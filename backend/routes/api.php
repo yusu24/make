@@ -141,31 +141,47 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ─── BUDIDAYA (AQUACULTURE) ENDPOINTS ───────────────────────────────────
     Route::prefix('budidaya')->group(function () {
+        // Dashboard
         Route::get('dashboard/stats', [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'dashboardStats']);
 
         // Ponds
         Route::apiResource('ponds', \App\Http\Controllers\Api\Budidaya\PondController::class);
 
         // Feed Stocks
-        Route::get('feeds', [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'index']);
-        Route::post('feeds', [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'store']);
-        Route::put('feeds/{id}/add', [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'addStock']);
+        Route::get('feeds',           [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'index']);
+        Route::post('feeds',          [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'store']);
+        Route::put('feeds/{id}/add',  [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'addStock']);
 
         // Cycles
-        Route::get('cycles', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'index']);
-        Route::get('cycles/{id}', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'show']);
-        Route::post('cycles', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'store']);
-        Route::post('cycles/{id}/harvest', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'harvest']);
-        
+        Route::get('cycles',              [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'index']);
+        Route::get('cycles/{id}',         [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'show']);
+        Route::post('cycles',             [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'store']);
+        Route::post('cycles/{id}/harvest',[\App\Http\Controllers\Api\Budidaya\CycleController::class, 'harvest']);
+
         // Cycle Logs
-        Route::post('feedings', [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'logFeeding']);
-        Route::delete('feedings/{id}', [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'destroyFeedingLog']);
-        
-        Route::post('health', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'logHealth']);
-        Route::post('samplings', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'logSampling']);
+        Route::post('feedings',         [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'logFeeding']);
+        Route::delete('feedings/{id}',  [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'destroyFeedingLog']);
+        Route::post('health',           [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'logHealth']);
+        Route::post('samplings',        [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'logSampling']);
 
         // Finance
         Route::apiResource('expenses', \App\Http\Controllers\Api\Budidaya\FinanceController::class)->except(['show', 'update']);
+
+        // ── Staff (Manajemen Pengguna) ────────────────────────────────────────
+        Route::get('staff',          [\App\Http\Controllers\Api\Budidaya\StaffController::class, 'index']);
+        Route::post('staff',         [\App\Http\Controllers\Api\Budidaya\StaffController::class, 'store']);
+        Route::put('staff/{id}',     [\App\Http\Controllers\Api\Budidaya\StaffController::class, 'update']);
+        Route::delete('staff/{id}',  [\App\Http\Controllers\Api\Budidaya\StaffController::class, 'destroy']);
+
+        // ── Roles & Permissions (Peran & Izin) ───────────────────────────────
+        Route::get('roles',          [\App\Http\Controllers\Api\Budidaya\RoleController::class, 'index']);
+        Route::post('roles',         [\App\Http\Controllers\Api\Budidaya\RoleController::class, 'store']);
+        Route::put('roles/{id}',     [\App\Http\Controllers\Api\Budidaya\RoleController::class, 'update']);
+        Route::delete('roles/{id}',  [\App\Http\Controllers\Api\Budidaya\RoleController::class, 'destroy']);
+
+        // ── Reports & Analytics ───────────────────────────────────────────────
+        Route::get('reports/ponds',  [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'pondReport']);
+        Route::get('reports/staff',  [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'staffStats']);
     });
 
 
