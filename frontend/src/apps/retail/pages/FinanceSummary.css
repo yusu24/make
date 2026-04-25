@@ -1,0 +1,90 @@
+.finance-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.finance-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  border-top: 4px solid var(--border-subtle);
+}
+
+.finance-card--income {
+  border-top-color: var(--primary-500);
+}
+
+.finance-card--expense {
+  border-top-color: var(--danger-500);
+}
+
+.finance-card--profit.is-profit {
+  border-top-color: var(--success-500);
+}
+
+.finance-card--profit.is-loss {
+  border-top-color: var(--danger-600);
+}
+
+.finance-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.finance-card__title {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.finance-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.finance-card--income .finance-card__icon {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary-600);
+}
+
+.finance-card--expense .finance-card__icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-600);
+}
+
+.finance-card--profit.is-profit .finance-card__icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-600);
+}
+
+.finance-card--profit.is-loss .finance-card__icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-600);
+}
+
+.finance-card__amount {
+  font-size: 32px;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.finance-card__desc {
+  font-size: 13px;
+  color: var(--text-muted);
+}

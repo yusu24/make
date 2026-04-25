@@ -1,0 +1,43 @@
+# ─── Backend (Laravel) ───────────────────────────────
+backend/vendor/
+backend/.env
+backend/.env.backup
+backend/.env.production
+backend/storage/logs/*.log
+backend/storage/framework/cache/
+backend/storage/framework/sessions/
+backend/storage/framework/views/
+backend/bootstrap/cache/*.php
+backend/public/hot
+backend/public/storage
+backend/node_modules/
+backend/.phpunit.result.cache
+backend/Homestead.json
+backend/Homestead.yaml
+backend/.vagrant
+backend/.idea/
+backend/*.sublime-project
+backend/*.sublime-workspace
+
+# ─── Frontend (React/Vite) ───────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+frontend/.env.*.local
+frontend/.vite/
+
+# ─── OS & Editor ─────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+*.log
+
+# ─── Misc ────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
