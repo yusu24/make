@@ -4,10 +4,12 @@ import { api } from '../../lib/api'
 import './budidaya.css'
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',           icon: 'grid_view',     path: '/budidaya'         },
-  { label: 'Pond Management',     icon: 'water_drop',    path: '/budidaya/ponds'   },
-  { label: 'Reports & Analytics', icon: 'bar_chart',     path: '/budidaya/reports' },
-  { label: 'User Settings',       icon: 'settings',      path: '/budidaya/settings'},
+  { label: 'Dashboard',           icon: 'grid_view',     path: '/budidaya/dashboard' },
+  { label: 'Manajemen Kolam',     icon: 'water_drop',    path: '/budidaya/ponds'     },
+  { label: 'Manajemen Pengguna',  icon: 'group',         path: '/budidaya/users'     },
+  { label: 'Peran & Izin',        icon: 'verified_user', path: '/budidaya/roles'     },
+  { label: 'Laporan & Analisa', icon: 'bar_chart',     path: '/budidaya/reports'   },
+  { label: 'Pengaturan Profil',   icon: 'settings',      path: '/budidaya/settings'  },
 ]
 
 export default function BudidayaSidebar({ mobileOpen, onToggle }) {
@@ -25,91 +27,175 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
     <>
       {/* ─── Sidebar ─── */}
       <aside
-        className={`
-          fixed top-0 left-0 h-screen w-64 bg-white z-50
-          flex flex-col
-          transition-transform duration-300
-          border-r border-slate-100
-          ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}
+        className={[
+          'fixed top-0 left-0 h-screen z-50',
+          'flex flex-col',
+          'transition-transform duration-300',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+        ].join(' ')}
+        style={{
+          width: 240,
+          background: '#FFFFFF',
+          borderRight: '1px solid #E9F0EC',
+          boxShadow: '2px 0 12px rgba(0,0,0,0.06)',
+        }}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-6 pt-8 pb-10">
+        {/* ── Brand / Logo ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '28px 20px 24px' }}>
           <div
-            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: '#1B4332' }}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 14,
+              background: '#1B4332',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
           >
             <span
-              className="material-symbols-outlined text-white text-[24px]"
-              style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}
+              className="material-symbols-outlined"
+              style={{
+                fontVariationSettings: "'FILL' 1, 'wght' 500",
+                fontSize: 22,
+                color: '#fff',
+                lineHeight: 1,
+              }}
             >
               water_drop
             </span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-[19px] font-extrabold leading-tight" style={{ color: '#1B4332' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 17,
+                fontWeight: 800,
+                color: '#1B4332',
+                letterSpacing: '-0.3px',
+                lineHeight: 1.2,
+              }}
+            >
               AquaGrow
             </span>
-            <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-slate-400">
-              Smart Aquaculture
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 10,
+                fontWeight: 500,
+                color: '#94A3B8',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Budidaya Pintar
             </span>
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 flex flex-col gap-1 px-3">
+        {/* ── Navigation ── */}
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '4px 12px', flex: 'none' }}>
           {NAV_ITEMS.map((item) => {
-            const isActive =
-              item.path === '/budidaya'
-                ? pathname === '/budidaya' || pathname === '/budidaya/'
-                : pathname.startsWith(item.path)
+            const isActive = pathname === item.path || pathname.startsWith(item.path + '/')
 
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
-                className="relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150"
-                style={({ isActive: linkActive }) => {
-                  const active = isActive || linkActive
-                  return {
-                    backgroundColor: active ? '#DCF0E2' : 'transparent',
-                    color: active ? '#1B4332' : '#94A3B8',
-                    fontWeight: active ? '600' : '400',
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  textDecoration: 'none',
+                  background: isActive ? '#E8F5ED' : 'transparent',
+                  color: isActive ? '#1B4332' : '#94A3B8',
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13.5,
+                  fontWeight: isActive ? 600 : 500,
+                  transition: 'background 0.15s, color 0.15s',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = '#F0F4F2'
+                    e.currentTarget.style.color = '#2D6A4F'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = '#94A3B8'
                   }
                 }}
               >
-                {/* Left border indicator for active */}
-                {isActive && (
-                  <span
-                    className="absolute left-0 top-1/2 -translate-y-1/2 rounded-r-full"
-                    style={{ width: 4, height: 28, background: '#1B4332' }}
-                  />
-                )}
-
                 <span
-                  className="material-symbols-outlined text-[22px] shrink-0"
+                  className="material-symbols-outlined"
                   style={{
-                    fontVariationSettings: "'FILL' 0, 'wght' 400",
-                    color: isActive ? '#1B4332' : '#94A3B8',
+                    fontVariationSettings: isActive
+                      ? "'FILL' 0, 'wght' 500"
+                      : "'FILL' 0, 'wght' 300",
+                    fontSize: 20,
+                    flexShrink: 0,
+                    color: 'inherit',
+                    lineHeight: 1,
                   }}
                 >
                   {item.icon}
                 </span>
-
-                <span className="text-[14px] leading-snug">{item.label}</span>
+                <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
               </NavLink>
             )
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="px-3 pb-8 pt-4 border-t border-slate-100">
+        {/* ── Spacer ── */}
+        <div style={{ flex: 1 }} />
+
+        {/* ── Logout ── */}
+        <div style={{ padding: '12px 12px 28px', borderTop: '1px solid #E9F0EC' }}>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 14px',
+              width: '100%',
+              borderRadius: 10,
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#94A3B8',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 13.5,
+              fontWeight: 500,
+              transition: 'background 0.15s, color 0.15s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#FEF2F2'
+              e.currentTarget.style.color = '#EF4444'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = '#94A3B8'
+            }}
           >
-            <span className="material-symbols-outlined text-[22px]">logout</span>
-            <span className="text-[14px] font-medium">Keluar</span>
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontVariationSettings: "'FILL' 0, 'wght' 300",
+                fontSize: 20,
+                flexShrink: 0,
+                color: 'inherit',
+                lineHeight: 1,
+              }}
+            >
+              logout
+            </span>
+            <span>Keluar</span>
           </button>
         </div>
       </aside>

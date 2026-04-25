@@ -1,0 +1,278 @@
+import React, { useState } from 'react'
+import { useAuth } from '../../../contexts/AuthContext'
+import '../budidaya.css'
+
+export default function Settings() {
+  const { user } = useAuth()
+  const [theme, setTheme] = useState('light')
+
+  const cardStyle = {
+    background: '#fff',
+    borderRadius: '24px',
+    padding: '28px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+    border: '1px solid #E9F0EC'
+  }
+
+  const inputStyle = {
+    width: '100%',
+    padding: '12px 16px',
+    background: '#F1F5F9',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '14px',
+    color: '#1A1C1A',
+    fontWeight: '500',
+    marginTop: '8px',
+    outline: 'none',
+    boxSizing: 'border-box'
+  }
+
+  const labelStyle = {
+    fontSize: '11px',
+    fontWeight: '800',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em'
+  }
+
+  const sectionHeader = (icon, title) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+      <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#1B4332' }}>{icon}</span>
+      <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#1A1C1A', margin: 0 }}>{title}</h3>
+    </div>
+  )
+
+  const toggleRow = (icon, title, desc, active) => (
+    <div style={{ 
+      display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', 
+      background: '#F8FAF9', borderRadius: '16px', border: '1px solid #E9F0EC' 
+    }}>
+      <div style={{ 
+        width: '40px', height: '40px', borderRadius: '10px', background: '#E8F5ED', 
+        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B4332' 
+      }}>
+        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{icon}</span>
+      </div>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: '14px', fontWeight: '700', color: '#1A1C1A', margin: 0 }}>{title}</p>
+        <p style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{desc}</p>
+      </div>
+      <div style={{ 
+        width: '44px', height: '24px', borderRadius: '12px', 
+        background: active ? '#1B4332' : '#E2E8F0', 
+        position: 'relative', cursor: 'pointer', transition: '0.2s' 
+      }}>
+        <div style={{ 
+          width: '18px', height: '18px', borderRadius: '50%', background: '#fff',
+          position: 'absolute', top: '3px', left: active ? '23px' : '3px',
+          transition: '0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }} />
+      </div>
+    </div>
+  )
+
+  return (
+    <div style={{ padding: '32px', background: '#F4F7F5', minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: '32px', fontWeight: '850', color: '#1B4332', margin: 0, letterSpacing: '-0.02em' }}>Pengaturan Profil</h1>
+          <p style={{ fontSize: '14px', color: '#64748B', marginTop: '4px' }}>
+            Kelola preferensi akun dan notifikasi aplikasi
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button style={{ 
+            padding: '12px 24px', borderRadius: '12px', border: '1.5px solid #E9F0EC', 
+            background: '#fff', color: '#64748B', fontWeight: '700', cursor: 'pointer', fontSize: '14px' 
+          }}>
+            Batalkan
+          </button>
+          <button style={{ 
+            padding: '12px 24px', borderRadius: '12px', border: 'none', 
+            background: '#1B4332', color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px' 
+          }}>
+            Simpan Perubahan
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px' }}>
+        
+        {/* ── Left Column ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* Informasi Pribadi */}
+          <div style={cardStyle}>
+            {sectionHeader('person', 'Informasi Pribadi')}
+            
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px' }}>
+              <div style={{ position: 'relative' }}>
+                <div style={{ 
+                  width: '120px', height: '120px', borderRadius: '24px', overflow: 'hidden', 
+                  border: '4px solid #E8F5ED', background: '#F1F5F9' 
+                }}>
+                  <img 
+                    src={`https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=1B4332&color=fff&size=200`} 
+                    alt="Profile" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+                <div style={{ 
+                  position: 'absolute', bottom: '-10px', right: '-10px', 
+                  width: '36px', height: '36px', borderRadius: '10px', background: '#1B4332',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
+                  cursor: 'pointer', border: '3px solid #fff'
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>photo_camera</span>
+                </div>
+              </div>
+              <p style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginTop: '20px', textTransform: 'uppercase' }}>Foto Profil</p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={labelStyle}>Nama Lengkap</label>
+                <input style={inputStyle} defaultValue={user?.name || 'Aris Setiawan'} />
+              </div>
+              <div>
+                <label style={labelStyle}>Alamat Email</label>
+                <input style={inputStyle} defaultValue={user?.email || 'aris.setiawan@aquagrow.io'} />
+              </div>
+            </div>
+          </div>
+
+          {/* Keamanan */}
+          <div style={cardStyle}>
+            {sectionHeader('lock', 'Keamanan')}
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={labelStyle}>Kata Sandi Saat Ini</label>
+                <input style={inputStyle} type="password" defaultValue="********" />
+              </div>
+              <div>
+                <label style={labelStyle}>Kata Sandi Baru</label>
+                <input style={inputStyle} type="password" placeholder="Masukkan kata sandi baru" />
+              </div>
+              <button style={{ 
+                marginTop: '10px', padding: '12px', borderRadius: '12px', border: '1.5px dashed #1B4332', 
+                background: '#F0FAF4', color: '#1B4332', fontWeight: '700', cursor: 'pointer', fontSize: '13px' 
+              }}>
+                Aktifkan Autentikasi Dua Faktor
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── Right Column ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* Pengaturan Notifikasi */}
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              {sectionHeader('notifications', 'Pengaturan Notifikasi')}
+              <span style={{ 
+                fontSize: '10px', fontWeight: '800', background: '#D1FAE5', 
+                color: '#059669', padding: '4px 10px', borderRadius: '40px' 
+              }}>OTOMATIS</span>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {toggleRow('restaurant', 'Pengingat Pakan', "Dapatkan notifikasi saat waktunya memberi makan ikan.", true)}
+              {toggleRow('opacity', 'Peringatan Kualitas Air', "Peringatan kritis untuk kadar pH, amonia, atau oksigen.", true)}
+              {toggleRow('analytics', 'Laporan Analisa Mingguan', "Ringkasan email tentang kesehatan kolam dan performa pertumbuhan.", false)}
+            </div>
+          </div>
+
+          {/* Preferensi Aplikasi */}
+          <div style={cardStyle}>
+            {sectionHeader('tune', 'Preferensi Aplikasi')}
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div>
+                <label style={labelStyle}>Bahasa</label>
+                <div style={{ position: 'relative' }}>
+                  <select style={{ ...inputStyle, appearance: 'none' }}>
+                    <option>Bahasa Indonesia</option>
+                    <option>English (US)</option>
+                  </select>
+                  <span className="material-symbols-outlined" style={{ 
+                    position: 'absolute', right: '12px', top: '18px', color: '#64748B', pointerEvents: 'none' 
+                  }}>expand_more</span>
+                </div>
+              </div>
+              <div>
+                <label style={labelStyle}>Satuan Ukuran</label>
+                <div style={{ position: 'relative' }}>
+                  <select style={{ ...inputStyle, appearance: 'none' }}>
+                    <option>Metrik (Celsius, kg, m³)</option>
+                    <option>Imperial (Fahrenheit, lb, ft³)</option>
+                  </select>
+                  <span className="material-symbols-outlined" style={{ 
+                    position: 'absolute', right: '12px', top: '18px', color: '#64748B', pointerEvents: 'none' 
+                  }}>expand_more</span>
+                </div>
+              </div>
+              <div>
+                <label style={labelStyle}>Laju Refresh Dashboard</label>
+                <div style={{ position: 'relative' }}>
+                  <select style={{ ...inputStyle, appearance: 'none' }}>
+                    <option>Real-time (Langsung)</option>
+                    <option>Setiap 5 Menit</option>
+                    <option>Setiap 15 Menit</option>
+                  </select>
+                  <span className="material-symbols-outlined" style={{ 
+                    position: 'absolute', right: '12px', top: '18px', color: '#64748B', pointerEvents: 'none' 
+                  }}>expand_more</span>
+                </div>
+              </div>
+              <div>
+                <label style={labelStyle}>Tema</label>
+                <div style={{ 
+                  marginTop: '8px', background: '#F1F5F9', padding: '4px', 
+                  borderRadius: '12px', display: 'flex', gap: '4px' 
+                }}>
+                  <button 
+                    onClick={() => setTheme('light')}
+                    style={{ 
+                      flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
+                      background: theme === 'light' ? '#fff' : 'transparent',
+                      color: theme === 'light' ? '#1B4332' : '#64748B',
+                      fontWeight: '700', fontSize: '13px', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      boxShadow: theme === 'light' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>light_mode</span>
+                    Terang
+                  </button>
+                  <button 
+                    onClick={() => setTheme('dark')}
+                    style={{ 
+                      flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
+                      background: theme === 'dark' ? '#fff' : 'transparent',
+                      color: theme === 'dark' ? '#1B4332' : '#64748B',
+                      fontWeight: '700', fontSize: '13px', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      boxShadow: theme === 'dark' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>dark_mode</span>
+                    Gelap
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  )
+}

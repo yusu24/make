@@ -3,22 +3,19 @@ import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import '../budidaya.css'
 
+const CHART_DATA = {
+  '1B': [32, 41, 48, 53, 61, 70],
+  '3B': [20, 33, 44, 55, 65, 78],
+  '6B': [15, 28, 38, 50, 60, 72],
+}
+
 export default function Dashboard() {
   const { user } = useAuth()
-  const [stats, setStats] = useState({
-    total_ponds: 0,
-    active_ponds: 0,
-    active_cycles: 0,
-    total_revenue: 0,
-    revenue_trend: [],
-    total_expenses: 0,
-    net_profit: 0
-  })
+  const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [chartRange, setChartRange] = useState('3B')
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
+  useEffect(() => { fetchStats() }, [])
 
   const fetchStats = async () => {
     try {
@@ -33,183 +30,358 @@ export default function Dashboard() {
   }
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
-       <div className="w-12 h-12 border-4 border-[#1B4332]/10 border-t-[#1B4332] rounded-full animate-spin"></div>
-       <p className="mt-4 text-[#1B4332] font-semibold">Menganalisis Performa Farm...</p>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
+      <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <p style={{ color: '#64748B', fontSize: 13, fontWeight: 500 }}>Memuat data farm...</p>
     </div>
   )
 
+  const chartValues = CHART_DATA[chartRange]
+  const maxVal = Math.max(...chartValues)
+
   return (
-    <div className="p-6 lg:p-10 space-y-10 w-full overflow-hidden">
-      {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24, minHeight: '100vh', background: '#F4F7F5' }}>
+
+      {/* ── Welcome Row ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-[#1A1C1A]">Halo, Bpk. Wijaya</h1>
-          <p className="text-slate-500 font-medium text-sm mt-1">Sistem berjalan optimal. Berikut ringkasan budidaya Anda hari ini.</p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1A1C1A', margin: 0, lineHeight: 1.3 }}>
+            Halo, Bpk. {user?.name?.split(' ')[0] || 'Wijaya'}
+          </h1>
+          <p style={{ fontSize: 13, color: '#94A3B8', marginTop: 4, fontWeight: 400 }}>
+            Sistem berjalan optimal. Berikut ringkasan budidaya Anda hari ini.
+          </p>
         </div>
-        <button className="bg-[#1B4332] text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-[#1B4332]/10 text-sm shrink-0">
-          <span className="material-symbols-outlined text-[20px]">add_circle</span>
+        <button
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: '#1B4332', color: '#fff',
+            padding: '10px 20px', borderRadius: 999,
+            border: 'none', cursor: 'pointer',
+            fontSize: 13, fontWeight: 600,
+            boxShadow: '0 2px 8px rgba(27,67,50,0.18)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add_circle</span>
           Tambah Kolam Baru
         </button>
       </div>
 
-      {/* KPI Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-        <div className="aquagrow-card p-6 flex flex-col">
-          <div className="flex justify-between items-start mb-4">
-            <div className="kpi-icon-box bg-[#D1FAE5] text-[#059669]">
-              <span className="material-symbols-outlined">waves</span>
+      {/* ── KPI Cards ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+
+        {/* Total Kolam */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <div style={iconBox('#D1FAE5', '#059669')}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>waves</span>
             </div>
-            <span className="bg-[#D1FAE5] text-[#059669] text-[9px] px-2 py-0.5 rounded-full font-black uppercase">AKTIF</span>
+            <span style={badge('#D1FAE5', '#059669')}>AKTIF</span>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">TOTAL KOLAM</p>
-          <h3 className="text-3xl font-black text-[#1A1C1A] mt-1">{stats.total_ponds || 12}</h3>
-          <p className="text-[11px] text-[#059669] font-bold mt-2 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]">trending_up</span> 2 Kolam baru
+          <p style={kpiLabel}>TOTAL KOLAM</p>
+          <p style={kpiValue}>{stats?.total_ponds || 12}</p>
+          <p style={{ fontSize: 12, color: '#059669', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>trending_up</span>
+            2 Kolam baru bulan ini
           </p>
         </div>
 
-        <div className="aquagrow-card p-6 flex flex-col">
-          <div className="flex justify-between items-start mb-4">
-            <div className="kpi-icon-box bg-[#FFE4E6] text-[#E11D48]">
-              <span className="material-symbols-outlined">warning</span>
+        {/* Butuh Perhatian */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <div style={iconBox('#FFE4E6', '#E11D48')}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>warning</span>
             </div>
-            <span className="bg-[#FFE4E6] text-[#E11D48] text-[9px] px-2 py-0.5 rounded-full font-black uppercase">PERINGATAN</span>
+            <span style={badge('#FFE4E6', '#E11D48')}>PERINGATAN</span>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">BUTUH PERHATIAN</p>
-          <h3 className="text-3xl font-black text-[#1A1C1A] mt-1">02</h3>
-          <p className="text-[11px] text-[#E11D48] font-bold mt-2">Oksigen Rendah (Kolam B3)</p>
+          <p style={kpiLabel}>BUTUH PERHATIAN</p>
+          <p style={kpiValue}>02</p>
+          <p style={{ fontSize: 12, color: '#E11D48', marginTop: 6 }}>
+            Kadar Oksigen Rendah (Kolam B3)
+          </p>
         </div>
 
-        <div className="aquagrow-card p-6 flex flex-col">
-          <div className="flex justify-between items-start mb-4">
-            <div className="kpi-icon-box bg-[#ECFDF5] text-[#10B981]">
-              <span className="material-symbols-outlined">restaurant</span>
+        {/* Jadwal Pakan */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <div style={iconBox('#ECFDF5', '#10B981')}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>restaurant</span>
             </div>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">JADWAL PAKAN</p>
-          <h3 className="text-3xl font-black text-[#1A1C1A] mt-1">16:30</h3>
-          <p className="text-[11px] text-slate-500 font-medium mt-2">Pakan Protein Tinggi</p>
+          <p style={kpiLabel}>JADWAL PAKAN BERIKUTNYA</p>
+          <p style={kpiValue}>16:30</p>
+          <p style={{ fontSize: 12, color: '#64748B', marginTop: 6 }}>
+            Pakan Protein Tinggi – 45 Menit lagi
+          </p>
         </div>
 
-        <div className="aquagrow-card p-6 flex flex-col">
-          <div className="flex justify-between items-start mb-4">
-            <div className="kpi-icon-box bg-[#E0F2FE] text-[#0EA5E9]">
-              <span className="material-symbols-outlined">thermostat</span>
+        {/* Suhu Air */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <div style={iconBox('#E0F2FE', '#0EA5E9')}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>thermostat</span>
             </div>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SUHU AIR RATA-RATA</p>
-          <h3 className="text-3xl font-black text-[#1A1C1A] mt-1">28.5°C</h3>
-          <p className="text-[11px] text-[#059669] font-bold mt-2">Kondisi Ideal</p>
+          <p style={kpiLabel}>SUHU AIR RATA-RATA</p>
+          <p style={kpiValue}>28.5°C</p>
+          <p style={{ fontSize: 12, color: '#059669', marginTop: 6 }}>
+            Kondisi Ideal untuk Nila
+          </p>
         </div>
       </div>
 
-      {/* Main Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 aquagrow-card p-6 md:p-8 flex flex-col">
-          <div className="flex justify-between items-center mb-8">
+      {/* ── Main Row: Chart + Notifikasi ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16 }}>
+
+        {/* Chart Card */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <div>
-              <h3 className="text-lg font-bold text-[#1A1C1A]">Grafik Pertumbuhan Ikan</h3>
-              <p className="text-xs text-slate-400 font-medium">Kenaikan berat rata-rata (gram) per minggu</p>
+              <p style={{ fontSize: 15, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Grafik Pertumbuhan Ikan</p>
+              <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 3 }}>Kenaikan berat rata-rata (gram) per minggu</p>
             </div>
-            <div className="flex gap-2 p-1 bg-[#F1F5F9] rounded-lg">
-               <button className="text-[10px] font-black px-3 py-1 rounded-md bg-white shadow-sm text-[#1B4332]">3B</button>
-               <button className="text-[10px] font-black px-3 py-1 rounded-md text-slate-400">6B</button>
+            {/* Toggle 1B / 3B / 6B */}
+            <div style={{ display: 'flex', background: '#F1F5F9', borderRadius: 8, padding: 3, gap: 2 }}>
+              {[['1B', '1B', '1B'], ['3B', '3B', '3B'], ['6B', '6B', '6B']].map(r => (
+                <button
+                  key={r[0]}
+                  onClick={() => setChartRange(r[0])}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: 6,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    background: chartRange === r[0] ? '#1B4332' : 'transparent',
+                    color: chartRange === r[0] ? '#fff' : '#94A3B8',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {r[2]}
+                </button>
+              ))}
             </div>
           </div>
-          
-          <div className="h-[240px] w-full flex items-end justify-around gap-2 pb-2">
-             {[1, 2, 3, 4, 5, 6].map((i) => (
-               <div key={i} className="w-12 flex flex-col items-center group h-full justify-end">
-                 <div className="w-full bg-[#F1F5F9] rounded-t-lg group-hover:bg-[#1B4332]/20" style={{ height: `${20 + (i * 12)}%` }}></div>
-                 <span className="text-[9px] font-bold text-slate-400 mt-3 uppercase">MGG {i}</span>
-               </div>
-             ))}
+
+          {/* Bar Chart */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8, height: 200, paddingBottom: 0 }}>
+            {chartValues.map((val, i) => (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: '100%', justifyContent: 'flex-end' }}>
+                <div
+                  style={{
+                    width: '100%',
+                    background: '#E9F0EC',
+                    borderRadius: '6px 6px 0 0',
+                    height: `${(val / maxVal) * 100}%`,
+                    transition: 'height 0.4s ease',
+                    cursor: 'pointer',
+                    minHeight: 8,
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#2D6A4F'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#E9F0EC'}
+                />
+                <span style={{ fontSize: 10, color: '#94A3B8', fontWeight: 600 }}>MGG {i + 1}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="aquagrow-card p-6 md:p-8 flex flex-col">
-          <h3 className="text-lg font-bold text-[#1A1C1A] mb-6">Notifikasi Cepat</h3>
-          <div className="space-y-6">
-            <div className="flex gap-4">
-              <div className="h-10 w-10 shrink-0 bg-[#D1FAE5] rounded-full flex items-center justify-center text-[#059669]"><span className="material-symbols-outlined text-[18px]">water_drop</span></div>
+        {/* Notifikasi Card */}
+        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Notifikasi Cepat</p>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#2D6A4F', fontWeight: 600 }}>
+              Lihat Semua
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, flex: 1 }}>
+            {/* Notif 1 */}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#D1FAE5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 17, color: '#059669' }}>water_drop</span>
+              </div>
               <div>
-                <p className="text-sm font-bold text-[#1A1C1A]">Penggantian Air Selesai</p>
-                <p className="text-[11px] text-slate-500 font-medium mt-0.5">Kolam A1 mencapai level target.</p>
-                <p className="text-[9px] text-slate-400 mt-1 uppercase font-black">10 Menit lalu</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Penggantian Air Selesai</p>
+                <p style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>Kolam A1 telah mencapai level target.</p>
+                <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>10 Menit lalu</p>
               </div>
             </div>
-            <div className="flex gap-4 p-3 bg-red-50 rounded-xl border-l-4 border-red-500">
-              <div className="h-10 w-10 shrink-0 bg-white rounded-full flex items-center justify-center text-red-500"><span className="material-symbols-outlined text-[18px]">bolt</span></div>
+
+            {/* Notif 2 – alert */}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: '#FFF8F8', borderRadius: 10, padding: '10px 12px', borderLeft: '3px solid #EF4444', margin: '0 -4px' }}>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 17, color: '#EF4444' }}>bolt</span>
+              </div>
               <div>
-                <p className="text-sm font-bold text-red-900">Gagal Pompa Udara</p>
-                <p className="text-[11px] text-red-700 font-medium">Periksa listrik Kolam B3!</p>
-                <p className="text-[9px] text-red-400 mt-1 uppercase font-black">2 Jam lalu</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#DC2626', margin: 0 }}>Gagal Pompa Udara</p>
+                <p style={{ fontSize: 12, color: '#EF4444', marginTop: 2 }}>Periksa sambungan listrik Kolam B3!</p>
+                <p style={{ fontSize: 10, color: '#FCA5A5', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2 Jam lalu</p>
               </div>
             </div>
-            <div className="flex gap-4">
-              <div className="h-10 w-10 shrink-0 bg-[#ECFDF5] rounded-full flex items-center justify-center text-[#10B981]"><span className="material-symbols-outlined text-[18px]">inventory_2</span></div>
+
+            {/* Notif 3 */}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 17, color: '#10B981' }}>inventory_2</span>
+              </div>
               <div>
-                <p className="text-sm font-bold text-[#1A1C1A]">Stok Pakan Menipis</p>
-                <p className="text-[11px] text-slate-500 font-medium mt-0.5">Tersisa 5kg untuk Pakan Benih.</p>
-                <p className="text-[9px] text-slate-400 mt-1 uppercase font-black">5 Jam lalu</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Stok Pakan Menipis</p>
+                <p style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>Tersisa 5kg untuk Pakan Benih.</p>
+                <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>5 Jam lalu</p>
               </div>
             </div>
           </div>
-          <button className="mt-8 w-full py-3 border border-[#1B4332]/20 text-[#1B4332] font-bold rounded-xl text-xs hover:bg-slate-50 transition-all">Kelola Alert</button>
+
+          {/* Kelola Alert Button */}
+          <button
+            style={{
+              marginTop: 24,
+              width: '100%',
+              padding: '11px 0',
+              border: '1.5px solid #1B4332',
+              borderRadius: 10,
+              background: 'transparent',
+              color: '#1B4332',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#F0F9F4'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            Kelola Pengaturan Alert
+          </button>
         </div>
       </div>
 
-      {/* Ponds Status */}
-      <div className="space-y-6 w-full">
-        <h3 className="text-xl font-bold text-[#1A1C1A]">Status Kolam Unggulan</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          <div className="aquagrow-card flex flex-col sm:flex-row h-auto sm:h-40 w-full">
-             <img className="w-full sm:w-40 h-32 sm:h-full object-cover" src="https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=400&q=80" alt="Pond A1" />
-             <div className="p-5 flex-1 flex flex-col justify-between">
-               <div className="flex justify-between items-start">
-                 <div>
-                   <h4 className="text-sm font-bold text-[#1A1C1A]">Kolam A1 - Pembesaran Nila</h4>
-                   <p className="text-[11px] text-slate-400 font-medium mt-0.5">Populasi: 2000 Ekor</p>
-                 </div>
-                 <span className="bg-[#D1FAE5] text-[#059669] text-[9px] px-2 py-0.5 rounded-full font-black uppercase">SEHAT</span>
-               </div>
-               <div className="flex justify-between pt-4 border-t border-slate-50 mt-4">
-                 <div className="text-center"><p className="text-[8px] font-bold text-slate-400 uppercase">pH</p><p className="text-xs font-black text-[#1A1C1A]">7.2</p></div>
-                 <div className="text-center"><p className="text-[8px] font-bold text-slate-400 uppercase">O2</p><p className="text-xs font-black text-[#1A1C1A]">6.5</p></div>
-                 <div className="text-center"><p className="text-[8px] font-bold text-slate-400 uppercase">Ammonia</p><p className="text-xs font-black text-[#1A1C1A]">0.01</p></div>
-               </div>
-             </div>
+      {/* ── Status Kolam Unggulan ── */}
+      <div>
+        {/* Section header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Status Kolam Unggulan</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#64748B' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+              Sehat
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#64748B' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', display: 'inline-block' }} />
+              Kritis
+            </span>
           </div>
-          <div className="aquagrow-card flex flex-col sm:flex-row h-auto sm:h-40 w-full border-l-4 border-l-red-500">
-             <img className="w-full sm:w-40 h-32 sm:h-full object-cover" src="https://images.unsplash.com/photo-1551631553-62c589083321?w=400&q=80" alt="Pond B3" />
-             <div className="p-5 flex-1 flex flex-col justify-between">
-               <div className="flex justify-between items-start">
-                 <div>
-                   <h4 className="text-sm font-bold text-[#1A1C1A]">Kolam B3 - Pemijahan Gurame</h4>
-                   <p className="text-[11px] text-slate-400 font-medium mt-0.5">Populasi: 500 Ekor</p>
-                 </div>
-                 <span className="bg-red-50 text-red-500 text-[9px] px-2 py-0.5 rounded-full font-black uppercase">PERHATIAN</span>
-               </div>
-               <div className="flex justify-between pt-4 border-t border-slate-50 mt-4">
-                 <div className="text-center"><p className="text-[8px] font-bold text-slate-400 uppercase">pH</p><p className="text-xs font-black text-[#1A1C1A]">6.8</p></div>
-                 <div className="text-center"><p className="text-[8px] font-bold text-slate-400 uppercase">O2</p><p className="text-xs font-black text-red-500">3.2</p></div>
-                 <div className="text-center"><p className="text-[8px] font-bold text-slate-400 uppercase">Ammonia</p><p className="text-xs font-black text-[#1A1C1A]">0.05</p></div>
-               </div>
-             </div>
+        </div>
+
+        {/* Pond Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+          {/* Pond A1 – Sehat */}
+          <div style={{ ...cardStyle, display: 'flex', gap: 0, padding: 0, overflow: 'hidden' }}>
+            <div style={{ width: 110, flexShrink: 0, background: 'linear-gradient(135deg, #D1FAE5 0%, #6EE7B7 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#059669', fontVariationSettings: "'FILL' 1" }}>water</span>
+            </div>
+            <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>Kolam A1 - Pembesaran Nila</p>
+                  <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 3 }}>Usia: 45 Hari | Populasi: 2000 Ekor</p>
+                </div>
+                <span style={badge('#D1FAE5', '#059669')}>SEHAT</span>
+              </div>
+              <div style={{ display: 'flex', gap: 20, marginTop: 14, paddingTop: 12, borderTop: '1px solid #F1F5F9' }}>
+                {[['PH', '7.2', '#1A1C1A'], ['O2', '6.5 mg/L', '#1A1C1A'], ['AMONIAK', '0.01 ppm', '#1A1C1A']].map(([label, val, color]) => (
+                  <div key={label}>
+                    <p style={{ fontSize: 9, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: 13, fontWeight: 800, color, margin: '2px 0 0' }}>{val}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
+
+          {/* Pond B3 – Kritis */}
+          <div style={{ ...cardStyle, display: 'flex', gap: 0, padding: 0, overflow: 'hidden', border: '1px solid #FECACA' }}>
+            <div style={{ width: 110, flexShrink: 0, background: 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#EF4444', fontVariationSettings: "'FILL' 1" }}>warning</span>
+            </div>
+            <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>Kolam B3 - Pemijahan Gurame</p>
+                  <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 3 }}>Usia: 12 Hari | Populasi: 500 Ekor</p>
+                </div>
+                <span style={badge('#FEE2E2', '#EF4444')}>PERHATIAN</span>
+              </div>
+              <div style={{ display: 'flex', gap: 20, marginTop: 14, paddingTop: 12, borderTop: '1px solid #FEF2F2' }}>
+                {[['PH', '6.8', '#1A1C1A'], ['O2', '3.2 mg/L', '#EF4444'], ['AMONIAK', '0.05 ppm', '#1A1C1A']].map(([label, val, color]) => (
+                  <div key={label}>
+                    <p style={{ fontSize: 9, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: 13, fontWeight: 800, color, margin: '2px 0 0' }}>{val}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <footer className="pt-10 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6 pb-6">
-        <div className="flex items-center gap-2"><div className="w-6 h-6 bg-[#1B4332] rounded flex items-center justify-center text-white text-[8px] font-black">A</div><span className="font-bold text-[10px] text-[#1B4332]">AquaGrow v2.4.0</span></div>
-        <div className="flex gap-6 text-[9px] font-bold text-slate-300 uppercase tracking-widest"><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Support</a></div>
-        <div className="text-[9px] font-bold text-slate-200 uppercase tracking-widest">© 2024 AquaGrow.</div>
-      </footer>
     </div>
   )
 }
 
+/* ── Style helpers ── */
+const cardStyle = {
+  background: '#FFFFFF',
+  border: '1px solid #E9F0EC',
+  borderRadius: 16,
+  padding: '20px 22px',
+  boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+}
 
+const kpiLabel = {
+  fontSize: 10,
+  fontWeight: 700,
+  color: '#94A3B8',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  margin: 0,
+}
 
+const kpiValue = {
+  fontSize: 32,
+  fontWeight: 800,
+  color: '#1A1C1A',
+  margin: '4px 0 0',
+  lineHeight: 1.1,
+}
 
+function iconBox(bg, color) {
+  return {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    background: bg,
+    color: color,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  }
+}
+
+function badge(bg, color) {
+  return {
+    background: bg,
+    color: color,
+    fontSize: 9,
+    fontWeight: 800,
+    padding: '3px 8px',
+    borderRadius: 999,
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  }
+}

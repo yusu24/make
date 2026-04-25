@@ -1,68 +1,227 @@
 
+/* ═══════════════════════════════════════════════
+   AquaGrow — Budidaya Ikan Design System
+   ═══════════════════════════════════════════════ */
+
+/* ── Google Font ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 :root {
-    --aquagrow-primary: #1B4332;
-    --aquagrow-primary-light: #D8F3DC;
-    --aquagrow-accent: #2D6A4F;
-    --aquagrow-bg: #F8FAF9;
-    --aquagrow-card-bg: #FFFFFF;
-    --aquagrow-text-main: #1A1C1A;
-    --aquagrow-text-muted: #64748B;
-    --aquagrow-border: #E9F0EC;
-    --aquagrow-shadow: 0px 10px 30px rgba(27, 67, 50, 0.04);
+  --aq-primary:        #1B4332;
+  --aq-primary-light:  #D8F3DC;
+  --aq-accent:         #2D6A4F;
+  --aq-bg:             #F4F7F5;
+  --aq-card-bg:        #FFFFFF;
+  --aq-text-main:      #1A1C1A;
+  --aq-text-muted:     #94A3B8;
+  --aq-border:         #E9F0EC;
+  --aq-shadow:         0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  --aq-sidebar-w:      240px;
+  --aq-sidebar-bg:     #FFFFFF;
+  --aq-active-bg:      #E8F5ED;
+  --aq-active-text:    #1B4332;
+  --aq-inactive-text:  #94A3B8;
 }
 
-/* Force light theme for Budidaya */
+/* ── Scope reset ── */
 .budidaya-scope {
-    background-color: var(--aquagrow-bg);
-    color: var(--aquagrow-text-main);
-    min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--aq-bg);
+  color: var(--aq-text-main);
+  min-height: 100vh;
 }
+
+/* Only apply Inter to non-icon elements — don't override Material Symbols! */
+.budidaya-scope *:not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp) {
+  font-family: 'Inter', sans-serif;
+}
+
+/* ════════════════════════════════════════════════
+   SIDEBAR
+   ════════════════════════════════════════════════ */
+
+.aq-sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  height: 100vh !important;
+  width: var(--aq-sidebar-w) !important;
+  background: #FFFFFF !important;
+  border-right: 1px solid var(--aq-border) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 50 !important;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+  box-shadow: none;
+}
+
+/* Desktop: always visible */
+@media (min-width: 1024px) {
+  .aq-sidebar {
+    transform: translateX(0) !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Mobile: open state */
+.aq-sidebar--open {
+  transform: translateX(0) !important;
+  box-shadow: 8px 0 32px rgba(0,0,0,.12) !important;
+}
+
+/* ── Brand ── */
+.aq-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 20px 24px;
+}
+
+.aq-brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: var(--aq-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.aq-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.aq-brand-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--aq-primary);
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.aq-brand-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--aq-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Navigation ── */
+.aq-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 12px;
+}
+
+.aq-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  color: var(--aq-inactive-text);
+  background: transparent;
+  text-decoration: none !important;
+}
+
+.aq-nav-item:hover {
+  background: #F0F4F2;
+  color: var(--aq-accent);
+}
+
+.aq-nav-item--active {
+  background: var(--aq-active-bg) !important;
+  color: var(--aq-active-text) !important;
+}
+
+.aq-nav-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.aq-nav-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.aq-nav-item--active .aq-nav-label {
+  font-weight: 600;
+}
+
+/* ── Logout ── */
+.aq-logout-wrap {
+  padding: 12px 12px 28px;
+  border-top: 1px solid var(--aq-border);
+}
+
+.aq-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  width: 100%;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--aq-text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.aq-logout-btn:hover {
+  background: #FEF2F2;
+  color: #EF4444;
+}
+
+/* ── Mobile overlay ── */
+.aq-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.22);
+  z-index: 40;
+}
+
+@media (min-width: 1024px) {
+  .aq-overlay { display: none; }
+}
+
+/* ════════════════════════════════════════════════
+   CARDS & SHARED UTILITIES
+   ════════════════════════════════════════════════ */
 
 .aquagrow-card {
-    background: var(--aquagrow-card-bg) !important;
-    border: 1px solid var(--aquagrow-border) !important;
-    border-radius: 24px !important;
-    box-shadow: var(--aquagrow-shadow) !important;
-    overflow: hidden;
-}
-
-.material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-.sidebar-aquagrow {
-    background: #FFFFFF !important;
-    border-right: 1px solid var(--aquagrow-border);
-}
-
-.nav-link-aquagrow {
-    color: var(--aquagrow-text-muted);
-    transition: all 0.2s ease;
-}
-
-.nav-link-aquagrow.active {
-    background: var(--aquagrow-primary-light) !important;
-    color: var(--aquagrow-accent) !important;
-    font-weight: 700;
-}
-
-.search-input-aquagrow {
-    background: #F1F5F9 !important;
-    border: none !important;
-    color: var(--aquagrow-text-main) !important;
-}
-
-.search-input-aquagrow::placeholder {
-    color: #94A3B8 !important;
+  background: var(--aq-card-bg) !important;
+  border: 1px solid var(--aq-border) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--aq-shadow) !important;
+  overflow: hidden;
 }
 
 .kpi-icon-box {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 14px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
 }
 
+.search-input-aquagrow {
+  background: #F1F5F9 !important;
+  border: none !important;
+  color: var(--aq-text-main) !important;
+}
 
+.search-input-aquagrow::placeholder {
+  color: #94A3B8 !important;
+}

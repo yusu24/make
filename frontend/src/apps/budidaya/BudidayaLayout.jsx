@@ -30,8 +30,8 @@ export default function BudidayaLayout() {
         onToggle={() => setMobileOpen(v => !v)} 
       />
       
-      {/* Main Content — offset by sidebar width w-64 = 256px */}
-      <div className="lg:ml-64 flex flex-col min-h-screen">
+      {/* Main Content — offset by sidebar width 240px */}
+      <div className="flex flex-col min-h-screen" style={{ marginLeft: '240px' }}>
         <BudidayaHeader 
           onMenuToggle={() => setMobileOpen(v => !v)} 
         />

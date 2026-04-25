@@ -1,168 +1,229 @@
-import React, { useState, useEffect } from 'react'
-import { api } from '../../../lib/api'
-import { 
-  TrendingUp, TrendingDown, DollarSign, 
-  FileText, Download, Filter, PieChart,
-  Target, Activity, Package, Check
-} from 'lucide-react'
+import React from 'react'
+import '../budidaya.css'
 
 export default function Reports() {
-  const [stats, setStats] = useState({
-    total_revenue: 0,
-    total_expenses: 0,
-    net_profit: 0
-  })
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-      const { data } = await api.get('/budidaya/dashboard/stats')
-      setStats(data.data)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
+  const cardStyle = {
+    background: '#fff',
+    borderRadius: '24px',
+    padding: '28px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+    border: '1px solid #E9F0EC'
   }
 
+  const badge = (bg, color) => ({
+    padding: '4px 12px',
+    borderRadius: '40px',
+    fontSize: '11px',
+    fontWeight: '800',
+    background: bg,
+    color: color,
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em'
+  })
+
   return (
-    <div className="animate-fade-in page-content">
-      {/* Premium Header */}
-      <div className="page-header">
-        <div className="flex items-center gap-4">
-          <div className="premium-icon-badge" style={{ background: '#0f172a' }}>
-             <FileText size={28} />
+    <div style={{ padding: '32px', background: '#F4F7F5', minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ fontSize: '36px', fontWeight: '850', color: '#1B4332', margin: 0, letterSpacing: '-0.03em' }}>Laporan & Analisa</h1>
+          <p style={{ fontSize: '15px', color: '#64748B', marginTop: '8px', maxWidth: '500px', lineHeight: '1.5' }}>
+            Visualisasi mendalam untuk performa kolam dan tren kualitas air untuk mendukung keputusan operasional harian.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button style={{ 
+            display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 24px', 
+            borderRadius: '12px', border: '1.5px solid #1B4332', background: '#fff', 
+            color: '#1B4332', fontWeight: '700', cursor: 'pointer', fontSize: '14px' 
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>download</span>
+            Ekspor PDF
+          </button>
+          <button style={{ 
+            display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 24px', 
+            borderRadius: '12px', border: 'none', background: '#1B4332', 
+            color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px' 
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>calendar_today</span>
+            30 Hari Terakhir
+          </button>
+        </div>
+      </div>
+
+      {/* ── Top Row ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '24px' }}>
+        
+        {/* Tren Kualitas Air */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#1A1C1A', margin: 0 }}>Tren Kualitas Air</h3>
+              <p style={{ fontSize: '12px', color: '#94A3B8', fontWeight: '600', marginTop: '4px', textTransform: 'uppercase' }}>PARAMETER: OKSIGEN TERLARUT (DO)</p>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span style={badge('#D1FAE5', '#059669')}>● Kolam A</span>
+              <span style={badge('#F1F5F9', '#64748B')}>● Kolam B</span>
+            </div>
           </div>
+          
+          {/* Simulated Chart with SVG */}
+          <div style={{ height: '240px', position: 'relative', marginTop: '40px' }}>
+            <svg width="100%" height="100%" viewBox="0 0 800 240" preserveAspectRatio="none">
+              {/* Grid Lines */}
+              <line x1="0" y1="240" x2="800" y2="240" stroke="#E9F0EC" strokeWidth="1" />
+              
+              {/* Area Gradient */}
+              <defs>
+                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1B4332" stopOpacity="0.1" />
+                  <stop offset="100%" stopColor="#1B4332" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              
+              {/* Kolam A Path */}
+              <path 
+                d="M0,180 C100,180 150,150 200,150 C250,150 300,100 400,100 C500,100 550,210 600,210 C650,210 700,120 800,120 L800,240 L0,240 Z" 
+                fill="url(#chartGradient)" 
+              />
+              <path 
+                d="M0,180 C100,180 150,150 200,150 C250,150 300,100 400,100 C500,100 550,210 600,210 C650,210 700,120 800,120" 
+                fill="none" stroke="#1B4332" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+              />
+              
+              {/* Kolam B Path (Dashed) */}
+              <path 
+                d="M0,210 C100,210 150,200 200,200 C250,200 300,160 400,160 C500,160 550,230 600,230 C650,230 700,180 800,180" 
+                fill="none" stroke="#94A3B8" strokeWidth="3" strokeDasharray="6,6" strokeLinecap="round"
+              />
+            </svg>
+            
+            {/* X-Axis Labels */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+              {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'].map(day => (
+                <span key={day} style={{ fontSize: '11px', fontWeight: '700', color: '#94A3B8' }}>{day}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Rata-rata FCR */}
+        <div style={{ ...cardStyle, background: '#1B4332', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-             <h2 className="page-title">Analisa Keuangan & Performa</h2>
-             <p className="page-sub">Evaluasi profitabilitas dan efisiensi unit produksi secara mendalam</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>monitoring</span>
+              </div>
+              <span style={{ fontSize: '11px', fontWeight: '800', opacity: 0.8, letterSpacing: '0.05em' }}>TARGET: 1.2</span>
+            </div>
+            
+            <div style={{ marginTop: '32px' }}>
+              <p style={{ fontSize: '16px', fontWeight: '600', margin: 0, opacity: 0.9 }}>Rata-rata FCR</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '8px' }}>
+                <h2 style={{ fontSize: '48px', fontWeight: '850', margin: 0 }}>1.42</h2>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: '#6EE7B7' }}>+0.05 vs bln lalu</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginTop: '40px' }}>
+            <p style={{ fontSize: '12px', fontWeight: '700', marginBottom: '16px', opacity: 0.8 }}>Efisiensi Pakan Per Kolam</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '700', marginBottom: '6px' }}>
+                  <span>Kolam A</span>
+                  <span>1.28</span>
+                </div>
+                <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px' }}>
+                  <div style={{ width: '82%', height: '100%', background: '#6EE7B7', borderRadius: '3px' }}></div>
+                </div>
+              </div>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '700', marginBottom: '6px' }}>
+                  <span>Kolam B</span>
+                  <span>1.56</span>
+                </div>
+                <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px' }}>
+                  <div style={{ width: '65%', height: '100%', background: '#EF4444', borderRadius: '3px' }}></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="flex gap-3">
-           <button className="btn btn-secondary"><Filter size={18} /><span>Filter Periode</span></button>
-           <button className="btn btn-primary" style={{ background: '#0f172a' }}><Download size={18} /><span>Export PDF</span></button>
+
+      </div>
+
+      {/* ── Bottom Row ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px' }}>
+        
+        {/* Estimasi Hasil Panen */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#1A1C1A', margin: 0 }}>Estimasi Hasil Panen (Ton)</h3>
+            <div style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', 
+              background: '#F1F5F9', borderRadius: '10px', fontSize: '12px', fontWeight: '700', color: '#64748B' 
+            }}>
+              Semua Kolam
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>expand_more</span>
+            </div>
+          </div>
+          
+          <div style={{ height: '300px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', padding: '0 20px' }}>
+            {[
+              { label: 'K-01', val: 0.8, color: '#F1F5F9' },
+              { label: 'K-02', val: 0.8, color: '#F1F5F9' },
+              { label: 'K-03', val: 0.8, color: '#F1F5F9' },
+              { label: 'K-04', val: 0.8, color: '#F1F5F9' },
+              { label: 'K-05', val: 0.8, color: '#F1F5F9' }
+            ].map((item, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', width: '48px' }}>
+                <div style={{ width: '100%', height: '8px', background: item.color, borderRadius: '4px' }}></div>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#94A3B8' }}>{item.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Ringkasan Konversi Pakan */}
+        <div style={cardStyle}>
+          <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#1A1C1A', margin: '0 0 32px' }}>Ringkasan Konversi Pakan (FCR)</h3>
+          
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ textAlign: 'left', borderBottom: '1.5px solid #F1F5F9' }}>
+                <th style={{ padding: '0 0 16px', fontSize: '11px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>KOLAM</th>
+                <th style={{ padding: '0 0 16px', fontSize: '11px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>PAKAN (KG)</th>
+                <th style={{ padding: '0 0 16px', fontSize: '11px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>BIOMAS (KG)</th>
+                <th style={{ padding: '0 0 16px', fontSize: '11px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>FCR</th>
+                <th style={{ padding: '0 0 16px', fontSize: '11px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { name: 'Kolam A-01', pakan: '1,250', biomas: '980', fcr: '1.28', status: 'SEHAT', bg: '#D1FAE5', color: '#059669' },
+                { name: 'Kolam B-04', pakan: '2,400', biomas: '1,530', fcr: '1.56', status: 'KRITIS', bg: '#FEE2E2', color: '#EF4444' },
+                { name: 'Kolam C-02', pakan: '1,800', biomas: '1,350', fcr: '1.33', status: 'MODERAT', bg: '#F1F5F9', color: '#64748B' },
+                { name: 'Kolam D-01', pakan: '3,100', biomas: '2,600', fcr: '1.19', status: 'SEHAT', bg: '#D1FAE5', color: '#059669' }
+              ].map((row, i) => (
+                <tr key={i} style={{ borderBottom: i === 3 ? 'none' : '1px solid #F1F5F9' }}>
+                  <td style={{ padding: '20px 0', fontSize: '14px', fontWeight: '800', color: '#1B4332' }}>{row.name}</td>
+                  <td style={{ padding: '20px 0', fontSize: '14px', fontWeight: '600', color: '#475569' }}>{row.pakan}</td>
+                  <td style={{ padding: '20px 0', fontSize: '14px', fontWeight: '600', color: '#475569' }}>{row.biomas}</td>
+                  <td style={{ padding: '20px 0', fontSize: '15px', fontWeight: '850', color: '#1A1C1A' }}>{row.fcr}</td>
+                  <td style={{ padding: '20px 0' }}>
+                    <span style={badge(row.bg, row.color)}>{row.status}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
       </div>
 
-      {/* Financial Summary Cards */}
-      <div className="premium-kpi-grid stagger" style={{ marginBottom: 32 }}>
-         <div className="premium-card highlight-emerald" style={{ padding: 28 }}>
-            <div className="kpi-header" style={{ marginBottom: 20 }}>
-               <div className="kpi-icon" style={{ background: '#f0fdf4', color: '#10b981' }}><DollarSign size={24} /></div>
-               <div className="kpi-trend positive" style={{ background: '#f0fdf4', color: '#16a34a' }}>+12.5%</div>
-            </div>
-            <div className="kpi-body">
-               <span className="label" style={{ fontSize: 11, fontWeight: 900, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Total Pendapatan</span>
-               <h3 className="value" style={{ fontSize: 28, fontWeight: 950, color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                  Rp {(stats.total_revenue || 0).toLocaleString()}
-               </h3>
-            </div>
-         </div>
-
-         <div className="premium-card highlight-red" style={{ padding: 28 }}>
-            <div className="kpi-header" style={{ marginBottom: 20 }}>
-               <div className="kpi-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><TrendingDown size={24} /></div>
-               <div className="kpi-trend negative" style={{ background: '#fef2f2', color: '#dc2626' }}>-4.2%</div>
-            </div>
-            <div className="kpi-body">
-               <span className="label" style={{ fontSize: 11, fontWeight: 900, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Total Pengeluaran</span>
-               <h3 className="value" style={{ fontSize: 28, fontWeight: 950, color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                  Rp {(stats.total_expenses || 0).toLocaleString()}
-               </h3>
-            </div>
-         </div>
-
-         <div className="premium-card highlight-blue" style={{ padding: 28 }}>
-            <div className="kpi-header" style={{ marginBottom: 20 }}>
-               <div className="kpi-icon" style={{ background: '#f0f9ff', color: '#0ea5e9' }}><Target size={24} /></div>
-               <div className="kpi-trend neutral" style={{ background: '#f0f9ff', color: '#0ea5e9' }}>Sehat</div>
-            </div>
-            <div className="kpi-body">
-               <span className="label" style={{ fontSize: 11, fontWeight: 900, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Laba Bersih Estimasi</span>
-               <h3 className="value" style={{ fontSize: 28, fontWeight: 950, color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                  Rp {(stats.net_profit || 0).toLocaleString()}
-               </h3>
-            </div>
-         </div>
-      </div>
-
-      {/* Analytics & Cost Structure */}
-      <div className="grid-2 gap-6">
-         <div className="premium-card">
-            <div className="flex justify-between items-center mb-10">
-               <div className="flex items-center gap-3">
-                  <Activity size={20} color="#10b981" />
-                  <h3 className="premium-title-900" style={{ fontSize: 18, fontWeight: 900, fontFamily: 'var(--font-heading)' }}>Efisiensi Teknis & KPI Budidaya</h3>
-               </div>
-               <span className="badge badge-gray">Live Data</span>
-            </div>
-            
-            <div className="flex flex-col gap-8">
-               <div className="kpi-row">
-                  <div className="flex justify-between items-end mb-2">
-                     <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-secondary)' }}>Feed Conversion Ratio (FCR)</span>
-                     <span style={{ fontSize: 18, fontWeight: 950, color: 'var(--text-primary)' }}>1.2 <small style={{ color: 'var(--text-muted)', fontSize: 11, marginLeft: 6 }}>/ Target 1.1</small></span>
-                  </div>
-                  <div style={{ height: 10, background: 'var(--bg-elevated)', borderRadius: 10, overflow: 'hidden' }}>
-                     <div style={{ height: '100%', width: '85%', background: 'linear-gradient(90deg, #10b981, #34d399)' }}></div>
-                  </div>
-               </div>
-
-               <div className="kpi-row">
-                  <div className="flex justify-between items-end mb-2">
-                     <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-secondary)' }}>Survival Rate (SR)</span>
-                     <span style={{ fontSize: 18, fontWeight: 950, color: 'var(--text-primary)' }}>94.2% <small style={{ color: 'var(--text-muted)', fontSize: 11, marginLeft: 6 }}>/ Target 90%</small></span>
-                  </div>
-                  <div style={{ height: 10, background: 'var(--bg-elevated)', borderRadius: 10, overflow: 'hidden' }}>
-                     <div style={{ height: '100%', width: '94%', background: 'linear-gradient(90deg, #3b82f6, #60a5fa)' }}></div>
-                  </div>
-               </div>
-
-               <div className="kpi-row">
-                  <div className="flex justify-between items-end mb-2">
-                     <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-secondary)' }}>Avg Daily Gain (ADG)</span>
-                     <span style={{ fontSize: 18, fontWeight: 950, color: 'var(--text-primary)' }}>0.35g <small style={{ color: 'var(--text-muted)', fontSize: 11, marginLeft: 6 }}>/ Target 0.4g</small></span>
-                  </div>
-                  <div style={{ height: 10, background: 'var(--bg-elevated)', borderRadius: 10, overflow: 'hidden' }}>
-                     <div style={{ height: '100%', width: '70%', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         <div className="premium-card">
-            <div className="flex items-center gap-3 mb-10">
-               <PieChart size={20} color="#3b82f6" />
-               <h3 className="premium-title-900" style={{ fontSize: 18, fontWeight: 900, fontFamily: 'var(--font-heading)' }}>Struktur Biaya Operasional</h3>
-            </div>
-            
-            <div className="flex flex-col gap-4">
-               {[
-                  { label: 'Pakan Pekat', pct: '70%', color: '#10b981' },
-                  { label: 'Pengadaan Benih', pct: '15%', color: '#3b82f6' },
-                  { label: 'Listrik & Air', pct: '10%', color: '#fbbf24' },
-                  { label: 'Suplemen/Lainnya', pct: '5%', color: '#ef4444' }
-               ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4" style={{ background: 'var(--bg-elevated)', borderRadius: 20, border: '1px solid var(--border-subtle)' }}>
-                     <div style={{ width: 10, height: 10, borderRadius: 5, background: item.color }}></div>
-                     <span style={{ flex: 1, fontSize: 13, fontWeight: 800, color: 'var(--text-secondary)' }}>{item.label}</span>
-                     <span style={{ fontSize: 15, fontWeight: 950, color: 'var(--text-primary)' }}>{item.pct}</span>
-                  </div>
-               ))}
-            </div>
-         </div>
-      </div>
-
-      <style>{`
-         .premium-icon-badge { width: 56px; height: 56px; border-radius: 18px; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-         .kpi-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
-         .kpi-trend { font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 40px; }
-      `}</style>
     </div>
   )
 }

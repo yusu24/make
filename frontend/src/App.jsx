@@ -47,6 +47,9 @@ const BudidayaFeeds = lazy(() => import('./apps/budidaya/pages/Feeds'))
 const BudidayaFeedCategories = lazy(() => import('./apps/budidaya/pages/FeedCategories'))
 const BudidayaFeedUnits = lazy(() => import('./apps/budidaya/pages/FeedUnits'))
 const BudidayaReports = lazy(() => import('./apps/budidaya/pages/Reports'))
+const BudidayaSettings = lazy(() => import('./apps/budidaya/pages/Settings'))
+const BudidayaUsers = lazy(() => import('./apps/budidaya/pages/UserManagement'))
+const BudidayaRoles = lazy(() => import('./apps/budidaya/pages/RolesPermissions'))
 
 const PageLoader = () => (
   <div style={{
@@ -149,12 +152,15 @@ function App() {
                   <Route index element={<Navigate to="dashboard" replace />} />
                   <Route path="dashboard" element={<BudidayaDashboard />} />
                   <Route path="ponds" element={<BudidayaPonds />} />
+                  <Route path="users" element={<BudidayaUsers />} />
+                  <Route path="roles" element={<BudidayaRoles />} />
                   <Route path="cycles" element={<BudidayaCycles />} />
                   <Route path="cycles/:id" element={<BudidayaCycleDetail />} />
                   <Route path="feeds" element={<BudidayaFeeds />} />
                   <Route path="feed-categories" element={<BudidayaFeedCategories />} />
                   <Route path="feed-units" element={<BudidayaFeedUnits />} />
                   <Route path="reports" element={<BudidayaReports />} />
+                  <Route path="settings" element={<BudidayaSettings />} />
                 </Route>
 
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
