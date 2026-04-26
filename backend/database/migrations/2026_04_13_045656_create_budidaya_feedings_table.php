@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('budidaya_feedings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cycle_id')->constrained('budidaya_cycles')->onDelete('cascade');
-            $table->foreignId('feed_stock_id')->constrained('budidaya_feed_stocks')->onDelete('cascade');
+            $table->foreignId('inventory_id')->constrained('budidaya_inventories')->onDelete('cascade');
             $table->decimal('amount_kg', 10, 2);
             $table->date('date');
             $table->text('notes')->nullable();

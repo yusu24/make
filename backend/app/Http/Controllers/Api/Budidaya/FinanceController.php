@@ -12,7 +12,7 @@ class FinanceController extends Controller
     // List all expenses
     public function index(Request $request)
     {
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $cycleId = $request->query('cycle_id');
 
         $query = BudidayaExpense::where('tenant_id', $tenantId)->orderBy('date', 'desc');
@@ -27,7 +27,7 @@ class FinanceController extends Controller
     // Add an expense 
     public function store(Request $request)
     {
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $request->validate([
             'category' => 'required|string',
             'amount' => 'required|numeric|min:0',
@@ -55,7 +55,7 @@ class FinanceController extends Controller
     // Delete an expense
     public function destroy(Request $request, $id)
     {
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $expense = BudidayaExpense::where('tenant_id', $tenantId)->findOrFail($id);
         
         $expense->delete();

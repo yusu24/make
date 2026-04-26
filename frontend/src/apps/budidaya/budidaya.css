@@ -12,24 +12,181 @@
   --aq-accent:         #2D6A4F;
   --aq-bg:             #F4F7F5;
   --aq-card-bg:        #FFFFFF;
-  --aq-text-main:      #1A1C1A;
+  
+  /* Typography Colors */
+  --aq-text-primary:   #000000;
+  --aq-text-secondary: #334155;
+  --aq-text-tertiary:  #64748B;
   --aq-text-muted:     #94A3B8;
+  
   --aq-border:         #E9F0EC;
   --aq-shadow:         0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
   --aq-sidebar-w:      240px;
   --aq-sidebar-bg:     #FFFFFF;
-  --aq-active-bg:      #E8F5ED;
-  --aq-active-text:    #1B4332;
-  --aq-inactive-text:  #94A3B8;
+  --aq-active-bg:      #F1F5F2;
+}
+
+/* ── Typography Scale ── */
+.aq-page-title {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: var(--aq-text-primary) !important;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.aq-section-title {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: var(--aq-text-primary) !important;
+  margin: 0;
+}
+
+.aq-kpi-label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--aq-text-tertiary) !important;
+  text-transform: none !important; /* Ensure Sentence case */
+  margin: 0;
+}
+
+.aq-kpi-value {
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  color: var(--aq-text-primary) !important;
+  margin: 4px 0 0;
+  line-height: 1.1;
+}
+
+.aq-body-text {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: var(--aq-text-secondary) !important;
+}
+
+.aq-small-text {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--aq-text-tertiary) !important;
+}
+
+/* ── Table Standardization (AquaGrow SaaS Standard) ── */
+.aq-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--aq-card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--aq-border);
+}
+
+.aq-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.aq-table-header {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important; /* Subtle depth */
+}
+
+.aq-table-header-cell {
+  padding: 14px 16px !important; /* Slightly taller for elegance */
+  font-size: 13px !important;
+  font-weight: 700 !important; /* Bolder headers for premium look */
+  color: #000000 !important;
+  text-transform: none !important;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.aq-table-row {
+  border-bottom: 1px solid #F1F5F9 !important;
+  transition: background 0.15s ease;
+}
+
+.aq-table-row:last-child {
+  border-bottom: none !important;
+}
+
+.aq-table-row:not(.no-hover):hover {
+  background: #F8FAFC !important;
+}
+
+.aq-table-cell {
+  padding: 14px 16px !important;
+  font-size: 14px !important;
+  color: #000000 !important;
+  font-weight: 500 !important; /* Primary data */
+  line-height: 1.5;
+}
+
+.aq-table-cell-secondary {
+  color: #334155 !important;
+  font-weight: 450 !important; /* Secondary data slightly lighter */
+}
+
+.capitalize-first-only {
+  text-transform: lowercase;
+}
+
+.capitalize-first-only::first-letter {
+  text-transform: uppercase;
 }
 
 /* ── Scope reset ── */
 .budidaya-scope {
   font-family: 'Inter', sans-serif;
   background-color: var(--aq-bg);
-  color: var(--aq-text-main);
+  color: var(--aq-text-secondary);
   min-height: 100vh;
+  overflow-x: hidden;  /* Prevent page-level horizontal scroll */
 }
+
+/* Responsive Container Spacing */
+.aq-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .aq-container {
+    padding: 28px 32px;
+    gap: 24px;
+  }
+}
+
+/* Grid Utilities */
+.aq-grid-1 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.aq-grid-2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.aq-grid-3 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.aq-grid-4 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+/* CRITICAL: grid/flex children must have min-width:0 to avoid overflow */
+.aq-grid-1 > *, .aq-grid-2 > *, .aq-grid-3 > *, .aq-grid-4 > *,
+.aq-reports-top > *, .aq-reports-bottom > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .aq-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .aq-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .aq-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .aq-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .aq-grid-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Mobile Visibility */
+.hide-mobile { display: none !important; }
+@media (min-width: 768px) { .hide-mobile { display: block !important; } }
 
 /* Only apply Inter to non-icon elements — don't override Material Symbols! */
 .budidaya-scope *:not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp) {
@@ -45,15 +202,14 @@
   top: 0 !important;
   left: 0 !important;
   height: 100vh !important;
-  width: var(--aq-sidebar-w) !important;
+  width: 240px !important;
   background: #FFFFFF !important;
-  border-right: 1px solid var(--aq-border) !important;
+  border-right: 1px solid #E9F0EC !important;
   display: flex !important;
   flex-direction: column !important;
-  z-index: 50 !important;
+  z-index: 200 !important;
   transform: translateX(-100%);
-  transition: transform 0.28s cubic-bezier(.4,0,.2,1);
-  box-shadow: none;
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
 }
 
 /* Desktop: always visible */
@@ -67,7 +223,62 @@
 /* Mobile: open state */
 .aq-sidebar--open {
   transform: translateX(0) !important;
-  box-shadow: 8px 0 32px rgba(0,0,0,.12) !important;
+  box-shadow: 4px 0 24px rgba(0,0,0,.12) !important;
+}
+
+/* Sidebar Overlay */
+.aq-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(2px);
+  z-index: 150;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+/* Content shifting helper */
+.aq-main-content {
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+  width: 100%;
+  overflow-x: hidden; /* Prevent child elements from breaking viewport */
+  max-width: 100vw;
+}
+
+@media (min-width: 1024px) {
+  .aq-main-content {
+    margin-left: 240px !important;
+    width: calc(100% - 240px) !important;
+    max-width: calc(100vw - 240px);
+  }
+}
+
+/* ── Reports page specific grids ── */
+.aq-reports-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.aq-reports-bottom {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .aq-reports-top {
+    grid-template-columns: 1.8fr 1fr;
+  }
+  .aq-reports-bottom {
+    grid-template-columns: 1fr 1.2fr;
+  }
 }
 
 /* ── Brand ── */
@@ -97,15 +308,15 @@
 
 .aq-brand-name {
   font-size: 17px;
-  font-weight: 800;
-  color: var(--aq-primary);
+  font-weight: 700;
+  color: var(--aq-text-primary);
   letter-spacing: -0.3px;
   line-height: 1.2;
 }
 
 .aq-brand-sub {
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--aq-text-muted);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -126,20 +337,22 @@
   padding: 10px 14px;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  color: var(--aq-inactive-text);
+  transition: all 0.15s;
+  color: var(--aq-text-primary);
+  opacity: 0.7;
   background: transparent;
   text-decoration: none !important;
 }
 
 .aq-nav-item:hover {
   background: #F0F4F2;
-  color: var(--aq-accent);
+  opacity: 1;
 }
 
 .aq-nav-item--active {
   background: var(--aq-active-bg) !important;
-  color: var(--aq-active-text) !important;
+  color: var(--aq-text-primary) !important;
+  opacity: 1 !important;
 }
 
 .aq-nav-icon {
@@ -149,7 +362,7 @@
 }
 
 .aq-nav-label {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -174,8 +387,8 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--aq-text-muted);
-  transition: background 0.15s, color 0.15s;
+  color: var(--aq-text-tertiary);
+  transition: all 0.15s;
 }
 
 .aq-logout-btn:hover {
@@ -219,9 +432,9 @@
 .search-input-aquagrow {
   background: #F1F5F9 !important;
   border: none !important;
-  color: var(--aq-text-main) !important;
+  color: var(--aq-text-primary) !important;
 }
 
 .search-input-aquagrow::placeholder {
-  color: #94A3B8 !important;
+  color: var(--aq-text-muted) !important;
 }

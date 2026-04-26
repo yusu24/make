@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
+import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table';
 
 export default function FeedCategories() {
   const [categories, setCategories] = useState([]);
@@ -69,27 +70,35 @@ export default function FeedCategories() {
           </form>
           
           {loading ? <p>Memuat...</p> : (
-            <table className="table">
-              <thead><tr><th style={{ width: 80 }}>ID</th><th>Nama Kategori</th><th style={{ textAlign: 'right' }}>Aksi</th></tr></thead>
-              <tbody>
-                {categories.length === 0 ? (
-                  <tr><td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada data kategori pakan.</td></tr>
-                ) : (
-                  categories.map(c => (
-                    <tr key={c.id}>
-                      <td>#{c.id}</td>
-                      <td style={{ fontWeight: 600 }}>{c.name}</td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                          <button className="btn btn-sm btn-secondary" onClick={() => setEditingCategory(c)}>Edit</button>
-                          <button className="btn btn-sm btn-ghost" onClick={() => confirm('Hapus kategori ini?') && console.log('Delete logic')}>Hapus</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+            <div className="aq-table-container">
+              <Table>
+                <TableHeader>
+                  <TableRow isHoverable={false}>
+                    <TableHeaderCell style={{ width: 80 }}>ID</TableHeaderCell>
+                    <TableHeaderCell>Nama kategori</TableHeaderCell>
+                    <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categories.length === 0 ? (
+                    <TableRow><TableCell colSpan="3" style={{ textAlign: 'center', color: 'var(--aq-text-tertiary)', padding: 32 }}>Belum ada data kategori pakan.</TableCell></TableRow>
+                  ) : (
+                    categories.map(c => (
+                      <TableRow key={c.id}>
+                        <TableCell>#{c.id}</TableCell>
+                        <TableCell style={{ fontWeight: 600 }}>{c.name}</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>
+                          <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+                            <button className="btn btn-sm btn-secondary" onClick={() => setEditingCategory(c)}>Edit</button>
+                            <button className="btn btn-sm btn-ghost" onClick={() => confirm('Hapus kategori ini?') && console.log('Delete logic')}>Hapus</button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </div>
       </div>

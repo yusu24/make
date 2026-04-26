@@ -152,19 +152,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('feeds',          [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'store']);
         Route::put('feeds/{id}/add',  [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'addStock']);
 
-        // Cycles
-        Route::get('cycles',              [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'index']);
-        Route::get('cycles/{id}',         [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'show']);
-        Route::post('cycles',             [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'store']);
-        Route::post('cycles/{id}/harvest',[\App\Http\Controllers\Api\Budidaya\CycleController::class, 'harvest']);
-
-        // Cycle Logs
-        Route::post('feedings',         [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'logFeeding']);
-        Route::delete('feedings/{id}',  [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'destroyFeedingLog']);
-        Route::post('health',           [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'logHealth']);
-        Route::post('samplings',        [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'logSampling']);
+        // Pond Cycle Management
+        Route::get('ponds/{pondId}/cycle', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'show']);
+        Route::post('ponds/{pondId}/cycles/start', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'start']);
+        
+        // Cycle Actions
+        Route::post('cycles/{cycleId}/feedings', [\App\Http\Controllers\Api\Budidaya\FeedingController::class, 'store']);
+        Route::post('cycles/{cycleId}/health', [\App\Http\Controllers\Api\Budidaya\HealthController::class, 'store']);
+        Route::post('cycles/{cycleId}/harvest', [\App\Http\Controllers\Api\Budidaya\HarvestController::class, 'store']);
 
         // Finance
+        Route::get('finance', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'index']);
+        Route::post('finance', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'store']);
         Route::apiResource('expenses', \App\Http\Controllers\Api\Budidaya\FinanceController::class)->except(['show', 'update']);
 
         // ── Staff (Manajemen Pengguna) ────────────────────────────────────────
@@ -182,6 +181,14 @@ Route::middleware('auth:sanctum')->group(function () {
         // ── Reports & Analytics ───────────────────────────────────────────────
         Route::get('reports/ponds',  [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'pondReport']);
         Route::get('reports/staff',  [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'staffStats']);
+
+        // ── Inventory (Gudang) ────────────────────────────────────────────────
+        Route::get('inventory', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'index']);
+        Route::post('inventory', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'store']);
+        Route::put('inventory/{id}', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'update']);
+        Route::delete('inventory/{id}', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'destroy']);
+        Route::post('inventory/{id}/stock', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'updateStock']);
+        Route::get('inventory/{id}/logs', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'logs']);
     });
 
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
-import Modal from '../../../components/Modal'
 import '../budidaya.css'
+import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 
 // ── Colour helpers ──────────────────────────────────────────────────────────
 const STATUS = {
@@ -10,30 +10,6 @@ const STATUS = {
   kosong:  { label: 'KOSONG',   bg: '#94A3B8',  text: '#fff' },
 }
 
-// ── Demo / fallback pond data ─────────────────────────────────────────────
-const DEMO_PONDS = [
-  {
-    id: 'd1', code: 'KOLAM A-01', name: 'Budidaya Lele', status_key: 'healthy',
-    age_days: 45, population: 2500,
-    temp: 27.8, ph: 7.1, ph_ok: true,
-    thumb_gradient: 'linear-gradient(145deg,#134e2a 0%,#1B4332 60%,#2D6A4F 100%)',
-    thumb_icon: 'water',
-  },
-  {
-    id: 'd2', code: 'KOLAM B-12', name: 'Budidaya Nila', status_key: 'warning',
-    age_days: 12, population: 5000,
-    temp: 31.2, ph: 8.4, ph_ok: false,
-    thumb_gradient: 'linear-gradient(145deg,#1e3a5f 0%,#1d4ed8 60%,#3b82f6 100%)',
-    thumb_icon: 'waves',
-  },
-  {
-    id: 'd3', code: 'KOLAM C-04', name: 'Budidaya Gurame', status_key: 'healthy',
-    age_days: 82, population: 1200,
-    temp: 26.5, ph: 6.9, ph_ok: true,
-    thumb_gradient: 'linear-gradient(145deg,#451a03 0%,#92400e 60%,#d97706 100%)',
-    thumb_icon: 'set_meal',
-  },
-]
 
 // ── Stat Bar KPIs ──────────────────────────────────────────────────────────
 const STATS = [
@@ -52,7 +28,10 @@ const card = {
   boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
 }
 
+import { useNavigate } from 'react-router-dom'
+
 export default function Ponds() {
+  const navigate = useNavigate()
   const [ponds, setPonds]       = useState([])
   const [loading, setLoading]   = useState(true)
   const [view, setView]         = useState('grid')
@@ -63,6 +42,16 @@ export default function Ponds() {
     area_m2: '', depth_cm: '', max_fish_count: '', status: 'kosong',
   })
   const [saving, setSaving] = useState(false)
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (modalOpen) {
+      setFormData({
+        name: '', code: '', type: 'tanah', area: '',
+        area_m2: '', depth_cm: '', max_fish_count: '', status: 'kosong',
+      })
+    }
+  }, [modalOpen])
 
   useEffect(() => { fetchPonds() }, [])
 
@@ -86,31 +75,207 @@ export default function Ponds() {
     } finally { setSaving(false) }
   }
 
-  // Merge API ponds with demo for display
-  const displayPonds = loading ? DEMO_PONDS : (ponds.length > 0 ? ponds.map((p, i) => ({
-    ...DEMO_PONDS[i % DEMO_PONDS.length],
-    ...p,
-    id: p.id,
-    code: p.code || DEMO_PONDS[i % DEMO_PONDS.length].code,
-    name: p.name,
-    status_key: p.status === 'aktif' ? 'healthy' : p.status === 'maintenance' ? 'warning' : 'kosong',
-  })) : DEMO_PONDS)
+  const calculateAge = (dateStr) => {
+    if (!dateStr) return 0;
+    const diffTime = Math.abs(new Date() - new Date(dateStr));
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    return diffDays;
+  }
+
+  const displayPonds = ponds.map((p, i) => {
+    const isAktif = p.active_cycle != null;
+    return {
+      id: p.id,
+      code: p.code || `KOLAM-${p.id}`,
+      name: p.name,
+      status_key: isAktif ? 'healthy' : (p.status === 'maintenance' ? 'warning' : 'kosong'),
+      age_days: isAktif ? calculateAge(p.active_cycle.seed_date) : 0,
+      population: isAktif ? p.active_cycle.seed_count : 0,
+      temp: 28.5, ph: 7.2, ph_ok: true, // Mock sensor data for visual
+      thumb_gradient: i % 3 === 0 ? 'linear-gradient(145deg,#134e2a 0%,#1B4332 60%,#2D6A4F 100%)' : 
+                      i % 3 === 1 ? 'linear-gradient(145deg,#1e3a5f 0%,#1d4ed8 60%,#3b82f6 100%)' :
+                      'linear-gradient(145deg,#451a03 0%,#92400e 60%,#d97706 100%)',
+      thumb_icon: i % 3 === 0 ? 'water' : i % 3 === 1 ? 'waves' : 'set_meal',
+      active_cycle: p.active_cycle,
+      type: p.type
+    }
+  })
 
   const filtered = displayPonds.filter(p =>
     p.name?.toLowerCase().includes(search.toLowerCase()) ||
     p.code?.toLowerCase().includes(search.toLowerCase())
   )
 
+  const renderGridView = () => (
+    <div className="aq-grid-3">
+      {filtered.map((pond) => {
+        const st = STATUS[pond.status_key] || STATUS.kosong
+        return (
+          <div key={pond.id} style={{ ...card, cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.2s' }}
+            onClick={() => navigate(`/budidaya/ponds/${pond.id}`)}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none' }}
+          >
+            {/* Thumbnail */}
+            <div style={{
+              height: 140,
+              background: pond.thumb_gradient || 'linear-gradient(145deg,#1B4332,#2D6A4F)',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 52, color: 'rgba(255,255,255,0.15)', fontVariationSettings: "'FILL' 1" }}>
+                {pond.thumb_icon || 'water'}
+              </span>
+              {/* Badges */}
+              <div style={{ position: 'absolute', bottom: 10, left: 10, display: 'flex', gap: 6 }}>
+                <span style={{ background: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, backdropFilter: 'blur(4px)' }}>
+                  {pond.code}
+                </span>
+                <span style={{ background: st.bg, color: st.text, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6 }}>
+                  {st.label}
+                </span>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '16px 18px' }}>
+              {/* Title row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                <div>
+                  <p className="aq-section-title" style={{ fontSize: 15 }}>{pond.name}</p>
+                  <p className="aq-small-text" style={{ marginTop: 2 }}>
+                    Usia: {pond.age_days} hari • Populasi: {(pond.population || 0).toLocaleString()} ekor
+                  </p>
+                </div>
+                <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: 4 }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>more_vert</span>
+                </button>
+              </div>
+
+              {/* Sensor boxes */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+                <div style={{ background: '#F4F7F5', borderRadius: 10, padding: '10px 12px' }}>
+                  <p className="aq-kpi-label" style={{ fontSize: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: '#2D6A4F' }}>thermostat</span> Suhu
+                  </p>
+                  <p className="aq-kpi-value" style={{ fontSize: 18 }}>{pond.temp}°C</p>
+                </div>
+                <div style={{ background: pond.ph_ok === false ? '#FFF5F5' : '#F4F7F5', border: pond.ph_ok === false ? '1px solid #FECACA' : 'none', borderRadius: 10, padding: '10px 12px' }}>
+                  <p className="aq-kpi-label" style={{ fontSize: 10, color: pond.ph_ok === false ? '#EF4444' : 'var(--aq-text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: pond.ph_ok === false ? '#EF4444' : '#10B981' }}>science</span> Tingkat pH
+                  </p>
+                  <p className="aq-kpi-value" style={{ fontSize: 18, color: pond.ph_ok === false ? '#EF4444' : 'var(--aq-text-primary)' }}>{pond.ph}</p>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <button style={{
+                  background: '#1B4332', color: '#fff',
+                  border: 'none', borderRadius: 10,
+                  padding: '10px 0', fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restaurant</span> Pakan
+                </button>
+                <button style={{
+                  background: '#F4F7F5', color: '#1B4332',
+                  border: '1.5px solid #E9F0EC', borderRadius: 10,
+                  padding: '10px 0', fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>health_and_safety</span> Kesehatan
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+      {/* ── New Pond Card ── */}
+      <div
+        onClick={() => setModalOpen(true)}
+        style={{
+          ...card,
+          minHeight: 320,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          cursor: 'pointer',
+          border: '2px dashed #D8F3DC',
+          background: '#F9FDF9',
+          transition: 'border-color 0.15s, background 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#1B4332'; e.currentTarget.style.background = '#F0FAF4' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = '#D8F3DC'; e.currentTarget.style.background = '#F9FDF9' }}
+      >
+        <div style={{ width: 48, height: 48, borderRadius: 14, background: '#E8F5ED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 28, color: '#1B4332' }}>add</span>
+        </div>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#1B4332', margin: 0 }}>Kolam Baru</p>
+        <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>Tambah kolam baru</p>
+      </div>
+    </div>
+  )
+
+  const renderTableView = () => (
+    <div className="aq-table-container">
+      <Table>
+        <TableHeader>
+          <TableRow isHoverable={false}>
+            <TableHeaderCell>Kode kolam</TableHeaderCell>
+            <TableHeaderCell>Nama kolam</TableHeaderCell>
+            <TableHeaderCell>Jenis</TableHeaderCell>
+            <TableHeaderCell>Usia (hari)</TableHeaderCell>
+            <TableHeaderCell>Populasi</TableHeaderCell>
+            <TableHeaderCell>Status</TableHeaderCell>
+            <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filtered.map((pond) => {
+            const st = STATUS[pond.status_key] || STATUS.kosong
+            return (
+              <TableRow key={pond.id} onClick={() => navigate(`/budidaya/ponds/${pond.id}`)} style={{ cursor: 'pointer' }}>
+                <TableCell>{pond.code}</TableCell>
+                <TableCell>{pond.name}</TableCell>
+                <TableCell isSecondary>{pond.type}</TableCell>
+                <TableCell>{pond.age_days}</TableCell>
+                <TableCell>{(pond.population || 0).toLocaleString()}</TableCell>
+                <TableCell>
+                  <span style={{ 
+                    padding: '4px 10px', borderRadius: '40px', fontSize: '11px', fontWeight: '700',
+                    background: st.bg, color: st.text, display: 'inline-block'
+                  }}>
+                    {st.label}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <button style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>more_vert</span>
+                  </button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  )
+
   return (
-    <div style={{ padding: '28px 32px', background: '#F4F7F5', minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="aq-container">
 
       {/* ── Page Header ── */}
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1A1C1A', margin: 0, letterSpacing: '-0.5px' }}>Manajemen Kolam</h1>
-          <p style={{ fontSize: 13, color: '#94A3B8', marginTop: 4 }}>Memantau {filtered.length} lingkungan perairan aktif</p>
+          <h1 className="aq-page-title">Manajemen kolam</h1>
+          <p className="aq-body-text" style={{ marginTop: 4 }}>Memantau {filtered.length} lingkungan perairan aktif</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', justifyContent: 'space-between' }}>
           {/* Grid / Table Toggle */}
           <div style={{ display: 'flex', background: '#fff', border: '1px solid #E9F0EC', borderRadius: 10, padding: 3, gap: 2 }}>
             {[['grid', 'grid_view', 'Grid'], ['table', 'table_rows', 'Tabel']].map(([v, icon, lbl]) => (
@@ -127,21 +292,31 @@ export default function Ponds() {
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{icon}</span>
-                {lbl}
+                <span className="hide-mobile">{lbl}</span>
               </button>
             ))}
           </div>
+          <button 
+            onClick={() => setModalOpen(true)}
+            style={{
+              padding: '10px 16px', borderRadius: 10, background: '#1B4332', color: '#fff',
+              border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
+            Tambah Kolam
+          </button>
         </div>
       </div>
 
       {/* ── Stat Bar ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
+      <div className="aq-grid-4">
         {STATS.map(s => (
           <div key={s.label} style={{ ...card, padding: '16px 20px' }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>{s.label}</p>
-            <p style={{ fontSize: 24, fontWeight: 800, color: '#1A1C1A', margin: '6px 0 2px' }}>
+            <p className="aq-kpi-label">{s.label.toLowerCase()}</p>
+            <p className="aq-kpi-value" style={{ fontSize: 24 }}>
               {s.value}
-              {s.sub && <span style={{ fontSize: 12, fontWeight: 600, color: s.subColor, marginLeft: 6 }}>{s.sub}</span>}
+              {s.sub && <span className="aq-small-text" style={{ fontWeight: 600, color: s.subColor, marginLeft: 6 }}>{s.sub}</span>}
             </p>
             <div style={{ height: 4, background: '#F1F5F9', borderRadius: 2, marginTop: 8 }}>
               <div style={{ height: 4, width: `${s.bar * 100}%`, background: s.barColor, borderRadius: 2 }} />
@@ -150,122 +325,8 @@ export default function Ponds() {
         ))}
       </div>
 
-      {/* ── Pond Grid ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-
-        {filtered.map((pond) => {
-          const st = STATUS[pond.status_key] || STATUS.kosong
-          return (
-            <div key={pond.id} style={{ ...card, cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none' }}
-            >
-              {/* Thumbnail */}
-              <div style={{
-                height: 140,
-                background: pond.thumb_gradient || 'linear-gradient(145deg,#1B4332,#2D6A4F)',
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 52, color: 'rgba(255,255,255,0.15)', fontVariationSettings: "'FILL' 1" }}>
-                  {pond.thumb_icon || 'water'}
-                </span>
-                {/* Badges */}
-                <div style={{ position: 'absolute', bottom: 10, left: 10, display: 'flex', gap: 6 }}>
-                  <span style={{ background: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, backdropFilter: 'blur(4px)' }}>
-                    {pond.code}
-                  </span>
-                  <span style={{ background: st.bg, color: st.text, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6 }}>
-                    {st.label}
-                  </span>
-                </div>
-              </div>
-
-              {/* Body */}
-              <div style={{ padding: '16px 18px' }}>
-                {/* Title row */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                  <div>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>{pond.name}</p>
-                    <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
-                      Usia: {pond.age_days} Hari • Populasi: {(pond.population || 0).toLocaleString()} Ekor
-                    </p>
-                  </div>
-                  <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: 4 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>more_vert</span>
-                  </button>
-                </div>
-
-                {/* Sensor boxes */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-                  <div style={{ background: '#F4F7F5', borderRadius: 10, padding: '10px 12px' }}>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', margin: 0, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 13, color: '#2D6A4F' }}>thermostat</span> SUHU
-                    </p>
-                    <p style={{ fontSize: 18, fontWeight: 800, color: '#1A1C1A', margin: '4px 0 0' }}>{pond.temp}°C</p>
-                  </div>
-                  <div style={{ background: pond.ph_ok === false ? '#FFF5F5' : '#F4F7F5', border: pond.ph_ok === false ? '1px solid #FECACA' : 'none', borderRadius: 10, padding: '10px 12px' }}>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: pond.ph_ok === false ? '#EF4444' : '#94A3B8', margin: 0, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 13, color: pond.ph_ok === false ? '#EF4444' : '#10B981' }}>science</span> TINGKAT PH
-                    </p>
-                    <p style={{ fontSize: 18, fontWeight: 800, color: pond.ph_ok === false ? '#EF4444' : '#1A1C1A', margin: '4px 0 0' }}>{pond.ph}</p>
-                  </div>
-                </div>
-
-                {/* Action buttons */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <button style={{
-                    background: '#1B4332', color: '#fff',
-                    border: 'none', borderRadius: 10,
-                    padding: '10px 0', fontSize: 13, fontWeight: 600,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restaurant</span>
-                    Pakan
-                  </button>
-                  <button style={{
-                    background: '#F4F7F5', color: '#1B4332',
-                    border: '1.5px solid #E9F0EC', borderRadius: 10,
-                    padding: '10px 0', fontSize: 13, fontWeight: 600,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>health_and_safety</span>
-                    Kesehatan
-                  </button>
-                </div>
-              </div>
-            </div>
-          )
-        })}
-
-        {/* ── New Pond Card ── */}
-        <div
-          onClick={() => setModalOpen(true)}
-          style={{
-            ...card,
-            minHeight: 320,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-            cursor: 'pointer',
-            border: '2px dashed #D8F3DC',
-            background: '#F9FDF9',
-            transition: 'border-color 0.15s, background 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#1B4332'; e.currentTarget.style.background = '#F0FAF4' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = '#D8F3DC'; e.currentTarget.style.background = '#F9FDF9' }}
-        >
-          <div style={{ width: 48, height: 48, borderRadius: 14, background: '#E8F5ED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 28, color: '#1B4332' }}>add</span>
-          </div>
-          <p style={{ fontSize: 14, fontWeight: 600, color: '#1B4332', margin: 0 }}>Kolam Baru</p>
-          <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>Tambah kolam baru</p>
-        </div>
-      </div>
+      {/* ── Content View ── */}
+      {view === 'grid' ? renderGridView() : renderTableView()}
 
       {/* ── FAB ── */}
       <button
@@ -286,47 +347,176 @@ export default function Ponds() {
         <span className="material-symbols-outlined" style={{ fontSize: 26 }}>add</span>
       </button>
 
-      {/* ── Add Pond Modal ── */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Tambah Kolam Baru" maxWidth="620px">
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {[
-            ['Nama Kolam', 'name', 'text', 'Budidaya Lele A1'],
-            ['Kode', 'code', 'text', 'KOLAM-A01'],
-            ['Area (m²)', 'area_m2', 'number', '0'],
-            ['Kedalaman (cm)', 'depth_cm', 'number', '0'],
-            ['Kapasitas (ekor)', 'max_fish_count', 'number', '0'],
-          ].map(([label, key, type, ph]) => (
-            <div key={key}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }}>{label}</label>
-              <input
-                type={type}
-                placeholder={ph}
-                value={formData[key]}
-                onChange={e => setFormData({ ...formData, [key]: e.target.value })}
+      {/* ── Add Pond Modal (custom inline — always light) ── */}
+      {modalOpen && (
+        <div
+          onClick={() => setModalOpen(false)}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 580,
+              background: '#ffffff',
+              borderRadius: 24,
+              boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
+              overflow: 'hidden',
+              fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '24px 28px 20px',
+              borderBottom: '1px solid #E9F0EC',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 12,
+                  background: '#D8F3DC',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#1B4332' }}>water_drop</span>
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>Tambah Kolam Baru</h3>
+                  <p style={{ fontSize: 12, color: '#94A3B8', margin: 0, marginTop: 2 }}>Isi data kolam untuk mulai memantau</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setModalOpen(false)}
                 style={{
-                  width: '100%', padding: '10px 14px',
-                  border: '1.5px solid #E9F0EC', borderRadius: 10,
-                  fontSize: 14, color: '#1A1C1A',
-                  outline: 'none', boxSizing: 'border-box',
-                  fontFamily: 'Inter, sans-serif',
+                  width: 36, height: 36, borderRadius: 10,
+                  background: '#F4F7F5', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: '#64748B',
                 }}
-                onFocus={e => e.target.style.borderColor = '#1B4332'}
-                onBlur={e => e.target.style.borderColor = '#E9F0EC'}
-              />
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+              </button>
             </div>
-          ))}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10, marginTop: 8 }}>
-            <button type="button" onClick={() => setModalOpen(false)}
-              style={{ padding: '12px 0', border: '1.5px solid #E9F0EC', borderRadius: 10, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>
-              Batal
-            </button>
-            <button type="submit" disabled={saving}
-              style={{ padding: '12px 0', border: 'none', borderRadius: 10, background: '#1B4332', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-              {saving ? 'Menyimpan...' : 'Daftarkan Kolam'}
-            </button>
+
+            {/* Modal Body */}
+            <form onSubmit={handleSubmit}
+              style={{ padding: '24px 28px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}
+            >
+              {/* Adaptive grid for fields */}
+              <div className="aq-grid-2">
+                {[
+                  ['Nama Kolam', 'name', 'text', 'Budidaya Lele A1', true],
+                  ['Kode Kolam', 'code', 'text', 'KOLAM-A01', false],
+                  ['Luas Area (m²)', 'area_m2', 'number', '0', false],
+                  ['Kedalaman (cm)', 'depth_cm', 'number', '100', false],
+                  ['Kapasitas (ekor)', 'max_fish_count', 'number', '1000', false],
+                ].map(([label, key, type, ph, required]) => (
+                  <div key={key} style={key === 'name' ? { gridColumn: '1 / -1' } : {}}>
+                    <label style={{
+                      fontSize: 12, fontWeight: 700,
+                      color: '#64748B',
+                      textTransform: 'capitalize',
+                      display: 'block', marginBottom: 6,
+                    }}>
+                      {label}{required && <span style={{ color: '#EF4444', marginLeft: 2 }}>*</span>}
+                    </label>
+                    <input
+                      type={type}
+                      required={required}
+                      placeholder={ph}
+                      value={formData[key]}
+                      onChange={e => setFormData({ ...formData, [key]: e.target.value })}
+                      style={{
+                        width: '100%', padding: '11px 14px',
+                        background: '#F8FAFC',
+                        border: '1.5px solid #E9F0EC',
+                        borderRadius: 12,
+                        fontSize: 14, color: '#1A1C1A',
+                        outline: 'none', boxSizing: 'border-box',
+                        fontFamily: 'Inter, sans-serif',
+                        transition: 'border-color 0.15s, box-shadow 0.15s',
+                      }}
+                      onFocus={e => {
+                        e.target.style.borderColor = '#1B4332'
+                        e.target.style.boxShadow = '0 0 0 3px rgba(27,67,50,0.1)'
+                        e.target.style.background = '#fff'
+                      }}
+                      onBlur={e => {
+                        e.target.style.borderColor = '#E9F0EC'
+                        e.target.style.boxShadow = 'none'
+                        e.target.style.background = '#F8FAFC'
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Tipe Kolam */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'capitalize', display: 'block', marginBottom: 6 }}>Jenis kolam</label>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  {[['tanah', 'Tanah'], ['beton', 'Beton'], ['terpal', 'Terpal']].map(([val, lbl]) => (
+                    <button
+                      key={val} type="button"
+                      onClick={() => setFormData({ ...formData, type: val })}
+                      style={{
+                        flex: 1, padding: '10px 0', borderRadius: 12,
+                        border: formData.type === val ? '2px solid #1B4332' : '1.5px solid #E9F0EC',
+                        background: formData.type === val ? '#D8F3DC' : '#F8FAFC',
+                        color: formData.type === val ? '#1B4332' : '#64748B',
+                        fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                    >{lbl}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: '#E9F0EC', margin: '4px 0' }} />
+
+              {/* Footer Buttons */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  style={{
+                    padding: '13px 0', border: '1.5px solid #E9F0EC',
+                    borderRadius: 12, background: '#fff',
+                    fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B',
+                  }}
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit" disabled={saving}
+                  style={{
+                    padding: '13px 0', border: 'none',
+                    borderRadius: 12, background: '#1B4332',
+                    color: '#fff', fontSize: 14, fontWeight: 700,
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.75 : 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  {saving ? (
+                    <>
+                      <div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <><span className="material-symbols-outlined" style={{ fontSize: 18 }}>water_drop</span>Daftarkan Kolam</>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </Modal>
+        </div>
+      )}
 
     </div>
   )

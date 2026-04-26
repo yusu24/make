@@ -8,6 +8,7 @@ import {
   TrendingDown, TrendingUp, Info
 } from 'lucide-react'
 import Modal from '../../../components/Modal'
+import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 
 export default function Feeds() {
   const [feeds, setFeeds] = useState([])
@@ -147,33 +148,28 @@ export default function Feeds() {
              <button className="btn btn-secondary" onClick={() => setModalOpen(true)}>Daftar Pakan Pertama</button>
           </div>
         ) : (
-          <div className="table-responsive">
-            <table className="premium-table">
-              <thead>
-                <tr>
-                  <th>NAMA / MERK PAKAN</th>
-                  <th>ESTIMASI STOK</th>
-                  <th>KATEGORI STATUS</th>
-                  <th className="text-right">MANAJEMEN</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="aq-table-container">
+            <Table>
+              <TableHeader>
+                <TableRow isHoverable={false}>
+                  <TableHeaderCell>Nama / merk pakan</TableHeaderCell>
+                  <TableHeaderCell>Estimasi stok</TableHeaderCell>
+                  <TableHeaderCell>Kategori status</TableHeaderCell>
+                  <TableHeaderCell style={{ textAlign: 'right' }}>Manajemen</TableHeaderCell>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {filteredFeeds.map((feed, idx) => {
                   const isLow = Number(feed.stock_kg) < 50;
                   return (
-                    <tr key={feed.id} className="animate-slide-in">
-                      <td>
-                        <div className="feed-identity-row">
-                          <div className="feed-icon-square">
-                             <Package size={20} />
-                          </div>
-                          <div className="feed-text-group">
-                             <span className="f-name">{feed.name}</span>
-                             <span className="f-id">ID: FEED-{feed.id.toString().padStart(4, '0')}</span>
-                          </div>
+                    <TableRow key={feed.id}>
+                      <TableCell>
+                        <div className="feed-text-group">
+                          <span className="f-name">{feed.name}</span>
+                          <span className="f-id">ID: FEED-{feed.id.toString().padStart(4, '0')}</span>
                         </div>
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell>
                         <div className="stock-visual-bar">
                           <div className="visual-header">
                              <span className="v-val">{Number(feed.stock_kg).toLocaleString()} <small>KG</small></span>
@@ -183,8 +179,8 @@ export default function Feeds() {
                              <div className={`v-progress-fill ${isLow ? 'is-low' : 'is-safe'}`} style={{ width: `${Math.min((feed.stock_kg / 500) * 100, 100)}%` }}></div>
                           </div>
                         </div>
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell>
                         <span className={`badge ${isLow ? 'badge-red' : 'badge-green'}`} style={{ 
                           padding: '6px 12px',
                           fontWeight: 700,
@@ -193,20 +189,20 @@ export default function Feeds() {
                         }}>
                           {isLow ? 'LIMIT TERCAPAI' : 'TERSEDIA'}
                         </span>
-                      </td>
-                      <td>
-                        <div className="table-row-actions">
+                      </TableCell>
+                      <TableCell style={{ textAlign: 'right' }}>
+                        <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
                           <button className="btn btn-sm btn-primary-alt" onClick={() => { setSelectedFeed(feed); setRestockModalOpen(true); }} style={{ fontWeight: 900 }}>
                              <ArrowUpCircle size={14} /> Restok
                           </button>
                           <button className="btn-icon-more"><Edit2 size={14} /></button>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )
                 })}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>

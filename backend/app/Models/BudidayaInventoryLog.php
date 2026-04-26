@@ -4,18 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class BudidayaFeeding extends Model
+class BudidayaInventoryLog extends Model
 {
+    protected $table = 'budidaya_inventory_logs';
     protected $guarded = [];
-
-    protected $casts = [
-        'date' => 'date',
-    ];
-
-    public function cycle()
-    {
-        return $this->belongsTo(BudidayaCycle::class, 'cycle_id');
-    }
 
     public function inventory()
     {

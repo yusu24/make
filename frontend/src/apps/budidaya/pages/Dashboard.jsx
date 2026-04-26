@@ -40,15 +40,15 @@ export default function Dashboard() {
   const maxVal = Math.max(...chartValues)
 
   return (
-    <div style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24, minHeight: '100vh', background: '#F4F7F5' }}>
+    <div className="aq-container">
 
       {/* ── Welcome Row ── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1A1C1A', margin: 0, lineHeight: 1.3 }}>
+          <h1 className="aq-page-title">
             Halo, Bpk. {user?.name?.split(' ')[0] || 'Wijaya'}
           </h1>
-          <p style={{ fontSize: 13, color: '#94A3B8', marginTop: 4, fontWeight: 400 }}>
+          <p className="aq-body-text" style={{ marginTop: 4 }}>
             Sistem berjalan optimal. Berikut ringkasan budidaya Anda hari ini.
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── KPI Cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+      <div className="aq-grid-4">
 
         {/* Total Kolam */}
         <div style={cardStyle}>
@@ -77,10 +77,10 @@ export default function Dashboard() {
             <div style={iconBox('#D1FAE5', '#059669')}>
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>waves</span>
             </div>
-            <span style={badge('#D1FAE5', '#059669')}>AKTIF</span>
+            <span style={badge('#D1FAE5', '#059669')}>Aktif</span>
           </div>
-          <p style={kpiLabel}>TOTAL KOLAM</p>
-          <p style={kpiValue}>{stats?.total_ponds || 12}</p>
+          <p className="aq-kpi-label">Total kolam</p>
+          <p className="aq-kpi-value">{stats?.total_ponds || 12}</p>
           <p style={{ fontSize: 12, color: '#059669', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
             <span className="material-symbols-outlined" style={{ fontSize: 14 }}>trending_up</span>
             2 Kolam baru bulan ini
@@ -93,10 +93,10 @@ export default function Dashboard() {
             <div style={iconBox('#FFE4E6', '#E11D48')}>
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>warning</span>
             </div>
-            <span style={badge('#FFE4E6', '#E11D48')}>PERINGATAN</span>
+            <span style={badge('#FFE4E6', '#E11D48')}>Peringatan</span>
           </div>
-          <p style={kpiLabel}>BUTUH PERHATIAN</p>
-          <p style={kpiValue}>02</p>
+          <p className="aq-kpi-label">Butuh perhatian</p>
+          <p className="aq-kpi-value">02</p>
           <p style={{ fontSize: 12, color: '#E11D48', marginTop: 6 }}>
             Kadar Oksigen Rendah (Kolam B3)
           </p>
@@ -109,8 +109,8 @@ export default function Dashboard() {
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>restaurant</span>
             </div>
           </div>
-          <p style={kpiLabel}>JADWAL PAKAN BERIKUTNYA</p>
-          <p style={kpiValue}>16:30</p>
+          <p className="aq-kpi-label">Jadwal pakan berikutnya</p>
+          <p className="aq-kpi-value">16:30</p>
           <p style={{ fontSize: 12, color: '#64748B', marginTop: 6 }}>
             Pakan Protein Tinggi – 45 Menit lagi
           </p>
@@ -123,8 +123,8 @@ export default function Dashboard() {
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>thermostat</span>
             </div>
           </div>
-          <p style={kpiLabel}>SUHU AIR RATA-RATA</p>
-          <p style={kpiValue}>28.5°C</p>
+          <p className="aq-kpi-label">Suhu air rata-rata</p>
+          <p className="aq-kpi-value">28.5°C</p>
           <p style={{ fontSize: 12, color: '#059669', marginTop: 6 }}>
             Kondisi Ideal untuk Nila
           </p>
@@ -132,14 +132,19 @@ export default function Dashboard() {
       </div>
 
       {/* ── Main Row: Chart + Notifikasi ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16 }}>
+      <div className="aq-grid-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 16 }}>
+        <style>{`
+          @media (max-width: 1024px) {
+            .aq-grid-2 { grid-template-columns: 1fr !important; }
+          }
+        `}</style>
 
         {/* Chart Card */}
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <div>
-              <p style={{ fontSize: 15, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Grafik Pertumbuhan Ikan</p>
-              <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 3 }}>Kenaikan berat rata-rata (gram) per minggu</p>
+              <p className="aq-section-title">Grafik pertumbuhan ikan</p>
+              <p className="aq-small-text" style={{ marginTop: 3 }}>Kenaikan berat rata-rata (gram) per minggu</p>
             </div>
             {/* Toggle 1B / 3B / 6B */}
             <div style={{ display: 'flex', background: '#F1F5F9', borderRadius: 8, padding: 3, gap: 2 }}>
@@ -189,11 +194,11 @@ export default function Dashboard() {
         </div>
 
         {/* Notifikasi Card */}
-        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ ...cardStyle, width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Notifikasi Cepat</p>
+            <p className="aq-section-title">Notifikasi cepat</p>
             <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#2D6A4F', fontWeight: 600 }}>
-              Lihat Semua
+              Lihat semua
             </button>
           </div>
 
@@ -262,7 +267,7 @@ export default function Dashboard() {
       <div>
         {/* Section header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <p style={{ fontSize: 15, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Status Kolam Unggulan</p>
+          <p className="aq-section-title">Status kolam unggulan</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#64748B' }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
@@ -276,7 +281,7 @@ export default function Dashboard() {
         </div>
 
         {/* Pond Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="aq-grid-2">
 
           {/* Pond A1 – Sehat */}
           <div style={{ ...cardStyle, display: 'flex', gap: 0, padding: 0, overflow: 'hidden' }}>

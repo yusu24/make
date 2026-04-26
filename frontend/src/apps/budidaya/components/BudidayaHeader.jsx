@@ -33,17 +33,19 @@ export default function BudidayaHeader({ onMenuToggle }) {
         <button
           onClick={onMenuToggle}
           style={{
-            display: 'none', // hidden on desktop, shown via media query not available inline
             padding: '6px',
             background: 'transparent',
             border: 'none',
             cursor: 'pointer',
-            color: '#64748B',
+            color: '#1B4332',
             borderRadius: 8,
+            display: 'flex', // Standardize to flex
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
           className="lg:hidden"
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 22 }}>menu</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 24, fontWeight: 700 }}>menu</span>
         </button>
         <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1C1A' }}>
           Dashboard Utama
@@ -53,8 +55,8 @@ export default function BudidayaHeader({ onMenuToggle }) {
       {/* Right: search + notif + avatar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
 
-        {/* Search Box */}
-        <div style={{ position: 'relative' }}>
+        {/* Search Box — Hidden on small mobile */}
+        <div className="hide-mobile" style={{ position: 'relative' }}>
           <span
             className="material-symbols-outlined"
             style={{
@@ -83,17 +85,19 @@ export default function BudidayaHeader({ onMenuToggle }) {
               fontSize: 13,
               color: '#1A1C1A',
               outline: 'none',
-              width: 240,
+              width: 180,
               fontFamily: 'Inter, sans-serif',
-              transition: 'border-color 0.15s, box-shadow 0.15s',
+              transition: 'border-color 0.15s, box-shadow 0.15s, width 0.2s',
             }}
             onFocus={e => {
               e.target.style.borderColor = '#2D6A4F'
               e.target.style.boxShadow = '0 0 0 3px rgba(45,106,79,0.1)'
+              e.target.style.width = '240px'
             }}
             onBlur={e => {
               e.target.style.borderColor = '#E9F0EC'
               e.target.style.boxShadow = 'none'
+              e.target.style.width = '180px'
             }}
           />
         </div>

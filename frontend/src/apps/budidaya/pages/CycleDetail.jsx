@@ -9,6 +9,7 @@ import {
   Play, CheckSquare, BarChart3, Clock
 } from 'lucide-react'
 import Modal from '../../../components/Modal'
+import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 
 export default function CycleDetail() {
   const { id } = useParams()
@@ -240,29 +241,39 @@ export default function CycleDetail() {
                   <h3 className="premium-title-900" style={{ fontSize: 18, margin: 0 }}>Riwayat Log Pemberian Pakan</h3>
                   <button className="btn btn-primary btn-sm" onClick={() => setModalType('feed')}><Plus size={16} /> Tambah Log</button>
                </div>
-               <div className="table-responsive">
-                  <table className="premium-table">
-                     <thead>
-                        <tr>
-                           <th>TANGGAL OPERASIONAL</th>
-                           <th>VARIAN PAKAN</th>
-                           <th>KUANTITAS</th>
-                           <th className="text-right">INPUT TIME</th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        {data?.feedings.map((f, i) => (
-                           <tr key={i} className="animate-slide-in">
-                              <td><span style={{ fontWeight: 800 }}>{new Date(f.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span></td>
-                              <td><span className="badge badge-blue">{f.feed_name}</span></td>
-                              <td><span style={{ fontWeight: 950, color: 'var(--primary-600)', fontSize: 16 }}>{f.amount_kg} <small>KG</small></span></td>
-                              <td className="text-right"><div className="flex items-center gap-2 justify-end text-muted font-bold"><Clock size={12} /> {new Date(f.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div></td>
-                           </tr>
-                        ))}
-                        {data?.feedings.length === 0 && <tr><td colSpan="4" style={{ padding: 80, textAlign: 'center', color: 'var(--text-muted)', fontWeight: 800 }}>Belum ada riwayat pakan untuk siklus ini.</td></tr>}
-                     </tbody>
-                  </table>
-               </div>
+               <div className="aq-table-container">
+                  <Table>
+                    <TableHeader>
+                      <TableRow isHoverable={false}>
+                        <TableHeaderCell>Tanggal operasional</TableHeaderCell>
+                        <TableHeaderCell>Varian pakan</TableHeaderCell>
+                        <TableHeaderCell>Kuantitas (kg)</TableHeaderCell>
+                        <TableHeaderCell style={{ textAlign: 'right' }}>Waktu input</TableHeaderCell>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data?.feedings.map((f, i) => (
+                        <TableRow key={i}>
+                          <TableCell style={{ fontWeight: 600 }}>{new Date(f.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</TableCell>
+                          <TableCell><span className="badge badge-blue">{f.feed_name}</span></TableCell>
+                          <TableCell><span style={{ fontWeight: 700, color: 'var(--aq-text-primary)', fontSize: 15 }}>{f.amount_kg} <small>KG</small></span></TableCell>
+                          <TableCell style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end', color: 'var(--aq-text-tertiary)', fontWeight: 600 }}>
+                              <Clock size={12} /> {new Date(f.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {data?.feedings.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan="4" style={{ padding: 80, textAlign: 'center', color: 'var(--aq-text-tertiary)', fontWeight: 600 }}>
+                            Belum ada riwayat pakan untuk siklus ini.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
             </div>
          )}
 
@@ -272,29 +283,35 @@ export default function CycleDetail() {
                   <h3 className="premium-title-900" style={{ fontSize: 18, margin: 0 }}>Data Pertumbuhan & Sampling</h3>
                   <button className="btn btn-primary btn-sm" onClick={() => setModalType('sampling')} style={{ background: 'var(--success-500)' }}><Plus size={16} /> Data Sampling</button>
                </div>
-               <div className="table-responsive">
-                  <table className="premium-table">
-                     <thead>
-                        <tr>
-                           <th>ID SAMPLING</th>
-                           <th>TANGGAL</th>
-                           <th>AVG WEIGHT (ABW)</th>
-                           <th>BIOMASSA ESTIMASI</th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        {data?.samplings.map((s, i) => (
-                           <tr key={i} className="animate-slide-in">
-                              <td><span style={{ fontFamily: 'monospace', fontWeight: 800 }}>SMP-{s.id}</span></td>
-                              <td><span style={{ fontWeight: 800 }}>{new Date(s.date).toLocaleDateString('id-ID')}</span></td>
-                              <td><span style={{ fontWeight: 950, color: 'var(--text-primary)', fontSize: 16 }}>{s.average_weight_gram} <small>gram</small></span></td>
-                              <td><span className="badge badge-green" style={{ fontSize: 14 }}>{s.estimated_biomass_kg} KG</span></td>
-                           </tr>
-                        ))}
-                        {data?.samplings.length === 0 && <tr><td colSpan="4" style={{ padding: 80, textAlign: 'center', color: 'var(--text-muted)', fontWeight: 800 }}>Belum ada data pertumbuhan.</td></tr>}
-                     </tbody>
-                  </table>
-               </div>
+               <div className="aq-table-container">
+                  <Table>
+                    <TableHeader>
+                    <TableRow isHoverable={false}>
+                      <TableHeaderCell>ID sampling</TableHeaderCell>
+                      <TableHeaderCell>Tanggal data</TableHeaderCell>
+                      <TableHeaderCell>Berat rata-rata (ABW)</TableHeaderCell>
+                      <TableHeaderCell>Estimasi biomassa</TableHeaderCell>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data?.samplings.map((s, i) => (
+                        <TableRow key={i}>
+                          <TableCell><span style={{ fontFamily: 'monospace', fontWeight: 700 }}>SMP-{s.id}</span></TableCell>
+                          <TableCell style={{ fontWeight: 600 }}>{new Date(s.date).toLocaleDateString('id-ID')}</TableCell>
+                          <TableCell><span style={{ fontWeight: 700, color: 'var(--aq-text-primary)', fontSize: 15 }}>{s.average_weight_gram} <small>gram</small></span></TableCell>
+                          <TableCell><span className="badge badge-green" style={{ fontSize: 14 }}>{s.estimated_biomass_kg} KG</span></TableCell>
+                        </TableRow>
+                      ))}
+                      {data?.samplings.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan="4" style={{ padding: 80, textAlign: 'center', color: 'var(--aq-text-tertiary)', fontWeight: 600 }}>
+                            Belum ada data pertumbuhan.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
             </div>
          )}
 
@@ -304,29 +321,35 @@ export default function CycleDetail() {
                   <h3 className="premium-title-900" style={{ fontSize: 18, margin: 0 }}>Monitor Kesehatan Unit</h3>
                   <button className="btn btn-primary btn-sm" onClick={() => setModalType('health')} style={{ background: 'var(--danger-500)' }}><AlertCircle size={16} /> Lapor Kondisi</button>
                </div>
-               <div className="table-responsive">
-                  <table className="premium-table">
-                     <thead>
-                        <tr>
-                           <th>TANGGAL LAPORAN</th>
-                           <th>MORTALITAS</th>
-                           <th>DIAGNOSA / GEJALA</th>
-                           <th className="text-right">TINDAKAN MEDIS</th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        {data?.health_logs.map((h, i) => (
-                           <tr key={i} className="animate-slide-in">
-                              <td><span style={{ fontWeight: 800 }}>{new Date(h.date).toLocaleDateString('id-ID')}</span></td>
-                              <td><span className="badge badge-red" style={{ fontSize: 14 }}>{h.mortality_count} Ekor</span></td>
-                              <td><span style={{ fontWeight: 700 }}>{h.disease_note || '-'}</span></td>
-                              <td className="text-right"><span style={{ fontWeight: 600, color: 'var(--primary-500)' }}>{h.treatment_note || '-'}</span></td>
-                           </tr>
-                        ))}
-                        {data?.health_logs.length === 0 && <tr><td colSpan="4" style={{ padding: 80, textAlign: 'center', color: 'var(--text-muted)', fontWeight: 800 }}>Unit dalam kondisi sehat optimal.</td></tr>}
-                     </tbody>
-                  </table>
-               </div>
+               <div className="aq-table-container">
+                  <Table>
+                    <TableHeader>
+                      <TableRow isHoverable={false}>
+                        <TableHeaderCell>Tanggal laporan</TableHeaderCell>
+                        <TableHeaderCell>Mortalitas (ekor)</TableHeaderCell>
+                        <TableHeaderCell>Diagnosa / gejala</TableHeaderCell>
+                        <TableHeaderCell style={{ textAlign: 'right' }}>Tindakan medis</TableHeaderCell>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data?.health_logs.map((h, i) => (
+                        <TableRow key={i}>
+                          <TableCell style={{ fontWeight: 600 }}>{new Date(h.date).toLocaleDateString('id-ID')}</TableCell>
+                          <TableCell><span className="badge badge-red" style={{ fontSize: 14 }}>{h.mortality_count} Ekor</span></TableCell>
+                          <TableCell><span style={{ fontWeight: 600 }}>{h.disease_note || '-'}</span></TableCell>
+                          <TableCell style={{ textAlign: 'right' }}><span style={{ fontWeight: 600, color: 'var(--aq-primary)' }}>{h.treatment_note || '-'}</span></TableCell>
+                        </TableRow>
+                      ))}
+                      {data?.health_logs.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan="4" style={{ padding: 80, textAlign: 'center', color: 'var(--aq-text-tertiary)', fontWeight: 600 }}>
+                            Unit dalam kondisi sehat optimal.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
             </div>
          )}
       </div>

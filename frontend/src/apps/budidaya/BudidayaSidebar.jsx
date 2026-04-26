@@ -6,9 +6,10 @@ import './budidaya.css'
 const NAV_ITEMS = [
   { label: 'Dashboard',           icon: 'grid_view',     path: '/budidaya/dashboard' },
   { label: 'Manajemen Kolam',     icon: 'water_drop',    path: '/budidaya/ponds'     },
+  { label: 'Gudang',              icon: 'inventory_2',   path: '/budidaya/inventory' },
   { label: 'Manajemen Pengguna',  icon: 'group',         path: '/budidaya/users'     },
   { label: 'Peran & Izin',        icon: 'verified_user', path: '/budidaya/roles'     },
-  { label: 'Laporan & Analisa', icon: 'bar_chart',     path: '/budidaya/reports'   },
+  { label: 'Laporan & Analisa',   icon: 'bar_chart',     path: '/budidaya/reports'   },
   { label: 'Pengaturan Profil',   icon: 'settings',      path: '/budidaya/settings'  },
 ]
 
@@ -27,17 +28,11 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
     <>
       {/* ─── Sidebar ─── */}
       <aside
-        className={[
-          'fixed top-0 left-0 h-screen z-50',
-          'flex flex-col',
-          'transition-transform duration-300',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-        ].join(' ')}
+        className={`aq-sidebar ${mobileOpen ? 'aq-sidebar--open' : ''}`}
         style={{
           width: 240,
           background: '#FFFFFF',
           borderRight: '1px solid #E9F0EC',
-          boxShadow: '2px 0 12px rgba(0,0,0,0.06)',
         }}
       >
         {/* ── Brand / Logo ── */}
@@ -203,7 +198,7 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/25 z-40 lg:hidden"
+          className="aq-sidebar-overlay lg:hidden"
           onClick={onToggle}
         />
       )}

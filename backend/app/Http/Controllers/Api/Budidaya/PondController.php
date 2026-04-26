@@ -26,7 +26,7 @@ class PondController extends Controller
             $query->where('area', $area);
         }
 
-        $ponds = $query->orderBy('area')->orderBy('name')->get();
+        $ponds = $query->with('activeCycle')->orderBy('area')->orderBy('name')->get();
         return response()->json(['data' => $ponds]);
     }
 
@@ -71,7 +71,7 @@ class PondController extends Controller
 
     public function show(Request $request, $id)
     {
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $pond = BudidayaPond::where('tenant_id', $tenantId)->findOrFail($id);
         
         // Include summary of active cycle if exists

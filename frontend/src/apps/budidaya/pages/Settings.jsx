@@ -29,17 +29,17 @@ export default function Settings() {
   }
 
   const labelStyle = {
-    fontSize: '11px',
-    fontWeight: '800',
+    fontSize: '12px',
+    fontWeight: '700',
     color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em'
+    marginBottom: '6px',
+    display: 'block'
   }
 
   const sectionHeader = (icon, title) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
       <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#1B4332' }}>{icon}</span>
-      <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#1A1C1A', margin: 0 }}>{title}</h3>
+      <h3 className="aq-section-title">{title}</h3>
     </div>
   )
 
@@ -78,8 +78,8 @@ export default function Settings() {
       {/* ── Header ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: '32px', fontWeight: '850', color: '#1B4332', margin: 0, letterSpacing: '-0.02em' }}>Pengaturan Profil</h1>
-          <p style={{ fontSize: '14px', color: '#64748B', marginTop: '4px' }}>
+          <h1 className="aq-page-title">Pengaturan profil</h1>
+          <p className="aq-body-text" style={{ marginTop: '4px' }}>
             Kelola preferensi akun dan notifikasi aplikasi
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function Settings() {
                   <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>photo_camera</span>
                 </div>
               </div>
-              <p style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginTop: '20px', textTransform: 'uppercase' }}>Foto Profil</p>
+              <p className="aq-small-text" style={{ fontWeight: '700', marginTop: '20px' }}>Foto profil</p>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -174,11 +174,11 @@ export default function Settings() {
           {/* Pengaturan Notifikasi */}
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              {sectionHeader('notifications', 'Pengaturan Notifikasi')}
-              <span style={{ 
-                fontSize: '10px', fontWeight: '800', background: '#D1FAE5', 
+              {sectionHeader('notifications', 'Pengaturan notifikasi')}
+              <span className="aq-small-text" style={{ 
+                fontWeight: '700', background: '#D1FAE5', 
                 color: '#059669', padding: '4px 10px', borderRadius: '40px' 
-              }}>OTOMATIS</span>
+              }}>Otomatis</span>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
