@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { 
-  History, Plus, Search, Calendar, 
-  ArrowRight, Activity, TrendingUp, Info,
-  Waves, MapPin, Hash, Target
+  History, Calendar, ArrowRight, Activity
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Modal from '../../../components/Modal'
+import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
+import { LoadingButton } from '../components/UXComponents'
 
 export default function Cycles() {
   const navigate = useNavigate()
   const [cycles, setCycles] = useState([])
   const [ponds, setPonds] = useState([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   
   const [formData, setFormData] = useState({
@@ -34,109 +35,136 @@ export default function Cycles() {
         api.get('/budidaya/cycles'),
         api.get('/budidaya/ponds', { params: { status: 'kosong' } })
       ])
-      setCycles(cycleRes.data.data)
-      setPonds(pondRes.data.data)
+      console.log('Cycles API Res:', cycleRes.data)
+      setCycles(Array.isArray(cycleRes.data.data) ? cycleRes.data.data : [])
+      setPonds(Array.isArray(pondRes.data.data) ? pondRes.data.data : [])
     } catch (err) {
-      console.error(err)
+      console.error('Fetch Cycles Error:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSubmit = async (e) => {
+  const handleStartCycle = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
-      await api.post('/budidaya/cycles', formData)
+      await api.post(`/budidaya/ponds/${formData.pond_id}/cycles/start`, formData)
       setModalOpen(false)
       fetchData()
     } catch (err) {
       alert(err.response?.data?.message || 'Gagal memulai siklus')
+    } finally {
+      setSaving(false)
     }
-  }
-
-  const calculateDOC = (startDate) => {
-    const diffTime = Math.abs(new Date() - new Date(startDate))
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   }
 
   return (
     <div className="animate-fade-in premium-cycles page-content" style={{ maxWidth: '1400px', margin: '0 auto' }}>
       {/* Header Section */}
-      <div className="page-header">
-        <div className="flex items-center gap-4">
-          <div className="title-icon-wrapper" style={{ padding: 12, borderRadius: 18, color: 'white', background: 'linear-gradient(135deg, var(--accent-500), var(--primary-600))' }}>
-            <Waves size={28} />
-          </div>
-          <div>
-            <h2 className="page-title">Pemantauan Siklus Aktif</h2>
-            <p className="page-sub">Monitor pertumbuhan, kesehatan, dan efisiensi unit produksi berjalan</p>
-          </div>
+      <div className="page-header" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2 className="aq-page-title">Riwayat Siklus Budidaya</h2>
         </div>
         
-        <button className="btn btn-primary btn-lg" onClick={() => setModalOpen(true)} style={{ borderRadius: 16 }}>
-          <Plus size={20} />
+        <button 
+          className="btn btn-primary" 
+          onClick={() => setModalOpen(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px',
+            borderRadius: '12px', background: '#1B4332', color: '#fff', border: 'none',
+            fontWeight: 700, cursor: 'pointer'
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
           <span>Mulai Siklus (Tebar)</span>
         </button>
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center p-12">
-           <div className="spinner" style={{ width: 44, height: 44, borderTopColor: 'var(--accent-500)' }}></div>
-           <p className="mt-4 font-bold text-secondary">Menganalisis data siklus...</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
+          <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Menganalisis data siklus...</p>
         </div>
       ) : cycles.length === 0 ? (
-        <div className="premium-card p-12 text-center" style={{ borderRadius: 32 }}>
-           <Activity size={48} style={{ marginBottom: 20, opacity: 0.2, color: 'var(--accent-500)' }} />
-           <h3 className="premium-title-900" style={{ fontSize: 20, marginBottom: 8 }}>Belum ada siklus berjalan</h3>
-           <p className="text-secondary">Tebar benih di kolam yang kosong untuk memulai monitoring</p>
+        <div style={{ 
+          background: '#fff', padding: '60px 20px', textAlign: 'center', 
+          borderRadius: 32, border: '1px solid #E9F0EC' 
+        }}>
+           <Activity size={48} style={{ marginBottom: 20, opacity: 0.2, color: '#1B4332' }} />
+           <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Belum ada siklus berjalan</h3>
+           <p style={{ color: '#64748B', fontWeight: 500, fontSize: '13px' }}>Tebar benih di kolam yang kosong untuk memulai monitoring</p>
         </div>
       ) : (
-        <div className="cycles-grid stagger">
-          {cycles.map((cycle) => (
-            <div key={cycle.id} className="premium-cycle-card animate-fade-in" onClick={() => navigate(`/budidaya/cycles/${cycle.id}`)}>
-              <div className="card-top">
-                <div className="pond-meta">
-                   <h3 className="p-name">{cycle.pond?.name}</h3>
-                   <span className="p-area"><MapPin size={12} /> {cycle.pond?.area || 'Area Utama'}</span>
-                </div>
-                <div className="doc-glimmer">
-                   <span className="doc-num">{calculateDOC(cycle.seed_date)}</span>
-                   <span className="doc-txt">DOC</span>
-                </div>
-              </div>
-              
-              <div className="card-middle">
-                <div className="stats-row">
-                   <div className="s-item">
-                      <span className="s-label">Komoditas</span>
-                      <span className="s-val" style={{ fontWeight: 900 }}>{cycle.seed_type}</span>
-                   </div>
-                   <div className="s-item">
-                      <span className="s-label">Tebar</span>
-                      <span className="s-val" style={{ fontWeight: 900 }}>{cycle.seed_count.toLocaleString()} <small>Ekor</small></span>
-                   </div>
-                </div>
-                
-                <div className="progress-section">
-                   <div className="p-info">
-                      <span>Perkiraan Panen</span>
-                      <span>{cycle.expected_harvest_date ? new Date(cycle.expected_harvest_date).toLocaleDateString('id-ID') : '-'}</span>
-                   </div>
-                   <div className="p-rail">
-                      <div className="p-track" style={{ width: '45%', background: 'linear-gradient(90deg, var(--accent-500), var(--accent-300))' }}></div>
-                   </div>
-                </div>
-              </div>
-              
-              <div className="card-bottom">
-                 <div className="status-indicator">
-                    <div className="pulse-dot"></div>
-                    Budidaya Aktif
-                 </div>
-                 <button className="btn-detail-circle"><ArrowRight size={18} /></button>
-              </div>
-            </div>
-          ))}
+        <div style={{ background: '#fff', borderRadius: '24px', border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+          <Table>
+            <TableHeader>
+              <TableRow isHoverable={false}>
+                <TableHeaderCell>Kolam</TableHeaderCell>
+                <TableHeaderCell>Komoditas</TableHeaderCell>
+                <TableHeaderCell>Tgl Tebar</TableHeaderCell>
+                <TableHeaderCell>Status</TableHeaderCell>
+                <TableHeaderCell>Total Modal</TableHeaderCell>
+                <TableHeaderCell>Pendapatan</TableHeaderCell>
+                <TableHeaderCell>Laba/Rugi</TableHeaderCell>
+                <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {cycles.map((cycle) => (
+                <TableRow key={cycle.id}>
+                  <TableCell>
+                    <div style={{ fontWeight: 600, color: '#1B4332' }}>{cycle.pond_name || '-'}</div>
+                    <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>ID: {cycle.id}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ fontWeight: 600, color: '#1A1C1A' }}>{cycle.seed_type || '-'}</div>
+                    <div style={{ fontSize: 11, color: '#64748B' }}>{(cycle.seed_count || 0).toLocaleString()} ekor</div>
+                  </TableCell>
+                  <TableCell isSecondary>
+                    {cycle.seed_date ? new Date(cycle.seed_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                  </TableCell>
+                  <TableCell>
+                    <span style={{ 
+                      padding: '4px 10px', borderRadius: '40px', fontSize: '11px', fontWeight: '500',
+                      background: cycle.status === 'panen' ? '#F1F5F9' : '#D1FAE5',
+                      color: cycle.status === 'panen' ? '#475569' : '#065F46',
+                    }}>
+                      {cycle.status === 'panen' ? 'Selesai' : 'Aktif'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ color: '#EF4444', fontWeight: 500 }}>Rp {(Number(cycle.total_cost) || 0).toLocaleString('id-ID')}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ color: '#059669', fontWeight: 500 }}>
+                      {cycle.status === 'panen' ? `Rp ${(Number(cycle.total_revenue) || 0).toLocaleString('id-ID')}` : '-'}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {cycle.status === 'panen' ? (
+                      <div style={{ color: (cycle.profit || 0) >= 0 ? '#1B4332' : '#EF4444', fontWeight: 600 }}>
+                        {(cycle.profit || 0) >= 0 ? '+' : ''}Rp {(Number(cycle.profit) || 0).toLocaleString()}
+                      </div>
+                    ) : '-'}
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'right' }}>
+                    <button 
+                      onClick={() => navigate(`/budidaya/cycles/${cycle.id}`)}
+                      style={{
+                        padding: '8px 16px', borderRadius: '10px', background: '#F4F7F5', border: '1px solid #E9F0EC',
+                        color: '#1B4332', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#1B4332'; e.currentTarget.style.color = '#fff' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#F4F7F5'; e.currentTarget.style.color = '#1B4332' }}
+                    >
+                      Detail
+                    </button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 
@@ -147,7 +175,7 @@ export default function Cycles() {
         title="Inisialisasi Siklus Budidaya"
         maxWidth="600px"
       >
-        <form onSubmit={handleSubmit} className="premium-form-modern">
+        <form onSubmit={handleStartCycle} className="premium-form-modern">
            <div className="form-group">
               <label>Pilih Unit Kolam (Tersedia)</label>
               <div className="input-field">
@@ -203,9 +231,9 @@ export default function Cycles() {
               </div>
            </div>
 
-           <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" style={{ flex: 1, padding: 14 }} onClick={() => setModalOpen(false)}>Kembali</button>
-              <button type="submit" className="btn btn-primary" style={{ flex: 2, padding: 14 }}>Mulai Budidaya</button>
+           <div className="modal-footer" style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              <button type="button" className="btn btn-secondary flex-1" onClick={() => setModalOpen(false)}>Kembali</button>
+              <LoadingButton loading={saving} type="submit" className="btn btn-primary flex-2">Mulai Budidaya</LoadingButton>
            </div>
         </form>
       </Modal>

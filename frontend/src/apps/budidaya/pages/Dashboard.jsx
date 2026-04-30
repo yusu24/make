@@ -32,7 +32,7 @@ export default function Dashboard() {
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
       <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <p style={{ color: '#64748B', fontSize: 13, fontWeight: 500 }}>Memuat data farm...</p>
+      <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat data farm...</p>
     </div>
   )
 
@@ -48,24 +48,9 @@ export default function Dashboard() {
           <h1 className="aq-page-title">
             Halo, Bpk. {user?.name?.split(' ')[0] || 'Wijaya'}
           </h1>
-          <p className="aq-body-text" style={{ marginTop: 4 }}>
-            Sistem berjalan optimal. Berikut ringkasan budidaya Anda hari ini.
-          </p>
+
         </div>
-        <button
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            background: '#1B4332', color: '#fff',
-            padding: '10px 20px', borderRadius: 999,
-            border: 'none', cursor: 'pointer',
-            fontSize: 13, fontWeight: 600,
-            boxShadow: '0 2px 8px rgba(27,67,50,0.18)',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add_circle</span>
-          Tambah Kolam Baru
-        </button>
+
       </div>
 
       {/* ── KPI Cards ── */}
@@ -111,7 +96,7 @@ export default function Dashboard() {
           </div>
           <p className="aq-kpi-label">Jadwal pakan berikutnya</p>
           <p className="aq-kpi-value">16:30</p>
-          <p style={{ fontSize: 12, color: '#64748B', marginTop: 6 }}>
+          <p style={{ fontSize: 12, color: '#475569', marginTop: 6 }}>
             Pakan Protein Tinggi – 45 Menit lagi
           </p>
         </div>
@@ -160,7 +145,7 @@ export default function Dashboard() {
                     fontSize: 11,
                     fontWeight: 700,
                     background: chartRange === r[0] ? '#1B4332' : 'transparent',
-                    color: chartRange === r[0] ? '#fff' : '#94A3B8',
+                    color: chartRange === r[0] ? '#fff' : '#64748B',
                     transition: 'all 0.15s',
                   }}
                 >
@@ -187,7 +172,7 @@ export default function Dashboard() {
                   onMouseEnter={e => e.currentTarget.style.background = '#2D6A4F'}
                   onMouseLeave={e => e.currentTarget.style.background = '#E9F0EC'}
                 />
-                <span style={{ fontSize: 10, color: '#94A3B8', fontWeight: 600 }}>MGG {i + 1}</span>
+                <span style={{ fontSize: 10, color: '#64748B', fontWeight: 600 }}>MGG {i + 1}</span>
               </div>
             ))}
           </div>
@@ -210,8 +195,8 @@ export default function Dashboard() {
               </div>
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Penggantian Air Selesai</p>
-                <p style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>Kolam A1 telah mencapai level target.</p>
-                <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>10 Menit lalu</p>
+                <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>Kolam A1 telah mencapai level target.</p>
+                <p style={{ fontSize: 10, color: '#64748B', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>10 Menit lalu</p>
               </div>
             </div>
 
@@ -234,8 +219,8 @@ export default function Dashboard() {
               </div>
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Stok Pakan Menipis</p>
-                <p style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>Tersisa 5kg untuk Pakan Benih.</p>
-                <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>5 Jam lalu</p>
+                <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>Tersisa 5kg untuk Pakan Benih.</p>
+                <p style={{ fontSize: 10, color: '#64748B', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>5 Jam lalu</p>
               </div>
             </div>
           </div>
@@ -269,11 +254,11 @@ export default function Dashboard() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <p className="aq-section-title">Status kolam unggulan</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#64748B' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#475569' }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
               Sehat
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#64748B' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#475569' }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', display: 'inline-block' }} />
               Kritis
             </span>
@@ -292,14 +277,14 @@ export default function Dashboard() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>Kolam A1 - Pembesaran Nila</p>
-                  <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 3 }}>Usia: 45 Hari | Populasi: 2000 Ekor</p>
+                  <p style={{ fontSize: 11, color: '#64748B', marginTop: 3 }}>Usia: 45 Hari | Populasi: 2000 Ekor</p>
                 </div>
                 <span style={badge('#D1FAE5', '#059669')}>SEHAT</span>
               </div>
               <div style={{ display: 'flex', gap: 20, marginTop: 14, paddingTop: 12, borderTop: '1px solid #F1F5F9' }}>
                 {[['PH', '7.2', '#1A1C1A'], ['O2', '6.5 mg/L', '#1A1C1A'], ['AMONIAK', '0.01 ppm', '#1A1C1A']].map(([label, val, color]) => (
                   <div key={label}>
-                    <p style={{ fontSize: 9, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: 9, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
                     <p style={{ fontSize: 13, fontWeight: 800, color, margin: '2px 0 0' }}>{val}</p>
                   </div>
                 ))}
@@ -316,14 +301,14 @@ export default function Dashboard() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>Kolam B3 - Pemijahan Gurame</p>
-                  <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 3 }}>Usia: 12 Hari | Populasi: 500 Ekor</p>
+                  <p style={{ fontSize: 11, color: '#64748B', marginTop: 3 }}>Usia: 12 Hari | Populasi: 500 Ekor</p>
                 </div>
                 <span style={badge('#FEE2E2', '#EF4444')}>PERHATIAN</span>
               </div>
               <div style={{ display: 'flex', gap: 20, marginTop: 14, paddingTop: 12, borderTop: '1px solid #FEF2F2' }}>
                 {[['PH', '6.8', '#1A1C1A'], ['O2', '3.2 mg/L', '#EF4444'], ['AMONIAK', '0.05 ppm', '#1A1C1A']].map(([label, val, color]) => (
                   <div key={label}>
-                    <p style={{ fontSize: 9, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: 9, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
                     <p style={{ fontSize: 13, fontWeight: 800, color, margin: '2px 0 0' }}>{val}</p>
                   </div>
                 ))}
@@ -344,13 +329,12 @@ const cardStyle = {
   border: '1px solid #E9F0EC',
   borderRadius: 16,
   padding: '20px 22px',
-  boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
 }
 
 const kpiLabel = {
   fontSize: 10,
   fontWeight: 700,
-  color: '#94A3B8',
+  color: '#64748B',
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
   margin: 0,

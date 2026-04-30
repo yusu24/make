@@ -12,6 +12,7 @@ const SYSTEM_ROUTES = {
   'Budidaya Ikan': '/budidaya/dashboard',
   'Jasa':          '/coming-soon',
   'Manufaktur':    '/coming-soon',
+  'Kuliner':       '/kuliner/storefront',
 }
 
 const DUMMY_CATS = [

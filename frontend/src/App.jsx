@@ -53,6 +53,14 @@ const BudidayaUsers = lazy(() => import('./apps/budidaya/pages/UserManagement'))
 const BudidayaRoles = lazy(() => import('./apps/budidaya/pages/RolesPermissions'))
 const BudidayaInventory = lazy(() => import('./apps/budidaya/pages/Inventory'))
 
+// Kuliner pages - Rebuilt with Dapur Nusantara Theme
+const KulinerAdminCategories = lazy(() => import('./apps/kuliner/pages/AdminCategories'))
+const KulinerAdminSettings = lazy(() => import('./apps/kuliner/pages/AdminSettings'))
+const KulinerCategoryStorefront = lazy(() => import('./apps/kuliner/pages/CategoryStorefront'))
+const KulinerFullMenu = lazy(() => import('./apps/kuliner/pages/FullMenu'))
+const KulinerDashboard = lazy(() => import('./apps/kuliner/pages/KulinerDashboard'))
+
+
 const PageLoader = () => (
   <div style={{
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -80,6 +88,7 @@ const GuestRoute = ({ children }) => {
     if (user.role === 'super_admin') return <Navigate to="/dashboard" replace />
     if (user.business_category === 'Toko Retail') return <Navigate to="/retail/dashboard" replace />
     if (user.business_category === 'Budidaya Ikan') return <Navigate to="/budidaya/dashboard" replace />
+    if (user.business_category === 'Kuliner') return <Navigate to="/kuliner" replace />
     return <Navigate to="/coming-soon" replace />
   }
   return children
@@ -90,6 +99,7 @@ const RootRedirect = () => {
   if (user?.role === 'super_admin') return <Navigate to="/dashboard" replace />
   if ((user?.role === 'customer' || user?.role === 'retail_cashier') && user?.business_category === 'Toko Retail') return <Navigate to="/retail/dashboard" replace />
   if ((user?.role === 'customer' || user?.role === 'worker') && user?.business_category === 'Budidaya Ikan') return <Navigate to="/budidaya/dashboard" replace />
+  if (user?.business_category === 'Kuliner') return <Navigate to="/kuliner" replace />
   return <Navigate to="/coming-soon" replace />
 }
 
@@ -166,6 +176,16 @@ function App() {
                   <Route path="reports" element={<BudidayaReports />} />
                   <Route path="settings" element={<BudidayaSettings />} />
                 </Route>
+
+              {/* Kuliner App - Dapur Nusantara Theme */}
+              <Route path="/kuliner">
+                <Route index element={<KulinerCategoryStorefront />} />
+                <Route path="menu" element={<KulinerFullMenu />} />
+                <Route path="admin" element={<ProtectedRoute><KulinerDashboard /></ProtectedRoute>} />
+                <Route path="admin/categories" element={<ProtectedRoute><KulinerAdminCategories /></ProtectedRoute>} />
+                <Route path="admin/settings" element={<ProtectedRoute><KulinerAdminSettings /></ProtectedRoute>} />
+              </Route>
+
 
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

@@ -31,16 +31,20 @@ class HarvestController extends Controller
             $totalRevenue = $validated['weight_kg'] * $validated['price_per_kg'];
             BudidayaHarvest::create([
                 'cycle_id' => $cycle->id,
-                'weight_kg' => $validated['weight_kg'],
-                'price_per_kg' => $validated['price_per_kg'],
+                'total_weight_kg' => $validated['weight_kg'],
+                'sale_price_per_kg' => $validated['price_per_kg'],
                 'total_revenue' => $totalRevenue,
-                'date' => $validated['date'],
+                'harvest_date' => $validated['date'],
                 'notes' => $validated['notes'],
             ]);
 
-            // 2. Close Cycle
+            // 2. Close Cycle and Reset Pond
             $cycle->update([
                 'status' => 'panen'
+            ]);
+            
+            $cycle->pond->update([
+                'status' => 'kosong'
             ]);
         });
 

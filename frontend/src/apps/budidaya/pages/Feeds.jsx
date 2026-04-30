@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import Modal from '../../../components/Modal'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
+import { LoadingButton } from '../components/UXComponents'
 
 export default function Feeds() {
   const [feeds, setFeeds] = useState([])
@@ -20,6 +21,7 @@ export default function Feeds() {
   
   const [formData, setFormData] = useState({ name: '', stock_kg: '' })
   const [restockAmount, setRestockAmount] = useState('')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     fetchFeeds()
@@ -37,24 +39,40 @@ export default function Feeds() {
     }
   }
 
-  const handleAddFeed = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
-      await api.post('/budidaya/feeds', formData)
+      if (selectedFeed) {
+        await api.put(`/budidaya/feeds/${selectedFeed.id}`, formData)
+      } else {
+        await api.post('/budidaya/feeds', formData)
+      }
       setModalOpen(false)
       setFormData({ name: '', stock_kg: '' })
       fetchFeeds()
-    } catch (err) { alert(err.response?.data?.message || 'Gagal menyimpan data') }
+    } catch (err) {
+      console.error(err)
+      alert('Gagal menyimpan pakan')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleRestock = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
-      await api.put(`/budidaya/feeds/${selectedFeed.id}/add`, { amount_kg: restockAmount })
+      await api.put(`/budidaya/feeds/${selectedFeed.id}/add`, { add_kg: restockAmount })
       setRestockModalOpen(false)
       setRestockAmount('')
       fetchFeeds()
-    } catch (err) { alert(err.response?.data?.message || 'Gagal menambah stok') }
+    } catch (err) {
+      console.error(err)
+      alert('Gagal tambah stok')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const filteredFeeds = feeds.filter(f => 
@@ -75,12 +93,12 @@ export default function Feeds() {
           </div>
           <div>
             <h2 className="page-title">Inventaris Logistik</h2>
-            <p className="page-sub">Manajemen pakan presisi & kontrol stok real-time</p>
+
           </div>
         </div>
         
-        <button className="btn btn-primary btn-lg" onClick={() => { setSelectedFeed(null); setModalOpen(true); }}>
-          <Plus size={20} />
+        <button className="btn btn-primary" onClick={() => { setSelectedFeed(null); setFormData({ name: '', stock_kg: '' }); setModalOpen(true); }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
           <span>Registrasi Pakan</span>
         </button>
       </div>
@@ -134,9 +152,9 @@ export default function Feeds() {
         </div>
 
         {loading ? (
-          <div className="loading-state-premium">
-             <div className="spinner-glow"></div>
-             <p className="loading-text">Menyinkronkan data gudang...</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Menyinkronkan data gudang...</p>
           </div>
         ) : filteredFeeds.length === 0 ? (
           <div className="empty-state-premium">
@@ -195,7 +213,7 @@ export default function Feeds() {
                           <button className="btn btn-sm btn-primary-alt" onClick={() => { setSelectedFeed(feed); setRestockModalOpen(true); }} style={{ fontWeight: 900 }}>
                              <ArrowUpCircle size={14} /> Restok
                           </button>
-                          <button className="btn-icon-more"><Edit2 size={14} /></button>
+                          <button className="btn-icon-more" onClick={() => { setSelectedFeed(feed); setFormData({ name: feed.name, stock_kg: feed.stock_kg }); setModalOpen(true); }}><Edit2 size={14} /></button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -208,8 +226,8 @@ export default function Feeds() {
       </div>
 
       {/* Styled Modals */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Tambah Logistik Baru">
-        <form onSubmit={handleAddFeed} className="premium-form-fluid">
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={selectedFeed ? "Update Data Pakan" : "Tambah Logistik Baru"}>
+        <form onSubmit={handleSubmit} className="premium-form-fluid">
            <div className="form-group mb-6">
               <label className="premium-label">IDENTITAS MERK PAKAN</label>
               <div className="premium-input-wrapper">
@@ -224,10 +242,10 @@ export default function Feeds() {
                  <input type="number" step="any" required placeholder="0.00" value={formData.stock_kg} onChange={e => setFormData({...formData, stock_kg: e.target.value})} />
               </div>
            </div>
-           <div className="modal-actions-premium">
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
               <button type="button" className="btn btn-secondary flex-1" onClick={() => setModalOpen(false)}>Batalkan</button>
-              <button type="submit" className="btn btn-primary flex-2">Simpan Logistik</button>
-           </div>
+              <LoadingButton loading={saving} type="submit" className="btn btn-primary flex-2">Simpan Logistik</LoadingButton>
+            </div>
         </form>
       </Modal>
 
@@ -249,10 +267,10 @@ export default function Feeds() {
                  <input type="number" step="any" required autoFocus placeholder="Masukkan angka penambahan..." value={restockAmount} onChange={(e) => setRestockAmount(e.target.value)} />
               </div>
            </div>
-           <div className="modal-actions-premium">
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
               <button type="button" className="btn btn-secondary flex-1" onClick={() => setRestockModalOpen(false)}>Tutup</button>
-              <button type="submit" className="btn btn-primary flex-2">Konfirmasi Stok</button>
-           </div>
+              <LoadingButton loading={saving} type="submit" className="btn btn-primary flex-2">Konfirmasi Stok</LoadingButton>
+            </div>
         </form>
       </Modal>
 

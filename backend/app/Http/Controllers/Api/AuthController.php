@@ -102,7 +102,7 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Data tidak lengkap', 'errors' => $validator->errors()], 422);
         }
 
-        $user = User::with('businessCategory', 'tenant', 'retailRole')->where('email', $request->email)->first();
+        $user = User::with(['businessCategory', 'tenant', 'retailRole'])->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['success' => false, 'message' => 'Email atau password salah'], 401);
@@ -190,7 +190,7 @@ class AuthController extends Controller
         ];
     }
 
-    private function seedDefaultRetailData($tenantId)
+    private function seedDefaultRetailData(string $tenantId)
     {
         // 1. Categories
         $cats = ['Makanan', 'Minuman', 'Elektronik', 'Pakaian', 'Alat Kantor', 'Lainnya'];

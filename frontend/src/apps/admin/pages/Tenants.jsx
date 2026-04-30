@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../../../lib/api'
+import { useAuth } from '../../../contexts/AuthContext'
 import './Shared.css'
 
 const DUMMY = [
@@ -14,12 +16,16 @@ const PLAN_BADGE = { Pro:'badge-violet', Basic:'badge-blue', '-':'badge-gray' }
 const STATUS_BADGE = { active:'badge-green', pending:'badge-yellow', inactive:'badge-gray' }
 
 export default function Tenants() {
+  const { impersonate, isImpersonating, exitImpersonate } = useAuth()
+  const navigate = useNavigate()
   const [tenants, setTenants] = useState(DUMMY)
   const [search, setSearch]   = useState('')
   const [showModal, setShowModal] = useState(false)
-  const [activeTab, setActiveTab] = useState('list') // 'list' or 'requests'
+  const [activeTab, setActiveTab] = useState('list')
   const [requests, setRequests] = useState([])
   const [loadingRequests, setLoadingRequests] = useState(false)
+  const [impersonating, setImpersonating] = useState(null)
+  const [confirmTarget, setConfirmTarget] = useState(null) // tenant to confirm impersonation
 
   const fetchTenants = () => {
     api.get('/tenants').then(r => setTenants(r.data?.data || DUMMY)).catch(() => {})
@@ -62,6 +68,19 @@ export default function Tenants() {
       fetchRequests()
     } catch (err) {
       alert('Gagal menolak permintaan')
+    }
+  }
+
+  const handleImpersonate = async (tenant) => {
+    setImpersonating(tenant.tenant_id)
+    setConfirmTarget(null)
+    try {
+      const redirect = await impersonate(tenant.tenant_id)
+      navigate(redirect)
+    } catch (err) {
+      alert('Gagal impersonate: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setImpersonating(null)
     }
   }
 
@@ -209,11 +228,32 @@ export default function Tenants() {
                   <td><span className={`badge ${STATUS_BADGE[t.status] || ''}`}>{t.status}</span></td>
                   <td style={{fontSize:12,color:'var(--text-muted)'}}>{t.joined}</td>
                   <td>
-                    <div style={{display:'flex',gap:6}}>
-                      {t.category === 'Toko Retail' && (
-                        <button className="btn btn-primary btn-sm" onClick={() => window.open('/retail/dashboard', '_blank')} title="Login sebagai Tenant ini">
-                          🔑 Impersonate
-                        </button>
+                    <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                      {(t.category === 'Toko Retail' || t.category === 'Budidaya Ikan') && (
+                        confirmTarget === t.tenant_id ? (
+                          <>
+                            <span style={{fontSize:11,color:'var(--text-muted)',whiteSpace:'nowrap'}}>Masuk sebagai ini?</span>
+                            <button
+                              className="btn btn-primary btn-sm"
+                              onClick={() => handleImpersonate(t)}
+                              disabled={impersonating === t.tenant_id}
+                            >
+                              {impersonating === t.tenant_id ? '...' : '✓ Ya, Masuk'}
+                            </button>
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => setConfirmTarget(null)}
+                            >✕</button>
+                          </>
+                        ) : (
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => setConfirmTarget(t.tenant_id)}
+                            title={`Login sebagai ${t.name}`}
+                          >
+                            🔑 Impersonate
+                          </button>
+                        )
                       )}
                       <button id={`btn-view-tenant-${t.id}`} className="btn btn-secondary btn-sm">👁 Lihat</button>
                       <button id={`btn-edit-tenant-${t.id}`} className="btn btn-ghost btn-sm">✏</button>

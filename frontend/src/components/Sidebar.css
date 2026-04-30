@@ -103,11 +103,12 @@
 
 .sidebar__section-label {
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-muted);
+  color: #000000;
   padding: 6px 10px 4px;
+  opacity: 0.7;
   white-space: nowrap;
 }
 
@@ -117,9 +118,9 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: var(--radius-md);
-  color: var(--text-secondary);
+  color: #000000;
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 600;
   transition: all var(--transition-fast);
   white-space: nowrap;
   border: 1px solid transparent;
@@ -137,7 +138,7 @@
 }
 
 .sidebar__item--active .sidebar__item-icon {
-  color: var(--primary-400);
+  color: #000000;
 }
 
 .sidebar__item-icon {
@@ -200,9 +201,9 @@
   border-radius: var(--radius-md);
   background: transparent;
   border: 1px solid var(--border-subtle);
-  color: var(--text-muted);
+  color: #000000;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   transition: all var(--transition-fast);
   width: 100%;
 }

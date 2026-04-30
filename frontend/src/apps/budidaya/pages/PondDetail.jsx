@@ -18,7 +18,6 @@ const cardStyle = {
   borderRadius: '24px',
   border: '1px solid #E9F0EC',
   padding: '24px',
-  boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
 }
 
 const inputStyle = {
@@ -38,10 +37,55 @@ const inputStyle = {
 const labelStyle = {
   fontSize: 12,
   fontWeight: 700,
-  color: '#64748B',
+  color: '#475569',
   display: 'block',
   marginBottom: 6,
 }
+
+// ── Numeric Input Component ──
+const NumericInput = ({ label, value, onChange, placeholder, suffix, required = false }) => {
+  const formatIndo = (val) => {
+    if (!val && val !== 0) return '';
+    let [num, dec] = val.toString().split('.');
+    num = num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return dec !== undefined ? `${num},${dec}` : num;
+  };
+
+  const [display, setDisplay] = React.useState(formatIndo(value));
+
+  React.useEffect(() => {
+    setDisplay(formatIndo(value));
+  }, [value]);
+
+  const onLocalChange = (e) => {
+    let input = e.target.value.replace(/\./g, '').replace(',', '.');
+    if (input === '' || /^\d*\.?\d*$/.test(input)) {
+      onChange(input);
+    }
+  };
+
+  return (
+    <div>
+      <label style={labelStyle}>{label} {required && <span style={{ color: '#EF4444' }}>*</span>}</label>
+      <div style={{ position: 'relative' }}>
+        <input 
+          type="text" 
+          value={display} 
+          onChange={onLocalChange} 
+          placeholder={placeholder} 
+          style={{ ...inputStyle, paddingRight: suffix ? '45px' : '14px' }}
+          required={required}
+        />
+        {suffix && (
+          <span style={{ 
+            position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
+            fontSize: 12, fontWeight: 700, color: '#94A3B8', pointerEvents: 'none'
+          }}>{suffix}</span>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default function PondDetail() {
   const { id } = useParams()
@@ -56,7 +100,15 @@ export default function PondDetail() {
   const feedItems = inventories.filter(i => i.category.toLowerCase() === 'pakan')
   const seedItems = inventories.filter(i => i.category.toLowerCase() === 'bibit')
 
-  const [formStart, setFormStart] = useState({ inventory_id: '', seed_count: '', seed_date: new Date().toISOString().split('T')[0], expected_harvest_date: '' })
+  const [formStart, setFormStart] = useState({ 
+    input_method: 'manual', 
+    inventory_id: '', 
+    seed_type: '', 
+    seed_count: '', 
+    total_seed_cost: '', 
+    seed_date: new Date().toISOString().split('T')[0], 
+    expected_harvest_date: '' 
+  })
   const [formFeed, setFormFeed] = useState({ inventory_id: '', amount_kg: '', date: new Date().toISOString().split('T')[0], notes: '' })
   const [formHarvest, setFormHarvest] = useState({ weight_kg: '', price_per_kg: '', date: new Date().toISOString().split('T')[0], notes: '' })
   const [formHealth, setFormHealth] = useState({ mortality_count: 0, disease_note: '', treatment_note: '', date: new Date().toISOString().split('T')[0] })
@@ -124,7 +176,54 @@ export default function PondDetail() {
     } catch (err) { alert(err.response?.data?.message || "Gagal mencatat biaya") }
   }
 
-  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}><div className="spinner"></div></div>
+  const handleHarvest = async (e) => {
+    if (e) e.preventDefault()
+    console.log("Handle Harvest Triggered", formHarvest)
+    
+    const cycleId = data?.cycle?.id
+    if (!cycleId) {
+      alert("Tidak ada siklus aktif untuk dipanen.")
+      return
+    }
+
+    if (!formHarvest.weight_kg || !formHarvest.price_per_kg) {
+      alert("Mohon isi berat panen dan harga jual.")
+      return
+    }
+    
+    try {
+      setLoading(true)
+      console.log("SENDING HARVEST", cycleId, formHarvest)
+      const res = await api.post(`/budidaya/cycles/${cycleId}/harvest`, {
+        ...formHarvest,
+        weight_kg: Number(formHarvest.weight_kg),
+        price_per_kg: Number(formHarvest.price_per_kg)
+      })
+      
+      // Success
+      alert(res.data.message || "Panen berhasil dicatat!")
+      setModalType(null)
+      setFormHarvest({ weight_kg: '', price_per_kg: '', date: new Date().toISOString().split('T')[0], notes: '' })
+      
+      // Refresh all data
+      await fetchPondData()
+    } catch (err) { 
+      console.error("Harvest Error:", err)
+      const msg = err.response?.data?.message || "Terjadi kesalahan sistem saat mencatat panen."
+      alert("Gagal: " + msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
+        <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat data kolam...</p>
+      </div>
+    )
+  }
 
   const cycle = data?.cycle
   const metrics = data?.metrics
@@ -147,11 +246,23 @@ export default function PondDetail() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
-          <button style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '14px', fontWeight: 600, color: '#1A1C1A', cursor: 'pointer' }}>
-            <Clock size={18} /> Lihat Laporan Akhir
+          <button 
+            onClick={() => navigate('/budidaya/reports')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '14px', fontWeight: 600, color: '#1A1C1A', cursor: 'pointer' }}
+          >
+            <BarChart3 size={18} /> Lihat Laporan Akhir
           </button>
-          <button onClick={() => setModalType(cycle ? 'harvest' : 'start')} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#1B4332', border: 'none', borderRadius: '14px', fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
-            <Plus size={18} /> {cycle ? 'Panen Siklus' : 'Mulai Siklus Baru'}
+          <button 
+            onClick={() => setModalType(cycle ? 'harvest' : 'start')} 
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', 
+              background: cycle ? '#EF4444' : '#1B4332', 
+              border: 'none', borderRadius: '14px', fontWeight: 600, color: '#fff', cursor: 'pointer',
+              boxShadow: cycle ? '0 4px 12px rgba(239, 68, 68, 0.2)' : '0 4px 12px rgba(27, 67, 50, 0.2)'
+            }}
+          >
+            {cycle ? <CheckCircle2 size={18} /> : <Plus size={18} />} 
+            {cycle ? 'Selesaikan Panen' : 'Mulai Siklus Baru'}
           </button>
         </div>
       </div>
@@ -235,7 +346,7 @@ export default function PondDetail() {
             onClick={() => setActiveTab(tab.id)}
             style={{ 
               padding: '12px 0', border: 'none', background: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              color: activeTab === tab.id ? '#1B4332' : '#94A3B8',
+              color: activeTab === tab.id ? '#1B4332' : '#64748B',
               borderBottom: activeTab === tab.id ? '4px solid #1B4332' : '4px solid transparent',
               marginBottom: -2,
               transition: 'all 0.2s ease'
@@ -280,14 +391,14 @@ export default function PondDetail() {
                   <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1A1C1A' }}>Prediksi Pakan</h4>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <span style={{ color: '#64748B', fontSize: 14 }}>Kebutuhan Harian</span>
+                  <span style={{ color: '#475569', fontSize: 14 }}>Kebutuhan Harian</span>
                   <span style={{ fontWeight: 600, color: '#1A1C1A' }}>25.5 Kg</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                  <span style={{ color: '#64748B', fontSize: 14 }}>Stok di Gudang</span>
+                  <span style={{ color: '#475569', fontSize: 14 }}>Stok di Gudang</span>
                   <span style={{ fontWeight: 600, color: '#1A1C1A' }}>450 Kg</span>
                 </div>
-                <p style={{ margin: 0, fontSize: 12, color: '#94A3B8', fontStyle: 'italic' }}>
+                <p style={{ margin: 0, fontSize: 12, color: '#64748B', fontStyle: 'italic' }}>
                   "Cukup untuk 17 hari ke depan dengan asumsi pertumbuhan normal."
                 </p>
               </div>
@@ -297,12 +408,12 @@ export default function PondDetail() {
                   <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1A1C1A' }}>Target Panen</h4>
                 </div>
                 <div style={{ marginBottom: 16 }}>
-                  <span style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', marginBottom: 4 }}>ESTIMASI TANGGAL</span>
+                  <span style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>ESTIMASI TANGGAL</span>
                   <span style={{ fontSize: 18, fontWeight: 700, color: '#1A1C1A' }}>15 November 2024</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontSize: 24, fontWeight: 800, color: '#1B4332' }}>75%</span>
-                  <span style={{ fontSize: 13, color: '#64748B', fontWeight: 500 }}>Menuju Ukuran Konsumsi</span>
+                  <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>Menuju Ukuran Konsumsi</span>
                 </div>
               </div>
             </div>
@@ -322,7 +433,7 @@ export default function PondDetail() {
                     <div style={{ width: 8, height: 8, borderRadius: 4, background: act.color, marginTop: 6 }} />
                     <div>
                       <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1A1C1A' }}>{act.title}</h4>
-                      <p style={{ margin: '4px 0 0 0', fontSize: 12, color: '#94A3B8' }}>{act.desc}</p>
+                      <p style={{ margin: '4px 0 0 0', fontSize: 12, color: '#64748B' }}>{act.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -362,29 +473,31 @@ export default function PondDetail() {
               
               {!cycle ? (
                 <div style={{ padding: '60px 0', textAlign: 'center' }}>
-                  <div style={{ width: 64, height: 64, background: '#F1F5F9', borderRadius: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#94A3B8' }}>
+                  <div style={{ width: 64, height: 64, background: '#F1F5F9', borderRadius: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#64748B' }}>
                     <Calendar size={32} />
                   </div>
-                  <p style={{ fontSize: 14, color: '#94A3B8' }}>Belum ada siklus yang berjalan di kolam ini.</p>
-                  <button onClick={() => setModalType('start')} style={{ marginTop: 16, padding: '12px 24px', background: '#1B4332', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}>Mulai Siklus Baru</button>
+                  <p style={{ fontSize: 14, color: '#64748B' }}>Belum ada siklus yang berjalan di kolam ini.</p>
+                  <button className="btn btn-primary" onClick={() => setModalType('start')} style={{ marginTop: 16 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
+                    Mulai Siklus Baru
+                  </button>
                 </div>
               ) : (
-              {/* Cycle Detail Grid */}
               <div className="aq-grid-2" style={{ gap: 40 }}>
-                   <div>
-                      <h4 style={{ fontSize: 14, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', marginBottom: 16 }}>DATA UTAMA</h4>
+                    <div>
+                      <h4 style={{ fontSize: 13, color: '#64748B', fontWeight: 700, marginBottom: 16 }}>Data utama</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#64748B' }}>Jenis Bibit</span> <span style={{ fontWeight: 600 }}>{cycle.seed_type}</span></div>
-                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#64748B' }}>Jumlah Tebar</span> <span style={{ fontWeight: 600 }}>{cycle.seed_count.toLocaleString()} Ekor</span></div>
-                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#64748B' }}>Tanggal Tebar</span> <span style={{ fontWeight: 600 }}>{new Date(cycle.seed_date).toLocaleDateString('id-ID')}</span></div>
-                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#64748B' }}>Status Saat Ini</span> <span style={{ fontWeight: 600, color: '#1B4332' }}>{cycle.status.toUpperCase()}</span></div>
+                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#475569' }}>Jenis Bibit</span> <span style={{ fontWeight: 600 }}>{cycle.seed_type}</span></div>
+                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#475569' }}>Jumlah Tebar</span> <span style={{ fontWeight: 600 }}>{cycle.seed_count.toLocaleString()} Ekor</span></div>
+                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#475569' }}>Tanggal Tebar</span> <span style={{ fontWeight: 600 }}>{new Date(cycle.seed_date).toLocaleDateString('id-ID')}</span></div>
+                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#475569' }}>Status Saat Ini</span> <span style={{ fontWeight: 600, color: '#1B4332' }}>{cycle.status.charAt(0).toUpperCase() + cycle.status.slice(1)}</span></div>
                       </div>
                    </div>
                    <div>
-                      <h4 style={{ fontSize: 14, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', marginBottom: 16 }}>ANALISA BIAYA (HPP)</h4>
+                      <h4 style={{ fontSize: 13, color: '#64748B', fontWeight: 700, marginBottom: 16 }}>Analisa biaya (HPP)</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#64748B' }}>Biaya Bibit</span> <span style={{ fontWeight: 600 }}>Rp {metrics?.total_seed_cost.toLocaleString()}</span></div>
-                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#64748B' }}>Biaya Pakan</span> <span style={{ fontWeight: 600 }}>Rp {metrics?.total_feed_cost.toLocaleString()}</span></div>
+                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#475569' }}>Biaya Bibit</span> <span style={{ fontWeight: 600 }}>Rp {metrics?.total_seed_cost.toLocaleString()}</span></div>
+                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#475569' }}>Biaya Pakan</span> <span style={{ fontWeight: 600 }}>Rp {metrics?.total_feed_cost.toLocaleString()}</span></div>
                          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid #E2E8F0' }}><span style={{ fontWeight: 700 }}>Total Modal Keluar</span> <span style={{ fontWeight: 700, color: '#EF4444' }}>Rp {metrics?.total_cost.toLocaleString()}</span></div>
                       </div>
                    </div>
@@ -400,15 +513,15 @@ export default function PondDetail() {
              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>Log Riwayat Operasional</h3>
               {cycle && (
                <div style={{ display: 'flex', gap: 10 }}>
-                 <button onClick={() => setModalType('expense')} style={{ padding: '10px 20px', background: '#fff', color: '#1B4332', border: '1.5px solid #1B4332', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <DollarSign size={16} /> Gaji & Panen
-                 </button>
-                 <button onClick={() => setModalType('health')} style={{ padding: '10px 20px', background: '#fff', color: '#EF4444', border: '1.5px solid #EF4444', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <AlertTriangle size={16} /> Catat Kematian
-                 </button>
-                 <button onClick={() => setModalType('feed')} style={{ padding: '10px 20px', background: '#1B4332', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Plus size={16} /> Catat Pakan
-                 </button>
+                  <button className="btn btn-secondary" onClick={() => setModalType('expense')}>
+                     <span className="material-symbols-outlined" style={{ fontSize: 18 }}>payments</span> Gaji & Panen
+                  </button>
+                  <button className="btn btn-secondary" onClick={() => setModalType('health')} style={{ color: '#EF4444', borderColor: '#EF4444' }}>
+                     <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#EF4444' }}>report_problem</span> Catat Kematian
+                  </button>
+                  <button className="btn btn-primary" onClick={() => setModalType('feed')}>
+                     <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span> Catat Pakan
+                  </button>
                </div>
               )}
            </div>
@@ -428,7 +541,7 @@ export default function PondDetail() {
                             <TableCell style={{ fontWeight: 600 }}>{new Date(f.date).toLocaleDateString('id-ID')}</TableCell>
                             <TableCell>Pemberian pakan</TableCell>
                             <TableCell isSecondary>{f.inventory?.name} - {f.amount_kg} kg</TableCell>
-                            <TableCell><span style={{ fontSize: 12, padding: '4px 10px', background: '#D1FAE5', color: '#065F46', borderRadius: 20, fontWeight: 600 }}>SELESAI</span></TableCell>
+                            <TableCell><span style={{ fontSize: 12, padding: '4px 10px', background: '#D1FAE5', color: '#065F46', borderRadius: 20, fontWeight: 600 }}>Selesai</span></TableCell>
                          </TableRow>
                       ))}
                       {cycle?.healths?.map((h, i) => (
@@ -439,7 +552,7 @@ export default function PondDetail() {
                               {h.mortality_count > 0 && <span style={{ color: '#EF4444', fontWeight: 600 }}>Mati: {h.mortality_count} ekor. </span>}
                               {h.disease_note && `Ket: ${h.disease_note}`}
                             </TableCell>
-                            <TableCell><span style={{ fontSize: 12, padding: '4px 10px', background: '#FEE2E2', color: '#991B1B', borderRadius: 20, fontWeight: 600 }}>TERCATAT</span></TableCell>
+                            <TableCell><span style={{ fontSize: 12, padding: '4px 10px', background: '#FEE2E2', color: '#991B1B', borderRadius: 20, fontWeight: 600 }}>Tercatat</span></TableCell>
                          </TableRow>
                       ))}
                       {cycle?.expenses?.filter(ex => !['pakan', 'benih'].includes(ex.category)).map((ex, i) => (
@@ -447,13 +560,13 @@ export default function PondDetail() {
                             <TableCell style={{ fontWeight: 600 }}>{new Date(ex.date).toLocaleDateString('id-ID')}</TableCell>
                             <TableCell style={{ color: '#1B4332', fontWeight: 700 }}>Biaya Operasional</TableCell>
                             <TableCell isSecondary>
-                              {ex.category.toUpperCase()}: Rp {Number(ex.amount).toLocaleString()} - {ex.notes}
+                              {ex.category.charAt(0).toUpperCase() + ex.category.slice(1)}: Rp {Number(ex.amount).toLocaleString()} - {ex.notes}
                             </TableCell>
-                            <TableCell><span style={{ fontSize: 12, padding: '4px 10px', background: '#DBEAFE', color: '#1E40AF', borderRadius: 20, fontWeight: 600 }}>DIBAYAR</span></TableCell>
+                            <TableCell><span style={{ fontSize: 12, padding: '4px 10px', background: '#DBEAFE', color: '#1E40AF', borderRadius: 20, fontWeight: 600 }}>Dibayar</span></TableCell>
                          </TableRow>
                       ))}
                       {(!cycle || (!cycle.feedings?.length && !cycle.healths?.length && !cycle.expenses?.length)) && (
-                        <TableRow><TableCell colSpan="4" style={{ padding: '40px 0', textAlign: 'center', color: '#94A3B8' }}>Belum ada riwayat aktivitas untuk siklus ini.</TableCell></TableRow>
+                        <TableRow><TableCell colSpan="4" style={{ padding: '40px 0', textAlign: 'center', color: '#64748B' }}>Belum ada riwayat aktivitas untuk siklus ini.</TableCell></TableRow>
                       )}
                    </TableBody>
                  </Table>
@@ -473,10 +586,10 @@ export default function PondDetail() {
                 </div>
                 <div>
                   <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>{modalType === 'start' ? 'Mulai Siklus Baru' : 'Catat Aktivitas'}</h3>
-                  <p style={{ fontSize: 12, color: '#94A3B8', margin: 0, marginTop: 2 }}>Lengkapi detail informasi di bawah ini</p>
+                  <p style={{ fontSize: 12, color: '#64748B', margin: 0, marginTop: 2 }}>Lengkapi detail informasi di bawah ini</p>
                 </div>
               </div>
-              <button onClick={() => setModalType(null)} style={{ width: 36, height: 36, borderRadius: 10, background: '#F4F7F5', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}>
+              <button onClick={() => setModalType(null)} style={{ width: 36, height: 36, borderRadius: 10, background: '#F4F7F5', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
               </button>
             </div>
@@ -484,19 +597,81 @@ export default function PondDetail() {
             {/* Modal Body */}
             {modalType === 'start' ? (
               <form onSubmit={handleStartCycle} style={{ padding: '24px 28px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div>
-                  <label style={labelStyle}>Pilih bibit</label>
-                  <select required value={formStart.inventory_id} onChange={e => setFormStart({...formStart, inventory_id: e.target.value})} style={inputStyle}>
-                    <option value="">-- Pilih Bibit --</option>
-                    {seedItems.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-                  </select>
+                {/* Input Method Toggle */}
+                <div style={{ marginBottom: 8 }}>
+                  <label style={labelStyle}>Metode input bibit</label>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button 
+                      type="button" 
+                      onClick={() => setFormStart({...formStart, input_method: 'manual', inventory_id: ''})}
+                      style={{
+                        flex: 1, padding: '10px 0', borderRadius: 12,
+                        border: formStart.input_method === 'manual' ? '2px solid #1B4332' : '1.5px solid #E9F0EC',
+                        background: formStart.input_method === 'manual' ? '#D8F3DC' : '#F8FAFC',
+                        color: formStart.input_method === 'manual' ? '#1B4332' : '#475569',
+                        fontWeight: 700, fontSize: 13, cursor: 'pointer'
+                      }}
+                    >Manual</button>
+                    <button 
+                      type="button" 
+                      onClick={() => setFormStart({...formStart, input_method: 'inventory'})}
+                      style={{
+                        flex: 1, padding: '10px 0', borderRadius: 12,
+                        border: formStart.input_method === 'inventory' ? '2px solid #1B4332' : '1.5px solid #E9F0EC',
+                        background: formStart.input_method === 'inventory' ? '#D8F3DC' : '#F8FAFC',
+                        color: formStart.input_method === 'inventory' ? '#1B4332' : '#475569',
+                        fontWeight: 700, fontSize: 13, cursor: 'pointer'
+                      }}
+                    >Gudang</button>
+                  </div>
                 </div>
-                <div>
-                  <label style={labelStyle}>Jumlah tebar (ekor)</label>
-                  <input type="number" required value={formStart.seed_count} onChange={e => setFormStart({...formStart, seed_count: e.target.value})} style={inputStyle} />
+
+                {formStart.input_method === 'inventory' ? (
+                  <div>
+                    <label style={labelStyle}>Pilih bibit dari gudang</label>
+                    <select required value={formStart.inventory_id} onChange={e => setFormStart({...formStart, inventory_id: e.target.value})} style={inputStyle}>
+                      <option value="">-- Pilih Bibit --</option>
+                      {seedItems.map(item => <option key={item.id} value={item.id}>{item.name} (Stok: {item.stock})</option>)}
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label style={labelStyle}>Nama / tipe bibit</label>
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="Contoh: Benur Vannamei"
+                      value={formStart.seed_type} 
+                      onChange={e => setFormStart({...formStart, seed_type: e.target.value})} 
+                      style={inputStyle} 
+                    />
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <label style={labelStyle}>Jumlah tebar (ekor)</label>
+                    <input type="number" required value={formStart.seed_count} onChange={e => setFormStart({...formStart, seed_count: e.target.value})} style={inputStyle} />
+                  </div>
+                  {formStart.input_method === 'manual' && (
+                    <NumericInput 
+                      label="Total harga beli" 
+                      value={formStart.total_seed_cost} 
+                      onChange={v => setFormStart({...formStart, total_seed_cost: v})} 
+                      placeholder="0" 
+                      suffix="Rp"
+                      required
+                    />
+                  )}
                 </div>
+
+                <div>
+                  <label style={labelStyle}>Tanggal tebar</label>
+                  <input type="date" required value={formStart.seed_date} onChange={e => setFormStart({...formStart, seed_date: e.target.value})} style={inputStyle} />
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginTop: 12 }}>
-                    <button type="button" onClick={() => setModalType(null)} style={{ padding: '13px 0', border: '1.5px solid #E9F0EC', borderRadius: 12, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>Batal</button>
+                    <button type="button" onClick={() => setModalType(null)} style={{ padding: '13px 0', border: '1.5px solid #E9F0EC', borderRadius: 12, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#475569' }}>Batal</button>
                     <button type="submit" style={{ padding: '13px 0', border: 'none', borderRadius: 12, background: '#1B4332', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Mulai Siklus</button>
                 </div>
               </form>
@@ -514,7 +689,7 @@ export default function PondDetail() {
                   <input type="number" step="any" required value={formFeed.amount_kg} onChange={e => setFormFeed({...formFeed, amount_kg: e.target.value})} style={inputStyle} />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginTop: 12 }}>
-                    <button type="button" onClick={() => setModalType(null)} style={{ padding: '13px 0', border: '1.5px solid #E9F0EC', borderRadius: 12, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>Batal</button>
+                    <button type="button" onClick={() => setModalType(null)} style={{ padding: '13px 0', border: '1.5px solid #E9F0EC', borderRadius: 12, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#475569' }}>Batal</button>
                     <button type="submit" style={{ padding: '13px 0', border: 'none', borderRadius: 12, background: '#1B4332', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Simpan Aktivitas</button>
                 </div>
               </form>
@@ -533,7 +708,7 @@ export default function PondDetail() {
                   <textarea value={formHealth.treatment_note} onChange={e => setFormHealth({...formHealth, treatment_note: e.target.value})} style={{...inputStyle, height: 80, resize: 'none'}} placeholder="Contoh: Pemberian obat A, ganti air 30%..." />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginTop: 12 }}>
-                    <button type="button" onClick={() => setModalType(null)} style={{ padding: '13px 0', border: '1.5px solid #E9F0EC', borderRadius: 12, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>Batal</button>
+                    <button type="button" onClick={() => setModalType(null)} style={{ padding: '13px 0', border: '1.5px solid #E9F0EC', borderRadius: 12, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#475569' }}>Batal</button>
                     <button type="submit" style={{ padding: '13px 0', border: 'none', borderRadius: 12, background: '#EF4444', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Catat Kesehatan</button>
                 </div>
               </form>
@@ -548,17 +723,53 @@ export default function PondDetail() {
                     <option value="lainnya">Lain-lain</option>
                   </select>
                 </div>
-                <div>
-                  <label style={labelStyle}>Jumlah biaya (Rp)</label>
-                  <input type="number" required value={formExpense.amount} onChange={e => setFormExpense({...formExpense, amount: e.target.value})} style={inputStyle} placeholder="Contoh: 500000" />
-                </div>
+                <NumericInput 
+                  label="Jumlah biaya" 
+                  value={formExpense.amount} 
+                  onChange={v => setFormExpense({...formExpense, amount: v})} 
+                  placeholder="Contoh: 500.000" 
+                  suffix="Rp"
+                  required
+                />
                 <div>
                   <label style={labelStyle}>Catatan tambahan</label>
                   <textarea value={formExpense.notes} onChange={e => setFormExpense({...formExpense, notes: e.target.value})} style={{...inputStyle, height: 80, resize: 'none'}} placeholder="Contoh: Gaji bulan Mei untuk 2 orang..." />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginTop: 12 }}>
-                    <button type="button" onClick={() => setModalType(null)} style={{ padding: '13px 0', border: '1.5px solid #E9F0EC', borderRadius: 12, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>Batal</button>
+                    <button type="button" onClick={() => setModalType(null)} style={{ padding: '13px 0', border: '1.5px solid #E9F0EC', borderRadius: 12, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#475569' }}>Batal</button>
                     <button type="submit" style={{ padding: '13px 0', border: 'none', borderRadius: 12, background: '#1B4332', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Simpan Biaya</button>
+                </div>
+              </form>
+            ) : modalType === 'harvest' ? (
+              <form onSubmit={handleHarvest} style={{ padding: '24px 28px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ padding: '12px', background: '#FEE2E2', borderRadius: '12px', marginBottom: 8 }}>
+                  <p style={{ margin: 0, fontSize: 12, color: '#991B1B', fontWeight: 600 }}>Peringatan: Tindakan ini akan menutup siklus budidaya saat ini secara permanen.</p>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <NumericInput 
+                    label="Total Berat Panen" 
+                    value={formHarvest.weight_kg} 
+                    onChange={v => setFormHarvest({...formHarvest, weight_kg: v})} 
+                    placeholder="0" 
+                    suffix="Kg"
+                    required
+                  />
+                  <NumericInput 
+                    label="Harga per kg" 
+                    value={formHarvest.price_per_kg} 
+                    onChange={v => setFormHarvest({...formHarvest, price_per_kg: v})} 
+                    placeholder="0" 
+                    suffix="Rp"
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Catatan Panen</label>
+                  <textarea value={formHarvest.notes} onChange={e => setFormHarvest({...formHarvest, notes: e.target.value})} style={{...inputStyle, height: 80, resize: 'none'}} placeholder="Contoh: Panen total, ukuran merata..." />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginTop: 12 }}>
+                    <button type="button" onClick={() => setModalType(null)} style={{ padding: '13px 0', border: '1.5px solid #E9F0EC', borderRadius: 12, background: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#475569' }}>Batal</button>
+                    <button type="submit" style={{ padding: '13px 0', border: 'none', borderRadius: 12, background: '#EF4444', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Selesaikan Panen</button>
                 </div>
               </form>
             ) : null}

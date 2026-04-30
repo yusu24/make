@@ -86,7 +86,7 @@ class RetailFinanceController extends Controller
     }
 
     // PUT /api/retail/finance/expenses/{id}
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $tenant_id = Auth::user()->tenant_id;
         $expense = RetailExpense::where('id', $id)->where('tenant_id', $tenant_id)->first();
@@ -117,7 +117,7 @@ class RetailFinanceController extends Controller
     }
 
     // DELETE /api/retail/finance/expenses/{id}
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $tenant_id = Auth::user()->tenant_id;
         $expense = RetailExpense::where('id', $id)->where('tenant_id', $tenant_id)->first();

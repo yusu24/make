@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
+import { LoadingButton } from '../components/UXComponents'
 
 
 export default function UserManagement() {
@@ -67,7 +68,7 @@ export default function UserManagement() {
 
   const cardStyle = {
     background: '#fff', borderRadius: '24px', padding: '28px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #E9F0EC'
+    border: '1px solid #E9F0EC'
   }
   const badge = (bg, color) => ({
     padding: '4px 12px', borderRadius: '40px', fontSize: '11px', fontWeight: '800',
@@ -83,13 +84,9 @@ export default function UserManagement() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 className="aq-page-title">Manajemen pengguna</h1>
-          <p className="aq-body-text" style={{ marginTop: '4px' }}>Kelola tingkat akses personel dan pantau sesi aktif di seluruh fasilitas.</p>
+
         </div>
-        <button onClick={() => setShowModal(true)} style={{
-          display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 24px',
-          borderRadius: '12px', border: 'none', background: '#1B4332', color: '#fff',
-          fontWeight: '700', cursor: 'pointer', fontSize: '14px'
-        }}>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>person_add</span>
           Tambah Pengguna Baru
         </button>
@@ -98,15 +95,16 @@ export default function UserManagement() {
       {/* Stats */}
       <div className="aq-grid-4">
         {[
-          { label: 'TOTAL STAF',        val: stats.total,    sub: '+4 bulan ini',       subColor: '#059669', icon: 'groups',             iconBg: '#D1FAE5', iconColor: '#059669' },
-          { label: 'AKTIF SEKARANG',    val: stats.active,   sub: 'Di 12 tambak',       subColor: '#64748B', icon: 'sensors',            iconBg: '#D1FAE5', iconColor: '#059669' },
-          { label: 'MANAJER',           val: stats.managers, sub: 'Administrator Sistem',subColor: '#64748B', icon: 'admin_panel_settings',iconBg: '#F1F5F9', iconColor: '#64748B' },
-          { label: 'KESEHATAN KEAMANAN',val: `${stats.security}%`, sub: 'MFA diaktifkan', subColor: '#059669', icon: 'check_circle', iconBg: '#D1FAE5', iconColor: '#059669' },
+          { label: 'Total staf',         val: stats.total,    sub: '+4 bulan ini',       subColor: '#059669', icon: 'groups',             iconBg: '#D1FAE5', iconColor: '#059669' },
+          { label: 'Aktif sekarang',     val: stats.active,   sub: 'Di 12 tambak',       subColor: '#475569', icon: 'sensors',            iconBg: '#D1FAE5', iconColor: '#059669' },
+          { label: 'Manajer',            val: stats.managers, sub: 'Administrator Sistem',subColor: '#475569', icon: 'admin_panel_settings',iconBg: '#F1F5F9', iconColor: '#475569' },
+          { label: 'Kesehatan keamanan', val: `${stats.security}%`, sub: 'MFA diaktifkan', subColor: '#059669', icon: 'check_circle', iconBg: '#D1FAE5', iconColor: '#059669' },
         ].map((s, i) => (
           <div key={i} style={{ ...cardStyle, padding: '20px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-              <p className="aq-kpi-label">{s.label.toLowerCase()}</p>
+              <p className="aq-kpi-label">{s.label}</p>
               <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: s.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.iconColor }}>
+
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{s.icon}</span>
               </div>
             </div>
@@ -120,7 +118,7 @@ export default function UserManagement() {
       <div style={cardStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
           <div style={{ position: 'relative', width: '400px' }}>
-            <span className="material-symbols-outlined" style={{ position: 'absolute', left: '16px', top: '12px', color: '#94A3B8', fontSize: '20px' }}>search</span>
+            <span className="material-symbols-outlined" style={{ position: 'absolute', left: '16px', top: '12px', color: '#64748B', fontSize: '20px' }}>search</span>
             <input
               placeholder="Cari berdasarkan nama, email atau peran..."
               value={search}
@@ -129,18 +127,19 @@ export default function UserManagement() {
             />
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '12px', border: '1.5px solid #E9F0EC', background: '#fff', color: '#64748B', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+            <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>filter_list</span>Filter
             </button>
-            <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '12px', border: '1.5px solid #E9F0EC', background: '#fff', color: '#64748B', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+            <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>upload</span>Ekspor
             </button>
           </div>
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
-            <div style={{ width: 32, height: 32, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat data pengguna...</p>
           </div>
         ) : (
           <div className="aq-table-container">
@@ -154,7 +153,7 @@ export default function UserManagement() {
               </TableHeader>
               <TableBody>
                 {staff.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: '#94A3B8' }}>Belum ada staf terdaftar</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>Belum ada staf terdaftar</TableCell></TableRow>
                 ) : staff.map((u, i) => (
                   <TableRow key={u.id}>
                     <TableCell>
@@ -169,15 +168,15 @@ export default function UserManagement() {
                     </TableCell>
                     <TableCell>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: u.status === 'aktif' ? '#059669' : '#94A3B8' }}></span>
-                        <span style={{ fontSize: '12px', fontWeight: 600, color: u.status === 'aktif' ? '#059669' : '#94A3B8' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: u.status === 'aktif' ? '#059669' : '#64748B' }}></span>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: u.status === 'aktif' ? '#059669' : '#64748B' }}>
                           {u.status === 'aktif' ? 'Aktif' : 'Tidak aktif'}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell isSecondary>{u.position ?? '-'}</TableCell>
                     <TableCell>
-                      <button onClick={() => handleDelete(u.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}>
+                      <button onClick={() => handleDelete(u.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}>
                         <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>more_vert</span>
                       </button>
                     </TableCell>
@@ -190,21 +189,21 @@ export default function UserManagement() {
 
         {/* Pagination */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', paddingTop: '24px', borderTop: '1.5px solid #F1F5F9' }}>
-          <p style={{ fontSize: '13px', color: '#94A3B8' }}>Menampilkan {staff.length} dari {total} pengguna</p>
+          <p style={{ fontSize: '13px', color: '#64748B' }}>Menampilkan {staff.length} dari {total} pengguna</p>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-              style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E9F0EC', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', cursor: 'pointer' }}>
+              style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E9F0EC', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', cursor: 'pointer' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_left</span>
             </button>
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(p => (
               <button key={p} onClick={() => setPage(p)} style={{
                 width: '32px', height: '32px', borderRadius: '8px', border: 'none',
                 background: page === p ? '#1B4332' : 'transparent',
-                color: page === p ? '#fff' : '#64748B', fontWeight: '700', fontSize: '13px', cursor: 'pointer'
+                color: page === p ? '#fff' : '#475569', fontWeight: '700', fontSize: '13px', cursor: 'pointer'
               }}>{p}</button>
             ))}
             <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-              style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E9F0EC', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', cursor: 'pointer' }}>
+              style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E9F0EC', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', cursor: 'pointer' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
             </button>
           </div>
@@ -235,7 +234,7 @@ export default function UserManagement() {
                   <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{p.icon}</span>
                 </div>
                 <h4 className="aq-body-text" style={{ fontWeight: '800', color: '#1A1C1A', margin: '0 0 8px' }}>{p.title}</h4>
-                <p className="aq-small-text" style={{ color: '#64748B', lineHeight: '1.6', margin: 0 }}>{p.desc}</p>
+                <p className="aq-small-text" style={{ color: '#475569', lineHeight: '1.6', margin: 0 }}>{p.desc}</p>
               </div>
             ))}
           </div>
@@ -243,8 +242,8 @@ export default function UserManagement() {
 
         <div style={{ ...cardStyle, background: '#1B4332', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-            <h3 style={{ fontSize: '20px', fontWeight: '850', color: '#fff', margin: '0 0 16px', lineHeight: '1.3' }}>Butuh impor pengguna massal?</h3>
-            <p className="aq-body-text" style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', margin: 0 }}>Unggah file CSV untuk menambahkan beberapa staf sekaligus ke kluster fasilitas tertentu.</p>
+            <h3 className="aq-section-title aq-text-white" style={{ fontSize: '18px', margin: '0 0 16px' }}>Butuh impor pengguna massal?</h3>
+            <p className="aq-body-text aq-text-white-muted" style={{ lineHeight: '1.6', margin: 0 }}>Unggah file CSV untuk menambahkan beberapa staf sekaligus ke kluster fasilitas tertentu.</p>
           </div>
           <button style={{ marginTop: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '14px', borderRadius: '12px', border: 'none', background: '#059669', color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>upload_file</span>Unggah CSV pengguna
@@ -272,7 +271,7 @@ export default function UserManagement() {
                 </div>
                 <div>
                   <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>Tambah Staf Baru</h3>
-                  <p style={{ fontSize: 12, color: '#94A3B8', margin: 0, marginTop: 2 }}>Daftarkan personel baru ke dalam sistem</p>
+                  <p style={{ fontSize: 12, color: '#64748B', margin: 0, marginTop: 2 }}>Daftarkan personel baru ke dalam sistem</p>
                 </div>
               </div>
               <button
@@ -281,7 +280,7 @@ export default function UserManagement() {
                   width: 36, height: 36, borderRadius: 10,
                   background: '#F4F7F5', border: 'none',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: '#64748B',
+                  cursor: 'pointer', color: '#475569',
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
@@ -291,13 +290,13 @@ export default function UserManagement() {
             <form onSubmit={handleSubmit} style={{ padding: '24px 28px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {[['Nama Lengkap*', 'name', 'text'], ['Email', 'email', 'email'], ['No. Telepon', 'phone', 'text'], ['Posisi / Jabatan', 'position', 'text']].map(([lbl, key, type]) => (
                 <div key={key}>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', textTransform: 'capitalize', display: 'block', marginBottom: '6px' }}>{lbl}</label>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', textTransform: 'capitalize', display: 'block', marginBottom: '6px' }}>{lbl}</label>
                   <input type={type} required={key === 'name'} value={formData[key]} onChange={e => setFormData({ ...formData, [key]: e.target.value })}
                     style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #E9F0EC', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
               ))}
               <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', textTransform: 'capitalize', display: 'block', marginBottom: '6px' }}>Peran</label>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', textTransform: 'capitalize', display: 'block', marginBottom: '6px' }}>Peran</label>
                 <select value={formData.budidaya_role_id} onChange={e => setFormData({ ...formData, budidaya_role_id: e.target.value })}
                   style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #E9F0EC', borderRadius: '10px', fontSize: '14px', outline: 'none' }}>
                   <option value="">-- Pilih Peran --</option>
@@ -305,7 +304,7 @@ export default function UserManagement() {
                 </select>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px', marginTop: '8px' }}>
-                <button type="button" onClick={() => setShowModal(false)} style={{ padding: '12px', border: '1.5px solid #E9F0EC', borderRadius: '10px', background: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#64748B' }}>Batal</button>
+                <button type="button" onClick={() => setShowModal(false)} style={{ padding: '12px', border: '1.5px solid #E9F0EC', borderRadius: '10px', background: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#475569' }}>Batal</button>
                 <button type="submit" disabled={saving} style={{ padding: '12px', border: 'none', borderRadius: '10px', background: '#1B4332', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
                   {saving ? 'Menyimpan...' : 'Tambah Staf'}
                 </button>

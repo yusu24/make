@@ -55,7 +55,7 @@ export default function FeedCategories() {
       <div className="page-header" style={{ marginBottom: 32 }}>
         <div>
           <h2 className="page-title">Data Master: Kategori Pakan</h2>
-          <p className="page-sub">Klasifikasi jenis pakan untuk manajemen logistik farm yang lebih terukur.</p>
+
         </div>
       </div>
 
@@ -66,10 +66,18 @@ export default function FeedCategories() {
         <div style={{ padding: 20 }}>
           <form onSubmit={addCategory} style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
             <input name="name" className="form-input" placeholder="Misal: Pakan Protein Tinggi, Herbal..." required style={{flex: 1}}/>
-            <button type="submit" className="btn btn-primary">Tambah Kategori</button>
+            <button type="submit" className="btn btn-primary">
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
+              Tambah Kategori
+            </button>
           </form>
           
-          {loading ? <p>Memuat...</p> : (
+          {loading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '30vh', flexDirection: 'column', gap: 12 }}>
+              <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat kategori...</p>
+            </div>
+          ) : (
             <div className="aq-table-container">
               <Table>
                 <TableHeader>

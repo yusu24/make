@@ -1,38 +1,101 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { api } from '../../../lib/api'
+import { useNavigate } from 'react-router-dom'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 
+const fmt = (n) => 'Rp ' + (n || 0).toLocaleString('id-ID')
+const fmtNum = (n, dec = 0) => (n || 0).toFixed(dec)
 
 export default function Reports() {
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
+  const [kpi, setKpi] = useState(null)
+  const [fcrData, setFcrData] = useState([])
+  const [harvestData, setHarvestData] = useState([])
+  const [harvestSummary, setHarvestSummary] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true)
+        const [dashRes, pondRes, harvestRes] = await Promise.all([
+          api.get('/budidaya/dashboard/stats'),
+          api.get('/budidaya/reports/ponds'),
+          api.get('/budidaya/reports/harvest'),
+        ])
+        setKpi(dashRes.data.data)
+        setFcrData(pondRes.data.data.fcr || [])
+        setHarvestData(harvestRes.data.data.records || [])
+        setHarvestSummary(harvestRes.data.data.summary || null)
+      } catch (e) {
+        console.error(e)
+        setError('Gagal memuat data laporan.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
   const cardStyle = {
-    background: '#fff',
-    borderRadius: '24px',
-    padding: '20px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+    background: '#fff', borderRadius: '20px', padding: '20px',
     border: '1px solid #E9F0EC',
-    boxSizing: 'border-box',
-    width: '100%',
-    minWidth: 0,
-    overflow: 'hidden',
+    boxSizing: 'border-box', width: '100%', minWidth: 0,
   }
 
-  const badge = (bg, color) => ({
-    padding: '4px 12px',
-    borderRadius: '40px',
-    fontSize: '11px',
-    fontWeight: '800',
-    background: bg,
-    color: color,
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em'
-  })
+  const fcrBadge = (status) => {
+    const map = {
+      sehat:   { bg: '#D1FAE5', color: '#059669' },
+      moderat: { bg: '#FEF3C7', color: '#D97706' },
+      kritis:  { bg: '#FEE2E2', color: '#EF4444' },
+      kosong:  { bg: '#F1F5F9', color: '#64748B' },
+    }
+    return map[status] || map.kosong
+  }
 
-  const harvestBars = [
-    { label: 'K-01', val: 0.72, color: '#C1F2D8' },
-    { label: 'K-02', val: 0.55, color: '#C1F2D8' },
-    { label: 'K-03', val: 0.88, color: '#1B4332' },
-    { label: 'K-04', val: 0.40, color: '#C1F2D8' },
-    { label: 'K-05', val: 0.65, color: '#C1F2D8' },
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
+      <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Menganalisis data laporan...</p>
+    </div>
+  )
+
+  if (error) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
+      <span className="material-symbols-outlined" style={{ fontSize: 48, color: '#EF4444' }}>error</span>
+      <p style={{ color: '#EF4444', fontWeight: 600 }}>{error}</p>
+    </div>
+  )
+
+  const kpiCards = [
+    {
+      label: 'Total pendapatan',
+      value: fmt(harvestSummary?.total_revenue),
+      icon: 'payments', bg: '#E8F5ED', color: '#1B4332',
+      sub: `${harvestSummary?.total_harvests || 0} siklus panen`
+    },
+    {
+      label: 'Keuntungan bersih',
+      value: fmt(harvestSummary?.total_profit),
+      icon: 'trending_up',
+      bg: harvestSummary?.total_profit >= 0 ? '#D1FAE5' : '#FEE2E2',
+      color: harvestSummary?.total_profit >= 0 ? '#059669' : '#EF4444',
+      sub: `Modal: ${fmt(harvestSummary?.total_cost)}`
+    },
+    {
+      label: 'Rata-rata FCR',
+      value: harvestSummary?.avg_fcr != null ? fmtNum(harvestSummary.avg_fcr, 2) : '-',
+      icon: 'monitoring', bg: '#FEF3C7', color: '#D97706',
+      sub: harvestSummary?.avg_fcr != null ? (harvestSummary.avg_fcr <= 1.3 ? '✓ Efisiensi tinggi' : 'Target: ≤ 1.30') : 'Belum ada data'
+    },
+    {
+      label: 'Total berat panen',
+      value: `${fmtNum(harvestSummary?.total_weight_kg, 1)} kg`,
+      icon: 'scale', bg: '#E0E7FF', color: '#4F46E5',
+      sub: `${harvestSummary?.total_harvests || 0} catatan panen`
+    },
   ]
 
   return (
@@ -41,205 +104,167 @@ export default function Reports() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 className="aq-page-title" style={{ fontSize: '28px' }}>Laporan &amp; analisa</h1>
-          <p className="aq-body-text" style={{ marginTop: '8px', maxWidth: '500px', lineHeight: '1.5' }}>
-            Visualisasi mendalam untuk performa kolam dan tren kualitas air untuk mendukung keputusan operasional harian.
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button style={{
-            display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px',
-            borderRadius: '12px', border: '1.5px solid #1B4332', background: '#fff',
-            color: '#1B4332', fontWeight: '700', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap'
-          }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span>
-            Ekspor PDF
-          </button>
-          <button style={{
-            display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px',
-            borderRadius: '12px', border: 'none', background: '#1B4332',
-            color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap'
-          }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>calendar_today</span>
-            30 Hari Terakhir
-          </button>
+          <h1 className="aq-page-title">Laporan & analisa</h1>
+          <p className="aq-kpi-label" style={{ marginTop: 4 }}>Ringkasan kinerja budidaya dari seluruh data tersimpan</p>
         </div>
       </div>
 
-      {/* Top Row: SVG Chart + FCR KPI */}
-      <div className="aq-reports-top">
-        {/* Tren Kualitas Air */}
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-            <div>
-              <h3 className="aq-section-title">Tren kualitas air</h3>
-              <p className="aq-kpi-label" style={{ marginTop: '4px' }}>Parameter: Oksigen terlarut (DO)</p>
+      {/* KPI Cards */}
+      <div className="aq-grid-4">
+        {kpiCards.map((card, i) => (
+          <div key={i} style={{ ...cardStyle, padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: card.color }}>{card.icon}</span>
+              </div>
+              <p className="aq-kpi-label">{card.label}</p>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <span style={badge('#D1FAE5', '#059669')}>● Kolam A</span>
-              <span style={badge('#F1F5F9', '#64748B')}>● Kolam B</span>
-            </div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#1A1C1A', lineHeight: 1.2 }}>{card.value}</div>
+            <p style={{ fontSize: 11, color: '#64748B', marginTop: 6, fontWeight: 500 }}>{card.sub}</p>
           </div>
+        ))}
+      </div>
 
-          <div style={{ position: 'relative' }}>
-            <svg width="100%" height="180" viewBox="0 0 800 200" preserveAspectRatio="none">
-              <line x1="0" y1="200" x2="800" y2="200" stroke="#E9F0EC" strokeWidth="1" />
-              <line x1="0" y1="133" x2="800" y2="133" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="0" y1="67" x2="800" y2="67" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="4 4" />
-              <defs>
-                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1B4332" stopOpacity="0.12" />
-                  <stop offset="100%" stopColor="#1B4332" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M0,150 C100,150 150,120 200,120 C250,120 300,70 400,70 C500,70 550,175 600,175 C650,175 700,90 800,90 L800,200 L0,200 Z"
-                fill="url(#chartGradient)"
-              />
-              <path
-                d="M0,150 C100,150 150,120 200,120 C250,120 300,70 400,70 C500,70 550,175 600,175 C650,175 700,90 800,90"
-                fill="none" stroke="#1B4332" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-              />
-              <path
-                d="M0,175 C100,175 150,165 200,165 C250,165 300,130 400,130 C500,130 550,190 600,190 C650,190 700,150 800,150"
-                fill="none" stroke="#94A3B8" strokeWidth="2.5" strokeDasharray="6,6" strokeLinecap="round"
-              />
-            </svg>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px' }}>
-              {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map(day => (
-                <span key={day} style={{ fontSize: '11px', fontWeight: '700', color: '#94A3B8' }}>{day}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* FCR KPI Card */}
-        <div style={{ ...cardStyle, background: '#1B4332', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      {/* FCR Table — Active Cycles */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>monitoring</span>
-              </div>
-              <span className="aq-kpi-label" style={{ color: '#fff', opacity: 0.8 }}>Target: 1.2</span>
-            </div>
-
-            <div style={{ marginTop: '24px' }}>
-              <p className="aq-body-text" style={{ color: '#fff', fontWeight: 700, opacity: 0.9 }}>Rata-rata fcr</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '8px' }}>
-                <h2 className="aq-kpi-value" style={{ fontSize: '44px', color: '#fff' }}>1.42</h2>
-                <span className="aq-small-text" style={{ fontWeight: '600', color: '#6EE7B7' }}>+0.05 vs bln lalu</span>
-              </div>
-            </div>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>Konversi pakan (FCR) — siklus aktif</h3>
+            <p className="aq-kpi-label" style={{ marginTop: 4 }}>Feed Conversion Ratio per kolam yang sedang berjalan</p>
           </div>
-
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginTop: '28px' }}>
-            <p className="aq-kpi-label" style={{ color: '#fff', opacity: 0.8, marginBottom: '16px' }}>Efisiensi pakan per kolam</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {[
-                { label: 'Kolam A', val: '82%', color: '#6EE7B7' },
-                { label: 'Kolam B', val: '65%', color: '#EF4444' },
-              ].map(bar => (
-                <div key={bar.label}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '700', marginBottom: '6px' }}>
-                    <span>{bar.label}</span><span>{bar.val}</span>
-                  </div>
-                  <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px' }}>
-                    <div style={{ width: bar.val, height: '100%', background: bar.color, borderRadius: '3px' }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Row: Bar Chart + FCR Table */}
-      <div className="aq-reports-bottom">
-
-        {/* Estimasi Hasil Panen */}
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-            <h3 style={{ fontSize: '17px', fontWeight: '800', color: '#1A1C1A', margin: 0 }}>Estimasi hasil panen (Ton)</h3>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px',
-              background: '#F1F5F9', borderRadius: '10px', fontSize: '12px', fontWeight: '700', color: '#64748B', cursor: 'pointer'
-            }}>
-              Semua kolam
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>expand_more</span>
-            </div>
-          </div>
-
-          {/* Bar chart with real heights */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '160px', padding: '0 4px', boxSizing: 'border-box', overflow: 'hidden' }}>
-            {harvestBars.map((item, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: '9px', fontWeight: '700', color: item.color === '#1B4332' ? '#1B4332' : '#94A3B8', whiteSpace: 'nowrap' }}>
-                  {(item.val * 2).toFixed(1)}T
-                </span>
-                <div style={{
-                  width: '100%',
-                  height: `${Math.round(item.val * 120)}px`,
-                  background: item.color,
-                  borderRadius: '6px 6px 3px 3px',
-                  boxShadow: item.color === '#1B4332' ? '0 4px 12px rgba(27,67,50,0.3)' : 'none',
-                  minHeight: '12px',
-                }}></div>
-                <span style={{ fontSize: '10px', fontWeight: '700', color: '#64748B', whiteSpace: 'nowrap' }}>{item.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Legend */}
-          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #F1F5F9' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1B4332' }}></div>
-              <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>Tertinggi</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#C1F2D8' }}></div>
-              <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>Lainnya</span>
-            </div>
-          </div>
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#64748B', background: '#F1F5F9', borderRadius: 8, padding: '4px 10px' }}>
+            {fcrData.length} kolam aktif
+          </span>
         </div>
 
-        {/* FCR Table */}
-        <div style={cardStyle}>
-          <h3 className="aq-section-title" style={{ fontSize: '17px', marginBottom: '20px' }}>Ringkasan konversi pakan (FCR)</h3>
-
-          <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '12px', border: '1px solid #E9F0EC' }}>
+        {fcrData.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px', background: '#F8FAFC', borderRadius: 16, border: '1px dashed #E2E8F0' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#CBD5E1' }}>monitoring</span>
+            <p style={{ color: '#64748B', fontSize: 14, marginTop: 12 }}>Belum ada siklus aktif dengan data pakan.</p>
+          </div>
+        ) : (
+          <div className="aq-table-container">
             <Table>
               <TableHeader>
                 <TableRow isHoverable={false}>
                   <TableHeaderCell>Nama kolam</TableHeaderCell>
-                  <TableHeaderCell>Pakan (kg)</TableHeaderCell>
+                  <TableHeaderCell>Total pakan (kg)</TableHeaderCell>
                   <TableHeaderCell>Biomassa (kg)</TableHeaderCell>
                   <TableHeaderCell>FCR</TableHeaderCell>
                   <TableHeaderCell>Status</TableHeaderCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[
-                  { name: 'Kolam A-01', pakan: '1,250', biomas: '980',   fcr: '1.28', status: 'Sehat',   bg: '#D1FAE5', color: '#059669' },
-                  { name: 'Kolam B-04', pakan: '2,400', biomas: '1,530', fcr: '1.56', status: 'Kritis',  bg: '#FEE2E2', color: '#EF4444' },
-                  { name: 'Kolam C-02', pakan: '1,800', biomas: '1,350', fcr: '1.33', status: 'Moderat', bg: '#F1F5F9', color: '#64748B' },
-                  { name: 'Kolam D-01', pakan: '3,100', biomas: '2,600', fcr: '1.19', status: 'Sehat',   bg: '#D1FAE5', color: '#059669' }
-                ].map((row, i) => (
-                  <TableRow key={i}>
-                    <TableCell style={{ fontWeight: '700', color: '#1B4332' }}>{row.name}</TableCell>
-                    <TableCell isSecondary>{row.pakan}</TableCell>
-                    <TableCell isSecondary>{row.biomas}</TableCell>
-                    <TableCell style={{ fontWeight: '800', color: '#1A1C1A' }}>{row.fcr}</TableCell>
-                    <TableCell>
-                      <span style={badge(row.bg, row.color)}>{row.status}</span>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {fcrData.map((row, i) => {
+                  const badge = fcrBadge(row.status)
+                  return (
+                    <TableRow key={i}>
+                      <TableCell style={{ fontWeight: 700, color: '#1B4332' }}>{row.pond_name}</TableCell>
+                      <TableCell isSecondary>{fmtNum(row.total_feed, 1)}</TableCell>
+                      <TableCell isSecondary>{fmtNum(row.biomass_kg, 1)}</TableCell>
+                      <TableCell style={{ fontWeight: 800, color: '#1A1C1A' }}>
+                        {row.fcr != null ? fmtNum(row.fcr, 2) : '—'}
+                      </TableCell>
+                      <TableCell>
+                        <span style={{ padding: '4px 10px', borderRadius: 30, fontSize: 11, fontWeight: 700, background: badge.bg, color: badge.color, textTransform: 'capitalize' }}>
+                          {row.status}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
+        )}
+      </div>
+
+      {/* Harvest History Table */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>Riwayat panen</h3>
+            <p className="aq-kpi-label" style={{ marginTop: 4 }}>Semua siklus yang telah selesai dipanen</p>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#64748B', background: '#F1F5F9', borderRadius: 8, padding: '4px 10px' }}>
+            {harvestData.length} catatan
+          </span>
         </div>
 
+        {harvestData.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px', background: '#F8FAFC', borderRadius: 16, border: '1px dashed #E2E8F0' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#CBD5E1' }}>agriculture</span>
+            <p style={{ color: '#64748B', fontSize: 14, marginTop: 12 }}>Belum ada data panen yang tercatat.</p>
+            <p style={{ color: '#94A3B8', fontSize: 12, marginTop: 4 }}>Catatan panen akan muncul setelah Anda menyelesaikan satu siklus budidaya.</p>
+          </div>
+        ) : (
+          <div className="aq-table-container">
+            <Table>
+              <TableHeader>
+                <TableRow isHoverable={false}>
+                  <TableHeaderCell>Kolam</TableHeaderCell>
+                  <TableHeaderCell>Jenis ikan</TableHeaderCell>
+                  <TableHeaderCell>Tgl. Panen</TableHeaderCell>
+                  <TableHeaderCell>Berat (kg)</TableHeaderCell>
+                  <TableHeaderCell>Harga/kg</TableHeaderCell>
+                  <TableHeaderCell>Pendapatan</TableHeaderCell>
+                  <TableHeaderCell>Keuntungan</TableHeaderCell>
+                  <TableHeaderCell>FCR</TableHeaderCell>
+                  <TableHeaderCell>Survival</TableHeaderCell>
+                  <TableHeaderCell style={{ textAlign: 'right' }}>Detail</TableHeaderCell>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {harvestData.map((row, i) => {
+                  const isProfit = row.net_profit >= 0
+                  return (
+                    <TableRow key={i}>
+                      <TableCell style={{ fontWeight: 700, color: '#1B4332' }}>{row.pond_name}</TableCell>
+                      <TableCell isSecondary style={{ textTransform: 'capitalize' }}>{row.fish_type}</TableCell>
+                      <TableCell isSecondary>{row.harvest_date ? new Date(row.harvest_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</TableCell>
+                      <TableCell>{fmtNum(row.weight_kg, 1)}</TableCell>
+                      <TableCell isSecondary>Rp {(row.price_per_kg || 0).toLocaleString('id-ID')}</TableCell>
+                      <TableCell style={{ fontWeight: 700, color: '#1B4332' }}>
+                        {fmt(row.total_revenue)}
+                      </TableCell>
+                      <TableCell style={{ fontWeight: 700, color: isProfit ? '#059669' : '#EF4444' }}>
+                        {isProfit ? '+' : ''}{fmt(row.net_profit)}
+                      </TableCell>
+                      <TableCell>
+                        {row.fcr != null ? (
+                          <span style={{
+                            padding: '3px 8px', borderRadius: 30, fontSize: 11, fontWeight: 700,
+                            background: row.fcr <= 1.3 ? '#D1FAE5' : row.fcr <= 1.6 ? '#FEF3C7' : '#FEE2E2',
+                            color: row.fcr <= 1.3 ? '#059669' : row.fcr <= 1.6 ? '#D97706' : '#EF4444'
+                          }}>
+                            {fmtNum(row.fcr, 2)}
+                          </span>
+                        ) : '—'}
+                      </TableCell>
+                      <TableCell isSecondary>
+                        {row.survival_rate != null ? `${fmtNum(row.survival_rate, 1)}%` : '—'}
+                      </TableCell>
+                      <TableCell style={{ textAlign: 'right' }}>
+                        <button
+                          onClick={() => navigate(`/budidaya/cycles/${row.cycle_id}`)}
+                          title="Lihat detail siklus"
+                          style={{
+                            width: 32, height: 32, borderRadius: 8,
+                            border: '1.5px solid #E9F0EC', background: '#fff',
+                            color: '#1B4332', cursor: 'pointer',
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>open_in_new</span>
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
 
     </div>

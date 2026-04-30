@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import '../budidaya.css'
+import { LoadingButton } from '../components/UXComponents'
 
 const DEFAULT_PERMISSIONS = {
   lihat_laporan:    { label: 'Lihat Laporan',    desc: 'Akses semua bagan kinerja',         category: 'Data & Analitik' },
@@ -107,13 +108,14 @@ export default function RolesPermissions() {
 
   const cardStyle = {
     background: '#fff', borderRadius: '24px', padding: '28px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #E9F0EC'
+    background: '#fff', borderRadius: '20px', padding: '20px',
+    border: '1px solid #E9F0EC'
   }
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
       <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <p style={{ color: '#64748B', fontSize: 13 }}>Memuat data peran...</p>
+      <p style={{ color: '#475569', fontSize: 13 }}>Memuat data peran...</p>
     </div>
   )
 
@@ -124,15 +126,9 @@ export default function RolesPermissions() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 className="aq-page-title">Peran & izin</h1>
-          <p className="aq-body-text" style={{ marginTop: '8px', maxWidth: '580px', lineHeight: '1.5' }}>
-            Konfigurasi tingkat akses administratif dan tentukan izin fitur khusus untuk anggota tim Anda di seluruh ekosistem akuakultur.
-          </p>
+
         </div>
-        <button onClick={() => setShowNewModal(true)} style={{
-          display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 24px',
-          borderRadius: '12px', border: 'none', background: '#1B4332', color: '#fff',
-          fontWeight: '700', cursor: 'pointer', fontSize: '14px'
-        }}>
+        <button className="btn btn-primary" onClick={() => setShowNewModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_moderator</span>
           Buat Peran Baru
         </button>
@@ -152,7 +148,7 @@ export default function RolesPermissions() {
               position: 'relative',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: isActive ? '#1B4332' : '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isActive ? '#fff' : '#64748B' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: isActive ? '#1B4332' : '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isActive ? '#fff' : '#475569' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>{role.is_system ? 'admin_panel_settings' : 'manage_accounts'}</span>
                 </div>
                 {role.is_system && (
@@ -193,7 +189,7 @@ export default function RolesPermissions() {
               </p>
             </div>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <button onClick={() => selectRole(activeRole)} style={{ background: 'none', border: 'none', color: '#64748B', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
+              <button onClick={() => selectRole(activeRole)} style={{ background: 'none', border: 'none', color: '#475569', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
                 Batalkan perubahan
               </button>
               <button onClick={handleSave} disabled={saving} style={{
@@ -216,7 +212,7 @@ export default function RolesPermissions() {
                       <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div>
                           <p style={{ fontSize: '14px', fontWeight: '700', color: '#1A1C1A', margin: 0 }}>{meta.label}</p>
-                          <p style={{ fontSize: '12px', color: '#94A3B8', marginTop: '2px' }}>{meta.desc}</p>
+                          <p style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{meta.desc}</p>
                         </div>
                         <div
                           onClick={() => togglePermission(key)}
@@ -260,7 +256,7 @@ export default function RolesPermissions() {
             <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#1A1C1A', margin: '0 0 24px' }}>Buat peran baru</h3>
             <form onSubmit={handleCreateRole} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>Nama peran</label>
+                <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>Nama peran</label>
                 <input
                   required value={newRoleName} onChange={e => setNewRoleName(e.target.value)}
                   placeholder="Contoh: Teknisi kolam"
@@ -268,8 +264,8 @@ export default function RolesPermissions() {
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px' }}>
-                <button type="button" onClick={() => setShowNewModal(false)} style={{ padding: '12px', border: '1.5px solid #E9F0EC', borderRadius: '10px', background: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#64748B' }}>Batal</button>
-                <button type="submit" style={{ padding: '12px', border: 'none', borderRadius: '10px', background: '#1B4332', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Buat Peran</button>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowNewModal(false)}>Batal</button>
+                <LoadingButton loading={loading} type="submit" className="btn btn-primary">Buat Peran</LoadingButton>
               </div>
             </form>
           </div>

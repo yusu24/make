@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
+import { LoadingButton, EmptyState, Breadcrumbs } from '../components/UXComponents'
 
 // ── Colour helpers ──────────────────────────────────────────────────────────
 const STATUS = {
   healthy: { label: 'SEHAT', bg: '#1B4332',  text: '#fff' },
   warning: { label: 'PERINGATAN', bg: '#EF4444',  text: '#fff' },
-  kosong:  { label: 'KOSONG',   bg: '#94A3B8',  text: '#fff' },
+  kosong:  { label: 'KOSONG',   bg: '#64748B',  text: '#fff' },
 }
 
 
@@ -16,7 +17,7 @@ const STATS = [
   { label: 'RATA-RATA PH', value: '7.2', sub: 'Optimal',   subColor: '#10B981', bar: 0.72, barColor: '#10B981' },
   { label: 'SUHU AIR',    value: '28.4°C', sub: '+0.2%',  subColor: '#10B981', bar: 0.60, barColor: '#10B981' },
   { label: 'OKSIGEN TERLARUT',  value: '6.5 mg/L', sub: '-2.1%',subColor: '#EF4444', bar: 0.45, barColor: '#EF4444' },
-  { label: 'TOTAL PAKAN HARI INI', value: '124.5 kg', sub: '',  subColor: '#64748B', bar: 0.80, barColor: '#1B4332' },
+  { label: 'TOTAL PAKAN HARI INI', value: '124.5 kg', sub: '',  subColor: '#475569', bar: 0.80, barColor: '#1B4332' },
 ]
 
 // ── Card style ─────────────────────────────────────────────────────────────
@@ -25,7 +26,6 @@ const card = {
   border: '1px solid #E9F0EC',
   borderRadius: 16,
   overflow: 'hidden',
-  boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
 }
 
 import { useNavigate } from 'react-router-dom'
@@ -149,7 +149,7 @@ export default function Ponds() {
                     Usia: {pond.age_days} hari • Populasi: {(pond.population || 0).toLocaleString()} ekor
                   </p>
                 </div>
-                <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: 4 }}>
+                <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: 4 }}>
                   <span className="material-symbols-outlined" style={{ fontSize: 18 }}>more_vert</span>
                 </button>
               </div>
@@ -216,7 +216,7 @@ export default function Ponds() {
           <span className="material-symbols-outlined" style={{ fontSize: 28, color: '#1B4332' }}>add</span>
         </div>
         <p style={{ fontSize: 14, fontWeight: 600, color: '#1B4332', margin: 0 }}>Kolam Baru</p>
-        <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>Tambah kolam baru</p>
+        <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>Tambah kolam baru</p>
       </div>
     </div>
   )
@@ -254,7 +254,7 @@ export default function Ponds() {
                   </span>
                 </TableCell>
                 <TableCell>
-                  <button style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}>
+                  <button style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer' }}>
                     <span className="material-symbols-outlined" style={{ fontSize: 18 }}>more_vert</span>
                   </button>
                 </TableCell>
@@ -269,11 +269,12 @@ export default function Ponds() {
   return (
     <div className="aq-container">
 
+
       {/* ── Page Header ── */}
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 className="aq-page-title">Manajemen kolam</h1>
-          <p className="aq-body-text" style={{ marginTop: 4 }}>Memantau {filtered.length} lingkungan perairan aktif</p>
+
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', justifyContent: 'space-between' }}>
           {/* Grid / Table Toggle */}
@@ -287,7 +288,7 @@ export default function Ponds() {
                   padding: '7px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
                   fontSize: 13, fontWeight: 600,
                   background: view === v ? '#1B4332' : 'transparent',
-                  color: view === v ? '#fff' : '#94A3B8',
+                  color: view === v ? '#fff' : '#64748B',
                   transition: 'all 0.15s',
                 }}
               >
@@ -296,37 +297,49 @@ export default function Ponds() {
               </button>
             ))}
           </div>
-          <button 
-            onClick={() => setModalOpen(true)}
-            style={{
-              padding: '10px 16px', borderRadius: 10, background: '#1B4332', color: '#fff',
-              border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
-            }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
-            Tambah Kolam
-          </button>
+        <button className="btn btn-primary" onClick={() => setModalOpen(true)}>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
+          Tambah Kolam
+        </button>
+      </div>
+    </div>
+
+      {/* ── Content ── */}
+      {loading ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
+          <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat data kolam...</p>
         </div>
-      </div>
-
-      {/* ── Stat Bar ── */}
-      <div className="aq-grid-4">
-        {STATS.map(s => (
-          <div key={s.label} style={{ ...card, padding: '16px 20px' }}>
-            <p className="aq-kpi-label">{s.label.toLowerCase()}</p>
-            <p className="aq-kpi-value" style={{ fontSize: 24 }}>
-              {s.value}
-              {s.sub && <span className="aq-small-text" style={{ fontWeight: 600, color: s.subColor, marginLeft: 6 }}>{s.sub}</span>}
-            </p>
-            <div style={{ height: 4, background: '#F1F5F9', borderRadius: 2, marginTop: 8 }}>
-              <div style={{ height: 4, width: `${s.bar * 100}%`, background: s.barColor, borderRadius: 2 }} />
-            </div>
+      ) : ponds.length === 0 ? (
+        <EmptyState 
+          icon="water_drop"
+          title="Belum ada kolam"
+          description="Daftarkan kolam pertama Anda untuk mulai memantau siklus budidaya."
+          onAction={() => setModalOpen(true)}
+          actionLabel="Tambah Kolam Sekarang"
+        />
+      ) : (
+        <>
+          <div className="aq-grid-4">
+            {STATS.map(s => (
+              <div key={s.label} style={{ ...card, padding: '16px 20px' }}>
+                <p className="aq-kpi-label">{s.label.toLowerCase()}</p>
+                <p className="aq-kpi-value" style={{ fontSize: 24 }}>
+                  {s.value}
+                  {s.sub && <span className="aq-small-text" style={{ fontWeight: 600, color: s.subColor, marginLeft: 6 }}>{s.sub}</span>}
+                </p>
+                <div style={{ height: 4, background: '#F1F5F9', borderRadius: 2, marginTop: 8 }}>
+                  <div style={{ height: 4, width: `${s.bar * 100}%`, background: s.barColor, borderRadius: 2 }} />
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* ── Content View ── */}
-      {view === 'grid' ? renderGridView() : renderTableView()}
+          <div style={{ marginTop: 24 }}>
+            {view === 'grid' ? renderGridView() : renderTableView()}
+          </div>
+        </>
+      )}
 
       {/* ── FAB ── */}
       <button
@@ -386,7 +399,7 @@ export default function Ponds() {
                 </div>
                 <div>
                   <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>Tambah Kolam Baru</h3>
-                  <p style={{ fontSize: 12, color: '#94A3B8', margin: 0, marginTop: 2 }}>Isi data kolam untuk mulai memantau</p>
+                  <p style={{ fontSize: 12, color: '#64748B', margin: 0, marginTop: 2 }}>Isi data kolam untuk mulai memantau</p>
                 </div>
               </div>
               <button
@@ -395,7 +408,7 @@ export default function Ponds() {
                   width: 36, height: 36, borderRadius: 10,
                   background: '#F4F7F5', border: 'none',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: '#64748B',
+                  cursor: 'pointer', color: '#475569',
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
@@ -418,7 +431,7 @@ export default function Ponds() {
                   <div key={key} style={key === 'name' ? { gridColumn: '1 / -1' } : {}}>
                     <label style={{
                       fontSize: 12, fontWeight: 700,
-                      color: '#64748B',
+                      color: '#475569',
                       textTransform: 'capitalize',
                       display: 'block', marginBottom: 6,
                     }}>
@@ -457,7 +470,7 @@ export default function Ponds() {
 
               {/* Tipe Kolam */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'capitalize', display: 'block', marginBottom: 6 }}>Jenis kolam</label>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'capitalize', display: 'block', marginBottom: 6 }}>Jenis kolam</label>
                 <div style={{ display: 'flex', gap: 10 }}>
                   {[['tanah', 'Tanah'], ['beton', 'Beton'], ['terpal', 'Terpal']].map(([val, lbl]) => (
                     <button
@@ -467,7 +480,7 @@ export default function Ponds() {
                         flex: 1, padding: '10px 0', borderRadius: 12,
                         border: formData.type === val ? '2px solid #1B4332' : '1.5px solid #E9F0EC',
                         background: formData.type === val ? '#D8F3DC' : '#F8FAFC',
-                        color: formData.type === val ? '#1B4332' : '#64748B',
+                        color: formData.type === val ? '#1B4332' : '#475569',
                         fontWeight: 700, fontSize: 13, cursor: 'pointer',
                         transition: 'all 0.15s',
                       }}
@@ -487,31 +500,18 @@ export default function Ponds() {
                   style={{
                     padding: '13px 0', border: '1.5px solid #E9F0EC',
                     borderRadius: 12, background: '#fff',
-                    fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B',
+                    fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#475569',
                   }}
                 >
                   Batal
                 </button>
-                <button
-                  type="submit" disabled={saving}
-                  style={{
-                    padding: '13px 0', border: 'none',
-                    borderRadius: 12, background: '#1B4332',
-                    color: '#fff', fontSize: 14, fontWeight: 700,
-                    cursor: saving ? 'not-allowed' : 'pointer',
-                    opacity: saving ? 0.75 : 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  }}
+                <LoadingButton
+                  type="submit"
+                  loading={saving}
                 >
-                  {saving ? (
-                    <>
-                      <div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    <><span className="material-symbols-outlined" style={{ fontSize: 18 }}>water_drop</span>Daftarkan Kolam</>
-                  )}
-                </button>
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>water_drop</span>
+                  Daftarkan Kolam
+                </LoadingButton>
               </div>
             </form>
           </div>

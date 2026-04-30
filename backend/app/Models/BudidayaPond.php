@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasTenant;
 
 class BudidayaPond extends Model
 {
+    use HasTenant;
+
     protected $guarded = [];
 
     public function cycles()

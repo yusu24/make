@@ -54,7 +54,7 @@ export default function FeedUnits() {
       <div className="page-header" style={{ marginBottom: 32 }}>
         <div>
           <h2 className="aq-page-title">Data master: Satuan pakan</h2>
-          <p className="aq-body-text" style={{ marginTop: 4 }}>Kelola unit pengukuran stok pakan untuk akurasi pencatatan logistik.</p>
+
         </div>
       </div>
 
@@ -65,10 +65,18 @@ export default function FeedUnits() {
         <div style={{ padding: 20 }}>
           <form onSubmit={addUnit} style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
             <input name="name" className="form-input" placeholder="Masukkan nama satuan baru..." required style={{flex: 1}}/>
-            <button type="submit" className="btn btn-primary">Tambah Satuan</button>
+            <button type="submit" className="btn btn-primary">
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
+              Tambah Satuan
+            </button>
           </form>
           
-          {loading ? <p className="aq-body-text">Memuat...</p> : (
+          {loading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '30vh', flexDirection: 'column', gap: 12 }}>
+              <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat data satuan...</p>
+            </div>
+          ) : (
             <div className="aq-table-container">
               <Table>
                 <TableHeader>

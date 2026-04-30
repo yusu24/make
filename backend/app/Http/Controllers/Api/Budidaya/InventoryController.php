@@ -12,11 +12,11 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $category = $request->query('category');
         $search = $request->query('search');
+        $perPage = $request->query('per_page', 15);
 
-        $query = BudidayaInventory::where('tenant_id', $tenantId);
+        $query = BudidayaInventory::query();
 
         if ($category && $category !== 'Semua') {
             $query->where('category', strtolower($category));
@@ -26,14 +26,13 @@ class InventoryController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
-        $items = $query->orderBy('name')->get();
+        $items = $query->orderBy('name')->paginate($perPage);
 
-        return response()->json(['data' => $items]);
+        return response()->json($items);
     }
 
     public function store(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $validated = $request->validate([
             'name' => 'required|string',
             'category' => 'required|string',
@@ -44,6 +43,7 @@ class InventoryController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $item = BudidayaInventory::create(array_merge($validated, ['tenant_id' => $tenantId]));
 
         // Log initial stock
@@ -62,8 +62,7 @@ class InventoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $item = BudidayaInventory::where('tenant_id', $tenantId)->findOrFail($id);
+        $item = BudidayaInventory::findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string',
@@ -81,8 +80,7 @@ class InventoryController extends Controller
 
     public function updateStock(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $item = BudidayaInventory::where('tenant_id', $tenantId)->findOrFail($id);
+        $item = BudidayaInventory::findOrFail($id);
 
         $validated = $request->validate([
             'type' => 'required|in:in,out',
@@ -111,8 +109,7 @@ class InventoryController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $item = BudidayaInventory::where('tenant_id', $tenantId)->findOrFail($id);
+        $item = BudidayaInventory::findOrFail($id);
         $item->delete();
 
         return response()->json(['message' => 'Barang berhasil dihapus']);
@@ -120,10 +117,10 @@ class InventoryController extends Controller
 
     public function logs(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $item = BudidayaInventory::where('tenant_id', $tenantId)->findOrFail($id);
-        $logs = $item->logs()->orderBy('transaction_date', 'desc')->get();
+        $perPage = $request->query('per_page', 15);
+        $item = BudidayaInventory::findOrFail($id);
+        $logs = $item->logs()->orderBy('transaction_date', 'desc')->paginate($perPage);
 
-        return response()->json(['data' => $logs]);
+        return response()->json($logs);
     }
 }

@@ -21,13 +21,13 @@ class RetailMasterController extends Controller
         return response()->json($cat);
     }
     
-    public function updateCategory(Request $request, $id) {
+    public function updateCategory(Request $request, int $id) {
         $cat = RetailCategory::findOrFail($id);
         $cat->update(['name' => $request->name]);
         return response()->json($cat);
     }
 
-    public function destroyCategory($id) {
+    public function destroyCategory(int $id) {
         RetailCategory::destroy($id);
         return response()->json(['message' => 'Deleted']);
     }
@@ -48,7 +48,7 @@ class RetailMasterController extends Controller
         return response()->json($sup);
     }
 
-    public function updateSupplier(Request $request, $id) {
+    public function updateSupplier(Request $request, int $id) {
         $sup = RetailSupplier::findOrFail($id);
         $sup->update([
             'name' => $request->name,
@@ -58,7 +58,7 @@ class RetailMasterController extends Controller
         return response()->json($sup);
     }
 
-    public function destroySupplier($id) {
+    public function destroySupplier(int $id) {
         RetailSupplier::destroy($id);
         return response()->json(['message' => 'Deleted']);
     }
@@ -80,7 +80,7 @@ class RetailMasterController extends Controller
         return response()->json($cus);
     }
 
-    public function updateCustomer(Request $request, $id) {
+    public function updateCustomer(Request $request, int $id) {
         $cus = RetailCustomer::findOrFail($id);
         $cus->update([
             'name' => $request->name,
@@ -91,7 +91,7 @@ class RetailMasterController extends Controller
         return response()->json($cus);
     }
 
-    public function destroyCustomer($id) {
+    public function destroyCustomer(int $id) {
         RetailCustomer::destroy($id);
         return response()->json(['message' => 'Deleted']);
     }
@@ -108,13 +108,13 @@ class RetailMasterController extends Controller
         return response()->json($unit);
     }
 
-    public function updateUnit(Request $request, $id) {
+    public function updateUnit(Request $request, int $id) {
         $unit = RetailUnit::findOrFail($id);
         $unit->update(['name' => $request->name]);
         return response()->json($unit);
     }
 
-    public function destroyUnit($id) {
+    public function destroyUnit(int $id) {
         RetailUnit::destroy($id);
         return response()->json(['message' => 'Deleted']);
     }
@@ -131,13 +131,13 @@ class RetailMasterController extends Controller
         return response()->json($cat);
     }
 
-    public function updateExpenseCategory(Request $request, $id) {
+    public function updateExpenseCategory(Request $request, int $id) {
         $cat = \App\Models\RetailExpenseCategory::findOrFail($id);
         $cat->update(['name' => $request->name]);
         return response()->json($cat);
     }
 
-    public function destroyExpenseCategory($id) {
+    public function destroyExpenseCategory(int $id) {
         \App\Models\RetailExpenseCategory::destroy($id);
         return response()->json(['message' => 'Deleted']);
     }
@@ -158,12 +158,12 @@ class RetailMasterController extends Controller
         $cat = RetailCategory::create(['tenant_id' => $this->adminTenantId($request), 'name' => $request->name]);
         return response()->json($cat);
     }
-    public function adminUpdateCategory(Request $request, $id) {
+    public function adminUpdateCategory(Request $request, int $id) {
         $cat = RetailCategory::findOrFail($id);
         $cat->update(['name' => $request->name]);
         return response()->json($cat);
     }
-    public function adminDestroyCategory($id) {
+    public function adminDestroyCategory(int $id) {
         RetailCategory::destroy($id);
         return response()->json(['message' => 'Deleted']);
     }
@@ -176,12 +176,12 @@ class RetailMasterController extends Controller
         $unit = RetailUnit::create(['tenant_id' => $this->adminTenantId($request), 'name' => $request->name]);
         return response()->json($unit);
     }
-    public function adminUpdateUnit(Request $request, $id) {
+    public function adminUpdateUnit(Request $request, int $id) {
         $unit = RetailUnit::findOrFail($id);
         $unit->update(['name' => $request->name]);
         return response()->json($unit);
     }
-    public function adminDestroyUnit($id) {
+    public function adminDestroyUnit(int $id) {
         RetailUnit::destroy($id);
         return response()->json(['message' => 'Deleted']);
     }
@@ -194,12 +194,12 @@ class RetailMasterController extends Controller
         $cat = \App\Models\RetailExpenseCategory::create(['tenant_id' => $this->adminTenantId($request), 'name' => $request->name]);
         return response()->json($cat);
     }
-    public function adminUpdateExpenseCategory(Request $request, $id) {
+    public function adminUpdateExpenseCategory(Request $request, int $id) {
         $cat = \App\Models\RetailExpenseCategory::findOrFail($id);
         $cat->update(['name' => $request->name]);
         return response()->json($cat);
     }
-    public function adminDestroyExpenseCategory($id) {
+    public function adminDestroyExpenseCategory(int $id) {
         \App\Models\RetailExpenseCategory::destroy($id);
         return response()->json(['message' => 'Deleted']);
     }

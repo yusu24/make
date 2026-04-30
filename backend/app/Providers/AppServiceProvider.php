@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Models\BudidayaInventory;
+use App\Models\BudidayaFeeding;
+use App\Models\BudidayaHarvest;
+use App\Observers\BudidayaAuditObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register Observers for Audit Trail
+        BudidayaInventory::observe(BudidayaAuditObserver::class);
+        BudidayaFeeding::observe(BudidayaAuditObserver::class);
+        BudidayaHarvest::observe(BudidayaAuditObserver::class);
     }
 }

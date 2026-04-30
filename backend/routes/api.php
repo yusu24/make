@@ -75,6 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('subscription/requests/{id}/reject',  [\App\Http\Controllers\Api\SubscriptionRequestController::class, 'reject']);
         
         Route::get('stats',        [DashboardController::class, 'stats']);
+        Route::post('tenants/{tenant_id}/impersonate', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonate']);
     });
 
     // Retail Endpoints
@@ -146,6 +147,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Ponds
         Route::apiResource('ponds', \App\Http\Controllers\Api\Budidaya\PondController::class);
+        Route::post('ponds/{pondId}/sensors', [\App\Http\Controllers\Api\Budidaya\SensorController::class, 'store']);
 
         // Feed Stocks
         Route::get('feeds',           [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'index']);
@@ -157,6 +159,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('ponds/{pondId}/cycles/start', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'start']);
         
         // Cycle Actions
+        Route::get('cycles', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'index']);
+        Route::get('cycles/{id}', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'details']);
         Route::post('cycles/{cycleId}/feedings', [\App\Http\Controllers\Api\Budidaya\FeedingController::class, 'store']);
         Route::post('cycles/{cycleId}/health', [\App\Http\Controllers\Api\Budidaya\HealthController::class, 'store']);
         Route::post('cycles/{cycleId}/harvest', [\App\Http\Controllers\Api\Budidaya\HarvestController::class, 'store']);
@@ -179,8 +183,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('roles/{id}',  [\App\Http\Controllers\Api\Budidaya\RoleController::class, 'destroy']);
 
         // ── Reports & Analytics ───────────────────────────────────────────────
-        Route::get('reports/ponds',  [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'pondReport']);
-        Route::get('reports/staff',  [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'staffStats']);
+        Route::get('reports/ponds',   [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'pondReport']);
+        Route::get('reports/staff',   [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'staffStats']);
+        Route::get('reports/harvest', [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'harvestSummary']);
+
 
         // ── Inventory (Gudang) ────────────────────────────────────────────────
         Route::get('inventory', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'index']);
@@ -189,8 +195,56 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('inventory/{id}', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'destroy']);
         Route::post('inventory/{id}/stock', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'updateStock']);
         Route::get('inventory/{id}/logs', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'logs']);
+
+        // Alerts (Notifikasi)
+        Route::get('alerts', [\App\Http\Controllers\Api\Budidaya\AlertController::class, 'index']);
+        Route::post('alerts/mark-all-read', [\App\Http\Controllers\Api\Budidaya\AlertController::class, 'markAllAsRead']);
+        Route::patch('alerts/{id}/read', [\App\Http\Controllers\Api\Budidaya\AlertController::class, 'markAsRead']);
     });
 
+
+    // ─── KULINER (CULINARY) ENDPOINTS ──────────────────────────────────────
+    Route::prefix('kuliner')->group(function () {
+        // Public Storefront (No Auth Required for browsing)
+        Route::get('public/{tenantId}/categories', [\App\Http\Controllers\Api\KulinerPublicController::class, 'getCategories']);
+        Route::get('public/{tenantId}/products', [\App\Http\Controllers\Api\KulinerPublicController::class, 'getProducts']);
+        Route::get('public/products/{id}', [\App\Http\Controllers\Api\KulinerPublicController::class, 'getProductDetails']);
+        Route::get('public/settings', [\App\Http\Controllers\Api\KulinerPublicController::class, 'getSettings']);
+        Route::post('public/orders', [\App\Http\Controllers\Api\KulinerOrderController::class, 'store']);
+
+        // Customer Routes (Auth Required)
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('orders/checkout', [\App\Http\Controllers\Api\KulinerOrderController::class, 'checkout']);
+            Route::get('orders/my', [\App\Http\Controllers\Api\KulinerOrderController::class, 'getMyOrders']);
+            Route::get('orders/{id}', [\App\Http\Controllers\Api\KulinerOrderController::class, 'getOrderDetails']);
+        });
+
+        // Admin Routes (Auth + Admin Role Required)
+        Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+            Route::get('dashboard/stats', [\App\Http\Controllers\Api\KulinerDashboardController::class, 'getStats']);
+            Route::get('stats', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getDashboardStats']);
+            
+            // Categories
+            Route::get('categories', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getCategories']);
+            Route::post('categories', [\App\Http\Controllers\Api\KulinerAdminController::class, 'storeCategory']);
+            Route::put('categories/{id}', [\App\Http\Controllers\Api\KulinerAdminController::class, 'updateCategory']);
+            Route::delete('categories/{id}', [\App\Http\Controllers\Api\KulinerAdminController::class, 'destroyCategory']);
+
+            // Products
+            Route::get('products', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getProducts']);
+            Route::post('products', [\App\Http\Controllers\Api\KulinerAdminController::class, 'storeProduct']);
+            Route::put('products/{id}', [\App\Http\Controllers\Api\KulinerAdminController::class, 'updateProduct']);
+            Route::delete('products/{id}', [\App\Http\Controllers\Api\KulinerAdminController::class, 'destroyProduct']);
+
+            // Orders
+            Route::get('orders', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getOrders']);
+            Route::patch('orders/{id}/status', [\App\Http\Controllers\Api\KulinerAdminController::class, 'updateOrderStatus']);
+
+            // Settings
+            Route::get('settings', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getSettings']);
+            Route::post('settings', [\App\Http\Controllers\Api\KulinerAdminController::class, 'updateSettings']);
+        });
+    });
 
     // ─── ADMIN ONLY ────────────────────────────────────────────────────────
     Route::middleware('is_admin')->group(function () {

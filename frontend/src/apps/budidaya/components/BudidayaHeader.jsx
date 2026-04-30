@@ -1,13 +1,56 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
+import { api } from '../../../lib/api'
 import '../budidaya.css'
 
 export default function BudidayaHeader({ onMenuToggle }) {
   const { user } = useAuth()
+  const [alerts, setAlerts] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const dropdownRef = useRef(null)
 
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
     : 'WI'
+
+  const fetchAlerts = async () => {
+    try {
+      const res = await api.get('/alerts')
+      if (res.data.success) {
+        setAlerts(res.data.data)
+        setUnreadCount(res.data.unread_count)
+      }
+    } catch (err) {
+      console.error('Failed to fetch alerts:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchAlerts()
+    const interval = setInterval(fetchAlerts, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const markAllAsRead = async () => {
+    try {
+      await api.post('/alerts/mark-all-read')
+      setUnreadCount(0)
+      setAlerts(alerts.map(a => ({ ...a, is_read: true })))
+    } catch (err) {
+      console.error('Failed to mark alerts as read:', err)
+    }
+  }
 
   return (
     <header
@@ -43,13 +86,11 @@ export default function BudidayaHeader({ onMenuToggle }) {
             alignItems: 'center',
             justifyContent: 'center'
           }}
-          className="lg:hidden"
+          className="lg-hidden"
         >
           <span className="material-symbols-outlined" style={{ fontSize: 24, fontWeight: 700 }}>menu</span>
         </button>
-        <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1C1A' }}>
-          Dashboard Utama
-        </span>
+
       </div>
 
       {/* Right: search + notif + avatar */}
@@ -103,38 +144,105 @@ export default function BudidayaHeader({ onMenuToggle }) {
         </div>
 
         {/* Notification Bell */}
-        <button
-          style={{
-            position: 'relative',
-            width: 38,
-            height: 38,
-            borderRadius: 10,
-            background: '#F4F7F5',
-            border: '1.5px solid #E9F0EC',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            color: '#64748B',
-            transition: 'background 0.15s',
-            flexShrink: 0,
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = '#E9F0EC'}
-          onMouseLeave={e => e.currentTarget.style.background = '#F4F7F5'}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>notifications</span>
-          {/* Red dot */}
-          <span style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            width: 7,
-            height: 7,
-            background: '#EF4444',
-            borderRadius: '50%',
-            border: '1.5px solid white',
-          }} />
-        </button>
+        <div style={{ position: 'relative' }} ref={dropdownRef}>
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            style={{
+              position: 'relative',
+              width: 38,
+              height: 38,
+              borderRadius: 10,
+              background: showDropdown ? '#E9F0EC' : '#F4F7F5',
+              border: '1.5px solid #E9F0EC',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#64748B',
+              transition: 'all 0.15s',
+              flexShrink: 0,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>notifications</span>
+            {unreadCount > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                width: 7,
+                height: 7,
+                background: '#EF4444',
+                borderRadius: '50%',
+                border: '1.5px solid white',
+              }} />
+            )}
+          </button>
+
+          {showDropdown && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 12px)',
+              right: 0,
+              width: 320,
+              background: '#fff',
+              borderRadius: 16,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05)',
+              border: '1px solid #E9F0EC',
+              overflow: 'hidden',
+              zIndex: 100,
+              animation: 'slideIn 0.2s ease-out'
+            }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1A1C1A' }}>Notifikasi</h4>
+                {unreadCount > 0 && (
+                  <button onClick={markAllAsRead} style={{ background: 'none', border: 'none', color: '#059669', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+                    Tandai dibaca
+                  </button>
+                )}
+              </div>
+              <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+                {alerts.length === 0 ? (
+                  <div style={{ padding: '32px 20px', textAlign: 'center', color: '#94A3B8' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>notifications_off</span>
+                    <p style={{ margin: 0, fontSize: 13 }}>Tidak ada notifikasi baru</p>
+                  </div>
+                ) : (
+                  alerts.map((alert) => (
+                    <div key={alert.id} style={{
+                      padding: '14px 20px',
+                      borderBottom: '1px solid #F8FAFC',
+                      background: alert.is_read ? 'transparent' : '#F0F9F4',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s'
+                    }}>
+                      <div style={{ display: 'flex', gap: 12 }}>
+                        <div style={{ 
+                          width: 8, height: 8, borderRadius: '50%', 
+                          background: alert.status === 'critical' ? '#EF4444' : '#F59E0B', 
+                          marginTop: 5, flexShrink: 0,
+                          opacity: alert.is_read ? 0.3 : 1
+                        }} />
+                        <div>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: alert.is_read ? 500 : 700, color: '#1A1C1A', lineHeight: '1.4' }}>
+                            {alert.pond?.name || 'Kolam'}: {alert.parameter} {alert.status === 'critical' ? 'Kritis' : 'Peringatan'}
+                          </p>
+                          <p style={{ margin: '4px 0 0', fontSize: 11, color: '#64748B' }}>
+                            Nilai: {alert.value} • {new Date(alert.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div style={{ padding: '12px', textAlign: 'center', borderTop: '1px solid #F1F5F9', background: '#F8FAF9' }}>
+                <button style={{ background: 'none', border: 'none', color: '#1B4332', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                  Lihat Semua Riwayat
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Avatar */}
         <div

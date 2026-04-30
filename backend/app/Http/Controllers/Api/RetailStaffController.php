@@ -70,7 +70,7 @@ class RetailStaffController extends Controller
         return response()->json(['message' => 'Pegawai berhasil ditambahkan', 'data' => $newStaff]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $tenantId = $request->user()->tenant_id;
         $staff = User::where('id', $id)->where('tenant_id', $tenantId)->first();
@@ -95,7 +95,7 @@ class RetailStaffController extends Controller
         return response()->json(['message' => 'Pegawai diupdate', 'data' => $staff]);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, int $id)
     {
         $tenantId = $request->user()->tenant_id;
         // Mencegah menghapus diri sendiri

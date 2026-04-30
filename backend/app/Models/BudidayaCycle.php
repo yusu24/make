@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasTenant;
 
 class BudidayaCycle extends Model
 {
+    use HasTenant;
     protected $guarded = [];
 
     protected $casts = [

@@ -6,17 +6,27 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\BudidayaPond;
 use App\Models\BudidayaCycle;
+use App\Services\Budidaya\PondService;
 use Illuminate\Validation\Rule;
+use Exception;
 
 class PondController extends Controller
 {
+    protected $pondService;
+
+    public function __construct(PondService $pondService)
+    {
+        $this->pondService = $pondService;
+    }
+
     public function index(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $status = $request->query('status');
         $area = $request->query('area');
+        $perPage = $request->query('per_page', 15);
 
-        $query = BudidayaPond::where('tenant_id', $tenantId);
+        // Tenant filtering is automatically handled by HasTenant trait
+        $query = BudidayaPond::query();
 
         if ($status) {
             $query->where('status', $status);
@@ -26,19 +36,18 @@ class PondController extends Controller
             $query->where('area', $area);
         }
 
-        $ponds = $query->with('activeCycle')->orderBy('area')->orderBy('name')->get();
-        return response()->json(['data' => $ponds]);
+        $ponds = $query->with('activeCycle')->orderBy('area')->orderBy('name')->paginate($perPage);
+        return response()->json($ponds);
     }
 
     public function store(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $request->validate([
             'name' => 'required|string',
             'code' => [
                 'nullable',
                 'string',
-                Rule::unique('budidaya_ponds')->where('tenant_id', $tenantId)
+                Rule::unique('budidaya_ponds')->where('tenant_id', auth()->user()->tenant_id ?? null)
             ],
             'type' => 'required|string',
             'area' => 'nullable|string',
@@ -48,31 +57,14 @@ class PondController extends Controller
             'location' => 'nullable|string'
         ]);
 
-        $code = $request->code;
-        if (!$code) {
-           $count = BudidayaPond::where('tenant_id', $tenantId)->count() + 1;
-           $code = 'KL-' . str_pad($count, 3, '0', STR_PAD_LEFT);
-           
-           // Ensure generated code is actually unique (in case of deletions)
-           while (BudidayaPond::where('tenant_id', $tenantId)->where('code', $code)->exists()) {
-               $count++;
-               $code = 'KL-' . str_pad($count, 3, '0', STR_PAD_LEFT);
-           }
-        }
-
-        $pond = BudidayaPond::create(array_merge($request->all(), [
-            'tenant_id' => $tenantId,
-            'code' => $code,
-            'status' => 'kosong'
-        ]));
+        $pond = $this->pondService->createPond($request->all());
 
         return response()->json(['message' => 'Kolam berhasil ditambahkan', 'data' => $pond]);
     }
 
     public function show(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $pond = BudidayaPond::where('tenant_id', $tenantId)->findOrFail($id);
+        $pond = BudidayaPond::findOrFail($id);
         
         // Include summary of active cycle if exists
         $activeCycle = BudidayaCycle::where('pond_id', $pond->id)
@@ -87,15 +79,14 @@ class PondController extends Controller
 
     public function update(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $pond = BudidayaPond::where('tenant_id', $tenantId)->findOrFail($id);
+        $pond = BudidayaPond::findOrFail($id);
         
         $request->validate([
             'name' => 'required|string',
             'code' => [
                 'required',
                 'string',
-                Rule::unique('budidaya_ponds')->where('tenant_id', $tenantId)->ignore($id)
+                Rule::unique('budidaya_ponds')->where('tenant_id', auth()->user()->tenant_id ?? null)->ignore($id)
             ],
             'type' => 'required|string',
             'area' => 'nullable|string',
@@ -106,28 +97,23 @@ class PondController extends Controller
             'status' => 'required|in:kosong,aktif,panen,maintenance'
         ]);
 
-        // Logic check: cannot set to 'aktif' manually if no cycle started
-        // Actually, let lifecycle handle it, but allow 'maintenance' toggle
-        $pond->update($request->all());
-        
-        return response()->json(['message' => 'Data kolam diperbarui', 'data' => $pond]);
+        try {
+            $pond = $this->pondService->updatePond($pond, $request->all());
+            return response()->json(['message' => 'Data kolam diperbarui', 'data' => $pond]);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $pond = BudidayaPond::where('tenant_id', $tenantId)->findOrFail($id);
+        $pond = BudidayaPond::findOrFail($id);
         
-        // CHECK HISTORY: Check if any cycles (active or finished) exist
-        $historyCount = BudidayaCycle::where('pond_id', $pond->id)->count();
-        
-        if ($historyCount > 0) {
-            return response()->json([
-                'message' => 'Kolam tidak bisa dihapus karena memiliki riwayat siklus (panen/aktif). Silakan gunakan status Maintenance jika tidak ingin digunakan.'
-            ], 422);
+        try {
+            $this->pondService->deletePond($pond);
+            return response()->json(['message' => 'Kolam berhasil dihapus']);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
-
-        $pond->delete();
-        return response()->json(['message' => 'Kolam berhasil dihapus']);
     }
 }

@@ -78,8 +78,8 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontSize: 10,
-                fontWeight: 500,
-                color: '#94A3B8',
+                fontWeight: 600,
+                color: '#475569',
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
               }}
@@ -106,10 +106,10 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                   borderRadius: 10,
                   textDecoration: 'none',
                   background: isActive ? '#E8F5ED' : 'transparent',
-                  color: isActive ? '#1B4332' : '#94A3B8',
+                  color: isActive ? '#1B4332' : '#1A1C1A',
                   fontFamily: "'Inter', sans-serif",
                   fontSize: 13.5,
-                  fontWeight: isActive ? 600 : 500,
+                  fontWeight: isActive ? 700 : 500,
                   transition: 'background 0.15s, color 0.15s',
                   cursor: 'pointer',
                 }}
@@ -122,7 +122,7 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                 onMouseLeave={e => {
                   if (!isActive) {
                     e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.color = '#94A3B8'
+                    e.currentTarget.style.color = '#1A1C1A'
                   }
                 }}
               >
@@ -163,7 +163,7 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
-              color: '#94A3B8',
+              color: '#1A1C1A',
               fontFamily: "'Inter', sans-serif",
               fontSize: 13.5,
               fontWeight: 500,
@@ -175,7 +175,7 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.color = '#94A3B8'
+              e.currentTarget.style.color = '#1A1C1A'
             }}
           >
             <span

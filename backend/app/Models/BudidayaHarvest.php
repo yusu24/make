@@ -9,7 +9,7 @@ class BudidayaHarvest extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'date' => 'date',
+        'harvest_date' => 'date',
     ];
 
     public function cycle()

@@ -5,12 +5,17 @@ import '../budidaya.css'
 export default function Settings() {
   const { user } = useAuth()
   const [theme, setTheme] = useState('light')
+  const [loading, setLoading] = useState(true)
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 600)
+    return () => clearTimeout(timer)
+  }, [])
 
   const cardStyle = {
     background: '#fff',
     borderRadius: '24px',
     padding: '28px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
     border: '1px solid #E9F0EC'
   }
 
@@ -31,7 +36,7 @@ export default function Settings() {
   const labelStyle = {
     fontSize: '12px',
     fontWeight: '700',
-    color: '#64748B',
+    color: '#475569',
     marginBottom: '6px',
     display: 'block'
   }
@@ -56,7 +61,7 @@ export default function Settings() {
       </div>
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: '14px', fontWeight: '700', color: '#1A1C1A', margin: 0 }}>{title}</p>
-        <p style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{desc}</p>
+        <p style={{ fontSize: '12px', color: '#475569', marginTop: '2px' }}>{desc}</p>
       </div>
       <div style={{ 
         width: '44px', height: '24px', borderRadius: '12px', 
@@ -72,34 +77,49 @@ export default function Settings() {
     </div>
   )
 
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
+      <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat pengaturan...</p>
+    </div>
+  )
+
   return (
-    <div style={{ padding: '32px', background: '#F4F7F5', minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div className="aq-container">
+      <style>{`
+        @media (max-width: 768px) {
+          .settings-header { flex-direction: column; align-items: flex-start !important; gap: 16px; }
+          .header-actions { width: 100%; display: flex; gap: 12px; }
+          .header-actions button { flex: 1; justify-content: center; padding: 12px 8px !important; font-size: 12px !important; }
+          .pref-grid { grid-template-columns: 1fr !important; }
+          .aq-grid-2 { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
       
       {/* ── Header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="settings-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="aq-page-title">Pengaturan profil</h1>
-          <p className="aq-body-text" style={{ marginTop: '4px' }}>
-            Kelola preferensi akun dan notifikasi aplikasi
-          </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="header-actions" style={{ display: 'flex', gap: '12px' }}>
           <button style={{ 
             padding: '12px 24px', borderRadius: '12px', border: '1.5px solid #E9F0EC', 
-            background: '#fff', color: '#64748B', fontWeight: '700', cursor: 'pointer', fontSize: '14px' 
+            background: '#fff', color: '#475569', fontWeight: '700', cursor: 'pointer', fontSize: '14px',
+            display: 'flex', alignItems: 'center', gap: '8px'
           }}>
             Batalkan
           </button>
           <button style={{ 
             padding: '12px 24px', borderRadius: '12px', border: 'none', 
-            background: '#1B4332', color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px' 
+            background: '#1B4332', color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px',
+            display: 'flex', alignItems: 'center', gap: '8px'
           }}>
             Simpan Perubahan
           </button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px' }}>
+      <div className="aq-grid-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', alignItems: 'start' }}>
         
         {/* ── Left Column ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -192,7 +212,7 @@ export default function Settings() {
           <div style={cardStyle}>
             {sectionHeader('tune', 'Preferensi Aplikasi')}
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <div className="pref-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
               <div>
                 <label style={labelStyle}>Bahasa</label>
                 <div style={{ position: 'relative' }}>
@@ -201,7 +221,7 @@ export default function Settings() {
                     <option>English (US)</option>
                   </select>
                   <span className="material-symbols-outlined" style={{ 
-                    position: 'absolute', right: '12px', top: '18px', color: '#64748B', pointerEvents: 'none' 
+                    position: 'absolute', right: '12px', top: '18px', color: '#475569', pointerEvents: 'none' 
                   }}>expand_more</span>
                 </div>
               </div>
@@ -213,7 +233,7 @@ export default function Settings() {
                     <option>Imperial (Fahrenheit, lb, ft³)</option>
                   </select>
                   <span className="material-symbols-outlined" style={{ 
-                    position: 'absolute', right: '12px', top: '18px', color: '#64748B', pointerEvents: 'none' 
+                    position: 'absolute', right: '12px', top: '18px', color: '#475569', pointerEvents: 'none' 
                   }}>expand_more</span>
                 </div>
               </div>
@@ -226,7 +246,7 @@ export default function Settings() {
                     <option>Setiap 15 Menit</option>
                   </select>
                   <span className="material-symbols-outlined" style={{ 
-                    position: 'absolute', right: '12px', top: '18px', color: '#64748B', pointerEvents: 'none' 
+                    position: 'absolute', right: '12px', top: '18px', color: '#475569', pointerEvents: 'none' 
                   }}>expand_more</span>
                 </div>
               </div>
@@ -241,7 +261,7 @@ export default function Settings() {
                     style={{ 
                       flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
                       background: theme === 'light' ? '#fff' : 'transparent',
-                      color: theme === 'light' ? '#1B4332' : '#64748B',
+                      color: theme === 'light' ? '#1B4332' : '#475569',
                       fontWeight: '700', fontSize: '13px', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                       boxShadow: theme === 'light' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
@@ -255,7 +275,7 @@ export default function Settings() {
                     style={{ 
                       flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
                       background: theme === 'dark' ? '#fff' : 'transparent',
-                      color: theme === 'dark' ? '#1B4332' : '#64748B',
+                      color: theme === 'dark' ? '#1B4332' : '#475569',
                       fontWeight: '700', fontSize: '13px', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                       boxShadow: theme === 'dark' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'

@@ -51,7 +51,7 @@ class ReportController extends Controller
         ]);
     }
 
-    // ── Pond reports: water quality trend & FCR ──────────────────────────────
+    // ── Pond reports: FCR per active cycle ───────────────────────────────────
     public function pondReport(Request $request)
     {
         $tenantId = $request->user()->tenant_id ?? 'TN-001';
@@ -60,39 +60,102 @@ class ReportController extends Controller
             ->with(['latestSensor'])
             ->get();
 
-        // FCR calculation per cycle
         $cycles = BudidayaCycle::where('tenant_id', $tenantId)
             ->whereNotIn('status', ['panen'])
             ->with(['pond', 'feedings', 'samplings'])
             ->get()
             ->map(function ($cycle) {
-                $totalFeed     = $cycle->feedings->sum('amount_kg');
-                $latestSampling= $cycle->samplings->sortByDesc('date')->first();
-                $biomass       = $latestSampling
+                $totalFeed      = $cycle->feedings->sum('amount_kg');
+                $latestSampling = $cycle->samplings->sortByDesc('date')->first();
+                $biomass        = $latestSampling
                     ? ($latestSampling->avg_weight_gram / 1000) * $latestSampling->estimated_count
                     : 0;
                 $fcr = ($biomass > 0) ? round($totalFeed / $biomass, 2) : null;
 
                 return [
-                    'cycle_id'    => $cycle->id,
-                    'pond_name'   => $cycle->pond->name ?? '-',
-                    'total_feed'  => $totalFeed,
-                    'biomass_kg'  => round($biomass, 2),
-                    'fcr'         => $fcr,
-                    'status'      => $fcr === null ? 'kosong' : ($fcr <= 1.3 ? 'sehat' : ($fcr <= 1.6 ? 'moderat' : 'kritis')),
+                    'cycle_id'   => $cycle->id,
+                    'pond_name'  => $cycle->pond->name ?? '-',
+                    'total_feed' => $totalFeed,
+                    'biomass_kg' => round($biomass, 2),
+                    'fcr'        => $fcr,
+                    'status'     => $fcr === null ? 'kosong' : ($fcr <= 1.3 ? 'sehat' : ($fcr <= 1.6 ? 'moderat' : 'kritis')),
                 ];
             })
             ->values();
 
         return response()->json([
             'data' => [
-                'ponds'  => $ponds,
-                'fcr'    => $cycles,
+                'ponds' => $ponds,
+                'fcr'   => $cycles,
             ],
         ]);
     }
 
-    // ── Staff summary for user management page ────────────────────────────────
+    // ── Harvest summary: all completed cycles ────────────────────────────────
+    public function harvestSummary(Request $request)
+    {
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+
+        $harvests = BudidayaHarvest::whereHas('cycle', fn($q) => $q->where('tenant_id', $tenantId))
+            ->with(['cycle.pond', 'cycle.feedings'])
+            ->orderByDesc('harvest_date')
+            ->get()
+            ->map(function ($harvest) {
+                $cycle     = $harvest->cycle;
+                $pond      = $cycle->pond;
+                $totalFeed = $cycle->feedings->sum('amount_kg');
+                $biomass   = $harvest->total_weight_kg;
+                $fcr       = ($biomass > 0 && $totalFeed > 0) ? round($totalFeed / $biomass, 2) : null;
+
+                $seedCost  = (float) ($cycle->seed_cost ?? 0);
+                $feedCost  = $totalFeed * 12000;
+                $totalCost = $seedCost + $feedCost;
+                $profit    = $harvest->total_revenue - $totalCost;
+
+                $initialPop    = (int) ($cycle->initial_population ?? 0);
+                $avgWeight     = max((float) ($cycle->avg_weight_gram ?? 300), 1);
+                $harvestedFish = ($biomass * 1000) / $avgWeight;
+                $survivalRate  = $initialPop > 0 ? round(($harvestedFish / $initialPop) * 100, 1) : null;
+
+                return [
+                    'id'            => $harvest->id,
+                    'pond_name'     => $pond->name ?? '-',
+                    'cycle_id'      => $cycle->id,
+                    'fish_type'     => $cycle->fish_type ?? '-',
+                    'harvest_date'  => $harvest->harvest_date,
+                    'weight_kg'     => (float) $harvest->total_weight_kg,
+                    'price_per_kg'  => (float) $harvest->sale_price_per_kg,
+                    'total_revenue' => (float) $harvest->total_revenue,
+                    'total_cost'    => (float) $totalCost,
+                    'net_profit'    => (float) $profit,
+                    'total_feed_kg' => (float) $totalFeed,
+                    'fcr'           => $fcr,
+                    'survival_rate' => $survivalRate,
+                ];
+            });
+
+        $totalRevenue  = $harvests->sum('total_revenue');
+        $totalCost     = $harvests->sum('total_cost');
+        $totalProfit   = $harvests->sum('net_profit');
+        $avgFcr        = $harvests->whereNotNull('fcr')->avg('fcr');
+        $totalWeightKg = $harvests->sum('weight_kg');
+
+        return response()->json([
+            'data' => [
+                'summary' => [
+                    'total_revenue'   => (float) $totalRevenue,
+                    'total_cost'      => (float) $totalCost,
+                    'total_profit'    => (float) $totalProfit,
+                    'avg_fcr'         => $avgFcr ? round($avgFcr, 2) : null,
+                    'total_weight_kg' => (float) $totalWeightKg,
+                    'total_harvests'  => $harvests->count(),
+                ],
+                'records' => $harvests->values(),
+            ],
+        ]);
+    }
+
+    // ── Staff summary ────────────────────────────────────────────────────────
     public function staffStats(Request $request)
     {
         $tenantId = $request->user()->tenant_id ?? 'TN-001';

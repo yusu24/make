@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasTenant;
 
 class BudidayaInventory extends Model
 {
+    use HasTenant;
     protected $table = 'budidaya_inventories';
     protected $guarded = [];
 
