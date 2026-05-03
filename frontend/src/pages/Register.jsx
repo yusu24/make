@@ -11,6 +11,7 @@ const CATEGORY_ICONS = {
   'Toko Retail':   '🛒',
   'Jasa':          '🔧',
   'Manufaktur':    '🏭',
+  'Kuliner':       '🍱',
 }
 
 export default function Register() {
@@ -36,6 +37,7 @@ export default function Register() {
         { id: 2, name: 'Toko Retail' },
         { id: 3, name: 'Jasa' },
         { id: 4, name: 'Manufaktur' },
+        { id: 5, name: 'Kuliner' },
       ])
     })
   }, [])
@@ -71,6 +73,8 @@ export default function Register() {
       setTimeout(() => {
         if (userData.business_category === 'Toko Retail') {
           navigate('/retail/dashboard')
+        } else if (userData.business_category === 'Kuliner') {
+          navigate('/kuliner/admin')
         } else {
           navigate('/coming-soon')
         }

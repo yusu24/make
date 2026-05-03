@@ -11,8 +11,8 @@ class Tenant extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'tenant_id', 'user_id', 'business_category_id',
-        'business_name', 'subscription_plan', 'status', 'trial_ends_at',
+        'name', 'type', 'tenant_id', 'user_id', 'subscription_plan', 'status', 
+        'business_category_id', 'business_name', 'address', 'phone', 'settings'
     ];
 
     protected $casts = [
@@ -27,5 +27,19 @@ class Tenant extends Model
     public function businessCategory()
     {
         return $this->belongsTo(BusinessCategory::class);
+    }
+
+    public function modules()
+    {
+        return $this->belongsToMany(Module::class, 'business_modules', 'tenant_id', 'module_id', 'tenant_id', 'id')
+                    ->withPivot('is_active');
+    }
+
+    public function hasModule(string $moduleName): bool
+    {
+        return $this->modules()
+                    ->where('name', $moduleName)
+                    ->where('is_active', true)
+                    ->exists();
     }
 }

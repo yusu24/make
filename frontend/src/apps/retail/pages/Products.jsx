@@ -52,8 +52,27 @@ export default function Products() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const [errors, setErrors] = useState({});
+
+  const validateForm = (data) => {
+    const newErrors = {};
+    if (!data.name) newErrors.name = 'Nama produk wajib diisi';
+    if (!data.sku) newErrors.sku = 'SKU wajib diisi';
+    if (!data.category_id) newErrors.category_id = 'Pilih kategori';
+    if (!data.unit) newErrors.unit = 'Pilih satuan';
+    
+    if (Number(data.price_buy) < 0) newErrors.price_buy = 'Harga modal tidak boleh minus';
+    if (Number(data.price_sell) < 0) newErrors.price_sell = 'Harga jual tidak boleh minus';
+    if (Number(data.stock) < 0) newErrors.stock = 'Stok tidak boleh minus';
+    if (Number(data.stock_min) < 0) newErrors.stock_min = 'Stok minimum tidak boleh minus';
+    
+    return newErrors;
+  };
+
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    setErrors({});
+    
     const fd = new FormData(e.target);
     const payload = {
       name: fd.get('name'),
@@ -66,6 +85,13 @@ export default function Products() {
       stock: fd.get('stock'),
       stock_min: fd.get('stock_min'),
     };
+
+    const validationErrors = validateForm(payload);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
       if (editingProduct) {
         await api.put(`/retail/products/${editingProduct.id}`, payload);
@@ -75,7 +101,11 @@ export default function Products() {
       fetchData();
       setShowModal(false);
       setEditingProduct(null);
-    } catch (e) {}
+    } catch (e) {
+      if (e.response?.status === 422) {
+        setErrors(e.response.data.errors);
+      }
+    }
   };
 
   const openEdit = (p) => {
@@ -219,63 +249,71 @@ export default function Products() {
         </table>
       </div>
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingProduct(null); }} title={editingProduct ? 'Edit Barang' : 'Tambah Barang Baru'}>
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingProduct(null); setErrors({}); }} title={editingProduct ? 'Edit Barang' : 'Tambah Barang Baru'}>
         <form onSubmit={handleAddProduct} className="flex flex-col gap-5">
            <div className="grid-2">
               <div className="form-group">
                  <label className="form-label">Nama Produk</label>
-                 <input name="name" className="form-input" placeholder="Contoh: Beras Premium" defaultValue={editingProduct?.name} required />
+                 <input name="name" className={`form-input ${errors.name ? 'border-red-500 bg-red-50' : ''}`} placeholder="Contoh: Beras Premium" defaultValue={editingProduct?.name} />
+                 {errors.name && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.name}</span>}
               </div>
               <div className="form-group">
                  <label className="form-label">SKU (Barcode)</label>
-                 <input name="sku" className="form-input" value={formSku} onChange={e => setFormSku(e.target.value)} required />
+                 <input name="sku" className={`form-input ${errors.sku ? 'border-red-500 bg-red-50' : ''}`} value={formSku} onChange={e => setFormSku(e.target.value)} />
+                 {errors.sku && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.sku}</span>}
               </div>
            </div>
            <div className="grid-3">
               <div className="form-group">
                  <label className="form-label">Kategori</label>
-                 <select name="category_id" className="form-input" defaultValue={editingProduct?.category_id || ''} required>
+                 <select name="category_id" className={`form-input ${errors.category_id ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.category_id || ''}>
                     <option value="" disabled>Pilih...</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                  </select>
+                 {errors.category_id && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.category_id}</span>}
               </div>
               <div className="form-group">
                  <label className="form-label">Supplier</label>
-                 <select name="supplier_id" className="form-input" defaultValue={editingProduct?.supplier_id || ''} required>
+                 <select name="supplier_id" className="form-input" defaultValue={editingProduct?.supplier_id || ''}>
                    <option value="" disabled>Pilih...</option>
                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                  </select>
               </div>
               <div className="form-group">
                  <label className="form-label">Satuan</label>
-                 <select name="unit" className="form-input" defaultValue={editingProduct?.unit || ''} required>
+                 <select name="unit" className={`form-input ${errors.unit ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.unit || ''}>
                    <option value="" disabled>Pilih...</option>
                    {units.map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
                  </select>
+                 {errors.unit && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.unit}</span>}
               </div>
            </div>
            <div className="grid-2">
               <div className="form-group">
                  <label className="form-label">Harga Modal (Rp)</label>
-                 <input name="price_buy" type="number" className="form-input" defaultValue={editingProduct?.price_buy} required />
+                 <input name="price_buy" type="number" className={`form-input ${errors.price_buy ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.price_buy} />
+                 {errors.price_buy && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.price_buy}</span>}
               </div>
               <div className="form-group">
                  <label className="form-label">Harga Jual (Rp)</label>
-                 <input name="price_sell" type="number" className="form-input" defaultValue={editingProduct?.price_sell} required />
+                 <input name="price_sell" type="number" className={`form-input ${errors.price_sell ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.price_sell} />
+                 {errors.price_sell && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.price_sell}</span>}
               </div>
            </div>
            <div className="grid-2">
               <div className="form-group">
                  <label className="form-label">Stok Awal</label>
-                 <input name="stock" type="number" className="form-input" defaultValue={editingProduct?.stock || 0} required />
+                 <input name="stock" type="number" className={`form-input ${errors.stock ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.stock || 0} />
+                 {errors.stock && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.stock}</span>}
               </div>
               <div className="form-group">
                  <label className="form-label">Stok Minimum</label>
-                 <input name="stock_min" type="number" className="form-input" defaultValue={editingProduct?.stock_min || 5} required />
+                 <input name="stock_min" type="number" className={`form-input ${errors.stock_min ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.stock_min || 5} />
+                 {errors.stock_min && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.stock_min}</span>}
               </div>
            </div>
            <div className="modal__actions">
-              <button type="button" className="btn btn-secondary" onClick={() => { setShowModal(false); setEditingProduct(null); }}>Batal</button>
+              <button type="button" className="btn btn-secondary" onClick={() => { setShowModal(false); setEditingProduct(null); setErrors({}); }}>Batal</button>
               <button type="submit" className="btn btn-primary">{editingProduct ? 'Simpan Perubahan' : 'Daftarkan Barang'}</button>
            </div>
         </form>

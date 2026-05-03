@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import './CategoryStorefront.css';
 
 const AdminCategories = () => {
+  const { user } = useAuth();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -75,7 +77,7 @@ const AdminCategories = () => {
   return (
     <div className="kl-admin-dashboard" style={{ background: '#fdfaf5', minHeight: '100vh', color: '#1a140e' }}>
       <div className="kl-admin-nav" style={{ background: '#fff', padding: '20px 48px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div className="kl-logo">Admin <em>Dapur Nusantara</em></div>
+        <div className="kl-logo">Panel <em>{user?.tenant_name || 'Toko'}</em></div>
         <div style={{ display: 'flex', gap: '20px' }}>
           <Link to="/kuliner" className="kl-btn-ghost" style={{ fontSize: 13, color: '#666' }}>Lihat Storefront</Link>
           <Link to="/kuliner/admin" className="kl-btn-ghost" style={{ fontSize: 13, color: '#666' }}>Dashboard</Link>

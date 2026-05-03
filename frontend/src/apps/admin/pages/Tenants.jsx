@@ -18,7 +18,7 @@ const STATUS_BADGE = { active:'badge-green', pending:'badge-yellow', inactive:'b
 export default function Tenants() {
   const { impersonate, isImpersonating, exitImpersonate } = useAuth()
   const navigate = useNavigate()
-  const [tenants, setTenants] = useState(DUMMY)
+  const [tenants, setTenants] = useState([])
   const [search, setSearch]   = useState('')
   const [showModal, setShowModal] = useState(false)
   const [activeTab, setActiveTab] = useState('list')
@@ -26,9 +26,12 @@ export default function Tenants() {
   const [loadingRequests, setLoadingRequests] = useState(false)
   const [impersonating, setImpersonating] = useState(null)
   const [confirmTarget, setConfirmTarget] = useState(null) // tenant to confirm impersonation
+  const [moduleModal, setModuleModal] = useState(null) // tenant_id for module modal
+  const [tenantModules, setTenantModules] = useState([])
+  const [savingModules, setSavingModules] = useState(false)
 
   const fetchTenants = () => {
-    api.get('/tenants').then(r => setTenants(r.data?.data || DUMMY)).catch(() => {})
+    api.get('/admin/tenants').then(r => setTenants(r.data?.data || DUMMY)).catch(() => {})
   }
 
   const fetchRequests = async () => {
@@ -84,6 +87,35 @@ export default function Tenants() {
     }
   }
 
+  const openModuleModal = async (tenant_id) => {
+    setModuleModal(tenant_id)
+    setTenantModules([])
+    try {
+      const res = await api.get(`/admin/tenants/${tenant_id}/modules`)
+      setTenantModules(res.data.data)
+    } catch (err) {
+      alert('Gagal memuat modul')
+    }
+  }
+
+  const handleToggleModule = (id) => {
+    setTenantModules(prev => prev.map(m => m.id === id ? { ...m, is_active: !m.is_active } : m))
+  }
+
+  const saveModules = async () => {
+    setSavingModules(true)
+    try {
+      const activeIds = tenantModules.filter(m => m.is_active).map(m => m.id)
+      await api.post(`/admin/tenants/${moduleModal}/modules`, { module_ids: activeIds })
+      alert('Modul berhasil diperbarui!')
+      setModuleModal(null)
+    } catch (err) {
+      alert('Gagal menyimpan modul')
+    } finally {
+      setSavingModules(false)
+    }
+  }
+
   const filtered = tenants.filter(t => {
     const q = search.toLowerCase()
     return t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
@@ -104,7 +136,16 @@ export default function Tenants() {
     }
     setTenants(v => [...v, newTenant])
     setShowModal(false)
-    try { await api.post('/tenants', newTenant) } catch {}
+    try { 
+      const res = await api.post('/admin/tenants', newTenant)
+      // Update local state with the real data from server if needed
+      fetchTenants()
+      alert('Tenant berhasil dibuat!')
+    } catch (err) {
+      alert('Gagal menyimpan tenant ke database: ' + (err.response?.data?.message || err.message))
+      // Remove from local list if failed
+      setTenants(prev => prev.filter(t => t.id !== newTenant.id))
+    }
   }
 
   return (
@@ -229,34 +270,25 @@ export default function Tenants() {
                   <td style={{fontSize:12,color:'var(--text-muted)'}}>{t.joined}</td>
                   <td>
                     <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                      {(t.category === 'Toko Retail' || t.category === 'Budidaya Ikan') && (
-                        confirmTarget === t.tenant_id ? (
-                          <>
-                            <span style={{fontSize:11,color:'var(--text-muted)',whiteSpace:'nowrap'}}>Masuk sebagai ini?</span>
-                            <button
-                              className="btn btn-primary btn-sm"
-                              onClick={() => handleImpersonate(t)}
-                              disabled={impersonating === t.tenant_id}
-                            >
-                              {impersonating === t.tenant_id ? '...' : '✓ Ya, Masuk'}
-                            </button>
-                            <button
-                              className="btn btn-ghost btn-sm"
-                              onClick={() => setConfirmTarget(null)}
-                            >✕</button>
-                          </>
-                        ) : (
-                          <button
-                            className="btn btn-primary btn-sm"
-                            onClick={() => setConfirmTarget(t.tenant_id)}
-                            title={`Login sebagai ${t.name}`}
-                          >
-                            🔑 Impersonate
-                          </button>
-                        )
+                      {(t.category === 'Toko Retail' || t.category === 'Budidaya Ikan' || t.category === 'Kuliner') && (
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => handleImpersonate(t)}
+                          disabled={impersonating === t.tenant_id}
+                          title={`Login sebagai ${t.name}`}
+                        >
+                          {impersonating === t.tenant_id ? '⏳...' : '🔑 Impersonate'}
+                        </button>
                       )}
-                      <button id={`btn-view-tenant-${t.id}`} className="btn btn-secondary btn-sm">👁 Lihat</button>
-                      <button id={`btn-edit-tenant-${t.id}`} className="btn btn-ghost btn-sm">✏</button>
+                        <button 
+                          className="btn btn-secondary btn-sm" 
+                          onClick={() => openModuleModal(t.tenant_id)}
+                          title="Atur Modul Aktif"
+                        >
+                          📦 Modul
+                        </button>
+                        <button id={`btn-view-tenant-${t.id}`} className="btn btn-secondary btn-sm">👁 Lihat</button>
+                        <button id={`btn-edit-tenant-${t.id}`} className="btn btn-ghost btn-sm">✏</button>
                     </div>
                   </td>
                 </tr>
@@ -324,6 +356,7 @@ export default function Tenants() {
                   <select name="category" className="form-select" required>
                     <option value="Toko Retail">Toko Retail</option>
                     <option value="Budidaya Ikan">Budidaya Ikan</option>
+                    <option value="Kuliner">Kuliner</option>
                     <option value="Jasa">Jasa</option>
                     <option value="Manufaktur">Manufaktur</option>
                   </select>
@@ -341,6 +374,48 @@ export default function Tenants() {
                 <button type="submit" className="btn btn-primary">Simpan</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {moduleModal && (
+        <div className="modal-overlay" onClick={() => setModuleModal(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <h3 className="modal__title">Manajemen Modul Tenant</h3>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>ID: {moduleModal}</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {tenantModules.length === 0 ? <p className="text-center py-4">Memuat modul...</p> : tenantModules.map(m => (
+                <label key={m.id} style={{ 
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', 
+                  background: 'var(--bg-elevated)', borderRadius: 12, cursor: 'pointer',
+                  border: m.is_active ? '1px solid var(--primary-500)' : '1px solid transparent'
+                }}>
+                  <input 
+                    type="checkbox" 
+                    checked={m.is_active} 
+                    onChange={() => handleToggleModule(m.id)}
+                    style={{ width: 18, height: 18 }}
+                  />
+                  <div>
+                    <p style={{ fontWeight: 600, fontSize: 14 }}>{m.name.replace('_', ' ').toUpperCase()}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Aktifkan fitur ini untuk tenant</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <div className="modal__actions mt-6">
+              <button type="button" className="btn btn-secondary" onClick={() => setModuleModal(null)}>Batal</button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={saveModules}
+                disabled={savingModules}
+              >
+                {savingModules ? 'Menyimpan...' : 'Simpan Perubahan'}
+              </button>
+            </div>
           </div>
         </div>
       )}

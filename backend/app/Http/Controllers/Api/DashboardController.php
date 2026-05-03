@@ -3,79 +3,53 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActivityLog;
-use App\Models\BusinessCategory;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    /**
-     * GET /api/dashboard/stats
-     * Super admin stats
-     */
-    public function stats()
+    public function index()
     {
-        $totalUsers         = User::where('role', 'customer')->count();
-        $totalAdmins        = User::where('role', 'admin')->count();
-        $totalTenants       = Tenant::count();
-        $totalCategories    = BusinessCategory::where('active', true)->count();
-        $activeSubs         = Tenant::where('subscription_plan', '!=', 'free')->count();
-        $newUsersThisWeek   = User::where('created_at', '>=', now()->subDays(7))->count();
+        $income = Transaction::where('type', 'income')->sum('amount');
+        $expense = Transaction::where('type', 'expense')->sum('amount');
+        $profit = $income - $expense;
+
+        // Last 7 days stats
+        $stats = Transaction::select(
+                DB::raw('date'),
+                DB::raw('SUM(CASE WHEN type = "income" THEN amount ELSE 0 END) as income'),
+                DB::raw('SUM(CASE WHEN type = "expense" THEN amount ELSE 0 END) as expense')
+            )
+            ->groupBy('date')
+            ->orderBy('date', 'desc')
+            ->limit(7)
+            ->get();
 
         return response()->json([
-            'success' => true,
-            'data'    => [
-                'total_users'             => $totalUsers,
-                'total_admins'            => $totalAdmins,
-                'total_tenants'           => $totalTenants,
-                'total_categories'        => $totalCategories,
-                'active_subscriptions'    => $activeSubs,
-                'revenue_this_month'      => 48500000, // placeholder
-                'new_users_this_week'     => $newUsersThisWeek,
+            'summary' => [
+                'income' => $income,
+                'expense' => $expense,
+                'profit' => $profit,
             ],
+            'daily_stats' => $stats
         ]);
     }
 
-    /**
-     * GET /api/dashboard/categories
-     * Distribution of tenants per category
-     */
-    public function categories()
+    public function stats()
     {
-        $categories = BusinessCategory::withCount('tenants')
-            ->where('active', true)
-            ->get()
-            ->map(fn ($cat) => [
-                'name'  => $cat->name,
-                'value' => $cat->tenants_count,
-                'color' => $cat->color ?? '#3b82f6',
-                'icon'  => $cat->icon ?? '🏢',
-            ]);
-
-        return response()->json(['success' => true, 'data' => $categories]);
-    }
-
-    /**
-     * GET /api/dashboard/recent-users
-     */
-    public function recentUsers()
-    {
-        $users = User::with('businessCategory')
-            ->latest()
-            ->limit(10)
-            ->get()
-            ->map(fn ($u) => [
-                'id'       => $u->id,
-                'name'     => $u->name,
-                'email'    => $u->email,
-                'role'     => $u->role,
-                'status'   => $u->status,
-                'category' => $u->businessCategory?->name ?? '-',
-                'joined'   => $u->created_at->format('Y-m-d'),
-            ]);
-
-        return response()->json(['success' => true, 'data' => $users]);
+        $totalUsers = \App\Models\User::count();
+        $totalTenants = \App\Models\Tenant::count();
+        $activeSubs = \App\Models\Tenant::where('subscription_plan', '!=', 'free')->count();
+        $totalCategories = \App\Models\BusinessCategory::count();
+        
+        return response()->json(['data' => [
+            'total_users' => $totalUsers,
+            'total_tenants' => $totalTenants,
+            'total_categories' => $totalCategories,
+            'active_subscriptions' => $activeSubs,
+            'revenue_this_month' => 48500000, // Dummy
+            'new_users_this_week' => 12, // Dummy
+        ]]);
     }
 }

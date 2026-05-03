@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, CreditCard, Package, Layers, Ruler, Users, Truck,
-  BarChart2, ShoppingCart, UserCheck,
+  BarChart2, ShoppingCart, UserCheck, RefreshCw,
   LogOut, Inbox, ClipboardList, Database, Wallet
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
@@ -113,6 +113,33 @@ const RETAIL_NAV_ITEMS = [
   }
 ]
 
+// ─── Budidaya nav items ───────────────────────────────────────────────────────
+const BUDIDAYA_NAV_ITEMS = [
+  {
+    section: 'Budidaya',
+    module: 'budidaya_cycle',
+    icon: <Layers size={20} />,
+    items: [
+      { path: '/budidaya/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' },
+      { path: '/budidaya/ponds',     icon: <Layers size={24} />,          label: 'Kolam' },
+      { path: '/budidaya/cycles',    icon: <RefreshCw size={24} />,      label: 'Siklus' },
+    ]
+  }
+]
+
+// ─── Kuliner nav items ────────────────────────────────────────────────────────
+const KULINER_NAV_ITEMS = [
+  {
+    section: 'Website Order',
+    module: 'website_order',
+    icon: <ShoppingCart size={20} />,
+    items: [
+      { path: '/kuliner/admin',          icon: <LayoutDashboard size={24} />, label: 'Dashboard' },
+      { path: '/kuliner/admin/categories', icon: <Layers size={24} />,          label: 'Menu & Kategori' },
+    ]
+  }
+]
+
 // ─── Flyout Popover (Collapsed Mode) ─────────────────────────────────────────
 function RetailPopover({ section, anchorY, sidebarWidth = 68, onClose, onPaywall, pathname }) {
   const ref = useRef(null)
@@ -202,63 +229,38 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
   // Admin: standard collapse behaviour
   const isMini = isRetail ? collapsed : (collapsed && !mobileOpen)
 
-  // ── Build nav items ───────────────────────────────────────────────
-  let currentNavItems = isRetail ? [...RETAIL_NAV_ITEMS] : [...NAV_ITEMS]
+  // ── Build nav items dynamically based on active_modules ──────────────────
+  const activeModules = user?.active_modules || []
+  let currentNavItems = []
 
-  if (isRetail) {
-    // Admin & super_admin get full access — no RBAC, no paywall, no lock
-    const isAdminUser = isSuperAdmin() || user?.role === 'admin'
-    const isFree = isAdminUser ? false : user?.subscription_plan === 'free'
-    const perms  = isAdminUser ? 'all' : (user?.permissions || [])
-
-    currentNavItems = currentNavItems.filter(section => {
-      if (perms === 'all') return true
-      if (section.section === 'Logistik & Stok')   return perms.includes('inventory')
-      if (section.section === 'Laporan')            return perms.includes('reports')
-      if (section.section === 'Keuangan')           return perms.includes('finance')
-      if (section.section === 'Data Master') {
-        const allowed = section.items.filter(i =>
-          i.path === '/retail/products' ? perms.includes('catalog') : perms.includes('master')
-        )
-        if (!allowed.length) return false
-        section.items = allowed
-        return true
-      }
-      if (section.section === 'Karyawan & Akses') {
-        const allowed = section.items.filter(i =>
-          i.path === '/retail/staff' ? perms.includes('staff')
-          : i.path === '/retail/roles' ? perms.includes('roles')
-          : false
-        )
-        if (!allowed.length) return false
-        section.items = allowed
-        return true
-      }
-      if (section.section === 'Menu Utama') {
-        section.items = section.items.filter(i =>
-          i.path === '/retail/dashboard' ? true : perms.includes('pos')
-        )
-        return true
-      }
-      if (section.section === 'Sistem & Paket') return perms === 'all'
-      return true
-    }).map(section => {
-      const name = section.section.replace(' 🔒', '')
-      if (isFree && ['Laporan', 'Keuangan'].includes(name)) {
-        return { ...section, section: name + ' 🔒', isLocked: true }
-      }
-      return section
+  if (isSuperAdmin() || user?.role === 'admin') {
+    currentNavItems = [...NAV_ITEMS]
+  } else {
+    // Basic items
+    currentNavItems.push({
+      section: 'Utama',
+      items: [{ path: '/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' }]
     })
-  }
 
-  if (isRetail && (isSuperAdmin() || user?.role === 'admin')) {
-    currentNavItems = [
-      {
-        section: 'Mode Admin',
-        items: [{ path: '/dashboard', icon: <span style={{ transform: 'rotate(180deg)', display: 'inline-block' }}>➜</span>, label: 'Kembali ke Admin' }]
-      },
-      ...currentNavItems
-    ]
+    // Retail Module
+    if (activeModules.includes('retail_pos') || activeModules.includes('inventory')) {
+      currentNavItems = [...currentNavItems, ...RETAIL_NAV_ITEMS]
+    }
+
+    // Budidaya Module
+    if (activeModules.includes('budidaya_cycle')) {
+      currentNavItems = [...currentNavItems, ...BUDIDAYA_NAV_ITEMS]
+    }
+
+    // Kuliner Module
+    if (activeModules.includes('website_order')) {
+      currentNavItems = [...currentNavItems, ...KULINER_NAV_ITEMS]
+    }
+
+    currentNavItems.push({
+      section: 'Akun',
+      items: [{ path: '/profile', icon: <UserCheck size={24} />, label: 'Profil Saya' }]
+    })
   }
 
   const handleLogout = () => { logout(); navigate('/login') }

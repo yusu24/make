@@ -1,45 +1,25 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { api } from '../../../lib/api';
+import { Link, useLocation } from 'react-router-dom';
+import api from '../../../services/api';
+import { useAuth } from '../../../contexts/AuthContext';
 import './CategoryStorefront.css';
 
-const menuData = [
-  { id:1, name:'Rendang Padang', cat:'nasi', emoji:'🍛', bg:'kl-bg-a', desc:'Daging sapi empuk dimasak perlahan dengan 20+ rempah pilihan.', price:45000, rating:4.9, votes:312, cal:520, tag:'fav', tagLabel:'Favorit' },
-  { id:2, name:'Nasi Gudeg Jogja', cat:'nasi', emoji:'🍱', bg:'kl-bg-d', desc:'Nangka muda santan kental, krecek, dan ayam opor.', price:32000, rating:4.8, votes:198, cal:480, tag:'fav', tagLabel:'Favorit' },
-  { id:3, name:'Nasi Padang Komplit', cat:'nasi', emoji:'🍚', bg:'kl-bg-a', desc:'Nasi dengan pilihan 5 lauk khas Minang plus sambal hijau.', price:38000, rating:4.7, votes:156, cal:610, tag:null, tagLabel:null },
-  { id:4, name:'Nasi Liwet Solo', cat:'nasi', emoji:'🫕', bg:'kl-bg-d', desc:'Nasi gurih santan dengan lauk suwir ayam and areh.', price:28000, rating:4.6, votes:89, cal:430, tag:'new', tagLabel:'Baru' },
-  { id:5, name:'Nasi Campur Bali', cat:'nasi', emoji:'🍛', bg:'kl-bg-b', desc:'Nasi dengan lauk khas Bali: sate lilit, lawar, dan plecing.', price:42000, rating:4.8, votes:201, cal:550, tag:null, tagLabel:null },
-  { id:6, name:'Soto Betawi', cat:'sup', emoji:'🍲', bg:'kl-bg-a', desc:'Kuah santan gurih dengan daging sapi, kentang, dan tomat.', price:30000, rating:4.9, votes:421, cal:390, tag:'hot', tagLabel:'Terlaris' },
-  { id:7, name:'Sop Buntut Goreng', cat:'sup', emoji:'🥣', bg:'kl-bg-d', desc:'Buntut sapi empuk disajikan dengan kuah bening harum.', price:55000, rating:4.8, votes:167, cal:470, tag:null, tagLabel:null },
-  { id:8, name:'Mie Aceh Spesial', cat:'sup', emoji:'🍜', bg:'kl-bg-c', desc:'Mie kuning tebal dengan kuah kari rempah dan seafood segar.', price:38000, rating:4.8, votes:247, cal:520, tag:'hot', tagLabel:'Terlaris' },
-  { id:9, name:'Rawon Surabaya', cat:'sup', emoji:'🍛', bg:'kl-bg-f', desc:'Kuah hitam kluwek khas Jawa Timur dengan daging sapi lembut.', price:35000, rating:4.9, votes:389, cal:410, tag:'fav', tagLabel:'Favorit' },
-  { id:10, name:'Udang Saus Padang', cat:'seafood', emoji:'🦐', bg:'kl-bg-e', desc:'Udang jumbo dengan saus padang pedas manis menggugah selera.', price:55000, rating:4.8, votes:156, cal:320, tag:null, tagLabel:null },
-  { id:11, name:'Ikan Bakar Jimbaran', cat:'seafood', emoji:'🐟', bg:'kl-bg-g', desc:'Ikan segar dibakar dengan bumbu bali dan sambal matah.', price:65000, rating:4.9, votes:234, cal:290, tag:'fav', tagLabel:'Favorit' },
-  { id:12, name:'Cumi Goreng Tepung', cat:'seafood', emoji:'🦑', bg:'kl-bg-e', desc:'Cumi segar dibalut tepung crispy dengan saus tartar spesial.', price:48000, rating:4.7, votes:112, cal:380, tag:'new', tagLabel:'Baru' },
-  { id:13, name:'Sate Madura', cat:'jajanan', emoji:'🍢', bg:'kl-bg-a', desc:'10 tusuk sate ayam/kambing dengan bumbu kacang dan kecap.', price:30000, rating:4.9, votes:421, cal:340, tag:'hot', tagLabel:'Terlaris' },
-  { id:14, name:'Gado-Gado Jakarta', cat:'jajanan', emoji:'🥗', bg:'kl-bg-b', desc:'Sayuran segar dengan bumbu kacang spesial dan lontong.', price:25000, rating:4.7, votes:198, cal:310, tag:'veg', tagLabel:'Vegetarian' },
-  { id:15, name:'Martabak Manis', cat:'jajanan', emoji:'🥞', bg:'kl-bg-h', desc:'Martabak tebal dengan isian cokelat, keju, dan kacang.', price:35000, rating:4.6, votes:143, cal:560, tag:null, tagLabel:null },
-  { id:16, name:'Es Dawet Ayu', cat:'minuman', emoji:'🥤', bg:'kl-bg-b', desc:'Cendol, santan segar, dan gula aren khas Banjarnegara.', price:15000, rating:4.6, votes:89, cal:180, tag:null, tagLabel:null },
-  { id:17, name:'Jus Alpukat Kental', cat:'minuman', emoji:'🥑', bg:'kl-bg-g', desc:'Alpukat segar dengan susu kental manis dan es batu.', price:18000, rating:4.7, votes:134, cal:220, tag:'fav', tagLabel:'Favorit' },
-  { id:18, name:'Teh Tarik Spesial', cat:'minuman', emoji:'☕', bg:'kl-bg-h', desc:'Teh hitam pekat ditarik hingga berbusa dengan susu creamer.', price:12000, rating:4.5, votes:76, cal:140, tag:'new', tagLabel:'Baru' },
-];
-
-const categories = [
-  { id: 'semua', label: 'Semua', icon: '🍽️', count: 18 },
-  { id: 'nasi', label: 'Nasi & Lauk', icon: '🍚', count: 5 },
-  { id: 'sup', label: 'Sup & Soto', icon: '🍲', count: 4 },
-  { id: 'seafood', label: 'Seafood', icon: '🦐', count: 3 },
-  { id: 'jajanan', label: 'Jajanan', icon: '🍢', count: 3 },
-  { id: 'minuman', label: 'Minuman', icon: '🥤', count: 3 },
-];
-
 const FullMenu = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const isCashierMode = new URLSearchParams(location.search).get('mode') === 'cashier';
+  const tenantIdFromUrl = new URLSearchParams(location.search).get('tenant_id') || 
+                          new URLSearchParams(location.search).get('tenant') ||
+                          (user?.tenant_id);
+  
   const [activeCat, setActiveCat] = useState('semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState('default');
   const [viewMode, setViewMode] = useState('grid');
   const [cartItems, setCartItems] = useState([]);
-  const [settings, setSettings] = useState({ store_name: 'Dapur Nusantara' });
+  const [settings, setSettings] = useState({ store_name: 'Loading...' });
+  const [categories, setCategories] = useState([{ id: 'semua', label: 'Semua', icon: '🍽️', count: 0 }]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState('cart'); // cart, form, success
@@ -55,26 +35,72 @@ const FullMenu = () => {
   const [lastOrder, setLastOrder] = useState(null);
 
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/kuliner/public/settings');
-        if (response.data) setSettings(prev => ({ ...prev, ...response.data }));
+        setLoading(true);
+        const query = tenantIdFromUrl ? `?tenant_id=${tenantIdFromUrl}` : '';
+        
+        // 1. Fetch Settings
+        const settingsRes = await api.get(`/kuliner/public/settings${query}`);
+        if (settingsRes.data) setSettings(prev => ({ ...prev, ...settingsRes.data }));
+
+        const currentTenantId = settingsRes.data?.tenant_id;
+        const tenantQuery = currentTenantId ? `?tenant_id=${currentTenantId}` : query;
+
+        // 2. Fetch Categories
+        const catsRes = await api.get(`/kuliner/public/categories${tenantQuery}`);
+        const apiCats = catsRes.data.map(c => ({
+          id: c.id.toString(),
+          label: c.name,
+          icon: c.image_url || '🍽️',
+          count: 0 // Will be calculated
+        }));
+
+        // 3. Fetch Products
+        const productsRes = await api.get(`/kuliner/public/products${tenantQuery}`);
+        const apiProducts = productsRes.data.map(p => ({
+          id: p.id,
+          name: p.name,
+          cat: p.category_id.toString(),
+          emoji: p.image_url || '🍛',
+          bg: 'kl-bg-a', // Default bg
+          desc: p.description || '',
+          price: p.price,
+          rating: 4.8, // Default
+          votes: 12,
+          cal: 0,
+          tag: null,
+          tagLabel: null
+        }));
+
+        setProducts(apiProducts);
+
+        // Update category counts
+        const updatedCats = [
+          { id: 'semua', label: 'Semua', icon: '🍽️', count: apiProducts.length },
+          ...apiCats.map(cat => ({
+            ...cat,
+            count: apiProducts.filter(p => p.cat === cat.id).length
+          }))
+        ];
+        setCategories(updatedCats);
+
       } catch (error) {
-        console.error('Failed to fetch settings:', error);
+        console.error('Failed to fetch store data:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchSettings();
-  }, []);
+    fetchData();
+  }, [tenantIdFromUrl]);
 
   const formatRp = (n) => {
     if (n === undefined || n === null) return 'Rp 0';
-    return 'Rp ' + n.toLocaleString('id-ID');
+    return 'Rp ' + new Intl.NumberFormat('id-ID').format(parseInt(n));
   };
 
   const filteredMenu = useMemo(() => {
-    let data = [...menuData].filter(i => {
+    let data = [...products].filter(i => {
       const matchesCat = activeCat === 'semua' || i.cat === activeCat;
       const matchesSearch = (i.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
                            (i.desc || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -86,7 +112,7 @@ const FullMenu = () => {
     else if (sortMode === 'rating') data.sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
     return data;
-  }, [activeCat, searchQuery, sortMode]);
+  }, [activeCat, searchQuery, sortMode, products]);
 
   const addToCart = (item) => {
     setCartItems(prev => {
@@ -112,6 +138,12 @@ const FullMenu = () => {
     setCartItems(prev => prev.filter(i => i.id !== id));
   };
 
+  useEffect(() => {
+    if (isCashierMode) {
+      setOrderInfo(prev => ({ ...prev, name: 'Kasir', payment: 'cash_cashier' }));
+    }
+  }, [isCashierMode]);
+
   const handleOrder = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -123,6 +155,8 @@ const FullMenu = () => {
         table_number: orderInfo.order_type === 'dine_in' ? orderInfo.table_number : null,
         payment_method: orderInfo.payment,
         notes: orderInfo.notes,
+        is_staff_order: isCashierMode,
+        tenant_id: settings.tenant_id, // Include tenant_id
         items: cartItems.map(i => ({
           id: i.id,
           name: i.name,
@@ -136,7 +170,8 @@ const FullMenu = () => {
       setCartItems([]);
     } catch (error) {
       console.error('Order failed:', error);
-      alert('Gagal mengirim pesanan. Silakan coba lagi.');
+      const msg = error.response?.data?.message || 'Gagal mengirim pesanan. Silakan coba lagi.';
+      alert(msg);
     } finally {
       setSubmitting(false);
     }
@@ -148,7 +183,7 @@ const FullMenu = () => {
   if (loading) {
     return (
       <div style={{background: '#ffffff', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'serif', fontSize: 24, color: '#b48c36'}}>
-        {settings?.store_name || 'Dapur Nusantara'}...
+        {settings?.store_name || 'Toko'}...
       </div>
     );
   }
@@ -213,8 +248,8 @@ const FullMenu = () => {
                   <input required type="text" value={orderInfo.name} onChange={e => setOrderInfo({...orderInfo, name: e.target.value})} placeholder="Masukkan nama Anda" />
                 </div>
                 <div className="kl-form-group">
-                  <label>No. WhatsApp</label>
-                  <input required type="tel" value={orderInfo.phone} onChange={e => setOrderInfo({...orderInfo, phone: e.target.value})} placeholder="0812..." />
+                  <label>No. WhatsApp {isCashierMode ? '(Opsional)' : '*'}</label>
+                  <input required={!isCashierMode} type="tel" value={orderInfo.phone} onChange={e => setOrderInfo({...orderInfo, phone: e.target.value})} placeholder="0812..." />
                 </div>
                 <div className="kl-form-group">
                   <label>Catatan (Opsional)</label>
@@ -258,7 +293,7 @@ const FullMenu = () => {
           {checkoutStep === 'form' && (
             <div className="kl-drawer-footer">
               <button type="submit" form="checkout-form" className="kl-checkout-btn" disabled={submitting}>
-                {submitting ? 'Mengirim...' : 'Konfirmasi Pesanan'}
+                {submitting ? 'Mengirim...' : (isCashierMode ? '✅ Selesaikan Transaksi Kasir' : 'Konfirmasi Pesanan')}
               </button>
               <button className="kl-remove-btn" style={{width: '100%', marginTop: 12, textAlign: 'center'}} onClick={() => setCheckoutStep('cart')}>Kembali ke Keranjang</button>
             </div>
@@ -266,9 +301,18 @@ const FullMenu = () => {
         </div>
       </div>
 
+      {isCashierMode && (
+        <div style={{ background: '#b48c36', color: '#fff', padding: '10px 24px', fontSize: 13, fontWeight: 700, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>🔔 MODE KASIR AKTIF — Membuat pesanan manual</span>
+          <Link to="/kuliner/admin/orders" style={{ color: '#fff', textDecoration: 'underline' }}>Kembali ke Admin Pesanan</Link>
+        </div>
+      )}
+
       <div className="kl-page-header">
-        <Link to="/kuliner" className="kl-back-btn">← Kembali</Link>
-        <h1 className="kl-page-title">{settings?.store_name || 'Menu'} <em>Lengkap</em></h1>
+        <Link to={isCashierMode ? "/kuliner/admin/orders" : `/kuliner${tenantIdFromUrl ? `?tenant_id=${tenantIdFromUrl}` : ''}`} className="kl-back-btn">
+          ← {isCashierMode ? "Kembali ke Admin" : "Kembali"}
+        </Link>
+        <h1 className="kl-page-title">{settings?.store_name || 'Toko Kuliner'} <em>Menu</em></h1>
       </div>
 
       <div className="kl-toolbar">

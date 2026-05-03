@@ -1,6 +1,118 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
-@config "../tailwind.config.js";
+
+@theme {
+  /* Primary Brand Colors */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Kuliner Custom Colors */
+  --color-kl-on-surface-variant: #584237;
+  --color-kl-on-primary-fixed-variant: #7a3000;
+  --color-kl-outline: #8c7166;
+  --color-kl-error-container: #ffdad6;
+  --color-kl-surface-tint: #a04100;
+  --color-kl-on-surface: #1e1b18;
+  --color-kl-primary-container: #f37021;
+  --color-kl-on-background: #1e1b18;
+  --color-kl-on-primary: #ffffff;
+  --color-kl-surface-variant: #e9e1dc;
+  --color-kl-surface-container-lowest: #ffffff;
+  --color-kl-on-secondary-fixed-variant: #005313;
+  --color-kl-surface-container-high: #efe6e2;
+  --color-kl-background: #fff8f5;
+  --color-kl-on-tertiary-container: #402c00;
+  --color-kl-primary-fixed: #ffdbcb;
+  --color-kl-outline-variant: #e0c0b2;
+  --color-kl-on-primary-container: #541f00;
+  --color-kl-surface-container-highest: #e9e1dc;
+  --color-kl-secondary-fixed: #94f990;
+  --color-kl-tertiary: #7c5800;
+  --color-kl-secondary-fixed-dim: #78dc77;
+  --color-kl-inverse-on-surface: #f8efea;
+  --color-kl-on-error-container: #93000a;
+  --color-kl-inverse-primary: #ffb693;
+  --color-kl-on-primary-fixed: #341000;
+  --color-kl-tertiary-fixed: #ffdea8;
+  --color-kl-surface-bright: #fff8f5;
+  --color-kl-surface: #fff8f5;
+  --color-kl-secondary-container: #91f78e;
+  --color-kl-secondary: #006e1c;
+  --color-kl-on-secondary-fixed: #002204;
+  --color-kl-on-error: #ffffff;
+  --color-kl-primary: #a04100;
+  --color-kl-on-tertiary-fixed-variant: #5e4200;
+  --color-kl-surface-container-low: #fbf2ed;
+  --color-kl-inverse-surface: #34302c;
+  --color-kl-on-tertiary: #ffffff;
+  --color-kl-tertiary-fixed-dim: #ffba20;
+  --color-kl-error: #ba1a1a;
+  --color-kl-surface-dim: #e1d8d4;
+  --color-kl-on-secondary: #ffffff;
+  --color-kl-surface-container: #f5ece7;
+  --color-kl-primary-fixed-dim: #ffb693;
+  --color-kl-on-secondary-container: #00731e;
+  --color-kl-tertiary-container: #c48d00;
+  --color-kl-on-tertiary-fixed: #271900;
+
+  /* Custom Spacing */
+  --spacing-kl-sm: 12px;
+  --spacing-kl-margin: 32px;
+  --spacing-kl-md: 24px;
+  --spacing-kl-xs: 4px;
+  --spacing-kl-base: 8px;
+  --spacing-kl-xl: 64px;
+  --spacing-kl-lg: 40px;
+  --spacing-kl-gutter: 24px;
+
+  /* Custom Typography */
+  --font-kl-label-sm: "Inter", sans-serif;
+  --font-kl-headline-md: "Plus Jakarta Sans", sans-serif;
+  --font-kl-headline-lg: "Plus Jakarta Sans", sans-serif;
+  --font-kl-body-md: "Plus Jakarta Sans", sans-serif;
+  --font-kl-body-lg: "Plus Jakarta Sans", sans-serif;
+  --font-kl-display-lg: "Plus Jakarta Sans", sans-serif;
+  --font-kl-label-md: "Inter", sans-serif;
+
+  --font-size-kl-label-sm: 12px;
+  --font-size-kl-label-sm--line-height: 16px;
+  --font-size-kl-label-sm--font-weight: 500;
+
+  --font-size-kl-headline-md: 24px;
+  --font-size-kl-headline-md--line-height: 32px;
+  --font-size-kl-headline-md--font-weight: 600;
+
+  --font-size-kl-headline-lg: 32px;
+  --font-size-kl-headline-lg--line-height: 40px;
+  --font-size-kl-headline-lg--font-weight: 700;
+  --font-size-kl-headline-lg--letter-spacing: -0.01em;
+
+  --font-size-kl-body-md: 16px;
+  --font-size-kl-body-md--line-height: 24px;
+  --font-size-kl-body-md--font-weight: 400;
+
+  --font-size-kl-body-lg: 18px;
+  --font-size-kl-body-lg--line-height: 28px;
+  --font-size-kl-body-lg--font-weight: 400;
+
+  --font-size-kl-display-lg: 48px;
+  --font-size-kl-display-lg--line-height: 56px;
+  --font-size-kl-display-lg--font-weight: 700;
+  --font-size-kl-display-lg--letter-spacing: -0.02em;
+
+  --font-size-kl-label-md: 14px;
+  --font-size-kl-label-md--line-height: 20px;
+  --font-size-kl-label-md--font-weight: 600;
+  --font-size-kl-label-md--letter-spacing: 0.01em;
+}
 
 /* ============================================
    UMKM SaaS Platform - Global Design System

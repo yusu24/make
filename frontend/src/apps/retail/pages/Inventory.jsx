@@ -6,6 +6,7 @@ import {
   CheckCircle2, 
   Package
 } from 'lucide-react';
+import { CardSkeleton, TableSkeleton } from '../../../components/Skeleton';
 import '../retail.css';
 
 export default function Inventory() {
@@ -40,11 +41,17 @@ export default function Inventory() {
   );
 
   if (loading) return (
-    <div className="retail-dashboard-spacing">
-      <div className="loading-state-premium">
-        <div className="spinner-glow"></div>
-        <p className="loading-text">Menyinkronkan data inventori...</p>
+    <div className="animate-fade-in retail-dashboard-spacing">
+      <div className="page-header" style={{ marginBottom: 32 }}>
+        <div className="w-64 h-8 bg-gray-200 animate-pulse rounded-lg" />
+        <div className="w-32 h-10 bg-gray-200 animate-pulse rounded-lg" />
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
+      </div>
+      <TableSkeleton rows={8} cols={5} />
     </div>
   );
 

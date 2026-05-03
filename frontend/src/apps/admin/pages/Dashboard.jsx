@@ -7,6 +7,7 @@ import {
 } from 'recharts'
 import './Dashboard.css'
 import './Shared.css'
+import { CardSkeleton, ListSkeleton } from '../../../components/Skeleton'
 
 /* ---- Dummy / fallback data ---- */
 const DUMMY_STATS = {
@@ -125,8 +126,8 @@ export default function Dashboard() {
     const fetchDashboard = async () => {
       try {
         const [statsRes, catRes] = await Promise.all([
-          api.get('/dashboard/stats'),
-          api.get('/dashboard/categories'),
+          api.get('/admin/stats'),
+          api.get('/admin/categories'),
         ])
         setStats(statsRes.data?.data || DUMMY_STATS)
         setCatData(catRes.data?.data || DUMMY_CATEGORIES)
@@ -171,7 +172,11 @@ export default function Dashboard() {
 
       {/* KPI Cards */}
       <div className="grid-4 stagger" style={{ marginBottom: 28 }}>
-        {cards.map(card => (
+        {loading ? (
+          <>
+            <CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton />
+          </>
+        ) : cards.map(card => (
           <div key={card.id} id={`stat-card-${card.id}`} className="kpi-card animate-fade-in">
             <div className="kpi-card__top">
               <div className="kpi-card__icon-wrap" style={{ background: card.color + '20' }}>
@@ -291,7 +296,9 @@ export default function Dashboard() {
             <a href="/users" className="btn btn-ghost btn-sm">Lihat Semua →</a>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {recentUsers.map(u => (
+            {loading ? (
+              <ListSkeleton count={5} />
+            ) : recentUsers.map(u => (
               <div key={u.id} style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '8px 0',

@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\RetailReportController;
 use App\Http\Controllers\Api\RetailProductController;
 use App\Http\Controllers\Api\RetailTransactionController;
 use App\Http\Controllers\Api\RetailPurchaseController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\TransactionController;
 
 // ─── PUBLIC ROUTES ───────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
@@ -41,261 +43,95 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('me',     [AuthController::class, 'me']);
     });
 
-    // Admin function to change tenant plan quickly (Development/Demo utility)
-    Route::put('/admin/tenants/{tenant_id}/plan', function (Request $req, $tenant_id) {
-        if ($req->user()->role !== 'super_admin' && $req->user()->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-        $tenant = Tenant::where('tenant_id', $tenant_id)->firstOrFail();
-        $tenant->update(['subscription_plan' => $req->plan]);
-        return response()->json(['message' => 'Plan updated', 'tenant' => $tenant]);
-    });
-
     // Profile
-    Route::put('profile',          [ProfileController::class, 'update']);
+    Route::put('profile', [ProfileController::class, 'update']);
     Route::get('logs', [ActivityLogController::class, 'index']);
 
-    // Subscription Requests
-    Route::post('subscription/request', [\App\Http\Controllers\Api\SubscriptionRequestController::class, 'store']);
-    Route::get('subscription/current',  [\App\Http\Controllers\Api\SubscriptionRequestController::class, 'current']);
+    // Core System Routes (Protected by Tenant Isolation)
+    Route::middleware(['tenant'])->group(function () {
+        
+        // Dashboard
+        Route::get('dashboard', [DashboardController::class, 'index']);
 
-    // Notifications
-    Route::get('notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
-    Route::post('notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
-    Route::post('notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'readAll']);
+        // Products (Requires inventory module)
+        Route::middleware(['check_module:inventory'])->group(function () {
+            Route::get('products', [ProductController::class, 'index']);
+            Route::post('products', [ProductController::class, 'store']);
+        });
 
-    // Admin Specific
-    Route::prefix('admin')->group(function () {
+        // Transactions (Requires retail_pos module)
+        Route::middleware(['check_module:retail_pos'])->group(function () {
+            Route::get('transactions', [TransactionController::class, 'index']);
+            Route::post('transactions', [TransactionController::class, 'store']);
+            Route::post('retail/pos', [\App\Http\Controllers\Api\Retail\RetailPosController::class, 'store']);
+        });
+
+        // Budidaya Cycles (Requires budidaya_cycle module)
+        Route::middleware(['check_module:budidaya_cycle'])->group(function () {
+            Route::get('budidaya/cycles', [\App\Http\Controllers\Api\Budidaya\BudidayaCycleController::class, 'index']);
+            Route::post('budidaya/cycles/start', [\App\Http\Controllers\Api\Budidaya\BudidayaCycleController::class, 'start']);
+            
+            // Core Budidaya API
+            Route::post('budidaya/pond', [\App\Http\Controllers\Api\CoreBudidayaController::class, 'storePond']);
+            Route::post('budidaya/cycle', [\App\Http\Controllers\Api\CoreBudidayaController::class, 'storeCycle']);
+            Route::post('budidaya/expense', [\App\Http\Controllers\Api\CoreBudidayaController::class, 'storeExpense']);
+            Route::post('budidaya/harvest', [\App\Http\Controllers\Api\CoreBudidayaController::class, 'storeHarvest']);
+        });
+
+        // Culinary Admin Routes (Accessible for all culinary tenants)
+        Route::prefix('kuliner/admin')->group(function () {
+            Route::get('categories', [\App\Http\Controllers\Api\KulinerController::class, 'getCategories']);
+            Route::post('categories', [\App\Http\Controllers\Api\KulinerController::class, 'storeCategory']);
+            Route::put('categories/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'updateCategory']);
+            Route::delete('categories/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'destroyCategory']);
+            Route::get('products', [\App\Http\Controllers\Api\KulinerController::class, 'getProducts']);
+            Route::post('products', [\App\Http\Controllers\Api\KulinerController::class, 'storeProduct']);
+            Route::put('products/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'updateProduct']);
+            Route::delete('products/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'destroyProduct']);
+            Route::get('settings', [\App\Http\Controllers\Api\KulinerController::class, 'getAdminSettings']);
+            Route::post('settings', [\App\Http\Controllers\Api\KulinerController::class, 'updateAdminSettings']);
+            Route::get('staff', [\App\Http\Controllers\Api\KulinerController::class, 'getStaff']);
+            Route::post('staff', [\App\Http\Controllers\Api\KulinerController::class, 'storeStaff']);
+            Route::put('staff/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'updateStaff']);
+            Route::delete('staff/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'destroyStaff']);
+            
+            // Orders
+            Route::get('orders', [\App\Http\Controllers\Api\KulinerController::class, 'getOrders']);
+            Route::patch('orders/{id}/status', [\App\Http\Controllers\Api\KulinerController::class, 'updateOrderStatus']);
+            Route::get('dashboard/stats', [\App\Http\Controllers\Api\KulinerController::class, 'getDashboardStats']);
+            Route::get('analytics', [\App\Http\Controllers\Api\KulinerController::class, 'getAnalytics']);
+            Route::get('testimonials', [\App\Http\Controllers\Api\KulinerController::class, 'getAdminTestimonials']);
+            Route::patch('testimonials/{id}/status', [\App\Http\Controllers\Api\KulinerController::class, 'updateTestimonialStatus']);
+        });
+
+        // Website Orders (Requires website_order module)
+        Route::middleware(['check_module:website_order'])->group(function () {
+            // Other protected routes for website orders
+        });
+    });
+
+    // Public Storefront (Outside Sanctum)
+    Route::get('storefront/{slug}', [\App\Http\Controllers\Api\KulinerController::class, 'storefront']);
+
+    Route::prefix('admin')->middleware('is_admin')->group(function () {
+        Route::get('staff', [\App\Http\Controllers\Api\RetailStaffController::class, 'index']);
         Route::get('tenants', [TenantController::class, 'index']);
+        Route::post('tenants', [TenantController::class, 'store']);
         Route::put('tenants/{tenant_id}/plan', [TenantController::class, 'updatePlan']);
-        
-        // Admin Subscription Controls
-        Route::get('subscription/requests', [\App\Http\Controllers\Api\SubscriptionRequestController::class, 'index']);
-        Route::post('subscription/requests/{id}/approve', [\App\Http\Controllers\Api\SubscriptionRequestController::class, 'approve']);
-        Route::post('subscription/requests/{id}/reject',  [\App\Http\Controllers\Api\SubscriptionRequestController::class, 'reject']);
-        
-        Route::get('stats',        [DashboardController::class, 'stats']);
+        Route::get('tenants/{tenant_id}/modules', [TenantController::class, 'getModules']);
+        Route::post('tenants/{tenant_id}/modules', [TenantController::class, 'updateModules']);
+        Route::get('stats', [DashboardController::class, 'stats']);
         Route::post('tenants/{tenant_id}/impersonate', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonate']);
     });
+});
 
-    // Retail Endpoints
-    Route::prefix('retail')->group(function () {
-        // Roles & Staff
-        Route::get('roles',        [RetailRoleController::class, 'index']);
-        Route::post('roles',       [RetailRoleController::class, 'store']);
-        Route::put('roles/{id}',   [RetailRoleController::class, 'update']);
-        Route::delete('roles/{id}',[RetailRoleController::class, 'destroy']);
-
-        Route::get('staff',        [RetailStaffController::class, 'index']);
-        Route::post('staff',       [RetailStaffController::class, 'store']);
-        Route::put('staff/{id}',   [RetailStaffController::class, 'update']);
-        Route::delete('staff/{id}',[RetailStaffController::class, 'destroy']);
-        Route::get('categories', [RetailMasterController::class, 'getCategories']);
-        Route::post('categories', [RetailMasterController::class, 'storeCategory']);
-        Route::put('categories/{id}', [RetailMasterController::class, 'updateCategory']);
-        Route::delete('categories/{id}', [RetailMasterController::class, 'destroyCategory']);
-
-        Route::get('suppliers', [RetailMasterController::class, 'getSuppliers']);
-        Route::post('suppliers', [RetailMasterController::class, 'storeSupplier']);
-        Route::put('suppliers/{id}', [RetailMasterController::class, 'updateSupplier']);
-        Route::delete('suppliers/{id}', [RetailMasterController::class, 'destroySupplier']);
-
-        Route::get('customers', [RetailMasterController::class, 'getCustomers']);
-        Route::post('customers', [RetailMasterController::class, 'storeCustomer']);
-        Route::put('customers/{id}', [RetailMasterController::class, 'updateCustomer']);
-        Route::delete('customers/{id}', [RetailMasterController::class, 'destroyCustomer']);
-
-        Route::get('units', [RetailMasterController::class, 'getUnits']);
-        Route::post('units', [RetailMasterController::class, 'storeUnit']);
-        Route::put('units/{id}', [RetailMasterController::class, 'updateUnit']);
-        Route::delete('units/{id}', [RetailMasterController::class, 'destroyUnit']);
-        
-        // Expense Categories
-        Route::get('expense-categories', [RetailMasterController::class, 'getExpenseCategories']);
-        Route::post('expense-categories', [RetailMasterController::class, 'storeExpenseCategory']);
-        Route::put('expense-categories/{id}', [RetailMasterController::class, 'updateExpenseCategory']);
-        Route::delete('expense-categories/{id}', [RetailMasterController::class, 'destroyExpenseCategory']);
-        
-        // Products
-        Route::get('products', [RetailProductController::class, 'index']);
-        Route::post('products', [RetailProductController::class, 'store']);
-        Route::put('products/{id}', [RetailProductController::class, 'update']);
-        Route::delete('products/{id}', [RetailProductController::class, 'destroy']);
-
-        // Transactions (POS)
-        Route::post('transactions', [RetailTransactionController::class, 'store']);
-
-        // Purchases (Restok)
-        // Purchases (Restok)
-        Route::get('purchases', [RetailPurchaseController::class, 'index']);
-        Route::post('purchases', [RetailPurchaseController::class, 'store']);
-        
-        // Finance (Keuangan Sederhana)
-        Route::get('finance/summary', [\App\Http\Controllers\Api\RetailFinanceController::class, 'getSummary']);
-        Route::get('finance/expenses', [\App\Http\Controllers\Api\RetailFinanceController::class, 'index']);
-        Route::post('finance/expenses', [\App\Http\Controllers\Api\RetailFinanceController::class, 'store']);
-        Route::put('finance/expenses/{id}', [\App\Http\Controllers\Api\RetailFinanceController::class, 'update']);
-        Route::delete('finance/expenses/{id}', [\App\Http\Controllers\Api\RetailFinanceController::class, 'destroy']);
-
-        Route::get('reports', [RetailReportController::class, 'getReports']);
-    });
-
-    // ─── BUDIDAYA (AQUACULTURE) ENDPOINTS ───────────────────────────────────
-    Route::prefix('budidaya')->group(function () {
-        // Dashboard
-        Route::get('dashboard/stats', [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'dashboardStats']);
-
-        // Ponds
-        Route::apiResource('ponds', \App\Http\Controllers\Api\Budidaya\PondController::class);
-        Route::post('ponds/{pondId}/sensors', [\App\Http\Controllers\Api\Budidaya\SensorController::class, 'store']);
-
-        // Feed Stocks
-        Route::get('feeds',           [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'index']);
-        Route::post('feeds',          [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'store']);
-        Route::put('feeds/{id}/add',  [\App\Http\Controllers\Api\Budidaya\FeedController::class, 'addStock']);
-
-        // Pond Cycle Management
-        Route::get('ponds/{pondId}/cycle', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'show']);
-        Route::post('ponds/{pondId}/cycles/start', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'start']);
-        
-        // Cycle Actions
-        Route::get('cycles', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'index']);
-        Route::get('cycles/{id}', [\App\Http\Controllers\Api\Budidaya\CycleController::class, 'details']);
-        Route::post('cycles/{cycleId}/feedings', [\App\Http\Controllers\Api\Budidaya\FeedingController::class, 'store']);
-        Route::post('cycles/{cycleId}/health', [\App\Http\Controllers\Api\Budidaya\HealthController::class, 'store']);
-        Route::post('cycles/{cycleId}/harvest', [\App\Http\Controllers\Api\Budidaya\HarvestController::class, 'store']);
-
-        // Finance
-        Route::get('finance', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'index']);
-        Route::post('finance', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'store']);
-        Route::apiResource('expenses', \App\Http\Controllers\Api\Budidaya\FinanceController::class)->except(['show', 'update']);
-
-        // ── Staff (Manajemen Pengguna) ────────────────────────────────────────
-        Route::get('staff',          [\App\Http\Controllers\Api\Budidaya\StaffController::class, 'index']);
-        Route::post('staff',         [\App\Http\Controllers\Api\Budidaya\StaffController::class, 'store']);
-        Route::put('staff/{id}',     [\App\Http\Controllers\Api\Budidaya\StaffController::class, 'update']);
-        Route::delete('staff/{id}',  [\App\Http\Controllers\Api\Budidaya\StaffController::class, 'destroy']);
-
-        // ── Roles & Permissions (Peran & Izin) ───────────────────────────────
-        Route::get('roles',          [\App\Http\Controllers\Api\Budidaya\RoleController::class, 'index']);
-        Route::post('roles',         [\App\Http\Controllers\Api\Budidaya\RoleController::class, 'store']);
-        Route::put('roles/{id}',     [\App\Http\Controllers\Api\Budidaya\RoleController::class, 'update']);
-        Route::delete('roles/{id}',  [\App\Http\Controllers\Api\Budidaya\RoleController::class, 'destroy']);
-
-        // ── Reports & Analytics ───────────────────────────────────────────────
-        Route::get('reports/ponds',   [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'pondReport']);
-        Route::get('reports/staff',   [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'staffStats']);
-        Route::get('reports/harvest', [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'harvestSummary']);
-
-
-        // ── Inventory (Gudang) ────────────────────────────────────────────────
-        Route::get('inventory', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'index']);
-        Route::post('inventory', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'store']);
-        Route::put('inventory/{id}', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'update']);
-        Route::delete('inventory/{id}', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'destroy']);
-        Route::post('inventory/{id}/stock', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'updateStock']);
-        Route::get('inventory/{id}/logs', [\App\Http\Controllers\Api\Budidaya\InventoryController::class, 'logs']);
-
-        // Alerts (Notifikasi)
-        Route::get('alerts', [\App\Http\Controllers\Api\Budidaya\AlertController::class, 'index']);
-        Route::post('alerts/mark-all-read', [\App\Http\Controllers\Api\Budidaya\AlertController::class, 'markAllAsRead']);
-        Route::patch('alerts/{id}/read', [\App\Http\Controllers\Api\Budidaya\AlertController::class, 'markAsRead']);
-    });
-
-
-    // ─── KULINER (CULINARY) ENDPOINTS ──────────────────────────────────────
-    Route::prefix('kuliner')->group(function () {
-        // Public Storefront (No Auth Required for browsing)
-        Route::get('public/{tenantId}/categories', [\App\Http\Controllers\Api\KulinerPublicController::class, 'getCategories']);
-        Route::get('public/{tenantId}/products', [\App\Http\Controllers\Api\KulinerPublicController::class, 'getProducts']);
-        Route::get('public/products/{id}', [\App\Http\Controllers\Api\KulinerPublicController::class, 'getProductDetails']);
-        Route::get('public/settings', [\App\Http\Controllers\Api\KulinerPublicController::class, 'getSettings']);
-        Route::post('public/orders', [\App\Http\Controllers\Api\KulinerOrderController::class, 'store']);
-
-        // Customer Routes (Auth Required)
-        Route::middleware('auth:sanctum')->group(function () {
-            Route::post('orders/checkout', [\App\Http\Controllers\Api\KulinerOrderController::class, 'checkout']);
-            Route::get('orders/my', [\App\Http\Controllers\Api\KulinerOrderController::class, 'getMyOrders']);
-            Route::get('orders/{id}', [\App\Http\Controllers\Api\KulinerOrderController::class, 'getOrderDetails']);
-        });
-
-        // Admin Routes (Auth + Admin Role Required)
-        Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
-            Route::get('dashboard/stats', [\App\Http\Controllers\Api\KulinerDashboardController::class, 'getStats']);
-            Route::get('stats', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getDashboardStats']);
-            
-            // Categories
-            Route::get('categories', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getCategories']);
-            Route::post('categories', [\App\Http\Controllers\Api\KulinerAdminController::class, 'storeCategory']);
-            Route::put('categories/{id}', [\App\Http\Controllers\Api\KulinerAdminController::class, 'updateCategory']);
-            Route::delete('categories/{id}', [\App\Http\Controllers\Api\KulinerAdminController::class, 'destroyCategory']);
-
-            // Products
-            Route::get('products', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getProducts']);
-            Route::post('products', [\App\Http\Controllers\Api\KulinerAdminController::class, 'storeProduct']);
-            Route::put('products/{id}', [\App\Http\Controllers\Api\KulinerAdminController::class, 'updateProduct']);
-            Route::delete('products/{id}', [\App\Http\Controllers\Api\KulinerAdminController::class, 'destroyProduct']);
-
-            // Orders
-            Route::get('orders', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getOrders']);
-            Route::patch('orders/{id}/status', [\App\Http\Controllers\Api\KulinerAdminController::class, 'updateOrderStatus']);
-
-            // Settings
-            Route::get('settings', [\App\Http\Controllers\Api\KulinerAdminController::class, 'getSettings']);
-            Route::post('settings', [\App\Http\Controllers\Api\KulinerAdminController::class, 'updateSettings']);
-        });
-    });
-
-    // ─── ADMIN ONLY ────────────────────────────────────────────────────────
-    Route::middleware('is_admin')->group(function () {
-
-        // Users
-        Route::get('users',               [UserController::class, 'index']);
-        Route::post('users',              [UserController::class, 'store']);
-        Route::get('users/{user}',        [UserController::class, 'show']);
-        Route::put('users/{user}',        [UserController::class, 'update']);
-        Route::delete('users/{user}',     [UserController::class, 'destroy']);
-        Route::patch('users/{user}/status', [UserController::class, 'updateStatus']);
-
-        // Tenants
-        Route::get('tenants',               [TenantController::class, 'index']);
-        Route::get('tenants/{tenant}',      [TenantController::class, 'show']);
-        Route::put('tenants/{tenant}',      [TenantController::class, 'update']);
-        Route::delete('tenants/{tenant}',   [TenantController::class, 'destroy']);
-
-        // Categories (admin manages)
-        Route::get('categories',                            [BusinessCategoryController::class, 'index']);
-        Route::post('categories',                           [BusinessCategoryController::class, 'store']);
-        Route::put('categories/{businessCategory}',         [BusinessCategoryController::class, 'update']);
-        Route::delete('categories/{businessCategory}',      [BusinessCategoryController::class, 'destroy']);
-        Route::patch('categories/{businessCategory}/toggle',[BusinessCategoryController::class, 'toggle']);
-
-        // Activity Logs
-        Route::get('logs', [ActivityLogController::class, 'index']);
-
-        // Admin FULL ACCESS → Retail master data per tenant (developer view)
-        Route::prefix('retail-admin')->group(function () {
-            // Categories
-            Route::get('categories',         [RetailMasterController::class, 'adminGetCategories']);
-            Route::post('categories',        [RetailMasterController::class, 'adminStoreCategory']);
-            Route::put('categories/{id}',    [RetailMasterController::class, 'adminUpdateCategory']);
-            Route::delete('categories/{id}', [RetailMasterController::class, 'adminDestroyCategory']);
-            // Units
-            Route::get('units',              [RetailMasterController::class, 'adminGetUnits']);
-            Route::post('units',             [RetailMasterController::class, 'adminStoreUnit']);
-            Route::put('units/{id}',         [RetailMasterController::class, 'adminUpdateUnit']);
-            Route::delete('units/{id}',      [RetailMasterController::class, 'adminDestroyUnit']);
-            // Expense Categories
-            Route::get('expense-categories',         [RetailMasterController::class, 'adminGetExpenseCategories']);
-            Route::post('expense-categories',        [RetailMasterController::class, 'adminStoreExpenseCategory']);
-            Route::put('expense-categories/{id}',    [RetailMasterController::class, 'adminUpdateExpenseCategory']);
-            Route::delete('expense-categories/{id}', [RetailMasterController::class, 'adminDestroyExpenseCategory']);
-        });
-
-        // Admin management (super_admin only)
-        Route::middleware('is_super_admin')->group(function () {
-            Route::post('admins',        [UserController::class, 'store']);
-            Route::delete('admins/{user}', [UserController::class, 'destroy']);
-        });
-    });
+// ─── KULINER PUBLIC ROUTES (NO AUTH REQUIRED) ───────────────────────────────
+Route::prefix('kuliner/public')->group(function () {
+    Route::get('settings', [\App\Http\Controllers\Api\KulinerController::class, 'getSettings']);
+    Route::get('best-sellers', [\App\Http\Controllers\Api\KulinerController::class, 'getBestSellers']);
+    Route::get('categories', [\App\Http\Controllers\Api\KulinerController::class, 'getPublicCategories']);
+    Route::get('products', [\App\Http\Controllers\Api\KulinerController::class, 'getPublicProducts']);
+    Route::post('orders', [\App\Http\Controllers\Api\KulinerController::class, 'placeOrder']);
+    Route::get('testimonials', [\App\Http\Controllers\Api\KulinerController::class, 'getPublicTestimonials']);
+    Route::post('testimonials', [\App\Http\Controllers\Api\KulinerController::class, 'submitTestimonial']);
 });

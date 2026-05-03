@@ -87,7 +87,7 @@ class SubscriptionRequestController extends Controller
     /**
      * Admin approves a request
      */
-    public function approve(Request $request, $id)
+    public function approve(Request $request, int $id)
     {
         if ($request->user()->role !== 'super_admin') {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -125,7 +125,7 @@ class SubscriptionRequestController extends Controller
     /**
      * Admin rejects a request
      */
-    public function reject(Request $request, $id)
+    public function reject(Request $request, int $id)
     {
         if ($request->user()->role !== 'super_admin') {
             return response()->json(['message' => 'Unauthorized'], 403);

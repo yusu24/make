@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Modal from '../../../components/Modal';
+import { PosSkeleton } from '../../../components/Skeleton';
 import '../pos.css';
 
 export default function Pos() {
@@ -113,6 +114,13 @@ export default function Pos() {
         discount_amount: discount,
         items: cart.map(item => ({ id: item.id, qty: item.qty, price: item.price_sell }))
       };
+
+      if (payAmount < totalAfterDiscount) {
+        alert('Jumlah bayar tidak cukup!');
+        setIsProcessing(false);
+        return;
+      }
+
       const res = await api.post('/retail/transactions', payload);
       setLastSuccess(res.data);
       setShowPayModal(false); setCart([]); setCustomerId(''); setDiscount(0);
@@ -177,6 +185,8 @@ export default function Pos() {
     window.addEventListener('keydown', handleArrowKeys);
     return () => window.removeEventListener('keydown', handleArrowKeys);
   }, [displayedProducts, focusedProductIndex, showPayModal]);
+
+  if (loading) return <div className="pos-container"><PosSkeleton /></div>;
 
   return (
     <div className="pos-container">
@@ -405,7 +415,7 @@ export default function Pos() {
                   <p className="pay-section-label">Jumlah bayar</p>
                   <input 
                      type="text"
-                     className="pay-amount-input"
+                     className={`pay-amount-input ${payAmount < totalAfterDiscount ? 'border-red-500 bg-red-50 text-red-600' : ''}`}
                      value={`Rp ${payAmount.toLocaleString()}`}
                      onChange={e => {
                         const val = e.target.value.replace(/[^0-9]/g, '');
@@ -413,6 +423,9 @@ export default function Pos() {
                      }}
                      onFocus={e => e.target.select()}
                   />
+                  {payAmount < totalAfterDiscount && (
+                     <p className="text-[11px] text-red-500 font-800 mt-2 uppercase tracking-wide">Jumlah bayar kurang Rp {(totalAfterDiscount - payAmount).toLocaleString()}</p>
+                  )}
                   
                   <div className="pay-quick-amounts">
                      {[50000, 100000, 150000, 200000].map(amount => (

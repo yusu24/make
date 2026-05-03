@@ -35,7 +35,7 @@ class ImpersonateController extends Controller
 
         // Format user data same as login
         $plan = $tenant->subscription_plan ?? 'free';
-        $businessCategory = $targetUser->businessCategory?->name;
+        $businessCategory = $targetUser->businessCategory?->name ?? $tenant->businessCategory?->name;
 
         $userData = [
             'id'                  => $targetUser->id,
@@ -66,11 +66,11 @@ class ImpersonateController extends Controller
 
     private function resolveRedirect(?string $category): string
     {
-        return match ($category) {
-            'Budidaya Ikan' => '/budidaya/dashboard',
-            'Toko Retail'   => '/retail/dashboard',
-            'Kuliner'       => '/kuliner/storefront',
-            default         => '/coming-soon',
-        };
+        $cat = trim($category);
+        if (strcasecmp($cat, 'Budidaya Ikan') === 0) return '/budidaya/dashboard';
+        if (strcasecmp($cat, 'Toko Retail') === 0)   return '/retail/dashboard';
+        if (strcasecmp($cat, 'Kuliner') === 0)       return '/kuliner/admin/categories';
+        
+        return '/coming-soon';
     }
 }

@@ -177,6 +177,8 @@ class AuthController extends Controller
             'name'              => $user->name,
             'email'             => $user->email,
             'role'              => $user->role,
+            'tenant_id'         => $user->tenant_id,
+            'tenant_name'       => $tenant?->business_name ?? $tenant?->name,
             'status'            => $user->status,
             'phone'             => $user->phone,
             'business_category' => $user->businessCategory?->name,
@@ -184,6 +186,7 @@ class AuthController extends Controller
             'subscription_plan' => $plan,
             'subscription_status' => $status,
             'subscription_days_left' => $daysLeft,
+            'active_modules'    => $tenant ? $tenant->modules()->where('is_active', true)->pluck('name')->toArray() : [],
             'permissions'       => ($user->role === 'customer' || $user->role === 'super_admin') 
                                     ? 'all' 
                                     : ($user->retailRole ? $user->retailRole->permissions : []),

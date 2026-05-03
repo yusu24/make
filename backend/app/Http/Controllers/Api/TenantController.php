@@ -47,6 +47,31 @@ class TenantController extends Controller
         return response()->json(['success' => true, 'data' => $tenant]);
     }
 
+    public function store(Request $request)
+    {
+        // Find business category ID based on name
+        $category = \App\Models\BusinessCategory::where('name', $request->category)->first();
+        
+        $user = \App\Models\User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt('password123'),
+            'role' => 'admin', // Tenant owner is an admin of their own store
+            'tenant_id' => $request->tenant_id,
+            'business_category_id' => $category ? $category->id : null,
+        ]);
+
+        $tenant = Tenant::create([
+            'user_id' => $user->id,
+            'tenant_id' => $request->tenant_id,
+            'business_category_id' => $category ? $category->id : null,
+            'subscription_plan' => $request->plan ?? 'free',
+            'status' => 'active',
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Tenant berhasil dibuat']);
+    }
+
     public function update(Request $request, Tenant $tenant)
     {
         $tenant->update($request->only('status', 'subscription_plan', 'business_name'));
@@ -59,5 +84,51 @@ class TenantController extends Controller
         ActivityLog::record('delete_tenant', 'Tenant: ' . $tenant->tenant_id, 'danger');
         $tenant->delete();
         return response()->json(['success' => true, 'message' => 'Tenant dihapus']);
+    }
+
+    public function getModules(string $tenant_id)
+    {
+        $tenant = Tenant::where('tenant_id', $tenant_id)->firstOrFail();
+        $allModules = \App\Models\Module::all();
+        $activeModules = $tenant->modules()->where('is_active', true)->pluck('modules.id')->toArray();
+
+        $data = $allModules->map(fn($m) => [
+            'id' => $m->id,
+            'name' => $m->name,
+            'is_active' => in_array($m->id, $activeModules)
+        ]);
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function updateModules(Request $request, string $tenant_id)
+    {
+        $tenant = Tenant::where('tenant_id', $tenant_id)->firstOrFail();
+        $moduleIds = $request->module_ids; // Array of IDs
+
+        // Reset all
+        $tenant->modules()->update(['is_active' => false]);
+
+        // Set active
+        if (!empty($moduleIds)) {
+            foreach ($moduleIds as $mid) {
+                // Ensure record exists in pivot first (seeders should have handled this, but just in case)
+                $exists = $tenant->modules()->where('modules.id', $mid)->exists();
+                if (!$exists) {
+                    $tenant->modules()->attach($mid, ['is_active' => true]);
+                } else {
+                    $tenant->modules()->updateExistingPivot($mid, ['is_active' => true]);
+                }
+            }
+        }
+
+        return response()->json(['message' => 'Modul diperbarui']);
+    }
+
+    public function updatePlan(Request $request, string $tenant_id)
+    {
+        $tenant = Tenant::where('tenant_id', $tenant_id)->firstOrFail();
+        $tenant->update(['subscription_plan' => $request->plan]);
+        return response()->json(['message' => 'Paket berhasil diperbarui']);
     }
 }

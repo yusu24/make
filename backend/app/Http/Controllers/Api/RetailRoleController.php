@@ -36,7 +36,7 @@ class RetailRoleController extends Controller
         return response()->json(['message' => 'Role berhasil dibuat', 'data' => $role], 201);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $tenantId = $request->user()->tenant_id;
         $role = RetailRole::where('id', $id)->where('tenant_id', $tenantId)->first();
@@ -60,7 +60,7 @@ class RetailRoleController extends Controller
         return response()->json(['message' => 'Role diupdate', 'data' => $role]);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, int $id)
     {
         $tenantId = $request->user()->tenant_id;
         $role = RetailRole::where('id', $id)->where('tenant_id', $tenantId)->first();

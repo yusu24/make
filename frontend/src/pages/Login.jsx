@@ -25,6 +25,8 @@ export default function Login() {
       } else {
         if (userData.business_category === 'Toko Retail') {
           navigate('/retail/dashboard')
+        } else if (userData.business_category === 'Kuliner') {
+          navigate('/kuliner/admin')
         } else {
           navigate('/coming-soon')
         }

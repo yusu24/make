@@ -12,7 +12,7 @@ const SYSTEM_ROUTES = {
   'Budidaya Ikan': '/budidaya/dashboard',
   'Jasa':          '/coming-soon',
   'Manufaktur':    '/coming-soon',
-  'Kuliner':       '/kuliner/storefront',
+  'Kuliner':       '/kuliner/admin',
 }
 
 const DUMMY_CATS = [
@@ -20,6 +20,7 @@ const DUMMY_CATS = [
   { id:2, name:'Budidaya Ikan', description:'Pemantauan kolam ikan dan siklus panen',    tenant_count:89,  active:true,  icon:'🐟', color:'#10b981' },
   { id:3, name:'Jasa',          description:'Manajemen booking dan layanan jasa',         tenant_count:76,  active:true,  icon:'🔧', color:'#8b5cf6' },
   { id:4, name:'Manufaktur',    description:'Kontrol produksi dan manajemen bahan baku',  tenant_count:41,  active:true,  icon:'🏭', color:'#f59e0b' },
+  { id:5, name:'Kuliner',       description:'Manajemen restoran, cafe, dan pesanan online', tenant_count:56, active:true,  icon:'🍱', color:'#ec4899' },
 ]
 
 export default function Categories() {

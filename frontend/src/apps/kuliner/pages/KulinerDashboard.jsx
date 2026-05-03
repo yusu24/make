@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { api } from '../../../lib/api';
-import './CategoryStorefront.css';
+import { useNavigate, Link } from 'react-router-dom';
+import api from '../../../services/api';
+import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import KulinerLoading from '../components/KulinerLoading';
+import './KulinerDashboard.css';
+
+import { useAuth } from '../../../contexts/AuthContext';
 
 const KulinerDashboard = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeModal, setActiveModal] = useState(null);
 
   useEffect(() => {
     fetchStats();
@@ -23,111 +30,228 @@ const KulinerDashboard = () => {
   };
 
   const formatRp = (n) => {
-    return 'Rp ' + (n || 0).toLocaleString('id-ID');
+    if (n === undefined || n === null) return 'Rp 0';
+    return 'Rp ' + new Intl.NumberFormat('id-ID').format(parseInt(n));
   };
 
-  if (loading) return <div className="kl-loading">Memuat Dashboard...</div>;
+  const openModal = (type) => setActiveModal(type);
+  const closeModal = () => setActiveModal(null);
 
   return (
-    <div className="kl-admin-dashboard" style={{ background: '#fdfaf5', minHeight: '100vh' }}>
-      {/* Admin Sidebar/Header */}
-      <div className="kl-admin-nav" style={{ background: '#fff', padding: '20px 48px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div className="kl-logo">Admin <em>Dapur Nusantara</em></div>
-        <div style={{ display: 'flex', gap: '20px' }}>
-          <Link to="/kuliner" className="kl-btn-ghost" style={{ fontSize: 13 }}>Lihat Storefront</Link>
-          <Link to="/kuliner/admin/settings" className="kl-btn-ghost" style={{ fontSize: 13 }}>Pengaturan Toko</Link>
-          <Link to="/kuliner/admin/categories" className="kl-btn-ghost" style={{ fontSize: 13 }}>Kategori Menu</Link>
-        </div>
-      </div>
-
-      <div style={{ padding: '48px' }}>
-        <div className="kl-section-header" style={{ textAlign: 'left', marginBottom: 32 }}>
-          <h2 style={{ fontSize: 28 }}>Dashboard <em>Keuangan</em></h2>
-          <p>Pantau performa penjualan dan pesanan toko Anda secara real-time.</p>
-        </div>
-
-        {/* Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '48px' }}>
-          <div className="kl-stat-card" style={{ background: '#fff', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', border: '1px solid #f0f0f0' }}>
-            <p style={{ fontSize: 13, color: '#888', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase' }}>Pendapatan Hari Ini</p>
-            <h3 style={{ fontSize: 24, fontWeight: 800, color: '#10b981' }}>{formatRp(stats?.revenue_today)}</h3>
-            <p style={{ fontSize: 12, color: '#aaa', marginTop: 8 }}>Total dari {stats?.orders_today} pesanan</p>
-          </div>
-          <div className="kl-stat-card" style={{ background: '#fff', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', border: '1px solid #f0f0f0' }}>
-            <p style={{ fontSize: 13, color: '#888', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase' }}>Pendapatan Bulan Ini</p>
-            <h3 style={{ fontSize: 24, fontWeight: 800, color: '#b48c36' }}>{formatRp(stats?.revenue_month)}</h3>
-            <p style={{ fontSize: 12, color: '#aaa', marginTop: 8 }}>Bulan {new Date().toLocaleString('id-ID', {month: 'long'})}</p>
-          </div>
-          <div className="kl-stat-card" style={{ background: '#fff', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', border: '1px solid #f0f0f0' }}>
-            <p style={{ fontSize: 13, color: '#888', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase' }}>Total Pesanan</p>
-            <h3 style={{ fontSize: 24, fontWeight: 800, color: '#3b82f6' }}>{stats?.total_orders}</h3>
-            <p style={{ fontSize: 12, color: '#aaa', marginTop: 8 }}>Semua waktu</p>
-          </div>
-          <div className="kl-stat-card" style={{ background: '#fff', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', border: '1px solid #f0f0f0' }}>
-            <p style={{ fontSize: 13, color: '#888', fontWeight: 600, marginBottom: 8, textTransform: 'uppercase' }}>Status Sistem</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-              <div style={{ width: 10, height: 10, background: '#10b981', borderRadius: '50%' }}></div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#10b981' }}>Aktif</h3>
+    <KulinerAdminLayout>
+      {loading ? (
+        <KulinerLoading message="Menyiapkan Dapur..." />
+      ) : (
+        <>
+          <div className="kd-topbar">
+            <h1 className="kd-page-title">Dashboard Overview</h1>
+            <div className="kd-topbar-actions">
+              {/* Notifications and Profile moved to sidebar */}
             </div>
-            <p style={{ fontSize: 12, color: '#aaa', marginTop: 14 }}>Database Connected</p>
-          </div>
-        </div>
-
-        {/* Recent Orders Table */}
-        <div style={{ background: '#fff', borderRadius: '24px', padding: '40px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', border: '1px solid #f0f0f0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 22 }}>Pesanan <em>Terbaru</em></h3>
-            <button className="kl-btn-ghost" style={{ fontSize: 13 }}>Lihat Semua Pesanan</button>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ textAlign: 'left', borderBottom: '1px solid #f0f0f0' }}>
-                <th style={{ padding: '16px', color: '#888', fontSize: 13, fontWeight: 600 }}>ORDER ID</th>
-                <th style={{ padding: '16px', color: '#888', fontSize: 13, fontWeight: 600 }}>PELANGGAN</th>
-                <th style={{ padding: '16px', color: '#888', fontSize: 13, fontWeight: 600 }}>TIPE</th>
-                <th style={{ padding: '16px', color: '#888', fontSize: 13, fontWeight: 600 }}>TOTAL</th>
-                <th style={{ padding: '16px', color: '#888', fontSize: 13, fontWeight: 600 }}>STATUS</th>
-                <th style={{ padding: '16px', color: '#888', fontSize: 13, fontWeight: 600 }}>WAKTU</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats?.recent_orders?.map((order) => (
-                <tr key={order.id} style={{ borderBottom: '1px solid #fafafa' }}>
-                  <td style={{ padding: '20px 16px', fontSize: 14, fontWeight: 700, color: '#b48c36' }}>{order.order_number}</td>
-                  <td style={{ padding: '20px 16px' }}>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>{order.customer_name}</div>
-                    <div style={{ fontSize: 12, color: '#aaa' }}>{order.customer_phone}</div>
-                  </td>
-                  <td style={{ padding: '20px 16px' }}>
-                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: '100px', background: order.order_type === 'dine_in' ? '#eff6ff' : '#f0fdf4', color: order.order_type === 'dine_in' ? '#3b82f6' : '#10b981', fontWeight: 700 }}>
-                      {order.order_type === 'dine_in' ? 'Dine In' : 'Take Away'}
-                      {order.table_number && ` (${order.table_number})`}
-                    </span>
-                  </td>
-                  <td style={{ padding: '20px 16px', fontSize: 14, fontWeight: 700 }}>{formatRp(order.total_amount)}</td>
-                  <td style={{ padding: '20px 16px' }}>
-                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: '100px', background: '#fef3c7', color: '#d97706', fontWeight: 700 }}>
-                      {order.status.toUpperCase()}
-                    </span>
-                  </td>
-                  <td style={{ padding: '20px 16px', fontSize: 13, color: '#888' }}>
-                    {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="kd-content">
+            {/* STATS */}
+            <div className="kd-stats-grid">
+              <div className="kd-stat-card">
+                <div className="kd-stat-header">
+                  <span className="kd-stat-label">Pendapatan Hari Ini</span>
+                  <div className="kd-stat-icon kd-icon-revenue">💰</div>
+                </div>
+                <div className="kd-stat-value">{formatRp(stats?.revenue_today)}</div>
+                <div className="kd-stat-change kd-change-up">↑ 12.5% dari kemarin</div>
+              </div>
 
-          {stats?.recent_orders?.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#aaa' }}>
-              <div style={{ fontSize: 40, marginBottom: 16 }}>📝</div>
-              <p>Belum ada pesanan masuk.</p>
+              <div className="kd-stat-card">
+                <div className="kd-stat-header">
+                  <span className="kd-stat-label">Pesanan Hari Ini</span>
+                  <div className="kd-stat-icon kd-icon-orders">📦</div>
+                </div>
+                <div className="kd-stat-value">{stats?.orders_today || 0}</div>
+                <div className="kd-stat-change kd-change-up">↑ {stats?.orders_today || 0} pesanan baru</div>
+              </div>
+
+              <div className="kd-stat-card">
+                <div className="kd-stat-header">
+                  <span className="kd-stat-label">Pendapatan Bulan Ini</span>
+                  <div className="kd-stat-icon kd-icon-menu">📊</div>
+                </div>
+                <div className="kd-stat-value">{formatRp(stats?.revenue_month)}</div>
+                <div className="kd-stat-change kd-change-up">Trend positif bulan ini</div>
+              </div>
+
+              <div className="kd-stat-card">
+                <div className="kd-stat-header">
+                  <span className="kd-stat-label">Total Pesanan</span>
+                  <div className="kd-stat-icon kd-icon-users">📈</div>
+                </div>
+                <div className="kd-stat-value">{stats?.total_orders || 0}</div>
+                <div className="kd-stat-change kd-change-up">Seluruh periode</div>
+              </div>
+            </div>
+
+            {/* QUICK ACTIONS */}
+            <div className="kd-quick-actions">
+              <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/categories')}>
+                <div className="kd-action-icon kd-ai-add">➕</div>
+                <div className="kd-action-text">
+                  <h4>Tambah Menu Baru</h4>
+                  <p>Upload menu dan atur harga</p>
+                </div>
+              </button>
+
+              <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/categories')}>
+                <div className="kd-action-icon kd-ai-edit">🏷️</div>
+                <div className="kd-action-text">
+                  <h4>Kelola Kategori</h4>
+                  <p>Edit & atur kategori menu</p>
+                </div>
+              </button>
+
+              <button className="kd-action-btn" onClick={() => openModal('flyer')}>
+                <div className="kd-action-icon kd-ai-design">🎨</div>
+                <div className="kd-action-text">
+                  <h4>Buat Flyer Promo</h4>
+                  <p>Desain banner & promosi</p>
+                </div>
+              </button>
+
+              <button className="kd-action-btn" onClick={() => openModal('finance')}>
+                <div className="kd-action-icon kd-ai-finance">📊</div>
+                <div className="kd-action-text">
+                  <h4>Laporan Keuangan</h4>
+                  <p>Lihat & export data</p>
+                </div>
+              </button>
+            </div>
+
+            <div className="kd-panels">
+              <div className="kd-panel">
+                <div className="kd-panel-header">
+                  <h3 className="kd-panel-title">Pesanan Terbaru</h3>
+                  <button className="kd-panel-action" onClick={() => navigate('/kuliner/admin/orders')}>Lihat semua →</button>
+                </div>
+                <div className="kd-table-container">
+                  <table className="kd-table">
+                    <thead>
+                      <tr>
+                        <th>Order ID</th>
+                        <th>Pelanggan</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Waktu</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats?.recent_orders?.map((order) => (
+                        <tr key={order.id}>
+                          <td><span className="font-bold text-[#b48c36]">{order.order_number}</span></td>
+                          <td>
+                            <div className="kd-menu-name">{order.customer_name}</div>
+                            <div className="text-[11px] text-slate-400">{order.customer_phone}</div>
+                          </td>
+                          <td>{formatRp(order.total_amount)}</td>
+                          <td><span className="kd-status-badge kd-status-draft">{order.status}</span></td>
+                          <td>{new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
+                        </tr>
+                      ))}
+                      {(!stats?.recent_orders || stats.recent_orders.length === 0) && (
+                        <tr>
+                          <td colSpan="5" className="text-center py-10 text-slate-400">Belum ada pesanan masuk.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="kd-panel">
+                <div className="kd-panel-header">
+                  <h3 className="kd-panel-title">Aktivitas Terkini</h3>
+                </div>
+                <div className="kd-activity-list">
+                  <div className="kd-activity-item">
+                    <div className="kd-activity-icon kd-act-order">📦</div>
+                    <div className="kd-activity-content">
+                      <h4>Pesanan baru masuk</h4>
+                      <p>Sistem otomatis memproses</p>
+                    </div>
+                  </div>
+                  <div className="kd-activity-item">
+                    <div className="kd-activity-icon kd-act-menu">🍛</div>
+                    <div className="kd-activity-content">
+                      <h4>Menu Terlaris</h4>
+                      <p>Rendang Padang naik 12%</p>
+                    </div>
+                  </div>
+                  <div className="kd-activity-item">
+                    <div className="kd-activity-icon kd-act-review">⭐</div>
+                    <div className="kd-activity-content">
+                      <h4>Review Pelanggan</h4>
+                      <p>Rata-rata 4.8 bintang</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* FLYER MODAL */}
+          {activeModal === 'flyer' && (
+            <div className="kd-modal-overlay visible" onClick={closeModal}>
+              <div className="kd-modal" onClick={e => e.stopPropagation()}>
+                <div className="kd-modal-header">
+                  <h2 className="kd-modal-title">Buat Flyer Promo</h2>
+                  <button className="kd-close-btn" onClick={closeModal}>×</button>
+                </div>
+                <div className="kd-modal-body">
+                  <div className="kd-form-group">
+                    <label className="kd-form-label">Judul Promo</label>
+                    <input type="text" className="kd-form-input" placeholder="Diskon Weekend 20%" />
+                  </div>
+                  <div className="kd-form-group">
+                    <label className="kd-form-label">Upload Desain Flyer</label>
+                    <div className="kd-upload-area">
+                      <div className="kd-upload-icon">🎨</div>
+                      <div className="kd-upload-text">Upload gambar flyer (JPG, PNG max 2MB)</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="kd-modal-footer">
+                  <button className="kd-btn kd-btn-secondary" onClick={closeModal}>Batal</button>
+                  <button className="kd-btn kd-btn-primary">Publikasikan Promo</button>
+                </div>
+              </div>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+
+          {/* FINANCE MODAL */}
+          {activeModal === 'finance' && (
+            <div className="kd-modal-overlay visible" onClick={closeModal}>
+              <div className="kd-modal" onClick={e => e.stopPropagation()}>
+                <div className="kd-modal-header">
+                  <h2 className="kd-modal-title">Laporan Keuangan</h2>
+                  <button className="kd-close-btn" onClick={closeModal}>×</button>
+                </div>
+                <div className="kd-modal-body">
+                  <div className="kd-form-group">
+                    <label className="kd-form-label">Periode Laporan</label>
+                    <select className="kd-form-select">
+                      <option>Bulan Ini</option>
+                      <option>Bulan Lalu</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="kd-modal-footer">
+                  <button className="kd-btn kd-btn-secondary" onClick={closeModal}>Tutup</button>
+                  <button className="kd-btn kd-btn-primary">Download Laporan</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </KulinerAdminLayout>
   );
 };
 

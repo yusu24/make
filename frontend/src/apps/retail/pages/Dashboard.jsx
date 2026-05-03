@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../../lib/api';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell 
@@ -8,10 +7,10 @@ import {
   ShoppingBag, TrendingUp, Receipt, AlertTriangle, ArrowRight,
   RefreshCw, Plus, Package, Eye, DollarSign
 } from 'lucide-react';
+import { useCore } from '../../../hooks/useCore';
 import '../retail.css';
 
 // Sub-component for KPI Card (Top Row)
-// Modified for Horizon UI Style
 const KpiCard = ({ title, value, trend, trendType, icon: Icon, color }) => (
   <div className="horizon-kpi">
     <div className="horizon-kpi__icon-wrap" style={{ background: 'var(--airy-bg)' }}>
@@ -53,6 +52,7 @@ let _cacheTime = 0;
 const CACHE_TTL = 60_000;
 
 export default function RetailDashboard() {
+  const { getDashboard, loading: apiLoading } = useCore();
   const [data, setData] = useState(_cache || null);
   const [loading, setLoading] = useState(!_cache);
 
@@ -61,20 +61,22 @@ export default function RetailDashboard() {
     if (_cache && (now - _cacheTime) < CACHE_TTL) {
       setData(_cache); setLoading(false); return;
     }
-    api.get('/retail/reports').then(res => {
+    
+    getDashboard().then(res => {
+        const summary = res.summary || {};
         const sanitizedData = {
-          total_sales: res.data?.total_sales || 0,
-          total_transactions: res.data?.total_transactions || 0,
-          transactions: res.data?.transactions || [],
-          top_products: res.data?.top_products || [],
-          low_stock: res.data?.low_stock || []
+          total_sales: summary.income || 0,
+          total_transactions: summary.income_count || 0,
+          transactions: res.daily_stats || [],
+          top_products: [], 
+          low_stock: []
         };
         _cache = sanitizedData; 
         _cacheTime = Date.now(); 
         setData(sanitizedData); 
         setLoading(false); 
     }).catch(() => setLoading(false));
-  }, []);
+  }, [getDashboard]);
 
   if (loading || !data) return (
     <div className="page-content">
@@ -86,8 +88,7 @@ export default function RetailDashboard() {
   );
 
   // Derived data for visuals
-  const netSales = data.total_sales * 0.85; // Placeholder logic
-  const totalVariants = 50 + (data.top_products.length * 5); // Placeholder
+  const netSales = data.total_sales * 0.85; 
   
   const chartData = [
     { name: 'Nov', sales: 25000 }, { name: 'Dec', sales: 15000 },
@@ -129,7 +130,6 @@ export default function RetailDashboard() {
 
       {/* Row 2: Charts & Deep Analysis */}
       <div className="airy-main-grid">
-        {/* Statistics Card */}
         <div className="airy-card">
           <div className="flex justify-between items-center mb-8">
              <div>
@@ -159,7 +159,6 @@ export default function RetailDashboard() {
           </div>
         </div>
 
-        {/* Stock Unit Donut */}
         <div className="airy-card flex flex-col items-center">
            <div className="w-full flex justify-between items-center mb-6">
               <h3 className="font-700 text-lg" style={{ color: 'var(--airy-text-bold)' }}>Stock Unit</h3>
@@ -198,7 +197,6 @@ export default function RetailDashboard() {
         </div>
       </div>
 
-      {/* Row 3: Most Selling Products */}
       <div className="airy-card">
          <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-700" style={{ color: 'var(--airy-text-bold)' }}>Most Selling Product</h3>
@@ -216,8 +214,7 @@ export default function RetailDashboard() {
                 progress={100 - (idx * 15)}
               />
             ))}
-            {/* Pad with placeholders if few products */}
-            {data.top_products.length < 4 && [1,2].map(i => (
+            {data.top_products.length < 4 && [1,2,3,4].map(i => (
               <ProductCard 
                 key={`p-${i}`} 
                 product={{ id: `p-${i}`, name: 'New Arrival Item' }} 
