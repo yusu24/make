@@ -10,7 +10,7 @@ class KulinerProduct extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['tenant_id', 'category_id', 'name', 'description', 'price', 'stock', 'image_url', 'is_available'];
+    protected $fillable = ['tenant_id', 'category_id', 'name', 'description', 'price', 'discount_price', 'stock', 'image_url', 'is_available'];
 
     public function category()
     {

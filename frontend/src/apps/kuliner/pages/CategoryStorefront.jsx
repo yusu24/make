@@ -59,7 +59,8 @@ const CategoryStorefront = () => {
             id: p.id,
             name: p.name,
             desc: p.description || '',
-            price: 'Rp ' + new Intl.NumberFormat('id-ID').format(p.price || 0),
+            price: p.price,
+            discount_price: p.discount_price,
             category: catsRes.data.find(c => c.id === p.category_id)?.name || 'Lainnya',
             emoji: p.image_url || '🍛',
             class: `kl-mi-${(idx % 6) + 1}`
@@ -266,7 +267,20 @@ const CategoryStorefront = () => {
                 <h4>{item.name}</h4>
                 <p className="line-clamp-2">{item.desc}</p>
                 <div className="kl-menu-item-footer">
-                  <div className="kl-item-price">{item.price}</div>
+                  <div className="kl-item-price">
+                    {item.discount_price ? (
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ textDecoration: 'line-through', fontSize: '10px', color: '#94a3b8', marginBottom: '-2px' }}>
+                          Rp {new Intl.NumberFormat('id-ID').format(item.price)}
+                        </span>
+                        <span style={{ color: '#ef4444', fontWeight: 'bold' }}>
+                          Rp {new Intl.NumberFormat('id-ID').format(item.discount_price)}
+                        </span>
+                      </div>
+                    ) : (
+                      `Rp ${new Intl.NumberFormat('id-ID').format(item.price)}`
+                    )}
+                  </div>
                   <div className="kl-item-rating"><span>★</span> 4.8</div>
                 </div>
               </div>

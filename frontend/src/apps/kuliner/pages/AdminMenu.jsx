@@ -22,6 +22,7 @@ const AdminMenu = () => {
     name: '',
     category_id: '',
     price: '',
+    discount_price: '',
     description: '',
     image_url: '',
     is_available: true
@@ -61,13 +62,14 @@ const AdminMenu = () => {
         name: product.name,
         category_id: product.category_id || '',
         price: product.price,
+        discount_price: product.discount_price || '',
         description: product.description || '',
         image_url: product.image_url || '',
         is_available: product.is_available ?? true
       });
     } else {
       setEditingItem(null);
-      setProductForm({ name: '', category_id: '', price: '', description: '', image_url: '', is_available: true });
+      setProductForm({ name: '', category_id: '', price: '', discount_price: '', description: '', image_url: '', is_available: true });
     }
     setShowProductModal(true);
   };
@@ -83,6 +85,11 @@ const AdminMenu = () => {
     setProductForm({ ...productForm, price: value });
   };
 
+  const handleDiscountPriceChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '');
+    setProductForm({ ...productForm, discount_price: value });
+  };
+
   const displayPrice = (val) => {
     if (!val) return '';
     return new Intl.NumberFormat('id-ID').format(parseInt(val));
@@ -94,7 +101,8 @@ const AdminMenu = () => {
     try {
       const payload = {
         ...productForm,
-        price: parseInt(productForm.price) || 0
+        price: parseInt(productForm.price) || 0,
+        discount_price: productForm.discount_price ? parseInt(productForm.discount_price) : null
       };
       if (editingItem) {
         await api.put(`/kuliner/admin/products/${editingItem.id}`, payload);
@@ -350,7 +358,7 @@ const AdminMenu = () => {
                     </select>
                   </div>
                   <div className="kd-form-group">
-                    <label className="kd-form-label">Harga (Rp)</label>
+                    <label className="kd-form-label">Harga Asli (Rp)</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold" style={{ fontSize: '13px' }}>Rp</span>
                       <input 
@@ -361,6 +369,20 @@ const AdminMenu = () => {
                         placeholder="0"
                         value={displayPrice(productForm.price)}
                         onChange={handlePriceChange}
+                      />
+                    </div>
+                  </div>
+                  <div className="kd-form-group">
+                    <label className="kd-form-label text-green-600 font-bold">Harga Promo (Rp)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-green-400 font-bold" style={{ fontSize: '13px' }}>Rp</span>
+                      <input 
+                        type="text"
+                        className="kd-form-input border-green-200 focus:border-green-500"
+                        style={{ paddingLeft: '40px' }}
+                        placeholder="Kosongkan jika tidak promo"
+                        value={displayPrice(productForm.discount_price)}
+                        onChange={handleDiscountPriceChange}
                       />
                     </div>
                   </div>

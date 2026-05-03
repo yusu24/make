@@ -390,6 +390,7 @@ class KulinerController extends Controller
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:kuliner_categories,id',
             'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'image_url' => 'nullable|string',
         ]);
@@ -404,6 +405,7 @@ class KulinerController extends Controller
             'name' => $request->name,
             'category_id' => $request->category_id,
             'price' => $request->price,
+            'discount_price' => $request->discount_price,
             'description' => $request->description,
             'image_url' => $request->image_url,
             'is_available' => true,
@@ -450,6 +452,7 @@ class KulinerController extends Controller
             'name' => $request->name,
             'category_id' => $request->category_id,
             'price' => $request->price,
+            'discount_price' => $request->discount_price,
             'description' => $request->description,
             'image_url' => $request->image_url,
             'is_available' => $request->is_available,

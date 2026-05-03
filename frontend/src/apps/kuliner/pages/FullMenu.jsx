@@ -66,6 +66,7 @@ const FullMenu = () => {
           bg: 'kl-bg-a', // Default bg
           desc: p.description || '',
           price: p.price,
+          discount_price: p.discount_price,
           rating: 4.8, // Default
           votes: 12,
           cal: 0,
@@ -160,7 +161,7 @@ const FullMenu = () => {
         items: cartItems.map(i => ({
           id: i.id,
           name: i.name,
-          price: i.price,
+          price: i.discount_price || i.price,
           quantity: i.quantity
         }))
       };
@@ -178,7 +179,7 @@ const FullMenu = () => {
   };
 
   const cartCount = cartItems.reduce((acc, curr) => acc + curr.quantity, 0);
-  const totalCartPrice = cartItems.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
+  const totalCartPrice = cartItems.reduce((acc, curr) => acc + ((curr.discount_price || curr.price) * curr.quantity), 0);
 
   if (loading) {
     return (
@@ -211,7 +212,7 @@ const FullMenu = () => {
                     <div className="kl-ci-thumb">{item.emoji}</div>
                     <div className="kl-ci-info">
                       <h4>{item.name}</h4>
-                      <p>{formatRp(item.price)}</p>
+                      <p>{formatRp(item.discount_price || item.price)}</p>
                     </div>
                     <div className="kl-ci-actions">
                       <div className="kl-qty-control">
@@ -390,7 +391,18 @@ const FullMenu = () => {
                     <div className="kl-item-cal">{item.cal} kal</div>
                   </div>
                   <div className="kl-item-price" style={{marginTop:6}}>
-                    {formatRp(item.price)}
+                    {item.discount_price ? (
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <span style={{ color: '#ef4444', fontWeight: 'bold' }}>
+                          {formatRp(item.discount_price)}
+                        </span>
+                        <span style={{ textDecoration: 'line-through', fontSize: '0.75em', color: '#94a3b8' }}>
+                          {formatRp(item.price)}
+                        </span>
+                      </div>
+                    ) : (
+                      formatRp(item.price)
+                    )}
                   </div>
                 </div>
                 <button 
