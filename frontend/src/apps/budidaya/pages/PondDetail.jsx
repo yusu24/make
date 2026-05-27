@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import { 
   ArrowLeft, Droplets, Activity, 
@@ -90,6 +90,7 @@ const NumericInput = ({ label, value, onChange, placeholder, suffix, required = 
 export default function PondDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { setCustomTitle } = useOutletContext() || {}
   const [data, setData] = useState(null)
   const [pond, setPond] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -229,6 +230,15 @@ export default function PondDetail() {
   const metrics = data?.metrics
   const age_days = data?.age_days
 
+  useEffect(() => {
+    if (setCustomTitle && pond) {
+      setCustomTitle(pond.name)
+    }
+    return () => {
+      if (setCustomTitle) setCustomTitle('')
+    }
+  }, [pond, setCustomTitle])
+
   return (
     <div className="aq-container">
       
@@ -236,7 +246,6 @@ export default function PondDetail() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 40 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-            <h1 className="aq-page-title" style={{ fontSize: 32 }}>{pond?.name || 'Kolam Utama A1'}</h1>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ padding: '6px 14px', background: '#D1FAE5', color: '#065F46', borderRadius: '40px', fontSize: 12, fontWeight: 600 }}>Sehat</span>

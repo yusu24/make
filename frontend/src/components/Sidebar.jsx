@@ -3,7 +3,8 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, CreditCard, Package, Layers, Ruler, Users, Truck,
   BarChart2, ShoppingCart, UserCheck, RefreshCw,
-  LogOut, Inbox, ClipboardList, Database, Wallet
+  LogOut, Inbox, ClipboardList, Database, Wallet, Settings, User,
+  HelpCircle, ServerCog, FileText, Zap, Shield
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import Modal from './Modal'
@@ -14,30 +15,64 @@ const NAV_ITEMS = [
   {
     section: 'Overview',
     items: [
-      { path: '/dashboard', icon: '◈', label: 'Dashboard' },
+      { path: '/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' },
     ]
   },
   {
-    section: 'Manajemen',
+    section: 'Tenant Management',
     adminOnly: true,
     items: [
-      { path: '/users',      icon: '◉', label: 'Pengguna' },
-      { path: '/tenants',    icon: '⬡', label: 'Tenant' },
-      { path: '/admins',     icon: '◆', label: 'Admin' },
-      { path: '/categories', icon: '⊞', label: 'Kategori Bisnis' },
+      { path: '/tenants',    icon: <Truck size={24} />,     label: 'Tenant Management' },
+      { path: '/users',      icon: <Users size={24} />,     label: 'Users' },
+      { path: '/admins',     icon: <UserCheck size={24} />, label: 'Admins' },
+      { path: '/saas-roles', icon: <Shield size={24} />,    label: 'SaaS Roles' },
+      { path: '/categories', icon: <Layers size={24} />,    label: 'Business Categories' },
     ]
   },
   {
-    section: 'Sistem',
+    section: 'Subscription & Billing',
     adminOnly: true,
     items: [
-      { path: '/logs', icon: '≡', label: 'Activity Log' },
+      { path: '/subscriptions', icon: <CreditCard size={24} />, label: 'Subscription & Billing' },
+    ]
+  },
+  {
+    section: 'Packages & Features',
+    adminOnly: true,
+    items: [
+      { path: '/packages-features', icon: <Package size={24} />, label: 'Packages & Features' },
+      { path: '/finance',          icon: <Wallet size={24} />,  label: 'Finance' },
+    ]
+  },
+  {
+    section: 'Operations',
+    adminOnly: true,
+    items: [
+      { path: '/support-center',      icon: <HelpCircle size={24} />,  label: 'Support Center' },
+      { path: '/system-monitoring',   icon: <ServerCog size={24} />,  label: 'System Monitoring' },
+      { path: '/content-announcement', icon: <FileText size={24} />,   label: 'Content & Announcement' },
+    ]
+  },
+  {
+    section: 'Reports',
+    adminOnly: true,
+    items: [
+      { path: '/reports-analytics', icon: <BarChart2 size={24} />,   label: 'Reports & Analytics' },
+      { path: '/logs',              icon: <ClipboardList size={24} />, label: 'Security & Audit' },
+    ]
+  },
+  {
+    section: 'Platform',
+    adminOnly: true,
+    items: [
+      { path: '/settings', icon: <Settings size={24} />, label: 'Settings' },
+      { path: '/developer-integrations', icon: <Zap size={24} />, label: 'Developer & Integrations' },
     ]
   },
   {
     section: 'Akun',
     items: [
-      { path: '/profile', icon: '⊙', label: 'Profil Saya' },
+      { path: '/profile', icon: <User size={24} />, label: 'Profil Saya' },
     ]
   }
 ]
@@ -109,6 +144,7 @@ const RETAIL_NAV_ITEMS = [
     icon: <Database size={20} />,
     items: [
       { path: '/retail/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
+      { path: '/retail/support',      icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
     ]
   }
 ]
@@ -124,6 +160,14 @@ const BUDIDAYA_NAV_ITEMS = [
       { path: '/budidaya/ponds',     icon: <Layers size={24} />,          label: 'Kolam' },
       { path: '/budidaya/cycles',    icon: <RefreshCw size={24} />,      label: 'Siklus' },
     ]
+  },
+  {
+    section: 'Sistem & Paket',
+    icon: <Database size={20} />,
+    items: [
+      { path: '/budidaya/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
+      { path: '/budidaya/support',      icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
+    ]
   }
 ]
 
@@ -136,6 +180,14 @@ const KULINER_NAV_ITEMS = [
     items: [
       { path: '/kuliner/admin',          icon: <LayoutDashboard size={24} />, label: 'Dashboard' },
       { path: '/kuliner/admin/categories', icon: <Layers size={24} />,          label: 'Menu & Kategori' },
+    ]
+  },
+  {
+    section: 'Sistem & Paket',
+    icon: <Database size={20} />,
+    items: [
+      { path: '/kuliner/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
+      { path: '/kuliner/support',      icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
     ]
   }
 ]
@@ -199,7 +251,7 @@ function RetailPopover({ section, anchorY, sidebarWidth = 68, onClose, onPaywall
                 style={section.isLocked ? { opacity: 0.55 } : {}}
               >
                 <span className="sidebar__popover-item-icon">
-                  {item.icon && React.cloneElement(item.icon, { size: 24 })}
+                  {item.icon && (typeof item.icon === 'string' ? item.icon : React.cloneElement(item.icon, { size: 24 }))}
                 </span>
                 <span className="sidebar__popover-item-label">{item.label}</span>
               </NavLink>
@@ -231,39 +283,48 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
 
   // ── Build nav items dynamically based on active_modules ──────────────────
   const activeModules = user?.active_modules || []
+  const isSaasAdmin = !isRetail && (isSuperAdmin() || user?.role === 'admin')
   let currentNavItems = []
 
-  if (isSuperAdmin() || user?.role === 'admin') {
+  if (isSaasAdmin) {
     currentNavItems = [...NAV_ITEMS]
   } else {
-    // Basic items
-    currentNavItems.push({
-      section: 'Utama',
-      items: [{ path: '/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' }]
-    })
+    // Basic items (skip for Retail as it has its own Menu Utama)
+    if (user?.business_category !== 'Toko Retail') {
+      currentNavItems.push({
+        section: 'Utama',
+        items: [{ path: '/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' }]
+      })
+    }
 
     // Retail Module
-    if (activeModules.includes('retail_pos') || activeModules.includes('inventory')) {
+    if (user?.business_category === 'Toko Retail' || activeModules.includes('retail_pos') || activeModules.includes('inventory')) {
       currentNavItems = [...currentNavItems, ...RETAIL_NAV_ITEMS]
     }
 
     // Budidaya Module
-    if (activeModules.includes('budidaya_cycle')) {
+    if (user?.business_category === 'Budidaya Ikan' || activeModules.includes('budidaya_cycle')) {
       currentNavItems = [...currentNavItems, ...BUDIDAYA_NAV_ITEMS]
     }
 
     // Kuliner Module
-    if (activeModules.includes('website_order')) {
+    if (user?.business_category === 'Kuliner' || activeModules.includes('website_order')) {
       currentNavItems = [...currentNavItems, ...KULINER_NAV_ITEMS]
     }
 
     currentNavItems.push({
-      section: 'Akun',
-      items: [{ path: '/profile', icon: <UserCheck size={24} />, label: 'Profil Saya' }]
+      section: 'Akun & Bantuan',
+      items: [
+        { path: '/support', icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
+        { path: '/profile', icon: <UserCheck size={24} />, label: 'Profil Saya' }
+      ]
     })
   }
 
-  const handleLogout = () => { logout(); navigate('/login') }
+  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']
+  const isDemo = DEMO_EMAILS.includes(user?.email)
+
+  const handleLogout = () => { logout(); navigate(isDemo ? '/' : '/login') }
 
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -453,15 +514,15 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
               </div>
             </div>
           )}
-          <button
-            id="btn-logout"
-            onClick={handleLogout}
-            className={`sidebar__logout ${isMini ? 'sidebar__logout--icon' : ''}`}
-            title="Keluar"
-          >
-            <span>⇥</span>
-            {!isMini && <span>Keluar</span>}
-          </button>
+                      <button
+              id="btn-logout"
+              onClick={handleLogout}
+              className={`sidebar__logout ${isMini ? 'sidebar__logout--icon' : ''}`}
+              title="Keluar"
+            >
+              <span>⇥</span>
+              {!isMini && <span>Keluar</span>}
+            </button>
         </div>
       </aside>
 

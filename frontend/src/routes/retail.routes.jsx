@@ -19,6 +19,7 @@ const RetailUnits = lazy(() => import('../apps/retail/pages/Units'));
 const RetailInventory = lazy(() => import('../apps/retail/pages/Inventory'));
 const RetailFinanceSummary = lazy(() => import('../apps/retail/pages/FinanceSummary'));
 const RetailExpenses = lazy(() => import('../apps/retail/pages/Expenses'));
+const TenantSupportCenter = lazy(() => import('../pages/TenantSupportCenter'));
 
 const retailRoutes = (
   <Route path="retail">
@@ -38,6 +39,7 @@ const retailRoutes = (
     <Route path="staff" element={<RetailStaff />} />
     <Route path="roles" element={<RetailRoles />} />
     <Route path="subscription" element={<RetailSubscription />} />
+    <Route path="support" element={<TenantSupportCenter />} />
 
     {/* LAPORAN */}
     <Route path="reports">

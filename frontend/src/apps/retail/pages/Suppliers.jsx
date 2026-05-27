@@ -59,34 +59,27 @@ export default function Suppliers() {
 
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="page-title">Database Mitra Supplier</h2>
-          <p className="page-sub">Kelola daftar pemasok barang dagangan untuk supply chain toko Anda.</p>
-        </div>
-        <button className="btn btn-primary" onClick={() => { setEditingSupplier(null); setShowModal(true); }}>
-          + Registrasi Supplier
-        </button>
-      </div>
+
 
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Direktori Mitra Supplier</h3>
+        <div className="p-6 flex justify-end items-center gap-6">
+          <div className="flex items-center gap-3">
+            <button className="btn btn-primary h-[42px] px-6 whitespace-nowrap" onClick={() => { setEditingSupplier(null); setShowModal(true); }}>
+              + Registrasi Supplier
+            </button>
+            <span className="px-3 py-1 retail-bg-main retail-border rounded-lg retail-label whitespace-nowrap">
+               {suppliers.length} Partners Registered
+            </span>
           </div>
-          <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-800 text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-heading)' }}>
-             {suppliers.length} Partners Registered
-          </span>
         </div>
         
         <table className="table">
           <thead>
             <tr>
-               <th className="pl-6">Identitas Supplier</th>
-               <th>Kontak PIC</th>
-               <th>Alamat Operasional</th>
-               <th className="text-right pr-6">Kontrol</th>
+               <th className="pl-6 retail-table-header">Identitas Supplier</th>
+               <th className="retail-table-header">Kontak PIC</th>
+               <th className="retail-table-header">Alamat Operasional</th>
+               <th className="text-right pr-6 retail-table-header">Kontrol</th>
             </tr>
           </thead>
           <tbody>
@@ -104,24 +97,24 @@ export default function Suppliers() {
                 <tr key={s.id}>
                   <td className="pl-6">
                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-primary-600 border border-slate-200">
+                        <div className="w-10 h-10 rounded-xl retail-bg-primary-subtle flex items-center justify-center retail-text-primary retail-border">
                            <Building2 size={18} />
                         </div>
                         <div>
-                           <div className="text-slate-800">{s.name}</div>
-                           <div className="text-[10px] text-slate-400 uppercase tracking-widest">{s.id.toString().padStart(4, '0')}</div>
+                           <div className="retail-text-primary">{s.name}</div>
+                           <div className="text-[10px] retail-text-secondary uppercase tracking-widest">{s.id.toString().padStart(4, '0')}</div>
                         </div>
                      </div>
                   </td>
                   <td>
-                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <Phone size={13} className="text-slate-400" />
+                     <div className="flex items-center gap-2 text-sm retail-text-primary">
+                        <Phone size={13} className="retail-text-secondary" />
                         {s.contact || '-'}
                      </div>
                   </td>
                   <td>
-                     <div className="flex items-center gap-2 text-sm text-slate-500 max-w-xs truncate">
-                        <MapPin size={13} className="text-slate-400 shrink-0" />
+                     <div className="flex items-center gap-2 text-sm retail-text-secondary max-w-xs truncate">
+                        <MapPin size={13} className="retail-text-secondary shrink-0" />
                         {s.address || '-'}
                      </div>
                   </td>
@@ -131,7 +124,7 @@ export default function Suppliers() {
                          <Edit3 size={15} />
                       </button>
 
-                      <button className="btn btn-sm btn-ghost text-red-500" onClick={async () => { if(confirm('Hapus supplier ini?')) { await api.delete(`/retail/suppliers/${s.id}`); fetchSuppliers(); } }} title="Hapus Data">
+                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if(confirm('Hapus supplier ini?')) { await api.delete(`/retail/suppliers/${s.id}`); fetchSuppliers(); } }} title="Hapus Data">
                          <Trash2 size={15} />
                       </button>
                     </div>

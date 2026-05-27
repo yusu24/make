@@ -62,10 +62,7 @@ const CulinaryReviews = () => {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <div>
-          <h1 className="kd-page-title">Ulasan Pelanggan</h1>
-          <p className="text-sm text-slate-500 mt-1">Dengarkan suara pelanggan untuk meningkatkan kualitas layanan Anda.</p>
-        </div>
+        <h1 className="kd-page-title">Ulasan Pelanggan</h1>
         <div className="kd-topbar-actions">
           <div style={{ textAlign: 'right' }}>
             <div className="text-2xl font-black text-slate-800">{stats.averageRating} / 5.0</div>

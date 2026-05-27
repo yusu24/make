@@ -62,33 +62,25 @@ export default function Customers() {
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       {/* Page Header (Synced with Finance) */}
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-           <h2 className="page-title">Database Pelanggan</h2>
-           <p className="page-sub">Kelola profil dan data kontak pelanggan retail Anda.</p>
-        </div>
-        <button className="btn btn-primary" onClick={() => { setEditingCustomer(null); setShowModal(true); }}>
-           + Tambah pelanggan
-        </button>
-      </div>
+
 
       {/* CRM Statistics */}
       <div className="grid-2" style={{ marginBottom: 52 }}>
         <div className="card card-pad flex items-center justify-between">
            <div className="flex flex-col">
-              <span className="text-xs font-800 text-slate-400 uppercase tracking-widest mb-1">Total Member</span>
-              <span className="text-2xl font-800 text-slate-800">{customers.length} User</span>
+              <span className="retail-label mb-1">Total Member</span>
+              <span className="retail-title">{customers.length} User</span>
            </div>
-           <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center">
+           <div className="w-12 h-12 retail-bg-primary-subtle retail-text-primary rounded-2xl flex items-center justify-center">
               <User size={24} />
            </div>
         </div>
         <div className="card card-pad flex items-center justify-between">
            <div className="flex flex-col">
-              <span className="text-xs font-800 text-slate-400 uppercase tracking-widest mb-1">Database Health</span>
-              <span className="text-2xl font-800 text-green-500">Active</span>
+              <span className="retail-label mb-1">Database Health</span>
+              <span className="retail-title retail-text-success">Active</span>
            </div>
-           <div className="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center">
+           <div className="w-12 h-12 retail-bg-success-subtle retail-text-success rounded-2xl flex items-center justify-center">
               <RefreshCw size={24} />
            </div>
         </div>
@@ -96,14 +88,12 @@ export default function Customers() {
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-             <div className="w-1 h-5 bg-primary-500 rounded-full" />
-             <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Direktori Pelanggan</h3>
-          </div>
-          
-          <div className="flex items-center gap-3 w-full md:w-auto">
-             <div className="airy-search-wrapper" style={{ width: 280 }}>
+        <div className="p-6 flex justify-end">
+          <div className="flex items-center gap-3">
+             <button className="btn btn-primary h-[42px] px-6 whitespace-nowrap" onClick={() => { setEditingCustomer(null); setShowModal(true); }}>
+                + Tambah pelanggan
+             </button>
+             <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
                 <input 
                   placeholder="Cari Pelanggan..."
                   value={search}
@@ -124,10 +114,10 @@ export default function Customers() {
         <table className="table">
           <thead>
             <tr>
-              <th className="pl-6">Informasi Profil</th>
-              <th>Akses Kontak</th>
-              <th>Alamat Terdaftar</th>
-              <th className="pr-6 text-right">Aksi</th>
+              <th className="pl-6 retail-table-header">Informasi Profil</th>
+              <th className="retail-table-header">Akses Kontak</th>
+              <th className="retail-table-header">Alamat Terdaftar</th>
+              <th className="pr-6 text-right retail-table-header">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -144,26 +134,26 @@ export default function Customers() {
                 <tr key={c.id}>
                   <td className="pl-6">
                       <div className="flex items-center gap-4">
-                         <div className="w-1 h-8 bg-slate-200 rounded-full" />
+                         <div className="w-1 h-8 retail-bg-primary-subtle rounded-full" />
                          <div>
-                            <p className="text-base mb-0.5 text-slate-800">{c.name}</p>
-                            <code className="text-[10px] text-slate-400 uppercase">#{c.id.toString().padStart(4, '0')}</code>
+                            <p className="text-base mb-0.5 retail-text-primary">{c.name}</p>
+                            <code className="text-[10px] retail-text-secondary uppercase">#{c.id.toString().padStart(4, '0')}</code>
                          </div>
                       </div>
                   </td>
                   <td>
                      <div className="flex flex-col">
-                        <span className="text-slate-700">{c.contact || '-'}</span>
-                        <span className="text-[11px] text-slate-400">{c.email || 'No email registered'}</span>
+                        <span className="retail-text-primary">{c.contact || '-'}</span>
+                        <span className="text-[11px] retail-text-secondary">{c.email || 'No email registered'}</span>
                      </div>
                   </td>
                   <td>
-                     <span className="text-xs text-slate-500 line-clamp-1 max-w-[200px]">{c.address || 'Alamat belum diinput'}</span>
+                     <span className="text-xs retail-text-secondary line-clamp-1 max-w-[200px]">{c.address || 'Alamat belum diinput'}</span>
                   </td>
                   <td className="pr-6 text-right">
                      <div className="flex justify-end gap-2">
                         <button className="btn btn-sm btn-ghost" onClick={() => openEdit(c)}><Edit3 size={14} /></button>
-                        <button className="btn btn-sm btn-ghost text-red-500" onClick={() => alert('Delete logic placeholder')}><Trash2 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => alert('Delete logic placeholder')}><Trash2 size={14} /></button>
                      </div>
                   </td>
                 </tr>

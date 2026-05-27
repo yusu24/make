@@ -58,84 +58,75 @@ export default function Inventory() {
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       {/* Page Header (Synced with Finance) */}
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-           <h2 className="page-title">Monitoring Persediaan</h2>
-           <p className="page-sub">Pantau stok barang di gudang Anda secara real-time.</p>
-        </div>
-        <button 
-           className="btn btn-secondary" 
-           onClick={fetchData}
-        >
-           + Segarkan data
-        </button>
-      </div>
+
 
       {/* Finance-style Summary Cards */}
       <div className="finance-cards-grid" style={{ marginBottom: 52 }}>
         <div className="finance-card finance-card--primary">
           <div className="finance-card__header">
-            <span className="finance-card__title">Total Katalog</span>
+            <span className="retail-label">Total Katalog</span>
             <div className="finance-card__icon"><Package size={20} /></div>
           </div>
-          <div className="finance-card__amount">{totalItems}</div>
+          <div className="retail-kpi-value">{totalItems}</div>
           <div className="finance-card__desc">Jumlah SKU unik terdaftar.</div>
         </div>
 
         <div className="finance-card finance-card--success">
           <div className="finance-card__header">
-            <span className="finance-card__title">Stok Aman</span>
+            <span className="retail-label">Stok Aman</span>
             <div className="finance-card__icon"><CheckCircle2 size={20} /></div>
           </div>
-          <div className="finance-card__amount">{safeItems}</div>
+          <div className="retail-kpi-value">{safeItems}</div>
           <div className="finance-card__desc">Produk dengan stok di atas batas minimum.</div>
         </div>
 
         <div className="finance-card finance-card--danger">
           <div className="finance-card__header">
-            <span className="finance-card__title">Perlu Restok</span>
+            <span className="retail-label">Perlu Restok</span>
             <div className="finance-card__icon"><AlertCircle size={20} /></div>
           </div>
-          <div className="finance-card__amount">{criticalItems}</div>
+          <div className="retail-kpi-value">{criticalItems}</div>
           <div className="finance-card__desc">{outOfStock} habis, {lowStock} menipis.</div>
         </div>
       </div>
 
-      {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Daftar Detail Inventori</h3>
-          </div>
-          
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="airy-search-wrapper" style={{ width: 300 }}>
-               <input 
-                 placeholder="Cari SKU atau Nama Barang..." 
-                 value={searchQuery}
-                 onChange={e => setSearchQuery(e.target.value)}
-               />
-            </div>
+        <div className="p-6 flex justify-end">
+          <div className="flex items-center gap-3">
             <button 
-               onClick={fetchData} 
-               className="btn-reset-sync"
-               style={{ width: 42, height: 42 }}
-               title="Segarkan Data"
+               className="btn btn-secondary h-[42px] px-6 whitespace-nowrap" 
+               onClick={fetchData}
             >
-               <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+               + Segarkan data
             </button>
+            <div className="flex items-center gap-3">
+              <div className="airy-search-wrapper" style={{ width: 300, margin: 0 }}>
+                 <input 
+                   placeholder="Cari SKU atau Nama Barang..." 
+                   value={searchQuery}
+                   onChange={e => setSearchQuery(e.target.value)}
+                 />
+              </div>
+              <button 
+                 onClick={fetchData} 
+                 className="btn-reset-sync"
+                 style={{ width: 42, height: 42 }}
+                 title="Segarkan Data"
+              >
+                 <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+              </button>
+            </div>
           </div>
         </div>
 
         <table className="table">
           <thead>
             <tr>
-              <th className="pl-6">Identitas SKU</th>
-              <th>Informasi Barang</th>
-              <th className="text-center">Kuantitas</th>
-              <th className="text-center">Limit Aman</th>
-              <th className="text-right pr-6">Status</th>
+              <th className="pl-6 retail-table-header">Identitas SKU</th>
+              <th className="retail-table-header">Informasi Barang</th>
+              <th className="text-center retail-table-header">Kuantitas</th>
+              <th className="text-center retail-table-header">Limit Aman</th>
+              <th className="text-right pr-6 retail-table-header">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -153,28 +144,28 @@ export default function Inventory() {
                 return (
                   <tr key={p.id}>
                     <td className="pl-6">
-                       <div className="inline-flex px-3 py-1 bg-slate-100 rounded-lg">
-                         <code className="text-[11px] text-slate-600 tracking-tight">{p.sku}</code>
+                       <div className="inline-flex px-3 py-1 retail-bg-primary-subtle rounded-lg">
+                         <code className="text-[11px] retail-text-primary tracking-tight">{p.sku}</code>
                        </div>
                     </td>
                     <td>
-                      <span className="text-slate-800">{p.name}</span>
+                      <span className="retail-text-primary">{p.name}</span>
                     </td>
                     <td className="text-center">
-                      <span className={`${isLow ? 'text-red-500' : 'text-slate-800'}`}>
+                      <span className={`${isLow ? 'retail-text-danger' : 'retail-text-primary'}`}>
                         {p.stock} {p.unit}
                       </span>
                     </td>
                     <td className="text-center">
-                      <span className="text-xs text-slate-400">{p.stock_min} {p.unit}</span>
+                      <span className="text-xs retail-text-secondary">{p.stock_min} {p.unit}</span>
                     </td>
                     <td className="text-right pr-6">
                       {isOut ? (
-                         <span className="badge badge-red">Habis Total</span>
+                         <span className="retail-badge retail-badge-danger">Habis Total</span>
                       ) : isLow ? (
-                         <span className="badge badge-yellow">Menipis</span>
+                         <span className="retail-badge retail-badge-warning">Menipis</span>
                       ) : (
-                         <span className="badge badge-green">Tersedia</span>
+                         <span className="retail-badge retail-badge-success">Tersedia</span>
                       )}
                     </td>
                   </tr>

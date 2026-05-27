@@ -83,7 +83,6 @@ export default function UserManagement() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1 className="aq-page-title">Manajemen pengguna</h1>
 
         </div>
         <button className="btn btn-primary" onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

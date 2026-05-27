@@ -8,10 +8,8 @@ const MarketingDesign = () => {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <div>
-          <h1 className="kd-page-title">Desain & Flyer Promosi</h1>
-          <p className="text-sm text-slate-500 mt-1">Gunakan materi promosi premium ini untuk meningkatkan penjualan Anda.</p>
-        </div>
+        <h1 className="kd-page-title">Desain & Flyer Promosi</h1>
+        <div className="kd-topbar-actions" />
       </div>
 
       <div className="kd-content">

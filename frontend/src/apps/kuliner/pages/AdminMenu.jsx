@@ -185,10 +185,7 @@ const AdminMenu = () => {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar" style={{ flexWrap: 'wrap', gap: '16px' }}>
-        <div style={{ minWidth: '200px' }}>
-          <h1 className="kd-page-title">Manajemen Katalog</h1>
-          <p className="text-sm text-slate-500 mt-1">Kelola menu dan kategori toko Anda.</p>
-        </div>
+        <h1 className="kd-page-title">Manajemen Katalog</h1>
         <div className="kd-topbar-actions" style={{ marginLeft: 'auto' }}>
           {activeTab === 'products' ? (
             <button className="kd-btn kd-btn-primary" onClick={() => handleOpenProductModal()}>

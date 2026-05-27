@@ -60,13 +60,9 @@ export default function Cycles() {
   }
 
   return (
-    <div className="animate-fade-in premium-cycles page-content" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="aq-container">
       {/* Header Section */}
-      <div className="page-header" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h2 className="aq-page-title">Riwayat Siklus Budidaya</h2>
-        </div>
-        
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
         <button 
           className="btn btn-primary" 
           onClick={() => setModalOpen(true)}

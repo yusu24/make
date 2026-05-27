@@ -6,7 +6,9 @@ import { Suspense } from 'react'
 import DashboardLayout from './layouts/DashboardLayout'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Landing from './pages/Landing'
 import ComingSoon from './pages/ComingSoon'
+import TenantSupportCenter from './pages/TenantSupportCenter'
 import ErrorBoundary from './components/ErrorBoundary'
 
 // Route Guards
@@ -26,6 +28,9 @@ function App() {
           <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
               <Routes>
+                {/* Landing page for guests & sandbox testing */}
+                <Route path="/" element={<Landing />} />
+
                 {/* Public / Guest Routes */}
                 <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
                 <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
@@ -33,15 +38,18 @@ function App() {
                 {/* Shared Protected Routes */}
                 <Route path="/coming-soon" element={<ProtectedRoute><ComingSoon /></ProtectedRoute>} />
                 
-                {/* Main Application Layout (SaaS Admin & Retail) */}
-                <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                  <Route index element={<RootRedirect />} />
+                {/* Main Application Layout (SaaS Admin & Retail under pathless Protected wrapper) */}
+                <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                  <Route path="/dashboard-redirect" element={<RootRedirect />} />
                   
                   {/* SaaS Admin Module */}
                   {adminRoutes}
 
                   {/* Retail Module */}
                   {retailRoutes}
+
+                  {/* Generic Tenant Modules */}
+                  <Route path="/support" element={<TenantSupportCenter />} />
                 </Route>
 
                 {/* Budidaya Module */}
@@ -50,8 +58,8 @@ function App() {
                 {/* Kuliner Module */}
                 {kulinerRoutes}
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                {/* Fallback to root (which redirects to dashboard if logged in) */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
           </ErrorBoundary>

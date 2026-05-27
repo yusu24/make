@@ -39,18 +39,16 @@ const KulinerDashboard = () => {
 
   return (
     <KulinerAdminLayout>
-      {loading ? (
-        <KulinerLoading message="Menyiapkan Dapur..." />
-      ) : (
-        <>
-          <div className="kd-topbar">
-            <h1 className="kd-page-title">Dashboard Overview</h1>
-            <div className="kd-topbar-actions">
-              {/* Notifications and Profile moved to sidebar */}
-            </div>
-          </div>
+      <div className="kd-topbar">
+        <h1 className="kd-page-title">Dashboard Overview</h1>
+        <div className="kd-topbar-actions" />
+      </div>
 
-          <div className="kd-content">
+      <div className="kd-content">
+        {loading ? (
+          <KulinerLoading message="Menyiapkan Dapur..." />
+        ) : (
+          <>
             {/* STATS */}
             <div className="kd-stats-grid">
               <div className="kd-stat-card">
@@ -194,63 +192,63 @@ const KulinerDashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* FLYER MODAL */}
-          {activeModal === 'flyer' && (
-            <div className="kd-modal-overlay visible" onClick={closeModal}>
-              <div className="kd-modal" onClick={e => e.stopPropagation()}>
-                <div className="kd-modal-header">
-                  <h2 className="kd-modal-title">Buat Flyer Promo</h2>
-                  <button className="kd-close-btn" onClick={closeModal}>×</button>
-                </div>
-                <div className="kd-modal-body">
-                  <div className="kd-form-group">
-                    <label className="kd-form-label">Judul Promo</label>
-                    <input type="text" className="kd-form-input" placeholder="Diskon Weekend 20%" />
+            {/* FLYER MODAL */}
+            {activeModal === 'flyer' && (
+              <div className="kd-modal-overlay visible" onClick={closeModal}>
+                <div className="kd-modal" onClick={e => e.stopPropagation()}>
+                  <div className="kd-modal-header">
+                    <h2 className="kd-modal-title">Buat Flyer Promo</h2>
+                    <button className="kd-close-btn" onClick={closeModal}>×</button>
                   </div>
-                  <div className="kd-form-group">
-                    <label className="kd-form-label">Upload Desain Flyer</label>
-                    <div className="kd-upload-area">
-                      <div className="kd-upload-icon">🎨</div>
-                      <div className="kd-upload-text">Upload gambar flyer (JPG, PNG max 2MB)</div>
+                  <div className="kd-modal-body">
+                    <div className="kd-form-group">
+                      <label className="kd-form-label">Judul Promo</label>
+                      <input type="text" className="kd-form-input" placeholder="Diskon Weekend 20%" />
+                    </div>
+                    <div className="kd-form-group">
+                      <label className="kd-form-label">Upload Desain Flyer</label>
+                      <div className="kd-upload-area">
+                        <div className="kd-upload-icon">🎨</div>
+                        <div className="kd-upload-text">Upload gambar flyer (JPG, PNG max 2MB)</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="kd-modal-footer">
-                  <button className="kd-btn kd-btn-secondary" onClick={closeModal}>Batal</button>
-                  <button className="kd-btn kd-btn-primary">Publikasikan Promo</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* FINANCE MODAL */}
-          {activeModal === 'finance' && (
-            <div className="kd-modal-overlay visible" onClick={closeModal}>
-              <div className="kd-modal" onClick={e => e.stopPropagation()}>
-                <div className="kd-modal-header">
-                  <h2 className="kd-modal-title">Laporan Keuangan</h2>
-                  <button className="kd-close-btn" onClick={closeModal}>×</button>
-                </div>
-                <div className="kd-modal-body">
-                  <div className="kd-form-group">
-                    <label className="kd-form-label">Periode Laporan</label>
-                    <select className="kd-form-select">
-                      <option>Bulan Ini</option>
-                      <option>Bulan Lalu</option>
-                    </select>
+                  <div className="kd-modal-footer">
+                    <button className="kd-btn kd-btn-secondary" onClick={closeModal}>Batal</button>
+                    <button className="kd-btn kd-btn-primary">Publikasikan Promo</button>
                   </div>
                 </div>
-                <div className="kd-modal-footer">
-                  <button className="kd-btn kd-btn-secondary" onClick={closeModal}>Tutup</button>
-                  <button className="kd-btn kd-btn-primary">Download Laporan</button>
+              </div>
+            )}
+
+            {/* FINANCE MODAL */}
+            {activeModal === 'finance' && (
+              <div className="kd-modal-overlay visible" onClick={closeModal}>
+                <div className="kd-modal" onClick={e => e.stopPropagation()}>
+                  <div className="kd-modal-header">
+                    <h2 className="kd-modal-title">Laporan Keuangan</h2>
+                    <button className="kd-close-btn" onClick={closeModal}>×</button>
+                  </div>
+                  <div className="kd-modal-body">
+                    <div className="kd-form-group">
+                      <label className="kd-form-label">Periode Laporan</label>
+                      <select className="kd-form-select">
+                        <option>Bulan Ini</option>
+                        <option>Bulan Lalu</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="kd-modal-footer">
+                    <button className="kd-btn kd-btn-secondary" onClick={closeModal}>Tutup</button>
+                    <button className="kd-btn kd-btn-primary">Download Laporan</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </KulinerAdminLayout>
   );
 };

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import './Shared.css'
 
 const DUMMY = [
@@ -17,16 +19,35 @@ const STATUS_BADGE = { active: 'badge-green', pending: 'badge-yellow', inactive:
 const ROLE_BADGE   = { admin: 'badge-violet', super_admin: 'badge-red', customer: 'badge-blue' }
 
 export default function Users() {
-  const [users, setUsers]       = useState(DUMMY)
+  const { impersonateUser } = useAuth()
+  const navigate = useNavigate()
+  const [users, setUsers]       = useState([])
   const [search, setSearch]     = useState('')
   const [filter, setFilter]     = useState('all')
   const [loading, setLoading]   = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [delId, setDelId]       = useState(null)
+  const [impersonating, setImpersonating] = useState(null)
 
   useEffect(() => {
-    api.get('/users').then(r => setUsers(r.data?.data || DUMMY)).catch(() => {})
+    setLoading(true)
+    api.get('/users')
+      .then(r => setUsers(r.data?.data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
+
+  const handleImpersonate = async (id) => {
+    setImpersonating(id)
+    try {
+      const redirect = await impersonateUser(id)
+      navigate(redirect)
+    } catch (err) {
+      alert('Gagal impersonate: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setImpersonating(null)
+    }
+  }
 
   const filtered = users.filter(u => {
     const q = search.toLowerCase()
@@ -58,7 +79,7 @@ export default function Users() {
       id: Date.now(),
       name: fd.get('name'),
       email: fd.get('email'),
-      role: fd.get('role'),
+      role: 'customer',
       category: '-',
       status: 'active',
       joined: new Date().toISOString().slice(0, 10)
@@ -95,7 +116,7 @@ export default function Users() {
           />
         </div>
         <div className="filter-tabs">
-          {['all','customer','admin','active','pending','inactive'].map(f => (
+          {['all','active','pending','inactive'].map(f => (
             <button
               key={f}
               id={`filter-${f}`}
@@ -115,7 +136,6 @@ export default function Users() {
             <tr>
               <th>#</th>
               <th>Pengguna</th>
-              <th>Role</th>
               <th>Kategori Bisnis</th>
               <th>Status</th>
               <th>Bergabung</th>
@@ -123,7 +143,16 @@ export default function Users() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((u, i) => (
+            {loading ? (
+              <tr>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                    <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
+                    <span>Memuat data pengguna...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : filtered.map((u, i) => (
               <tr key={u.id}>
                 <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{i + 1}</td>
                 <td>
@@ -142,7 +171,6 @@ export default function Users() {
                     </div>
                   </div>
                 </td>
-                <td><span className={`badge ${ROLE_BADGE[u.role] || 'badge-gray'}`}>{u.role}</span></td>
                 <td style={{ fontSize: 13 }}>{u.category}</td>
                 <td>
                   <button
@@ -157,6 +185,15 @@ export default function Users() {
                 <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{u.joined}</td>
                 <td>
                   <div style={{ display: 'flex', gap: 6 }}>
+                    <button 
+                      className="btn btn-ghost btn-sm" 
+                      title="Impersonate (Login sebagai User)"
+                      onClick={() => handleImpersonate(u.id)}
+                      disabled={impersonating === u.id}
+                      style={{ color: 'var(--primary-500)' }}
+                    >
+                      {impersonating === u.id ? '⏳' : '🔑'}
+                    </button>
                     <button id={`btn-edit-user-${u.id}`} className="btn btn-ghost btn-sm" title="Edit">✏</button>
                     <button
                       id={`btn-del-user-${u.id}`}
@@ -169,9 +206,9 @@ export default function Users() {
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && (
+            {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
+                <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
                   Tidak ada pengguna ditemukan
                 </td>
               </tr>
@@ -195,14 +232,7 @@ export default function Users() {
                 <label className="form-label">Email</label>
                 <input name="email" className="form-input" required type="email" placeholder="email@contoh.com" />
               </div>
-              <div className="form-group">
-                <label className="form-label">Role</label>
-                <select name="role" className="form-select" required>
-                  <option value="customer">Customer</option>
-                  <option value="admin">Admin</option>
-                  <option value="super_admin">Super Admin</option>
-                </select>
-              </div>
+
               <div className="modal__actions mt-4">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
                 <button type="submit" className="btn btn-primary">Simpan</button>

@@ -83,20 +83,9 @@ export default function Feeds() {
   const lowStockCount = feeds.filter(f => Number(f.stock_kg) < 50).length
 
   return (
-    <div className="animate-fade-in page-content">
+    <div className="aq-container">
       {/* Premium Header */}
-      <div className="page-header">
-        <div className="header-context-box">
-          <div className="premium-icon-badge">
-            <Package size={28} />
-            <div className="badge-glow"></div>
-          </div>
-          <div>
-            <h2 className="page-title">Inventaris Logistik</h2>
-
-          </div>
-        </div>
-        
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
         <button className="btn btn-primary" onClick={() => { setSelectedFeed(null); setFormData({ name: '', stock_kg: '' }); setModalOpen(true); }}>
           <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
           <span>Registrasi Pakan</span>

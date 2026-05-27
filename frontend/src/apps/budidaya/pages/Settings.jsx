@@ -96,28 +96,7 @@ export default function Settings() {
         }
       `}</style>
       
-      {/* ── Header ── */}
-      <div className="settings-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 className="aq-page-title">Pengaturan profil</h1>
-        </div>
-        <div className="header-actions" style={{ display: 'flex', gap: '12px' }}>
-          <button style={{ 
-            padding: '12px 24px', borderRadius: '12px', border: '1.5px solid #E9F0EC', 
-            background: '#fff', color: '#475569', fontWeight: '700', cursor: 'pointer', fontSize: '14px',
-            display: 'flex', alignItems: 'center', gap: '8px'
-          }}>
-            Batalkan
-          </button>
-          <button style={{ 
-            padding: '12px 24px', borderRadius: '12px', border: 'none', 
-            background: '#1B4332', color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px',
-            display: 'flex', alignItems: 'center', gap: '8px'
-          }}>
-            Simpan Perubahan
-          </button>
-        </div>
-      </div>
+
 
       <div className="aq-grid-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', alignItems: 'start' }}>
         
@@ -291,6 +270,24 @@ export default function Settings() {
 
         </div>
 
+      </div>
+
+      {/* ── Footer Actions ── */}
+      <div className="header-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '8px' }}>
+        <button style={{ 
+          padding: '12px 24px', borderRadius: '12px', border: '1.5px solid #E9F0EC', 
+          background: '#fff', color: '#475569', fontWeight: '700', cursor: 'pointer', fontSize: '14px',
+          display: 'flex', alignItems: 'center', gap: '8px'
+        }}>
+          Batalkan
+        </button>
+        <button style={{ 
+          padding: '12px 24px', borderRadius: '12px', border: 'none', 
+          background: '#1B4332', color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px',
+          display: 'flex', alignItems: 'center', gap: '8px'
+        }}>
+          Simpan Perubahan
+        </button>
       </div>
 
     </div>

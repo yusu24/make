@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../lib/api'
 import '../../../pages/Auth.css'
@@ -6,6 +7,7 @@ import './Shared.css'
 
 export default function Profile() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [form, setForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -51,7 +53,7 @@ export default function Profile() {
   const initials = user?.name?.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2) || 'U'
 
   return (
-    <div className="animate-fade-in" style={{maxWidth:720, margin:'0 auto'}}>
+    <div className="animate-fade-in">
       <div className="page-header">
         <div>
           <h2 className="page-title">Profil Saya</h2>
@@ -168,7 +170,7 @@ export default function Profile() {
             <p style={{fontSize:14,fontWeight:600,marginBottom:4}}>Keluar dari Sesi</p>
             <p style={{fontSize:12,color:'var(--text-muted)'}}>Anda akan keluar dari semua session aktif</p>
           </div>
-          <button id="btn-logout-profile" className="btn btn-danger btn-sm" onClick={logout}>Keluar Sekarang</button>
+          <button id="btn-logout-profile" className="btn btn-danger btn-sm" onClick={() => { const demoEmails = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']; logout(); navigate(demoEmails.includes(user?.email) ? '/' : '/login'); }}>Keluar Sekarang</button>
         </div>
       </div>
     </div>

@@ -7,18 +7,56 @@ import './Header.css'
 
 const PAGE_TITLES = {
   '/dashboard':   { title: 'Dashboard', sub: 'Ringkasan statistik platform' },
-  '/users':       { title: 'Pengguna', sub: 'Kelola semua pengguna terdaftar' },
-  '/tenants':     { title: 'Tenant', sub: 'Kelola tenant & akses bisnis' },
-  '/admins':      { title: 'Admin', sub: 'Kelola adminstrator' },
-  '/categories':  { title: 'Kategori Bisnis', sub: 'Kelola master kategori UMKM' },
-  '/logs':        { title: 'Activity Log', sub: 'Riwayat aktivitas sistem' },
+  '/users':       { title: 'Users', sub: 'Kelola semua pengguna terdaftar' },
+  '/tenants':     { title: 'Tenant Management', sub: 'Kelola tenant dan pelanggan bisnis' },
+  '/subscriptions': { title: 'Subscription & Billing', sub: 'Kelola paket langganan dan faktur' },
+  '/packages-features': { title: 'Packages & Features', sub: 'Atur paket dan fitur yang tersedia' },
+  '/finance':     { title: 'Finance', sub: 'Kelola transaksi dan laporan keuangan' },
+  '/support-center': { title: 'Support Center', sub: 'Layanan pelanggan dan tiket dukungan' },
+  '/system-monitoring': { title: 'System Monitoring', sub: 'Pantau performa dan kesehatan sistem' },
+  '/content-announcement': { title: 'Content & Announcement', sub: 'Kelola konten dan pengumuman platform' },
+  '/reports-analytics': { title: 'Reports & Analytics', sub: 'Lihat laporan dan data analitik' },
+  '/logs':        { title: 'Security & Audit', sub: 'Riwayat aktivitas sistem' },
+  '/settings':    { title: 'Settings', sub: 'Konfigurasi platform dan portal' },
+  '/landing-settings': { title: 'Settings', sub: 'Konfigurasi platform dan portal' },
+  '/developer-integrations':  { title: 'Developer & Integrations', sub: 'Atur integrasi dan akses developer' },
+  '/admins':      { title: 'Admins', sub: 'Kelola administrator' },
+  '/categories':  { title: 'Business Categories', sub: 'Kelola master kategori UMKM' },
   '/profile':     { title: 'Profil Saya', sub: 'Pengaturan akun Anda' },
+  
+  // Retail Module
+  '/retail/dashboard':          { title: 'Dashboard Retail' },
+  '/retail/pos':                { title: 'Kasir (POS)' },
+  '/retail/products':           { title: 'Daftar Barang' },
+  '/retail/inventory':          { title: 'Stok Barang' },
+  '/retail/stock':              { title: 'Penerimaan Barang' },
+  '/retail/categories':         { title: 'Kategori Produk' },
+  '/retail/units':              { title: 'Satuan Barang' },
+  '/retail/suppliers':          { title: 'Daftar Supplier' },
+  '/retail/customers':          { title: 'Daftar Pelanggan' },
+  '/retail/expense-categories': { title: 'Kategori Pengeluaran' },
+  '/retail/staff':              { title: 'Data Pegawai' },
+  '/retail/roles':              { title: 'Jabatan & Akses' },
+  '/retail/subscription':       { title: 'Paket Langganan' },
+  '/subscriptions':             { title: 'Langganan', sub: 'Kelola paket dan permintaan langganan pelanggan' },
+  '/retail/reports/sales':      { title: 'Laporan Penjualan' },
+  '/retail/reports/products':   { title: 'Laporan Produk' },
+  '/retail/reports/customers':  { title: 'Laporan Pelanggan' },
+  '/retail/finance/summary':    { title: 'Laporan Laba Rugi' },
+  '/retail/finance/expenses':   { title: 'Laporan Pengeluaran' },
 }
 
 export default function Header({ onMenuToggle, collapsed }) {
   const { pathname } = useLocation()
   const { user } = useAuth()
+  const isRetail = pathname.startsWith('/retail')
   const page = PAGE_TITLES[pathname] || { title: 'UMKM SaaS', sub: '' }
+  const hideAdminPageTitle = [
+    '/dashboard', '/users', '/tenants', '/subscriptions', '/packages-features', '/finance',
+    '/support-center', '/system-monitoring', '/content-announcement', '/reports-analytics',
+    '/admins', '/categories', '/logs', '/settings', '/landing-settings', '/profile',
+    '/developer-integrations'
+  ].includes(pathname)
 
   const [showNotif, setShowNotif] = useState(false)
   const [notifications, setNotifications] = useState([])
@@ -77,10 +115,12 @@ export default function Header({ onMenuToggle, collapsed }) {
             <line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </button>
-        <div className="header__title">
-          <h1 className="header__page-title">{page.title}</h1>
-          <p className="header__sub">{page.sub}</p>
-        </div>
+        {!hideAdminPageTitle && (
+          <div className="header__title">
+            <h1 className="header__page-title">{page.title}</h1>
+            {!isRetail && page.sub && <p className="header__sub">{page.sub}</p>}
+          </div>
+        )}
       </div>
 
       <div className="header__right">

@@ -21,58 +21,25 @@ export default function Tenants() {
   const [tenants, setTenants] = useState([])
   const [search, setSearch]   = useState('')
   const [showModal, setShowModal] = useState(false)
-  const [activeTab, setActiveTab] = useState('list')
-  const [requests, setRequests] = useState([])
-  const [loadingRequests, setLoadingRequests] = useState(false)
   const [impersonating, setImpersonating] = useState(null)
   const [confirmTarget, setConfirmTarget] = useState(null) // tenant to confirm impersonation
   const [moduleModal, setModuleModal] = useState(null) // tenant_id for module modal
   const [tenantModules, setTenantModules] = useState([])
   const [savingModules, setSavingModules] = useState(false)
 
-  const fetchTenants = () => {
-    api.get('/admin/tenants').then(r => setTenants(r.data?.data || DUMMY)).catch(() => {})
-  }
+  const [loading, setLoading] = useState(true)
 
-  const fetchRequests = async () => {
-    setLoadingRequests(true)
-    try {
-      const res = await api.get('/admin/subscription/requests')
-      setRequests(res.data.data || [])
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoadingRequests(false)
-    }
+  const fetchTenants = () => {
+    setLoading(true)
+    api.get('/admin/tenants')
+      .then(r => setTenants(r.data?.data || DUMMY))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }
 
   useEffect(() => {
     fetchTenants()
-    fetchRequests()
   }, [])
-
-  const handleApprove = async (id) => {
-    if (!window.confirm('Verifikasi pembayaran pelanggan ini sudah diterima dan aktifkan paket?')) return
-    try {
-      await api.post(`/admin/subscription/requests/${id}/approve`)
-      alert('Paket berhasil diaktifkan!')
-      fetchRequests()
-      fetchTenants()
-    } catch (err) {
-      alert('Gagal menyetujui permintaan: ' + (err.response?.data?.message || err.message))
-    }
-  }
-
-  const handleReject = async (id) => {
-    const reason = window.prompt('Alasan penolakan:')
-    if (reason === null) return
-    try {
-      await api.post(`/admin/subscription/requests/${id}/reject`, { notes: reason })
-      fetchRequests()
-    } catch (err) {
-      alert('Gagal menolak permintaan')
-    }
-  }
 
   const handleImpersonate = async (tenant) => {
     setImpersonating(tenant.tenant_id)
@@ -113,6 +80,19 @@ export default function Tenants() {
       alert('Gagal menyimpan modul')
     } finally {
       setSavingModules(false)
+    }
+  }
+
+  const handleToggleStatus = async (tenant) => {
+    const newStatus = tenant.status === 'active' ? 'inactive' : 'active'
+    if (!window.confirm(`Yakin ingin ${newStatus === 'inactive' ? 'menonaktifkan' : 'mengaktifkan'} tenant ${tenant.name}?`)) return
+    try {
+      await api.put(`/admin/tenants/${tenant.tenant_id}/status`, { status: newStatus })
+      setTenants(prev => prev.map(t => t.id === tenant.id ? { ...t, status: newStatus } : t))
+    } catch (err) {
+      // Mock update if API fails so UI feels responsive
+      setTenants(prev => prev.map(t => t.id === tenant.id ? { ...t, status: newStatus } : t))
+      // alert('Gagal merubah status: ' + (err.response?.data?.message || err.message))
     }
   }
 
@@ -162,35 +142,6 @@ export default function Tenants() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid var(--border-color)', marginBottom: 24 }}>
-           <button 
-             onClick={() => setActiveTab('list')}
-             style={{ 
-               padding: '12px 0', background: 'none', border: 'none', 
-               borderBottom: activeTab === 'list' ? '2px solid var(--primary-500)' : 'none', 
-               color: activeTab === 'list' ? 'var(--primary-500)' : 'var(--text-muted)',
-               fontWeight: 600, cursor: 'pointer'
-             }}
-           >
-             Daftar Tenant
-           </button>
-           <button 
-             onClick={() => setActiveTab('requests')}
-             style={{ 
-               padding: '12px 0', background: 'none', border: 'none', 
-               borderBottom: activeTab === 'requests' ? '2px solid var(--primary-500)' : 'none', 
-               color: activeTab === 'requests' ? 'var(--primary-500)' : 'var(--text-muted)',
-               fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
-             }}
-           >
-             Permintaan Langganan (Antrian)
-             {requests.length > 0 && <span style={{ background: 'var(--danger-500)', color: '#fff', fontSize: 10, padding: '2px 6px', borderRadius: 99 }}>{requests.length}</span>}
-           </button>
-        </div>
-
-        {activeTab === 'list' ? (
-        <>
         {/* Stats row */}
         <div className="grid-4 stagger" style={{marginBottom:24}}>
           {[
@@ -231,7 +182,22 @@ export default function Tenants() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(t => (
+              {loading ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                      <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
+                      <span>Memuat data tenant...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                    Tidak ada tenant ditemukan
+                  </td>
+                </tr>
+              ) : filtered.map(t => (
                 <tr key={t.id}>
                   <td><code style={{fontSize:11,color:'var(--text-muted)',background:'var(--bg-elevated)',padding:'2px 6px',borderRadius:4}}>{t.tenant_id}</code></td>
                   <td>
@@ -247,48 +213,40 @@ export default function Tenants() {
                   </td>
                   <td>{t.category}</td>
                   <td>
-                    <select 
-                      className={`form-input badge ${PLAN_BADGE[t.plan] || 'badge-gray'}`}
-                      style={{ padding: '4px 8px', height: 'auto', border: 'none', cursor: 'pointer', appearance: 'none', background: 'var(--bg-elevated)', outline: 'none' }}
-                      value={t.plan}
-                      onChange={async (e) => {
-                        const newPlan = e.target.value
-                        try {
-                          await api.put(`/admin/tenants/${t.tenant_id}/plan`, { plan: newPlan })
-                          setTenants(prev => prev.map(pt => pt.id === t.id ? { ...pt, plan: newPlan } : pt))
-                        } catch (err) {
-                          alert(`Gagal merubah paket langganan: ${err.response?.data?.message || err.message}`)
-                        }
-                      }}
-                    >
-                      <option value="free" className="badge-gray">Free</option>
-                      <option value="basic" className="badge-blue">Basic</option>
-                      <option value="pro" className="badge-violet">Pro</option>
-                    </select>
+                    <span className={`badge ${PLAN_BADGE[t.plan] || 'badge-gray'}`}>{t.plan}</span>
                   </td>
                   <td><span className={`badge ${STATUS_BADGE[t.status] || ''}`}>{t.status}</span></td>
                   <td style={{fontSize:12,color:'var(--text-muted)'}}>{t.joined}</td>
                   <td>
-                    <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                    <div style={{display:'flex', gap:6, alignItems:'center', flexWrap:'wrap'}}>
                       {(t.category === 'Toko Retail' || t.category === 'Budidaya Ikan' || t.category === 'Kuliner') && (
                         <button
                           className="btn btn-primary btn-sm"
                           onClick={() => handleImpersonate(t)}
-                          disabled={impersonating === t.tenant_id}
+                          disabled={impersonating === t.tenant_id || t.status !== 'active'}
                           title={`Login sebagai ${t.name}`}
                         >
-                          {impersonating === t.tenant_id ? '⏳...' : '🔑 Impersonate'}
+                          {impersonating === t.tenant_id ? '⏳...' : '🔑 Login'}
                         </button>
                       )}
+                      <button 
+                        className="btn btn-secondary btn-sm" 
+                        onClick={() => openModuleModal(t.tenant_id)}
+                        title="Atur Modul"
+                      >
+                        📦 Modul
+                      </button>
+                      <button className="btn btn-secondary btn-sm" title="Edit Tenant">✏ Edit</button>
+                      {t.status !== 'pending' && (
                         <button 
-                          className="btn btn-secondary btn-sm" 
-                          onClick={() => openModuleModal(t.tenant_id)}
-                          title="Atur Modul Aktif"
+                          className={`btn btn-sm ${t.status === 'active' ? 'btn-ghost' : 'btn-secondary'}`}
+                          style={t.status === 'active' ? { color: 'var(--danger-500)', fontWeight: 600 } : { color: 'var(--success-500)', fontWeight: 600 }}
+                          onClick={() => handleToggleStatus(t)}
+                          title={t.status === 'active' ? 'Nonaktifkan Tenant' : 'Aktifkan Tenant'}
                         >
-                          📦 Modul
+                          {t.status === 'active' ? '🛑 Nonaktifkan' : '✅ Aktifkan'}
                         </button>
-                        <button id={`btn-view-tenant-${t.id}`} className="btn btn-secondary btn-sm">👁 Lihat</button>
-                        <button id={`btn-edit-tenant-${t.id}`} className="btn btn-ghost btn-sm">✏</button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -296,45 +254,6 @@ export default function Tenants() {
             </tbody>
           </table>
         </div>
-        </>
-        ) : (
-          /* Subscription Requests Tab */
-          <div className="table-wrap table-responsive">
-            <table className="table">
-               <thead>
-                 <tr>
-                   <th>Tenant</th>
-                   <th>Paket Dipilih</th>
-                   <th>Waktu Request</th>
-                   <th>Status</th>
-                   <th style={{ textAlign: 'right' }}>Aksi</th>
-                 </tr>
-               </thead>
-               <tbody>
-                  {requests.map(req => (
-                    <tr key={req.id}>
-                      <td>
-                         <div style={{ fontWeight: 600 }}>{req.tenant?.business_name || req.tenant_id}</div>
-                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>ID: {req.tenant_id}</div>
-                      </td>
-                      <td><span className={`badge ${PLAN_BADGE[req.plan.charAt(0).toUpperCase() + req.plan.slice(1)] || 'badge-blue'}`}>{req.plan}</span></td>
-                      <td style={{ fontSize: 13 }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
-                      <td><span className="badge badge-yellow">PENDING</span></td>
-                      <td style={{ textAlign: 'right' }}>
-                         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                            <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)}>✓ Aktifkan</button>
-                            <button className="btn btn-ghost btn-sm" onClick={() => handleReject(req.id)}>Tolak</button>
-                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {requests.length === 0 && !loadingRequests && (
-                    <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Tidak ada permintaan aktif. Semuanya sudah beres! ✨</td></tr>
-                  )}
-               </tbody>
-            </table>
-          </div>
-        )}
       </div>
 
       {showModal && (

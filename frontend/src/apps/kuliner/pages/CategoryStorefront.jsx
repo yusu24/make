@@ -13,7 +13,8 @@ const CategoryStorefront = () => {
     store_name: 'Loading...',
     opening_hours: 'Senin - Minggu',
     hero_title: 'Cita Rasa Kuliner Terbaik',
-    hero_subtitle: 'Nikmati kelezatan hidangan istimewa yang kami sajikan dengan bahan pilihan dan cinta.'
+    hero_subtitle: 'Nikmati kelezatan hidangan istimewa yang kami sajikan dengan bahan pilihan dan cinta.',
+    hero_image_url: ''
   });
 
   const [categories, setCategories] = useState(['Semua']);
@@ -177,7 +178,11 @@ const CategoryStorefront = () => {
         <Link to={menuUrl} className="kl-nav-cta">Pesan Sekarang</Link>
       </nav>
 
-      <section className="kl-hero">
+      <section 
+        className={`kl-hero ${settings.hero_image_url ? 'kl-hero-parallax' : ''}`}
+        style={settings.hero_image_url ? { backgroundImage: `url(${settings.hero_image_url})` } : {}}
+      >
+        {settings.hero_image_url && <div className="kl-hero-overlay"></div>}
         <div className="kl-hero-text">
           <div className="kl-badge">
             <div className="kl-badge-dot"></div>

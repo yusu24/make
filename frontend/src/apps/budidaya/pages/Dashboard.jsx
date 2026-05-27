@@ -42,17 +42,6 @@ export default function Dashboard() {
   return (
     <div className="aq-container">
 
-      {/* ── Welcome Row ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        <div>
-          <h1 className="aq-page-title">
-            Halo, Bpk. {user?.name?.split(' ')[0] || 'Wijaya'}
-          </h1>
-
-        </div>
-
-      </div>
-
       {/* ── KPI Cards ── */}
       <div className="aq-grid-4">
 

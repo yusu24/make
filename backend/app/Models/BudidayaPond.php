@@ -16,4 +16,10 @@ class BudidayaPond extends Model
     {
         return $this->hasMany(BudidayaCycle::class, 'pond_id');
     }
+
+    public function activeCycle()
+    {
+        return $this->hasOne(BudidayaCycle::class, 'pond_id')->where('status', 'aktif');
+    }
 }
+

@@ -27,45 +27,58 @@ export default function BudidayaLayout() {
   }
 
   return (
-    <div className="budidaya-scope min-h-screen bg-[#F8FAF9]">
+    <div className="budidaya-scope h-screen overflow-hidden bg-[#F8FAF9] flex flex-col">
       {/* Impersonation Banner */}
       {isImpersonating() && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
-          background: '#D97706', color: '#fff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16,
-          padding: '8px 20px', fontSize: 13, fontWeight: 600,
+        <div style={{ 
+          background: 'linear-gradient(90deg, #ef4444, #f97316)', 
+          color: 'white', 
+          padding: '10px 20px', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexShrink: 0,
+          zIndex: 9999,
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)',
+          fontSize: '13px',
+          fontWeight: '600'
         }}>
-          <span>⚠️ Mode Impersonasi: <strong>{user?.name}</strong> — {user?.business_category}</span>
-          <button
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>⚠️ Anda sedang dalam mode penyamaran (Impersonate): <strong>{user?.name}</strong> — {user?.business_category}</span>
+          </div>
+          <button 
             onClick={handleExitImpersonate}
-            style={{
-              background: '#fff', color: '#D97706', border: 'none',
-              borderRadius: 8, padding: '4px 14px', fontWeight: 700,
-              cursor: 'pointer', fontSize: 12,
+            style={{ 
+              background: 'white', 
+              color: '#ef4444', 
+              border: 'none', 
+              padding: '4px 12px', 
+              borderRadius: '6px', 
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: 'bold'
             }}
           >
-            ✕ Keluar Impersonasi
+            Kembali ke Admin SaaS
           </button>
         </div>
       )}
 
-      <BudidayaSidebar
-        mobileOpen={mobileOpen}
-        onToggle={() => setMobileOpen(v => !v)}
-      />
-
-      {/* Main Content — offset by sidebar width 240px on desktop via CSS class */}
-      <div
-        className="aq-main-content flex flex-col min-h-screen transition-all duration-300"
-        style={{ paddingTop: isImpersonating() ? 40 : 0 }}
-      >
-        <BudidayaHeader
-          onMenuToggle={() => setMobileOpen(v => !v)}
+      <div className="flex flex-1 overflow-hidden relative">
+        <BudidayaSidebar
+          mobileOpen={mobileOpen}
+          onToggle={() => setMobileOpen(v => !v)}
         />
-        <main className="flex-1">
-          <Outlet />
-        </main>
+
+        {/* Main Content — offset by sidebar width 240px on desktop via CSS class */}
+        <div className="aq-main-content flex flex-col flex-1 overflow-hidden transition-all duration-300">
+          <BudidayaHeader
+            onMenuToggle={() => setMobileOpen(v => !v)}
+          />
+          <main className="flex-1 overflow-y-auto">
+            <Outlet />
+          </main>
+        </div>
       </div>
 
       <SubscriptionLock status={user?.subscription_status} daysLeft={user?.trial_days_left} />

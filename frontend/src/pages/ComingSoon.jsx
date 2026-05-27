@@ -7,9 +7,12 @@ export default function ComingSoon() {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
 
+  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']
+
   const handleLogout = () => {
+    const isDemo = DEMO_EMAILS.includes(user?.email)
     logout();
-    navigate('/login');
+    navigate(isDemo ? '/' : '/login');
   };
 
   return (

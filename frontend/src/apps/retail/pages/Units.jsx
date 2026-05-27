@@ -44,29 +44,21 @@ export default function Units() {
 
   return (
     <div className="retail-page-classic">
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="page-title">Data Master: Satuan Barang</h2>
-          <p className="page-sub">Kelola satuan (Unit) untuk standarisasi stok dan transaksi.</p>
-        </div>
+      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
       </div>
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Daftar Satuan Aktif</h3>
-          </div>
-          <form onSubmit={addUnit} className="flex items-center gap-3 w-full md:w-auto">
-             <div className="airy-search-wrapper" style={{ width: 280 }}>
+        <div className="p-6 flex justify-end">
+          <form onSubmit={addUnit} className="flex items-center gap-3">
+             <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
                 <input 
                   name="name"
                   placeholder="Satuan baru (Pcs, Kg, dll)..."
                   required
                 />
              </div>
-             <button type="submit" className="btn btn-primary h-[42px] px-6">
+             <button type="submit" className="btn btn-primary h-[42px] px-6 whitespace-nowrap">
                 Tambah
              </button>
           </form>
@@ -75,29 +67,29 @@ export default function Units() {
         <table className="table">
           <thead>
             <tr>
-              <th className="pl-6" style={{ width: 100 }}>ID</th>
-              <th>Nama Satuan</th>
-              <th className="text-right pr-6">Aksi</th>
+              <th className="pl-6 retail-table-header" style={{ width: 100 }}>ID</th>
+              <th className="retail-table-header">Nama Satuan</th>
+              <th className="text-right pr-6 retail-table-header">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-               <tr><td colSpan="3" className="py-20 text-center text-slate-400 font-800">Menyinkronkan Satuan...</td></tr>
+               <tr><td colSpan="3" className="py-20 text-center retail-text-secondary font-800">Menyinkronkan Satuan...</td></tr>
             ) : units.length === 0 ? (
                <tr><td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada data satuan.</td></tr>
             ) : (
               units.map(u => (
                 <tr key={u.id}>
                   <td className="pl-6">
-                    <span className="text-slate-400">#{u.id}</span>
+                    <span className="retail-text-secondary">#{u.id}</span>
                   </td>
                   <td>
-                    <span className="text-slate-800">{u.name}</span>
+                    <span className="retail-text-primary">{u.name}</span>
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
                       <button className="btn btn-sm btn-ghost" onClick={() => setEditingUnit(u)}><Edit3 size={14} /></button>
-                      <button className="btn btn-sm btn-ghost" style={{ color: 'var(--danger-600)' }} onClick={async () => { if(confirm('Hapus satuan ini?')) { await api.delete(`/retail/units/${u.id}`); fetchUnits(); } }}><Trash2 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if(confirm('Hapus satuan ini?')) { await api.delete(`/retail/units/${u.id}`); fetchUnits(); } }}><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>

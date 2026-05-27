@@ -88,63 +88,55 @@ export default function Roles() {
 
   return (
     <div className="animate-fade-in" style={{ padding: 24 }}>
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="page-title">Manajemen Jabatan (Hak Akses)</h2>
-          <p className="page-sub">Atur kasta dan izin akses fitur untuk berbagai posisi karyawan Anda.</p>
-        </div>
-        <button 
-          className="btn btn-primary" 
-          onClick={() => { setEditingRole(null); setShowModal(true); setErrorMsg(''); }}
-        >
-          + Jabatan Baru
-        </button>
-      </div>
 
-      {/* Table Section (Unified Style) */}
+
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Struktur Jabatan & Hak Akses</h3>
+        <div className="p-6 flex justify-end items-center gap-6">
+          <div className="flex items-center gap-3">
+            <button 
+              className="btn btn-primary h-[42px] px-6 whitespace-nowrap" 
+              onClick={() => { setEditingRole(null); setShowModal(true); setErrorMsg(''); }}
+            >
+              + Jabatan Baru
+            </button>
+            <span className="px-3 py-1 retail-bg-main retail-border rounded-lg retail-label whitespace-nowrap">
+               {roles.length} Roles Defined
+            </span>
           </div>
-          <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-800 text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-heading)' }}>
-             {roles.length} Roles Defined
-          </span>
         </div>
 
         <table className="table">
           <thead>
             <tr>
-              <th className="pl-6" style={{ width: '25%' }}>Nama Jabatan</th>
-              <th style={{ width: '55%' }}>Izin Akses Fitur</th>
-              <th style={{ width: '20%', textAlign: 'right' }} className="pr-6">Aksi</th>
+              <th className="pl-6 retail-table-header" style={{ width: '25%' }}>Nama Jabatan</th>
+              <th className="retail-table-header" style={{ width: '55%' }}>Izin Akses Fitur</th>
+              <th style={{ width: '20%', textAlign: 'right' }} className="pr-6 retail-table-header">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-               <tr><td colSpan="3" className="py-20 text-center text-slate-400 font-800">Menyinkronkan Jabatan...</td></tr>
+               <tr><td colSpan="3" className="py-20 text-center retail-text-secondary font-800">Menyinkronkan Jabatan...</td></tr>
             ) : roles.length === 0 ? (
                <tr><td colSpan="3" style={{ textAlign: 'center', padding: 20 }}>Belum ada kustomisasi jabatan.</td></tr>
             ) : (
               roles.map(r => (
                 <tr key={r.id}>
                   <td className="pl-6">
-                    <span className="text-slate-800">{r.name}</span>
+                    <span className="retail-text-primary">{r.name}</span>
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {(!r.permissions || r.permissions.length === 0) && <span style={{ color: 'var(--text-muted)' }}>Tidak ada akses</span>}
                       {r.permissions?.map(p => {
                         const m = MODULE_PERMISSIONS.find(x => x.id === p)
-                        return <span key={p} className="badge badge-gray" style={{ fontSize: 10 }}>{m ? m.label : p}</span>
+                        return <span key={p} className="retail-badge retail-badge-primary" style={{ fontSize: 10 }}>{m ? m.label : p}</span>
                       })}
                     </div>
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                       <button className="btn btn-sm btn-ghost" onClick={() => handleEdit(r)}><Edit3 size={14} /></button>
-                      <button className="btn btn-sm btn-ghost" style={{ color: 'var(--danger-600)' }} onClick={() => handleDelete(r.id)}><Trash2 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(r.id)}><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -156,7 +148,7 @@ export default function Roles() {
 
       {/* Form Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingRole ? "Edit Jabatan" : "Tambah Jabatan Baru"} maxWidth="600px">
-        {errorMsg && <div style={{ color: 'red', marginBottom: 16 }}>{errorMsg}</div>}
+        {errorMsg && <div style={{ color: 'var(--retail-danger)', marginBottom: 16 }}>{errorMsg}</div>}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div className="form-group">
             <label className="form-label">Nama Jabatan</label>

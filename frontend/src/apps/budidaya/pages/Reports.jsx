@@ -101,13 +101,7 @@ export default function Reports() {
   return (
     <div className="aq-container">
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <h1 className="aq-page-title">Laporan & analisa</h1>
-          <p className="aq-kpi-label" style={{ marginTop: 4 }}>Ringkasan kinerja budidaya dari seluruh data tersimpan</p>
-        </div>
-      </div>
+      {/* Header Removed */}
 
       {/* KPI Cards */}
       <div className="aq-grid-4">

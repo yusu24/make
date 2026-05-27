@@ -9,6 +9,8 @@ export default function Subscription() {
   const [staffCount, setStaffCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [pendingReq, setPendingReq] = useState(null);
+  const [categoryPromo, setCategoryPromo] = useState(null);
+  const [globalSettings, setGlobalSettings] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,6 +23,8 @@ export default function Subscription() {
       ]);
       setStaffCount(staffRes.data.length || 0);
       setPendingReq(subRes.data.data);
+      setCategoryPromo(subRes.data.category_promo || null);
+      setGlobalSettings(subRes.data.global_settings || null);
     } catch (e) {
       console.error(e);
     } finally {
@@ -48,6 +52,36 @@ export default function Subscription() {
   }, []);
 
   const currentPlan = user?.subscription_plan || 'free';
+  
+  const formatRupiah = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+  const getPlanPriceInfo = (planId) => {
+    if (!planId || planId === 'free') return { display: 'Rp 0', numeric: 0, discounted: false };
+    
+    const basePrices = { 
+      basic: globalSettings?.price_basic || 149000, 
+      pro: globalSettings?.price_pro || 299000 
+    };
+    const base = basePrices[planId] || 0;
+    
+    if (categoryPromo && categoryPromo.discount_pct > 0) {
+      const discount = Math.round(base * (categoryPromo.discount_pct / 100));
+      const finalPrice = base - discount;
+      return {
+        original: formatRupiah(base) + ' / bln',
+        display: formatRupiah(finalPrice) + ' / bln',
+        numeric: finalPrice,
+        discounted: true,
+        discountPct: categoryPromo.discount_pct
+      };
+    }
+    
+    return {
+      display: formatRupiah(base) + ' / bln',
+      numeric: base,
+      discounted: false
+    };
+  };
   
   const PLANS = [
     { 
@@ -78,11 +112,7 @@ export default function Subscription() {
 
   return (
     <div className="animate-fade-in" style={{ padding: 24 }}>
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="page-title">Manajemen Langganan</h2>
-          <p className="page-sub">Kelola paket billing dan kuota fitur toko Anda.</p>
-        </div>
+      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
       </div>
 
       <style>{`
@@ -138,11 +168,57 @@ export default function Subscription() {
             </div>
           </div>
 
+          {categoryPromo && (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(217, 70, 239, 0.08))',
+              border: '1px dashed #8b5cf6',
+              borderRadius: 16,
+              padding: '16px 20px',
+              marginBottom: 20,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16
+            }}>
+              <div style={{ fontSize: 28 }}>🎉</div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#8b5cf6' }}>
+                  Promo Khusus Kategori {categoryPromo.category_name} Aktif!
+                </h4>
+                <p style={{ margin: '4px 0 0 0', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                  {categoryPromo.text || `Selamat! Akun Anda memenuhi syarat untuk diskon upgrade sebesar ${categoryPromo.discount_pct}%.`}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
              {PLANS.map(plan => (
                <div key={plan.id} className="card" style={{ padding: 24, border: currentPlan === plan.id ? `2px solid ${plan.color}` : '1px solid var(--border-color)', opacity: currentPlan !== plan.id && plan.id === 'free' ? 0.6 : 1, transform: currentPlan === plan.id ? 'scale(1.02)' : 'scale(1)', transition: 'all 0.3s ease' }}>
                   <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4, color: plan.color }}>{plan.name}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 20 }}>{plan.price}</div>
+                  
+                  {(() => {
+                    const priceInfo = getPlanPriceInfo(plan.id);
+                    return (
+                      <div style={{ marginBottom: 20 }}>
+                        {priceInfo.discounted ? (
+                          <div>
+                            <span style={{ fontSize: 13, textDecoration: 'line-through', color: 'var(--text-muted)', marginRight: 8 }}>
+                              {priceInfo.original}
+                            </span>
+                            <span style={{ fontSize: 10, background: '#ef4444', color: '#fff', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>
+                              -{priceInfo.discountPct}%
+                            </span>
+                            <div style={{ fontSize: 24, fontWeight: 900, marginTop: 4, color: '#10b981' }}>
+                              {priceInfo.display}
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 24, fontWeight: 900 }}>{priceInfo.display}</div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   <ul style={{ padding: 0, margin: '0 0 24px 0', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
                      {plan.features.map((f, i) => (
                        <li key={i} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -171,7 +247,6 @@ export default function Subscription() {
 
         {/* Sidebar Help / Info */}
         <div className="card" style={{ padding: 24, background: 'var(--bg-elevated)' }}>
-           <h3 style={{ marginTop: 0, marginBottom: 16 }}>Riwayat Tagihan</h3>
            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>📄</div>
               <p style={{ fontSize: 13 }}>Belum ada riwayat pembayaran yang tercatat.</p>
@@ -179,7 +254,6 @@ export default function Subscription() {
            
            <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '24px 0' }} />
            
-           <h3 style={{ marginBottom: 12 }}>Butuh Bantuan?</h3>
            <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>
               Jika Anda mengalami kendala saat proses upgrade atau ingin melakukan pembayaran via Transfer Bank Manual, silakan hubungi tim support kami.
            </p>
@@ -191,11 +265,32 @@ export default function Subscription() {
       {/* MODAL ORDER & PEMBAYARAN */}
       <Modal isOpen={showOrderModal} onClose={() => !isSubmitting && setShowOrderModal(false)} title="Konfirmasi Upgrade Paket" maxWidth="500px">
          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={{ textAlign: 'center', padding: '10px 0' }}>
-               <div style={{ fontSize: 48, marginBottom: 12 }}>💳</div>
-               <p style={{ fontSize: 16 }}>Anda memilih paket <strong>{selectedPlan?.name}</strong></p>
-               <h2 style={{ fontSize: 32, fontWeight: 900, color: 'var(--primary-500)', margin: '8px 0' }}>{selectedPlan?.price}</h2>
-            </div>
+            {(() => {
+               const priceInfo = getPlanPriceInfo(selectedPlan?.id);
+               return (
+                 <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>💳</div>
+                    <p style={{ fontSize: 16, margin: 0 }}>Anda memilih paket <strong>{selectedPlan?.name}</strong></p>
+                    {priceInfo.discounted ? (
+                      <div style={{ marginTop: 8 }}>
+                        <span style={{ textDecoration: 'line-through', color: 'var(--text-muted)', fontSize: 14, marginRight: 8 }}>
+                          {priceInfo.original}
+                        </span>
+                        <span style={{ fontSize: 10, background: '#ef4444', color: '#fff', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>
+                          POTONGAN {priceInfo.discountPct}% KATEGORI
+                        </span>
+                        <h2 style={{ fontSize: 32, fontWeight: 900, color: '#10b981', margin: '6px 0' }}>
+                          {priceInfo.display}
+                        </h2>
+                      </div>
+                    ) : (
+                      <h2 style={{ fontSize: 32, fontWeight: 900, color: 'var(--primary-500)', margin: '8px 0' }}>
+                        {priceInfo.display}
+                      </h2>
+                    )}
+                 </div>
+               );
+            })()}
 
             <div style={{ background: 'var(--bg-elevated)', padding: 20, borderRadius: 12, border: '1px solid var(--border-color)' }}>
                <h4 style={{ margin: '0 0 12px 0', fontSize: 14 }}>Instruksi Pembayaran:</h4>
@@ -204,12 +299,12 @@ export default function Subscription() {
                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--bg-base)', borderRadius: 8 }}>
                      <div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>BANK BCA</div>
-                        <div style={{ fontWeight: 800, fontSize: 16 }}>8837 001 992</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{globalSettings?.bank_name || 'BANK BCA'}</div>
+                        <div style={{ fontWeight: 800, fontSize: 16 }}>{globalSettings?.bank_account_no || '8837 001 992'}</div>
                      </div>
-                     <button className="btn btn-sm btn-ghost" onClick={() => alert('Nomor Rekening Disalin!')}>Salin</button>
+                     <button className="btn btn-sm btn-ghost" onClick={() => { navigator.clipboard.writeText(globalSettings?.bank_account_no || '8837 001 992'); alert('Nomor Rekening Disalin!'); }}>Salin</button>
                   </div>
-                  <div style={{ fontSize: 12, textAlign: 'center', color: 'var(--text-muted)' }}>a.n. **PT Antigravity Global SaaS**</div>
+                  <div style={{ fontSize: 12, textAlign: 'center', color: 'var(--text-muted)' }}>a.n. <strong>{globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'}</strong></div>
                </div>
             </div>
 

@@ -13,7 +13,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'tenant_id', 'name', 'email', 'password', 'role', 
-        'status', 'business_category_id', 'phone'
+        'status', 'business_category_id', 'phone', 'kuliner_role_id', 'saas_role_id'
     ];
 
     protected $hidden = [
@@ -33,12 +33,22 @@ class User extends Authenticatable
 
     public function tenant()
     {
-        return $this->hasOne(Tenant::class);
+        return $this->belongsTo(Tenant::class, 'tenant_id', 'tenant_id');
+    }
+
+    public function kulinerRole()
+    {
+        return $this->belongsTo(KulinerRole::class, 'kuliner_role_id');
     }
 
     public function retailRole()
     {
         return $this->belongsTo(RetailRole::class);
+    }
+
+    public function saasRole()
+    {
+        return $this->belongsTo(SaasRole::class, 'saas_role_id');
     }
 
     public function activityLogs()

@@ -10,18 +10,23 @@ const NAV_ITEMS = [
   { label: 'Manajemen Pengguna',  icon: 'group',         path: '/budidaya/users'     },
   { label: 'Peran & Izin',        icon: 'verified_user', path: '/budidaya/roles'     },
   { label: 'Laporan & Analisa',   icon: 'bar_chart',     path: '/budidaya/reports'   },
+  { label: 'Paket Langganan',     icon: 'credit_card',   path: '/budidaya/subscription' },
+  { label: 'Pusat Bantuan',       icon: 'help',          path: '/budidaya/support'   },
   { label: 'Pengaturan Profil',   icon: 'settings',      path: '/budidaya/settings'  },
 ]
 
 export default function BudidayaSidebar({ mobileOpen, onToggle }) {
   const { pathname } = useLocation()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
+  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']
+
   const handleLogout = async () => {
+    const isDemo = DEMO_EMAILS.includes(user?.email)
     try { await api.post('/logout') } catch {}
     logout()
-    navigate('/login')
+    navigate(isDemo ? '/' : '/login')
   }
 
   return (

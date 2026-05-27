@@ -51,13 +51,7 @@ export default function FeedCategories() {
   };
 
   return (
-    <div className="animate-fade-in" style={{ padding: 24 }}>
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="page-title">Data Master: Kategori Pakan</h2>
-
-        </div>
-      </div>
+    <div className="aq-container">
 
       <div className="card" style={{ maxWidth: 800 }}>
         <div style={{ padding: 20, borderBottom: '1px solid var(--border-color)', background: 'var(--bg-elevated)' }}>

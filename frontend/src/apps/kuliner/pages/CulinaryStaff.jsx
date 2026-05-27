@@ -1,35 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { api } from '../../../lib/api';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import './KulinerDashboard.css';
 
 const CulinaryStaff = () => {
+  const { impersonateUser } = useAuth();
+  const navigate = useNavigate();
   const [staff, setStaff] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
+  const [impersonating, setImpersonating] = useState(null);
   const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'cashier', // cashier or chef
+    role: 'cashier', // core role
+    kuliner_role_id: '', // dynamic role
     phone: ''
   });
 
   useEffect(() => {
     fetchStaff();
+    fetchRoles();
   }, []);
 
   const fetchStaff = async () => {
     try {
       setLoading(true);
-      // We will use the generic user management but filtered for this tenant in backend
       const res = await api.get('/kuliner/admin/staff');
       setStaff(res.data);
     } catch (err) {
       console.error('Failed to fetch staff:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const res = await api.get('/kuliner/admin/roles');
+      setRoles(res.data);
+    } catch (err) {
+      console.error('Failed to fetch roles:', err);
     }
   };
 
@@ -45,10 +61,26 @@ const CulinaryStaff = () => {
       }
       setShowModal(false);
       setEditingStaff(null);
-      setForm({ name: '', email: '', password: '', role: 'cashier', phone: '' });
+      setForm({ name: '', email: '', password: '', role: 'cashier', kuliner_role_id: '', phone: '' });
       fetchStaff();
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menyimpan data staff');
+      let errorMessage = 'Gagal menyimpan data staff';
+      if (err.response?.data?.errors) {
+        const firstErrorKey = Object.keys(err.response.data.errors)[0];
+        const errorMsg = err.response.data.errors[firstErrorKey][0];
+        
+        // Translate common validation messages
+        if (errorMsg.includes('has already been taken')) {
+          errorMessage = `Email tersebut sudah terdaftar. Silakan gunakan email lain.`;
+        } else if (errorMsg.includes('at least 8 characters')) {
+          errorMessage = 'Password minimal harus 8 karakter.';
+        } else {
+          errorMessage = errorMsg;
+        }
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      alert(errorMessage);
     }
   };
 
@@ -57,11 +89,24 @@ const CulinaryStaff = () => {
     setForm({
       name: member.name,
       email: member.email,
-      password: '', // Leave empty for security
+      password: '', 
       role: member.role || 'cashier',
+      kuliner_role_id: member.kuliner_role_id || '',
       phone: member.phone || ''
     });
     setShowModal(true);
+  };
+
+  const handleImpersonate = async (id) => {
+    setImpersonating(id);
+    try {
+      const redirect = await impersonateUser(id);
+      navigate(redirect);
+    } catch (err) {
+      alert('Gagal impersonate: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setImpersonating(null);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -78,17 +123,19 @@ const CulinaryStaff = () => {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <div>
-          <h1 className="kd-page-title">Kelola Staff Karyawan</h1>
-          <p className="text-sm text-slate-500 mt-1">Atur akses kasir dan koki untuk operasional restoran Anda.</p>
+        <h1 className="kd-page-title">Kelola Staff Karyawan</h1>
+        <div className="flex gap-3">
+          <a href="/kuliner/admin/roles" className="kd-btn kd-btn-secondary flex items-center gap-2">
+            ⚙️ Atur Role & Izin
+          </a>
+          <button className="kd-btn kd-btn-primary" onClick={() => {
+            setEditingStaff(null);
+            setForm({ name: '', email: '', password: '', role: 'cashier', kuliner_role_id: '', phone: '' });
+            setShowModal(true);
+          }}>
+            + Tambah Staff Baru
+          </button>
         </div>
-        <button className="kd-btn kd-btn-primary" onClick={() => {
-          setEditingStaff(null);
-          setForm({ name: '', email: '', password: '', role: 'cashier', phone: '' });
-          setShowModal(true);
-        }}>
-          + Tambah Staff Baru
-        </button>
       </div>
 
       <div className="kd-content">
@@ -131,13 +178,29 @@ const CulinaryStaff = () => {
                       </td>
                       <td><span className="text-xs text-slate-500">{member.email}</span></td>
                       <td>
-                        <span className={`badge ${member.role === 'chef' ? 'badge-violet' : 'badge-green'}`}>
-                          {member.role === 'chef' ? '👨‍🍳 Koki / Dapur' : '💰 Kasir'}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className={`badge ${member.role === 'chef' ? 'badge-violet' : 'badge-green'}`}>
+                            {member.role === 'chef' ? '👨‍🍳 Koki / Dapur' : '💰 Kasir'}
+                          </span>
+                          {member.kuliner_role && (
+                            <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tight bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 mt-1">
+                              {member.kuliner_role.name}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td><span className="text-xs text-slate-500">{member.phone || '-'}</span></td>
                       <td style={{ textAlign: 'right' }}>
                         <div className="flex justify-end gap-2">
+                          <button 
+                            className="kd-btn-icon" 
+                            style={{ color: '#b48c36', borderColor: '#b48c36' }}
+                            onClick={() => handleImpersonate(member.id)}
+                            disabled={impersonating === member.id}
+                            title="Login sebagai Staff ini"
+                          >
+                            {impersonating === member.id ? '⏳' : '🔑'}
+                          </button>
                           <button className="kd-btn-icon" onClick={() => handleEdit(member)}>Edit</button>
                           <button className="kd-btn-icon text-red-500" onClick={() => handleDelete(member.id)}>×</button>
                         </div>
@@ -153,7 +216,7 @@ const CulinaryStaff = () => {
 
       {/* MODAL STAFF */}
       {showModal && (
-        <div className="kd-modal-overlay">
+        <div className="kd-modal-overlay active">
           <div className="kd-modal" style={{ maxWidth: 450 }}>
             <div className="kd-modal-header">
               <h2 className="text-lg font-bold text-slate-800">
@@ -161,52 +224,68 @@ const CulinaryStaff = () => {
               </h2>
               <button className="text-slate-400 hover:text-slate-600" onClick={() => setShowModal(false)}>×</button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="form-group mb-4">
-                <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2">Nama Lengkap</label>
-                <input 
-                  type="text" className="form-input" required
-                  value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                  placeholder="Contoh: Budi Santoso"
-                />
+            <form onSubmit={handleSubmit}>
+              <div className="kd-modal-body">
+                <div className="form-group mb-5">
+                  <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2 block">Nama Lengkap</label>
+                  <input 
+                    type="text" className="form-input w-full" required
+                    value={form.name} onChange={e => setForm({...form, name: e.target.value})}
+                    placeholder="Contoh: Budi Santoso"
+                  />
+                </div>
+                <div className="form-group mb-5">
+                  <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2 block">Email Login</label>
+                  <input 
+                    type="email" className="form-input w-full" required
+                    value={form.email} onChange={e => setForm({...form, email: e.target.value})}
+                    placeholder="budi@restoran.com"
+                  />
+                </div>
+                <div className="form-group mb-5">
+                  <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2 block">Password {editingStaff && '(Kosongkan jika tidak ganti)'}</label>
+                  <input 
+                    type="password" className="form-input w-full" required={!editingStaff}
+                    value={form.password} onChange={e => setForm({...form, password: e.target.value})}
+                    placeholder="Min. 8 karakter"
+                  />
+                </div>
+                <div className="form-group mb-5">
+                  <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2 block">Akses Sistem (Core Role)</label>
+                  <select 
+                    className="form-input w-full" 
+                    value={form.role} onChange={e => setForm({...form, role: e.target.value})}
+                  >
+                    <option value="cashier">💰 Kasir (Akses Transaksi)</option>
+                    <option value="chef">👨‍🍳 Koki / Dapur (Akses Pesanan)</option>
+                    <option value="staff">👤 Staff Biasa</option>
+                  </select>
+                </div>
+                <div className="form-group mb-5">
+                  <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2 block">Posisi / Jabatan (Custom)</label>
+                  <select 
+                    className="form-input w-full" 
+                    value={form.kuliner_role_id} onChange={e => setForm({...form, kuliner_role_id: e.target.value})}
+                  >
+                    <option value="">-- Pilih Posisi --</option>
+                    {roles.map(role => (
+                      <option key={role.id} value={role.id}>{role.name}</option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-slate-400 mt-1 italic">* Kelola pilihan ini di menu "Atur Role & Izin"</p>
+                </div>
+                <div className="form-group">
+                  <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2 block">Nomor Telepon</label>
+                  <input 
+                    type="text" className="form-input w-full"
+                    value={form.phone} onChange={e => setForm({...form, phone: e.target.value})}
+                    placeholder="08123xxx"
+                  />
+                </div>
               </div>
-              <div className="form-group mb-4">
-                <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2">Email Login</label>
-                <input 
-                  type="email" className="form-input" required
-                  value={form.email} onChange={e => setForm({...form, email: e.target.value})}
-                  placeholder="budi@restoran.com"
-                />
-              </div>
-              <div className="form-group mb-4">
-                <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2">Password {editingStaff && '(Kosongkan jika tidak ganti)'}</label>
-                <input 
-                  type="password" className="form-input" required={!editingStaff}
-                  value={form.password} onChange={e => setForm({...form, password: e.target.value})}
-                  placeholder="Min. 8 karakter"
-                />
-              </div>
-              <div className="form-group mb-4">
-                <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2">Posisi / Role</label>
-                <select 
-                  className="form-input" 
-                  value={form.role} onChange={e => setForm({...form, role: e.target.value})}
-                >
-                  <option value="cashier">💰 Kasir (Akses Transaksi)</option>
-                  <option value="chef">👨‍🍳 Koki / Dapur (Akses Pesanan)</option>
-                </select>
-              </div>
-              <div className="form-group mb-6">
-                <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2">Nomor Telepon</label>
-                <input 
-                  type="text" className="form-input"
-                  value={form.phone} onChange={e => setForm({...form, phone: e.target.value})}
-                  placeholder="08123xxx"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button type="button" className="kd-btn kd-btn-secondary flex-1" onClick={() => setShowModal(false)}>Batal</button>
-                <button type="submit" className="kd-btn kd-btn-primary flex-1">Simpan Staff</button>
+              <div className="kd-modal-footer">
+                <button type="button" className="kd-btn kd-btn-secondary w-full sm:w-auto" onClick={() => setShowModal(false)}>Batal</button>
+                <button type="submit" className="kd-btn kd-btn-primary w-full sm:w-auto">Simpan Staff</button>
               </div>
             </form>
           </div>

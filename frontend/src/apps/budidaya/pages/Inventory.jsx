@@ -105,7 +105,6 @@ export default function Inventory() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1 className="aq-page-title">Gudang & inventaris</h1>
 
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>

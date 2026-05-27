@@ -250,15 +250,13 @@ export default function Pos() {
 
       {/* ── RIGHT: CART ── */}
       <div className="pos-right">
-        <div className="pos-sidebar-header">
-           <h2 style={{ fontSize: '17px', fontWeight: 900, color: '#1E293B', margin: 0 }}>Ringkasan Pembayaran</h2>
+        <div className="pos-sidebar-header" style={{ justifyContent: 'flex-end' }}>
            <span style={{ background: '#EFF6FF', color: '#1D4ED8', padding: '5px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 600 }}>
              {cart.length} Item
            </span>
         </div>
 
         <div className="pos-sidebar-body">
-           <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '16px', letterSpacing: '0.02em' }}>Item dipilih</h3>
            {cart.length === 0 ? (
              <div style={{ textAlign: 'center', padding: '60px 0', color: '#CBD5E1' }}>
                 <ShoppingCart size={48} style={{ opacity: 0.3, marginBottom: '16px' }} />
@@ -294,16 +292,16 @@ export default function Pos() {
         <div className="pos-summary">
            <div className="pos-summary-row">
               <span style={{ fontSize: '14px', fontWeight: 500, color: '#64748B' }}>Sub total</span>
-              <span style={{ fontSize: '15px', fontWeight: 700, color: '#1E293B' }}>Rp {subtotal.toLocaleString()}</span>
+              <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--retail-text-primary)' }}>Rp {subtotal.toLocaleString()}</span>
            </div>
            
            <div className="pos-summary-row" style={{ marginTop: '12px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#1E293B' }}>Diskon (F7)</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--retail-text-primary)' }}>Diskon (F7)</span>
               <div style={{ display: 'flex', gap: '8px', width: '130px' }}>
                  <select 
                    value={discountType} 
                    onChange={e => setDiscountType(e.target.value)} 
-                   style={{ padding: '6px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '13px', fontWeight: 700, outline: 'none' }}
+                   style={{ padding: '6px', borderRadius: '8px', border: '1px solid var(--retail-border)', background: 'var(--retail-card-bg)', color: 'var(--retail-text-primary)', fontSize: '13px', fontWeight: 700, outline: 'none' }}
                  >
                     <option value="%">%</option>
                     <option value="Rp">Rp</option>
@@ -318,17 +316,17 @@ export default function Pos() {
            </div>
 
            <div className="pos-summary-row" style={{ marginTop: '12px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#1E293B' }}>PPN 11%</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--retail-text-primary)' }}>PPN 11%</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                 {usePPN && <span style={{ fontSize: '14px', fontWeight: 700, color: '#1E293B' }}>Rp {ppnAmount.toLocaleString()}</span>}
-                 <div onClick={() => setUsePPN(!usePPN)} style={{ width: '40px', height: '22px', borderRadius: '20px', background: usePPN ? '#1D4ED8' : '#CBD5E1', position: 'relative', cursor: 'pointer', transition: '0.2s' }}>
+                 {usePPN && <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--retail-text-primary)' }}>Rp {ppnAmount.toLocaleString()}</span>}
+                 <div onClick={() => setUsePPN(!usePPN)} style={{ width: '40px', height: '22px', borderRadius: '20px', background: usePPN ? 'var(--retail-primary)' : 'var(--retail-border)', position: 'relative', cursor: 'pointer', transition: '0.2s' }}>
                     <div style={{ width: '18px', height: '18px', background: 'white', borderRadius: '50%', position: 'absolute', top: '2px', left: usePPN ? '20px' : '2px', transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
                  </div>
               </div>
            </div>
 
            <div className="pos-total-row">
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', marginBottom: '6px' }}>Total pembayaran</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--retail-text-secondary)', marginBottom: '6px' }}>Total pembayaran</div>
               <div className="pos-total-val">Rp {totalAfterDiscount.toLocaleString()}</div>
            </div>
 
@@ -415,7 +413,7 @@ export default function Pos() {
                   <p className="pay-section-label">Jumlah bayar</p>
                   <input 
                      type="text"
-                     className={`pay-amount-input ${payAmount < totalAfterDiscount ? 'border-red-500 bg-red-50 text-red-600' : ''}`}
+                     className={`pay-amount-input ${payAmount < totalAfterDiscount ? 'retail-border-danger retail-bg-danger-subtle retail-text-danger' : ''}`}
                      value={`Rp ${payAmount.toLocaleString()}`}
                      onChange={e => {
                         const val = e.target.value.replace(/[^0-9]/g, '');
@@ -442,9 +440,9 @@ export default function Pos() {
 
                {/* Change/Kembalian */}
                {payAmount > totalAfterDiscount && (
-                  <div style={{ marginTop: '16px', padding: '16px', background: '#F0FDF4', borderRadius: '12px', border: '1px solid #DCFCE7', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                     <span style={{ fontSize: '14px', fontWeight: 600, color: '#16A34A' }}>Kembalian</span>
-                     <span style={{ fontSize: '18px', fontWeight: 800, color: '#16A34A' }}>Rp {(payAmount - totalAfterDiscount).toLocaleString()}</span>
+                  <div style={{ marginTop: '16px', padding: '16px', background: 'var(--retail-success-subtle)', border: '1px solid var(--retail-success)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--retail-success)' }}>Kembalian</span>
+                     <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--retail-success)' }}>Rp {(payAmount - totalAfterDiscount).toLocaleString()}</span>
                   </div>
                )}
             </div>
@@ -471,32 +469,32 @@ export default function Pos() {
 
       <Modal isOpen={!!lastSuccess} onClose={() => setLastSuccess(null)} hideHeader maxWidth="400px">
         <div className="text-center py-8">
-           <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-green-200">
-              <CheckCircle2 size={48} className="text-white" />
+           <div className="w-24 h-24 retail-bg-success-subtle rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-green-200">
+              <CheckCircle2 size={48} className="retail-text-success" />
            </div>
-           <h3 className="text-3xl font-700 mb-2 tracking-tighter">Berhasil!</h3>
-           <p className="text-xs font-900 text-slate-400 uppercase tracking-widest mb-10">{lastSuccess?.invoice_no}</p>
+           <h3 className="retail-title mb-2 tracking-tighter">Berhasil!</h3>
+           <p className="retail-label mb-10">{lastSuccess?.invoice_no}</p>
 
-           <div className="bg-slate-50 rounded-[32px] p-8 mb-10 text-left border border-white">
-              <div className="flex justify-between items-center pb-6 border-b border-dashed border-slate-200 mb-6">
-                 <span className="text-[10px] font-950 text-slate-400 uppercase">Total Lunas</span>
-                 <span className="text-2xl font-700 text-purple-600">Rp {Number(totalAfterDiscount).toLocaleString()}</span>
+           <div className="retail-bg-main rounded-[32px] p-8 mb-10 text-left border border-white">
+              <div className="flex justify-between items-center pb-6 border-b border-dashed retail-border mb-6">
+                 <span className="retail-label">Total Lunas</span>
+                 <span className="retail-title retail-text-primary">Rp {Number(totalAfterDiscount).toLocaleString()}</span>
               </div>
               <div className="space-y-3">
-                <div className="flex justify-between text-xs font-900">
-                  <span className="text-slate-400">METODE</span>
-                  <span className="text-slate-900">{payMethod}</span>
+                <div className="flex justify-between retail-label">
+                  <span className="retail-text-secondary">METODE</span>
+                  <span className="retail-text-primary">{payMethod}</span>
                 </div>
-                <div className="flex justify-between text-xs font-900">
-                  <span className="text-slate-400">WAKTU</span>
-                  <span className="text-slate-900">{new Date().toLocaleTimeString()}</span>
+                <div className="flex justify-between retail-label">
+                  <span className="retail-text-secondary">WAKTU</span>
+                  <span className="retail-text-primary">{new Date().toLocaleTimeString()}</span>
                 </div>
               </div>
            </div>
 
            <div className="flex gap-4">
-              <button className="flex-1 h-14 font-950 text-slate-400" onClick={() => setLastSuccess(null)}>Tutup</button>
-              <button className="flex-[2] h-14 bg-slate-900 text-white rounded-2xl font-950 flex items-center justify-center gap-3" onClick={() => window.print()}>
+              <button className="flex-1 h-14 font-950 retail-text-secondary" onClick={() => setLastSuccess(null)}>Tutup</button>
+              <button className="flex-[2] h-14 retail-bg-primary text-white rounded-2xl font-950 flex items-center justify-center gap-3" onClick={() => window.print()}>
                  <Printer size={20} /> CETAK STRUK
               </button>
            </div>

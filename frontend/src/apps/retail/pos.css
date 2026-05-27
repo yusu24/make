@@ -7,7 +7,7 @@
   right: 0;
   bottom: 0;
   display: flex;
-  background: #F5F6F8;
+  background: var(--retail-bg);
   font-family: 'Inter', 'Outfit', sans-serif;
   overflow: hidden;
 }
@@ -22,8 +22,8 @@
 
 .pos-right {
   width: 380px;
-  background: white;
-  border-left: 1px solid #E2E8F0;
+  background: var(--retail-card-bg);
+  border-left: 1px solid var(--retail-border);
   display: flex;
   flex-direction: column;
   box-shadow: none;
@@ -32,12 +32,12 @@
 
 /* Header & Search */
 .pos-search-card {
-  background: white;
+  background: var(--retail-card-bg);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
   box-shadow: none;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--retail-border);
   position: sticky;
   top: -24px;
   z-index: 10;
@@ -49,13 +49,13 @@
   left: -24px;
   right: -24px;
   height: 24px;
-  background: #F5F6F8;
+  background: var(--retail-bg);
 }
 
 .pos-search-bar {
   display: flex;
   align-items: center;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--retail-border);
   border-radius: 12px;
   padding: 12px 16px;
   margin-bottom: 20px;
@@ -67,7 +67,7 @@
   outline: none;
   font-size: 15px;
   font-weight: 500;
-  color: #1E293B;
+  color: var(--retail-text-primary);
   background: transparent;
 }
 
@@ -85,15 +85,15 @@
   font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
-  border: 1px solid #E2E8F0;
-  background: white;
-  color: #64748B;
+  border: 1px solid var(--retail-border);
+  background: var(--retail-card-bg);
+  color: var(--retail-text-secondary);
   transition: all 0.2s;
 }
 .pos-tab.active {
-  background: #1D4ED8;
+  background: var(--retail-primary);
   color: white;
-  border-color: #1D4ED8;
+  border-color: var(--retail-primary);
 }
 
 /* Product Grid */
@@ -105,10 +105,10 @@
 }
 
 .pos-card {
-  background: white;
+  background: var(--retail-card-bg);
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--retail-border);
   box-shadow: none;
   transition: all 0.3s;
   display: flex;
@@ -117,12 +117,12 @@
 .pos-card:hover {
   transform: translateY(-4px);
   box-shadow: none;
-  border-color: #1D4ED8;
+  border-color: var(--retail-primary);
 }
 
 .pos-card-img {
   height: 160px;
-  background: #F8FAFC;
+  background: var(--retail-bg);
   position: relative;
 }
 .pos-card-img img { width: 100%; height: 100%; object-fit: cover; }
@@ -131,7 +131,7 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background: #3B82F6;
+  background: var(--retail-primary);
   color: white;
   font-size: 11px;
   font-weight: 700;
@@ -150,7 +150,7 @@
 .pos-card-title {
   font-size: 14px;
   font-weight: 600;
-  color: #1E293B;
+  color: var(--retail-text-primary);
   margin-bottom: 4px;
   line-height: 1.3;
 }
@@ -158,7 +158,7 @@
 .pos-card-sku {
   font-size: 11px;
   font-weight: 600;
-  color: #94A3B8;
+  color: var(--retail-text-secondary);
   text-transform: uppercase;
   margin-bottom: 12px;
 }
@@ -166,14 +166,14 @@
 .pos-card-price {
   font-size: 16px;
   font-weight: 700;
-  color: #1D4ED8;
+  color: var(--retail-primary);
   margin-top: auto;
 }
 
 .pos-card-stock {
   font-size: 11px;
   font-weight: 600;
-  color: #94A3B8;
+  color: var(--retail-text-secondary);
   margin-top: 2px;
 }
 
@@ -183,7 +183,7 @@
   right: 16px;
   width: 36px;
   height: 36px;
-  background: #1D4ED8;
+  background: var(--retail-primary);
   color: white;
   border-radius: 10px;
   display: flex;
@@ -195,7 +195,7 @@
 /* Sidebar Right */
 .pos-sidebar-header {
   padding: 24px;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid var(--retail-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -208,14 +208,14 @@
 }
 
 .pos-cart-item {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
+  background: var(--retail-bg);
+  border: 1px solid var(--retail-border);
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 16px;
 }
 
-.pos-item-title { font-size: 14px; font-weight: 600; color: #1E293B; margin-bottom: 8px; }
+.pos-item-title { font-size: 14px; font-weight: 600; color: var(--retail-text-primary); margin-bottom: 8px; }
 
 .pos-item-footer {
   display: flex;
@@ -230,10 +230,10 @@
   margin-bottom: 8px;
 }
 
-.pos-qty-val { font-size: 14px; font-weight: 800; min-width: 16px; text-align: center; }
+.pos-qty-val { font-size: 14px; font-weight: 800; min-width: 16px; text-align: center; color: var(--retail-text-primary); }
 
 .pos-trash-btn {
-  color: #EF4444;
+  color: var(--retail-danger);
   background: none;
   border: none;
   cursor: pointer;
@@ -241,9 +241,9 @@
 
 /* Summary Section */
 .pos-summary {
-  border-top: 2px dashed #E2E8F0;
+  border-top: 2px dashed var(--retail-border);
   padding: 24px;
-  background: white;
+  background: var(--retail-card-bg);
 }
 
 .pos-summary-row {
@@ -256,17 +256,17 @@
 .pos-total-row {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 2px dashed #E2E8F0;
+  border-top: 2px dashed var(--retail-border);
 }
 
 .pos-total-val {
   font-size: 22px;
   font-weight: 700;
-  color: #1D4ED8;
+  color: var(--retail-primary);
 }
 
 .pos-pay-methods {
-  background: #F8FAFC;
+  background: var(--retail-bg);
   border-radius: 16px;
   padding: 16px;
   margin: 16px 0;
@@ -281,24 +281,24 @@
 
 .pos-method-btn {
   padding: 10px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--retail-border);
   border-radius: 10px;
-  background: white;
+  background: var(--retail-card-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
   font-size: 12px;
   font-weight: 700;
-  color: #64748B;
+  color: var(--retail-text-secondary);
 }
 .pos-method-btn.active {
-  border-color: #1D4ED8;
-  color: #1D4ED8;
-  background: #EFF6FF;
+  border-color: var(--retail-primary);
+  color: var(--retail-primary);
+  background: var(--retail-primary-subtle);
 }
 
 .pos-btn-pay {
-  background: #1D4ED8;
+  background: var(--retail-primary);
   color: white;
   border: none;
   border-radius: 12px;
@@ -307,17 +307,19 @@
   font-weight: 800;
   width: 100%;
   margin-bottom: 12px;
+  cursor: pointer;
 }
 
 .pos-btn-clear {
-  background: white;
-  color: #EF4444;
-  border: 1px solid #EF4444;
+  background: var(--retail-card-bg);
+  color: var(--retail-danger);
+  border: 1px solid var(--retail-danger);
   border-radius: 12px;
   padding: 14px;
   font-size: 14px;
   font-weight: 800;
   width: 100%;
+  cursor: pointer;
 }
 
 /* Payment Modal Redesign */
@@ -330,20 +332,20 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid var(--retail-border);
 }
 
 .pay-modal-header h2 {
   font-size: 18px;
   font-weight: 800;
-  color: #1E293B;
+  color: var(--retail-text-primary);
   margin: 0;
 }
 
 .pay-modal-close {
   background: none;
   border: none;
-  color: #64748B;
+  color: var(--retail-text-secondary);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -357,12 +359,12 @@
 
 .pay-modal-desc {
   font-size: 14px;
-  color: #64748B;
+  color: var(--retail-text-secondary);
   margin-bottom: 20px;
 }
 
 .pay-total-banner {
-  background: #F0F7FF;
+  background: var(--retail-primary-subtle);
   border-radius: 12px;
   padding: 20px 24px;
   display: flex;
@@ -373,20 +375,20 @@
 
 .pay-total-label {
   font-size: 14px;
-  color: #475569;
+  color: var(--retail-text-secondary);
   font-weight: 500;
 }
 
 .pay-total-amount {
   font-size: 24px;
   font-weight: 800;
-  color: #1D4ED8;
+  color: var(--retail-primary);
 }
 
 .pay-section-label {
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: var(--retail-text-primary);
   margin-bottom: 12px;
 }
 
@@ -398,8 +400,8 @@
 }
 
 .pay-method-card {
-  background: white;
-  border: 1px solid #E2E8F0;
+  background: var(--retail-card-bg);
+  border: 1px solid var(--retail-border);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -410,13 +412,13 @@
   transition: all 0.2s;
   font-size: 14px;
   font-weight: 600;
-  color: #475569;
+  color: var(--retail-text-secondary);
 }
 
 .pay-method-card.active {
-  border: 2px solid #1D4ED8;
-  color: #1D4ED8;
-  background: white;
+  border: 2px solid var(--retail-primary);
+  color: var(--retail-primary);
+  background: var(--retail-card-bg);
 }
 
 .pay-input-group {
@@ -426,18 +428,18 @@
 .pay-amount-input {
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--retail-border);
   border-radius: 10px;
   font-size: 18px;
   font-weight: 700;
-  color: #1E293B;
+  color: var(--retail-text-primary);
   outline: none;
-  background: #F8FAFC;
+  background: var(--retail-bg);
 }
 
 .pay-amount-input:focus {
-  background: white;
-  border-color: #1D4ED8;
+  background: var(--retail-card-bg);
+  border-color: var(--retail-primary);
 }
 
 .pay-quick-amounts {
@@ -449,20 +451,20 @@
 
 .pay-quick-btn {
   padding: 10px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--retail-border);
   border-radius: 8px;
-  background: white;
+  background: var(--retail-card-bg);
   font-size: 13px;
   font-weight: 600;
-  color: #475569;
+  color: var(--retail-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
 }
 
 .pay-quick-btn:hover {
-  background: #F8FAFC;
-  border-color: #CBD5E1;
+  background: var(--retail-bg);
+  border-color: var(--retail-border);
 }
 
 .pay-modal-footer {
@@ -473,7 +475,7 @@
 }
 
 .pay-btn-primary {
-  background: #1149A6;
+  background: var(--retail-primary);
   color: white;
   border: none;
   border-radius: 10px;
@@ -488,9 +490,9 @@
 }
 
 .pay-btn-outline {
-  background: white;
-  color: #1149A6;
-  border: 1px solid #1149A6;
+  background: var(--retail-card-bg);
+  color: var(--retail-primary);
+  border: 1px solid var(--retail-primary);
   border-radius: 10px;
   padding: 14px;
   font-size: 14px;

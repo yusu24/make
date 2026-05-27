@@ -102,7 +102,7 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Data tidak lengkap', 'errors' => $validator->errors()], 422);
         }
 
-        $user = User::with(['businessCategory', 'tenant', 'retailRole'])->where('email', $request->email)->first();
+        $user = User::with(['businessCategory', 'tenant', 'retailRole', 'kulinerRole'])->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['success' => false, 'message' => 'Email atau password salah'], 401);
@@ -148,7 +148,7 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        $user = $request->user()->load('businessCategory', 'tenant', 'retailRole');
+        $user = $request->user()->load('businessCategory', 'tenant', 'retailRole', 'kulinerRole');
         return response()->json(['success' => true, 'data' => $this->formatUser($user)]);
     }
 
@@ -189,7 +189,7 @@ class AuthController extends Controller
             'active_modules'    => $tenant ? $tenant->modules()->where('is_active', true)->pluck('name')->toArray() : [],
             'permissions'       => ($user->role === 'customer' || $user->role === 'super_admin') 
                                     ? 'all' 
-                                    : ($user->retailRole ? $user->retailRole->permissions : []),
+                                    : ($user->retailRole ? $user->retailRole->permissions : ($user->kulinerRole ? $user->kulinerRole->permissions : [])),
         ];
     }
 

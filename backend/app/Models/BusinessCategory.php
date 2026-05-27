@@ -13,10 +13,13 @@ class BusinessCategory extends Model
 
     protected $fillable = [
         'name', 'slug', 'description', 'icon', 'color', 'active', 'sort_order',
+        'promo_text', 'discount_pct', 'promo_active', 'features_list',
     ];
 
     protected $casts = [
         'active' => 'boolean',
+        'promo_active' => 'boolean',
+        'features_list' => 'array',
     ];
 
     protected static function booted(): void

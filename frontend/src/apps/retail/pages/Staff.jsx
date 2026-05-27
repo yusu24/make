@@ -82,58 +82,50 @@ export default function Staff() {
 
   return (
     <div className="animate-fade-in" style={{ padding: 24 }}>
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="page-title">Data Pegawai (Staff)</h2>
-          <p className="page-sub">Kelola akun kasir dan pengelola cabang toko Anda.</p>
-        </div>
-        <button 
-          className="btn btn-primary"
-          onClick={() => { setEditingUser(null); setErrorMsg(''); setShowModal(true); }}
-        >
-          + Tambah Pegawai
-        </button>
-      </div>
 
-      {/* Staff Table Section (Unified Style) */}
+
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Daftar Pegawai & Akses</h3>
+        <div className="p-6 flex justify-end items-center gap-6">
+          <div className="flex items-center gap-3">
+            <button 
+              className="btn btn-primary h-[42px] px-6 whitespace-nowrap"
+              onClick={() => { setEditingUser(null); setErrorMsg(''); setShowModal(true); }}
+            >
+              + Tambah Pegawai
+            </button>
+            <span className="px-3 py-1 retail-bg-main retail-border rounded-lg retail-label whitespace-nowrap">
+               {staff.length} Active Users
+            </span>
           </div>
-          <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-800 text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-heading)' }}>
-             {staff.length} Active Users
-          </span>
         </div>
 
         <table className="table">
             <thead>
               <tr>
-                <th>Nama</th>
-                <th>Email / Username</th>
-                <th>Role System</th>
-                <th style={{ textAlign: 'right' }}>Aksi</th>
+                <th className="pl-6 retail-table-header">Nama</th>
+                <th className="retail-table-header">Email / Username</th>
+                <th className="retail-table-header">Role System</th>
+                <th style={{ textAlign: 'right' }} className="pr-6 retail-table-header">Aksi</th>
               </tr>
             </thead>
           <tbody>
             {loading ? (
-               <tr><td colSpan="4" className="py-20 text-center text-slate-400 font-800">Menyinkronkan Data Pegawai...</td></tr>
+               <tr><td colSpan="4" className="py-20 text-center retail-text-secondary font-800">Menyinkronkan Data Pegawai...</td></tr>
             ) : staff.length === 0 ? (
                <tr><td colSpan="4" style={{ textAlign: 'center', padding: 20 }}>Belum ada data pegawai.</td></tr>
             ) : (
               staff.map((s) => (
                 <tr key={s.id}>
                   <td className="pl-6">
-                    <div>{s.name}</div>
-                    {user.id === s.id && <span className="badge badge-blue">Anda (Pemilik)</span>}
+                    <div className="retail-text-primary">{s.name}</div>
+                    {user.id === s.id && <span className="retail-badge retail-badge-primary">Anda (Pemilik)</span>}
                   </td>
-                  <td>{s.email}</td>
+                  <td className="retail-text-primary">{s.email}</td>
                   <td>
                     {s.retail_role ? (
-                      <span className="badge badge-gray">{s.retail_role.name}</span>
+                      <span className="retail-badge retail-badge-primary">{s.retail_role.name}</span>
                     ) : (
-                      <span className={`badge ${s.role === 'customer' ? 'badge-blue' : 'badge-gray'}`}>
+                      <span className={`retail-badge ${s.role === 'customer' ? 'retail-badge-primary' : 'retail-badge-primary'}`}>
                         {s.role === 'customer' ? 'Admin Toko' : 'Kasir (Default)'}
                       </span>
                     )}
@@ -142,7 +134,7 @@ export default function Staff() {
                     {user.id !== s.id && (
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                         <button className="btn btn-sm btn-ghost" onClick={() => handleEdit(s)}><Edit3 size={14} /></button>
-                        <button className="btn btn-sm btn-ghost text-red-500" onClick={() => handleDelete(s.id)}><Trash2 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(s.id)}><Trash2 size={14} /></button>
                       </div>
                     )}
                   </td>
@@ -155,7 +147,7 @@ export default function Staff() {
 
       {/* Form Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingUser ? "Edit Pegawai" : "Tambah Pegawai"}>
-        {errorMsg && <div style={{ color: 'red', marginBottom: 16 }}>{errorMsg}</div>}
+        {errorMsg && <div style={{ color: 'var(--retail-danger)', marginBottom: 16 }}>{errorMsg}</div>}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div className="form-group">
             <label className="form-label">Nama Lengkap</label>

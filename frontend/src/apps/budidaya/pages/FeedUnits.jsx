@@ -50,13 +50,7 @@ export default function FeedUnits() {
   };
 
   return (
-    <div className="animate-fade-in" style={{ padding: 24 }}>
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="aq-page-title">Data master: Satuan pakan</h2>
-
-        </div>
-      </div>
+    <div className="aq-container">
 
       <div className="aquagrow-card" style={{ maxWidth: 800 }}>
         <div style={{ padding: 20, borderBottom: '1px solid var(--aq-border)', background: '#F8FAFC' }}>

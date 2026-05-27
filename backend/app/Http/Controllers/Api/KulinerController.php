@@ -12,9 +12,13 @@ use App\Models\KulinerSetting;
 use App\Models\KulinerTestimonial;
 use App\Services\TransactionService;
 use App\Models\User;
+use App\Models\KulinerPromo;
+use App\Models\KulinerRole;
+use App\Models\KulinerExpense;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class KulinerController extends Controller
@@ -158,21 +162,22 @@ class KulinerController extends Controller
         $settings = KulinerSetting::where('tenant_id', $tenant->tenant_id)->first();
         
         return response()->json([
-            'store_name' => $settings->store_name ?? $tenant->name,
-            'address' => $settings->address ?? $tenant->address ?? 'Alamat belum diatur',
-            'phone' => $settings->phone ?? $tenant->phone,
+            'store_name' => optional($settings)->store_name ?? $tenant->name,
+            'address' => optional($settings)->address ?? $tenant->address ?? 'Alamat belum diatur',
+            'phone' => optional($settings)->phone ?? $tenant->phone,
             'tenant_id' => $tenant->tenant_id,
-            'operational_days' => $settings->operational_days ?? 'Senin - Minggu',
-            'opening_hours' => $settings->opening_hours ?? '08:00 - 22:00',
-            'hero_title' => $settings->hero_title ?? 'Menu Lezat Kami',
-            'hero_subtitle' => $settings->hero_subtitle ?? 'Selamat datang di toko kami.',
-            'promo_title' => $settings->promo_title ?? null,
-            'promo_desc' => $settings->promo_desc ?? null,
-            'instagram_url' => $settings->instagram_url ?? null,
-            'whatsapp_number' => $settings->whatsapp_number ?? null,
-            'logo_url' => $settings->logo_url ?? null,
-            'website_url' => $settings->website_url ?? null,
-            'total_tables' => $settings->total_tables ?? 0,
+            'operational_days' => optional($settings)->operational_days ?? 'Senin - Minggu',
+            'opening_hours' => optional($settings)->opening_hours ?? '08:00 - 22:00',
+            'hero_title' => optional($settings)->hero_title ?? 'Menu Lezat Kami',
+            'hero_subtitle' => optional($settings)->hero_subtitle ?? 'Selamat datang di toko kami.',
+            'hero_image_url' => optional($settings)->hero_image_url ?? null,
+            'promo_title' => optional($settings)->promo_title ?? null,
+            'promo_desc' => optional($settings)->promo_desc ?? null,
+            'instagram_url' => optional($settings)->instagram_url ?? null,
+            'whatsapp_number' => optional($settings)->whatsapp_number ?? null,
+            'logo_url' => optional($settings)->logo_url ?? null,
+            'website_url' => optional($settings)->website_url ?? null,
+            'total_tables' => optional($settings)->total_tables ?? 0,
         ]);
     }
 
@@ -254,12 +259,12 @@ class KulinerController extends Controller
                 $orderItems = [];
 
                 foreach ($request->items as $itemData) {
-                    $product = Product::find($itemData['id']);
+                    $product = KulinerProduct::withoutGlobalScopes()->find($itemData['id']);
                     
                     if (!$product) {
                         $price = (float) ($itemData['price'] ?? 0);
                     } else {
-                        $price = (float) $product->price;
+                        $price = (float) ($product->discount_price ?: $product->price);
                     }
 
                     $qty = (float) ($itemData['quantity'] ?? 1);
@@ -276,8 +281,10 @@ class KulinerController extends Controller
                 }
 
                 // 1. Save order
-                $order = Order::create([
+                $orderNumber = 'ORD-' . strtoupper(substr(uniqid(), -6));
+                $order = Order::withoutGlobalScopes()->create([
                     'tenant_id' => $tenantId,
+                    'order_number' => $orderNumber,
                     'customer_name' => $request->customer_name,
                     'customer_phone' => $request->customer_phone,
                     'order_type' => $request->order_type,
@@ -311,7 +318,7 @@ class KulinerController extends Controller
 
                 return response()->json([
                     'message' => 'Pesanan berhasil dibuat',
-                    'order_number' => 'ORD-' . strtoupper(substr(uniqid(), -5)),
+                    'order_number' => $orderNumber,
                     'id' => $order->id
                 ], 201);
 
@@ -351,7 +358,10 @@ class KulinerController extends Controller
         }
 
         try {
-            $tenantId = auth()->user()->tenant_id ?: 'TN-ADMIN'; // Fallback if user tenant_id is missing
+            $tenantId = auth()->user()->tenant_id;
+            if (!$tenantId) {
+                return response()->json(['message' => 'Akun Anda belum memiliki tenant yang valid.'], 403);
+            }
             $category = KulinerCategory::create([
                 'tenant_id' => $tenantId,
                 'name' => $request->name,
@@ -399,7 +409,10 @@ class KulinerController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $tenantId = auth()->user()->tenant_id ?: 'TN-ADMIN';
+        $tenantId = auth()->user()->tenant_id;
+        if (!$tenantId) {
+            return response()->json(['message' => 'Akun Anda belum memiliki tenant yang valid.'], 403);
+        }
         $product = KulinerProduct::create([
             'tenant_id' => $tenantId,
             'name' => $request->name,
@@ -478,6 +491,7 @@ class KulinerController extends Controller
     {
         $tenantId = auth()->user()->tenant_id;
         $staff = User::where('tenant_id', $tenantId)
+            ->with('kulinerRole')
             ->whereIn('role', ['cashier', 'chef', 'staff'])
             ->get();
         return response()->json($staff);
@@ -493,6 +507,7 @@ class KulinerController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
             'role' => 'required|in:cashier,chef,staff',
+            'kuliner_role_id' => 'nullable|exists:kuliner_roles,id'
         ]);
 
         if ($validator->fails()) {
@@ -508,7 +523,8 @@ class KulinerController extends Controller
             'role' => $request->role,
             'phone' => $request->phone,
             'status' => 'active',
-            'business_category_id' => auth()->user()->business_category_id
+            'business_category_id' => auth()->user()->business_category_id,
+            'kuliner_role_id' => $request->kuliner_role_id
         ]);
 
         return response()->json(['message' => 'Staff berhasil ditambahkan', 'data' => $user], 201);
@@ -519,13 +535,27 @@ class KulinerController extends Controller
      */
     public function updateStaff(Request $request, $id)
     {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:8',
+            'role' => 'required|in:cashier,chef,staff',
+            'kuliner_role_id' => 'nullable|exists:kuliner_roles,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $tenantId = auth()->user()->tenant_id;
         $user = User::where('tenant_id', $tenantId)->findOrFail($id);
         
         $data = [
             'name' => $request->name,
+            'email' => $request->email,
             'role' => $request->role,
             'phone' => $request->phone,
+            'kuliner_role_id' => $request->kuliner_role_id
         ];
 
         if ($request->password) {
@@ -534,6 +564,49 @@ class KulinerController extends Controller
 
         $user->update($data);
         return response()->json(['message' => 'Data staff berhasil diperbarui', 'data' => $user]);
+    }
+
+    public function getRoles()
+    {
+        $tenantId = auth()->user()->tenant_id;
+        return response()->json(KulinerRole::where('tenant_id', $tenantId)->get());
+    }
+
+    public function storeRole(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'permissions' => 'nullable|array'
+        ]);
+
+        $role = KulinerRole::create([
+            'tenant_id' => auth()->user()->tenant_id,
+            'name' => $request->name,
+            'permissions' => $request->permissions
+        ]);
+
+        return response()->json($role, 201);
+    }
+
+    public function updateRole(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'permissions' => 'nullable|array'
+        ]);
+
+        $role = KulinerRole::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+        $role->update($request->only('name', 'permissions'));
+
+        return response()->json($role);
+    }
+
+    public function destroyRole($id)
+    {
+        $role = KulinerRole::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+        $role->delete();
+
+        return response()->json(['message' => 'Role berhasil dihapus']);
     }
 
     /**
@@ -559,21 +632,22 @@ class KulinerController extends Controller
         $settings = KulinerSetting::where('tenant_id', $tenantId)->first();
 
         return response()->json([
-            'store_name' => $settings->store_name ?? $tenant->name,
-            'address' => $settings->address ?? $tenant->address,
-            'phone' => $settings->phone ?? $tenant->phone,
+            'store_name' => optional($settings)->store_name ?? $tenant->name,
+            'address' => optional($settings)->address ?? $tenant->address,
+            'phone' => optional($settings)->phone ?? $tenant->phone,
             'tenant_id' => $tenant->tenant_id,
-            'opening_hours' => $settings->opening_hours ?? '08:00 - 22:00',
-            'operational_days' => $settings->operational_days ?? 'Senin - Minggu',
-            'total_tables' => $settings->total_tables ?? 0,
-            'hero_title' => $settings->hero_title ?? 'Menu Lezat Kami',
-            'hero_subtitle' => $settings->hero_subtitle ?? 'Selamat datang di toko kami.',
-            'promo_title' => $settings->promo_title ?? '',
-            'promo_desc' => $settings->promo_desc ?? '',
-            'instagram_url' => $settings->instagram_url ?? '',
-            'whatsapp_number' => $settings->whatsapp_number ?? '',
-            'logo_url' => $settings->logo_url ?? '',
-            'website_url' => $settings->website_url ?? '',
+            'opening_hours' => optional($settings)->opening_hours ?? '08:00 - 22:00',
+            'operational_days' => optional($settings)->operational_days ?? 'Senin - Minggu',
+            'total_tables' => optional($settings)->total_tables ?? 0,
+            'hero_title' => optional($settings)->hero_title ?? 'Menu Lezat Kami',
+            'hero_subtitle' => optional($settings)->hero_subtitle ?? 'Selamat datang di toko kami.',
+            'hero_image_url' => optional($settings)->hero_image_url ?? '',
+            'promo_title' => optional($settings)->promo_title ?? '',
+            'promo_desc' => optional($settings)->promo_desc ?? '',
+            'instagram_url' => optional($settings)->instagram_url ?? '',
+            'whatsapp_number' => optional($settings)->whatsapp_number ?? '',
+            'logo_url' => optional($settings)->logo_url ?? '',
+            'website_url' => optional($settings)->website_url ?? '',
         ]);
     }
 
@@ -616,6 +690,7 @@ class KulinerController extends Controller
                     'total_tables' => $request->total_tables,
                     'hero_title' => $request->hero_title,
                     'hero_subtitle' => $request->hero_subtitle,
+                    'hero_image_url' => $request->hero_image_url,
                     'promo_title' => $request->promo_title,
                     'promo_desc' => $request->promo_desc,
                     'instagram_url' => $request->instagram_url,
@@ -640,9 +715,100 @@ class KulinerController extends Controller
         $orders = Order::where('tenant_id', $tenantId)
             ->with(['items'])
             ->orderBy('created_at', 'desc')
+            ->limit(100)
             ->get();
         return response()->json($orders);
     }
+
+    /**
+     * Admin: GET /api/kuliner/admin/ledger
+     */
+    public function getLedger()
+    {
+        $tenantId = auth()->user()->tenant_id;
+        
+        // Ambil orders (income)
+        $orders = Order::where('tenant_id', $tenantId)
+            ->with(['items'])
+            ->orderBy('created_at', 'desc')
+            ->limit(100)
+            ->get()
+            ->map(function ($order) {
+                // Formatting for unified ledger
+                return [
+                    'id' => 'ORD-' . $order->id,
+                    'original_id' => $order->id,
+                    'type' => 'income',
+                    'date' => $order->created_at,
+                    'category' => 'Penjualan',
+                    'description' => 'Pesanan: ' . $order->customer_name,
+                    'amount' => $order->total_amount,
+                    'status' => $order->status,
+                    'raw_data' => $order
+                ];
+            });
+
+        // Ambil expenses
+        $expenses = KulinerExpense::where('tenant_id', $tenantId)
+            ->orderBy('date', 'desc')
+            ->limit(100)
+            ->get()
+            ->map(function ($expense) {
+                return [
+                    'id' => 'EXP-' . $expense->id,
+                    'original_id' => $expense->id,
+                    'type' => 'expense',
+                    'date' => $expense->date . ' ' . $expense->created_at->format('H:i:s'), // Mocking datetime for sorting
+                    'category' => $expense->category,
+                    'description' => $expense->description,
+                    'amount' => $expense->amount,
+                    'status' => 'completed',
+                    'raw_data' => $expense
+                ];
+            });
+
+        // Gabungkan dan urutkan berdasarkan tanggal terbaru
+        $ledger = $orders->concat($expenses)->sortByDesc('date')->values();
+        
+        return response()->json($ledger);
+    }
+
+    /**
+     * Admin: POST /api/kuliner/admin/expenses
+     */
+    public function storeExpense(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        if (!$tenantId || $tenantId === 'TN-ADMIN') {
+            return response()->json(['message' => 'Unauthorized: Invalid tenant context.'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'date' => 'required|date',
+            'category' => 'required|string',
+            'description' => 'nullable|string',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 400);
+        }
+
+        try {
+            $expense = KulinerExpense::create([
+                'tenant_id' => $tenantId,
+                'date' => $request->date,
+                'category' => $request->category,
+                'description' => $request->description,
+                'amount' => $request->amount
+            ]);
+
+            return response()->json(['message' => 'Pengeluaran berhasil dicatat', 'data' => $expense], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal mencatat pengeluaran: ' . $e->getMessage()], 500);
+        }
+    }
+
 
     /**
      * Admin: PATCH /api/kuliner/admin/orders/{id}/status
@@ -917,6 +1083,124 @@ class KulinerController extends Controller
             'revenue_month' => $revenueMonth,
             'total_orders' => $totalOrders,
             'recent_orders' => $recentOrders
+        ]);
+    }
+
+    /**
+     * Admin: GET /api/kuliner/admin/promos
+     */
+    public function getPromos()
+    {
+        $tenantId = auth('sanctum')->user()?->tenant_id;
+        $promos = KulinerPromo::where('tenant_id', $tenantId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return response()->json($promos);
+    }
+
+    /**
+     * Admin: POST /api/kuliner/admin/promos
+     */
+    public function storePromo(Request $request)
+    {
+        $tenantId = auth('sanctum')->user()?->tenant_id;
+        
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|unique:kuliner_promos,code',
+            'type' => 'required|in:discount,nominal,bundle',
+            'value' => 'required|string',
+            'quota' => 'nullable|integer',
+            'expired_at' => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $promo = KulinerPromo::create([
+            'tenant_id' => $tenantId,
+            'name' => $request->name,
+            'code' => strtoupper($request->code),
+            'type' => $request->type,
+            'value' => $request->value,
+            'description' => $request->description,
+            'quota' => $request->quota ?: 0,
+            'expired_at' => $request->expired_at,
+            'status' => 'active'
+        ]);
+
+        return response()->json(['message' => 'Promo berhasil dibuat', 'data' => $promo], 201);
+    }
+
+    /**
+     * Admin: PUT /api/kuliner/admin/promos/{id}
+     */
+    public function updatePromo(Request $request, $id)
+    {
+        $tenantId = auth('sanctum')->user()?->tenant_id;
+        $promo = KulinerPromo::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $promo->update([
+            'name' => $request->name,
+            'type' => $request->type,
+            'value' => $request->value,
+            'description' => $request->description,
+            'quota' => $request->quota,
+            'expired_at' => $request->expired_at,
+            'status' => $request->status ?? 'active'
+        ]);
+
+        return response()->json(['message' => 'Promo berhasil diperbarui', 'data' => $promo]);
+    }
+
+    /**
+     * Admin: DELETE /api/kuliner/admin/promos/{id}
+     */
+    public function destroyPromo($id)
+    {
+        $tenantId = auth('sanctum')->user()?->tenant_id;
+        $promo = KulinerPromo::where('tenant_id', $tenantId)->findOrFail($id);
+        $promo->delete();
+        return response()->json(['message' => 'Promo berhasil dihapus']);
+    }
+
+    /**
+     * Public: POST /api/kuliner/public/validate-promo
+     */
+    public function validatePromo(Request $request)
+    {
+        $code = strtoupper($request->code);
+        $tenantId = $request->tenant_id;
+
+        $promo = KulinerPromo::where('tenant_id', $tenantId)
+            ->where('code', $code)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$promo) {
+            return response()->json(['message' => 'Kode promo tidak valid atau sudah tidak aktif.'], 404);
+        }
+
+        // Check Expiry
+        if ($promo->expired_at && $promo->expired_at->isPast()) {
+            return response()->json(['message' => 'Maaf, masa berlaku promo ini sudah habis.'], 422);
+        }
+
+        // Check Quota
+        if ($promo->quota > 0 && $promo->used_count >= $promo->quota) {
+            return response()->json(['message' => 'Maaf, kuota promo ini sudah habis.'], 422);
+        }
+
+        return response()->json([
+            'valid' => true,
+            'message' => 'Promo berhasil dipasang! ✨',
+            'data' => [
+                'code' => $promo->code,
+                'type' => $promo->type,
+                'value' => $promo->value,
+                'name' => $promo->name
+            ]
         ]);
     }
 }

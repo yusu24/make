@@ -9,46 +9,6 @@ import './Dashboard.css'
 import './Shared.css'
 import { CardSkeleton, ListSkeleton } from '../../../components/Skeleton'
 
-/* ---- Dummy / fallback data ---- */
-const DUMMY_STATS = {
-  total_users: 1284,
-  total_tenants: 348,
-  total_categories: 8,
-  active_subscriptions: 215,
-  revenue_this_month: 48500000,
-  new_users_this_week: 42,
-}
-
-const DUMMY_MONTHLY = [
-  { month: 'Jan', users: 80,  revenue: 22 },
-  { month: 'Feb', users: 110, revenue: 31 },
-  { month: 'Mar', users: 145, revenue: 38 },
-  { month: 'Apr', users: 130, revenue: 35 },
-  { month: 'Mei', users: 190, revenue: 44 },
-  { month: 'Jun', users: 220, revenue: 50 },
-  { month: 'Jul', users: 250, revenue: 58 },
-  { month: 'Agu', users: 240, revenue: 55 },
-  { month: 'Sep', users: 300, revenue: 67 },
-  { month: 'Okt', users: 330, revenue: 72 },
-  { month: 'Nov', users: 300, revenue: 68 },
-  { month: 'Des', users: 380, revenue: 85 },
-]
-
-const DUMMY_CATEGORIES = [
-  { name: 'Toko Retail', value: 142, color: '#3b82f6' },
-  { name: 'Budidaya Ikan', value: 89, color: '#10b981' },
-  { name: 'Jasa', value: 76, color: '#8b5cf6' },
-  { name: 'Manufaktur', value: 41, color: '#f59e0b' },
-]
-
-const DUMMY_RECENT = [
-  { id: 1, name: 'Ahmad Suharto', email: 'ahmad@retail.com', category: 'Toko Retail', role: 'customer', status: 'active', joined: '2026-04-09' },
-  { id: 2, name: 'Siti Rahayu',   email: 'siti@ikan.com',   category: 'Budidaya Ikan', role: 'customer', status: 'active', joined: '2026-04-08' },
-  { id: 3, name: 'Budi Santoso',  email: 'budi@jasa.com',  category: 'Jasa',  role: 'customer', status: 'pending', joined: '2026-04-08' },
-  { id: 4, name: 'Dewi Lestari',  email: 'dewi@mftr.com',  category: 'Manufaktur', role: 'customer', status: 'active', joined: '2026-04-07' },
-  { id: 5, name: 'Rizka Admin',   email: 'rizka@saas.com', category: '-', role: 'admin', status: 'active', joined: '2026-04-05' },
-]
-
 const fmt = (n) => new Intl.NumberFormat('id-ID').format(n)
 const fmtRp = (n) => 'Rp ' + new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 }).format(n)
 
@@ -75,8 +35,8 @@ const STAT_CARDS = (stats) => [
   {
     id: 'total-users',
     label: 'Total Pengguna',
-    value: fmt(stats.total_users),
-    sub: `+${stats.new_users_this_week} minggu ini`,
+    value: fmt(stats.total_users || 0),
+    sub: `+${stats.new_users_this_week || 0} minggu ini`,
     icon: '◉',
     color: '#3b82f6',
     trend: '+12%',
@@ -85,7 +45,7 @@ const STAT_CARDS = (stats) => [
   {
     id: 'total-tenants',
     label: 'Total Tenant Aktif',
-    value: fmt(stats.total_tenants),
+    value: fmt(stats.total_tenants || 0),
     sub: 'Terdaftar di sistem',
     icon: '⬡',
     color: '#10b981',
@@ -95,8 +55,8 @@ const STAT_CARDS = (stats) => [
   {
     id: 'active-subs',
     label: 'Langganan Aktif',
-    value: fmt(stats.active_subscriptions),
-    sub: `${Math.round(stats.active_subscriptions / stats.total_users * 100)}% konversi`,
+    value: fmt(stats.active_subscriptions || 0),
+    sub: `${stats.total_users ? Math.round((stats.active_subscriptions || 0) / stats.total_users * 100) : 0}% konversi`,
     icon: '⭐',
     color: '#8b5cf6',
     trend: '+5%',
@@ -105,8 +65,8 @@ const STAT_CARDS = (stats) => [
   {
     id: 'revenue',
     label: 'Pendapatan Bulan Ini',
-    value: fmtRp(stats.revenue_this_month),
-    sub: 'April 2026',
+    value: fmtRp(stats.revenue_this_month || 0),
+    sub: new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
     icon: '◈',
     color: '#f59e0b',
     trend: '+18%',
@@ -116,10 +76,17 @@ const STAT_CARDS = (stats) => [
 
 export default function Dashboard() {
   const { user, isSuperAdmin } = useAuth()
-  const [stats, setStats] = useState(DUMMY_STATS)
-  const [catData, setCatData] = useState(DUMMY_CATEGORIES)
-  const [monthlyData, setMonthlyData] = useState(DUMMY_MONTHLY)
-  const [recentUsers, setRecentUsers] = useState(DUMMY_RECENT)
+  const [stats, setStats] = useState({
+    total_users: 0,
+    total_tenants: 0,
+    total_categories: 0,
+    active_subscriptions: 0,
+    revenue_this_month: 0,
+    new_users_this_week: 0,
+  })
+  const [catData, setCatData] = useState([])
+  const [monthlyData, setMonthlyData] = useState([])
+  const [recentUsers, setRecentUsers] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -129,10 +96,27 @@ export default function Dashboard() {
           api.get('/admin/stats'),
           api.get('/admin/categories'),
         ])
-        setStats(statsRes.data?.data || DUMMY_STATS)
-        setCatData(catRes.data?.data || DUMMY_CATEGORIES)
+        const sData = statsRes.data?.data || {}
+        setStats({
+          total_users: sData.total_users || 0,
+          total_tenants: sData.total_tenants || 0,
+          total_categories: sData.total_categories || 0,
+          active_subscriptions: sData.active_subscriptions || 0,
+          revenue_this_month: sData.revenue_this_month || 0,
+          new_users_this_week: sData.new_users_this_week || 0,
+        })
+        setRecentUsers(sData.recent_users || [])
+        setMonthlyData(sData.monthly_data || [])
+        
+        // Map category data dynamically so that Recharts PieChart value is linked to tenants_count
+        const mappedCats = (catRes.data?.data || []).map(c => ({
+          name: c.name,
+          value: c.tenants_count ?? 0,
+          color: c.color || '#3b82f6'
+        }))
+        setCatData(mappedCats)
       } catch {
-        // Use dummy data
+        // Safe empty fallback
       } finally {
         setLoading(false)
       }

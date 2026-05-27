@@ -14,21 +14,13 @@ export default function CustomerReport() {
 
   return (
     <div className="animate-fade-in" style={{ padding: 24 }}>
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="page-title">Laporan Pelanggan & Loyalitas</h2>
-          <p className="page-sub">Analisis kontribusi belanja dan frekuensi kunjungan pelanggan.</p>
-        </div>
+      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
       </div>
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Loyalitas & Top Spenders</h3>
-          </div>
-          <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-800 text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-heading)' }}>
+        <div className="p-6 flex justify-end items-center gap-6">
+          <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg retail-label">
              {data.top_customers.length} Customers Analyzed
           </span>
         </div>
@@ -36,11 +28,11 @@ export default function CustomerReport() {
         <table className="table">
           <thead>
             <tr>
-              <th className="pl-6">Nama Pelanggan</th>
-              <th>No. HP</th>
-              <th className="text-center">Frekuensi Belanja</th>
-              <th className="text-right">Total Kontribusi</th>
-              <th className="text-right pr-6">Rata-rata Order</th>
+              <th className="pl-6 retail-table-header">Nama Pelanggan</th>
+              <th className="retail-table-header">No. HP</th>
+              <th className="text-center retail-table-header">Frekuensi Belanja</th>
+              <th className="text-right retail-table-header">Total Kontribusi</th>
+              <th className="text-right pr-6 retail-table-header">Rata-rata Order</th>
             </tr>
           </thead>
           <tbody>

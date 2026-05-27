@@ -12,7 +12,8 @@ class Order extends Model
     use HasFactory, HasTenant;
 
     protected $fillable = [
-        'tenant_id', 
+        'tenant_id',
+        'order_number',
         'customer_name', 
         'customer_phone',
         'total', 

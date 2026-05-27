@@ -131,33 +131,25 @@ export default function Products() {
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       {/* Page Header (Synced with Finance) */}
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-           <h2 className="page-title">Katalog Barang</h2>
-           <p className="page-sub">Kelola daftar produk, harga modal, dan harga jual retail.</p>
-        </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-           + Tambah baru
-        </button>
-      </div>
+
 
       {/* Stats Cards Section */}
       <div className="grid-2" style={{ marginBottom: 52 }}>
          <div className="card card-pad flex items-center justify-between">
             <div className="flex flex-col">
-               <span className="text-xs font-800 text-slate-400 uppercase tracking-widest mb-1">Total Katalog</span>
-               <span className="text-2xl font-800 text-slate-800">{products.length} Varian</span>
+               <span className="retail-label mb-1">Total Katalog</span>
+               <span className="retail-title">{products.length} Varian</span>
             </div>
-            <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 retail-bg-primary-subtle retail-text-primary rounded-2xl flex items-center justify-center">
                <Package size={24} />
             </div>
          </div>
          <div className="card card-pad flex items-center justify-between">
             <div className="flex flex-col">
-               <span className="text-xs font-800 text-slate-400 uppercase tracking-widest mb-1">Stok Kritis</span>
-               <span className="text-2xl font-800 text-red-500">{products.filter(p => Number(p.stock) <= Number(p.stock_min)).length} Items</span>
+               <span className="retail-label mb-1">Stok Kritis</span>
+               <span className="retail-title retail-text-danger">{products.filter(p => Number(p.stock) <= Number(p.stock_min)).length} Items</span>
             </div>
-            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 retail-bg-danger-subtle retail-text-danger rounded-2xl flex items-center justify-center">
                <AlertCircle size={24} />
             </div>
          </div>
@@ -165,14 +157,12 @@ export default function Products() {
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Daftar Produk Retail</h3>
-          </div>
-          
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="airy-search-wrapper" style={{ width: 280 }}>
+        <div className="p-6 flex justify-end">
+          <div className="flex items-center gap-3">
+            <button className="btn btn-primary h-[42px] px-6 whitespace-nowrap" onClick={() => setShowModal(true)}>
+               + Tambah baru
+            </button>
+            <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
               <input 
                 placeholder="Cari Produk..."
                 value={search}
@@ -193,11 +183,11 @@ export default function Products() {
         <table className="table">
           <thead>
             <tr>
-              <th className="pl-6">Identitas Barang</th>
-              <th>Kategori</th>
-              <th>Posisi Stok</th>
-              <th>Harga Jual</th>
-              <th className="pr-6 text-right">Aksi</th>
+              <th className="pl-6 retail-table-header">Identitas Barang</th>
+              <th className="retail-table-header">Kategori</th>
+              <th className="retail-table-header">Posisi Stok</th>
+              <th className="retail-table-header">Harga Jual</th>
+              <th className="pr-6 text-right retail-table-header">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -214,32 +204,32 @@ export default function Products() {
                 <tr key={p.id}>
                   <td className="pl-6">
                       <div className="flex items-center gap-4">
-                         <div className="w-1 h-8 bg-slate-200 rounded-full" />
+                         <div className="w-1 h-8 retail-bg-primary-subtle rounded-full" />
                          <div>
-                            <p className="text-base mb-0.5 text-slate-800">{p.name}</p>
-                            <code className="text-[10px] text-slate-400 uppercase tracking-wider">{p.sku}</code>
+                            <p className="text-base mb-0.5 retail-text-primary">{p.name}</p>
+                            <code className="text-[10px] retail-text-secondary uppercase tracking-wider">{p.sku}</code>
                          </div>
                       </div>
                   </td>
                   <td>
-                     <span className="px-3 py-1 bg-slate-100 rounded-lg text-[10px] text-slate-500 uppercase">
+                     <span className="px-3 py-1 retail-bg-primary-subtle rounded-lg text-[10px] retail-text-secondary uppercase">
                         {categories.find(c => c.id === p.category_id)?.name || 'General'}
                      </span>
                   </td>
                   <td>
-                     <span className={`${Number(p.stock) <= Number(p.stock_min) ? 'text-red-500' : 'text-slate-600'}`}>
+                     <span className={`${Number(p.stock) <= Number(p.stock_min) ? 'retail-text-danger' : 'retail-text-primary'}`}>
                         {p.stock} {p.unit}
                      </span>
                   </td>
                   <td>
-                     <span className="text-slate-800">
+                     <span className="retail-text-primary">
                         Rp {Number(p.price_sell).toLocaleString('id-ID')}
                      </span>
                   </td>
                   <td className="pr-6 text-right">
                      <div className="flex justify-end gap-2">
                         <button className="btn btn-sm btn-ghost" onClick={() => openEdit(p)}><Edit3 size={14} /></button>
-                        <button className="btn btn-sm btn-ghost text-red-500" onClick={() => handleDelete(p.id)}><Trash2 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(p.id)}><Trash2 size={14} /></button>
                      </div>
                   </td>
                 </tr>
@@ -254,19 +244,19 @@ export default function Products() {
            <div className="grid-2">
               <div className="form-group">
                  <label className="form-label">Nama Produk</label>
-                 <input name="name" className={`form-input ${errors.name ? 'border-red-500 bg-red-50' : ''}`} placeholder="Contoh: Beras Premium" defaultValue={editingProduct?.name} />
-                 {errors.name && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.name}</span>}
+                 <input name="name" className={`form-input ${errors.name ? 'retail-border-danger retail-bg-danger-subtle' : ''}`} placeholder="Contoh: Beras Premium" defaultValue={editingProduct?.name} />
+                 {errors.name && <span className="text-[10px] retail-text-danger font-700 mt-1 uppercase tracking-tight">{errors.name}</span>}
               </div>
               <div className="form-group">
                  <label className="form-label">SKU (Barcode)</label>
-                 <input name="sku" className={`form-input ${errors.sku ? 'border-red-500 bg-red-50' : ''}`} value={formSku} onChange={e => setFormSku(e.target.value)} />
-                 {errors.sku && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.sku}</span>}
+                 <input name="sku" className={`form-input ${errors.sku ? 'retail-border-danger retail-bg-danger-subtle' : ''}`} value={formSku} onChange={e => setFormSku(e.target.value)} />
+                 {errors.sku && <span className="text-[10px] retail-text-danger font-700 mt-1 uppercase tracking-tight">{errors.sku}</span>}
               </div>
            </div>
            <div className="grid-3">
               <div className="form-group">
                  <label className="form-label">Kategori</label>
-                 <select name="category_id" className={`form-input ${errors.category_id ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.category_id || ''}>
+                 <select name="category_id" className={`form-input ${errors.category_id ? 'retail-border-danger retail-bg-danger-subtle' : ''}`} defaultValue={editingProduct?.category_id || ''}>
                     <option value="" disabled>Pilih...</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                  </select>

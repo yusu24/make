@@ -56,21 +56,19 @@ class ReportController extends Controller
     {
         $tenantId = $request->user()->tenant_id ?? 'TN-001';
 
-        $ponds = BudidayaPond::where('tenant_id', $tenantId)
-            ->with(['latestSensor'])
-            ->get();
+        $ponds = BudidayaPond::where('tenant_id', $tenantId)->get();
 
         $cycles = BudidayaCycle::where('tenant_id', $tenantId)
             ->whereNotIn('status', ['panen'])
-            ->with(['pond', 'feedings', 'samplings'])
+            ->with(['pond', 'feedings'])
             ->get()
             ->map(function ($cycle) {
-                $totalFeed      = $cycle->feedings->sum('amount_kg');
-                $latestSampling = $cycle->samplings->sortByDesc('date')->first();
-                $biomass        = $latestSampling
-                    ? ($latestSampling->avg_weight_gram / 1000) * $latestSampling->estimated_count
-                    : 0;
-                $fcr = ($biomass > 0) ? round($totalFeed / $biomass, 2) : null;
+                $totalFeed = $cycle->feedings->sum('amount_kg');
+                // Estimate biomass from seed count and a default avg weight
+                $seedCount = (int) ($cycle->seed_count ?? 0);
+                $avgWeightGram = 300; // default estimate
+                $biomass = ($seedCount * $avgWeightGram) / 1000;
+                $fcr = ($biomass > 0 && $totalFeed > 0) ? round($totalFeed / $biomass, 2) : null;
 
                 return [
                     'cycle_id'   => $cycle->id,
@@ -104,28 +102,28 @@ class ReportController extends Controller
                 $cycle     = $harvest->cycle;
                 $pond      = $cycle->pond;
                 $totalFeed = $cycle->feedings->sum('amount_kg');
-                $biomass   = $harvest->total_weight_kg;
+                $biomass   = (float) ($harvest->total_weight_kg ?? 0);
                 $fcr       = ($biomass > 0 && $totalFeed > 0) ? round($totalFeed / $biomass, 2) : null;
 
-                $seedCost  = (float) ($cycle->seed_cost ?? 0);
                 $feedCost  = $totalFeed * 12000;
-                $totalCost = $seedCost + $feedCost;
-                $profit    = $harvest->total_revenue - $totalCost;
+                $totalCost = $feedCost;
+                $revenue   = (float) ($harvest->total_revenue ?? 0);
+                $profit    = $revenue - $totalCost;
 
-                $initialPop    = (int) ($cycle->initial_population ?? 0);
-                $avgWeight     = max((float) ($cycle->avg_weight_gram ?? 300), 1);
-                $harvestedFish = ($biomass * 1000) / $avgWeight;
-                $survivalRate  = $initialPop > 0 ? round(($harvestedFish / $initialPop) * 100, 1) : null;
+                $seedCount     = (int) ($cycle->seed_count ?? 0);
+                $avgWeight     = 300; // default gram
+                $harvestedFish = $biomass > 0 ? ($biomass * 1000) / $avgWeight : 0;
+                $survivalRate  = $seedCount > 0 ? round(($harvestedFish / $seedCount) * 100, 1) : null;
 
                 return [
                     'id'            => $harvest->id,
                     'pond_name'     => $pond->name ?? '-',
                     'cycle_id'      => $cycle->id,
-                    'fish_type'     => $cycle->fish_type ?? '-',
+                    'fish_type'     => $cycle->seed_type ?? '-',
                     'harvest_date'  => $harvest->harvest_date,
-                    'weight_kg'     => (float) $harvest->total_weight_kg,
-                    'price_per_kg'  => (float) $harvest->sale_price_per_kg,
-                    'total_revenue' => (float) $harvest->total_revenue,
+                    'weight_kg'     => $biomass,
+                    'price_per_kg'  => (float) ($harvest->sale_price_per_kg ?? 0),
+                    'total_revenue' => $revenue,
                     'total_cost'    => (float) $totalCost,
                     'net_profit'    => (float) $profit,
                     'total_feed_kg' => (float) $totalFeed,

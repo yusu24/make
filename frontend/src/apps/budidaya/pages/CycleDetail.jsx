@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import { 
   ArrowLeft, ShoppingCart, Heart, Scale, BarChart3, Clock, 
@@ -13,6 +13,7 @@ import { LoadingButton } from '../components/UXComponents'
 export default function CycleDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { setCustomTitle } = useOutletContext() || {}
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('ikhtisar_performa')
@@ -84,11 +85,20 @@ export default function CycleDetail() {
   const stats = data?.stats || { total_cost: 0, total_revenue: 0, profit: 0, current_population: 0, survival_rate: 0, total_feed_kg: 0, fcr: 0 }
   const doc = cycle ? Math.ceil(Math.abs(new Date() - new Date(cycle.seed_date)) / (1000 * 60 * 60 * 24)) : 0
 
+  useEffect(() => {
+    if (setCustomTitle && cycle) {
+      setCustomTitle(`Detail Siklus - ${cycle.pond?.name || ''}`)
+    }
+    return () => {
+      if (setCustomTitle) setCustomTitle('')
+    }
+  }, [cycle, setCustomTitle])
+
   return (
-    <div className="animate-fade-in" style={{ padding: '20px 20px 40px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="aq-container">
       
       {/* Action Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', marginTop: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <button onClick={() => navigate('/budidaya/reports')} className="btn-back-v2">
           <ArrowLeft size={16} /> <span>Kembali ke laporan</span>
         </button>
@@ -111,7 +121,6 @@ export default function CycleDetail() {
                <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#CBD5E1' }}></div>
                <span style={{ fontSize: '12px', fontWeight: 500, color: '#64748B' }}>{cycle?.pond?.area || 'Area tidak diketahui'}</span>
             </div>
-            <h1 className="aq-page-title" style={{ margin: '0 0 12px', fontSize: '32px' }}>{cycle?.pond?.name || 'Pilih kolam'}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748B', fontWeight: 500, fontSize: '14px' }}>
                   <Calendar size={16} style={{ color: '#1B4332' }} />

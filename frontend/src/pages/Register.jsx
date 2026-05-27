@@ -3,15 +3,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
 import './Auth.css'
-import './Register.css'
-import '../apps/admin/pages/Shared.css'
 
 const CATEGORY_ICONS = {
-  'Budidaya Ikan': '🐟',
-  'Toko Retail':   '🛒',
-  'Jasa':          '🔧',
-  'Manufaktur':    '🏭',
-  'Kuliner':       '🍱',
+  'Budidaya Ikan': 'ti-fish',
+  'Toko Retail':   'ti-shopping-cart',
+  'Jasa':          'ti-briefcase',
+  'Manufaktur':    'ti-building-factory-2',
+  'Kuliner':       'ti-tools-kitchen-2',
 }
 
 export default function Register() {
@@ -31,7 +29,6 @@ export default function Register() {
     api.get('/categories/public').then(res => {
       setCategories(res.data?.data || [])
     }).catch(() => {
-      // Fallback demo categories
       setCategories([
         { id: 1, name: 'Budidaya Ikan' },
         { id: 2, name: 'Toko Retail' },
@@ -50,6 +47,10 @@ export default function Register() {
     if (!form.name || !form.email || !form.password) {
       setError('Mohon lengkapi semua field')
       return
+    }
+    if (form.password.length < 8) {
+        setError('Password minimal 8 karakter')
+        return
     }
     if (form.password !== form.password_confirmation) {
       setError('Konfirmasi password tidak cocok')
@@ -92,148 +93,134 @@ export default function Register() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-bg">
-        <div className="auth-bg__orb auth-bg__orb--1" />
-        <div className="auth-bg__orb auth-bg__orb--2" />
-        <div className="auth-bg__orb auth-bg__orb--3" />
-        <div className="auth-bg__grid" />
-      </div>
-
-      <div className="auth-left">
-        <div className="auth-left__content animate-fade-in">
-          <div className="auth-left__logo">
-            <div className="auth-left__logo-icon">U</div>
-            <span className="auth-left__logo-text">UMKM SaaS</span>
-          </div>
-          <h2 className="auth-left__headline">
-            Bergabung dengan<br/>
-            <span className="gradient-text">Ribuan UMKM</span>
-          </h2>
-          <p className="auth-left__desc">
-            Daftarkan bisnis Anda dan mulai kelola operasional dengan dashboard yang modern dan lengkap.
-          </p>
-          <div className="auth-left__features">
-            {[
-              { icon: '🚀', text: 'Setup cepat, langsung siap pakai' },
-              { icon: '📊', text: 'Laporan bisnis komprehensif' },
-              { icon: '🔐', text: 'Keamanan data terjamin' },
-              { icon: '💬', text: 'Dukungan teknis 24/7' },
-            ].map((f, i) => (
-              <div key={i} className="auth-left__feature">
-                <span className="auth-left__feature-icon">{f.icon}</span>
-                <span>{f.text}</span>
-              </div>
-            ))}
-          </div>
+    <div className="page">
+      <nav className="topnav">
+        <div className="nav-logo">
+          <div className="nav-logo-icon"><i className="ti ti-building-store" aria-hidden="true"></i></div>
+          <span className="nav-logo-name">UMKM Hub</span>
         </div>
-      </div>
+        <div className="nav-links">
+          <Link to="/login" className="nav-link">Beranda</Link>
+          <Link to="/login" className="nav-link">Fitur</Link>
+        </div>
+        <Link to="/login" className="nav-cta">Masuk Akun</Link>
+      </nav>
 
-      <div className="auth-right" style={{ width: 520 }}>
-        <div className="auth-card" style={{ maxWidth: 440 }}>
-          {/* Step indicator */}
-          <div className="reg-steps">
-            <div className={`reg-step ${step >= 1 ? 'reg-step--active' : ''}`}>
-              <div className="reg-step__dot">1</div>
-              <span>Informasi Akun</span>
+      <div className="hero">
+        <div className="hero-decor hero-decor-1"></div>
+        <div className="hero-decor hero-decor-2"></div>
+        <div className="hero-inner">
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <div className="hero-badge">
+              <i className="ti ti-rocket" aria-hidden="true"></i>
+              Gabung Bersama 24.000+ UMKM Lainnya
             </div>
-            <div className="reg-step__line" />
-            <div className={`reg-step ${step >= 2 ? 'reg-step--active' : ''}`}>
-              <div className="reg-step__dot">2</div>
-              <span>Pilih Kategori</span>
+            <h1 className="hero-title">Mulai Transformasi Digital<br /><span>Bisnis Anda Sekarang</span></h1>
+            <p className="hero-sub">Daftarkan akun dan nikmati kemudahan mengelola operasional bisnis dengan dashboard modern yang dirancang khusus untuk UMKM Indonesia.</p>
+            
+            <div className="hero-stats" style={{ marginTop: '2rem' }}>
+              <div className="hero-stat">
+                <div className="hero-stat-num">100%</div>
+                <div className="hero-stat-lbl">Data Aman</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-num">Gratis</div>
+                <div className="hero-stat-lbl">Masa Percobaan</div>
+              </div>
             </div>
           </div>
 
-          <div className="auth-card__header">
-            <h1 className="auth-card__title">
-              {step === 1 ? 'Buat Akun 🚀' : 'Pilih Bisnis Anda'}
-            </h1>
-            <p className="auth-card__sub">
-              {step === 1 ? 'Lengkapi data diri untuk mendaftar' : 'Pilih kategori bisnis yang sesuai'}
-            </p>
-          </div>
+          <div className="login-card" style={{ width: 440 }}>
+            <div className="reg-steps">
+                <div className={`reg-step ${step >= 1 ? 'reg-step--active' : ''}`}>
+                    <div className="reg-step__dot">1</div>
+                    <span>Akun</span>
+                </div>
+                <div className="reg-step__line" />
+                <div className={`reg-step ${step >= 2 ? 'reg-step--active' : ''}`}>
+                    <div className="reg-step__dot">2</div>
+                    <span>Bisnis</span>
+                </div>
+            </div>
 
-          {error && <div className="auth-alert auth-alert--error"><span>⚠</span> {error}</div>}
-          {success && <div className="auth-alert auth-alert--success"><span>✓</span> {success}</div>}
+            <div className="login-logo">
+              <div className="login-logo-icon"><i className="ti ti-user-plus"></i></div>
+              <div>
+                <div className="login-logo-text">Daftar Akun</div>
+                <div className="login-logo-sub">Lengkapi data untuk memulai</div>
+              </div>
+            </div>
 
-          {step === 1 ? (
-            <form id="form-register-step1" className="auth-form" onSubmit={handleNext} noValidate>
-              <div className="form-group">
-                <label className="form-label" htmlFor="reg-name">Nama Lengkap</label>
-                <div className="auth-input-wrap">
-                  <span className="auth-input-icon">👤</span>
-                  <input id="reg-name" name="name" type="text" className="form-input auth-input"
-                    placeholder="Nama bisnis / pemilik" value={form.name} onChange={handleChange} required />
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="reg-email">Email</label>
-                <div className="auth-input-wrap">
-                  <span className="auth-input-icon">✉</span>
-                  <input id="reg-email" name="email" type="email" className="form-input auth-input"
-                    placeholder="email@bisnis.com" value={form.email} onChange={handleChange} required />
-                </div>
-              </div>
-              <div className="auth-grid-2">
-                <div className="form-group">
-                  <label className="form-label" htmlFor="reg-pass">Password</label>
-                  <div className="auth-input-wrap">
-                    <span className="auth-input-icon">🔒</span>
-                    <input id="reg-pass" name="password" type="password" className="form-input auth-input"
-                      placeholder="Min. 8 karakter" value={form.password} onChange={handleChange} required />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="reg-pass-confirm">Konfirmasi</label>
-                  <div className="auth-input-wrap">
-                    <span className="auth-input-icon">🔐</span>
-                    <input id="reg-pass-confirm" name="password_confirmation" type="password" className="form-input auth-input"
-                      placeholder="Ulangi password" value={form.password_confirmation} onChange={handleChange} required />
-                  </div>
-                </div>
-              </div>
-              <button id="btn-next-step" type="submit" className="btn btn-primary btn-full btn-lg">
-                Lanjut →
-              </button>
-            </form>
-          ) : (
-            <form id="form-register-step2" className="auth-form" onSubmit={handleSubmit}>
-              <div className="category-grid">
-                {categories.map(cat => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    id={`btn-cat-${cat.id}`}
-                    className={`category-card ${form.business_category_id === cat.id ? 'category-card--selected' : ''}`}
-                    onClick={() => selectCategory(cat.id)}
-                  >
-                    <span className="category-card__icon">
-                      {CATEGORY_ICONS[cat.name] || '🏢'}
-                    </span>
-                    <span className="category-card__name">{cat.name}</span>
-                    {form.business_category_id === cat.id && (
-                      <span className="category-card__check">✓</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-              <div className="auth-grid-2">
-                <button id="btn-back-step" type="button" className="btn btn-secondary btn-lg"
-                  onClick={() => setStep(1)}>← Kembali</button>
-                <button id="btn-register-submit" type="submit" className="btn btn-primary btn-lg"
-                  disabled={loading || !form.business_category_id}>
-                  {loading ? (
-                    <><span className="spinner" style={{width:18,height:18,borderWidth:2}}/> Mendaftar...</>
-                  ) : 'Daftar Sekarang'}
-                </button>
-              </div>
-            </form>
-          )}
+            {error && <div className="auth-alert auth-alert--error" style={{ marginBottom: 20 }}><span>⚠</span> {error}</div>}
+            {success && <div className="auth-alert auth-alert--success" style={{ marginBottom: 20 }}><span>✓</span> {success}</div>}
 
-          <div className="auth-footer">
-            <p>Sudah punya akun?{' '}
-              <Link id="link-to-login" to="/login" className="auth-link">Masuk di sini →</Link>
-            </p>
+            {step === 1 ? (
+                <form onSubmit={handleNext}>
+                    <div className="field-lbl">Nama Pemilik / Bisnis</div>
+                    <div className="field-wrap">
+                        <i className="ti ti-user field-icon"></i>
+                        <input name="name" placeholder="Contoh: Budi Santoso" value={form.name} onChange={handleChange} required />
+                    </div>
+
+                    <div className="field-lbl">Alamat Email</div>
+                    <div className="field-wrap">
+                        <i className="ti ti-mail field-icon"></i>
+                        <input name="email" type="email" placeholder="email@bisnis.com" value={form.email} onChange={handleChange} required />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <div>
+                            <div className="field-lbl">Kata Sandi</div>
+                            <div className="field-wrap">
+                                <i className="ti ti-lock field-icon"></i>
+                                <input name="password" type="password" placeholder="••••••••" value={form.password} onChange={handleChange} required />
+                            </div>
+                        </div>
+                        <div>
+                            <div className="field-lbl">Konfirmasi</div>
+                            <div className="field-wrap">
+                                <i className="ti ti-circle-check field-icon"></i>
+                                <input name="password_confirmation" type="password" placeholder="••••••••" value={form.password_confirmation} onChange={handleChange} required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" className="btn-login">
+                        Lanjut ke Langkah 2 <i className="ti ti-arrow-right"></i>
+                    </button>
+                </form>
+            ) : (
+                <form onSubmit={handleSubmit}>
+                    <div className="field-lbl">Pilih Kategori Bisnis Anda</div>
+                    <div className="category-grid">
+                        {categories.map(cat => (
+                            <div 
+                                key={cat.id} 
+                                className={`category-card ${form.business_category_id === cat.id ? 'category-card--selected' : ''}`}
+                                onClick={() => selectCategory(cat.id)}
+                            >
+                                <div className="category-card__icon">
+                                    <i className={`ti ${CATEGORY_ICONS[cat.name] || 'ti-building'}`}></i>
+                                </div>
+                                <div className="category-card__name">{cat.name}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
+                        <button type="button" className="btn-login" style={{ background: 'rgba(255,255,255,0.1)' }} onClick={() => setStep(1)}>
+                            <i className="ti ti-arrow-left"></i>
+                        </button>
+                        <button type="submit" className="btn-login" disabled={loading || !form.business_category_id}>
+                            {loading ? <span className="spinner" style={{ width: 18, height: 18 }}></span> : 'Daftar Sekarang'}
+                        </button>
+                    </div>
+                </form>
+            )}
+
+            <div className="login-footer">
+              Sudah punya akun? <Link to="/login">Masuk di sini</Link>
+            </div>
           </div>
         </div>
       </div>

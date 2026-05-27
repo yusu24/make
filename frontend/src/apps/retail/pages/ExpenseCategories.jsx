@@ -44,29 +44,21 @@ export default function ExpenseCategories() {
 
   return (
     <div className="retail-page-classic">
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="page-title">Data Master: Kategori Pengeluaran</h2>
-          <p className="page-sub">Kelola label kategori agar pencatatan pengeluaran toko rapi dan seragam.</p>
-        </div>
+      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
       </div>
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Daftar Kategori Tersedia</h3>
-          </div>
-          <form onSubmit={addCategory} className="flex items-center gap-3 w-full md:w-auto">
-             <div className="airy-search-wrapper" style={{ width: 280 }}>
+        <div className="p-6 flex justify-end">
+          <form onSubmit={addCategory} className="flex items-center gap-3">
+             <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
                 <input 
                   name="name"
                   placeholder="Kategori pengeluaran baru..."
                   required
                 />
              </div>
-             <button type="submit" className="btn btn-primary h-[42px] px-6">
+             <button type="submit" className="btn btn-primary h-[42px] px-6 whitespace-nowrap">
                 Tambah
              </button>
           </form>
@@ -75,9 +67,9 @@ export default function ExpenseCategories() {
         <table className="table">
           <thead>
             <tr>
-              <th className="pl-6" style={{ width: 100 }}>ID</th>
-              <th>Nama Kategori</th>
-              <th className="text-right pr-6">Aksi</th>
+              <th className="pl-6 retail-table-header" style={{ width: 100 }}>ID</th>
+              <th className="retail-table-header">Nama Kategori</th>
+              <th className="text-right pr-6 retail-table-header">Aksi</th>
             </tr>
           </thead>
           <tbody>

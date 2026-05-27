@@ -13,15 +13,15 @@ import '../retail.css';
 // Sub-component for KPI Card (Top Row)
 const KpiCard = ({ title, value, trend, trendType, icon: Icon, color }) => (
   <div className="horizon-kpi">
-    <div className="horizon-kpi__icon-wrap" style={{ background: 'var(--airy-bg)' }}>
-      <Icon size={24} style={{ color: 'var(--horizon-primary)' }} />
+    <div className="horizon-kpi__icon-wrap retail-bg-primary-subtle">
+      <Icon size={24} className="retail-text-primary" />
     </div>
     <div className="horizon-kpi__content">
-      <span className="horizon-kpi__title">{title}</span>
-      <h3 className="horizon-kpi__value">{value}</h3>
+      <span className="retail-label">{title}</span>
+      <h3 className="retail-kpi-value">{value}</h3>
       {trend && (
-        <span className={`text-[10px] font-700 ${trendType === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-          {trendType === 'up' ? '↑' : '↓'} {trend} <span className="text-slate-400 font-500">since last month</span>
+        <span className={`text-[10px] font-bold ${trendType === 'up' ? 'retail-text-success' : 'retail-text-danger'}`}>
+          {trendType === 'up' ? '↑' : '↓'} {trend} <span className="retail-text-secondary">since last month</span>
         </span>
       )}
     </div>
@@ -36,10 +36,10 @@ const ProductCard = ({ product, sales, price, progress }) => (
       alt={product.name} 
       className="airy-product-thumb" 
     />
-    <h4 className="font-600 text-xs mb-1 truncate">{product.name}</h4>
+    <h4 className="retail-card-title text-xs mb-1 truncate">{product.name}</h4>
     <div className="flex justify-between items-center mb-2">
-      <span className="text-[10px] font-700 text-primary-600">Rp {Number(price).toLocaleString('id-ID')}</span>
-      <span className="text-[10px] font-500 text-muted">{sales} sales</span>
+      <span className="text-[10px] font-bold retail-text-primary">Rp {Number(price).toLocaleString('id-ID')}</span>
+      <span className="text-[10px] font-medium retail-text-secondary">{sales} sales</span>
     </div>
     <div className="airy-progress-bar">
       <div className="airy-progress-fill" style={{ width: `${progress}%` }}></div>
@@ -53,7 +53,13 @@ const CACHE_TTL = 60_000;
 
 export default function RetailDashboard() {
   const { getDashboard, loading: apiLoading } = useCore();
-  const [data, setData] = useState(_cache || null);
+  const [data, setData] = useState(_cache || {
+    total_sales: 0,
+    total_transactions: 0,
+    transactions: [],
+    top_products: [],
+    low_stock: []
+  });
   const [loading, setLoading] = useState(!_cache);
 
   useEffect(() => {
@@ -63,6 +69,7 @@ export default function RetailDashboard() {
     }
     
     getDashboard().then(res => {
+        if (!res) { setLoading(false); return; }
         const summary = res.summary || {};
         const sanitizedData = {
           total_sales: summary.income || 0,
@@ -75,10 +82,13 @@ export default function RetailDashboard() {
         _cacheTime = Date.now(); 
         setData(sanitizedData); 
         setLoading(false); 
-    }).catch(() => setLoading(false));
+    }).catch(err => {
+      console.error('Dashboard load failed:', err);
+      setLoading(false);
+    });
   }, [getDashboard]);
 
-  if (loading || !data) return (
+  if (loading) return (
     <div className="page-content">
       <div className="loading-state-premium">
         <div className="spinner-glow"></div>
@@ -97,24 +107,20 @@ export default function RetailDashboard() {
   ];
 
   const pieData = [
-    { name: 'Production', value: 50, color: 'var(--success-600)' },
-    { name: 'Store', value: 20, color: 'var(--warning-500)' },
-    { name: 'Stock', value: 30, color: 'var(--danger-500)' },
+    { name: 'Production', value: 50, color: 'var(--retail-success)' },
+    { name: 'Store', value: 20, color: 'var(--retail-warning)' },
+    { name: 'Stock', value: 30, color: 'var(--retail-danger)' },
   ];
 
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       {/* Header Section */}
-      <div className="page-header py-8" style={{ border: 'none' }}>
-        <div>
-          <h2 className="page-title">Main Dashboard</h2>
-          <p className="text-sm font-500" style={{ color: 'var(--airy-text-light)' }}>Welcome back! Here's what's happening today.</p>
-        </div>
+      <div className="page-header py-4" style={{ border: 'none', justifyContent: 'flex-end' }}>
         <div className="flex gap-4">
           <button className="btn btn-secondary" onClick={() => { _cache = null; window.location.reload(); }}>
             <RefreshCw size={18} />
           </button>
-          <button className="btn btn-primary px-8" style={{ background: 'var(--success-600)', border: 'none' }} onClick={() => window.location.href='/retail/pos'}>
+          <button className="btn btn-primary px-8" style={{ background: 'var(--retail-success)', border: 'none' }} onClick={() => window.location.href='/retail/pos'}>
             <Plus size={18} /> <span>Open POS</span>
           </button>
         </div>
@@ -133,10 +139,10 @@ export default function RetailDashboard() {
         <div className="airy-card">
           <div className="flex justify-between items-center mb-8">
              <div>
-                <h3 className="text-2xl font-700 tracking-tight" style={{ color: 'var(--airy-text-bold)' }}>Rp 37.5jt</h3>
-                <span className="text-xs font-500 text-slate-400">Total Revenue <span className="text-green-500 font-700">+2.45%</span></span>
+                <h3 className="retail-title">Rp 37.5jt</h3>
+                <span className="retail-label">Total Revenue <span className="retail-text-success font-bold">+2.45%</span></span>
              </div>
-             <button className="p-3 rounded-xl text-primary-600" style={{ background: 'var(--airy-bg)' }}>
+             <button className="p-3 rounded-xl retail-text-primary retail-bg-primary-subtle">
                 <TrendingUp size={20} />
              </button>
           </div>
@@ -145,23 +151,22 @@ export default function RetailDashboard() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--horizon-primary)" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="var(--horizon-primary)" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--retail-primary)" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="var(--retail-primary)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 500, fill: '#A3AED0'}} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 500, fill: 'var(--retail-text-secondary)'}} />
                 <Tooltip 
-                  contentStyle={{ borderRadius: 16, border: 'none', boxShadow: 'var(--airy-shadow)', padding: 12 }}
+                  contentStyle={{ borderRadius: 16, border: 'none', boxShadow: 'var(--retail-shadow)', background: 'var(--retail-card-bg)', color: 'var(--retail-text-primary)', padding: 12 }}
                 />
-                <Area type="monotone" dataKey="sales" stroke="var(--horizon-primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
+                <Area type="monotone" dataKey="sales" stroke="var(--retail-primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="airy-card flex flex-col items-center">
-           <div className="w-full flex justify-between items-center mb-6">
-              <h3 className="font-700 text-lg" style={{ color: 'var(--airy-text-bold)' }}>Stock Unit</h3>
+           <div className="w-full flex justify-end items-center mb-6">
            </div>
            <div style={{ position: 'relative', width: '100%', height: 200 }}>
              <ResponsiveContainer width="100%" height="100%">
@@ -181,16 +186,16 @@ export default function RetailDashboard() {
                   </Pie>
                 </PieChart>
              </ResponsiveContainer>
-             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                <span className="text-2xl font-700 block" style={{ color: 'var(--airy-text-bold)' }}>100%</span>
-                <span className="text-[10px] font-500 text-slate-400 uppercase tracking-wider">Growth</span>
+             <div className="retail-pie-center">
+                <span className="retail-kpi-value">100%</span>
+                <span className="retail-label">Growth</span>
              </div>
            </div>
            <div className="flex gap-4 mt-8 flex-wrap justify-center">
               {pieData.map(d => (
                 <div key={d.name} className="flex items-center gap-2">
                    <div style={{ width: 8, height: 8, borderRadius: 2, background: d.color }}></div>
-                   <span className="text-[10px] font-700 text-slate-400">{d.name}</span>
+                   <span className="retail-label" style={{ fontSize: 10 }}>{d.name}</span>
                 </div>
               ))}
            </div>
@@ -198,9 +203,8 @@ export default function RetailDashboard() {
       </div>
 
       <div className="airy-card">
-         <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-700" style={{ color: 'var(--airy-text-bold)' }}>Most Selling Product</h3>
-            <button className="font-700 text-sm" style={{ color: 'var(--horizon-primary)' }} onClick={()=>window.location.href='/retail/products'}>
+         <div className="flex justify-end items-center mb-8">
+            <button className="retail-label retail-text-primary font-bold hover:underline" onClick={()=>window.location.href='/retail/products'}>
                See all
             </button>
          </div>

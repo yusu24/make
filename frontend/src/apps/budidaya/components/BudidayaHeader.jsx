@@ -1,14 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../lib/api'
 import '../budidaya.css'
 
+const NAV_ITEMS = [
+  { label: 'Dashboard',           path: '/budidaya/dashboard' },
+  { label: 'Manajemen Kolam',     path: '/budidaya/ponds'     },
+  { label: 'Siklus Budidaya',     path: '/budidaya/cycles'    },
+  { label: 'Pakan & Logistik',    path: '/budidaya/feeds'     },
+  { label: 'Data Satuan',         path: '/budidaya/feed-units' },
+  { label: 'Kategori Pakan',      path: '/budidaya/feed-categories' },
+  { label: 'Gudang & Inventaris', path: '/budidaya/inventory' },
+  { label: 'Laporan & Analisa',   path: '/budidaya/reports'   },
+  { label: 'Manajemen Pengguna',  path: '/budidaya/users'     },
+  { label: 'Peran & Izin',        path: '/budidaya/roles'     },
+  { label: 'Paket Langganan',     path: '/budidaya/subscription' },
+  { label: 'Pusat Bantuan',       path: '/budidaya/support'   },
+  { label: 'Pengaturan Profil',   path: '/budidaya/settings'  },
+]
+
 export default function BudidayaHeader({ onMenuToggle }) {
   const { user } = useAuth()
+  const location = useLocation()
   const [alerts, setAlerts] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef(null)
+
+  let pageTitle = 'Budidaya'
+  const exactMatch = NAV_ITEMS.find(item => item.path === location.pathname)
+  if (exactMatch) {
+    pageTitle = exactMatch.label
+  } else if (location.pathname.startsWith('/budidaya/ponds/')) {
+    pageTitle = 'Detail Kolam'
+  } else if (location.pathname.startsWith('/budidaya/cycles/')) {
+    pageTitle = 'Detail Siklus'
+  }
 
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
@@ -58,7 +86,6 @@ export default function BudidayaHeader({ onMenuToggle }) {
         position: 'sticky',
         top: 0,
         zIndex: 40,
-        width: '100%',
         height: 64,
         background: 'rgba(255,255,255,0.95)',
         backdropFilter: 'blur(12px)',
@@ -90,7 +117,9 @@ export default function BudidayaHeader({ onMenuToggle }) {
         >
           <span className="material-symbols-outlined" style={{ fontSize: 24, fontWeight: 700 }}>menu</span>
         </button>
-
+        <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1B4332', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 8 }}>
+          {pageTitle}
+        </h1>
       </div>
 
       {/* Right: search + notif + avatar */}

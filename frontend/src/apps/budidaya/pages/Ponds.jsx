@@ -270,12 +270,8 @@ export default function Ponds() {
     <div className="aq-container">
 
 
-      {/* ── Page Header ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 className="aq-page-title">Manajemen kolam</h1>
-
-        </div>
+      {/* ── Page Actions ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', justifyContent: 'space-between' }}>
           {/* Grid / Table Toggle */}
           <div style={{ display: 'flex', background: '#fff', border: '1px solid #E9F0EC', borderRadius: 10, padding: 3, gap: 2 }}>

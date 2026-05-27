@@ -32,6 +32,10 @@ const FullMenu = () => {
     payment: 'cash_cashier' 
   });
   const [submitting, setSubmitting] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoData, setPromoData] = useState(null);
+  const [isCheckingPromo, setIsCheckingPromo] = useState(false);
+  const [promoMessage, setPromoMessage] = useState(null);
   const [lastOrder, setLastOrder] = useState(null);
 
   useEffect(() => {
@@ -135,9 +139,50 @@ const FullMenu = () => {
     }));
   };
 
+  const cartCount = cartItems.reduce((acc, curr) => acc + curr.quantity, 0);
+  const totalCartPrice = cartItems.reduce((acc, curr) => acc + ((curr.discount_price || curr.price) * curr.quantity), 0);
+
   const removeFromCart = (id) => {
     setCartItems(prev => prev.filter(i => i.id !== id));
   };
+
+  const handleCheckPromo = async () => {
+    if (!promoCode) return;
+    setIsCheckingPromo(true);
+    setPromoMessage(null);
+    try {
+      const response = await api.post('/kuliner/public/validate-promo', {
+        code: promoCode,
+        tenant_id: settings.tenant_id
+      });
+      setPromoData(response.data.data);
+      setPromoMessage({ type: 'success', text: response.data.message });
+    } catch (error) {
+      console.error('Promo validation failed:', error);
+      setPromoMessage({ 
+        type: 'error', 
+        text: error.response?.data?.message || 'Kode promo tidak valid.' 
+      });
+      setPromoData(null);
+    } finally {
+      setIsCheckingPromo(false);
+    }
+  };
+
+  const calculateDiscount = () => {
+    if (!promoData) return 0;
+    const subtotal = totalCartPrice;
+    if (promoData.type === 'discount') {
+      const percent = parseInt(promoData.value.replace('%', ''));
+      return (subtotal * percent) / 100;
+    } else if (promoData.type === 'nominal') {
+      const amount = parseInt(promoData.value.replace(/\D/g, ''));
+      return Math.min(amount, subtotal);
+    }
+    return 0;
+  };
+
+  const finalTotal = totalCartPrice + 2000 - calculateDiscount();
 
   useEffect(() => {
     if (isCashierMode) {
@@ -150,20 +195,22 @@ const FullMenu = () => {
     setSubmitting(true);
     try {
       const payload = {
+        tenant_id: settings.tenant_id,
         customer_name: orderInfo.name,
         customer_phone: orderInfo.phone,
         order_type: orderInfo.order_type,
-        table_number: orderInfo.order_type === 'dine_in' ? orderInfo.table_number : null,
-        payment_method: orderInfo.payment,
+        table_number: orderInfo.table_number,
         notes: orderInfo.notes,
-        is_staff_order: isCashierMode,
-        tenant_id: settings.tenant_id, // Include tenant_id
+        payment_method: orderInfo.payment,
         items: cartItems.map(i => ({
           id: i.id,
           name: i.name,
           price: i.discount_price || i.price,
           quantity: i.quantity
-        }))
+        })),
+        promo_code: promoData?.code,
+        discount_amount: calculateDiscount(),
+        total: finalTotal
       };
       const response = await api.post('/kuliner/public/orders', payload);
       setLastOrder(response.data);
@@ -177,9 +224,6 @@ const FullMenu = () => {
       setSubmitting(false);
     }
   };
-
-  const cartCount = cartItems.reduce((acc, curr) => acc + curr.quantity, 0);
-  const totalCartPrice = cartItems.reduce((acc, curr) => acc + ((curr.discount_price || curr.price) * curr.quantity), 0);
 
   if (loading) {
     return (
@@ -196,7 +240,7 @@ const FullMenu = () => {
         <div className="kl-cart-drawer" onClick={e => e.stopPropagation()}>
           <div className="kl-drawer-header">
             <h2>{checkoutStep === 'success' ? 'Berhasil!' : checkoutStep === 'form' ? 'Detail Pesanan' : 'Pesanan Anda'}</h2>
-            <button className="kl-close-btn" onClick={() => { setIsCartOpen(false); if(checkoutStep==='success') setCheckoutStep('cart'); }}>✕</button>
+            <button className="kl-close-btn" onClick={() => { setIsCartOpen(false); if(checkoutStep==='success') setCheckoutStep('cart'); }}>X</button>
           </div>
 
           <div className="kl-drawer-content">
@@ -279,15 +323,51 @@ const FullMenu = () => {
 
           {cartItems.length > 0 && checkoutStep === 'cart' && (
             <div className="kl-drawer-footer">
+              <div className="kl-promo-section" style={{marginBottom: 16, padding: '12px', background: '#f8fafc', borderRadius: '12px'}}>
+                <label style={{display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase'}}>Punya Kode Promo?</label>
+                <div style={{display: 'flex', gap: '8px'}}>
+                  <input 
+                    type="text" 
+                    placeholder="Contoh: MERDEKA" 
+                    value={promoCode}
+                    onChange={e => setPromoCode(e.target.value.toUpperCase())}
+                    style={{flex: 1, padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '12px', textTransform: 'uppercase'}}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={handleCheckPromo}
+                    disabled={isCheckingPromo || !promoCode}
+                    style={{padding: '8px 16px', background: '#b48c36', color: '#fff', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', border: 'none'}}
+                  >
+                    {isCheckingPromo ? '...' : 'Cek'}
+                  </button>
+                </div>
+                {promoMessage && (
+                  <div style={{marginTop: '8px', fontSize: '11px', color: promoMessage.type === 'success' ? '#16a34a' : '#ef4444', fontWeight: 'medium'}}>
+                    {promoMessage.text}
+                  </div>
+                )}
+              </div>
+
               <div className="kl-summary-row">
                 <span>Subtotal</span>
                 <span>{formatRp(totalCartPrice)}</span>
               </div>
+              <div className="kl-summary-row">
+                <span>Biaya Layanan</span>
+                <span>{formatRp(2000)}</span>
+              </div>
+              {promoData && (
+                <div className="kl-summary-row" style={{color: '#16a34a', fontWeight: 'bold'}}>
+                  <span>Promo ({promoData.code})</span>
+                  <span>-{formatRp(calculateDiscount())}</span>
+                </div>
+              )}
               <div className="kl-summary-row total">
                 <span>Total</span>
-                <span>{formatRp(totalCartPrice + 2000)}</span>
+                <span>{formatRp(finalTotal)}</span>
               </div>
-              <button className="kl-checkout-btn" onClick={() => setCheckoutStep('form')}>Lanjut ke Pembayaran →</button>
+              <button className="kl-checkout-btn" onClick={() => setCheckoutStep('form')}>Lanjut ke Pembayaran {'->'}</button>
             </div>
           )}
 
@@ -311,7 +391,7 @@ const FullMenu = () => {
 
       <div className="kl-page-header">
         <Link to={isCashierMode ? "/kuliner/admin/orders" : `/kuliner${tenantIdFromUrl ? `?tenant_id=${tenantIdFromUrl}` : ''}`} className="kl-back-btn">
-          ← {isCashierMode ? "Kembali ke Admin" : "Kembali"}
+          {'<-'} {isCashierMode ? "Kembali ke Admin" : "Kembali"}
         </Link>
         <h1 className="kl-page-title">{settings?.store_name || 'Toko Kuliner'} <em>Menu</em></h1>
       </div>
@@ -422,7 +502,7 @@ const FullMenu = () => {
           <h4>{cartCount} item ditambahkan</h4>
           <p>Total: {formatRp(totalCartPrice)}</p>
         </div>
-        <button className="kl-cart-cta" onClick={() => setIsCartOpen(true)}>Lihat Keranjang →</button>
+        <button className="kl-cart-cta" onClick={() => setIsCartOpen(true)}>Lihat Keranjang {'->'}</button>
       </div>
     </div>
   );

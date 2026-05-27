@@ -13,7 +13,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('businessCategory')->latest();
+        $query = User::with(['businessCategory', 'saasRole'])->latest();
 
         if ($request->search) {
             $q = $request->search;
@@ -21,7 +21,13 @@ class UserController extends Controller
         }
 
         if ($request->role) {
-            $query->where('role', $request->role);
+            if (is_array($request->role)) {
+                $query->whereIn('role', $request->role);
+            } else {
+                $query->where('role', $request->role);
+            }
+        } else {
+            $query->where('role', 'customer');
         }
 
         if ($request->status) {
@@ -31,13 +37,16 @@ class UserController extends Controller
         $users = $query->paginate($request->per_page ?? 20);
 
         $data = collect($users->items())->map(fn ($u) => [
-            'id'       => $u->id,
-            'name'     => $u->name,
-            'email'    => $u->email,
-            'role'     => $u->role,
-            'status'   => $u->status,
-            'category' => $u->businessCategory?->name ?? '-',
-            'joined'   => $u->created_at->format('Y-m-d'),
+            'id'           => $u->id,
+            'name'         => $u->name,
+            'email'        => $u->email,
+            'role'         => $u->role,
+            'status'       => $u->status,
+            'category'     => $u->businessCategory?->name ?? '-',
+            'joined'       => $u->created_at->format('Y-m-d'),
+            'saas_role_id' => $u->saas_role_id,
+            'saas_role'    => $u->saasRole?->name ?? ($u->role === 'super_admin' ? 'Super Admin' : '-'),
+            'permissions'  => $u->role === 'super_admin' ? ['*'] : ($u->saasRole?->permissions ?? []),
         ]);
 
         return response()->json([
@@ -64,6 +73,7 @@ class UserController extends Controller
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
             'role'     => 'in:admin,customer,super_admin',
+            'saas_role_id' => 'nullable|exists:saas_roles,id',
         ]);
 
         if ($validator->fails()) {
@@ -77,6 +87,7 @@ class UserController extends Controller
             'role'     => $request->role ?? 'customer',
             'status'   => 'active',
             'business_category_id' => $request->business_category_id,
+            'saas_role_id' => $request->saas_role_id,
         ]);
 
         ActivityLog::record('create_user', 'User: ' . $user->name, 'success');
@@ -86,7 +97,11 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $user->update($request->only('name', 'email', 'role', 'status', 'business_category_id', 'phone'));
+        $data = $request->only('name', 'email', 'role', 'status', 'business_category_id', 'phone', 'saas_role_id');
+        if ($request->password) {
+            $data['password'] = Hash::make($request->password);
+        }
+        $user->update($data);
         ActivityLog::record('edit_user', 'User: ' . $user->name, 'info');
         return response()->json(['success' => true, 'message' => 'Pengguna diperbarui']);
     }

@@ -30,11 +30,27 @@ const KulinerAdminLayout = ({ children }) => {
     navigate(redirectPath);
   };
 
-  const handleLogout = () => {
-    if (window.confirm('Apakah Anda yakin ingin keluar?')) {
-      logout();
-      navigate('/login');
+  const hasPermission = (permId) => {
+    // Temporary: Grant all users full access
+    return true;
+
+    // Owners and Super Admins have all permissions
+    if (user?.role === 'customer' || user?.role === 'super_admin' || user?.permissions === 'all') {
+      return true;
     }
+    // Check specific permission array
+    if (user?.permissions && Array.isArray(user.permissions)) {
+      return user.permissions.includes(permId);
+    }
+    return false;
+  };
+
+  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']
+
+  const handleLogout = () => {
+    const isDemo = DEMO_EMAILS.includes(user?.email)
+    logout();
+    navigate(isDemo ? '/' : '/login');
   };
 
   // Close sidebar and scroll to top on route change
@@ -140,118 +156,134 @@ const KulinerAdminLayout = ({ children }) => {
                 <span className="kd-nav-icon">📊</span>
                 <span>Dashboard</span>
               </Link>
-              <Link 
-                to="/kuliner/admin/orders" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/orders' ? 'active' : ''}`}
-                onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/orders') {
-                    e.preventDefault();
-                    window.scrollTo(0, 0);
-                  }
-                }}
-              >
-                <span className="kd-nav-icon">📋</span>
-                <span>Pesanan & Kasir</span>
-              </Link>
-              <Link 
-                to="/kuliner/admin/categories" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/categories' ? 'active' : ''}`}
-                onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/categories') {
-                    e.preventDefault();
-                    window.scrollTo(0, 0);
-                  }
-                }}
-              >
-                <span className="kd-nav-icon">🍽️</span>
-                <span>Menu & Produk</span>
-              </Link>
-              <Link 
-                to="/kuliner/admin/marketing" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/marketing' ? 'active' : ''}`}
-                onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/marketing') {
-                    e.preventDefault();
-                    window.scrollTo(0, 0);
-                  }
-                }}
-              >
-                <span className="kd-nav-icon">🎨</span>
-                <span>Desain & Flyer</span>
-              </Link>
+              {hasPermission('orders') && (
+                <Link 
+                  to="/kuliner/admin/orders" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/orders' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/orders') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">📋</span>
+                  <span>Pesanan & Kasir</span>
+                </Link>
+              )}
+              {hasPermission('menu') && (
+                <Link 
+                  to="/kuliner/admin/categories" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/categories' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/categories') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">🍽️</span>
+                  <span>Menu & Produk</span>
+                </Link>
+              )}
+              {hasPermission('marketing') && (
+                <Link 
+                  to="/kuliner/admin/marketing" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/marketing' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/marketing') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">🎨</span>
+                  <span>Desain & Flyer</span>
+                </Link>
+              )}
             </div>
 
             <div className="kd-nav-section">
               <div className="kd-nav-label">Keuangan</div>
-              <Link 
-                to="/kuliner/admin/reports" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/reports' ? 'active' : ''}`}
-                onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/reports') {
-                    e.preventDefault();
-                    window.scrollTo(0, 0);
-                  }
-                }}
-              >
-                <span className="kd-nav-icon">💰</span>
-                <span>Laporan Penjualan</span>
-              </Link>
-              <Link 
-                to="/kuliner/admin/analytics" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/analytics' ? 'active' : ''}`}
-                onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/analytics') {
-                    e.preventDefault();
-                    window.scrollTo(0, 0);
-                  }
-                }}
-              >
-                <span className="kd-nav-icon">📈</span>
-                <span>Analitik</span>
-              </Link>
-              <Link 
-                to="/kuliner/admin/transactions" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/transactions' ? 'active' : ''}`}
-                onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/transactions') {
-                    e.preventDefault();
-                    window.scrollTo(0, 0);
-                  }
-                }}
-              >
-                <span className="kd-nav-icon">🧾</span>
-                <span>Transaksi</span>
-              </Link>
+              {hasPermission('reports') && (
+                <Link 
+                  to="/kuliner/admin/reports" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/reports' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/reports') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">💰</span>
+                  <span>Laporan Penjualan</span>
+                </Link>
+              )}
+              {hasPermission('analytics') && (
+                <Link 
+                  to="/kuliner/admin/analytics" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/analytics' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/analytics') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">📈</span>
+                  <span>Analitik</span>
+                </Link>
+              )}
+              {hasPermission('reports') && (
+                <Link 
+                  to="/kuliner/admin/transactions" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/transactions' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/transactions') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">🧾</span>
+                  <span>Transaksi</span>
+                </Link>
+              )}
             </div>
 
             <div className="kd-nav-section">
               <div className="kd-nav-label">Konten</div>
-              <Link 
-                to="/kuliner/admin/promos" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/promos' ? 'active' : ''}`}
-                onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/promos') {
-                    e.preventDefault();
-                    window.scrollTo(0, 0);
-                  }
-                }}
-              >
-                <span className="kd-nav-icon">🎁</span>
-                <span>Promo & Diskon</span>
-              </Link>
-              <Link 
-                to="/kuliner/admin/reviews" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/reviews' ? 'active' : ''}`}
-                onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/reviews') {
-                    e.preventDefault();
-                    window.scrollTo(0, 0);
-                  }
-                }}
-              >
-                <span className="kd-nav-icon">⭐</span>
-                <span>Review</span>
-              </Link>
+              {hasPermission('marketing') && (
+                <Link 
+                  to="/kuliner/admin/promos" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/promos' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/promos') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">🎁</span>
+                  <span>Promo & Diskon</span>
+                </Link>
+              )}
+              {hasPermission('marketing') && (
+                <Link 
+                  to="/kuliner/admin/reviews" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/reviews' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/reviews') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">⭐</span>
+                  <span>Review</span>
+                </Link>
+              )}
             </div>
 
             <div className="kd-nav-section">
@@ -269,31 +301,48 @@ const KulinerAdminLayout = ({ children }) => {
                 <span className="kd-nav-icon">👤</span>
                 <span>Profil Saya</span>
               </Link>
+              {hasPermission('staff') && (
+                <Link 
+                  to="/kuliner/admin/staff" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/staff' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/staff') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">👥</span>
+                  <span>Kelola Staff</span>
+                </Link>
+              )}
+              {hasPermission('settings') && (
+                <Link 
+                  to="/kuliner/admin/settings" 
+                  className={`kd-nav-item ${location.pathname === '/kuliner/admin/settings' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (location.pathname === '/kuliner/admin/settings') {
+                      e.preventDefault();
+                      window.scrollTo(0, 0);
+                    }
+                  }}
+                >
+                  <span className="kd-nav-icon">⚙️</span>
+                  <span>Pengaturan Toko</span>
+                </Link>
+              )}
               <Link 
-                to="/kuliner/admin/staff" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/staff' ? 'active' : ''}`}
+                to="/kuliner/admin/support" 
+                className={`kd-nav-item ${location.pathname === '/kuliner/admin/support' ? 'active' : ''}`}
                 onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/staff') {
+                  if (location.pathname === '/kuliner/admin/support') {
                     e.preventDefault();
                     window.scrollTo(0, 0);
                   }
                 }}
               >
-                <span className="kd-nav-icon">👥</span>
-                <span>Kelola Staff</span>
-              </Link>
-              <Link 
-                to="/kuliner/admin/settings" 
-                className={`kd-nav-item ${location.pathname === '/kuliner/admin/settings' ? 'active' : ''}`}
-                onClick={(e) => {
-                  if (location.pathname === '/kuliner/admin/settings') {
-                    e.preventDefault();
-                    window.scrollTo(0, 0);
-                  }
-                }}
-              >
-                <span className="kd-nav-icon">⚙️</span>
-                <span>Pengaturan Toko</span>
+                <span className="kd-nav-icon">❓</span>
+                <span>Pusat Bantuan</span>
               </Link>
             </div>
             
@@ -307,10 +356,22 @@ const KulinerAdminLayout = ({ children }) => {
                 <span className="kd-nav-icon">🌐</span>
                 <span className="kd-nav-text">Lihat Storefront</span>
               </Link>
-              <div className="kd-nav-item text-red-500" onClick={handleLogout} style={{ cursor: 'pointer', marginTop: 10 }}>
+              <button 
+                className="kd-nav-item" 
+                onClick={handleLogout} 
+                style={{ 
+                  cursor: 'pointer', 
+                  marginTop: 10, 
+                  width: '100%', 
+                  textAlign: 'left',
+                  background: 'none',
+                  border: 'none',
+                  borderLeft: '3px solid transparent'
+                }}
+              >
                 <span className="kd-nav-icon">🚪</span>
                 <span style={{ color: '#ef4444', fontWeight: 'bold' }}>Keluar Akun</span>
-              </div>
+              </button>
             </div>
           </nav>
         </aside>

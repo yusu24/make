@@ -76,12 +76,32 @@ class SubscriptionRequestController extends Controller
      */
     public function current(Request $request)
     {
-        $tenantId = $request->user()->tenant_id;
+        $user = $request->user();
+        $tenantId = $user->tenant_id;
+        
         $req = SubscriptionRequest::where('tenant_id', $tenantId)
             ->where('status', 'pending')
             ->first();
 
-        return response()->json(['data' => $req]);
+        // Fetch tenant with business category to retrieve active promo packages
+        $tenant = Tenant::where('tenant_id', $tenantId)->with('businessCategory')->first();
+        
+        $promo = null;
+        if ($tenant && $tenant->businessCategory && $tenant->businessCategory->promo_active) {
+            $promo = [
+                'text' => $tenant->businessCategory->promo_text,
+                'discount_pct' => (int) $tenant->businessCategory->discount_pct,
+                'category_name' => $tenant->businessCategory->name
+            ];
+        }
+
+        $settings = \App\Models\LandingSetting::first();
+
+        return response()->json([
+            'data' => $req,
+            'category_promo' => $promo,
+            'global_settings' => $settings
+        ]);
     }
 
     /**

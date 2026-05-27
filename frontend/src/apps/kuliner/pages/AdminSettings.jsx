@@ -16,6 +16,7 @@ const AdminSettings = () => {
     total_tables: '',
     hero_title: '',
     hero_subtitle: '',
+    hero_image_url: '',
     promo_title: '',
     promo_desc: '',
     instagram_url: '',
@@ -65,18 +66,16 @@ const AdminSettings = () => {
 
   return (
     <KulinerAdminLayout>
-      {loading ? (
-        <KulinerLoading message="Memuat Pengaturan..." />
-      ) : (
-        <>
-          <div className="kd-topbar">
-            <div>
-              <h1 className="kd-page-title">Pengaturan Toko</h1>
-              <p className="text-sm text-slate-500 mt-1">Sesuaikan identitas dan profil bisnis kuliner Anda.</p>
-            </div>
-          </div>
+      <div className="kd-topbar">
+        <h1 className="kd-page-title">Pengaturan Toko</h1>
+        <div className="kd-topbar-actions" />
+      </div>
 
-          <div className="kd-content">
+      <div className="kd-content">
+        {loading ? (
+          <KulinerLoading message="Memuat Pengaturan..." />
+        ) : (
+          <>
             {message && (
               <div className={`p-4 rounded-2xl mb-8 text-sm font-bold border animate-in fade-in slide-in-from-top-4 duration-300 ${message.type === 'success' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
                 {message.type === 'success' ? '✨ ' : '❌ '} {message.text}
@@ -224,6 +223,20 @@ const AdminSettings = () => {
                           onChange={e => setSettings({...settings, hero_subtitle: e.target.value})} 
                         />
                       </div>
+
+                      <div className="kd-form-group">
+                        <label className="kd-form-label flex items-center gap-2">
+                          <span>🖼️</span> URL Gambar Utama (Background Parallax)
+                        </label>
+                        <input 
+                          type="text" 
+                          className="kd-form-input"
+                          placeholder="https://..."
+                          value={settings.hero_image_url || ''} 
+                          onChange={e => setSettings({...settings, hero_image_url: e.target.value})} 
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">Opsional: Tambahkan URL gambar untuk jadikan background beranda dengan efek parallax.</p>
+                      </div>
                       
                       <div className="kd-divider my-6 opacity-50"></div>
 
@@ -312,9 +325,9 @@ const AdminSettings = () => {
                 </div>
               </form>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </KulinerAdminLayout>
   );
 };

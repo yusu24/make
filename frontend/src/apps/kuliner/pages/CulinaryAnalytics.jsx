@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import KulinerLoading from '../components/KulinerLoading';
 import './KulinerDashboard.css';
 
 const CulinaryAnalytics = () => {
@@ -32,22 +33,10 @@ const CulinaryAnalytics = () => {
     }
   };
 
-  if (loading) return (
-    <KulinerAdminLayout>
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <div className="spinner" style={{ width: 40, height: 40, margin: '0 auto 20px' }}></div>
-        <p className="text-slate-400">Menganalisis data transaksi Anda...</p>
-      </div>
-    </KulinerAdminLayout>
-  );
-
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <div>
-          <h1 className="kd-page-title">Analitik Bisnis</h1>
-          <p className="text-sm text-slate-500 mt-1">Pahami tren pelanggan dan optimalkan strategi penjualan Anda.</p>
-        </div>
+        <h1 className="kd-page-title">Analitik Bisnis</h1>
         <div className="kd-topbar-actions">
           <div className="text-xs font-medium text-slate-400 mr-2">Data terakhir diperbarui: Baru saja</div>
           <button className="kd-btn kd-btn-primary">⚡ Generate Insight AI</button>
@@ -55,9 +44,13 @@ const CulinaryAnalytics = () => {
       </div>
 
       <div className="kd-content">
-        <div className="kd-settings-layout">
-          
-          {/* TOP PRODUCTS CHART */}
+        {loading ? (
+          <KulinerLoading message="Menganalisis data transaksi Anda..." />
+        ) : (
+          <>
+            <div className="kd-settings-layout">
+              
+              {/* TOP PRODUCTS CHART */}
           <div className="kd-panel">
             <div className="kd-panel-header">
               <div className="text-sm font-bold text-slate-800">Menu Paling Dicari (Top 5)</div>
@@ -95,22 +88,27 @@ const CulinaryAnalytics = () => {
               <div className="text-sm font-bold text-slate-800">Analisis Jam Sibuk</div>
             </div>
             <div className="p-6" style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {peakHours.length === 0 ? (
+              {peakHours.every(ph => ph.intensity === 0) ? (
                 <div className="text-center text-slate-400 text-xs italic">Data jam sibuk akan muncul setelah ada transaksi.</div>
               ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 4 }}>
                   {peakHours.map((data, index) => (
-                    <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div 
-                        style={{ 
-                          width: '100%', 
-                          height: `${data.intensity}%`, 
-                          background: 'linear-gradient(to top, #3b82f6, #60a5fa)', 
-                          borderRadius: '8px 8px 0 0',
-                          transition: 'height 1s ease-out'
-                        }} 
-                      />
-                      <span className="text-[10px] text-slate-400 mt-4 font-bold">{data.hour}</span>
+                    <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                      <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '8px' }}>
+                        <div 
+                          style={{ 
+                            width: '80%', 
+                            height: `${Math.max(data.intensity, 2)}%`, // Minimum height 2% for visibility if 0 it will be 2 but actually we can just show empty
+                            background: data.intensity > 0 ? 'linear-gradient(to top, #3b82f6, #60a5fa)' : '#f1f5f9', 
+                            borderRadius: '4px 4px 0 0',
+                            transition: 'height 1s ease-out'
+                          }} 
+                          title={`${data.hour} - Intensitas: ${data.intensity}%`}
+                        />
+                      </div>
+                      <span className="text-[9px] text-slate-400 font-bold" style={{ visibility: index % 3 === 0 ? 'visible' : 'hidden' }}>
+                        {data.hour}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -142,7 +140,9 @@ const CulinaryAnalytics = () => {
             <div className="text-[10px] text-slate-400 font-bold tracking-widest">Rating Layanan</div>
           </div>
         </div>
-      </div>
+      </>
+    )}
+  </div>
     </KulinerAdminLayout>
   );
 };

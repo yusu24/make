@@ -13,35 +13,42 @@ class ImpersonateController extends Controller
      * POST /api/admin/tenants/{tenant_id}/impersonate
      * Admin SaaS can generate a temporary token for any tenant's owner.
      */
-    public function impersonate(Request $request, string $tenantId)
+    public function impersonateUser(Request $request, $id)
     {
-        // Only super_admin or admin can impersonate
         $requester = $request->user();
-        if (!in_array($requester->role, ['super_admin', 'admin'])) {
+        $targetUser = User::with(['businessCategory', 'tenant', 'retailRole', 'kulinerRole'])->findOrFail($id);
+
+        // Authorization check
+        $canImpersonate = false;
+        
+        // 1. Super Admin/Admin can impersonate anyone
+        if (in_array($requester->role, ['super_admin', 'admin'])) {
+            $canImpersonate = true;
+        } 
+        // 2. Tenant Owner can impersonate their staff
+        else if ($requester->tenant_id === $targetUser->tenant_id && $targetUser->role !== 'super_admin' && $targetUser->role !== 'admin') {
+            $canImpersonate = true;
+        }
+
+        if (!$canImpersonate) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $tenant = Tenant::where('tenant_id', $tenantId)->firstOrFail();
-        $targetUser = User::with('businessCategory', 'tenant')
-            ->where('id', $tenant->user_id)
-            ->first();
-
-        if (!$targetUser) {
-            return response()->json(['message' => 'User tenant tidak ditemukan'], 404);
-        }
-
-        // Create a short-lived token (1 hour) for the tenant user
+        // Create a short-lived token (1 hour) for the target user
         $token = $targetUser->createToken('impersonate', ['*'], now()->addHour())->plainTextToken;
 
-        // Format user data same as login
-        $plan = $tenant->subscription_plan ?? 'free';
-        $businessCategory = $targetUser->businessCategory?->name ?? $tenant->businessCategory?->name;
+        // Use tenant from target user if available
+        $tenant = $targetUser->tenant;
+        $plan = $tenant?->subscription_plan ?? 'free';
+        $businessCategory = $targetUser->businessCategory?->name ?? $tenant?->businessCategory?->name;
 
         $userData = [
             'id'                  => $targetUser->id,
             'name'                => $targetUser->name,
             'email'               => $targetUser->email,
             'role'                => $targetUser->role,
+            'tenant_id'           => $targetUser->tenant_id,
+            'tenant_name'         => $tenant?->business_name ?? $tenant?->name,
             'status'              => $targetUser->status,
             'phone'               => $targetUser->phone,
             'business_category'   => $businessCategory,
@@ -49,8 +56,11 @@ class ImpersonateController extends Controller
             'subscription_plan'   => $plan,
             'subscription_status' => 'active',
             'subscription_days_left' => 999,
-            'permissions'         => 'all',
+            'permissions'         => ($targetUser->role === 'customer' || $targetUser->role === 'super_admin') 
+                                    ? 'all' 
+                                    : ($targetUser->retailRole ? $targetUser->retailRole->permissions : ($targetUser->kulinerRole ? $targetUser->kulinerRole->permissions : [])),
             'is_impersonating'    => true,
+            'active_modules'      => $tenant ? $tenant->modules()->where('is_active', true)->pluck('name')->toArray() : [],
         ];
 
         return response()->json([
@@ -64,7 +74,7 @@ class ImpersonateController extends Controller
         ]);
     }
 
-    private function resolveRedirect(?string $category): string
+    public function resolveRedirect(?string $category): string
     {
         $cat = trim($category);
         if (strcasecmp($cat, 'Budidaya Ikan') === 0) return '/budidaya/dashboard';

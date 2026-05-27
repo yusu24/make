@@ -84,6 +84,43 @@
   background: radial-gradient(circle at 10% 20%, rgba(180, 140, 54, 0.03) 0%, transparent 40%);
 }
 
+.kl-hero-parallax {
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  position: relative;
+  color: #fff;
+}
+
+.kl-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 0;
+}
+
+.kl-hero-parallax > * {
+  position: relative;
+  z-index: 1;
+}
+
+.kl-hero-parallax .kl-hero-text h1,
+.kl-hero-parallax .kl-hero-text p {
+  color: #fff;
+}
+
+.kl-hero-parallax .kl-hero-text h1 em {
+  color: var(--kl-accent-light);
+}
+
+.kl-hero-parallax .kl-badge {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+
 .kl-hero-text h1 {
   font-family: 'Playfair Display', serif;
   font-size: 64px;

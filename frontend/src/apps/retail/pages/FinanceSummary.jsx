@@ -58,18 +58,14 @@ export default function FinanceSummary() {
 
   return (
     <div className="finance-summary animate-fade-in" style={{ padding: 24, paddingBottom: 100 }}>
-      <div className="page-header" style={{ marginBottom: 24 }}>
-        <div>
-          <h2 className="page-title">Ringkasan Laba & Rugi</h2>
-          <p className="page-sub">Pantau arus kas dan kesehatan finansial toko Anda.</p>
-        </div>
+      <div className="page-header" style={{ marginBottom: 24, justifyContent: 'flex-end' }}>
       </div>
 
       {/* Filter Section */}
       <div className="card card-pad" style={{ marginBottom: 24, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Calendar size={18} className="text-muted" />
-          <span style={{ fontWeight: 600, fontSize: 13 }}>Periode:</span>
+          <Calendar size={18} className="retail-text-secondary" />
+          <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--retail-text-primary)' }}>Periode:</span>
         </div>
         <select className="form-input" style={{ width: 'auto' }} value={dateFilter} onChange={handleFilterChange}>
           <option value="today">Hari Ini</option>
@@ -91,37 +87,37 @@ export default function FinanceSummary() {
         {/* Income Card */}
         <div className="card finance-card finance-card--income">
           <div className="finance-card__header">
-            <span className="finance-card__title">Total Pendapatan (Penjualan)</span>
+            <span className="retail-label">Total Pendapatan</span>
             <div className="finance-card__icon"><TrendingUp size={20} /></div>
           </div>
-          <div className="finance-card__amount">
+          <div className="retail-kpi-value retail-text-primary">
             {loading ? '...' : formatRp(summary.total_sales)}
           </div>
-          <div className="finance-card__desc">Total kotor dari transaksi mesin kasir (POS).</div>
+          <div className="retail-text-secondary">Total kotor dari transaksi mesin kasir (POS).</div>
         </div>
 
         {/* Expense Card */}
         <div className="card finance-card finance-card--expense">
           <div className="finance-card__header">
-            <span className="finance-card__title">Total Pengeluaran</span>
+            <span className="retail-label">Total Pengeluaran</span>
             <div className="finance-card__icon"><TrendingDown size={20} /></div>
           </div>
-          <div className="finance-card__amount" style={{ color: 'var(--danger-500)' }}>
+          <div className="retail-kpi-value retail-text-danger">
             {loading ? '...' : formatRp(summary.total_expenses)}
           </div>
-          <div className="finance-card__desc">Total seluruh catatan pengeluaran manual.</div>
+          <div className="retail-text-secondary">Total seluruh catatan pengeluaran manual.</div>
         </div>
 
         {/* Profit Card */}
         <div className={`card finance-card finance-card--profit ${isProfit ? 'is-profit' : 'is-loss'}`}>
           <div className="finance-card__header">
-            <span className="finance-card__title">Laba Bersih (Profit)</span>
+            <span className="retail-label">Laba Bersih (Profit)</span>
             <div className="finance-card__icon"><Wallet size={20} /></div>
           </div>
-          <div className="finance-card__amount" style={{ color: isProfit ? 'var(--success-600)' : 'var(--danger-600)' }}>
+          <div className="retail-kpi-value" style={{ color: isProfit ? 'var(--retail-success)' : 'var(--retail-danger)' }}>
             {loading ? '...' : formatRp(summary.profit)}
           </div>
-          <div className="finance-card__desc">Pendapatan dikurangi Pengeluaran.</div>
+          <div className="retail-text-secondary">Pendapatan dikurangi Pengeluaran.</div>
         </div>
       </div>
     </div>

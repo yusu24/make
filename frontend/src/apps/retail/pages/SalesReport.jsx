@@ -38,11 +38,7 @@ export default function SalesReport() {
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       {/* Page Header (Synced with Finance) */}
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-           <h2 className="page-title">Analisis Penjualan</h2>
-           <p className="page-sub">Pantau performa harian dan tren pendapatan retail Anda.</p>
-        </div>
+      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
         <div className="flex items-center gap-4">
            <button className="btn btn-secondary" onClick={fetchReports}>
               + Segarkan analisis
@@ -57,61 +53,56 @@ export default function SalesReport() {
       <div className="finance-cards-grid" style={{ marginBottom: 52 }}>
         <div className="finance-card finance-card--success">
            <div className="finance-card__header">
-              <span className="finance-card__title">Total Omzet</span>
+              <span className="retail-label">Total Omzet</span>
               <div className="finance-card__icon"><TrendingUp size={20} /></div>
            </div>
-           <div className="finance-card__amount">Rp {Number(data.total_sales).toLocaleString('id-ID')}</div>
-           <div className="finance-card__desc">Akumulasi pendapatan kotor bulan ini.</div>
+           <div className="retail-kpi-value retail-text-primary">Rp {Number(data.total_sales).toLocaleString('id-ID')}</div>
+           <div className="retail-text-secondary">Akumulasi pendapatan kotor bulan ini.</div>
         </div>
 
         <div className="finance-card finance-card--primary">
            <div className="finance-card__header">
-              <span className="finance-card__title">Total Transaksi</span>
+              <span className="retail-label">Total Transaksi</span>
               <div className="finance-card__icon"><Target size={20} /></div>
            </div>
-           <div className="finance-card__amount">{data.total_transactions} <span className="text-sm opacity-20 ml-1">TRX</span></div>
-           <div className="finance-card__desc">Volume penjualan yang berhasil diproses.</div>
+           <div className="retail-kpi-value retail-text-primary">{data.total_transactions} <span className="text-sm retail-label opacity-40 ml-1">TRX</span></div>
+           <div className="retail-text-secondary">Volume penjualan yang berhasil diproses.</div>
         </div>
 
         <div className="finance-card finance-card--warning">
            <div className="finance-card__header">
-              <span className="finance-card__title">Rata-rata Keranjang</span>
+              <span className="retail-label">Rata-rata Keranjang</span>
               <div className="finance-card__icon"><ArrowUpRight size={20} /></div>
            </div>
-           <div className="finance-card__amount">
+           <div className="retail-kpi-value retail-text-primary">
               Rp {data.total_transactions > 0 ? Math.round(data.total_sales / data.total_transactions).toLocaleString('id-ID') : 0}
            </div>
-           <div className="finance-card__desc">Rata-rata nilai per transaksi (Basket Size).</div>
+           <div className="retail-text-secondary">Rata-rata nilai per transaksi (Basket Size).</div>
         </div>
       </div>
 
       {/* Chart Section */}
       <div className="card card-pad mb-12 animate-fade-in">
-        <div className="flex justify-between items-center mb-10">
-           <div>
-              <h3 className="font-800 text-xl tracking-tight text-slate-800" style={{ fontFamily: 'var(--font-heading)' }}>Tren Pendapatan Harian</h3>
-              <p className="text-[11px] font-800 text-slate-400 uppercase tracking-widest mt-1">Visualisasi 7 hari terakhir</p>
-           </div>
-           <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-800 uppercase tracking-widest" style={{ fontFamily: 'var(--font-heading)' }}>Live Updates</span>
+        <div className="flex justify-end items-center mb-10">
         </div>
         <div style={{ height: 350, width: '100%' }}>
            <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                     <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2}/>
-                     <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                     <stop offset="5%" stopColor="var(--retail-primary)" stopOpacity={0.2}/>
+                     <stop offset="95%" stopColor="var(--retail-primary)" stopOpacity={0}/>
                    </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="6 6" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fontWeight: 700, fill: '#64748b'}} dy={15} />
                 <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fontWeight: 700, fill: '#64748b'}} tickFormatter={(val) => `Rp ${(val/1000).toFixed(0)}k`} width={70} />
                 <Tooltip
-                  contentStyle={{ background: '#0f172a', border: 'none', borderRadius: '16px', padding: '16px', color: 'white' }}
-                  itemStyle={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0' }}
-                  labelStyle={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase' }}
+                  contentStyle={{ background: 'var(--retail-card-bg)', border: '1px solid var(--retail-border)', borderRadius: '12px', padding: '12px', color: 'var(--retail-text-primary)' }}
+                  itemStyle={{ fontSize: 14, fontWeight: 700, color: 'var(--retail-primary)' }}
+                  labelStyle={{ fontSize: 10, fontWeight: 800, color: 'var(--retail-text-secondary)', marginBottom: '4px', textTransform: 'uppercase' }}
                 />
-                <Area type="monotone" dataKey="total" stroke="#2563eb" strokeWidth={4} fillOpacity={1} fill="url(#colorTotal)" />
+                <Area type="monotone" dataKey="total" stroke="var(--retail-primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorTotal)" />
               </AreaChart>
            </ResponsiveContainer>
         </div>
@@ -119,12 +110,8 @@ export default function SalesReport() {
 
       {/* Transactions Table (Synced with Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Histori Transaksi Terakhir</h3>
-          </div>
-          <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-800 text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-heading)' }}>
+        <div className="p-6 flex justify-end items-center gap-6">
+          <span className="px-3 py-1 retail-bg-main retail-border rounded-lg retail-label">
              {data.transactions.length} Records found
           </span>
         </div>
@@ -132,11 +119,11 @@ export default function SalesReport() {
         <table className="table">
           <thead>
              <tr>
-                <th className="pl-6">Invoice</th>
-                <th>Waktu Transaksi</th>
-                <th>Identitas Pelanggan</th>
-                <th>Nilai Bruto</th>
-                <th className="text-right pr-6">Status</th>
+                <th className="pl-6 retail-table-header">Invoice</th>
+                <th className="retail-table-header">Waktu Transaksi</th>
+                <th className="retail-table-header">Identitas Pelanggan</th>
+                <th className="retail-table-header">Nilai Bruto</th>
+                <th className="text-right pr-6 retail-table-header">Status</th>
              </tr>
           </thead>
           <tbody>
@@ -150,19 +137,19 @@ export default function SalesReport() {
               data.transactions.map(tx => (
                 <tr key={tx.id}>
                   <td className="pl-6">
-                    <code className="text-[11px] text-slate-600 bg-slate-100 px-2 py-1 rounded">#{tx.invoice_number}</code>
+                    <code className="text-[11px] retail-text-primary retail-bg-main retail-border px-2 py-1 rounded">#{tx.invoice_number}</code>
                   </td>
                   <td>
-                    <span className="text-slate-800">{new Date(tx.created_at).toLocaleString('id-ID')}</span>
+                    <span className="retail-text-primary">{new Date(tx.created_at).toLocaleString('id-ID')}</span>
                   </td>
                   <td>
-                    <span className="text-primary-600 uppercase tracking-tight">{tx.customer?.name || 'Walk-in Customer'}</span>
+                    <span className="retail-text-primary uppercase tracking-tight">{tx.customer?.name || 'Walk-in Customer'}</span>
                   </td>
                   <td>
-                    <span className="text-slate-800">Rp {Number(tx.total_price).toLocaleString('id-ID')}</span>
+                    <span className="retail-text-primary">Rp {Number(tx.total_price).toLocaleString('id-ID')}</span>
                   </td>
                   <td className="text-right pr-6">
-                    <span className="badge badge-green">Paid</span>
+                    <span className="retail-badge retail-badge-success">Paid</span>
                   </td>
                 </tr>
               ))

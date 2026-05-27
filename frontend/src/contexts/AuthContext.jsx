@@ -8,8 +8,12 @@ const AuthContext = createContext(null);
  * Manages login state, user info, and tenant context.
  */
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // Optimistic init: load from localStorage immediately to avoid waterfall
+    const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('umkm_user');
+        return saved ? JSON.parse(saved) : null;
+    });
+    const [loading, setLoading] = useState(() => !!localStorage.getItem('umkm_token'));
 
     useEffect(() => {
         const fetchMe = async () => {
@@ -28,14 +32,10 @@ export const AuthProvider = ({ children }) => {
                         localStorage.removeItem('umkm_user');
                         setUser(null);
                     }
-                }
-            } else {
-                const savedUser = localStorage.getItem('umkm_user');
-                if (savedUser) {
-                    setUser(JSON.parse(savedUser));
+                } finally {
+                    setLoading(false);
                 }
             }
-            setLoading(false);
         };
         fetchMe();
     }, []);
@@ -75,11 +75,32 @@ export const AuthProvider = ({ children }) => {
         // Save current admin session to impersonator storage
         const currentAdmin = {
             token: localStorage.getItem('umkm_token'),
-            user: user
+            user: user,
+            returnUrl: window.location.pathname + window.location.search
         };
         localStorage.setItem('umkm_impersonator', JSON.stringify(currentAdmin));
         
         // Switch to tenant session
+        localStorage.setItem('umkm_token', token);
+        localStorage.setItem('umkm_user', JSON.stringify(userData));
+        setUser(userData);
+        
+        return redirect;
+    };
+
+    const impersonateUser = async (userId) => {
+        const res = await api.post(`/auth/impersonate/${userId}`);
+        const { token, user: userData, redirect } = res.data.data;
+        
+        // Save current admin session to impersonator storage
+        const currentAdmin = {
+            token: localStorage.getItem('umkm_token'),
+            user: user,
+            returnUrl: window.location.pathname + window.location.search
+        };
+        localStorage.setItem('umkm_impersonator', JSON.stringify(currentAdmin));
+        
+        // Switch to target user session
         localStorage.setItem('umkm_token', token);
         localStorage.setItem('umkm_user', JSON.stringify(userData));
         setUser(userData);
@@ -99,7 +120,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('umkm_token', adminData.token);
             localStorage.setItem('umkm_user', JSON.stringify(adminData.user));
             localStorage.removeItem('umkm_impersonator');
-            return '/tenants';
+            return adminData.returnUrl || '/tenants';
         }
         return '/dashboard';
     };
@@ -113,7 +134,7 @@ export const AuthProvider = ({ children }) => {
     return (
         <AuthContext.Provider value={{ 
             user, login, logout, register, loading, updateUser,
-            impersonate, isSuperAdmin, isImpersonating, exitImpersonate 
+            impersonate, impersonateUser, isSuperAdmin, isImpersonating, exitImpersonate 
         }}>
             {children}
         </AuthContext.Provider>

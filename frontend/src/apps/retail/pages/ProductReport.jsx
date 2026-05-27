@@ -14,22 +14,24 @@ export default function ProductReport() {
 
   return (
     <div className="animate-fade-in" style={{ padding: 24 }}>
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div>
-          <h2 className="page-title">Analisis Produk & Inventori</h2>
-          <p className="page-sub">Monitoring performa penjualan barang dan manajemen ambang stok.</p>
-        </div>
+      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <div className="card">
-          <div style={{ padding: 20, borderBottom: '1px solid var(--border-color)', background: 'var(--bg-elevated)' }}>
+          <div style={{ padding: 20, borderBottom: '1px solid var(--border-color)', background: 'var(--bg-elevated)', display: 'none' }}>
             <h3 style={{ margin: 0, fontSize: 16 }}>Produk Paling Laris (Sales Volume)</h3>
           </div>
           <div style={{ padding: 20 }}>
             {loading ? <p>Menganalisa...</p> : (
               <table className="table">
-                <thead><tr><th>Nama Barang</th><th>Total Terjual</th><th style={{textAlign:'right'}}>Peringkat</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th className="retail-table-header">Nama Barang</th>
+                    <th className="retail-table-header">Total Terjual</th>
+                    <th style={{textAlign:'right'}} className="retail-table-header">Peringkat</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {data.top_products.map((tp, i) => (
                     <tr key={i}>
@@ -46,14 +48,21 @@ export default function ProductReport() {
         </div>
 
         <div className="card">
-          <div style={{ padding: 20, borderBottom: '1px solid var(--border-color)', background: 'var(--bg-elevated)' }}>
+          <div style={{ padding: 20, borderBottom: '1px solid var(--border-color)', background: 'var(--bg-elevated)', display: 'none' }}>
             <h3 style={{ margin: 0, fontSize: 16 }}>Peringatan Stok di Bawah Batas Minimal</h3>
           </div>
           <div style={{ padding: 20 }}>
             <p style={{fontSize:13, color:'var(--text-muted)', marginBottom:16}}>Barang berikut telah mencapai atau melewati ambang batas aman yang Anda tentukan.</p>
             {loading ? <p>Mengecek gudang...</p> : (
               <table className="table">
-                <thead><tr><th>Nama Barang</th><th>Sisa</th><th>Batas Min.</th><th style={{textAlign:'right'}}>Status</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th className="retail-table-header">Nama Barang</th>
+                    <th className="retail-table-header">Sisa</th>
+                    <th className="retail-table-header">Batas Min.</th>
+                    <th style={{textAlign:'right'}} className="retail-table-header">Status</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {data.low_stock.map(p => (
                     <tr key={p.id}>

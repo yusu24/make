@@ -8,6 +8,9 @@ const SubscriptionLock = ({ status, daysLeft }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
+  // Temporarily disabled: Grant all users full access
+  return null;
+
   // Admin & super_admin are never locked — they are impersonating for dev/maintenance
   if (!status || status === 'active') return null;
   if (user?.role === 'super_admin' || user?.role === 'admin') return null;
@@ -55,7 +58,7 @@ const SubscriptionLock = ({ status, daysLeft }) => {
               <ArrowRight size={20} />
             </div>
           </div>
-          <button onClick={() => logout()} className="btn btn-ghost btn-full mt-4">
+          <button onClick={() => { const demoEmails = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']; logout(); navigate(demoEmails.includes(user?.email) ? '/' : '/login'); }} className="btn btn-ghost btn-full mt-4">
             Keluar
           </button>
         </div>

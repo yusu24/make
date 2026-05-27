@@ -73,58 +73,51 @@ export default function Expenses() {
 
   return (
     <div className="animate-fade-in" style={{ padding: 24 }}>
-      <div className="page-header">
-        <div>
-          <h2 className="page-title">Keuangan: Pengeluaran</h2>
-          <p className="page-sub">Catat dan kelola pengeluaran operasional toko Anda.</p>
-        </div>
-        <button className="btn btn-primary" onClick={() => { setEditingExpense(null); setShowModal(true); }}>+ Tambah Pengeluaran</button>
-      </div>
+
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in mt-8">
-        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-1 h-5 bg-primary-500 rounded-full" />
-            <h3 className="font-800 text-lg tracking-tight text-primary-500" style={{ fontFamily: 'var(--font-heading)' }}>Histori Pengeluaran Toko</h3>
+        <div className="p-6 flex justify-end items-center gap-6">
+          <div className="flex items-center gap-3">
+            <button className="btn btn-primary h-[42px] px-6 whitespace-nowrap" onClick={() => { setEditingExpense(null); setShowModal(true); }}>+ Tambah Pengeluaran</button>
+            <span className="px-3 py-1 retail-bg-main retail-border rounded-lg retail-label whitespace-nowrap">
+               {expenses.length} Records Found
+            </span>
           </div>
-          <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-800 text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-heading)' }}>
-             {expenses.length} Records Found
-          </span>
         </div>
 
         <table className="table">
           <thead>
             <tr>
-              <th className="pl-6">Tanggal</th>
-              <th>Kategori</th>
-              <th>Keterangan</th>
-              <th>Nominal</th>
-              <th className="text-right pr-6">Aksi</th>
+              <th className="pl-6 retail-table-header">Tanggal</th>
+              <th className="retail-table-header">Kategori</th>
+              <th className="retail-table-header">Keterangan</th>
+              <th className="retail-table-header">Nominal</th>
+              <th className="text-right pr-6 retail-table-header">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-               <tr><td colSpan="5" className="py-20 text-center text-slate-400 font-800">Menyinkronkan Pengeluaran...</td></tr>
+               <tr><td colSpan="5" className="py-20 text-center retail-text-secondary font-800">Menyinkronkan Pengeluaran...</td></tr>
             ) : expenses.length === 0 ? (
                <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada catatan pengeluaran.</td></tr>
             ) : (
               expenses.map(ex => (
                 <tr key={ex.id}>
                   <td className="pl-6">
-                    <span className="text-slate-500">{new Date(ex.tanggal).toLocaleDateString('id-ID')}</span>
+                    <span className="retail-text-secondary">{new Date(ex.tanggal).toLocaleDateString('id-ID')}</span>
                   </td>
                   <td>
-                    <span className="badge badge-gray">{ex.kategori}</span>
+                    <span className="retail-badge retail-badge-primary">{ex.kategori}</span>
                   </td>
-                  <td className="text-slate-800">{ex.keterangan}</td>
-                  <td style={{ color: 'var(--danger-500)' }}>
+                  <td className="retail-text-primary">{ex.keterangan}</td>
+                  <td className="retail-text-danger">
                     - Rp {Number(ex.nominal).toLocaleString('id-ID')}
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
                       <button className="btn btn-sm btn-secondary" onClick={() => openEdit(ex)}>Edit</button>
-                      <button className="btn btn-sm btn-ghost" style={{ color: 'var(--danger-600)' }} onClick={async () => { if(confirm('Hapus pencatatan pengeluaran ini?')) { await api.delete(`/retail/finance/expenses/${ex.id}`); fetchExpenses(); } }}>Hapus</button>
+                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if(confirm('Hapus pencatatan pengeluaran ini?')) { await api.delete(`/retail/finance/expenses/${ex.id}`); fetchExpenses(); } }}>Hapus</button>
                     </div>
                   </td>
                 </tr>
