@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import usePagination from '../../../hooks/usePagination'
+import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
 
 const ALL_PERMS = [
@@ -133,6 +135,13 @@ export default function Admins() {
     return a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q)
   })
 
+  const {
+    currentPage, setCurrentPage,
+    pageSize, setPageSize,
+    totalPages, totalItems,
+    paginatedData, startIndex, endIndex,
+  } = usePagination(filtered)
+
   return (
     <>
       <div className="animate-fade-in">
@@ -190,9 +199,9 @@ export default function Admins() {
                     </div>
                   </td>
                 </tr>
-              ) : filtered.map((admin, i) => (
+              ) : paginatedData.map((admin, i) => (
                 <tr key={admin.id}>
-                  <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{i + 1}</td>
+                  <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div className="avatar" style={{
@@ -268,6 +277,18 @@ export default function Admins() {
               )}
             </tbody>
           </table>
+          {!loading && filtered.length > 0 && (
+            <SaasPagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              endIndex={endIndex}
+            />
+          )}
         </div>
       </div>
 
@@ -293,7 +314,7 @@ export default function Admins() {
                   <input
                     className="form-input"
                     type="email"
-                    placeholder="admin@umkm.com"
+                    placeholder="admin@bizora.id"
                     required
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}

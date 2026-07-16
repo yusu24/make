@@ -23,24 +23,16 @@ class RetailStaffController extends Controller
         $user = $request->user();
         $tenantId = $user->tenant_id;
 
-        // Cek Kuota (1 for Free, 5 for Basic)
+        // Cek Kuota pegawai sesuai paket langganan tenant
         $tenantData = Tenant::where('tenant_id', $tenantId)->first();
-        $plan = $tenantData ? $tenantData->subscription_plan : 'free';
-        
-        $currentStaffCount = User::where('tenant_id', $tenantId)->where('id', '!=', $user->id)->count(); // Exclude owner
-        
-        if ($plan === 'free' && $currentStaffCount >= 1) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Batas kuota pegawai paket FREE telah tercapai (Maks 1 orang). Silakan upgrade ke paket Basic atau Pro.',
-                'code' => 'QUOTA_EXCEEDED'
-            ], 403);
-        }
+        $plan = \App\Models\SubscriptionPlan::forTenant($tenantData);
 
-        if ($plan === 'basic' && $currentStaffCount >= 5) {
+        $currentStaffCount = User::where('tenant_id', $tenantId)->where('id', '!=', $user->id)->count(); // Exclude owner
+
+        if ($plan && $plan->max_staff !== null && $currentStaffCount >= $plan->max_staff) {
             return response()->json([
                 'success' => false,
-                'message' => 'Batas kuota pegawai paket BASIC telah tercapai (Maks 5 orang). Silakan upgrade ke paket Pro.',
+                'message' => "Batas kuota pegawai paket {$plan->name} telah tercapai (Maks {$plan->max_staff} orang). Silakan upgrade paket.",
                 'code' => 'QUOTA_EXCEEDED'
             ], 403);
         }

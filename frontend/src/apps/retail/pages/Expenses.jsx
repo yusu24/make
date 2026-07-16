@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import '../retail.css';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
+import { Edit3, Trash2, Plus } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
@@ -8,6 +13,7 @@ export default function Expenses() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
+  const [search, setSearch] = useState('');
 
   const fetchDependencies = async () => {
     setLoading(true);
@@ -71,22 +77,48 @@ export default function Expenses() {
     setEditingExpense(null);
   }
 
+  const filteredExpenses = expenses.filter(ex =>
+    (ex.keterangan || '').toLowerCase().includes(search.toLowerCase()) ||
+    (ex.kategori || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(filteredExpenses);
+
   return (
-    <div className="animate-fade-in" style={{ padding: 24 }}>
+    <div className="animate-fade-in">
 
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in mt-8">
-        <div className="p-6 flex justify-end items-center gap-6">
-          <div className="flex items-center gap-3">
-            <button className="btn btn-primary h-[42px] px-6 whitespace-nowrap" onClick={() => { setEditingExpense(null); setShowModal(true); }}>+ Tambah Pengeluaran</button>
-            <span className="px-3 py-1 retail-bg-main retail-border rounded-lg retail-label whitespace-nowrap">
-               {expenses.length} Records Found
-            </span>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+          <button
+            className="btn btn-primary"
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            onClick={() => { setEditingExpense(null); setShowModal(true); }}
+          >
+            <Plus size={15} className="mr-2 mobile-no-margin" />
+            <span className="btn-text-mobile-hide">Tambah Pengeluaran</span>
+          </button>
+          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+            <input
+              placeholder="Cari pengeluaran..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
-        <table className="table">
+        <div className="retail-table-responsive"><table className="table">
           <thead>
             <tr>
               <th className="pl-6 retail-table-header">Tanggal</th>
@@ -98,11 +130,11 @@ export default function Expenses() {
           </thead>
           <tbody>
             {loading ? (
-               <tr><td colSpan="5" className="py-20 text-center retail-text-secondary font-800">Menyinkronkan Pengeluaran...</td></tr>
-            ) : expenses.length === 0 ? (
+               <RetailTableLoadingRow colSpan={5} text="Menyinkronkan Pengeluaran..." />
+            ) : filteredExpenses.length === 0 ? (
                <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada catatan pengeluaran.</td></tr>
             ) : (
-              expenses.map(ex => (
+              paginatedData.map(ex => (
                 <tr key={ex.id}>
                   <td className="pl-6">
                     <span className="retail-text-secondary">{new Date(ex.tanggal).toLocaleDateString('id-ID')}</span>
@@ -116,15 +148,25 @@ export default function Expenses() {
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                      <button className="btn btn-sm btn-secondary" onClick={() => openEdit(ex)}>Edit</button>
-                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if(confirm('Hapus pencatatan pengeluaran ini?')) { await api.delete(`/retail/finance/expenses/${ex.id}`); fetchExpenses(); } }}>Hapus</button>
+                      <button className="btn btn-sm btn-ghost" onClick={() => openEdit(ex)} title="Edit"><Edit3 size={15} /></button>
+                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if(confirm('Hapus pencatatan pengeluaran ini?')) { await api.delete(`/retail/finance/expenses/${ex.id}`); fetchExpenses(); } }} title="Hapus"><Trash2 size={15} /></button>
                     </div>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
-        </table>
+        </table></div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
 
       <Modal 

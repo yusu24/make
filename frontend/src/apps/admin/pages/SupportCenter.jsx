@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../../../lib/api'
 import Modal from '../../../components/Modal'
+import usePagination from '../../../hooks/usePagination'
+import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
 
 const PRIORITY_BADGE = { high: 'badge-red', medium: 'badge-yellow', low: 'badge-gray' }
@@ -61,6 +63,13 @@ export default function SupportCenter() {
       t.id.toLowerCase().includes(q)
     return matchStatus && matchSearch
   })
+
+  const {
+    currentPage, setCurrentPage,
+    pageSize, setPageSize,
+    totalPages, totalItems,
+    paginatedData, startIndex, endIndex,
+  } = usePagination(filtered)
 
   const openCount = tickets.filter(t => t.status === 'open').length
   const inProgressCount = tickets.filter(t => t.status === 'in_progress').length
@@ -145,17 +154,29 @@ export default function SupportCenter() {
       ) : (
         <>
           {/* ── Stats ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 24 }}>
             {[
-              { label: 'Tiket Baru', value: openCount, icon: '📬', color: '#3b82f6' },
-              { label: 'Diproses', value: inProgressCount, icon: '⚙️', color: '#f59e0b' },
-              { label: 'Selesai', value: resolvedCount, icon: '✅', color: '#10b981' },
-              { label: 'Prioritas Tinggi', value: highPriorityCount, icon: '🔴', color: '#ef4444' },
+              { label: 'Tiket Baru', value: openCount, icon: '📬', color: '#3b82f6', desc: 'Menunggu respons admin' },
+              { label: 'Diproses', value: inProgressCount, icon: '⚙️', color: '#f59e0b', desc: 'Sedang ditangani staf' },
+              { label: 'Selesai', value: resolvedCount, icon: '✅', color: '#10b981', desc: 'Tiket berhasil ditutup' },
+              { label: 'Prioritas Tinggi', value: highPriorityCount, icon: '🔴', color: '#ef4444', desc: 'Butuh tindakan segera' },
             ].map(card => (
-              <div key={card.label} className="card card-pad">
-                <div style={{ fontSize: 28, marginBottom: 8 }}>{card.icon}</div>
-                <div style={{ fontSize: 28, fontWeight: 800, color: card.color, lineHeight: 1 }}>{card.value}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{card.label}</div>
+              <div key={card.label} className="card card-pad" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 12,
+                    background: card.color + '20',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22, color: card.color, flexShrink: 0
+                  }}>{card.icon}</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{card.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.2 }}>{card.desc}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 600, color: card.color, lineHeight: 1 }}>
+                  {card.value}
+                </div>
               </div>
             ))}
           </div>
@@ -163,7 +184,7 @@ export default function SupportCenter() {
           {/* ── Filters + Table ── */}
           <div className="card card-pad" style={{ padding: 0 }}>
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15 }}>🎫 Daftar Tiket</h3>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>🎫 Daftar Tiket</h3>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
                   <span className="search-icon">🔍</span>
@@ -193,7 +214,7 @@ export default function SupportCenter() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(t => (
+                  {paginatedData.map(t => (
                     <tr key={t.id}>
                       <td><code style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.id}</code></td>
                       <td style={{ fontWeight: 600, fontSize: 13 }}>{t.tenant}</td>
@@ -204,12 +225,12 @@ export default function SupportCenter() {
                       <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.date}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
-                          <button className="btn btn-secondary btn-sm" onClick={() => setSelected(t)}>👁 Detail</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => setSelected(t)} title="Lihat Detail">👁</button>
                           {t.status === 'open' && (
-                            <button className="btn btn-primary btn-sm" style={{ fontSize: 11 }} onClick={() => handleUpdateStatus(t.id, 'in_progress')}>⚙️ Proses</button>
+                            <button className="btn btn-primary btn-sm" style={{ fontSize: 11 }} onClick={() => handleUpdateStatus(t.id, 'in_progress')} title="Proses Tiket">⚙️</button>
                           )}
                           {t.status === 'in_progress' && (
-                            <button className="btn btn-primary btn-sm" style={{ fontSize: 11, background: 'var(--success-500)', border: 'none' }} onClick={() => handleUpdateStatus(t.id, 'resolved')}>✓ Selesai</button>
+                            <button className="btn btn-primary btn-sm" style={{ fontSize: 11, background: 'var(--success-500)', border: 'none' }} onClick={() => handleUpdateStatus(t.id, 'resolved')} title="Tandai Selesai">✓</button>
                           )}
                         </div>
                       </td>
@@ -227,6 +248,18 @@ export default function SupportCenter() {
                   )}
                 </tbody>
               </table>
+              {!loading && filtered.length > 0 && (
+                <SaasPagination
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  pageSize={pageSize}
+                  setPageSize={setPageSize}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  startIndex={startIndex}
+                  endIndex={endIndex}
+                />
+              )}
             </div>
           </div>
         </>
@@ -243,7 +276,7 @@ export default function SupportCenter() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <span style={{ fontSize: 32 }}>{CAT_ICON[selected.category]}</span>
             <div>
-              <h3 className="modal__title" style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{selected.subject}</h3>
+              <h3 className="modal__title" style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{selected.subject}</h3>
               <span className={`badge ${STATUS_BADGE[selected.status]}`} style={{ marginTop: 4, display: 'inline-block' }}>
                 {STATUS_LABEL[selected.status]}
               </span>

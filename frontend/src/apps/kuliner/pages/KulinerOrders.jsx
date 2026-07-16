@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { Eye, Receipt } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
+import KulinerReceiptModal from '../components/KulinerReceiptModal';
 import './KulinerDashboard.css';
 
 import { useAuth } from '../../../contexts/AuthContext';
@@ -17,6 +19,7 @@ const KulinerOrders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaymentMode, setIsPaymentMode] = useState(false);
   const [cashReceived, setCashReceived] = useState('');
+  const [receiptOrder, setReceiptOrder] = useState(null);
 
   useEffect(() => {
     fetchOrders(true); // initial load = show spinner
@@ -172,11 +175,6 @@ const KulinerOrders = () => {
       {/* Topbar selalu tampil, tidak ikut loading */}
       <div className="kd-topbar">
         <h1 className="kd-page-title">Manajemen Pesanan</h1>
-        <div className="kd-topbar-actions">
-          <button className="kd-btn kd-btn-primary" onClick={() => navigate(`/kuliner/menu?mode=cashier&tenant_id=${user?.tenant_id}`)}>
-            + Buat Pesanan Manual
-          </button>
-        </div>
       </div>
 
       {/* Hanya konten yang loading */}
@@ -185,6 +183,11 @@ const KulinerOrders = () => {
           <KulinerLoading message="Memuat Pesanan..." />
         ) : (
           <>
+            <div className="kd-page-actions">
+              <button className="kd-btn kd-btn-primary" onClick={() => navigate(`/kuliner/menu?mode=cashier&tenant_id=${user?.tenant_id}`)}>
+                + Buat Pesanan Manual
+              </button>
+            </div>
             <div className="kd-panel">
               <div className="kd-panel-header">
                 <div style={{ display: 'flex', gap: 12 }}>
@@ -256,13 +259,22 @@ const KulinerOrders = () => {
                           </span>
                         </td>
                         <td className="text-right">
-                          <button
-                            className="kd-btn kd-btn-secondary"
-                            style={{ padding: '6px 12px', fontSize: 11 }}
-                            onClick={() => { setSelectedOrder(order); setIsModalOpen(true); setIsPaymentMode(false); setCashReceived(''); }}
-                          >
-                            Detail / Proses
-                          </button>
+                          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                            <button
+                              className="kd-icon-btn"
+                              title="Detail / Proses"
+                              onClick={() => { setSelectedOrder(order); setIsModalOpen(true); setIsPaymentMode(false); setCashReceived(''); }}
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button
+                              className="kd-icon-btn"
+                              title="Struk"
+                              onClick={() => setReceiptOrder(order)}
+                            >
+                              <Receipt size={16} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -412,6 +424,12 @@ const KulinerOrders = () => {
           </>
         )}
       </div>
+      <KulinerReceiptModal
+        isOpen={!!receiptOrder}
+        order={receiptOrder}
+        storeName={user?.tenant_name}
+        onClose={() => setReceiptOrder(null)}
+      />
     </KulinerAdminLayout>
   );
 };

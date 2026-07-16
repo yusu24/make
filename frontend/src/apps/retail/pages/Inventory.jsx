@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import { 
   RefreshCw, 
@@ -6,7 +8,7 @@ import {
   CheckCircle2, 
   Package
 } from 'lucide-react';
-import { CardSkeleton, TableSkeleton } from '../../../components/Skeleton';
+import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import '../retail.css';
 
 export default function Inventory() {
@@ -40,20 +42,17 @@ export default function Inventory() {
     p.sku.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) return (
-    <div className="animate-fade-in retail-dashboard-spacing">
-      <div className="page-header" style={{ marginBottom: 32 }}>
-        <div className="w-64 h-8 bg-gray-200 animate-pulse rounded-lg" />
-        <div className="w-32 h-10 bg-gray-200 animate-pulse rounded-lg" />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <CardSkeleton />
-        <CardSkeleton />
-        <CardSkeleton />
-      </div>
-      <TableSkeleton rows={8} cols={5} />
-    </div>
-  );
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems: paginatedTotalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(filteredProducts);
 
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
@@ -61,65 +60,70 @@ export default function Inventory() {
 
 
       {/* Finance-style Summary Cards */}
-      <div className="finance-cards-grid" style={{ marginBottom: 52 }}>
-        <div className="finance-card finance-card--primary">
-          <div className="finance-card__header">
-            <span className="retail-label">Total Katalog</span>
-            <div className="finance-card__icon"><Package size={20} /></div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ marginBottom: 52 }}>
+        {/* Total Katalog Card */}
+        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
+              <Package size={18} />
+            </div>
+            <span className="text-sm font-medium text-slate-500">Total Katalog</span>
           </div>
-          <div className="retail-kpi-value">{totalItems}</div>
-          <div className="finance-card__desc">Jumlah SKU unik terdaftar.</div>
+          <div>
+            <p className="text-2xl text-slate-900 leading-tight font-normal">{totalItems}</p>
+            <p className="text-xs text-slate-400 mt-1">Jumlah SKU unik terdaftar.</p>
+          </div>
         </div>
 
-        <div className="finance-card finance-card--success">
-          <div className="finance-card__header">
-            <span className="retail-label">Stok Aman</span>
-            <div className="finance-card__icon"><CheckCircle2 size={20} /></div>
+        {/* Stok Aman Card */}
+        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
+              <CheckCircle2 size={18} />
+            </div>
+            <span className="text-sm font-medium text-slate-500">Stok Aman</span>
           </div>
-          <div className="retail-kpi-value">{safeItems}</div>
-          <div className="finance-card__desc">Produk dengan stok di atas batas minimum.</div>
+          <div>
+            <p className="text-2xl text-slate-900 leading-tight font-normal">{safeItems}</p>
+            <p className="text-xs text-slate-400 mt-1">Produk dengan stok di atas batas minimum.</p>
+          </div>
         </div>
 
-        <div className="finance-card finance-card--danger">
-          <div className="finance-card__header">
-            <span className="retail-label">Perlu Restok</span>
-            <div className="finance-card__icon"><AlertCircle size={20} /></div>
+        {/* Perlu Restok Card */}
+        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0">
+              <AlertCircle size={18} />
+            </div>
+            <span className="text-sm font-medium text-slate-500">Perlu Restok</span>
           </div>
-          <div className="retail-kpi-value">{criticalItems}</div>
-          <div className="finance-card__desc">{outOfStock} habis, {lowStock} menipis.</div>
+          <div>
+            <p className="text-2xl text-slate-900 leading-tight font-normal">{criticalItems}</p>
+            <p className="text-xs text-slate-400 mt-1">{outOfStock} habis, {lowStock} menipis.</p>
+          </div>
         </div>
       </div>
 
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex justify-end">
-          <div className="flex items-center gap-3">
-            <button 
-               className="btn btn-secondary h-[42px] px-6 whitespace-nowrap" 
-               onClick={fetchData}
-            >
-               + Segarkan data
-            </button>
-            <div className="flex items-center gap-3">
-              <div className="airy-search-wrapper" style={{ width: 300, margin: 0 }}>
-                 <input 
-                   placeholder="Cari SKU atau Nama Barang..." 
-                   value={searchQuery}
-                   onChange={e => setSearchQuery(e.target.value)}
-                 />
-              </div>
-              <button 
-                 onClick={fetchData} 
-                 className="btn-reset-sync"
-                 style={{ width: 42, height: 42 }}
-                 title="Segarkan Data"
-              >
-                 <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-              </button>
-            </div>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+            <input 
+              placeholder="Cari SKU atau Nama Barang..." 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
           </div>
+          <button 
+            onClick={fetchData} 
+            className="btn-reset-sync"
+            style={{ width: 42, height: 42, flexShrink: 0 }}
+            title="Segarkan Data"
+          >
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+          </button>
         </div>
 
-        <table className="table">
+        <div className="retail-table-responsive"><table className="table">
           <thead>
             <tr>
               <th className="pl-6 retail-table-header">Identitas SKU</th>
@@ -130,14 +134,16 @@ export default function Inventory() {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.length === 0 ? (
+            {loading ? (
+              <RetailTableLoadingRow colSpan={5} text="Memuat data stok..." />
+            ) : filteredProducts.length === 0 ? (
               <tr>
                  <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
                     Belum ada data persediaan barang.
                  </td>
               </tr>
             ) : (
-              filteredProducts.map(p => {
+              paginatedData.map(p => {
                 const isLow = Number(p.stock) <= Number(p.stock_min);
                 const isOut = Number(p.stock) <= 0;
                 
@@ -173,7 +179,17 @@ export default function Inventory() {
               })
             )}
           </tbody>
-        </table>
+        </table></div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={paginatedTotalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
     </div>
   );

@@ -5,6 +5,9 @@ import {
   Edit3, Trash2, RotateCcw
 } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
 import '../retail.css';
 
 export default function Customers() {
@@ -59,59 +62,88 @@ export default function Customers() {
     (c.contact && c.contact.includes(search))
   );
 
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex,
+  } = usePagination(filtered);
+
+
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       {/* Page Header (Synced with Finance) */}
 
 
       {/* CRM Statistics */}
-      <div className="grid-2" style={{ marginBottom: 52 }}>
-        <div className="card card-pad flex items-center justify-between">
-           <div className="flex flex-col">
-              <span className="retail-label mb-1">Total Member</span>
-              <span className="retail-title">{customers.length} User</span>
-           </div>
-           <div className="w-12 h-12 retail-bg-primary-subtle retail-text-primary rounded-2xl flex items-center justify-center">
-              <User size={24} />
-           </div>
-        </div>
-        <div className="card card-pad flex items-center justify-between">
-           <div className="flex flex-col">
-              <span className="retail-label mb-1">Database Health</span>
-              <span className="retail-title retail-text-success">Active</span>
-           </div>
-           <div className="w-12 h-12 retail-bg-success-subtle retail-text-success rounded-2xl flex items-center justify-center">
-              <RefreshCw size={24} />
-           </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 52 }}>
+         {/* Total Member Card */}
+         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
+                  <User size={18} />
+               </div>
+               <span className="text-sm font-medium text-slate-500">Total Member</span>
+            </div>
+            <div>
+               <p className="text-2xl text-slate-900 leading-tight font-normal">
+                  {customers.length} <span className="text-sm text-slate-400 font-medium ml-1">User</span>
+               </p>
+               <p className="text-xs text-slate-400 mt-1">Total pelanggan terdaftar dalam sistem.</p>
+            </div>
+         </div>
+
+         {/* Database Health Card */}
+         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
+                  <RefreshCw size={18} />
+               </div>
+               <span className="text-sm font-medium text-slate-500">Database Health</span>
+            </div>
+            <div>
+               <p className="text-2xl text-emerald-600 leading-tight font-semibold">
+                  Active
+               </p>
+               <p className="text-xs text-slate-400 mt-1">Koneksi dan integritas database pelanggan stabil.</p>
+            </div>
+         </div>
       </div>
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex justify-end">
-          <div className="flex items-center gap-3">
-             <button className="btn btn-primary h-[42px] px-6 whitespace-nowrap" onClick={() => { setEditingCustomer(null); setShowModal(true); }}>
-                + Tambah pelanggan
-             </button>
-             <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
-                <input 
-                  placeholder="Cari Pelanggan..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
-             </div>
-             <button 
-                onClick={() => { setSearch(''); fetchCustomers(); }} 
-                className="btn-reset-sync"
-                style={{ width: 42, height: 42 }}
-                title="Segarkan Data"
-             >
-                <RotateCcw size={18} strokeWidth={3} className={loading ? "animate-spin" : ""} />
-             </button>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+          <button
+            className="btn btn-primary"
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            onClick={() => { setEditingCustomer(null); setShowModal(true); }}
+          >
+            <User size={15} className="mr-2 mobile-no-margin" />
+            <span className="btn-text-mobile-hide">Tambah pelanggan</span>
+          </button>
+          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+            <input 
+              placeholder="Cari Pelanggan..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
+          <button 
+            onClick={() => { setSearch(''); fetchCustomers(); }} 
+            className="btn-reset-sync"
+            style={{ width: 42, height: 42, flexShrink: 0 }}
+            title="Segarkan Data"
+          >
+            <RotateCcw size={18} strokeWidth={3} className={loading ? "animate-spin" : ""} />
+          </button>
         </div>
 
-        <table className="table">
+        <div className="retail-table-responsive"><table className="table">
           <thead>
             <tr>
               <th className="pl-6 retail-table-header">Informasi Profil</th>
@@ -122,7 +154,7 @@ export default function Customers() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="4" className="py-20 text-center font-800 text-slate-400">Memuat database...</td></tr>
+              <RetailTableLoadingRow colSpan={4} text="Memuat database..." />
             ) : filtered.length === 0 ? (
               <tr>
                  <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
@@ -130,7 +162,7 @@ export default function Customers() {
                  </td>
               </tr>
             ) : (
-              filtered.map(c => (
+              paginatedData.map(c => (
                 <tr key={c.id}>
                   <td className="pl-6">
                       <div className="flex items-center gap-4">
@@ -160,7 +192,17 @@ export default function Customers() {
               ))
             )}
           </tbody>
-        </table>
+        </table></div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingCustomer(null); }} title={editingCustomer ? 'Edit Profil Pelanggan' : 'Daftarkan Pelanggan Baru'}>

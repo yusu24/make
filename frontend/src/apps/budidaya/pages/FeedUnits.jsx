@@ -90,8 +90,22 @@ export default function FeedUnits() {
                         <TableCell style={{ fontWeight: 600 }}>{u.name}</TableCell>
                         <TableCell style={{ textAlign: 'right' }}>
                           <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                            <button className="btn btn-sm btn-secondary" onClick={() => setEditingUnit(u)}>Edit</button>
-                            <button className="btn btn-sm btn-ghost" onClick={() => confirm('Hapus satuan ini?') && console.log('Delete logic')}>Hapus</button>
+                            <button 
+                              title="Edit Satuan"
+                              className="btn btn-sm btn-secondary" 
+                              onClick={() => setEditingUnit(u)}
+                              style={{ width: '32px', height: '32px', padding: 0, borderRadius: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
+                            </button>
+                            <button 
+                              title="Hapus Satuan"
+                              className="btn btn-sm btn-ghost" 
+                              onClick={() => confirm('Hapus satuan ini?') && console.log('Delete logic')}
+                              style={{ width: '32px', height: '32px', padding: 0, borderRadius: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                            </button>
                           </div>
                         </TableCell>
                       </TableRow>

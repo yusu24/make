@@ -30,7 +30,7 @@ function Gauge({ value, label, color, unit = '%' }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{label}</span>
-        <span style={{ fontSize: 15, fontWeight: 800, color: statusColor }}>{Math.round(pct)}{unit}</span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: statusColor }}>{Math.round(pct)}{unit}</span>
       </div>
       <div style={{ height: 8, borderRadius: 99, background: 'var(--bg-elevated)', overflow: 'hidden' }}>
         <div style={{
@@ -92,22 +92,34 @@ export default function SystemMonitoring() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', display: 'inline-block', animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: 13, color: '#10b981', fontWeight: 700 }}>Live Monitoring</span>
+          <span style={{ fontSize: 13, color: '#10b981', fontWeight: 600 }}>Live Monitoring</span>
         </div>
       </div>
 
       {/* ── Top Stats ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 24 }}>
         {[
-          { label: 'Uptime', value: metrics.uptime, icon: '⏱', color: '#10b981' },
-          { label: 'Req/menit', value: metrics.requests, icon: '📡', color: '#3b82f6' },
-          { label: 'Avg Latency', value: `${Math.round(metrics.latency)}ms`, icon: '⚡', color: '#8b5cf6' },
-          { label: 'Errors (24j)', value: metrics.errors, icon: '⚠️', color: '#ef4444' },
+          { label: 'Uptime', value: metrics.uptime, icon: '⏱', color: '#10b981', desc: 'Lama server aktif' },
+          { label: 'Req / Menit', value: metrics.requests, icon: '📡', color: '#3b82f6', desc: 'Total request API saat ini' },
+          { label: 'Avg Latency', value: `${Math.round(metrics.latency)}ms`, icon: '⚡', color: '#8b5cf6', desc: 'Kecepatan respon server' },
+          { label: 'Errors (24j)', value: metrics.errors, icon: '⚠️', color: '#ef4444', desc: 'Kegagalan sistem terdeteksi' },
         ].map(card => (
-          <div key={card.label} className="card card-pad">
-            <div style={{ fontSize: 28, marginBottom: 8 }}>{card.icon}</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: card.color, lineHeight: 1 }}>{card.value}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{card.label}</div>
+          <div key={card.label} className="card card-pad" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: card.color + '20',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22, color: card.color, flexShrink: 0
+              }}>{card.icon}</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{card.label}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.2 }}>{card.desc}</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 600, color: card.color, lineHeight: 1 }}>
+              {card.value}
+            </div>
           </div>
         ))}
       </div>
@@ -115,26 +127,40 @@ export default function SystemMonitoring() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
         {/* ── Resource Usage ── */}
         <div className="card card-pad">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15 }}>🖥️ Resource Usage</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>🖥️ Resource Usage</h3>
             <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Update setiap 2 detik</span>
           </div>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+            Pantau beban CPU, RAM, serta kapasitas penyimpanan lokal server hosting.
+          </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
-              <Gauge value={metrics.cpu} label="CPU" color="#3b82f6" />
-              <div style={{ marginTop: 6 }}><Sparkline values={[...cpuHistory, metrics.cpu]} color="#3b82f6" /></div>
+              <Gauge value={metrics.cpu} label="CPU Core" color="#3b82f6" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Tren (30 detik):</span>
+                <Sparkline values={[...cpuHistory, metrics.cpu]} color="#3b82f6" />
+              </div>
             </div>
             <div>
               <Gauge value={metrics.memory} label="Memory (RAM)" color="#8b5cf6" />
-              <div style={{ marginTop: 6 }}><Sparkline values={[...memHistory, metrics.memory]} color="#8b5cf6" /></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Tren (30 detik):</span>
+                <Sparkline values={[...memHistory, metrics.memory]} color="#8b5cf6" />
+              </div>
             </div>
-            <Gauge value={metrics.disk} label="Disk Usage" color="#10b981" />
+            <div>
+              <Gauge value={metrics.disk} label="Disk Usage (SSD)" color="#10b981" />
+            </div>
           </div>
         </div>
 
         {/* ── Service Status ── */}
         <div className="card card-pad">
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>🔧 Status Layanan</h3>
+          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 4 }}>🔧 Status Layanan</h3>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+            Status operasional subsistem backend, database cache, dan layanan eksternal.
+          </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {DUMMY_SERVICES.map(svc => (
               <div key={svc.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 10 }}>
@@ -151,8 +177,11 @@ export default function SystemMonitoring() {
 
       {/* ── Recent Logs ── */}
       <div className="card card-pad" style={{ padding: 0 }}>
-        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15 }}>📋 Log Sistem Terbaru</h3>
+        <div style={{ padding: '20px 24px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
+          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 4 }}>📋 Log Sistem Terbaru</h3>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            Catatan log kejadian, warning, dan error sistem untuk mempermudah audit operasional.
+          </p>
         </div>
         <div style={{ padding: '12px 0' }}>
           {DUMMY_LOGS.map((log, i) => (

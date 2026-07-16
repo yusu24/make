@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import usePagination from '../../../hooks/usePagination'
+import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
 
 const ALL_PERMS = [
@@ -94,6 +96,13 @@ export default function SaasRoles() {
     return r.name.toLowerCase().includes(q) || (r.description && r.description.toLowerCase().includes(q))
   })
 
+  const {
+    currentPage, setCurrentPage,
+    pageSize, setPageSize,
+    totalPages, totalItems,
+    paginatedData, startIndex, endIndex,
+  } = usePagination(filtered)
+
   return (
     <>
       <div className="animate-fade-in">
@@ -151,9 +160,9 @@ export default function SaasRoles() {
                     </div>
                   </td>
                 </tr>
-              ) : filtered.map((role, i) => (
+              ) : paginatedData.map((role, i) => (
                 <tr key={role.id}>
-                  <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{i + 1}</td>
+                  <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
                   <td>
                     <span className="badge badge-violet" style={{ fontSize: 13, fontWeight: 600, padding: '4px 10px' }}>
                       {role.name}
@@ -208,6 +217,18 @@ export default function SaasRoles() {
               )}
             </tbody>
           </table>
+          {!loading && filtered.length > 0 && (
+            <SaasPagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              endIndex={endIndex}
+            />
+          )}
         </div>
       </div>
 

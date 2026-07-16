@@ -1,5 +1,29 @@
 /* === Shared Page Styles === */
 
+/* ── Admin SaaS: override tombol ke semi-bold ── */
+.btn {
+  font-weight: 600 !important;
+}
+
+/* ── Admin SaaS: hilangkan shadow dan efek hover berat untuk performa lebih ringan ── */
+.card,
+.premium-card,
+.kpi-card,
+.table-wrap,
+.saas-pagination-btn.active,
+.modal,
+.lp-sandbox,
+.filter-tab--active {
+  box-shadow: none !important;
+}
+
+.card:hover,
+.kpi-card:hover,
+.premium-card:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
 /* Page Header */
 .page-header {
   display: flex;
@@ -11,7 +35,7 @@
 .page-title {
   font-family: var(--font-heading);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 4px;
 }
@@ -113,7 +137,7 @@
 .modal__title {
   font-family: var(--font-heading);
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 600;
   margin-bottom: 8px;
   color: var(--text-primary);
 }
@@ -184,7 +208,7 @@
 
 .cat-card__name {
   font-family: var(--font-heading);
-  font-size: 16px; font-weight: 700;
+  font-size: 16px; font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -210,7 +234,7 @@
 .cat-card__stat-num {
   font-family: var(--font-heading);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .cat-card__stat-lbl {
@@ -257,3 +281,97 @@
 
 .toggle-btn--on .toggle-knob { left: 18px; }
 .toggle-btn--off .toggle-knob { left: 2px; }
+
+/* === Pagination Styles === */
+.saas-pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+.saas-pagination-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.saas-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.saas-pagination-select-wrapper {
+  position: relative;
+}
+
+.saas-pagination-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--bg-surface);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  color: var(--text-primary);
+  padding: 0 28px 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  height: 38px;
+  min-width: 68px;
+  transition: all 0.2s ease;
+}
+
+.saas-pagination-select:focus {
+  border-color: var(--primary-500);
+}
+
+.saas-pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.saas-pagination-btn:hover:not(.active):not(:disabled) {
+  background: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.saas-pagination-btn.active {
+  background: var(--primary-500) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+  font-weight: 600;
+  border-color: var(--primary-500);
+}
+
+.saas-pagination-btn.prev-next {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+.saas-pagination-btn.prev-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+

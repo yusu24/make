@@ -11,6 +11,11 @@ use App\Models\KulinerProduct;
 use App\Models\KulinerSetting;
 use App\Models\KulinerTestimonial;
 use App\Services\TransactionService;
+use App\Services\Kuliner\RecipeService;
+use App\Services\Kuliner\OrderStatusService;
+use App\Services\Kuliner\ReportService;
+use App\Services\Notifications\WhatsAppNotifierInterface;
+use App\Models\KulinerIngredient;
 use App\Models\User;
 use App\Models\KulinerPromo;
 use App\Models\KulinerRole;
@@ -24,10 +29,18 @@ use Illuminate\Support\Str;
 class KulinerController extends Controller
 {
     protected TransactionService $transactionService;
+    protected RecipeService $recipeService;
+    protected OrderStatusService $orderStatusService;
+    protected ReportService $reportService;
+    protected WhatsAppNotifierInterface $whatsApp;
 
-    public function __construct(TransactionService $transactionService)
+    public function __construct(TransactionService $transactionService, RecipeService $recipeService, OrderStatusService $orderStatusService, ReportService $reportService, WhatsAppNotifierInterface $whatsApp)
     {
         $this->transactionService = $transactionService;
+        $this->recipeService = $recipeService;
+        $this->orderStatusService = $orderStatusService;
+        $this->reportService = $reportService;
+        $this->whatsApp = $whatsApp;
     }
 
     /**
@@ -273,6 +286,7 @@ class KulinerController extends Controller
 
                     $orderItems[] = [
                         'product_id' => $product->id ?? null,
+                        'kuliner_product_id' => $product->id ?? null,
                         'name' => $itemData['name'],
                         'qty' => $qty,
                         'price' => $price,
@@ -282,6 +296,8 @@ class KulinerController extends Controller
 
                 // 1. Save order
                 $orderNumber = 'ORD-' . strtoupper(substr(uniqid(), -6));
+                $source = $request->input('source', 'pos');
+                $initialStatus = $request->is_staff_order ? 'processing' : ($source === 'qr_selforder' ? 'waiting' : 'pending');
                 $order = Order::withoutGlobalScopes()->create([
                     'tenant_id' => $tenantId,
                     'order_number' => $orderNumber,
@@ -291,8 +307,9 @@ class KulinerController extends Controller
                     'table_number' => $request->table_number,
                     'payment_method' => $request->payment_method,
                     'notes' => $request->notes,
+                    'source' => $source,
                     'total' => $total,
-                    'status' => $request->is_staff_order ? 'processing' : 'pending'
+                    'status' => $initialStatus
                 ]);
 
                 // 2. Save order items
@@ -314,6 +331,18 @@ class KulinerController extends Controller
                         'amount' => $total,
                         'description' => "Pesanan Kasir: {$request->customer_name} (Order #{$order->id})",
                     ]);
+                }
+
+                // 4. WhatsApp notification (best-effort, never blocks order creation)
+                if ($request->customer_phone) {
+                    try {
+                        $this->whatsApp->send(
+                            $request->customer_phone,
+                            "Halo {$request->customer_name}, pesanan Anda #{$orderNumber} sudah kami terima dan akan segera diproses. Total: Rp " . number_format($total, 0, ',', '.')
+                        );
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('WhatsApp notify (order placed) failed: ' . $e->getMessage());
+                    }
                 }
 
                 return response()->json([
@@ -648,6 +677,7 @@ class KulinerController extends Controller
             'whatsapp_number' => optional($settings)->whatsapp_number ?? '',
             'logo_url' => optional($settings)->logo_url ?? '',
             'website_url' => optional($settings)->website_url ?? '',
+            'dine_in_enabled' => (bool) (optional($settings)->dine_in_enabled ?? false),
         ]);
     }
 
@@ -697,6 +727,7 @@ class KulinerController extends Controller
                     'whatsapp_number' => $request->whatsapp_number,
                     'logo_url' => $request->logo_url,
                     'website_url' => $request->website_url,
+                    'dine_in_enabled' => $request->boolean('dine_in_enabled'),
                 ]
             );
 
@@ -819,7 +850,7 @@ class KulinerController extends Controller
         $order = Order::where('tenant_id', $tenantId)->findOrFail($id);
         
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:pending,processing,completed,cancelled'
+            'status' => 'required|in:draft,waiting,pending,cooking,processing,ready,served,completed,cancelled'
         ]);
 
         if ($validator->fails()) {
@@ -829,8 +860,8 @@ class KulinerController extends Controller
         return DB::transaction(function () use ($request, $order, $tenantId) {
             $oldStatus = $order->status;
             $newStatus = $request->status;
-            
-            $order->update(['status' => $newStatus]);
+
+            $order = $this->orderStatusService->transition($order, $newStatus, $request->input('note'));
 
             // If moving to 'processing' or 'completed' and was 'pending', record transaction if not already recorded
             // (Note: staff orders are recorded immediately in placeOrder)
@@ -843,6 +874,19 @@ class KulinerController extends Controller
                     'amount' => $order->total,
                     'description' => "Pesanan Selesai: {$order->customer_name} (Order #{$order->id})",
                 ]);
+                $this->recipeService->consumeForOrder($order);
+            }
+
+            // WhatsApp notification on completion (best-effort, never blocks the status update)
+            if ($newStatus === 'completed' && $oldStatus !== 'completed' && $order->customer_phone) {
+                try {
+                    $this->whatsApp->send(
+                        $order->customer_phone,
+                        "Halo {$order->customer_name}, pesanan Anda #{$order->order_number} telah selesai. Terima kasih telah memesan!"
+                    );
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('WhatsApp notify (order completed) failed: ' . $e->getMessage());
+                }
             }
 
             return response()->json(['message' => 'Status pesanan berhasil diperbarui', 'data' => $order]);
@@ -1077,12 +1121,37 @@ class KulinerController extends Controller
                 ];
             });
 
+        // Phase 4 additive widgets — computed defensively so a failure here never
+        // breaks the existing stats the dashboard already relies on.
+        $profitToday = 0;
+        $topMenu = null;
+        $lowStockIngredients = [];
+        $kitchenQueueCount = 0;
+        try {
+            $profitToday = $this->reportService->profitLoss($tenantId, $today, $today)['net_profit'];
+            $topSeller = $this->reportService->bestSellers($tenantId, now()->subDays(29)->toDateString(), $today, 1);
+            $topMenu = $topSeller[0]->name ?? null;
+            $lowStockIngredients = KulinerIngredient::where('tenant_id', $tenantId)
+                ->whereColumn('stock', '<=', 'min_stock')
+                ->limit(5)
+                ->get(['id', 'name', 'stock', 'unit']);
+            $kitchenQueueCount = Order::where('tenant_id', $tenantId)
+                ->whereIn('status', ['pending', 'waiting', 'processing', 'cooking', 'ready'])
+                ->count();
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         return response()->json([
             'revenue_today' => $revenueToday,
             'orders_today' => $ordersToday,
             'revenue_month' => $revenueMonth,
             'total_orders' => $totalOrders,
-            'recent_orders' => $recentOrders
+            'recent_orders' => $recentOrders,
+            'profit_today' => $profitToday,
+            'top_menu' => $topMenu,
+            'low_stock_ingredients' => $lowStockIngredients,
+            'kitchen_queue_count' => $kitchenQueueCount,
         ]);
     }
 
@@ -1200,6 +1269,121 @@ class KulinerController extends Controller
                 'type' => $promo->type,
                 'value' => $promo->value,
                 'name' => $promo->name
+            ]
+        ]);
+    }
+
+    /**
+     * POST /api/kuliner/admin/ai-insights
+     */
+    public function getAiInsights()
+    {
+        $tenantId = auth()->user()->tenant_id;
+
+        // Fetch same analytics data to feed the "AI logic"
+        // 1. Top Products
+        $topProducts = DB::table('kuliner_order_items')
+            ->join('kuliner_orders', 'kuliner_order_items.order_id', '=', 'kuliner_orders.id')
+            ->select('kuliner_order_items.name', DB::raw('SUM(kuliner_order_items.qty) as total_orders'))
+            ->where('kuliner_orders.tenant_id', $tenantId)
+            ->where('kuliner_orders.status', '!=', 'cancelled')
+            ->groupBy('kuliner_order_items.name')
+            ->orderBy('total_orders', 'desc')
+            ->limit(3)
+            ->get();
+
+        // 2. Peak Hours
+        $peakHours = DB::table('kuliner_orders')
+            ->select(DB::raw('HOUR(created_at) as hour'), DB::raw('COUNT(*) as count'))
+            ->where('tenant_id', $tenantId)
+            ->where('created_at', '>=', now()->subDays(30))
+            ->groupBy('hour')
+            ->orderBy('count', 'desc')
+            ->first(); // Get the single busiest hour
+
+        // 3. Loyalty
+        $totalCustomers = DB::table('kuliner_orders')->where('tenant_id', $tenantId)->distinct('customer_phone')->count('customer_phone');
+        $returningCustomers = DB::table('kuliner_orders')
+            ->where('tenant_id', $tenantId)
+            ->select('customer_phone')
+            ->groupBy('customer_phone')
+            ->having(DB::raw('COUNT(*)'), '>', 1)
+            ->get()
+            ->count();
+        $loyaltyRate = $totalCustomers > 0 ? round(($returningCustomers / $totalCustomers) * 100) : 0;
+
+        // 4. Payment
+        $favoriteMethod = DB::table('kuliner_orders')
+            ->select('payment_method', DB::raw('COUNT(*) as count'))
+            ->where('tenant_id', $tenantId)
+            ->groupBy('payment_method')
+            ->orderBy('count', 'desc')
+            ->first();
+        $methodLabel = '-';
+        if ($favoriteMethod) {
+            $methodLabel = $favoriteMethod->payment_method === 'cash_cashier' ? 'Tunai (Cash)' : 'QRIS';
+        }
+
+        // Generate response sections
+        $insights = [];
+
+        // Heading / Summary
+        if ($topProducts->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'generated_at' => now()->toIso8601String(),
+                'insights' => [
+                    'summary' => "Analisis belum dapat dilakukan karena belum ada data transaksi yang cukup pada sistem.",
+                    'recommendations' => [
+                        "Mulai buat pesanan uji coba di POS Kasir atau Website Order untuk mengumpulkan data.",
+                        "Pastikan menu dan kategori sudah terisi lengkap di halaman Manajemen Katalog."
+                    ]
+                ]
+            ]);
+        }
+
+        // Top product analysis
+        $bestSeller = $topProducts->first()->name;
+        $itemsList = $topProducts->pluck('name')->implode(', ');
+        
+        $insights['product_insight'] = "Menu terpopuler Anda saat ini didominasi oleh **{$bestSeller}**, diikuti oleh {$itemsList}. Ini menunjukkan preferensi pelanggan yang kuat pada jenis hidangan ini.";
+        
+        // Peak hour analysis
+        if ($peakHours) {
+            $busyHour = sprintf('%02d:00', $peakHours->hour);
+            $insights['time_insight'] = "Trafik transaksi tertinggi terdeteksi di sekitar jam **{$busyHour}**. Disarankan untuk mengoptimalkan persiapan bahan baku (mise en place) sebelum jam sibuk ini guna meminimalkan waktu tunggu pelanggan.";
+        } else {
+            $insights['time_insight'] = "Pola kunjungan harian masih menyebar merata tanpa lonjakan trafik yang signifikan pada jam tertentu.";
+        }
+
+        // Loyalty rate analysis
+        if ($loyaltyRate > 30) {
+            $insights['loyalty_insight'] = "Rasio retensi pelanggan Anda sebesar **{$loyaltyRate}%** tergolong **Sangat Baik** untuk industri F&B. Pelanggan Anda menyukai rasa hidangan atau pelayanan Anda dan cenderung datang kembali.";
+        } else {
+            $insights['loyalty_insight'] = "Rasio retensi pelanggan Anda sebesar **{$loyaltyRate}%**. Rekomendasikan program loyalitas seperti stamp card digital atau diskon khusus kunjungan berikutnya untuk meningkatkan kedatangan berulang.";
+        }
+
+        // Payment analysis
+        if ($methodLabel === 'QRIS') {
+            $insights['payment_insight'] = "Pelanggan Anda lebih menyukai metode pembayaran digital (**QRIS**). Keuntungannya adalah pencatatan kas lebih akurat dan antrean kasir lebih cepat terurai.";
+        } else {
+            $insights['payment_insight'] = "Pembayaran tunai (**Tunai**) mendominasi transaksi. Pertimbangkan untuk menyediakan QRIS dinamis untuk mengurangi risiko uang kembalian dan mempercepat rekonsiliasi harian.";
+        }
+
+        // Recommendations list
+        $recommendations = [
+            "Buat paket bundling promo menyandingkan menu terlaris (**{$bestSeller}**) dengan minuman segar untuk menaikkan average basket size.",
+            "Berikan promo happy hour/diskon khusus pada jam sepi pengunjung untuk meratakan distribusi kedatangan pelanggan.",
+            "Pertahankan standar rasa dan kecepatan penyajian pada jam sibuk guna menjaga rasio loyalitas pelanggan Anda yang berharga."
+        ];
+
+        return response()->json([
+            'success' => true,
+            'generated_at' => now()->toIso8601String(),
+            'insights' => [
+                'summary' => "Berdasarkan performa transaksi 30 hari terakhir, bisnis kuliner Anda menunjukkan tren yang stabil dengan potensi pertumbuhan yang bisa dimaksimalkan melalui beberapa langkah taktis.",
+                'details' => $insights,
+                'recommendations' => $recommendations
             ]
         ]);
     }

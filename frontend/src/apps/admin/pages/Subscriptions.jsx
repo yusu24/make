@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import usePagination from '../../../hooks/usePagination'
+import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
 
 const DUMMY_TENANTS = [
@@ -82,6 +84,20 @@ export default function Subscriptions() {
     return t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.category.toLowerCase().includes(q) || t.tenant_id.toLowerCase().includes(q)
   })
 
+  const {
+    currentPage: tPage, setCurrentPage: setTPage,
+    pageSize: tPageSize, setPageSize: setTPageSize,
+    totalPages: tTotalPages, totalItems: tTotalItems,
+    paginatedData: tPaginatedData, startIndex: tStart, endIndex: tEnd,
+  } = usePagination(filteredTenants)
+
+  const {
+    currentPage: rPage, setCurrentPage: setRPage,
+    pageSize: rPageSize, setPageSize: setRPageSize,
+    totalPages: rTotalPages, totalItems: rTotalItems,
+    paginatedData: rPaginatedData, startIndex: rStart, endIndex: rEnd,
+  } = usePagination(requests)
+
   return (
     <>
       <div className="animate-fade-in">
@@ -160,7 +176,7 @@ export default function Subscriptions() {
                         Tidak ada pelanggan ditemukan
                       </td>
                     </tr>
-                  ) : filteredTenants.map(t => (
+                  ) : tPaginatedData.map(t => (
                     <tr key={t.id}>
                       <td><code style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.tenant_id}</code></td>
                       <td>
@@ -190,13 +206,25 @@ export default function Subscriptions() {
                       <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.joined}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                          <button className="btn btn-secondary btn-sm" onClick={() => setBillingTenant(t)}>👁 Riwayat Tagihan</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => setBillingTenant(t)} title="Riwayat Tagihan">👁</button>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              {!loading && filteredTenants.length > 0 && (
+                <SaasPagination
+                  currentPage={tPage}
+                  setCurrentPage={setTPage}
+                  pageSize={tPageSize}
+                  setPageSize={setTPageSize}
+                  totalPages={tTotalPages}
+                  totalItems={tTotalItems}
+                  startIndex={tStart}
+                  endIndex={tEnd}
+                />
+              )}
             </div>
           </>
         ) : (
@@ -221,7 +249,7 @@ export default function Subscriptions() {
                       </div>
                     </td>
                   </tr>
-                ) : requests.map(req => (
+                ) : rPaginatedData.map(req => (
                   <tr key={req.id}>
                     <td>
                       <div style={{ fontWeight: 600 }}>{req.tenant?.business_name || req.tenant_id}</div>
@@ -232,8 +260,8 @@ export default function Subscriptions() {
                     <td><span className="badge badge-yellow">PENDING</span></td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                        <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)}>✓ Aktifkan</button>
-                        <button className="btn btn-ghost btn-sm" onClick={() => handleReject(req.id)}>Tolak</button>
+                        <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)} title="Aktifkan">✓</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => handleReject(req.id)} title="Tolak">✗</button>
                       </div>
                     </td>
                   </tr>
@@ -243,6 +271,18 @@ export default function Subscriptions() {
                 )}
               </tbody>
             </table>
+            {!loading && requests.length > 0 && (
+              <SaasPagination
+                currentPage={rPage}
+                setCurrentPage={setRPage}
+                pageSize={rPageSize}
+                setPageSize={setRPageSize}
+                totalPages={rTotalPages}
+                totalItems={rTotalItems}
+                startIndex={rStart}
+                endIndex={rEnd}
+              />
+            )}
           </div>
         )}
       </div>

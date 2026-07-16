@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
+import usePagination from '../../../hooks/usePagination'
+import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
 
 const DUMMY = [
@@ -20,6 +22,7 @@ export default function Tenants() {
   const navigate = useNavigate()
   const [tenants, setTenants] = useState([])
   const [search, setSearch]   = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
   const [showModal, setShowModal] = useState(false)
   const [impersonating, setImpersonating] = useState(null)
   const [confirmTarget, setConfirmTarget] = useState(null) // tenant to confirm impersonation
@@ -96,10 +99,21 @@ export default function Tenants() {
     }
   }
 
+  const uniqueCategories = Array.from(new Set(tenants.map(t => t.category).filter(Boolean))).sort()
+
   const filtered = tenants.filter(t => {
     const q = search.toLowerCase()
-    return t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
+    const matchesSearch = t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
+    const matchesCategory = categoryFilter === 'all' || t.category === categoryFilter
+    return matchesSearch && matchesCategory
   })
+
+  const {
+    currentPage, setCurrentPage,
+    pageSize, setPageSize,
+    totalPages, totalItems,
+    paginatedData, startIndex, endIndex,
+  } = usePagination(filtered)
 
   const handleAddTenant = async (e) => {
     e.preventDefault()
@@ -158,18 +172,44 @@ export default function Tenants() {
                 fontSize:22, color:s.color, flexShrink:0
               }}>{s.icon}</div>
               <div>
-                <div style={{fontFamily:'var(--font-heading)',fontSize:28,fontWeight:800}}>{s.value}</div>
+                <div style={{fontFamily:'var(--font-heading)',fontSize:28,fontWeight: 600}}>{s.value}</div>
                 <div style={{fontSize:12,color:'var(--text-muted)'}}>{s.label}</div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="filter-bar">
-          <div className="search-wrap">
+        <div className="filter-bar" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 20 }}>
+          <div className="search-wrap" style={{ flex: 1, minWidth: 200, maxWidth: 360, margin: 0 }}>
             <span className="search-icon">🔍</span>
             <input id="input-search-tenants" className="form-input search-input" placeholder="Cari tenant..."
               value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+
+          <div className="select-wrap" style={{ minWidth: 200 }}>
+            <select
+              id="select-filter-category"
+              className="form-input"
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+              style={{
+                height: 40,
+                borderRadius: 10,
+                border: '1px solid var(--border-default, #e2e8f0)',
+                background: 'var(--bg-surface, #ffffff)',
+                color: 'var(--text-primary, #1e293b)',
+                padding: '0 12px',
+                fontSize: 13,
+                fontWeight: 500,
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="all">Semua Kategori Bisnis</option>
+              {uniqueCategories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -197,7 +237,7 @@ export default function Tenants() {
                     Tidak ada tenant ditemukan
                   </td>
                 </tr>
-              ) : filtered.map(t => (
+              ) : paginatedData.map(t => (
                 <tr key={t.id}>
                   <td><code style={{fontSize:11,color:'var(--text-muted)',background:'var(--bg-elevated)',padding:'2px 6px',borderRadius:4}}>{t.tenant_id}</code></td>
                   <td>
@@ -219,14 +259,14 @@ export default function Tenants() {
                   <td style={{fontSize:12,color:'var(--text-muted)'}}>{t.joined}</td>
                   <td>
                     <div style={{display:'flex', gap:6, alignItems:'center', flexWrap:'wrap'}}>
-                      {(t.category === 'Toko Retail' || t.category === 'Budidaya Ikan' || t.category === 'Kuliner') && (
+                      {(t.category === 'Toko Retail' || t.category === 'Budidaya Ikan' || t.category === 'Budidaya Tanaman' || t.category === 'Kuliner') && (
                         <button
                           className="btn btn-primary btn-sm"
                           onClick={() => handleImpersonate(t)}
                           disabled={impersonating === t.tenant_id || t.status !== 'active'}
                           title={`Login sebagai ${t.name}`}
                         >
-                          {impersonating === t.tenant_id ? '⏳...' : '🔑 Login'}
+                          {impersonating === t.tenant_id ? '⏳' : '🔑'}
                         </button>
                       )}
                       <button 
@@ -234,9 +274,9 @@ export default function Tenants() {
                         onClick={() => openModuleModal(t.tenant_id)}
                         title="Atur Modul"
                       >
-                        📦 Modul
+                        📦
                       </button>
-                      <button className="btn btn-secondary btn-sm" title="Edit Tenant">✏ Edit</button>
+                      <button className="btn btn-secondary btn-sm" title="Edit Tenant">✏</button>
                       {t.status !== 'pending' && (
                         <button 
                           className={`btn btn-sm ${t.status === 'active' ? 'btn-ghost' : 'btn-secondary'}`}
@@ -244,7 +284,7 @@ export default function Tenants() {
                           onClick={() => handleToggleStatus(t)}
                           title={t.status === 'active' ? 'Nonaktifkan Tenant' : 'Aktifkan Tenant'}
                         >
-                          {t.status === 'active' ? '🛑 Nonaktifkan' : '✅ Aktifkan'}
+                          {t.status === 'active' ? '🛑' : '✅'}
                         </button>
                       )}
                     </div>
@@ -253,6 +293,18 @@ export default function Tenants() {
               ))}
             </tbody>
           </table>
+          {!loading && filtered.length > 0 && (
+            <SaasPagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              endIndex={endIndex}
+            />
+          )}
         </div>
       </div>
 
@@ -275,6 +327,7 @@ export default function Tenants() {
                   <select name="category" className="form-select" required>
                     <option value="Toko Retail">Toko Retail</option>
                     <option value="Budidaya Ikan">Budidaya Ikan</option>
+                    <option value="Budidaya Tanaman">Budidaya Tanaman</option>
                     <option value="Kuliner">Kuliner</option>
                     <option value="Jasa">Jasa</option>
                     <option value="Manufaktur">Manufaktur</option>

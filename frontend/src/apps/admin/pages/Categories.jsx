@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../../lib/api'
+import { useAuth } from '../../../contexts/AuthContext'
 import Modal from '../../../components/Modal'
 import './Shared.css'
 
@@ -9,11 +10,12 @@ const ICONS  = ['🛒','🐟','🔧','🏭','🍱','🏥','🏗️','📦']
 
 // Map kategori bisnis → URL sistem yang bersangkutan
 const SYSTEM_ROUTES = {
-  'Toko Retail':   '/retail/dashboard',
-  'Budidaya Ikan': '/budidaya/dashboard',
-  'Jasa':          '/coming-soon',
-  'Manufaktur':    '/coming-soon',
-  'Kuliner':       '/kuliner/admin',
+  'Toko Retail':      '/retail/dashboard',
+  'Budidaya Ikan':    '/budidaya/dashboard',
+  'Budidaya Tanaman': '/budidaya/dashboard',
+  'Jasa':             '/coming-soon',
+  'Manufaktur':       '/coming-soon',
+  'Kuliner':          '/kuliner/admin',
 }
 
 const DUMMY_CATS = [
@@ -26,6 +28,32 @@ const DUMMY_CATS = [
 
 export default function Categories() {
   const navigate = useNavigate()
+  const { impersonateDemoSandbox } = useAuth()
+  const [demoLoading, setDemoLoading] = useState(false)
+
+  const handleEnterDemo = async (catName) => {
+    const slugMap = {
+      'Toko Retail': 'toko-retail',
+      'Budidaya Ikan': 'budidaya-ikan',
+      'Budidaya Tanaman': 'budidaya-tanaman',
+      'Kuliner': 'kuliner',
+    }
+    const slug = slugMap[catName]
+    if (!slug) {
+      navigate(SYSTEM_ROUTES[catName] || `/categories/${encodeURIComponent(catName)}`)
+      return
+    }
+    setDemoLoading(true)
+    try {
+      const redirect = await impersonateDemoSandbox(slug)
+      navigate(redirect)
+    } catch (err) {
+      alert('Gagal memproses impersonate demo sandbox: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setDemoLoading(false)
+    }
+  }
+
   const [cats, setCats]    = useState([])
   const [show, setShow]    = useState(false)
   const [editing, setEditing] = useState(null)
@@ -176,7 +204,7 @@ export default function Categories() {
                 background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
                 color: '#fff',
                 fontSize: 10,
-                fontWeight: 800,
+                fontWeight: 600,
                 padding: '4px 10px',
                 borderRadius: 8,
                 display: 'inline-flex',
@@ -204,7 +232,8 @@ export default function Categories() {
                 id={`btn-view-cat-${cat.id}`}
                 className="btn btn-primary btn-sm"
                 style={{ flex: 1 }}
-                onClick={() => navigate(SYSTEM_ROUTES[cat.name] || `/categories/${encodeURIComponent(cat.name)}`)}
+                onClick={() => handleEnterDemo(cat.name)}
+                disabled={demoLoading}
               >
                 👁 Masuk Sistem
               </button>
@@ -274,7 +303,7 @@ export default function Categories() {
 
           {/* Category Promo Section */}
           <div style={{ borderTop: '1px solid var(--border-default)', paddingTop: 16, marginTop: 8 }}>
-            <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Paket Promo Kategori</h4>
+            <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Paket Promo Kategori</h4>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16, marginBottom: 12 }}>
               <div className="form-group">

@@ -32,7 +32,7 @@ export const GuestRoute = ({ children }) => {
   if (user) {
     if (user.role === 'super_admin') return <Navigate to="/dashboard" replace />;
     if (user.business_category === 'Toko Retail') return <Navigate to="/retail/dashboard" replace />;
-    if (user.business_category === 'Budidaya Ikan') return <Navigate to="/budidaya/dashboard" replace />;
+    if (user.business_category === 'Budidaya Ikan' || user.business_category === 'Budidaya Tanaman') return <Navigate to="/budidaya/dashboard" replace />;
     if (user.business_category === 'Kuliner') return <Navigate to="/kuliner/admin" replace />;
     return <Navigate to="/coming-soon" replace />;
   }
@@ -46,7 +46,7 @@ export const RootRedirect = () => {
   if (user?.business_category === 'Toko Retail') {
     return <Navigate to="/retail/dashboard" replace />;
   }
-  if (user?.business_category === 'Budidaya Ikan') {
+  if (user?.business_category === 'Budidaya Ikan' || user?.business_category === 'Budidaya Tanaman') {
     return <Navigate to="/budidaya/dashboard" replace />;
   }
   if (user?.business_category === 'Kuliner') {
@@ -54,4 +54,17 @@ export const RootRedirect = () => {
   }
   
   return <Navigate to="/coming-soon" replace />;
+};
+
+export const CategoryRoute = ({ children, allowedCategory }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'super_admin') return children;
+  
+  const allowed = Array.isArray(allowedCategory) ? allowedCategory : [allowedCategory];
+  if (!allowed.includes(user.business_category)) {
+    return <Navigate to="/dashboard-redirect" replace />;
+  }
+  return children;
 };

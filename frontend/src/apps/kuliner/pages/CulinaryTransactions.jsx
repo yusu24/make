@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Eye } from 'lucide-react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import api from '../../../services/api';
 import KulinerLoading from '../components/KulinerLoading';
@@ -100,10 +101,6 @@ const CulinaryTransactions = () => {
     <KulinerAdminLayout>
       <div className="kd-topbar">
         <h1 className="kd-page-title">Buku Kas & Transaksi</h1>
-        <div className="kd-topbar-actions">
-          <button className="kd-btn kd-btn-secondary" onClick={() => setIsExpenseModalOpen(true)}>+ Catat Pengeluaran</button>
-          <button className="kd-btn kd-btn-primary" onClick={() => setIsReconModalOpen(true)}>📊 Rekonsiliasi Kas</button>
-        </div>
       </div>
 
       <div className="kd-content">
@@ -111,6 +108,10 @@ const CulinaryTransactions = () => {
           <KulinerLoading message="Menyiapkan buku kas..." />
         ) : (
           <>
+            <div className="kd-page-actions">
+              <button className="kd-btn kd-btn-secondary" onClick={() => setIsExpenseModalOpen(true)}>+ Catat Pengeluaran</button>
+              <button className="kd-btn kd-btn-primary" onClick={() => setIsReconModalOpen(true)}>📊 Rekonsiliasi Kas</button>
+            </div>
             {/* LEDGER CARDS */}
             <div className="kd-ledger-grid" style={{ marginBottom: 32 }}>
               <div className="kd-panel" style={{ background: '#ecfdf5', borderColor: '#10b981' }}>
@@ -209,7 +210,7 @@ const CulinaryTransactions = () => {
                             {item.type === 'income' ? '+' : '-'}{formatRp(item.amount)}
                           </td>
                           <td className="text-right">
-                            <button className="kd-btn kd-btn-secondary" style={{ padding: '4px 8px', fontSize: 10 }}>Detail</button>
+                            <button className="kd-icon-btn" title="Detail"><Eye size={16} /></button>
                           </td>
                         </tr>
                       ))

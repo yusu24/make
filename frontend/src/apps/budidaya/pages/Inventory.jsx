@@ -3,11 +3,15 @@ import { api } from '../../../lib/api'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton, EmptyState } from '../components/UXComponents'
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
-const CATEGORIES = ['Semua', 'Pakan', 'Bibit', 'Obat', 'Peralatan', 'Lainnya']
 const UNITS = ['kg', 'gram', 'liter', 'ml', 'ekor', 'pcs', 'zak', 'botol', 'box', 'karung']
 
 export default function Inventory() {
+  const terms = useBudidayaTerms()
+  const CATEGORIES = terms.inventoryCategories
+  const defaultCat = terms.defaultInventoryCategory
+
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -17,7 +21,7 @@ export default function Inventory() {
   const [showReceiveModal, setShowReceiveModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
   const [formData, setFormData] = useState({
-    name: '', category: 'Pakan', stock: 0, unit: 'kg', min_stock: 0, price_per_unit: 0, description: ''
+    name: '', category: defaultCat, stock: 0, unit: 'kg', min_stock: 0, price_per_unit: 0, description: ''
   })
   const [stockData, setStockData] = useState({ type: 'in', quantity: '', note: '' })
   const [saving, setSaving] = useState(false)
@@ -51,7 +55,7 @@ export default function Inventory() {
       }
       setShowModal(false)
       setSelectedItem(null)
-      setFormData({ name: '', category: 'Pakan', stock: 0, unit: 'kg', min_stock: 0, price_per_unit: 0, description: '' })
+      setFormData({ name: '', category: defaultCat, stock: 0, unit: 'kg', min_stock: 0, price_per_unit: 0, description: '' })
       fetchItems()
       alert('Berhasil menyimpan data barang')
     } catch (err) {
@@ -110,18 +114,19 @@ export default function Inventory() {
         <div style={{ display: 'flex', gap: '12px' }}>
           <button 
             className="btn btn-secondary"
-            onClick={() => { setSelectedItem(null); setStockData({ type: 'in', quantity: '', note: 'Penerimaan barang' }); setShowReceiveModal(true) }}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            onClick={() => { setSelectedItem(null); setStockData({ type: 'in', quantity: '', note: terms.stockReceiveNote }); setShowReceiveModal(true) }}
+            style={{ width: '200px', justifyContent: 'center' }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>download</span>
-            Penerimaan Barang
+            <span>Penerimaan Barang</span>
           </button>
           <button 
             className="btn btn-primary"
-            onClick={() => { setSelectedItem(null); setFormData({ name: '', category: 'Pakan', stock: 0, unit: 'kg', min_stock: 0, price_per_unit: 0, description: '' }); setShowModal(true) }}
+            onClick={() => { setSelectedItem(null); setFormData({ name: '', category: defaultCat, stock: 0, unit: 'kg', min_stock: 0, price_per_unit: 0, description: '' }); setShowModal(true) }}
+            style={{ width: '200px', justifyContent: 'center' }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add</span>
-            Tambah Barang
+            <span>Tambah Barang</span>
           </button>
         </div>
       </div>
@@ -186,7 +191,7 @@ export default function Inventory() {
           <div style={{ textAlign: 'center', padding: '60px 20px', background: '#F8FAFC', borderRadius: '20px', border: '1px dashed #E2E8F0' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#CBD5E1' }}>inventory_2</span>
             <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#475569', marginTop: '16px' }}>Belum ada barang</h3>
-            <p style={{ color: '#64748B', fontSize: '14px' }}>Mulai tambahkan pakan atau peralatan ke gudang Anda.</p>
+            <p style={{ color: '#64748B', fontSize: '14px' }}>{terms.emptyInventoryDesc}</p>
           </div>
         ) : (
           <div className="aq-table-container">
@@ -198,6 +203,7 @@ export default function Inventory() {
                   <TableHeaderCell>Stok</TableHeaderCell>
                   <TableHeaderCell>Satuan</TableHeaderCell>
                   <TableHeaderCell>Harga satuan</TableHeaderCell>
+                  <TableHeaderCell>Total Harga</TableHeaderCell>
                   <TableHeaderCell>Status</TableHeaderCell>
                   <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
                 </TableRow>
@@ -222,6 +228,11 @@ export default function Inventory() {
                       <TableCell>
                         <span style={{ fontWeight: 600, color: 'var(--aq-text-primary)', fontSize: '14px' }}>
                           Rp {parseFloat(item.price_per_unit).toLocaleString()}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span style={{ fontWeight: 700, color: '#1B4332', fontSize: '14px' }}>
+                          Rp {(parseFloat(item.stock) * parseFloat(item.price_per_unit || 0)).toLocaleString()}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -414,7 +425,7 @@ export default function Inventory() {
               </div>
               <div>
                 <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'capitalize', display: 'block', marginBottom: '6px' }}>Catatan</label>
-                <input value={stockData.note} onChange={e => setStockData({ ...stockData, note: e.target.value })} placeholder="Contoh: Pembelian baru, Pakan harian"
+                <input value={stockData.note} onChange={e => setStockData({ ...stockData, note: e.target.value })} placeholder={terms.stockNotePlaceholder}
                   style={{ width: '100%', padding: '12px', border: '1.5px solid #E9F0EC', borderRadius: '12px', fontSize: '14px', outline: 'none' }} />
               </div>
               <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>

@@ -21,7 +21,8 @@ const AdminSettings = () => {
     promo_desc: '',
     instagram_url: '',
     whatsapp_number: '',
-    logo_url: ''
+    logo_url: '',
+    dine_in_enabled: false
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -91,9 +92,9 @@ const AdminSettings = () => {
                 <div>
                   <h2 className="text-2xl font-black text-slate-800 mb-1">{settings.store_name || 'Nama Toko Anda'}</h2>
                   <p className="text-sm text-slate-400 mb-4">{settings.address || 'Alamat belum diatur'}</p>
-                  <div className="flex gap-2">
-                    <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-wider">Premium UMKM</span>
-                    <span className="text-[10px] font-bold bg-green-100 text-green-600 px-3 py-1 rounded-full uppercase tracking-wider">Toko Aktif</span>
+                  <div className="flex gap-3 items-center">
+                    <span className="inline-flex items-center justify-center text-[9px] font-bold bg-slate-100 text-slate-500 px-5 py-1.5 rounded-full uppercase tracking-widest">Premium BIZORA</span>
+                    <span className="inline-flex items-center justify-center text-[9px] font-bold bg-green-100 text-green-600 px-5 py-1.5 rounded-full uppercase tracking-widest">Toko Aktif</span>
                   </div>
                 </div>
               </div>
@@ -183,9 +184,22 @@ const AdminSettings = () => {
                             type="number" 
                             className="kd-form-input"
                             placeholder="20"
-                            value={settings.total_tables} 
-                            onChange={e => setSettings({...settings, total_tables: e.target.value})} 
+                            value={settings.total_tables}
+                            onChange={e => setSettings({...settings, total_tables: e.target.value})}
                           />
+                        </div>
+                        <div className="kd-form-group">
+                          <label className="kd-form-label flex items-center gap-2">
+                            <span>🍽️</span> Mode Dine-In (Meja & QR Self Order)
+                          </label>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                            <input
+                              type="checkbox"
+                              checked={!!settings.dine_in_enabled}
+                              onChange={e => setSettings({ ...settings, dine_in_enabled: e.target.checked })}
+                            />
+                            <span className="text-sm text-slate-500">Aktifkan untuk mengelola meja dan QR pesan mandiri</span>
+                          </label>
                         </div>
                       </div>
                     </div>

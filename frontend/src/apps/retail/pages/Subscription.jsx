@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
+import { FEATURE_LABELS } from '../../../lib/subscriptionFeatures';
+
+const PLAN_COLOR = {
+  free: 'var(--text-muted)',
+  basic: 'var(--primary-500)',
+  pro: '#8b5cf6',
+};
 
 export default function Subscription() {
   const { user } = useAuth();
@@ -11,6 +18,7 @@ export default function Subscription() {
   const [pendingReq, setPendingReq] = useState(null);
   const [categoryPromo, setCategoryPromo] = useState(null);
   const [globalSettings, setGlobalSettings] = useState(null);
+  const [plans, setPlans] = useState([]);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,6 +33,7 @@ export default function Subscription() {
       setPendingReq(subRes.data.data);
       setCategoryPromo(subRes.data.category_promo || null);
       setGlobalSettings(subRes.data.global_settings || null);
+      setPlans(subRes.data.plans || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -57,13 +66,14 @@ export default function Subscription() {
 
   const getPlanPriceInfo = (planId) => {
     if (!planId || planId === 'free') return { display: 'Rp 0', numeric: 0, discounted: false };
-    
-    const basePrices = { 
-      basic: globalSettings?.price_basic || 149000, 
-      pro: globalSettings?.price_pro || 299000 
+
+    const planOverride = plans.find(p => p.plan_key === planId)?.price;
+    const basePrices = {
+      basic: globalSettings?.price_basic || 149000,
+      pro: globalSettings?.price_pro || 299000
     };
-    const base = basePrices[planId] || 0;
-    
+    const base = planOverride ?? (basePrices[planId] || 0);
+
     if (categoryPromo && categoryPromo.discount_pct > 0) {
       const discount = Math.round(base * (categoryPromo.discount_pct / 100));
       const finalPrice = base - discount;
@@ -83,35 +93,30 @@ export default function Subscription() {
     };
   };
   
-  const PLANS = [
-    { 
-      id: 'free', 
-      name: 'Free (Tester)', 
-      price: 'Rp 0', 
-      features: ['Masa Aktif 3-5 Hari', 'Maks 1 Pegawai', 'Maks 20 Produk', 'Laporan Penjualan Dasar'],
-      color: 'var(--text-muted)'
-    },
-    { 
-      id: 'basic', 
-      name: 'Basic', 
-      price: 'Rp 149.000 / bln', 
-      features: ['Tanpa Batas Waktu', 'Maks 5 Pegawai', 'Maks 500 Produk', 'Laporan Stok & Piutang'],
-      color: 'var(--primary-500)'
-    },
-    { 
-      id: 'pro', 
-      name: 'Pro (Terbaik)', 
-      price: 'Rp 299.000 / bln', 
-      features: ['Tanpa Batas Waktu', 'Pegawai Tak Terbatas', 'Produk Tak Terbatas', 'Analitik Penuh & Multi Cabang'],
-      color: '#8b5cf6' 
-    }
-  ];
+  const describePlan = (plan) => {
+    const bullets = [];
+    bullets.push(plan.plan_key === 'free' ? 'Masa Aktif 3-5 Hari' : 'Tanpa Batas Waktu');
+    bullets.push(plan.max_staff === null ? 'Pegawai Tak Terbatas' : `Maks ${plan.max_staff} Pegawai`);
+    bullets.push(plan.max_products === null ? 'Produk Tak Terbatas' : `Maks ${plan.max_products} Produk`);
+    Object.entries(FEATURE_LABELS).forEach(([key, { label }]) => {
+      if (plan.features?.[key]) bullets.push(label);
+    });
+    return bullets;
+  };
 
-  const staffLimit = currentPlan === 'free' ? 1 : (currentPlan === 'basic' ? 5 : '∞');
+  const PLANS = plans.map(plan => ({
+    id: plan.plan_key,
+    name: plan.name,
+    features: describePlan(plan),
+    color: PLAN_COLOR[plan.plan_key] || 'var(--primary-500)'
+  }));
+
+  const currentPlanLimits = plans.find(p => p.plan_key === currentPlan);
+  const staffLimit = currentPlanLimits ? (currentPlanLimits.max_staff ?? '∞') : (currentPlan === 'free' ? 1 : (currentPlan === 'basic' ? 5 : '∞'));
   const staffPercentage = staffLimit === '∞' ? 0 : (staffCount / staffLimit) * 100;
 
   return (
-    <div className="animate-fade-in" style={{ padding: 24 }}>
+    <div className="animate-fade-in">
       <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
       </div>
 
@@ -257,7 +262,7 @@ export default function Subscription() {
            <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>
               Jika Anda mengalami kendala saat proses upgrade atau ingin melakukan pembayaran via Transfer Bank Manual, silakan hubungi tim support kami.
            </p>
-           <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }}>Hubungi Support UMKM</button>
+           <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }}>Hubungi Support BIZORA</button>
         </div>
 
       </div>

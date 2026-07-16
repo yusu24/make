@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasTenant;
 
 class RetailPurchase extends Model
 {
+    use HasTenant;
+
     protected $guarded = [];
 
     public function supplier()
@@ -15,6 +18,6 @@ class RetailPurchase extends Model
 
     public function items()
     {
-        return $this->hasMany(RetailPurchaseItem::class, 'retail_purchase_id');
+        return $this->hasMany(RetailPurchaseItem::class, 'purchase_id');
     }
 }

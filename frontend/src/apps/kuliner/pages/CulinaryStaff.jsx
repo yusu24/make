@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { KeyRound, Edit3, Trash2 } from 'lucide-react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -124,7 +125,10 @@ const CulinaryStaff = () => {
     <KulinerAdminLayout>
       <div className="kd-topbar">
         <h1 className="kd-page-title">Kelola Staff Karyawan</h1>
-        <div className="flex gap-3">
+      </div>
+
+      <div className="kd-content">
+        <div className="kd-page-actions">
           <a href="/kuliner/admin/roles" className="kd-btn kd-btn-secondary flex items-center gap-2">
             ⚙️ Atur Role & Izin
           </a>
@@ -136,9 +140,6 @@ const CulinaryStaff = () => {
             + Tambah Staff Baru
           </button>
         </div>
-      </div>
-
-      <div className="kd-content">
         <div className="kd-panel">
           <div className="p-0 overflow-hidden">
             <table className="kd-table">
@@ -192,17 +193,17 @@ const CulinaryStaff = () => {
                       <td><span className="text-xs text-slate-500">{member.phone || '-'}</span></td>
                       <td style={{ textAlign: 'right' }}>
                         <div className="flex justify-end gap-2">
-                          <button 
-                            className="kd-btn-icon" 
+                          <button
+                            className="kd-icon-btn"
                             style={{ color: '#b48c36', borderColor: '#b48c36' }}
                             onClick={() => handleImpersonate(member.id)}
                             disabled={impersonating === member.id}
                             title="Login sebagai Staff ini"
                           >
-                            {impersonating === member.id ? '⏳' : '🔑'}
+                            {impersonating === member.id ? '⏳' : <KeyRound size={16} />}
                           </button>
-                          <button className="kd-btn-icon" onClick={() => handleEdit(member)}>Edit</button>
-                          <button className="kd-btn-icon text-red-500" onClick={() => handleDelete(member.id)}>×</button>
+                          <button className="kd-icon-btn" title="Edit" onClick={() => handleEdit(member)}><Edit3 size={16} /></button>
+                          <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(member.id)}><Trash2 size={16} /></button>
                         </div>
                       </td>
                     </tr>

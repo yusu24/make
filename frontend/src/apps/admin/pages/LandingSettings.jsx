@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import bizoraLogo from '../../../assets/bizora-logo.png'
 
 export default function LandingSettings() {
   const [activeTab, setActiveTab] = useState('general') // 'general' or 'testimonials'
   
   // Tab 1: General settings state
   const [form, setForm] = useState({
-    hero_title: 'Kelola Bisnis UMKM',
+    hero_title: 'Kelola Bisnis Anda',
     hero_subtitle: 'Lebih Cerdas & Mudah',
     hero_desc: 'Satu platform untuk retail, budidaya ikan, kuliner, dan jasa.',
-    campaign_text: 'Promo Spesial Kategori — Potongan Harga Upgrade Paket Aktif! Buat UMKM Anda naik tingkat.',
+    campaign_text: 'Promo Spesial Kategori — Potongan Harga Upgrade Paket Aktif! Buat bisnis Anda naik tingkat.',
     campaign_active: true,
     show_sandbox: true,
     show_features: true,
@@ -183,7 +184,7 @@ export default function LandingSettings() {
             border: 'none',
             borderBottom: activeTab === 'general' ? '3px solid var(--primary-500)' : '3px solid transparent',
             color: activeTab === 'general' ? 'var(--text-primary)' : 'var(--text-muted)',
-            fontWeight: 800,
+            fontWeight: 600,
             cursor: 'pointer',
             fontSize: 14,
             transition: 'all 0.2s ease',
@@ -201,7 +202,7 @@ export default function LandingSettings() {
             border: 'none',
             borderBottom: activeTab === 'testimonials' ? '3px solid var(--primary-500)' : '3px solid transparent',
             color: activeTab === 'testimonials' ? 'var(--text-primary)' : 'var(--text-muted)',
-            fontWeight: 800,
+            fontWeight: 600,
             cursor: 'pointer',
             fontSize: 14,
             transition: 'all 0.2s ease',
@@ -219,7 +220,7 @@ export default function LandingSettings() {
             border: 'none',
             borderBottom: activeTab === 'billing' ? '3px solid var(--primary-500)' : '3px solid transparent',
             color: activeTab === 'billing' ? 'var(--text-primary)' : 'var(--text-muted)',
-            fontWeight: 800,
+            fontWeight: 600,
             cursor: 'pointer',
             fontSize: 14,
             transition: 'all 0.2s ease',
@@ -227,6 +228,24 @@ export default function LandingSettings() {
           }}
         >
           💳 Harga Paket & Rekening BCA
+        </button>
+        <button 
+          type="button" 
+          onClick={() => setActiveTab('logo')}
+          style={{
+            padding: '10px 20px',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'logo' ? '3px solid var(--primary-500)' : '3px solid transparent',
+            color: activeTab === 'logo' ? 'var(--text-primary)' : 'var(--text-muted)',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontSize: 14,
+            transition: 'all 0.2s ease',
+            outline: 'none'
+          }}
+        >
+          🎨 Logo & Branding
         </button>
       </div>
 
@@ -254,14 +273,14 @@ export default function LandingSettings() {
             
             {/* Section: Hero Banner */}
             <div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>🚀</span> Bagian Hero Utama
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Atur judul dan deskripsi utama yang memikat calon pengguna di halaman beranda.</p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>JUDUL BESAR (BARIS 1)</label>
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>JUDUL BESAR (BARIS 1)</label>
                   <input 
                     className="form-input" 
                     value={form.hero_title}
@@ -271,7 +290,7 @@ export default function LandingSettings() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>TEKS WARNA-WARNI (BARIS 2)</label>
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>TEKS WARNA-WARNI (BARIS 2)</label>
                   <input 
                     className="form-input" 
                     value={form.hero_subtitle}
@@ -281,7 +300,7 @@ export default function LandingSettings() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>DESKRIPSI HERO</label>
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>DESKRIPSI HERO</label>
                   <textarea 
                     className="form-input" 
                     rows="3"
@@ -298,7 +317,7 @@ export default function LandingSettings() {
 
             {/* Section: Promo Strip */}
             <div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>🎉</span> Banner Promo Berjalan
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Pasang pengumuman, diskon, atau promo menarik di bawah hero banner.</p>
@@ -306,7 +325,7 @@ export default function LandingSettings() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-elevated)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border-default)' }}>
                   <div>
-                    <span style={{ fontSize: 13, fontWeight: 700, display: 'block', color: 'var(--text-primary)' }}>Aktifkan Banner Promo</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, display: 'block', color: 'var(--text-primary)' }}>Aktifkan Banner Promo</span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tampilkan garis promo oranye tepat di bawah hero</span>
                   </div>
                   <button
@@ -341,7 +360,7 @@ export default function LandingSettings() {
 
                 {form.campaign_active && (
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>KALIMAT PROMO</label>
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>KALIMAT PROMO</label>
                     <textarea 
                       className="form-input" 
                       rows="3"
@@ -359,7 +378,7 @@ export default function LandingSettings() {
 
             {/* Section: Visibility Controls */}
             <div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>⚙️</span> Pengaturan Visibilitas Elemen
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Aktifkan atau sembunyikan section tertentu sesuai kesiapan platform.</p>
@@ -372,7 +391,7 @@ export default function LandingSettings() {
                 ].map(item => (
                   <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-elevated)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border-default)' }}>
                     <div>
-                      <span style={{ fontSize: 13, fontWeight: 700, display: 'block', color: 'var(--text-primary)' }}>{item.title}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, display: 'block', color: 'var(--text-primary)' }}>{item.title}</span>
                       <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{item.desc}</span>
                     </div>
                     <button
@@ -409,7 +428,7 @@ export default function LandingSettings() {
 
               {form.show_features && (
                 <div style={{ marginTop: 20, background: 'var(--bg-elevated)', padding: '16px', borderRadius: 10, border: '1px solid var(--border-default)' }}>
-                  <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>Pilih Kategori Unggulan</h4>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>Pilih Kategori Unggulan</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {dbCategories.map(cat => (
                       <label key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
@@ -437,7 +456,7 @@ export default function LandingSettings() {
               disabled={saving}
               className="btn btn-primary"
               style={{ 
-                padding: '14px', borderRadius: 10, fontSize: 14, fontWeight: 800, 
+                padding: '14px', borderRadius: 10, fontSize: 14, fontWeight: 600, 
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 marginTop: 10, boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
               }}
@@ -452,7 +471,7 @@ export default function LandingSettings() {
 
           {/* LIVE MOCKUP PREVIEW */}
           <div style={{ position: 'sticky', top: 24 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>🖥️</span> Pratonton Realtime (Desktop Mockup)
             </h3>
             
@@ -471,8 +490,10 @@ export default function LandingSettings() {
               {/* Header mock */}
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 16px', background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 14 }}>🏢</span>
-                  <span style={{ fontSize: 11, fontWeight: 900, color: '#fff' }}>UMKM Hub</span>
+                  <div style={{ width: 18, height: 18, background: '#fff', padding: '1px', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    <img src={form.landing_logo_url || bizoraLogo} alt="BIZORA Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '2px' }} />
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#fff' }}>BIZORA</span>
                 </div>
                 <div style={{ display: 'flex', gap: 10, fontSize: 8, color: 'rgba(255,255,255,0.6)' }}>
                   <span>Beranda</span>
@@ -484,10 +505,10 @@ export default function LandingSettings() {
               {/* Hero Mock */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 12, padding: 18, flex: 1, alignItems: 'center' }}>
                 <div>
-                  <span style={{ fontSize: 7, fontWeight: 800, color: '#2dd4bf', background: 'rgba(45,212,191,0.15)', padding: '2px 6px', borderRadius: 10 }}>
-                    UMKM TERPADU #1 INDONESIA
+                  <span style={{ fontSize: 7, fontWeight: 600, color: '#2dd4bf', background: 'rgba(45,212,191,0.15)', padding: '2px 6px', borderRadius: 10 }}>
+                    BISNIS DIGITAL #1 INDONESIA
                   </span>
-                  <h1 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: '6px 0 4px 0', lineHeight: 1.2 }}>
+                  <h1 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: '6px 0 4px 0', lineHeight: 1.2 }}>
                     {form.hero_title}<br />
                     <span style={{ color: '#2dd4bf' }}>{form.hero_subtitle}</span>
                   </h1>
@@ -510,14 +531,15 @@ export default function LandingSettings() {
                     <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                       <span style={{ fontSize: 8 }}>💻</span>
                       <div>
-                        <div style={{ fontSize: 8, fontWeight: 800, color: '#fff' }}>Sandbox Instan</div>
+                        <div style={{ fontSize: 8, fontWeight: 600, color: '#fff' }}>Sandbox Instan</div>
                         <div style={{ fontSize: 6, color: 'rgba(255,255,255,0.5)' }}>Coba Sistem Kategori Aktif</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <div style={{ background: '#3b82f6', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 700 }}>🛒 Demo Toko Retail</div>
-                      <div style={{ background: '#10b981', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 700 }}>🐟 Demo Budidaya Ikan</div>
-                      <div style={{ background: '#ef4444', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 700 }}>🍱 Demo Kuliner Resto</div>
+                      <div style={{ background: '#3b82f6', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🛒 Demo Toko Retail</div>
+                      <div style={{ background: '#10b981', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🐟 Demo Budidaya Ikan</div>
+                      <div style={{ background: '#84cc16', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🌱 Demo Budidaya Tanam</div>
+                      <div style={{ background: '#ef4444', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🍱 Demo Kuliner Resto</div>
                     </div>
                   </div>
                 ) : (
@@ -534,7 +556,7 @@ export default function LandingSettings() {
                   padding: '6px 12px',
                   fontSize: 7,
                   color: '#fff',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6
@@ -553,14 +575,14 @@ export default function LandingSettings() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Daftar Testimoni Aktif</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Daftar Testimoni Aktif</h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0' }}>Kelola daftar ulasan pelanggan yang muncul di halaman beranda publik.</p>
             </div>
             <button 
               type="button" 
               className="btn btn-primary"
               onClick={openAddTesti}
-              style={{ padding: '10px 18px', borderRadius: 8, fontSize: 13, fontWeight: 700 }}
+              style={{ padding: '10px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600 }}
             >
               💬 + Tambah Testimoni Baru
             </button>
@@ -578,7 +600,7 @@ export default function LandingSettings() {
                   
                   {/* Status active badge */}
                   <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: testi.active ? '#10b981' : '#64748b' }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: testi.active ? '#10b981' : '#64748b' }}>
                       {testi.active ? 'AKTIF' : 'NONAKTIF'}
                     </span>
                     <button
@@ -633,12 +655,12 @@ export default function LandingSettings() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: 12,
-                        fontWeight: 800
+                        fontWeight: 600
                       }}>
                         {testi.avatar_text || '??'}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 800, fontSize: 13, color: 'var(--text-primary)' }}>{testi.name}</div>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{testi.name}</div>
                         <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{testi.role}</div>
                       </div>
                     </div>
@@ -647,14 +669,14 @@ export default function LandingSettings() {
                       <button 
                         type="button" 
                         onClick={() => openEditTesti(testi)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--primary-500)', fontSize: 12, fontWeight: 700, cursor: 'pointer', padding: 4 }}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--primary-500)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 4 }}
                       >
                         ✏️ Edit
                       </button>
                       <button 
                         type="button" 
                         onClick={() => handleDeleteTesti(testi.id)}
-                        style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: 12, fontWeight: 700, cursor: 'pointer', padding: 4 }}
+                        style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 4 }}
                       >
                         🗑️ Hapus
                       </button>
@@ -682,7 +704,7 @@ export default function LandingSettings() {
             style={{ width: '100%', maxWidth: '460px', padding: 28, display: 'flex', flexDirection: 'column', gap: 18 }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-default)', paddingBottom: 12 }}>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                 {editingTesti ? '💬 Edit Ulasan Pelanggan' : '💬 Tambah Ulasan Baru'}
               </h3>
               <button 
@@ -695,7 +717,7 @@ export default function LandingSettings() {
             </div>
 
             <div className="form-group">
-              <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>NAMA PELANGGAN</label>
+              <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>NAMA PELANGGAN</label>
               <input 
                 className="form-input" 
                 placeholder="Contoh: Siti Rahayu"
@@ -706,7 +728,7 @@ export default function LandingSettings() {
             </div>
 
             <div className="form-group">
-              <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>PERAN / JABATAN & LOKASI</label>
+              <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>PERAN / JABATAN & LOKASI</label>
               <input 
                 className="form-input" 
                 placeholder="Contoh: Pemilik Warung Makan, Malang"
@@ -717,7 +739,7 @@ export default function LandingSettings() {
             </div>
 
             <div className="form-group">
-              <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>RATING BINTANG</label>
+              <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>RATING BINTANG</label>
               <select 
                 className="form-input" 
                 value={testiForm.stars}
@@ -731,7 +753,7 @@ export default function LandingSettings() {
             </div>
 
             <div className="form-group">
-              <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>TEKS ULASAN / KUTIPAN</label>
+              <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>TEKS ULASAN / KUTIPAN</label>
               <textarea 
                 className="form-input" 
                 rows="4"
@@ -745,7 +767,7 @@ export default function LandingSettings() {
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-elevated)', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-default)', marginTop: 4 }}>
               <div>
-                <span style={{ fontSize: 12, fontWeight: 700, display: 'block', color: 'var(--text-primary)' }}>Ulasan Langsung Aktif</span>
+                <span style={{ fontSize: 12, fontWeight: 600, display: 'block', color: 'var(--text-primary)' }}>Ulasan Langsung Aktif</span>
                 <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Tampilkan ulasan ini di landing page publik segera</span>
               </div>
               <button
@@ -781,7 +803,7 @@ export default function LandingSettings() {
                 type="button" 
                 className="btn btn-ghost"
                 onClick={() => setShowModal(false)}
-                style={{ padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700 }}
+                style={{ padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600 }}
               >
                 Batal
               </button>
@@ -789,7 +811,7 @@ export default function LandingSettings() {
                 type="submit" 
                 disabled={testiSaving}
                 className="btn btn-primary"
-                style={{ padding: '10px 24px', borderRadius: 8, fontSize: 13, fontWeight: 700 }}
+                style={{ padding: '10px 24px', borderRadius: 8, fontSize: 13, fontWeight: 600 }}
               >
                 {testiSaving ? 'Menyimpan...' : '💾 Simpan Testimoni'}
               </button>
@@ -807,14 +829,14 @@ export default function LandingSettings() {
             
             {/* Section: Rekening Bank */}
             <div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>🏦</span> Informasi Rekening Pembayaran (BCA)
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Atur rekening tujuan transfer manual yang akan ditampilkan kepada tenant saat proses upgrade.</p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>NAMA BANK</label>
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>NAMA BANK</label>
                   <input 
                     className="form-input" 
                     value={form.bank_name || ''}
@@ -824,7 +846,7 @@ export default function LandingSettings() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>NOMOR REKENING</label>
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>NOMOR REKENING</label>
                   <input 
                     className="form-input" 
                     value={form.bank_account_no || ''}
@@ -834,7 +856,7 @@ export default function LandingSettings() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>ATAS NAMA (A.N.)</label>
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>ATAS NAMA (A.N.)</label>
                   <input 
                     className="form-input" 
                     value={form.bank_account_name || ''}
@@ -849,14 +871,14 @@ export default function LandingSettings() {
 
             {/* Section: Harga Paket */}
             <div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>💰</span> Harga Dasar Paket SaaS (Bulanan)
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Tentukan harga dasar bulanan untuk paket Basic dan Pro. Harga ini akan otomatis disesuaikan jika ada diskon aktif per kategori.</p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>HARGA PAKET BASIC (RP)</label>
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>HARGA PAKET BASIC (RP)</label>
                   <input 
                     type="number"
                     className="form-input" 
@@ -867,7 +889,7 @@ export default function LandingSettings() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 700 }}>HARGA PAKET PRO (RP)</label>
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>HARGA PAKET PRO (RP)</label>
                   <input 
                     type="number"
                     className="form-input" 
@@ -889,7 +911,7 @@ export default function LandingSettings() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
-                  fontWeight: 800,
+                  fontWeight: 600,
                   padding: '12px 28px',
                   borderRadius: 10,
                   background: 'var(--primary-500)',
@@ -908,21 +930,21 @@ export default function LandingSettings() {
           {/* PREVIEW PANEL */}
           <div className="card" style={{ padding: 28, background: 'var(--bg-elevated)', border: '1px dashed var(--border-default)', display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div>
-              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4 }}>💳 Visualisasi Halaman Langganan Tenant</h4>
+              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>💳 Visualisasi Halaman Langganan Tenant</h4>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>Berikut adalah tampilan instruksi pembayaran yang akan dilihat oleh tenant Anda:</p>
             </div>
 
             <div style={{ background: 'var(--bg-base)', padding: 20, borderRadius: 12, border: '1px solid var(--border-default)' }}>
-              <h5 style={{ margin: '0 0 12px 0', fontSize: 13, fontWeight: 700 }}>Instruksi Pembayaran:</h5>
+              <h5 style={{ margin: '0 0 12px 0', fontSize: 13, fontWeight: 600 }}>Instruksi Pembayaran:</h5>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 14 }}>Silakan lakukan transfer sesuai nominal paket ke rekening berikut:</p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border-default)' }}>
                   <div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700 }}>{form.bank_name}</div>
-                    <div style={{ fontWeight: 800, fontSize: 15, letterSpacing: '0.05em' }}>{form.bank_account_no}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{form.bank_name}</div>
+                    <div style={{ fontWeight: 600, fontSize: 15, letterSpacing: '0.05em' }}>{form.bank_account_no}</div>
                   </div>
-                  <span style={{ fontSize: 10, background: 'var(--border-default)', padding: '4px 8px', borderRadius: 6, fontWeight: 700 }}>Salin</span>
+                  <span style={{ fontSize: 10, background: 'var(--border-default)', padding: '4px 8px', borderRadius: 6, fontWeight: 600 }}>Salin</span>
                 </div>
                 <div style={{ fontSize: 11, textAlign: 'center', color: 'var(--text-muted)' }}>a.n. <strong>{form.bank_account_name}</strong></div>
               </div>
@@ -942,6 +964,183 @@ export default function LandingSettings() {
         </div>
       )}
 
+      {/* TAB CONTENT: LOGO & BRANDING */}
+      {activeTab === 'logo' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 10 }}>
+          {/* Uploader 1: Logo Landing Page */}
+          <LogoUploaderCard
+            title="Logo Landing Page (Public)"
+            description="Logo yang akan ditampilkan pada navigasi atas dan footer landing page publik."
+            type="landing"
+            currentUrl={form.landing_logo_url}
+            defaultLogo={bizoraLogo}
+            onUploadSuccess={(url) => setForm({ ...form, landing_logo_url: url })}
+            onResetSuccess={() => setForm({ ...form, landing_logo_url: null })}
+          />
+
+          {/* Uploader 2: Logo Admin SaaS */}
+          <LogoUploaderCard
+            title="Logo Admin SaaS"
+            description="Logo yang akan ditampilkan pada sidebar kiri panel dashboard SaaS admin."
+            type="admin"
+            currentUrl={form.admin_logo_url}
+            defaultLogo={bizoraLogo}
+            onUploadSuccess={(url) => setForm({ ...form, admin_logo_url: url })}
+            onResetSuccess={() => setForm({ ...form, admin_logo_url: null })}
+          />
+        </div>
+      )}
+
+    </div>
+  )
+}
+
+function LogoUploaderCard({ title, description, type, currentUrl, defaultLogo, onUploadSuccess, onResetSuccess }) {
+  const [uploading, setUploading] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+
+  const handleFile = async (file) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      alert('File harus berupa gambar (PNG, JPG, SVG, dll)')
+      return
+    }
+    // Client-side size check: 5MB = 5 * 1024 * 1024 = 5242880 bytes
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ukuran file terlalu besar! Maksimal 5MB. File Anda: ' + (file.size / (1024 * 1024)).toFixed(1) + 'MB')
+      return
+    }
+    
+    const formData = new FormData()
+    formData.append('type', type)
+    formData.append('file', file)
+
+    setUploading(true)
+    try {
+      const res = await api.post('/admin/landing-settings/upload-logo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      if (res.data?.success) {
+        onUploadSuccess(res.data.data.url)
+      }
+    } catch (err) {
+      const errData = err.response?.data
+      const errMsg = errData?.message || (errData?.errors?.file && errData.errors.file[0]) || 'Terjadi kesalahan'
+      alert('Gagal mengunggah logo: ' + errMsg)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleReset = async () => {
+    if (!window.confirm('Kembalikan logo ke default?')) return
+    setUploading(true)
+    try {
+      const res = await api.post('/admin/landing-settings/reset-logo', { type })
+      if (res.data?.success) {
+        onResetSuccess()
+      }
+    } catch (err) {
+      alert('Gagal mengembalikan logo ke default')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div className="card" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div>
+        <h4 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{title}</h4>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>{description}</p>
+      </div>
+
+      <div 
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+        style={{
+          border: dragOver ? '2px dashed var(--primary-500)' : '2px dashed var(--border-default)',
+          background: dragOver ? 'rgba(59, 130, 246, 0.04)' : 'var(--bg-elevated)',
+          borderRadius: 12,
+          padding: 24,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 16,
+          transition: 'all 0.2s ease',
+          minHeight: 180,
+          position: 'relative',
+          cursor: 'pointer'
+        }}
+        onClick={() => document.getElementById(`file-input-${type}`).click()}
+      >
+        <input 
+          id={`file-input-${type}`}
+          type="file" 
+          accept="image/*" 
+          onChange={(e) => handleFile(e.target.files[0])}
+          style={{ display: 'none' }}
+        />
+
+        {uploading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <span className="spinner" style={{ width: 28, height: 28, border: '3px solid var(--border-default)', borderTopColor: 'var(--primary-500)', borderRadius: '50%', display: 'inline-block', animation: 'spin 1s linear infinite' }}></span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Mengunggah...</span>
+          </div>
+        ) : (
+          <>
+            <div style={{ 
+              width: 90, 
+              height: 90, 
+              background: '#fff', 
+              borderRadius: 12, 
+              padding: 10,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              border: '1px solid var(--border-default)'
+            }}>
+              <img 
+                src={currentUrl || defaultLogo} 
+                alt={`${title} Preview`} 
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary-500)' }}>Pilih berkas</span>
+              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}> atau tarik gambar ke sini</span>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Format PNG, JPG, atau SVG (Maks. 5MB)</div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {currentUrl && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); handleReset(); }}
+          className="btn btn-ghost"
+          style={{ 
+            color: '#ef4444', 
+            borderColor: 'rgba(239, 68, 68, 0.2)',
+            width: '100%', 
+            justifyContent: 'center',
+            fontSize: 13,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}
+        >
+          🗑️ Hapus & Gunakan Logo Default
+        </button>
+      )}
     </div>
   )
 }

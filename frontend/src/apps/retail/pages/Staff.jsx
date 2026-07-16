@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import '../retail.css';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
-import { Edit3, Trash2 } from 'lucide-react';
+import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import { Edit3, Trash2, RefreshCw, Plus } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export default function Staff() {
@@ -13,6 +17,7 @@ export default function Staff() {
   const [editingUser, setEditingUser] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [availableRoles, setAvailableRoles] = useState([]);
+  const [search, setSearch] = useState('');
 
   const fetchRoles = async () => {
     try {
@@ -80,26 +85,50 @@ export default function Staff() {
     }
   };
 
+  const filteredStaff = staff.filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase()) ||
+    (s.email && s.email.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(filteredStaff);
+
   return (
-    <div className="animate-fade-in" style={{ padding: 24 }}>
+    <div className="animate-fade-in">
 
 
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex justify-end items-center gap-6">
-          <div className="flex items-center gap-3">
-            <button 
-              className="btn btn-primary h-[42px] px-6 whitespace-nowrap"
-              onClick={() => { setEditingUser(null); setErrorMsg(''); setShowModal(true); }}
-            >
-              + Tambah Pegawai
-            </button>
-            <span className="px-3 py-1 retail-bg-main retail-border rounded-lg retail-label whitespace-nowrap">
-               {staff.length} Active Users
-            </span>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+          <button
+            className="btn btn-primary"
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            onClick={() => { setEditingUser(null); setErrorMsg(''); setShowModal(true); }}
+          >
+            <Plus size={15} className="mr-2 mobile-no-margin" />
+            <span className="btn-text-mobile-hide">Tambah Pegawai</span>
+          </button>
+          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+            <input
+              placeholder="Cari pegawai..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
+          <button onClick={fetchStaff} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+          </button>
         </div>
 
-        <table className="table">
+        <div className="retail-table-responsive"><table className="table">
             <thead>
               <tr>
                 <th className="pl-6 retail-table-header">Nama</th>
@@ -110,11 +139,11 @@ export default function Staff() {
             </thead>
           <tbody>
             {loading ? (
-               <tr><td colSpan="4" className="py-20 text-center retail-text-secondary font-800">Menyinkronkan Data Pegawai...</td></tr>
-            ) : staff.length === 0 ? (
+               <RetailTableLoadingRow colSpan={4} text="Menyinkronkan Data Pegawai..." />
+            ) : filteredStaff.length === 0 ? (
                <tr><td colSpan="4" style={{ textAlign: 'center', padding: 20 }}>Belum ada data pegawai.</td></tr>
             ) : (
-              staff.map((s) => (
+              paginatedData.map((s) => (
                 <tr key={s.id}>
                   <td className="pl-6">
                     <div className="retail-text-primary">{s.name}</div>
@@ -142,7 +171,17 @@ export default function Staff() {
               ))
             )}
           </tbody>
-        </table>
+        </table></div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
 
       {/* Form Modal */}

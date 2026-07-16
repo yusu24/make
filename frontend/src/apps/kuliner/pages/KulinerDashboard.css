@@ -81,9 +81,6 @@
   .kd-mobile-header {
     display: flex;
   }
-  .kd-topbar {
-    top: 56px; /* Below mobile header if needed, but topbar might be hidden/modified */
-  }
 }
 
 .kd-hamburger {
@@ -228,6 +225,63 @@
   font-weight: 600;
 }
 
+/* COLLAPSIBLE GROUPS */
+.kd-nav-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.kd-nav-group-header:hover {
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+.kd-nav-group-title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kd-nav-group-title {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #475569;
+}
+
+.kd-nav-group-arrow {
+  font-size: 10px;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.kd-nav-group-arrow.open {
+  transform: rotate(90deg);
+}
+
+.kd-nav-group-items {
+  border-left: 1px dashed #e2e8f0;
+  margin-left: 33px;
+  padding-left: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.kd-nav-group-items .kd-nav-item {
+  padding: 10px 16px;
+  font-size: 13.5px;
+  border-radius: 6px;
+}
+
+
 /* MAIN CONTENT */
 .kd-main {
   background: #f8fafc;
@@ -240,21 +294,52 @@
 }
 
 .kd-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 99;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
+  padding-right: 270px; /* space for fixed profile+notif widget */
   border-bottom: 1px solid rgba(0,0,0,0.06);
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
-  position: sticky;
-  top: 0;
-  z-index: 10;
   height: 70px;
   width: 100%;
   box-sizing: border-box;
   flex-shrink: 0;
 }
+
+@media (max-width: 1024px) {
+  /* The topbar only ever wraps the page title (see .kd-page-title below);
+     the title now lives in the mobile header row instead, so collapse the
+     topbar entirely on mobile rather than leaving a blank strip. */
+  .kd-topbar {
+    display: none;
+  }
+
+  /* Profile widget: show only the avatar initials on mobile, hide the
+     name/role text and dropdown chevron to save space. */
+  .kd-profile-text {
+    display: none;
+  }
+}
+
+@keyframes kd-fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.kd-page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 8px 24px 16px;
+  flex-shrink: 0;
+}
+
 
 .kd-page-title {
   font-size: 18px;
@@ -365,59 +450,70 @@
 
 .kd-stat-card {
   background: #ffffff;
-  border: 1px solid rgba(0,0,0,0.05);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01);
+  border: 1px solid rgba(226, 232, 240, 0.8); /* matches retail border-slate-200/80 */
+  border-radius: 12px;                          /* matches retail rounded-xl */
+  padding: 16px;                                /* matches retail p-4 */
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.05); /* matches retail shadow-sm */
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kd-stat-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
 }
 
 .kd-stat-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 0;
 }
 
 .kd-stat-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-size: 14px;
+  font-weight: 500;                /* matches retail font-medium */
+  color: #64748b;                  /* matches retail text-slate-500 */
+  letter-spacing: 0;
 }
 
 .kd-stat-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  flex-shrink: 0;
+  border: 1px solid transparent;
 }
 
-.kd-icon-revenue { background: #f0fdf4; color: #10b981; }
-.kd-icon-orders { background: #eff6ff; color: #3b82f6; }
-.kd-icon-menu { background: #fefce8; color: #eab308; }
-.kd-icon-users { background: #fef2f2; color: #ef4444; }
+.kd-icon-revenue { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); color: #10b981; }
+.kd-icon-orders  { background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2); color: #6366f1; }
+.kd-icon-menu    { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.kd-icon-users   { background: rgba(244, 63, 94, 0.1);  border-color: rgba(244, 63, 94, 0.2);  color: #f43f5e; }
 
 .kd-stat-value {
-  font-size: 30px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 8px;
-  letter-spacing: -0.03em;
+  font-size: 24px;               /* matches retail text-2xl */
+  font-weight: 600;              /* matches retail font-semibold */
+  color: #0f172a;                /* matches retail text-slate-900 */
+  margin-bottom: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .kd-stat-change {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 4px;
+  color: #94a3b8;               /* matches retail text-slate-400 sub text */
 }
 
-.kd-change-up { color: #10b981; }
+.kd-change-up   { color: #10b981; }
 .kd-change-down { color: #ef4444; }
 
 /* MAIN PANELS */
@@ -430,10 +526,10 @@
 
 .kd-panel {
   background: #ffffff;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   border-radius: 16px;
-  padding: 28px;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04);
+  padding: 24px;
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
 }
 
 .kd-panel-header {
@@ -538,7 +634,7 @@
 .kd-table thead th {
   text-align: left;
   font-weight: 600;
-  color: #94a3b8;
+  color: #000000;
   padding: 0 16px 16px 0;
   border-bottom: 1px solid #f1f5f9;
   font-size: 11px;
@@ -820,11 +916,12 @@
 }
 
 .kd-btn-secondary {
-  background: #f1f5f9;
-  color: #475569;
+  background: #fff;
+  color: #374151;
+  border: 1.5px solid #cbd5e1 !important;
 }
 
-.kd-btn-secondary:hover { background: #e2e8f0; }
+.kd-btn-secondary:hover { background: #f8fafc; border-color: #94a3b8 !important; }
 
 .kd-btn-primary {
   background: #b48c36;

@@ -5,28 +5,22 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\RetailExpense;
+use App\Models\RetailPayablePayment;
+use App\Models\RetailReceivablePayment;
 use App\Models\RetailTransaction;
 use Illuminate\Support\Facades\Validator;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class RetailFinanceController extends Controller
 {
     // GET /api/retail/finance/summary
-    // Menerima startDate dan endDate optional
     public function getSummary(Request $request)
     {
-        $tenant_id = Auth::user()->tenant_id;
-        if (!$tenant_id) {
-            return response()->json(['message' => 'Tenant ID tidak ditemukan'], 400);
-        }
-
         $startDate = $request->query('startDate');
         $endDate = $request->query('endDate');
 
-        // Build query for sales
-        $salesQuery = RetailTransaction::where('tenant_id', $tenant_id);
-        $expensesQuery = RetailExpense::where('tenant_id', $tenant_id);
+        $salesQuery = RetailTransaction::where('status', 'paid');
+        $expensesQuery = RetailExpense::query();
 
         if ($startDate && $endDate) {
             $salesQuery->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
@@ -44,12 +38,49 @@ class RetailFinanceController extends Controller
         ]);
     }
 
+    // GET /api/retail/finance/cash-summary?date=YYYY-MM-DD
+    public function getCashSummary(Request $request)
+    {
+        $date = $request->query('date', now()->toDateString());
+
+        $salesByMethod = RetailTransaction::where('status', 'paid')
+            ->whereDate('created_at', $date)
+            ->selectRaw('payment_method, SUM(total_amount) as total')
+            ->groupBy('payment_method')
+            ->get();
+
+        $receivablePayments = RetailReceivablePayment::whereDate('paid_at', $date)->sum('amount_paid');
+
+        $expensesByCategory = RetailExpense::whereDate('tanggal', $date)
+            ->selectRaw('kategori, SUM(nominal) as total')
+            ->groupBy('kategori')
+            ->get();
+
+        $payablePayments = RetailPayablePayment::whereDate('paid_at', $date)->sum('amount_paid');
+
+        $inflow = $salesByMethod->sum('total') + $receivablePayments;
+        $outflow = $expensesByCategory->sum('total') + $payablePayments;
+
+        return response()->json([
+            'date' => $date,
+            'inflow' => [
+                'sales_by_method' => $salesByMethod,
+                'receivable_payments' => $receivablePayments,
+                'total' => $inflow,
+            ],
+            'outflow' => [
+                'expenses_by_category' => $expensesByCategory,
+                'payable_payments' => $payablePayments,
+                'total' => $outflow,
+            ],
+            'net_cash' => $inflow - $outflow,
+        ]);
+    }
+
     // GET /api/retail/finance/expenses
     public function index(Request $request)
     {
-        $tenant_id = Auth::user()->tenant_id;
-        
-        $query = RetailExpense::with('user:id,name')->where('tenant_id', $tenant_id);
+        $query = RetailExpense::with(['user:id,name', 'category']);
 
         if ($request->has('startDate') && $request->has('endDate')) {
             $query->whereBetween('tanggal', [$request->startDate, $request->endDate]);
@@ -66,20 +97,24 @@ class RetailFinanceController extends Controller
             'tanggal' => 'required|date',
             'keterangan' => 'required|string|max:255',
             'nominal' => 'required|numeric|min:0',
-            'kategori' => 'nullable|string|max:100',
+            'expense_category_id' => 'nullable|integer|exists:retail_expense_categories,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $category = $request->expense_category_id
+            ? \App\Models\RetailExpenseCategory::find($request->expense_category_id)
+            : null;
+
         $expense = RetailExpense::create([
-            'tenant_id' => Auth::user()->tenant_id,
             'user_id' => Auth::id(),
             'tanggal' => $request->tanggal,
             'keterangan' => $request->keterangan,
             'nominal' => $request->nominal,
-            'kategori' => $request->kategori ?? 'Lainnya',
+            'expense_category_id' => $request->expense_category_id,
+            'kategori' => $category->name ?? 'Lainnya',
         ]);
 
         return response()->json(['message' => 'Pengeluaran berhasil ditambahkan', 'data' => $expense], 201);
@@ -88,8 +123,7 @@ class RetailFinanceController extends Controller
     // PUT /api/retail/finance/expenses/{id}
     public function update(Request $request, int $id)
     {
-        $tenant_id = Auth::user()->tenant_id;
-        $expense = RetailExpense::where('id', $id)->where('tenant_id', $tenant_id)->first();
+        $expense = RetailExpense::find($id);
 
         if (!$expense) {
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
@@ -99,18 +133,23 @@ class RetailFinanceController extends Controller
             'tanggal' => 'required|date',
             'keterangan' => 'required|string|max:255',
             'nominal' => 'required|numeric|min:0',
-            'kategori' => 'nullable|string|max:100',
+            'expense_category_id' => 'nullable|integer|exists:retail_expense_categories,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $category = $request->expense_category_id
+            ? \App\Models\RetailExpenseCategory::find($request->expense_category_id)
+            : null;
+
         $expense->update([
             'tanggal' => $request->tanggal,
             'keterangan' => $request->keterangan,
             'nominal' => $request->nominal,
-            'kategori' => $request->kategori ?? 'Lainnya',
+            'expense_category_id' => $request->expense_category_id,
+            'kategori' => $category->name ?? $expense->kategori,
         ]);
 
         return response()->json(['message' => 'Pengeluaran berhasil diupdate', 'data' => $expense]);
@@ -119,8 +158,7 @@ class RetailFinanceController extends Controller
     // DELETE /api/retail/finance/expenses/{id}
     public function destroy(int $id)
     {
-        $tenant_id = Auth::user()->tenant_id;
-        $expense = RetailExpense::where('id', $id)->where('tenant_id', $tenant_id)->first();
+        $expense = RetailExpense::find($id);
 
         if (!$expense) {
             return response()->json(['message' => 'Data tidak ditemukan'], 404);

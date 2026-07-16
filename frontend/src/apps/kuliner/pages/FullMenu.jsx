@@ -8,7 +8,9 @@ const FullMenu = () => {
   const { user } = useAuth();
   const location = useLocation();
   const isCashierMode = new URLSearchParams(location.search).get('mode') === 'cashier';
-  const tenantIdFromUrl = new URLSearchParams(location.search).get('tenant_id') || 
+  const isSelfOrderMode = new URLSearchParams(location.search).get('mode') === 'selforder';
+  const tableFromUrl = new URLSearchParams(location.search).get('table');
+  const tenantIdFromUrl = new URLSearchParams(location.search).get('tenant_id') ||
                           new URLSearchParams(location.search).get('tenant') ||
                           (user?.tenant_id);
   
@@ -23,13 +25,14 @@ const FullMenu = () => {
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState('cart'); // cart, form, success
-  const [orderInfo, setOrderInfo] = useState({ 
-    name: '', 
-    phone: '', 
-    order_type: 'dine_in', 
-    table_number: '', 
-    notes: '', 
-    payment: 'cash_cashier' 
+  const [orderInfo, setOrderInfo] = useState({
+    name: '',
+    phone: '',
+    order_type: 'dine_in',
+    table_number: tableFromUrl || '',
+    notes: '',
+    payment: 'cash_cashier',
+    source: isSelfOrderMode ? 'qr_selforder' : 'pos',
   });
   const [submitting, setSubmitting] = useState(false);
   const [promoCode, setPromoCode] = useState('');
@@ -202,6 +205,7 @@ const FullMenu = () => {
         table_number: orderInfo.table_number,
         notes: orderInfo.notes,
         payment_method: orderInfo.payment,
+        source: orderInfo.source,
         items: cartItems.map(i => ({
           id: i.id,
           name: i.name,
@@ -273,19 +277,30 @@ const FullMenu = () => {
 
             {checkoutStep === 'form' && (
               <form id="checkout-form" className="kl-checkout-form" onSubmit={handleOrder}>
-                <div className="kl-form-group">
-                  <label>Pilihan Pesanan</label>
-                  <div style={{display: 'flex', gap: '12px'}}>
-                    <button type="button" className={`kl-cat-pill ${orderInfo.order_type === 'dine_in' ? 'active' : ''}`} style={{flex: 1, padding: 12}} onClick={() => setOrderInfo({...orderInfo, order_type: 'dine_in'})}>🍽️ Makan di Tempat</button>
-                    <button type="button" className={`kl-cat-pill ${orderInfo.order_type === 'take_away' ? 'active' : ''}`} style={{flex: 1, padding: 12}} onClick={() => setOrderInfo({...orderInfo, order_type: 'take_away'})}>🛍️ Bawa Pulang</button>
-                  </div>
-                </div>
-
-                {orderInfo.order_type === 'dine_in' && (
+                {isSelfOrderMode && tableFromUrl ? (
                   <div className="kl-form-group">
-                    <label>Nomor Meja</label>
-                    <input required type="text" value={orderInfo.table_number} onChange={e => setOrderInfo({...orderInfo, table_number: e.target.value})} placeholder="Contoh: Meja 05" />
+                    <label>Meja Anda</label>
+                    <div style={{ padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, fontWeight: 700 }}>
+                      🍽️ Meja {tableFromUrl} (dipindai via QR)
+                    </div>
                   </div>
+                ) : (
+                  <>
+                    <div className="kl-form-group">
+                      <label>Pilihan Pesanan</label>
+                      <div style={{display: 'flex', gap: '12px'}}>
+                        <button type="button" className={`kl-cat-pill ${orderInfo.order_type === 'dine_in' ? 'active' : ''}`} style={{flex: 1, padding: 12}} onClick={() => setOrderInfo({...orderInfo, order_type: 'dine_in'})}>🍽️ Makan di Tempat</button>
+                        <button type="button" className={`kl-cat-pill ${orderInfo.order_type === 'take_away' ? 'active' : ''}`} style={{flex: 1, padding: 12}} onClick={() => setOrderInfo({...orderInfo, order_type: 'take_away'})}>🛍️ Bawa Pulang</button>
+                      </div>
+                    </div>
+
+                    {orderInfo.order_type === 'dine_in' && (
+                      <div className="kl-form-group">
+                        <label>Nomor Meja</label>
+                        <input required type="text" value={orderInfo.table_number} onChange={e => setOrderInfo({...orderInfo, table_number: e.target.value})} placeholder="Contoh: Meja 05" />
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="kl-form-group">

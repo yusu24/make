@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { api } from '../lib/api'
 import './Auth.css'
+import bizoraLogo from '../assets/bizora-logo.png'
 
 export default function Login() {
   const { login } = useAuth()
@@ -10,6 +12,17 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPass, setShowPass] = useState(false)
+  const [logoUrl, setLogoUrl] = useState(null)
+
+  useEffect(() => {
+    api.get('/landing-settings')
+      .then(r => {
+        if (r.data?.data?.landing_logo_url) {
+          setLogoUrl(r.data.data.landing_logo_url)
+        }
+      })
+      .catch(e => console.error('Failed to fetch login page logo:', e))
+  }, [])
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
@@ -26,7 +39,7 @@ export default function Login() {
           navigate('/retail/dashboard')
         } else if (userData.business_category === 'Kuliner') {
           navigate('/kuliner/admin')
-        } else if (userData.business_category === 'Budidaya Ikan') {
+        } else if (userData.business_category === 'Budidaya Ikan' || userData.business_category === 'Budidaya Tanaman') {
           navigate('/budidaya/dashboard')
         } else {
           navigate('/coming-soon')
@@ -74,11 +87,11 @@ export default function Login() {
 
         {/* Brand header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, zIndex: 10, cursor: 'pointer' }} onClick={() => navigate('/')}>
-          <div style={{ width: 42, height: 42, background: 'linear-gradient(135deg, #10b981, #3b82f6)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20 }}>
-            <span style={{ fontSize: 20 }}>🏢</span>
+          <div style={{ width: 42, height: 42, background: '#fff', padding: '4px', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <img src={logoUrl || bizoraLogo} alt="BIZORA Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} />
           </div>
           <div>
-            <div style={{ color: '#fff', fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em' }}>UMKM Hub</div>
+            <div style={{ color: '#fff', fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em' }}>BIZORA</div>
             <div style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: 11 }}>Platform Digital Terpadu</div>
           </div>
         </div>
@@ -116,7 +129,7 @@ export default function Login() {
 
         {/* Footer */}
         <div style={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: 12, zIndex: 10 }}>
-          © 2026 UMKM Hub Indonesia. All rights reserved.
+          © 2026 BIZORA Indonesia. All rights reserved.
         </div>
       </div>
 
@@ -160,7 +173,7 @@ export default function Login() {
                 <input 
                   name="email"
                   type="email" 
-                  placeholder="contoh@umkm.id" 
+                  placeholder="contoh@bizora.id" 
                   value={form.email}
                   onChange={handleChange}
                   required

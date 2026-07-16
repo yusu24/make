@@ -22,7 +22,7 @@ class LandingSettingController extends Controller
                 'show_sandbox' => true,
                 'show_features' => true,
                 'show_testimonials' => true,
-                'featured_categories' => ['toko-retail', 'budidaya-ikan', 'kuliner', 'jasa'],
+                'featured_categories' => ['toko-retail', 'budidaya-ikan', 'budidaya-tanaman', 'kuliner'],
                 'bank_name' => 'BANK BCA',
                 'bank_account_no' => '8837 001 992',
                 'bank_account_name' => 'PT Antigravity Global SaaS',
@@ -62,5 +62,78 @@ class LandingSettingController extends Controller
         ActivityLog::record('update_landing_settings', 'Pengaturan Portal diperbarui', 'info');
 
         return response()->json(['success' => true, 'message' => 'Pengaturan portal berhasil diperbarui', 'data' => $settings]);
+    }
+
+    public function uploadLogo(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|in:admin,landing',
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+        ]);
+
+        $settings = LandingSetting::first();
+        if (!$settings) {
+            $settings = LandingSetting::create([
+                'hero_title' => 'Kelola Bisnis Anda',
+                'hero_subtitle' => 'Lebih Cerdas & Mudah',
+                'hero_desc' => 'Satu platform untuk retail, budidaya ikan, kuliner, dan jasa.',
+            ]);
+        }
+
+        $type = $request->type;
+        $file = $request->file('file');
+        
+        // Store in storage/app/public/logos
+        $path = $file->store('logos', 'public');
+
+        // Delete old file if exists
+        if ($type === 'admin' && $settings->admin_logo_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($settings->admin_logo_path);
+        } elseif ($type === 'landing' && $settings->landing_logo_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($settings->landing_logo_path);
+        }
+
+        // Update database
+        $settings->update([
+            $type . '_logo_path' => $path
+        ]);
+
+        ActivityLog::record('upload_logo', 'Logo portal (' . $type . ') diperbarui', 'info');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logo berhasil diunggah',
+            'data' => [
+                'path' => $path,
+                'url' => url('storage/' . $path)
+            ]
+        ]);
+    }
+
+    public function resetLogo(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|in:admin,landing',
+        ]);
+
+        $settings = LandingSetting::first();
+        if ($settings) {
+            $type = $request->type;
+            if ($type === 'admin' && $settings->admin_logo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($settings->admin_logo_path);
+                $settings->update(['admin_logo_path' => null]);
+            } elseif ($type === 'landing' && $settings->landing_logo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($settings->landing_logo_path);
+                $settings->update(['landing_logo_path' => null]);
+            }
+        }
+
+        ActivityLog::record('reset_logo', 'Logo portal (' . $request->type . ') dikembalikan ke default', 'info');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logo berhasil dikembalikan ke default',
+            'data' => $settings
+        ]);
     }
 }

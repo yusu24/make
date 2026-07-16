@@ -99,16 +99,17 @@ const CulinaryPromos = () => {
     <KulinerAdminLayout>
       <div className="kd-topbar">
         <h1 className="kd-page-title">Promo & Kupon Diskon</h1>
-        <div className="kd-topbar-actions">
-          <button className="kd-btn kd-btn-primary" onClick={() => handleOpenModal()}>+ Buat Promo Baru</button>
-        </div>
       </div>
 
       <div className="kd-content">
         {loading ? (
           <KulinerLoading message="Memuat Data Promo..." />
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
+          <>
+            <div className="kd-page-actions">
+              <button className="kd-btn kd-btn-primary" onClick={() => handleOpenModal()}>+ Buat Promo Baru</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
             {promos.map(promo => (
               <div key={promo.id} className="kd-panel" style={{ 
                 position: 'relative', 
@@ -182,7 +183,8 @@ const CulinaryPromos = () => {
               <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tambah Promo Baru</div>
             </div>
           </div>
-        )}
+        </>
+      )}
 
         <div style={{ marginTop: 40, padding: 24, background: '#fffbeb', borderRadius: 24, border: '1px solid #fef3c7' }}>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>

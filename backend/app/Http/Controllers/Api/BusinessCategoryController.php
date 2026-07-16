@@ -11,10 +11,16 @@ use Illuminate\Support\Facades\Validator;
 
 class BusinessCategoryController extends Controller
 {
-    // Public listing (for registration)
+    // Public listing (for landing page & registration)
     public function publicIndex()
     {
-        $categories = BusinessCategory::where('active', true)->orderBy('sort_order')->get(['id','name','slug','icon','color','description','features_list']);
+        $categories = BusinessCategory::where('active', true)
+            ->orderBy('sort_order')
+            ->get([
+                'id', 'name', 'slug', 'icon', 'color',
+                'description', 'features_list',
+                'promo_active', 'promo_text', 'discount_pct',
+            ]);
         return response()->json(['success' => true, 'data' => $categories]);
     }
 

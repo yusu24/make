@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import '../retail.css';
 import { api } from '../../../lib/api';
+import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 export default function CustomerReport() {
   const [data, setData] = useState({ top_customers: [] });
@@ -13,19 +15,19 @@ export default function CustomerReport() {
   }, []);
 
   return (
-    <div className="animate-fade-in" style={{ padding: 24 }}>
+    <div className="animate-fade-in">
       <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
       </div>
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="p-6 flex justify-end items-center gap-6">
-          <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg retail-label">
-             {data.top_customers.length} Customers Analyzed
+          <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg retail-label" style={{ fontSize: 11, fontWeight: 400, textTransform: 'none' }}>
+             {data.top_customers.length} customers analyzed
           </span>
         </div>
 
-        <table className="table">
+        <div className="retail-table-responsive"><table className="table">
           <thead>
             <tr>
               <th className="pl-6 retail-table-header">Nama Pelanggan</th>
@@ -37,7 +39,7 @@ export default function CustomerReport() {
           </thead>
           <tbody>
             {loading ? (
-               <tr><td colSpan="5" className="py-20 text-center text-slate-400 font-800">Menghitung Loyalitas...</td></tr>
+               <RetailTableLoadingRow colSpan={5} text="Menghitung Loyalitas..." />
             ) : data.top_customers.length === 0 ? (
                <tr><td colSpan="5" style={{ textAlign:'center', padding:40, color:'var(--text-muted)' }}>Belum ada data pelanggan yang melakukan transaksi di POS.</td></tr>
             ) : (
@@ -62,7 +64,7 @@ export default function CustomerReport() {
               ))
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div style={{ marginTop: 24, padding: 16, borderRadius: 8, background: 'var(--bg-elevated)', border: '1px dashed var(--border-color)' }}>

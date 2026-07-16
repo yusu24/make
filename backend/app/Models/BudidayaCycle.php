@@ -44,4 +44,9 @@ class BudidayaCycle extends Model
     {
         return $this->hasMany(BudidayaHealth::class, 'cycle_id');
     }
+
+    public function samplings()
+    {
+        return $this->hasMany(BudidayaSampling::class, 'cycle_id')->orderBy('date', 'asc');
+    }
 }

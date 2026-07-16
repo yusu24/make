@@ -3,6 +3,7 @@ import { api } from '../../../lib/api'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton, EmptyState, Breadcrumbs } from '../components/UXComponents'
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
 // ── Colour helpers ──────────────────────────────────────────────────────────
 const STATUS = {
@@ -12,31 +13,28 @@ const STATUS = {
 }
 
 
-// ── Stat Bar KPIs ──────────────────────────────────────────────────────────
-const STATS = [
-  { label: 'RATA-RATA PH', value: '7.2', sub: 'Optimal',   subColor: '#10B981', bar: 0.72, barColor: '#10B981' },
-  { label: 'SUHU AIR',    value: '28.4°C', sub: '+0.2%',  subColor: '#10B981', bar: 0.60, barColor: '#10B981' },
-  { label: 'OKSIGEN TERLARUT',  value: '6.5 mg/L', sub: '-2.1%',subColor: '#EF4444', bar: 0.45, barColor: '#EF4444' },
-  { label: 'TOTAL PAKAN HARI INI', value: '124.5 kg', sub: '',  subColor: '#475569', bar: 0.80, barColor: '#1B4332' },
-]
-
 // ── Card style ─────────────────────────────────────────────────────────────
 const card = {
   background: '#fff',
   border: '1px solid #E9F0EC',
   borderRadius: 16,
   overflow: 'hidden',
+  position: 'relative'
 }
 
 import { useNavigate } from 'react-router-dom'
 
 export default function Ponds() {
   const navigate = useNavigate()
+  const terms = useBudidayaTerms()
   const [ponds, setPonds]       = useState([])
   const [loading, setLoading]   = useState(true)
   const [view, setView]         = useState('grid')
   const [search, setSearch]     = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  
+  // We determine default type based on categories
+  const defaultType = terms.isTanaman ? 'tanah' : 'tanah'
   const [formData, setFormData] = useState({
     name: '', code: '', type: 'tanah', area: '',
     area_m2: '', depth_cm: '', max_fish_count: '', status: 'kosong',
@@ -47,7 +45,7 @@ export default function Ponds() {
   useEffect(() => {
     if (modalOpen) {
       setFormData({
-        name: '', code: '', type: 'tanah', area: '',
+        name: '', code: '', type: defaultType, area: '',
         area_m2: '', depth_cm: '', max_fish_count: '', status: 'kosong',
       })
     }
@@ -82,20 +80,29 @@ export default function Ponds() {
     return diffDays;
   }
 
+  const statsData = [
+    { label: terms.statsPH, value: terms.statsPHVal, sub: 'Optimal', subColor: '#10B981', bar: 0.72, barColor: '#10B981' },
+    { label: terms.statsTemp, value: terms.statsTempVal, sub: terms.isTanaman ? 'Optimal' : '+0.2%', subColor: '#10B981', bar: 0.60, barColor: '#10B981' },
+    { label: terms.statsO2, value: terms.statsO2Val, sub: terms.isTanaman ? 'Optimal' : '-2.1%', subColor: terms.isTanaman ? '#10B981' : '#EF4444', bar: terms.isTanaman ? 0.65 : 0.45, barColor: terms.isTanaman ? '#10B981' : '#EF4444' },
+    { label: terms.statsTodayFeed, value: terms.statsTodayFeedVal, sub: '', subColor: '#475569', bar: 0.80, barColor: '#1B4332' },
+  ]
+
   const displayPonds = ponds.map((p, i) => {
     const isAktif = p.active_cycle != null;
     return {
       id: p.id,
-      code: p.code || `KOLAM-${p.id}`,
+      code: p.code || `${terms.isTanaman ? 'LAHAN' : 'KOLAM'}-${p.id}`,
       name: p.name,
       status_key: isAktif ? 'healthy' : (p.status === 'maintenance' ? 'warning' : 'kosong'),
       age_days: isAktif ? calculateAge(p.active_cycle.seed_date) : 0,
       population: isAktif ? p.active_cycle.seed_count : 0,
-      temp: 28.5, ph: 7.2, ph_ok: true, // Mock sensor data for visual
+      temp: terms.isTanaman ? 26.5 : 28.5, ph: terms.isTanaman ? 6.2 : 7.2, ph_ok: true, // Mock sensor data for visual
       thumb_gradient: i % 3 === 0 ? 'linear-gradient(145deg,#134e2a 0%,#1B4332 60%,#2D6A4F 100%)' : 
                       i % 3 === 1 ? 'linear-gradient(145deg,#1e3a5f 0%,#1d4ed8 60%,#3b82f6 100%)' :
                       'linear-gradient(145deg,#451a03 0%,#92400e 60%,#d97706 100%)',
-      thumb_icon: i % 3 === 0 ? 'water' : i % 3 === 1 ? 'waves' : 'set_meal',
+      thumb_icon: terms.isTanaman
+        ? (i % 3 === 0 ? 'grass' : i % 3 === 1 ? 'yard' : 'spa')
+        : (i % 3 === 0 ? 'water' : i % 3 === 1 ? 'waves' : 'set_meal'),
       active_cycle: p.active_cycle,
       type: p.type
     }
@@ -126,7 +133,7 @@ export default function Ponds() {
               justifyContent: 'center',
             }}>
               <span className="material-symbols-outlined" style={{ fontSize: 52, color: 'rgba(255,255,255,0.15)', fontVariationSettings: "'FILL' 1" }}>
-                {pond.thumb_icon || 'water'}
+                {pond.thumb_icon}
               </span>
               {/* Badges */}
               <div style={{ position: 'absolute', bottom: 10, left: 10, display: 'flex', gap: 6 }}>
@@ -146,10 +153,10 @@ export default function Ponds() {
                 <div>
                   <p className="aq-section-title" style={{ fontSize: 15 }}>{pond.name}</p>
                   <p className="aq-small-text" style={{ marginTop: 2 }}>
-                    Usia: {pond.age_days} hari • Populasi: {(pond.population || 0).toLocaleString()} ekor
+                    Usia: {pond.age_days} hari • Populasi: {(pond.population || 0).toLocaleString()} {terms.populationCount}
                   </p>
                 </div>
-                <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: 4 }}>
+                <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: 4 }} onClick={(e) => e.stopPropagation()}>
                   <span className="material-symbols-outlined" style={{ fontSize: 18 }}>more_vert</span>
                 </button>
               </div>
@@ -158,13 +165,13 @@ export default function Ponds() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
                 <div style={{ background: '#F4F7F5', borderRadius: 10, padding: '10px 12px' }}>
                   <p className="aq-kpi-label" style={{ fontSize: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: '#2D6A4F' }}>thermostat</span> Suhu
+                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: '#2D6A4F' }}>thermostat</span> {terms.isTanaman ? 'Suhu Udara' : 'Suhu'}
                   </p>
                   <p className="aq-kpi-value" style={{ fontSize: 18 }}>{pond.temp}°C</p>
                 </div>
                 <div style={{ background: pond.ph_ok === false ? '#FFF5F5' : '#F4F7F5', border: pond.ph_ok === false ? '1px solid #FECACA' : 'none', borderRadius: 10, padding: '10px 12px' }}>
                   <p className="aq-kpi-label" style={{ fontSize: 10, color: pond.ph_ok === false ? '#EF4444' : 'var(--aq-text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: pond.ph_ok === false ? '#EF4444' : '#10B981' }}>science</span> Tingkat pH
+                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: pond.ph_ok === false ? '#EF4444' : '#10B981' }}>science</span> {terms.phLabel}
                   </p>
                   <p className="aq-kpi-value" style={{ fontSize: 18, color: pond.ph_ok === false ? '#EF4444' : 'var(--aq-text-primary)' }}>{pond.ph}</p>
                 </div>
@@ -178,7 +185,7 @@ export default function Ponds() {
                   padding: '10px 0', fontSize: 13, fontWeight: 600,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restaurant</span> Pakan
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{terms.iconFeed}</span> {terms.feedLabelShort}
                 </button>
                 <button style={{
                   background: '#F4F7F5', color: '#1B4332',
@@ -186,7 +193,7 @@ export default function Ponds() {
                   padding: '10px 0', fontSize: 13, fontWeight: 600,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>health_and_safety</span> Kesehatan
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>health_and_safety</span> {terms.healthLabel}
                 </button>
               </div>
             </div>
@@ -215,8 +222,8 @@ export default function Ponds() {
         <div style={{ width: 48, height: 48, borderRadius: 14, background: '#E8F5ED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span className="material-symbols-outlined" style={{ fontSize: 28, color: '#1B4332' }}>add</span>
         </div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: '#1B4332', margin: 0 }}>Kolam Baru</p>
-        <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>Tambah kolam baru</p>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#1B4332', margin: 0 }}>{terms.newUnit}</p>
+        <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>{`Tambah ${terms.unitLower} baru`}</p>
       </div>
     </div>
   )
@@ -226,11 +233,11 @@ export default function Ponds() {
       <Table>
         <TableHeader>
           <TableRow isHoverable={false}>
-            <TableHeaderCell>Kode kolam</TableHeaderCell>
-            <TableHeaderCell>Nama kolam</TableHeaderCell>
-            <TableHeaderCell>Jenis</TableHeaderCell>
+            <TableHeaderCell>{terms.unitCode}</TableHeaderCell>
+            <TableHeaderCell>{terms.unitName}</TableHeaderCell>
+            <TableHeaderCell>{terms.typeUnit}</TableHeaderCell>
             <TableHeaderCell>Usia (hari)</TableHeaderCell>
-            <TableHeaderCell>Populasi</TableHeaderCell>
+            <TableHeaderCell>{terms.populationCountTitle}</TableHeaderCell>
             <TableHeaderCell>Status</TableHeaderCell>
             <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
           </TableRow>
@@ -244,7 +251,7 @@ export default function Ponds() {
                 <TableCell>{pond.name}</TableCell>
                 <TableCell isSecondary>{pond.type}</TableCell>
                 <TableCell>{pond.age_days}</TableCell>
-                <TableCell>{(pond.population || 0).toLocaleString()}</TableCell>
+                <TableCell>{(pond.population || 0).toLocaleString()} {terms.populationCount}</TableCell>
                 <TableCell>
                   <span style={{ 
                     padding: '4px 10px', borderRadius: '40px', fontSize: '11px', fontWeight: '700',
@@ -253,8 +260,8 @@ export default function Ponds() {
                     {st.label}
                   </span>
                 </TableCell>
-                <TableCell>
-                  <button style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer' }}>
+                <TableCell style={{ textAlign: 'right' }}>
+                  <button style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer' }} onClick={(e) => e.stopPropagation()}>
                     <span className="material-symbols-outlined" style={{ fontSize: 18 }}>more_vert</span>
                   </button>
                 </TableCell>
@@ -295,7 +302,7 @@ export default function Ponds() {
           </div>
         <button className="btn btn-primary" onClick={() => setModalOpen(true)}>
           <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
-          Tambah Kolam
+          {terms.addUnit}
         </button>
       </div>
     </div>
@@ -304,20 +311,20 @@ export default function Ponds() {
       {loading ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
           <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-          <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat data kolam...</p>
+          <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>{`Memuat data ${terms.unitLower}...`}</p>
         </div>
       ) : ponds.length === 0 ? (
         <EmptyState 
-          icon="water_drop"
-          title="Belum ada kolam"
-          description="Daftarkan kolam pertama Anda untuk mulai memantau siklus budidaya."
+          icon={terms.iconSeed}
+          title={`Belum ada ${terms.unitLower}`}
+          description={`Daftarkan ${terms.unitLower} pertama Anda untuk mulai memantau siklus budidaya.`}
           onAction={() => setModalOpen(true)}
-          actionLabel="Tambah Kolam Sekarang"
+          actionLabel={terms.registerUnit}
         />
       ) : (
         <>
           <div className="aq-grid-4">
-            {STATS.map(s => (
+            {statsData.map(s => (
               <div key={s.label} style={{ ...card, padding: '16px 20px' }}>
                 <p className="aq-kpi-label">{s.label.toLowerCase()}</p>
                 <p className="aq-kpi-value" style={{ fontSize: 24 }}>
@@ -391,11 +398,11 @@ export default function Ponds() {
                   background: '#D8F3DC',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#1B4332' }}>water_drop</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#1B4332' }}>{terms.iconSeed}</span>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>Tambah Kolam Baru</h3>
-                  <p style={{ fontSize: 12, color: '#64748B', margin: 0, marginTop: 2 }}>Isi data kolam untuk mulai memantau</p>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>{`Tambah ${terms.unit} Baru`}</h3>
+                  <p style={{ fontSize: 12, color: '#64748B', margin: 0, marginTop: 2 }}>{`Isi data ${terms.unitLower} untuk mulai memantau`}</p>
                 </div>
               </div>
               <button
@@ -418,11 +425,11 @@ export default function Ponds() {
               {/* Adaptive grid for fields */}
               <div className="aq-grid-2">
                 {[
-                  ['Nama Kolam', 'name', 'text', 'Budidaya Lele A1', true],
-                  ['Kode Kolam', 'code', 'text', 'KOLAM-A01', false],
+                  [`Nama ${terms.unit}`, 'name', 'text', terms.isTanaman ? 'Lahan Barat A1' : 'Budidaya Lele A1', true],
+                  [`Kode ${terms.unit}`, 'code', 'text', terms.isTanaman ? 'LAHAN-A01' : 'KOLAM-A01', false],
                   ['Luas Area (m²)', 'area_m2', 'number', '0', false],
                   ['Kedalaman (cm)', 'depth_cm', 'number', '100', false],
-                  ['Kapasitas (ekor)', 'max_fish_count', 'number', '1000', false],
+                  [`Kapasitas (${terms.populationCount})`, 'max_fish_count', 'number', '1000', false],
                 ].map(([label, key, type, ph, required]) => (
                   <div key={key} style={key === 'name' ? { gridColumn: '1 / -1' } : {}}>
                     <label style={{
@@ -466,9 +473,9 @@ export default function Ponds() {
 
               {/* Tipe Kolam */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'capitalize', display: 'block', marginBottom: 6 }}>Jenis kolam</label>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'capitalize', display: 'block', marginBottom: 6 }}>{terms.typeUnit}</label>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  {[['tanah', 'Tanah'], ['beton', 'Beton'], ['terpal', 'Terpal']].map(([val, lbl]) => (
+                  {terms.types.map(([val, lbl]) => (
                     <button
                       key={val} type="button"
                       onClick={() => setFormData({ ...formData, type: val })}
@@ -505,8 +512,8 @@ export default function Ponds() {
                   type="submit"
                   loading={saving}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>water_drop</span>
-                  Daftarkan Kolam
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{terms.iconSeed}</span>
+                  {terms.registerUnit}
                 </LoadingButton>
               </div>
             </form>

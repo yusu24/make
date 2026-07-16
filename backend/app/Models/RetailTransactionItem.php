@@ -8,6 +8,8 @@ class RetailTransactionItem extends Model
 {
     protected $guarded = [];
 
+    public $timestamps = false;
+
     public function product()
     {
         return $this->belongsTo(RetailProduct::class, 'product_id');

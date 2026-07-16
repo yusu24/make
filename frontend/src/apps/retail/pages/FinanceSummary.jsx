@@ -57,7 +57,7 @@ export default function FinanceSummary() {
   const isProfit = summary.profit >= 0;
 
   return (
-    <div className="finance-summary animate-fade-in" style={{ padding: 24, paddingBottom: 100 }}>
+    <div className="finance-summary animate-fade-in">
       <div className="page-header" style={{ marginBottom: 24, justifyContent: 'flex-end' }}>
       </div>
 
@@ -83,41 +83,53 @@ export default function FinanceSummary() {
       </div>
 
       {/* Summary Cards */}
-      <div className="finance-cards-grid">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Income Card */}
-        <div className="card finance-card finance-card--income">
-          <div className="finance-card__header">
-            <span className="retail-label">Total Pendapatan</span>
-            <div className="finance-card__icon"><TrendingUp size={20} /></div>
+        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
+              <TrendingUp size={18} />
+            </div>
+            <span className="text-sm font-medium text-slate-500">Total Pendapatan</span>
           </div>
-          <div className="retail-kpi-value retail-text-primary">
-            {loading ? '...' : formatRp(summary.total_sales)}
+          <div>
+            <p className="text-2xl text-slate-900 leading-tight font-semibold">
+              {loading ? '...' : formatRp(summary.total_sales)}
+            </p>
+            <p className="text-xs text-slate-400 mt-1">Total kotor dari transaksi mesin kasir (POS).</p>
           </div>
-          <div className="retail-text-secondary">Total kotor dari transaksi mesin kasir (POS).</div>
         </div>
 
         {/* Expense Card */}
-        <div className="card finance-card finance-card--expense">
-          <div className="finance-card__header">
-            <span className="retail-label">Total Pengeluaran</span>
-            <div className="finance-card__icon"><TrendingDown size={20} /></div>
+        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0">
+              <TrendingDown size={18} />
+            </div>
+            <span className="text-sm font-medium text-slate-500">Total Pengeluaran</span>
           </div>
-          <div className="retail-kpi-value retail-text-danger">
-            {loading ? '...' : formatRp(summary.total_expenses)}
+          <div>
+            <p className="text-2xl text-rose-600 leading-tight font-semibold">
+              {loading ? '...' : formatRp(summary.total_expenses)}
+            </p>
+            <p className="text-xs text-slate-400 mt-1">Total seluruh catatan pengeluaran manual.</p>
           </div>
-          <div className="retail-text-secondary">Total seluruh catatan pengeluaran manual.</div>
         </div>
 
         {/* Profit Card */}
-        <div className={`card finance-card finance-card--profit ${isProfit ? 'is-profit' : 'is-loss'}`}>
-          <div className="finance-card__header">
-            <span className="retail-label">Laba Bersih (Profit)</span>
-            <div className="finance-card__icon"><Wallet size={20} /></div>
+        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
+              <Wallet size={18} />
+            </div>
+            <span className="text-sm font-medium text-slate-500">Laba Bersih (Profit)</span>
           </div>
-          <div className="retail-kpi-value" style={{ color: isProfit ? 'var(--retail-success)' : 'var(--retail-danger)' }}>
-            {loading ? '...' : formatRp(summary.profit)}
+          <div>
+            <p className={`text-2xl leading-tight font-semibold ${isProfit ? 'text-emerald-600' : 'text-rose-600'}`}>
+              {loading ? '...' : formatRp(summary.profit)}
+            </p>
+            <p className="text-xs text-slate-400 mt-1">Pendapatan dikurangi Pengeluaran.</p>
           </div>
-          <div className="retail-text-secondary">Pendapatan dikurangi Pengeluaran.</div>
         </div>
       </div>
     </div>

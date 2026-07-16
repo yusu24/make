@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import '../budidaya.css'
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
 export default function Settings() {
   const { user } = useAuth()
+  const terms = useBudidayaTerms()
   const [theme, setTheme] = useState('light')
   const [loading, setLoading] = useState(true)
 
@@ -181,9 +183,9 @@ export default function Settings() {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {toggleRow('restaurant', 'Pengingat Pakan', "Dapatkan notifikasi saat waktunya memberi makan ikan.", true)}
-              {toggleRow('opacity', 'Peringatan Kualitas Air', "Peringatan kritis untuk kadar pH, amonia, atau oksigen.", true)}
-              {toggleRow('analytics', 'Laporan Analisa Mingguan', "Ringkasan email tentang kesehatan kolam dan performa pertumbuhan.", false)}
+              {toggleRow(terms.isTanaman ? 'eco' : 'restaurant', terms.isTanaman ? 'Pengingat Pupuk' : 'Pengingat Pakan', terms.isTanaman ? "Dapatkan notifikasi saat waktunya memberi pupuk/nutrisi." : "Dapatkan notifikasi saat waktunya memberi makan ikan.", true)}
+              {toggleRow('opacity', terms.isTanaman ? 'Peringatan Kondisi Lahan' : 'Peringatan Kualitas Air', terms.isTanaman ? "Peringatan kritis untuk kelembaban tanah, pH tanah, atau suhu." : "Peringatan kritis untuk kadar pH, amonia, atau oksigen.", true)}
+              {toggleRow('analytics', 'Laporan Analisa Mingguan', terms.isTanaman ? "Ringkasan email tentang kesehatan lahan dan performa pertumbuhan." : "Ringkasan email tentang kesehatan kolam dan performa pertumbuhan.", false)}
             </div>
           </div>
 

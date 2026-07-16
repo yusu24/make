@@ -18,10 +18,11 @@ class Order extends Model
         'customer_phone',
         'total', 
         'status', 
-        'order_type', 
-        'table_number', 
-        'payment_method', 
-        'notes'
+        'order_type',
+        'table_number',
+        'payment_method',
+        'notes',
+        'source',
     ];
 
     public function items()

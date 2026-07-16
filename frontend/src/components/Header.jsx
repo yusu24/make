@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
-import ThemeToggle from './ThemeToggle'
 import './Header.css'
 
 const PAGE_TITLES = {
@@ -21,7 +20,7 @@ const PAGE_TITLES = {
   '/landing-settings': { title: 'Settings', sub: 'Konfigurasi platform dan portal' },
   '/developer-integrations':  { title: 'Developer & Integrations', sub: 'Atur integrasi dan akses developer' },
   '/admins':      { title: 'Admins', sub: 'Kelola administrator' },
-  '/categories':  { title: 'Business Categories', sub: 'Kelola master kategori UMKM' },
+  '/categories':  { title: 'Business Categories', sub: 'Kelola master kategori bisnis' },
   '/profile':     { title: 'Profil Saya', sub: 'Pengaturan akun Anda' },
   
   // Retail Module
@@ -38,19 +37,32 @@ const PAGE_TITLES = {
   '/retail/staff':              { title: 'Data Pegawai' },
   '/retail/roles':              { title: 'Jabatan & Akses' },
   '/retail/subscription':       { title: 'Paket Langganan' },
+  '/retail/profile':            { title: 'Profil Saya' },
   '/subscriptions':             { title: 'Langganan', sub: 'Kelola paket dan permintaan langganan pelanggan' },
   '/retail/reports/sales':      { title: 'Laporan Penjualan' },
   '/retail/reports/products':   { title: 'Laporan Produk' },
   '/retail/reports/customers':  { title: 'Laporan Pelanggan' },
   '/retail/finance/summary':    { title: 'Laporan Laba Rugi' },
   '/retail/finance/expenses':   { title: 'Laporan Pengeluaran' },
+  '/retail/finance/payables':   { title: 'Hutang Supplier' },
+  '/retail/finance/receivables': { title: 'Piutang Pelanggan' },
+  '/retail/stock-movements':    { title: 'Riwayat Stok' },
+  '/retail/stock-opname':       { title: 'Stock Opname' },
+  '/retail/transactions':       { title: 'Riwayat Transaksi' },
+  '/retail/supplier-returns':   { title: 'Retur ke Supplier' },
+  '/retail/customer-returns':   { title: 'Retur Pelanggan' },
+  '/retail/discounts':          { title: 'Kode Diskon' },
+  '/retail/pricelists':         { title: 'Pricelist' },
+  '/retail/settings':           { title: 'Pengaturan Toko' },
+  '/retail/support':            { title: 'Pusat Bantuan' },
 }
 
 export default function Header({ onMenuToggle, collapsed }) {
   const { pathname } = useLocation()
-  const { user } = useAuth()
+  const navigate = useNavigate()
+  const { user, isImpersonating, exitImpersonate, logout } = useAuth()
   const isRetail = pathname.startsWith('/retail')
-  const page = PAGE_TITLES[pathname] || { title: 'UMKM SaaS', sub: '' }
+  const page = PAGE_TITLES[pathname] || { title: 'BIZORA SaaS', sub: '' }
   const hideAdminPageTitle = [
     '/dashboard', '/users', '/tenants', '/subscriptions', '/packages-features', '/finance',
     '/support-center', '/system-monitoring', '/content-announcement', '/reports-analytics',
@@ -59,9 +71,10 @@ export default function Header({ onMenuToggle, collapsed }) {
   ].includes(pathname)
 
   const [showNotif, setShowNotif] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
   const [notifications, setNotifications] = useState([])
-  const [loading, setLoading] = useState(false)
   const notifRef = useRef(null)
+  const profileRef = useRef(null)
 
   const fetchNotifications = async () => {
     try {
@@ -78,6 +91,34 @@ export default function Header({ onMenuToggle, collapsed }) {
     const interval = setInterval(fetchNotifications, 60000)
     return () => clearInterval(interval)
   }, [])
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    if (!showProfile) return
+    const handler = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setShowProfile(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showProfile])
+
+  const handleLogout = async () => {
+    if (isImpersonating && isImpersonating()) {
+      const redirectPath = exitImpersonate()
+      navigate(redirectPath || '/tenants')
+    } else {
+      try { await logout() } catch {}
+      const isDemo = user?.email?.includes('demo-sandbox-')
+      navigate(isDemo ? '/' : '/login')
+    }
+  }
+
+  const handleGoProfile = () => {
+    setShowProfile(false)
+    navigate(isRetail ? '/retail/profile' : '/profile')
+  }
 
   const handleMarkRead = async (id) => {
     try {
@@ -124,7 +165,6 @@ export default function Header({ onMenuToggle, collapsed }) {
       </div>
 
       <div className="header__right">
-        <ThemeToggle />
         <div className="header__date">{dateStr}</div>
 
         <div className="header__divider" />
@@ -172,11 +212,54 @@ export default function Header({ onMenuToggle, collapsed }) {
                 : (user?.business_category || 'Customer')}
             </span>
           </div>
-          <div className="header__avatar avatar" style={{
-            background: 'linear-gradient(135deg, var(--primary-600), var(--accent-600))',
-            width: 36, height: 36, fontSize: 13
-          }}>
-            {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+
+          {/* Avatar + Profile Dropdown */}
+          <div className="header__profile-wrap" ref={profileRef}>
+            <div
+              className="header__avatar avatar"
+              style={{
+                background: 'linear-gradient(135deg, var(--primary-600), var(--accent-600))',
+                width: 36, height: 36, fontSize: 13
+              }}
+              onClick={() => setShowProfile(v => !v)}
+              title="Profil"
+            >
+              {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+            </div>
+            {showProfile && (
+              <div className="header__profile-dropdown">
+                <div className="header__profile-info">
+                  <div className="header__profile-avatar avatar" style={{
+                    background: 'linear-gradient(135deg, var(--primary-600), var(--accent-600))',
+                    width: 40, height: 40, fontSize: 14, flexShrink: 0
+                  }}>
+                    {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+                  </div>
+                  <div>
+                    <p className="header__profile-name">{user?.name || 'User'}</p>
+                    <p className="header__profile-email">{user?.email || ''}</p>
+                  </div>
+                </div>
+                <div className="header__profile-divider" />
+                <button className="header__profile-item" onClick={handleGoProfile}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  Setting Profil
+                </button>
+                <button className="header__profile-item header__profile-item--danger" onClick={handleLogout}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  {isImpersonating && isImpersonating() 
+                    ? 'Keluar dari Impersonate' 
+                    : (user?.email?.includes('demo-sandbox-') ? 'Keluar dari Akun Demo' : 'Keluar')}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

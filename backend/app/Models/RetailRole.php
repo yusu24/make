@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasTenant;
 
 class RetailRole extends Model
 {
+    use HasTenant;
+
     protected $fillable = [
         'tenant_id',
         'name',

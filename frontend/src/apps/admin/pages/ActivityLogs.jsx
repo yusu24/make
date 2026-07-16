@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import usePagination from '../../../hooks/usePagination'
+import SaasPagination from '../../../components/SaasPagination'
+import './Shared.css'
 
 const DUMMY_LOGS = [
   { id:1, user:'Super Admin',  action:'login',          target:'System',                   ip:'127.0.0.1', time:'2026-04-10 21:35:12', level:'info' },
@@ -31,12 +34,19 @@ export default function ActivityLogs() {
     return matchSearch && matchLevel
   })
 
+  const {
+    currentPage, setCurrentPage,
+    pageSize, setPageSize,
+    totalPages, totalItems,
+    paginatedData, startIndex, endIndex,
+  } = usePagination(filtered, 10)
+
   return (
     <div className="animate-fade-in">
       <div className="page-header">
         <div>
           <h2 className="page-title">Activity Log</h2>
-          <p className="page-sub">Riwayat aktivitas di platform UMKM SaaS</p>
+          <p className="page-sub">Riwayat aktivitas di platform BIZORA SaaS</p>
         </div>
         <button id="btn-export-logs" className="btn btn-secondary">⬇ Export Log</button>
       </div>
@@ -62,11 +72,11 @@ export default function ActivityLogs() {
       <div className="card" style={{overflow:'hidden'}}>
         {/* Timeline style logs */}
         <div style={{display:'flex', flexDirection:'column'}}>
-          {filtered.map((log, i) => (
+          {paginatedData.map((log, i) => (
             <div key={log.id} style={{
               display:'flex', gap:16,
               padding:'16px 20px',
-              borderBottom: i < filtered.length-1 ? '1px solid var(--border-subtle)' : 'none',
+              borderBottom: i < paginatedData.length-1 ? '1px solid var(--border-subtle)' : 'none',
               transition:'background 0.15s'
             }}
             onMouseEnter={e=>e.currentTarget.style.background='var(--bg-elevated)'}
@@ -75,7 +85,7 @@ export default function ActivityLogs() {
               <div style={{
                 width:32, height:32, borderRadius:8, flexShrink:0,
                 display:'flex', alignItems:'center', justifyContent:'center',
-                fontSize:14, fontWeight:700,
+                fontSize:14, fontWeight: 600,
                 background: log.level==='info'    ? 'rgba(59,130,246,0.15)'  :
                             log.level==='success' ? 'rgba(16,185,129,0.15)'  :
                             log.level==='warning' ? 'rgba(245,158,11,0.15)'  :
@@ -105,6 +115,18 @@ export default function ActivityLogs() {
             </div>
           )}
         </div>
+        {filtered.length > 0 && (
+          <SaasPagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
+        )}
       </div>
     </div>
   )

@@ -119,44 +119,4 @@ export const DashboardSkeleton = () => (
   </div>
 );
 
-export const PosSkeleton = () => (
-  <div className="grid grid-cols-12 gap-6 h-full p-6">
-    {/* Left: Products Grid */}
-    <div className="col-span-8 space-y-6">
-      <div className="flex gap-4">
-        <SkeletonBase className="h-10 w-64 rounded-xl" />
-        <SkeletonBase className="h-10 w-32 rounded-xl" />
-      </div>
-      <div className="grid grid-cols-3 gap-4">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-white rounded-xl p-3 border border-slate-100">
-            <SkeletonBase className="aspect-square w-full rounded-lg mb-3" />
-            <SkeletonBase className="h-4 w-3/4 mb-2" />
-            <SkeletonBase className="h-5 w-1/2" />
-          </div>
-        ))}
-      </div>
-    </div>
-    {/* Right: Cart Sidebar */}
-    <div className="col-span-4 bg-white rounded-2xl p-6 border border-slate-100 flex flex-col gap-6">
-      <SkeletonBase className="h-8 w-1/2" />
-      <div className="flex-1 space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="flex gap-3">
-            <SkeletonBase className="w-12 h-12 rounded-lg" />
-            <div className="flex-1 space-y-2">
-              <SkeletonBase className="h-3 w-full" />
-              <SkeletonBase className="h-3 w-1/2" />
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="space-y-3 pt-6 border-t border-dashed border-slate-100">
-        <SkeletonBase className="h-4 w-full" />
-        <SkeletonBase className="h-12 w-full rounded-xl" />
-      </div>
-    </div>
-  </div>
-);
-
 export default SkeletonBase;

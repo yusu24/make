@@ -2,28 +2,64 @@ import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import './Shared.css'
 
-// ─── Simple bar chart ─────────────────────────────────────────────────────────
-function BarChart({ data, keyX, keyY, color = '#3b82f6', height = 140 }) {
-  const max = Math.max(...data.map(d => d[keyY]), 1)
+import {
+  BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts'
+
+// ─── Recharts bar chart ────────────────────────────────────────────────────────
+function BarChart({ data, keyX, keyY, color = '#3b82f6', height = 140, loading = false }) {
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height, gap: 12 }}>
+        <span className="spinner" style={{ width: 28, height: 28, borderWidth: 3, borderColor: `${color}20`, borderTopColor: color }} />
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Memuat grafik...</span>
+      </div>
+    )
+  }
+  if (!data || data.length === 0) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height, color: 'var(--text-muted)', fontSize: 13 }}>
+        Tidak ada data.
+      </div>
+    )
+  }
+  const formatYAxis = (tickItem) => {
+    if (keyY === 'revenue') {
+      return 'Rp ' + new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 }).format(tickItem)
+    }
+    return tickItem
+  }
+  const formatTooltip = (value) => {
+    if (keyY === 'revenue') {
+      return ['Rp ' + new Intl.NumberFormat('id-ID').format(value), 'Revenue']
+    }
+    return [value, keyY === 'tenants' ? 'Tenants' : keyY]
+  }
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height, padding: '0 4px' }}>
-      {data.map((d, i) => {
-        const pct = (d[keyY] / max) * 100
-        return (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
-              {Number(d[keyY]).toLocaleString('id-ID')}
-            </div>
-            <div style={{
-              width: '100%', borderRadius: '5px 5px 0 0',
-              height: `${pct}%`, minHeight: 6,
-              background: `linear-gradient(180deg, ${color}cc, ${color})`,
-              transition: 'height 0.7s cubic-bezier(0.16,1,0.3,1)',
-            }} />
-            <div style={{ fontSize: 9, color: 'var(--text-muted)', whiteSpace: 'nowrap', textAlign: 'center' }}>{d[keyX]}</div>
-          </div>
-        )
-      })}
+    <div style={{ width: '100%', height: height, marginTop: 10 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <RechartsBarChart data={data} margin={{ top: 15, right: 10, left: 15, bottom: 20 }}>
+          <defs>
+            <linearGradient id={`color-${keyY}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.95}/>
+              <stop offset="100%" stopColor={color} stopOpacity={0.55}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+          <XAxis dataKey={keyX} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={formatYAxis} width={65} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} axisLine={false} tickLine={false} />
+          <Tooltip 
+            formatter={formatTooltip}
+            contentStyle={{ 
+              background: 'var(--bg-elevated)', 
+              borderColor: 'var(--border-default)',
+              borderRadius: '8px',
+              fontSize: '11px'
+            }}
+          />
+          <Bar dataKey={keyY} fill={`url(#color-${keyY})`} radius={[4, 4, 0, 0]} />
+        </RechartsBarChart>
+      </ResponsiveContainer>
     </div>
   )
 }
@@ -62,13 +98,19 @@ export default function ReportsAnalytics() {
   const [categoryDist, setCategoryDist] = useState([])
   const [topTenants, setTopTenants] = useState([])
   const [activeTab, setActiveTab] = useState('overview')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get('/admin/stats').then(r => setStats(r.data?.data)).catch(() => {})
-    api.get('/admin/analytics/monthly-revenue').then(r => setMonthlyRevenue(r.data?.data || [])).catch(() => {})
-    api.get('/admin/analytics/plan-distribution').then(r => setPlanDist(r.data?.data || [])).catch(() => {})
-    api.get('/admin/analytics/category-distribution').then(r => setCategoryDist(r.data?.data || [])).catch(() => {})
-    api.get('/admin/analytics/top-tenants').then(r => setTopTenants(r.data?.data || [])).catch(() => {})
+    setLoading(true)
+    Promise.all([
+      api.get('/admin/stats').then(r => setStats(r.data?.data)).catch(() => {}),
+      api.get('/admin/analytics/monthly-revenue').then(r => setMonthlyRevenue(r.data?.data || [])).catch(() => {}),
+      api.get('/admin/analytics/plan-distribution').then(r => setPlanDist(r.data?.data || [])).catch(() => {}),
+      api.get('/admin/analytics/category-distribution').then(r => setCategoryDist(r.data?.data || [])).catch(() => {}),
+      api.get('/admin/analytics/top-tenants').then(r => setTopTenants(r.data?.data || [])).catch(() => {})
+    ]).finally(() => {
+      setLoading(false)
+    })
   }, [])
 
   const fmtRp = (v) => `Rp ${Number(v).toLocaleString('id-ID')}`
@@ -118,7 +160,7 @@ export default function ReportsAnalytics() {
             ].map(card => (
               <div key={card.label} className="card card-pad">
                 <div style={{ fontSize: 28, marginBottom: 8 }}>{card.icon}</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: card.color, lineHeight: 1, wordBreak: 'break-all' }}>{card.value}</div>
+                <div style={{ fontSize: 20, fontWeight: 600, color: card.color, lineHeight: 1, wordBreak: 'break-all' }}>{card.value}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{card.label} · {card.sub}</div>
               </div>
             ))}
@@ -127,12 +169,12 @@ export default function ReportsAnalytics() {
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 20 }}>
             {/* Revenue bar chart */}
             <div className="card card-pad">
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, marginBottom: 20 }}>📈 Revenue Bulanan</h3>
-              <BarChart data={monthlyRevenue} keyX="month" keyY="revenue" color="#3b82f6" height={130} />
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 20 }}>📈 Revenue Bulanan</h3>
+              <BarChart data={monthlyRevenue} keyX="month" keyY="revenue" color="#3b82f6" height={220} loading={loading} />
             </div>
             {/* Plan distribution donut */}
             <div className="card card-pad" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, alignSelf: 'flex-start' }}>🥧 Distribusi Paket</h3>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, alignSelf: 'flex-start' }}>🥧 Distribusi Paket</h3>
               <DonutChart slices={planDist} size={130} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
                 {planDist.map(sl => (
@@ -141,7 +183,7 @@ export default function ReportsAnalytics() {
                       <span style={{ width: 10, height: 10, borderRadius: 3, background: sl.color || '#ccc', display: 'inline-block' }} />
                       <span style={{ fontSize: 13 }}>{sl.label}</span>
                     </div>
-                    <span style={{ fontWeight: 700, fontSize: 13, color: sl.color || '#ccc' }}>{sl.value}</span>
+                    <span style={{ fontWeight: 600, fontSize: 13, color: sl.color || '#ccc' }}>{sl.value}</span>
                   </div>
                 ))}
               </div>
@@ -173,17 +215,17 @@ export default function ReportsAnalytics() {
             ].map(c => (
               <div key={c.label} className="card card-pad">
                 <div style={{ fontSize: 28, marginBottom: 8 }}>{c.icon}</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: c.color, lineHeight: 1 }}>{c.value}</div>
+                <div style={{ fontSize: 18, fontWeight: 600, color: c.color, lineHeight: 1 }}>{c.value}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{c.label}</div>
               </div>
             ))}
           </div>
           <div className="card card-pad" style={{ marginBottom: 20 }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, marginBottom: 20 }}>📊 Revenue Bulanan (Rp)</h3>
-            <BarChart data={monthlyRevenue} keyX="month" keyY="revenue" color="#10b981" height={150} />
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 20 }}>📊 Revenue Bulanan (Rp)</h3>
+            <BarChart data={monthlyRevenue} keyX="month" keyY="revenue" color="#10b981" height={240} loading={loading} />
           </div>
           <div className="card card-pad">
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, marginBottom: 20 }}>📋 Rincian per Bulan</h3>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 20 }}>📋 Rincian per Bulan</h3>
             <table className="table">
               <thead><tr><th>Bulan</th><th>Revenue</th><th>Jumlah Tenant</th><th>Avg/Tenant</th><th>Growth</th></tr></thead>
               <tbody>
@@ -193,10 +235,10 @@ export default function ReportsAnalytics() {
                   return (
                     <tr key={m.month}>
                       <td style={{ fontWeight: 600 }}>{m.month}</td>
-                      <td style={{ fontWeight: 700, color: '#10b981' }}>{fmtRp(m.revenue)}</td>
+                      <td style={{ fontWeight: 600, color: '#10b981' }}>{fmtRp(m.revenue)}</td>
                       <td>{m.tenants}</td>
                       <td>{fmtRp(Math.round(m.revenue / (m.tenants || 1)))}</td>
-                      <td>{growth ? <span style={{ color: Number(growth) > 0 ? '#10b981' : '#ef4444', fontWeight: 700 }}>{growth > 0 ? '+' : ''}{growth}%</span> : '—'}</td>
+                      <td>{growth ? <span style={{ color: Number(growth) > 0 ? '#10b981' : '#ef4444', fontWeight: 600 }}>{growth > 0 ? '+' : ''}{growth}%</span> : '—'}</td>
                     </tr>
                   )
                 })}
@@ -211,11 +253,11 @@ export default function ReportsAnalytics() {
         <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
             <div className="card card-pad">
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, marginBottom: 20 }}>📊 Pertumbuhan Tenant</h3>
-              <BarChart data={monthlyRevenue} keyX="month" keyY="tenants" color="#8b5cf6" height={130} />
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 20 }}>📊 Pertumbuhan Tenant</h3>
+              <BarChart data={monthlyRevenue} keyX="month" keyY="tenants" color="#8b5cf6" height={220} loading={loading} />
             </div>
             <div className="card card-pad">
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>🗂 Distribusi Kategori</h3>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 16 }}>🗂 Distribusi Kategori</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {categoryDist.map(c => {
                   const pct = Math.round((c.value / (categoryDist.reduce((s, x) => s + Number(x.value), 0) || 1)) * 100)
@@ -223,7 +265,7 @@ export default function ReportsAnalytics() {
                     <div key={c.label}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                         <span style={{ fontSize: 13 }}>{c.label}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: c.color }}>{c.value} ({pct}%)</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: c.color }}>{c.value} ({pct}%)</span>
                       </div>
                       <div style={{ height: 8, borderRadius: 99, background: 'var(--bg-elevated)', overflow: 'hidden' }}>
                         <div style={{ width: `${pct}%`, height: '100%', borderRadius: 99, background: c.color, transition: 'width 0.8s ease' }} />
@@ -236,18 +278,18 @@ export default function ReportsAnalytics() {
           </div>
           <div className="card card-pad" style={{ padding: 0, overflow: 'hidden' }}>
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15 }}>🏆 Top Tenant berdasarkan Revenue</h3>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>🏆 Top Tenant berdasarkan Revenue</h3>
             </div>
             <table className="table">
               <thead><tr><th>#</th><th>Nama</th><th>Paket</th><th>Kategori</th><th>Revenue/bln</th><th>Bergabung</th></tr></thead>
               <tbody>
                 {topTenants.map((t, i) => (
                   <tr key={t.name}>
-                    <td style={{ fontWeight: 700, color: i < 3 ? '#f59e0b' : 'var(--text-muted)' }}>{i + 1}</td>
+                    <td style={{ fontWeight: 600, color: i < 3 ? '#f59e0b' : 'var(--text-muted)' }}>{i + 1}</td>
                     <td style={{ fontWeight: 600 }}>{t.name}</td>
                     <td><span className={`badge ${t.plan === 'Pro' ? 'badge-violet' : 'badge-blue'}`}>{t.plan}</span></td>
                     <td style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t.category}</td>
-                    <td style={{ fontWeight: 700, color: '#10b981' }}>{fmtRp(t.revenue)}</td>
+                    <td style={{ fontWeight: 600, color: '#10b981' }}>{fmtRp(t.revenue)}</td>
                     <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.joined}</td>
                   </tr>
                 ))}

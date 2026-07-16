@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
   BarChart3, TrendingUp, Target, ArrowUpRight, 
-  Receipt, RefreshCw
+  Receipt, RefreshCw, Printer
 } from 'lucide-react';
+import RetailLoading from '../components/RetailLoading';
 import '../retail.css';
 
 export default function SalesReport() {
   const [data, setData] = useState({ total_sales: 0, total_transactions: 0, transactions: [], daily_sales: [] });
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   const fetchReports = () => {
     setLoading(true);
@@ -26,59 +30,90 @@ export default function SalesReport() {
     total: Number(item.total)
   }));
 
-  if (loading) return (
-    <div className="retail-dashboard-spacing">
-      <div className="loading-state-premium">
-        <div className="spinner-glow"></div>
-        <p className="loading-text">Menganalisis performa penjualan...</p>
-      </div>
-    </div>
+  const filteredTransactions = (data.transactions || []).filter(tx =>
+    String(tx.invoice_number || '').toLowerCase().includes(search.toLowerCase()) ||
+    (tx.customer?.name || '').toLowerCase().includes(search.toLowerCase())
   );
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(filteredTransactions);
+
+  if (loading) return <RetailLoading text="Menganalisis performa penjualan..." />;
+
+  
 
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       {/* Page Header (Synced with Finance) */}
       <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
         <div className="flex items-center gap-4">
-           <button className="btn btn-secondary" onClick={fetchReports}>
-              + Segarkan analisis
+           <button className="btn btn-secondary flex items-center gap-2" onClick={fetchReports}>
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Segarkan analisis
            </button>
-           <button className="btn btn-primary" onClick={() => window.print()}>
-              + Cetak laporan
+           <button className="btn btn-primary flex items-center gap-2" onClick={() => window.print()}>
+              <Printer size={16} /> Cetak laporan
            </button>
         </div>
       </div>
 
       {/* Finance KPI Cards */}
-      <div className="finance-cards-grid" style={{ marginBottom: 52 }}>
-        <div className="finance-card finance-card--success">
-           <div className="finance-card__header">
-              <span className="retail-label">Total Omzet</span>
-              <div className="finance-card__icon"><TrendingUp size={20} /></div>
-           </div>
-           <div className="retail-kpi-value retail-text-primary">Rp {Number(data.total_sales).toLocaleString('id-ID')}</div>
-           <div className="retail-text-secondary">Akumulasi pendapatan kotor bulan ini.</div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ marginBottom: 52 }}>
+         {/* Total Omzet Card */}
+         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
+                  <TrendingUp size={18} />
+               </div>
+               <span className="text-sm font-medium text-slate-500">Total Omzet</span>
+            </div>
+            <div>
+               <p className="text-2xl text-slate-900 leading-tight font-semibold">
+                  Rp {Number(data.total_sales).toLocaleString('id-ID')}
+               </p>
+               <p className="text-xs text-slate-400 mt-1">Akumulasi pendapatan kotor bulan ini.</p>
+            </div>
+         </div>
 
-        <div className="finance-card finance-card--primary">
-           <div className="finance-card__header">
-              <span className="retail-label">Total Transaksi</span>
-              <div className="finance-card__icon"><Target size={20} /></div>
-           </div>
-           <div className="retail-kpi-value retail-text-primary">{data.total_transactions} <span className="text-sm retail-label opacity-40 ml-1">TRX</span></div>
-           <div className="retail-text-secondary">Volume penjualan yang berhasil diproses.</div>
-        </div>
+         {/* Total Transaksi Card */}
+         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
+                  <Target size={18} />
+               </div>
+               <span className="text-sm font-medium text-slate-500">Total Transaksi</span>
+            </div>
+            <div>
+               <p className="text-2xl text-slate-900 leading-tight font-normal">
+                  {data.total_transactions} <span className="text-sm text-slate-400 font-medium ml-1">TRX</span>
+               </p>
+               <p className="text-xs text-slate-400 mt-1">Volume penjualan yang berhasil diproses.</p>
+            </div>
+         </div>
 
-        <div className="finance-card finance-card--warning">
-           <div className="finance-card__header">
-              <span className="retail-label">Rata-rata Keranjang</span>
-              <div className="finance-card__icon"><ArrowUpRight size={20} /></div>
-           </div>
-           <div className="retail-kpi-value retail-text-primary">
-              Rp {data.total_transactions > 0 ? Math.round(data.total_sales / data.total_transactions).toLocaleString('id-ID') : 0}
-           </div>
-           <div className="retail-text-secondary">Rata-rata nilai per transaksi (Basket Size).</div>
-        </div>
+         {/* Rata-rata Keranjang Card */}
+         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 shrink-0">
+                  <ArrowUpRight size={18} />
+               </div>
+               <span className="text-sm font-medium text-slate-500">Rata-rata Keranjang</span>
+            </div>
+            <div>
+               <p className="text-2xl text-slate-900 leading-tight font-semibold">
+                  Rp {data.total_transactions > 0 ? Math.round(data.total_sales / data.total_transactions).toLocaleString('id-ID') : 0}
+               </p>
+               <p className="text-xs text-slate-400 mt-1">Rata-rata nilai per transaksi (Basket Size).</p>
+            </div>
+         </div>
       </div>
 
       {/* Chart Section */}
@@ -110,13 +145,17 @@ export default function SalesReport() {
 
       {/* Transactions Table (Synced with Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex justify-end items-center gap-6">
-          <span className="px-3 py-1 retail-bg-main retail-border rounded-lg retail-label">
-             {data.transactions.length} Records found
-          </span>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+            <input
+              placeholder="Cari invoice/pelanggan..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
         </div>
 
-        <table className="table">
+        <div className="retail-table-responsive"><table className="table">
           <thead>
              <tr>
                 <th className="pl-6 retail-table-header">Invoice</th>
@@ -127,14 +166,14 @@ export default function SalesReport() {
              </tr>
           </thead>
           <tbody>
-            {data.transactions.length === 0 ? (
+            {filteredTransactions.length === 0 ? (
               <tr>
                  <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
                     Belum ada data transaksi penjualan.
                  </td>
               </tr>
             ) : (
-              data.transactions.map(tx => (
+              paginatedData.map(tx => (
                 <tr key={tx.id}>
                   <td className="pl-6">
                     <code className="text-[11px] retail-text-primary retail-bg-main retail-border px-2 py-1 rounded">#{tx.invoice_number}</code>
@@ -155,7 +194,17 @@ export default function SalesReport() {
               ))
             )}
           </tbody>
-        </table>
+        </table></div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
     </div>
   );

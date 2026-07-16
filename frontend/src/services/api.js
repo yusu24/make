@@ -21,15 +21,25 @@ apiClient.interceptors.request.use((config) => {
     return config;
 }, (error) => Promise.reject(error));
 
+// Guard: prevent multiple simultaneous 401s from each triggering a redirect
+let isRedirecting = false;
+
 // Global Error Handling (e.g. 401 Unauthorized)
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            localStorage.removeItem('umkm_token');
-            localStorage.removeItem('umkm_user');
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
+            // Only act if token exists (avoid loop) and not already redirecting
+            const hasToken = localStorage.getItem('umkm_token');
+            if (hasToken && !isRedirecting && window.location.pathname !== '/login') {
+                isRedirecting = true;
+                localStorage.removeItem('umkm_token');
+                localStorage.removeItem('umkm_user');
+                // Small delay so any in-flight state updates settle first
+                setTimeout(() => {
+                    window.location.href = '/login';
+                    isRedirecting = false;
+                }, 100);
             }
         }
         return Promise.reject(error);

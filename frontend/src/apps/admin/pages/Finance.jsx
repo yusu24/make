@@ -1,7 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../../../lib/api'
 import Modal from '../../../components/Modal'
+import usePagination from '../../../hooks/usePagination'
+import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
+
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts'
 
 const STATUS_BADGE = {
   paid: 'badge-green',
@@ -12,7 +18,7 @@ const STATUS_LABEL = { paid: 'Lunas', unpaid: 'Belum Bayar', overdue: 'Jatuh Tem
 
 const fmtRp = (v) => `Rp ${Number(v).toLocaleString('id-ID')}`
 
-// ─── Simple bar chart ─────────────────────────────────────────────────────────
+// ─── Recharts bar chart ────────────────────────────────────────────────────────
 function RevenueChart({ data }) {
   if (!data || data.length === 0) {
     return (
@@ -21,26 +27,37 @@ function RevenueChart({ data }) {
       </div>
     )
   }
-  const max = Math.max(...data.map(d => d.revenue), 1)
+  const formatYAxis = (tickItem) => {
+    return 'Rp ' + new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 }).format(tickItem)
+  }
+  const formatTooltip = (value) => {
+    return ['Rp ' + new Intl.NumberFormat('id-ID').format(value), 'Revenue']
+  }
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 120, padding: '0 4px' }}>
-      {data.map((d, i) => {
-        const pct = (d.revenue / max) * 100
-        return (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
-              {fmtRp(d.revenue).replace('Rp ', '')}
-            </div>
-            <div style={{
-              width: '100%', borderRadius: '6px 6px 0 0',
-              height: `${pct}%`, minHeight: 8,
-              background: 'linear-gradient(180deg, #3b82f6, #1d4ed8)',
-              transition: 'height 0.6s cubic-bezier(0.16,1,0.3,1)',
-            }} />
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{d.month}</div>
-          </div>
-        )
-      })}
+    <div style={{ width: '100%', height: 240, marginTop: 10 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 10, right: 10, left: 15, bottom: 10 }}>
+          <defs>
+            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.95}/>
+              <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.55}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+          <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={formatYAxis} width={65} tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <Tooltip 
+            formatter={formatTooltip}
+            contentStyle={{ 
+              background: 'var(--bg-elevated)', 
+              borderColor: 'var(--border-default)',
+              borderRadius: '10px',
+              fontSize: '12px'
+            }}
+          />
+          <Bar dataKey="revenue" name="Revenue" fill="url(#colorRevenue)" radius={[6, 6, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   )
 }
@@ -120,6 +137,13 @@ export default function Finance() {
     return matchStatus && matchSearch
   })
 
+  const {
+    currentPage, setCurrentPage,
+    pageSize, setPageSize,
+    totalPages, totalItems,
+    paginatedData, startIndex, endIndex,
+  } = usePagination(filtered)
+
   return (
     <div className="animate-fade-in">
       {/* ── Header ── */}
@@ -156,7 +180,7 @@ export default function Finance() {
                   </div>
                   <div>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{card.label}</p>
-                    <p style={{ fontSize: 22, fontWeight: 800, color: card.color, lineHeight: 1 }}>{card.value}</p>
+                    <p style={{ fontSize: 22, fontWeight: 600, color: card.color, lineHeight: 1 }}>{card.value}</p>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{card.sub}</p>
                   </div>
                 </div>
@@ -166,7 +190,7 @@ export default function Finance() {
 
           {/* ── Revenue Chart ── */}
           <div className="card card-pad" style={{ marginBottom: 24 }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, marginBottom: 20, fontSize: 15 }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, marginBottom: 20, fontSize: 15 }}>
               📈 Tren Pendapatan Bulanan (6 Bulan Terakhir)
             </h3>
             <RevenueChart data={months} />
@@ -176,7 +200,7 @@ export default function Finance() {
           <div className="card card-pad" style={{ padding: 0 }}>
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15 }}>📄 Daftar Invoice</h3>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>📄 Daftar Invoice</h3>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                   <div className="search-wrap" style={{ minWidth: 180, maxWidth: 240 }}>
                     <span className="search-icon">🔍</span>
@@ -207,12 +231,12 @@ export default function Finance() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(inv => (
+                  {paginatedData.map(inv => (
                     <tr key={inv.id}>
                       <td><code style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{inv.id}</code></td>
                       <td style={{ fontWeight: 600, fontSize: 13 }}>{inv.tenant}</td>
                       <td><span className={`badge ${inv.plan === 'Pro' ? 'badge-violet' : 'badge-blue'}`}>{inv.plan}</span></td>
-                      <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{fmtRp(inv.amount)}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{fmtRp(inv.amount)}</td>
                       <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{inv.date}</td>
                       <td style={{ fontSize: 12, color: inv.status === 'overdue' ? 'var(--danger-400)' : 'var(--text-muted)' }}>{inv.due}</td>
                       <td><span className={`badge ${STATUS_BADGE[inv.status]}`}>{STATUS_LABEL[inv.status]}</span></td>
@@ -225,8 +249,9 @@ export default function Finance() {
                               style={{ fontSize: 11 }}
                               disabled={markingPaid === inv.id}
                               onClick={() => handleMarkAsPaid(inv.id)}
+                              title="Tandai Lunas"
                             >
-                              {markingPaid === inv.id ? '...' : '✓ Lunas'}
+                              {markingPaid === inv.id ? '...' : '✓'}
                             </button>
                           )}
                         </div>
@@ -246,6 +271,18 @@ export default function Finance() {
                   )}
                 </tbody>
               </table>
+              {!loading && filtered.length > 0 && (
+                <SaasPagination
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  pageSize={pageSize}
+                  setPageSize={setPageSize}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  startIndex={startIndex}
+                  endIndex={endIndex}
+                />
+              )}
             </div>
           </div>
         </>
@@ -258,8 +295,8 @@ export default function Finance() {
             {/* Header / Brand */}
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px dashed var(--border-color)', paddingBottom: 16, marginBottom: 20 }}>
               <div>
-                <h4 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--primary-500)', letterSpacing: '0.5px' }}>
-                  UMKM <span style={{ fontWeight: 300, color: 'var(--text-muted)' }}>SaaS</span>
+                <h4 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: 'var(--primary-500)', letterSpacing: '0.5px' }}>
+                  BIZORA <span style={{ fontWeight: 300, color: 'var(--text-muted)' }}>SaaS</span>
                 </h4>
                 <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '4px 0 0' }}>Sistem Manajemen Tenant Terintegrasi</p>
               </div>
@@ -275,7 +312,7 @@ export default function Finance() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24, fontSize: 13 }}>
               <div>
                 <p style={{ fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ditagihkan Kepada:</p>
-                <p style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 14, margin: '0 0 2px' }}>{selectedInvoice.tenant}</p>
+                <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14, margin: '0 0 2px' }}>{selectedInvoice.tenant}</p>
                 <p style={{ margin: 0, color: 'var(--text-muted)' }}>Plan: <span className={`badge ${selectedInvoice.plan === 'Pro' ? 'badge-violet' : 'badge-blue'}`} style={{ fontSize: 10 }}>{selectedInvoice.plan} Plan</span></p>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -307,7 +344,7 @@ export default function Finance() {
               </table>
               <div style={{ padding: 16, background: 'var(--bg-elevated)', display: 'flex', justifyContent: 'flex-end' }}>
                 <div style={{ width: 220, fontSize: 13 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: 10, fontWeight: 800, fontSize: 15, color: 'var(--primary-500)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: 10, fontWeight: 600, fontSize: 15, color: 'var(--primary-500)' }}>
                     <span>Total Tagihan:</span>
                     <span>{fmtRp(selectedInvoice.amount)}</span>
                   </div>

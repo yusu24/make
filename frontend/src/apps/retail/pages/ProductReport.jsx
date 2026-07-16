@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import '../retail.css';
 import { api } from '../../../lib/api';
 
 export default function ProductReport() {
@@ -13,7 +14,7 @@ export default function ProductReport() {
   }, []);
 
   return (
-    <div className="animate-fade-in" style={{ padding: 24 }}>
+    <div className="animate-fade-in">
       <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
       </div>
 
@@ -24,7 +25,7 @@ export default function ProductReport() {
           </div>
           <div style={{ padding: 20 }}>
             {loading ? <p>Menganalisa...</p> : (
-              <table className="table">
+              <div className="retail-table-responsive"><table className="table">
                 <thead>
                   <tr>
                     <th className="retail-table-header">Nama Barang</th>
@@ -42,7 +43,7 @@ export default function ProductReport() {
                   ))}
                   {data.top_products.length === 0 && <tr><td colSpan="3" style={{textAlign:'center', padding:20, color:'var(--text-muted)'}}>Belum ada data penjualan.</td></tr>}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         </div>
@@ -54,7 +55,7 @@ export default function ProductReport() {
           <div style={{ padding: 20 }}>
             <p style={{fontSize:13, color:'var(--text-muted)', marginBottom:16}}>Barang berikut telah mencapai atau melewati ambang batas aman yang Anda tentukan.</p>
             {loading ? <p>Mengecek gudang...</p> : (
-              <table className="table">
+              <div className="retail-table-responsive"><table className="table">
                 <thead>
                   <tr>
                     <th className="retail-table-header">Nama Barang</th>
@@ -74,7 +75,7 @@ export default function ProductReport() {
                   ))}
                    {data.low_stock.length === 0 && <tr><td colSpan="4" style={{textAlign:'center', padding:20, color:'var(--text-muted)'}}>Semua stok aman.</td></tr>}
                 </tbody>
-              </table>
+              </table></div>
             )}
             <button className="btn btn-secondary" style={{ width:'100%', marginTop:16 }} onClick={()=>window.location.href='/retail/inventory'}>Lihat Semua Inventori</button>
           </div>

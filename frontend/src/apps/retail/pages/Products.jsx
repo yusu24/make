@@ -5,6 +5,9 @@ import {
   Edit3, Trash2, AlertCircle
 } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
 import '../retail.css';
 
 export default function Products() {
@@ -128,59 +131,84 @@ export default function Products() {
     (p.sku && p.sku.toLowerCase().includes(search.toLowerCase()))
   );
 
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex,
+  } = usePagination(filteredProducts);
+
+
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       {/* Page Header (Synced with Finance) */}
 
 
       {/* Stats Cards Section */}
-      <div className="grid-2" style={{ marginBottom: 52 }}>
-         <div className="card card-pad flex items-center justify-between">
-            <div className="flex flex-col">
-               <span className="retail-label mb-1">Total Katalog</span>
-               <span className="retail-title">{products.length} Varian</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 52 }}>
+         {/* Total Katalog Card */}
+         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
+                  <Package size={18} />
+               </div>
+               <span className="text-sm font-medium text-slate-500">Total Katalog</span>
             </div>
-            <div className="w-12 h-12 retail-bg-primary-subtle retail-text-primary rounded-2xl flex items-center justify-center">
-               <Package size={24} />
+            <div>
+               <p className="text-2xl text-slate-900 leading-tight font-normal">
+                  {products.length} <span className="text-sm text-slate-400 font-medium ml-1">Varian</span>
+               </p>
+               <p className="text-xs text-slate-400 mt-1">Jumlah variasi produk aktif dalam katalog.</p>
             </div>
          </div>
-         <div className="card card-pad flex items-center justify-between">
-            <div className="flex flex-col">
-               <span className="retail-label mb-1">Stok Kritis</span>
-               <span className="retail-title retail-text-danger">{products.filter(p => Number(p.stock) <= Number(p.stock_min)).length} Items</span>
+
+         {/* Stok Kritis Card */}
+         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0">
+                  <AlertCircle size={18} />
+               </div>
+               <span className="text-sm font-medium text-slate-500">Stok Kritis</span>
             </div>
-            <div className="w-12 h-12 retail-bg-danger-subtle retail-text-danger rounded-2xl flex items-center justify-center">
-               <AlertCircle size={24} />
+            <div>
+               <p className="text-2xl text-slate-900 leading-tight font-normal">
+                  {products.filter(p => Number(p.stock) <= Number(p.stock_min)).length} <span className="text-sm text-slate-400 font-medium ml-1">Items</span>
+               </p>
+               <p className="text-xs text-slate-400 mt-1">Jumlah produk dengan stok di bawah batas aman.</p>
             </div>
          </div>
       </div>
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex justify-end">
-          <div className="flex items-center gap-3">
-            <button className="btn btn-primary h-[42px] px-6 whitespace-nowrap" onClick={() => setShowModal(true)}>
-               + Tambah baru
-            </button>
-            <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
-              <input 
-                placeholder="Cari Produk..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
-            <button 
-               onClick={fetchData} 
-               className="btn-reset-sync"
-               style={{ width: 42, height: 42 }}
-               title="Segarkan Data"
-            >
-               <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-            </button>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+          <button className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }} onClick={() => setShowModal(true)}>
+            <Plus size={15} className="mr-2 mobile-no-margin" />
+            <span className="btn-text-mobile-hide">Tambah baru</span>
+          </button>
+          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+            <input 
+              placeholder="Cari Produk..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
+          <button 
+            onClick={fetchData} 
+            className="btn-reset-sync"
+            style={{ width: 42, height: 42, flexShrink: 0 }}
+            title="Segarkan Data"
+          >
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+          </button>
         </div>
 
-        <table className="table">
+        <div className="retail-table-responsive"><table className="table">
           <thead>
             <tr>
               <th className="pl-6 retail-table-header">Identitas Barang</th>
@@ -192,7 +220,7 @@ export default function Products() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="5" className="py-20 text-center text-slate-400 font-800">Memuat katalog...</td></tr>
+              <RetailTableLoadingRow colSpan={5} text="Memuat katalog..." />
             ) : filteredProducts.length === 0 ? (
               <tr>
                  <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
@@ -200,7 +228,7 @@ export default function Products() {
                  </td>
               </tr>
             ) : (
-              filteredProducts.map(p => (
+              paginatedData.map(p => (
                 <tr key={p.id}>
                   <td className="pl-6">
                       <div className="flex items-center gap-4">
@@ -236,7 +264,17 @@ export default function Products() {
               ))
             )}
           </tbody>
-        </table>
+        </table></div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingProduct(null); setErrors({}); }} title={editingProduct ? 'Edit Barang' : 'Tambah Barang Baru'}>

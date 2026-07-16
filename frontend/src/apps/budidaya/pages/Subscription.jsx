@@ -111,6 +111,7 @@ export default function Subscription() {
     );
   }
 
+  const terms = useBudidayaTerms();
   const currentPlan = user?.subscription_plan || 'free';
 
   const PLANS = [
@@ -118,21 +119,21 @@ export default function Subscription() {
       id: 'free', 
       name: 'Free (Tester)', 
       price: 'Rp 0', 
-      features: ['Masa Aktif 3-5 Hari', 'Maks 2 Kolam Budidaya', 'Maks 1 Siklus Aktif', 'Laporan Dasar Kolam'],
+      features: ['Masa Aktif 3-5 Hari', `Maks 2 ${terms.unit} Budidaya`, 'Maks 1 Siklus Aktif', `Laporan Dasar ${terms.unit}`],
       color: '#64748b'
     },
     { 
       id: 'basic', 
       name: 'Basic', 
       price: getPlanPriceInfo('basic').display, 
-      features: ['Tanpa Batas Waktu', 'Maks 5 Kolam Budidaya', 'Maks 3 Siklus Aktif', 'Laporan Pakan & Sampling'],
+      features: ['Tanpa Batas Waktu', `Maks 5 ${terms.unit} Budidaya`, 'Maks 3 Siklus Aktif', `${terms.isTanaman ? 'Laporan Pupuk & Sampling' : 'Laporan Pakan & Sampling'}`],
       color: '#2D6A4F'
     },
     { 
       id: 'pro', 
       name: 'Pro (Terbaik)', 
       price: getPlanPriceInfo('pro').display, 
-      features: ['Tanpa Batas Waktu', 'Kolam Tak Terbatas', 'Siklus Tak Terbatas', 'Analitik Panen & Multi Kolam'],
+      features: ['Tanpa Batas Waktu', `${terms.unit} Tak Terbatas`, 'Siklus Tak Terbatas', `Analitik Panen & Multi ${terms.unit}`],
       color: '#1B4332' 
     }
   ];
@@ -229,14 +230,14 @@ export default function Subscription() {
               {/* Kolam Progress */}
               <div style={{ padding: 20, background: '#F8FAFC', borderRadius: 16, border: '1px solid #E2E8F0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <span style={{ fontWeight: 600, fontSize: 13, color: '#475569' }}>Kapasitas Kolam</span>
+                  <span style={{ fontWeight: 600, fontSize: 13, color: '#475569' }}>{`Kapasitas ${terms.unit}`}</span>
                   <span style={{ fontWeight: 800, fontSize: 13, color: '#1B4332' }}>{pondCount} / {pondLimit}</span>
                 </div>
                 <div style={{ height: 8, background: '#E2E8F0', borderRadius: 4, overflow: 'hidden' }}>
                   <div style={{ width: `${Math.min(100, pondPercentage)}%`, height: '100%', background: pondPercentage >= 100 ? '#EF4444' : '#2D6A4F', transition: 'width 1s ease' }} />
                 </div>
                 <p style={{ fontSize: 11.5, color: '#64748b', marginTop: 10, margin: '10px 0 0 0', lineHeight: 1.4 }}>
-                  {pondLimit === '∞' ? 'Kapasitas kolam Anda tidak terbatas.' : `Maksimal kolam aktif adalah ${pondLimit} kolam.`}
+                  {pondLimit === '∞' ? `Kapasitas ${terms.unitLower} Anda tidak terbatas.` : `Maksimal ${terms.unitLower} aktif adalah ${pondLimit} ${terms.unitLower}.`}
                 </p>
               </div>
 
@@ -268,13 +269,13 @@ export default function Subscription() {
               alignItems: 'center',
               gap: 16
             }}>
-              <div style={{ fontSize: 28 }}>🐟</div>
+              <div style={{ fontSize: 28 }}>{user?.business_category === 'Budidaya Tanaman' ? '🌱' : '🐟'}</div>
               <div>
                 <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1B4332' }}>
-                  Promo Spesial Budidaya Ikan ({categoryPromo.category_name}) Aktif!
+                  Promo Spesial {categoryPromo.category_name} Aktif!
                 </h4>
                 <p style={{ margin: '4px 0 0 0', fontSize: 12, color: '#475569', lineHeight: 1.4 }}>
-                  {categoryPromo.text || `Dapatkan diskon upgrade sebesar ${categoryPromo.discount_pct}% khusus untuk memperluas kolam budidaya Anda.`}
+                  {categoryPromo.text || `Dapatkan diskon upgrade sebesar ${categoryPromo.discount_pct}% khusus untuk memperluas area budidaya Anda.`}
                 </p>
               </div>
             </div>

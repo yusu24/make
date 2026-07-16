@@ -450,12 +450,11 @@
   color: var(--aq-text-muted) !important;
 }
 
-/* ── Button Overrides for Budidaya ── */
 .budidaya-scope .btn-primary {
   background: var(--aq-primary) !important;
   color: #FFFFFF !important;
   box-shadow: 0 4px 12px rgba(27, 67, 50, 0.2) !important;
-  border: none !important;
+  border: 1.5px solid transparent !important;
 }
 
 .budidaya-scope .btn-primary:hover {

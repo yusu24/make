@@ -3,44 +3,43 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use App\Models\RetailCategory;
 use App\Models\RetailSupplier;
 use App\Models\RetailCustomer;
 use App\Models\RetailUnit;
+use App\Models\RetailExpenseCategory;
+use App\Models\RetailSetting;
 
 class RetailMasterController extends Controller
 {
     public function getCategories(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        return response()->json(RetailCategory::where('tenant_id', $tenantId)->get());
+        return response()->json(RetailCategory::get());
     }
 
     public function storeCategory(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $cat = RetailCategory::create(['tenant_id' => $tenantId, 'name' => $request->name]);
+        $cat = RetailCategory::create(['name' => $request->name]);
         return response()->json($cat);
     }
-    
+
     public function updateCategory(Request $request, int $id) {
         $cat = RetailCategory::findOrFail($id);
         $cat->update(['name' => $request->name]);
         return response()->json($cat);
     }
 
-    public function destroyCategory(int $id) {
-        RetailCategory::destroy($id);
+    public function destroyCategory(Request $request, int $id) {
+        RetailCategory::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
     public function getSuppliers(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        return response()->json(RetailSupplier::where('tenant_id', $tenantId)->latest()->get());
+        return response()->json(RetailSupplier::latest()->get());
     }
 
     public function storeSupplier(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $sup = RetailSupplier::create([
-            'tenant_id' => $tenantId,
             'name' => $request->name,
             'contact' => $request->contact,
             'address' => $request->address
@@ -58,20 +57,17 @@ class RetailMasterController extends Controller
         return response()->json($sup);
     }
 
-    public function destroySupplier(int $id) {
-        RetailSupplier::destroy($id);
+    public function destroySupplier(Request $request, int $id) {
+        RetailSupplier::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
     public function getCustomers(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        return response()->json(RetailCustomer::where('tenant_id', $tenantId)->latest()->get());
+        return response()->json(RetailCustomer::latest()->get());
     }
 
     public function storeCustomer(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
         $cus = RetailCustomer::create([
-            'tenant_id' => $tenantId,
             'name' => $request->name,
             'contact' => $request->contact,
             'email' => $request->email,
@@ -91,20 +87,18 @@ class RetailMasterController extends Controller
         return response()->json($cus);
     }
 
-    public function destroyCustomer(int $id) {
-        RetailCustomer::destroy($id);
+    public function destroyCustomer(Request $request, int $id) {
+        RetailCustomer::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
     // Units
     public function getUnits(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        return response()->json(RetailUnit::where('tenant_id', $tenantId)->get());
+        return response()->json(RetailUnit::get());
     }
 
     public function storeUnit(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $unit = RetailUnit::create(['tenant_id' => $tenantId, 'name' => $request->name]);
+        $unit = RetailUnit::create(['name' => $request->name]);
         return response()->json($unit);
     }
 
@@ -114,94 +108,120 @@ class RetailMasterController extends Controller
         return response()->json($unit);
     }
 
-    public function destroyUnit(int $id) {
-        RetailUnit::destroy($id);
+    public function destroyUnit(Request $request, int $id) {
+        RetailUnit::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
     // Expense Categories
     public function getExpenseCategories(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        return response()->json(\App\Models\RetailExpenseCategory::where('tenant_id', $tenantId)->get());
+        return response()->json(RetailExpenseCategory::get());
     }
 
     public function storeExpenseCategory(Request $request) {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
-        $cat = \App\Models\RetailExpenseCategory::create(['tenant_id' => $tenantId, 'name' => $request->name]);
+        $cat = RetailExpenseCategory::create(['name' => $request->name]);
         return response()->json($cat);
     }
 
     public function updateExpenseCategory(Request $request, int $id) {
-        $cat = \App\Models\RetailExpenseCategory::findOrFail($id);
+        $cat = RetailExpenseCategory::findOrFail($id);
         $cat->update(['name' => $request->name]);
         return response()->json($cat);
     }
 
-    public function destroyExpenseCategory(int $id) {
-        \App\Models\RetailExpenseCategory::destroy($id);
+    public function destroyExpenseCategory(Request $request, int $id) {
+        RetailExpenseCategory::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // ADMIN FULL-ACCESS METHODS (reads tenant_id from query param)
-    // ═══════════════════════════════════════════════════════════════════════
+    // ─── Settings ────────────────────────────────────────────────────────────────
 
-    private function adminTenantId(Request $request): string {
-        return $request->query('tenant_id', 'TN-001');
-    }
-
-    // Categories (admin)
-    public function adminGetCategories(Request $request) {
-        return response()->json(RetailCategory::where('tenant_id', $this->adminTenantId($request))->get());
-    }
-    public function adminStoreCategory(Request $request) {
-        $cat = RetailCategory::create(['tenant_id' => $this->adminTenantId($request), 'name' => $request->name]);
-        return response()->json($cat);
-    }
-    public function adminUpdateCategory(Request $request, int $id) {
-        $cat = RetailCategory::findOrFail($id);
-        $cat->update(['name' => $request->name]);
-        return response()->json($cat);
-    }
-    public function adminDestroyCategory(int $id) {
-        RetailCategory::destroy($id);
-        return response()->json(['message' => 'Deleted']);
+    private function getOrCreateSettings(Request $request): RetailSetting
+    {
+        return RetailSetting::firstOrCreate(
+            ['tenant_id' => $request->user()->tenant_id],
+            [
+                'tax_rate'                    => 0,
+                'points_ratio'                => 10000,
+                'low_stock_default_threshold' => 5,
+                'enable_tax'                  => true,
+                'enable_loyalty'              => true,
+                'currency'                    => 'IDR',
+            ]
+        );
     }
 
-    // Units (admin)
-    public function adminGetUnits(Request $request) {
-        return response()->json(RetailUnit::where('tenant_id', $this->adminTenantId($request))->get());
-    }
-    public function adminStoreUnit(Request $request) {
-        $unit = RetailUnit::create(['tenant_id' => $this->adminTenantId($request), 'name' => $request->name]);
-        return response()->json($unit);
-    }
-    public function adminUpdateUnit(Request $request, int $id) {
-        $unit = RetailUnit::findOrFail($id);
-        $unit->update(['name' => $request->name]);
-        return response()->json($unit);
-    }
-    public function adminDestroyUnit(int $id) {
-        RetailUnit::destroy($id);
-        return response()->json(['message' => 'Deleted']);
+    private function withQrisUrl(array $data): array
+    {
+        $data['qris_image_url'] = !empty($data['qris_image_path'])
+            ? asset('storage/' . $data['qris_image_path'])
+            : null;
+        return $data;
     }
 
-    // Expense Categories (admin)
-    public function adminGetExpenseCategories(Request $request) {
-        return response()->json(\App\Models\RetailExpenseCategory::where('tenant_id', $this->adminTenantId($request))->get());
+    public function getSettings(Request $request)
+    {
+        $settings = $this->getOrCreateSettings($request);
+        return response()->json($this->withQrisUrl($settings->toArray()));
     }
-    public function adminStoreExpenseCategory(Request $request) {
-        $cat = \App\Models\RetailExpenseCategory::create(['tenant_id' => $this->adminTenantId($request), 'name' => $request->name]);
-        return response()->json($cat);
+
+    public function updateSettings(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'store_name'                  => 'nullable|string|max:120',
+            'store_address'               => 'nullable|string|max:500',
+            'store_phone'                 => 'nullable|string|max:30',
+            'currency'                    => 'nullable|string|max:10',
+            'tax_rate'                    => 'nullable|numeric|min:0|max:100',
+            'enable_tax'                  => 'nullable|boolean',
+            'points_ratio'                => 'nullable|integer|min:1',
+            'enable_loyalty'              => 'nullable|boolean',
+            'low_stock_default_threshold' => 'nullable|numeric|min:0',
+            'receipt_header'              => 'nullable|string|max:500',
+            'receipt_footer'              => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $settings = $this->getOrCreateSettings($request);
+        $settings->update($validator->validated());
+
+        return response()->json($this->withQrisUrl($settings->fresh()->toArray()));
     }
-    public function adminUpdateExpenseCategory(Request $request, int $id) {
-        $cat = \App\Models\RetailExpenseCategory::findOrFail($id);
-        $cat->update(['name' => $request->name]);
-        return response()->json($cat);
+
+    public function uploadQris(Request $request)
+    {
+        $request->validate([
+            'qris_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $settings = $this->getOrCreateSettings($request);
+
+        // Delete old QRIS if exists
+        if ($settings->qris_image_path) {
+            Storage::disk('public')->delete($settings->qris_image_path);
+        }
+
+        $path = $request->file('qris_image')->store('retail/qris', 'public');
+        $settings->update(['qris_image_path' => $path]);
+
+        return response()->json([
+            'qris_image_path' => $path,
+            'qris_image_url'  => asset('storage/' . $path),
+        ]);
     }
-    public function adminDestroyExpenseCategory(int $id) {
-        \App\Models\RetailExpenseCategory::destroy($id);
-        return response()->json(['message' => 'Deleted']);
+
+    public function deleteQris(Request $request)
+    {
+        $settings = $this->getOrCreateSettings($request);
+
+        if ($settings->qris_image_path) {
+            Storage::disk('public')->delete($settings->qris_image_path);
+            $settings->update(['qris_image_path' => null]);
+        }
+
+        return response()->json(['message' => 'QRIS dihapus']);
     }
 }
-

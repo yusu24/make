@@ -114,17 +114,29 @@ export default function ContentAnnouncement() {
       </div>
 
       {/* ── Stats ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 24 }}>
         {[
-          { label: 'Total', value: items.length, icon: '📢', color: '#3b82f6' },
-          { label: 'Dipublikasi', value: items.filter(i => i.status === 'published').length, icon: '✅', color: '#10b981' },
-          { label: 'Draft', value: items.filter(i => i.status === 'draft').length, icon: '📝', color: '#f59e0b' },
-          { label: 'Ke Semua Tenant', value: items.filter(i => i.target === 'all').length, icon: '📡', color: '#8b5cf6' },
+          { label: 'Total', value: items.length, icon: '📢', color: '#3b82f6', desc: 'Semua pengumuman dibuat' },
+          { label: 'Dipublikasi', value: items.filter(i => i.status === 'published').length, icon: '✅', color: '#10b981', desc: 'Dapat dilihat oleh merchant' },
+          { label: 'Draft', value: items.filter(i => i.status === 'draft').length, icon: '📝', color: '#f59e0b', desc: 'Masih dalam tahap edit' },
+          { label: 'Ke Semua Tenant', value: items.filter(i => i.target === 'all').length, icon: '📡', color: '#8b5cf6', desc: 'Pengumuman siaran global' },
         ].map(card => (
-          <div key={card.label} className="card card-pad">
-            <div style={{ fontSize: 26, marginBottom: 8 }}>{card.icon}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: card.color, lineHeight: 1 }}>{card.value}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{card.label}</div>
+          <div key={card.label} className="card card-pad" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: card.color + '20',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22, color: card.color, flexShrink: 0
+              }}>{card.icon}</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{card.label}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.2 }}>{card.desc}</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 600, color: card.color, lineHeight: 1 }}>
+              {card.value}
+            </div>
           </div>
         ))}
       </div>
@@ -172,7 +184,7 @@ export default function ContentAnnouncement() {
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{item.date}</span>
                   </div>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{item.title}</h4>
+                  <h4 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 4 }}>{item.title}</h4>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{item.content}</p>
                 </div>
               </div>
@@ -181,11 +193,12 @@ export default function ContentAnnouncement() {
                   className={`btn btn-sm ${item.status === 'published' ? 'btn-secondary' : 'btn-primary'}`}
                   style={{ fontSize: 11 }}
                   onClick={() => handlePublish(item.id)}
+                  title={item.status === 'published' ? 'Tarik Pengumuman' : 'Publikasikan'}
                 >
-                  {item.status === 'published' ? 'Tarik' : '📡 Publish'}
+                  {item.status === 'published' ? '📥' : '📡'}
                 </button>
-                <button className="btn btn-secondary btn-sm" onClick={() => openEdit(item)}>✏️</button>
-                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => handleDelete(item.id)}>🗑</button>
+                <button className="btn btn-secondary btn-sm" onClick={() => openEdit(item)} title="Edit">✏️</button>
+                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => handleDelete(item.id)} title="Hapus">🗑</button>
               </div>
             </div>
           </div>

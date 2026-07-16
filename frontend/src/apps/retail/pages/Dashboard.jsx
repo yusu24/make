@@ -1,63 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell 
-} from 'recharts';
-import { 
-  ShoppingBag, TrendingUp, Receipt, AlertTriangle, ArrowRight,
-  RefreshCw, Plus, Package, Eye, DollarSign
+import { Link } from 'react-router-dom';
+import {
+  ShoppingCart, TrendingUp, Package, Users,
+  ArrowRight, BarChart3, Clock, CheckCircle,
+  AlertTriangle, Star, Zap, Receipt
 } from 'lucide-react';
 import { useCore } from '../../../hooks/useCore';
-import '../retail.css';
+import { useAuth } from '../../../contexts/AuthContext';
+import RetailLoading from '../components/RetailLoading';
 
-// Sub-component for KPI Card (Top Row)
-const KpiCard = ({ title, value, trend, trendType, icon: Icon, color }) => (
-  <div className="horizon-kpi">
-    <div className="horizon-kpi__icon-wrap retail-bg-primary-subtle">
-      <Icon size={24} className="retail-text-primary" />
-    </div>
-    <div className="horizon-kpi__content">
-      <span className="retail-label">{title}</span>
-      <h3 className="retail-kpi-value">{value}</h3>
-      {trend && (
-        <span className={`text-[10px] font-bold ${trendType === 'up' ? 'retail-text-success' : 'retail-text-danger'}`}>
-          {trendType === 'up' ? '↑' : '↓'} {trend} <span className="retail-text-secondary">since last month</span>
-        </span>
-      )}
-    </div>
-  </div>
-);
+function StatCard({ icon: Icon, label, value, sub, color = 'indigo', trend, isMoney = false }) {
+  const colors = {
+    indigo: { bg: 'bg-indigo-500/10', text: 'text-indigo-500', border: 'border-indigo-500/20' },
+    emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20' },
+    amber: { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' },
+    rose: { bg: 'bg-rose-500/10', text: 'text-rose-500', border: 'border-rose-500/20' },
+  };
+  const c = colors[color] || colors.indigo;
 
-// Sub-component for Product Card (Bottom Row)
-const ProductCard = ({ product, sales, price, progress }) => (
-  <div className="airy-product-card">
-    <img 
-      src={`https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=80&idx=${product.id}`} 
-      alt={product.name} 
-      className="airy-product-thumb" 
-    />
-    <h4 className="retail-card-title text-xs mb-1 truncate">{product.name}</h4>
-    <div className="flex justify-between items-center mb-2">
-      <span className="text-[10px] font-bold retail-text-primary">Rp {Number(price).toLocaleString('id-ID')}</span>
-      <span className="text-[10px] font-medium retail-text-secondary">{sales} sales</span>
+  return (
+    <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="flex items-center gap-3">
+        <div className={`p-2.5 rounded-xl ${c.bg} border ${c.border} shrink-0`}>
+          <Icon size={18} className={c.text} />
+        </div>
+        <span className="text-sm font-medium text-slate-500">{label}</span>
+        {trend !== undefined && (
+          <span className={`ml-auto text-xs font-normal px-2 py-0.5 rounded-full ${trend >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+            {trend >= 0 ? '+' : ''}{trend}%
+          </span>
+        )}
+      </div>
+      <div>
+        <p className={`text-2xl text-slate-900 leading-tight ${isMoney ? 'font-semibold' : 'font-normal'}`}>{value}</p>
+        {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
+      </div>
     </div>
-    <div className="airy-progress-bar">
-      <div className="airy-progress-fill" style={{ width: `${progress}%` }}></div>
-    </div>
-  </div>
-);
+  );
+}
+
+function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
+  const colors = {
+    indigo: 'from-indigo-600 to-indigo-700 hover:from-indigo-500',
+    emerald: 'from-emerald-600 to-emerald-700 hover:from-emerald-500',
+    amber: 'from-amber-500 to-amber-600 hover:from-amber-400',
+    slate: 'from-slate-700 to-slate-800 hover:from-slate-600',
+  };
+
+  return (
+    <Link
+      to={href}
+      className={`flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br ${colors[color] || colors.indigo} text-white shadow-md hover:shadow-lg transition-all duration-200 group`}
+    >
+      <div className="p-2.5 bg-white/15 rounded-xl shrink-0">
+        <Icon size={20} className="text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-sm text-white">{title}</h3>
+        <p className="text-[11px] text-white truncate">{desc}</p>
+      </div>
+      <ArrowRight size={16} className="text-white group-hover:translate-x-1 transition-transform duration-200 shrink-0" />
+    </Link>
+  );
+}
+
+const fmtRp = (val) =>
+  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
 
 let _cache = null;
 let _cacheTime = 0;
 const CACHE_TTL = 60_000;
 
 export default function RetailDashboard() {
-  const { getDashboard, loading: apiLoading } = useCore();
+  const { user } = useAuth();
+  const { getDashboard } = useCore();
   const [data, setData] = useState(_cache || {
-    total_sales: 0,
-    total_transactions: 0,
-    transactions: [],
-    top_products: [],
+    today_transactions: 0,
+    today_income: 0,
+    active_products: 0,
+    active_staff: 0,
+    recent_transactions: [],
     low_stock: []
   });
   const [loading, setLoading] = useState(!_cache);
@@ -67,168 +89,206 @@ export default function RetailDashboard() {
     if (_cache && (now - _cacheTime) < CACHE_TTL) {
       setData(_cache); setLoading(false); return;
     }
-    
+
     getDashboard().then(res => {
-        if (!res) { setLoading(false); return; }
-        const summary = res.summary || {};
-        const sanitizedData = {
-          total_sales: summary.income || 0,
-          total_transactions: summary.income_count || 0,
-          transactions: res.daily_stats || [],
-          top_products: [], 
-          low_stock: []
-        };
-        _cache = sanitizedData; 
-        _cacheTime = Date.now(); 
-        setData(sanitizedData); 
-        setLoading(false); 
+      if (!res) { setLoading(false); return; }
+      const summary = res.summary || {};
+      const sanitizedData = {
+        today_transactions: summary.today_transactions || 0,
+        today_income: summary.today_income || 0,
+        active_products: summary.active_products || 0,
+        active_staff: summary.active_staff || 0,
+        recent_transactions: res.recent_transactions || [],
+        low_stock: res.low_stock || [],
+      };
+      _cache = sanitizedData;
+      _cacheTime = Date.now();
+      setData(sanitizedData);
+      setLoading(false);
     }).catch(err => {
       console.error('Dashboard load failed:', err);
       setLoading(false);
     });
   }, [getDashboard]);
 
-  if (loading) return (
-    <div className="page-content">
-      <div className="loading-state-premium">
-        <div className="spinner-glow"></div>
-        <p className="loading-text">Menyinkronkan dashboard airy...</p>
-      </div>
-    </div>
-  );
+  if (loading) return <RetailLoading text="Menyinkronkan dashboard..." />;
 
-  // Derived data for visuals
-  const netSales = data.total_sales * 0.85; 
-  
-  const chartData = [
-    { name: 'Nov', sales: 25000 }, { name: 'Dec', sales: 15000 },
-    { name: 'Jan', sales: 18000 }, { name: 'Feb', sales: 35000 },
-    { name: 'Mar', sales: 22000 }, { name: 'Apr', sales: 42000 },
-  ];
+  // Our retail tenants use role 'customer' for the store owner and
+  // 'retail_cashier' for staff — map those onto the owner/cashier split.
+  const isCashier = user?.role === 'retail_cashier';
+  const isOwnerOrManager = !isCashier;
 
-  const pieData = [
-    { name: 'Production', value: 50, color: 'var(--retail-success)' },
-    { name: 'Store', value: 20, color: 'var(--retail-warning)' },
-    { name: 'Stock', value: 30, color: 'var(--retail-danger)' },
-  ];
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Selamat pagi' : hour < 17 ? 'Selamat siang' : 'Selamat malam';
+  const roleLabel = isCashier ? 'Kasir' : 'Owner';
 
   return (
-    <div className="animate-fade-in retail-dashboard-spacing">
-      {/* Header Section */}
-      <div className="page-header py-4" style={{ border: 'none', justifyContent: 'flex-end' }}>
-        <div className="flex gap-4">
-          <button className="btn btn-secondary" onClick={() => { _cache = null; window.location.reload(); }}>
-            <RefreshCw size={18} />
-          </button>
-          <button className="btn btn-primary px-8" style={{ background: 'var(--retail-success)', border: 'none' }} onClick={() => window.location.href='/retail/pos'}>
-            <Plus size={18} /> <span>Open POS</span>
-          </button>
-        </div>
-      </div>
+    <div className="flex flex-col gap-4">
+      {/* Welcome Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl p-5 text-white shadow-lg">
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-indigo-600/20 rounded-full blur-2xl" />
+        <div className="absolute -bottom-12 -left-6 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl" />
 
-      {/* Row 1: KPI Cards */}
-      <div className="airy-kpi-grid">
-        <KpiCard title="Total Sales" value={`Rp ${data.total_sales.toLocaleString('id-ID')}`} trend="0.5%" trendType="down" icon={DollarSign} />
-        <KpiCard title="Total Order" value={data.total_transactions} trend="1.0%" trendType="up" icon={ShoppingBag} />
-        <KpiCard title="Spend this month" value={`Rp ${netSales.toLocaleString('id-ID')}`} trend="1.0%" trendType="up" icon={Receipt} />
-        <KpiCard title="Your Balance" value="Rp 1.24jt" trend="2.5%" trendType="down" icon={DollarSign} />
-      </div>
-
-      {/* Row 2: Charts & Deep Analysis */}
-      <div className="airy-main-grid">
-        <div className="airy-card">
-          <div className="flex justify-between items-center mb-8">
-             <div>
-                <h3 className="retail-title">Rp 37.5jt</h3>
-                <span className="retail-label">Total Revenue <span className="retail-text-success font-bold">+2.45%</span></span>
-             </div>
-             <button className="p-3 rounded-xl retail-text-primary retail-bg-primary-subtle">
-                <TrendingUp size={20} />
-             </button>
+        <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <p className="text-indigo-300 text-sm font-medium mb-1">{greeting}, 👋</p>
+            <h2 className="text-2xl font-extrabold leading-tight">{user?.name || 'User'}</h2>
+            <p className="text-slate-400 text-sm mt-1">
+              Role: <span className="text-indigo-300 font-normal">{roleLabel}</span>
+              {user?.tenant_name && (
+                <> &middot; Outlet: <span className="text-indigo-300 font-normal">{user.tenant_name}</span></>
+              )}
+            </p>
           </div>
-          <div style={{ height: 260, width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--retail-primary)" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="var(--retail-primary)" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 500, fill: 'var(--retail-text-secondary)'}} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: 16, border: 'none', boxShadow: 'var(--retail-shadow)', background: 'var(--retail-card-bg)', color: 'var(--retail-text-primary)', padding: 12 }}
-                />
-                <Area type="monotone" dataKey="sales" stroke="var(--retail-primary)" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="hidden sm:flex items-center gap-2 bg-white/10 border border-white/10 rounded-2xl px-4 py-3">
+            <Clock size={16} className="text-indigo-300" />
+            <span className="text-sm font-medium text-white/80">
+              {now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
           </div>
         </div>
 
-        <div className="airy-card flex flex-col items-center">
-           <div className="w-full flex justify-end items-center mb-6">
-           </div>
-           <div style={{ position: 'relative', width: '100%', height: 200 }}>
-             <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-             </ResponsiveContainer>
-             <div className="retail-pie-center">
-                <span className="retail-kpi-value">100%</span>
-                <span className="retail-label">Growth</span>
-             </div>
-           </div>
-           <div className="flex gap-4 mt-8 flex-wrap justify-center">
-              {pieData.map(d => (
-                <div key={d.name} className="flex items-center gap-2">
-                   <div style={{ width: 8, height: 8, borderRadius: 2, background: d.color }}></div>
-                   <span className="retail-label" style={{ fontSize: 10 }}>{d.name}</span>
+        {isCashier && (
+          <Link
+            to="/retail/pos"
+            className="relative z-10 mt-5 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-md"
+          >
+            <Zap size={16} />
+            Buka Kasir POS
+            <ArrowRight size={14} className="ml-1" />
+          </Link>
+        )}
+      </div>
+
+      {/* Stats Grid - only for owner */}
+      {isOwnerOrManager && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard
+            icon={Receipt}
+            label="Transaksi Hari Ini"
+            value={data.today_transactions}
+            sub="total transaksi"
+            color="indigo"
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Omzet Hari Ini"
+            value={fmtRp(data.today_income)}
+            sub="total penjualan"
+            color="emerald"
+            isMoney
+          />
+          <StatCard
+            icon={Package}
+            label="Produk Aktif"
+            value={data.active_products}
+            sub="produk tersedia"
+            color="amber"
+          />
+          <StatCard
+            icon={Users}
+            label="Kasir Aktif"
+            value={data.active_staff}
+            sub="pengguna terdaftar"
+            color="rose"
+          />
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div>
+        <h3 className="text-sm font-normal text-slate-600 uppercase tracking-wider mb-3">Akses Cepat</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          <QuickAction icon={ShoppingCart} title="Kasir POS" desc="Mulai sesi penjualan" href="/retail/pos" color="indigo" />
+          {isOwnerOrManager && (
+            <>
+              <QuickAction icon={Package} title="Kelola Produk" desc="Tambah atau edit produk" href="/retail/products" color="emerald" />
+              <QuickAction icon={BarChart3} title="Lihat Laporan" desc="Analisis penjualan" href="/retail/reports/sales" color="amber" />
+              <QuickAction icon={Receipt} title="Riwayat Transaksi" desc="Daftar semua pesanan" href="/retail/transactions" color="slate" />
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom section: Recent transactions + Low stock */}
+      {isOwnerOrManager && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Recent Transactions */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <h3 className="font-bold text-slate-900 text-sm">Transaksi Terbaru</h3>
+              <Link to="/retail/transactions" className="text-xs text-indigo-600 hover:underline font-medium flex items-center gap-1">
+                Lihat semua <ArrowRight size={12} />
+              </Link>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {data.recent_transactions.length > 0 ? data.recent_transactions.slice(0, 5).map((t) => (
+                <div key={t.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/80 transition-colors">
+                  <div className="p-2 bg-indigo-50 rounded-lg shrink-0">
+                    <Receipt size={14} className="text-indigo-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-normal text-slate-800 truncate">#{t.invoice_no}</p>
+                    <p className="text-[10px] text-slate-400">{t.cashier_name || 'Kasir'}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs font-semibold text-slate-900">{fmtRp(t.total_amount)}</p>
+                    <span className={`inline-flex items-center gap-0.5 text-[9px] font-normal px-1.5 py-0.5 rounded-full ${
+                      t.status === 'paid' ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50'
+                    }`}>
+                      {t.status === 'paid' ? <><CheckCircle size={9} /> Lunas</> : t.status}
+                    </span>
+                  </div>
                 </div>
-              ))}
-           </div>
-        </div>
-      </div>
+              )) : (
+                <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+                  <Receipt size={28} className="opacity-30" />
+                  <p className="text-xs">Belum ada transaksi.</p>
+                </div>
+              )}
+            </div>
+          </div>
 
-      <div className="airy-card">
-         <div className="flex justify-end items-center mb-8">
-            <button className="retail-label retail-text-primary font-bold hover:underline" onClick={()=>window.location.href='/retail/products'}>
-               See all
-            </button>
-         </div>
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {data.top_products.slice(0,4).map((tp, idx) => (
-              <ProductCard 
-                key={idx} 
-                product={tp.product} 
-                sales={tp.total_qty} 
-                price={tp.product?.price_sell || 400000} 
-                progress={100 - (idx * 15)}
-              />
-            ))}
-            {data.top_products.length < 4 && [1,2,3,4].map(i => (
-              <ProductCard 
-                key={`p-${i}`} 
-                product={{ id: `p-${i}`, name: 'New Arrival Item' }} 
-                sales={Math.floor(Math.random()*200)} 
-                price={450000} 
-                progress={40 + i*10} 
-              />
-            ))}
-         </div>
-      </div>
+          {/* Low Stock Products */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <AlertTriangle size={14} className="text-amber-500" />
+                Stok Hampir Habis
+              </h3>
+              <Link to="/retail/inventory" className="text-xs text-indigo-600 hover:underline font-medium flex items-center gap-1">
+                Kelola stok <ArrowRight size={12} />
+              </Link>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {data.low_stock.length > 0 ? data.low_stock.slice(0, 5).map((p) => (
+                <div key={p.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/80 transition-colors">
+                  <div className="p-2 bg-amber-50 rounded-lg shrink-0">
+                    <Package size={14} className="text-amber-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-normal text-slate-800 truncate">{p.name}</p>
+                    <p className="text-[10px] text-slate-400">{p.category || 'Tanpa Kategori'}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className={`inline-block text-[9px] font-normal px-2 py-0.5 rounded-full ${
+                      p.stock <= 0 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      Sisa: {Math.round(p.stock)}
+                    </span>
+                  </div>
+                </div>
+              )) : (
+                <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+                  <Star size={28} className="opacity-30 text-emerald-500" />
+                  <p className="text-xs text-emerald-600 font-medium">Semua stok aman! 🎉</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

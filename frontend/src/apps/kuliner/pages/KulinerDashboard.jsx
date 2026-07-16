@@ -53,8 +53,8 @@ const KulinerDashboard = () => {
             <div className="kd-stats-grid">
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
-                  <span className="kd-stat-label">Pendapatan Hari Ini</span>
                   <div className="kd-stat-icon kd-icon-revenue">💰</div>
+                  <span className="kd-stat-label">Pendapatan Hari Ini</span>
                 </div>
                 <div className="kd-stat-value">{formatRp(stats?.revenue_today)}</div>
                 <div className="kd-stat-change kd-change-up">↑ 12.5% dari kemarin</div>
@@ -62,8 +62,8 @@ const KulinerDashboard = () => {
 
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
-                  <span className="kd-stat-label">Pesanan Hari Ini</span>
                   <div className="kd-stat-icon kd-icon-orders">📦</div>
+                  <span className="kd-stat-label">Pesanan Hari Ini</span>
                 </div>
                 <div className="kd-stat-value">{stats?.orders_today || 0}</div>
                 <div className="kd-stat-change kd-change-up">↑ {stats?.orders_today || 0} pesanan baru</div>
@@ -71,8 +71,8 @@ const KulinerDashboard = () => {
 
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
-                  <span className="kd-stat-label">Pendapatan Bulan Ini</span>
                   <div className="kd-stat-icon kd-icon-menu">📊</div>
+                  <span className="kd-stat-label">Pendapatan Bulan Ini</span>
                 </div>
                 <div className="kd-stat-value">{formatRp(stats?.revenue_month)}</div>
                 <div className="kd-stat-change kd-change-up">Trend positif bulan ini</div>
@@ -80,11 +80,48 @@ const KulinerDashboard = () => {
 
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
-                  <span className="kd-stat-label">Total Pesanan</span>
                   <div className="kd-stat-icon kd-icon-users">📈</div>
+                  <span className="kd-stat-label">Total Pesanan</span>
                 </div>
                 <div className="kd-stat-value">{stats?.total_orders || 0}</div>
                 <div className="kd-stat-change kd-change-up">Seluruh periode</div>
+              </div>
+            </div>
+
+            {/* PHASE 4: ADDITIONAL WIDGETS */}
+            <div className="kd-stats-grid" style={{ marginTop: 16 }}>
+              <div className="kd-stat-card">
+                <div className="kd-stat-header">
+                  <div className="kd-stat-icon kd-icon-revenue">📈</div>
+                  <span className="kd-stat-label">Profit Hari Ini</span>
+                </div>
+                <div className="kd-stat-value">{formatRp(stats?.profit_today)}</div>
+                <div className="kd-stat-change" style={{ color: '#94a3b8' }}>Estimasi: pendapatan − HPP − beban</div>
+              </div>
+              <div className="kd-stat-card">
+                <div className="kd-stat-header">
+                  <div className="kd-stat-icon kd-icon-menu">🏆</div>
+                  <span className="kd-stat-label">Menu Terlaris (30 hari)</span>
+                </div>
+                <div className="kd-stat-value" style={{ fontSize: 18 }}>{stats?.top_menu || '-'}</div>
+              </div>
+              <div className="kd-stat-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/kuliner/admin/kitchen-queue')}>
+                <div className="kd-stat-header">
+                  <div className="kd-stat-icon kd-icon-orders">👨‍🍳</div>
+                  <span className="kd-stat-label">Kitchen Queue Aktif</span>
+                </div>
+                <div className="kd-stat-value">{stats?.kitchen_queue_count || 0}</div>
+                <div className="kd-stat-change" style={{ color: '#94a3b8' }}>Klik untuk lihat papan dapur →</div>
+              </div>
+              <div className="kd-stat-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/kuliner/admin/ingredients')}>
+                <div className="kd-stat-header">
+                  <div className="kd-stat-icon kd-icon-users">⚠️</div>
+                  <span className="kd-stat-label">Bahan Baku Hampir Habis</span>
+                </div>
+                <div className="kd-stat-value">{stats?.low_stock_ingredients?.length || 0}</div>
+                <div className="kd-stat-change" style={{ color: '#94a3b8' }}>
+                  {(stats?.low_stock_ingredients || []).slice(0, 3).map((i) => i.name).join(', ') || 'Semua stok aman'}
+                </div>
               </div>
             </div>
 

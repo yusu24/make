@@ -16,4 +16,21 @@ class KulinerProduct extends Model
     {
         return $this->belongsTo(KulinerCategory::class, 'category_id');
     }
+
+    public function recipeItems()
+    {
+        return $this->hasMany(KulinerRecipeItem::class, 'product_id');
+    }
+
+    public function modifierGroups()
+    {
+        return $this->belongsToMany(KulinerModifierGroup::class, 'kuliner_product_modifier_groups', 'product_id', 'modifier_group_id')
+            ->withPivot('sort_order');
+    }
+
+    public function addons()
+    {
+        return $this->belongsToMany(KulinerAddon::class, 'kuliner_product_addons', 'product_id', 'addon_id')
+            ->withPivot('sort_order');
+    }
 }

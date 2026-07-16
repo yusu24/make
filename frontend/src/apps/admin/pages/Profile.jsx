@@ -68,14 +68,14 @@ export default function Profile() {
             width:72, height:72, borderRadius:20,
             background:'linear-gradient(135deg, var(--primary-600), var(--accent-600))',
             display:'flex', alignItems:'center', justifyContent:'center',
-            fontSize:28, fontWeight:800, color:'white',
+            fontSize:28, fontWeight: 600, color:'white',
             boxShadow:'0 8px 24px rgba(59,130,246,0.35)',
             flexShrink:0
           }}>
             {initials}
           </div>
           <div>
-            <h3 style={{fontFamily:'var(--font-heading)',fontSize:20,fontWeight:800,marginBottom:4}}>{user?.name}</h3>
+            <h3 style={{fontFamily:'var(--font-heading)',fontSize:20,fontWeight: 600,marginBottom:4}}>{user?.name}</h3>
             <p style={{fontSize:13,color:'var(--text-muted)',marginBottom:8}}>{user?.email}</p>
             <div style={{display:'flex', gap:8}}>
               <span className={`badge ${user?.role==='super_admin'?'badge-violet':user?.role==='admin'?'badge-blue':'badge-green'}`}>
@@ -92,7 +92,7 @@ export default function Profile() {
         {error && <div className="auth-alert auth-alert--error" style={{marginBottom:16}}><span>⚠</span> {error}</div>}
 
         <form id="form-profile" onSubmit={handleSave} style={{display:'flex',flexDirection:'column',gap:16}}>
-          <h4 style={{fontSize:13,fontWeight:700,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.08em'}}>Informasi Akun</h4>
+          <h4 style={{fontSize:13,fontWeight: 600,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.08em'}}>Informasi Akun</h4>
           <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:14}}>
             <div className="form-group">
               <label className="form-label" htmlFor="prof-name">Nama Lengkap</label>
@@ -116,7 +116,7 @@ export default function Profile() {
       {/* Change password */}
       <div className="card card-pad">
         <form id="form-change-pass" onSubmit={handleChangePass} style={{display:'flex',flexDirection:'column',gap:16}}>
-          <h4 style={{fontSize:13,fontWeight:700,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.08em'}}>Ubah Password</h4>
+          <h4 style={{fontSize:13,fontWeight: 600,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.08em'}}>Ubah Password</h4>
           <div className="form-group">
             <label className="form-label" htmlFor="cur-pass">Password Saat Ini</label>
             <div className="auth-input-wrap">
@@ -162,7 +162,7 @@ export default function Profile() {
 
       {/* Danger zone */}
       <div className="card card-pad" style={{marginTop:20, border:'1px solid rgba(239,68,68,0.2)'}}>
-        <h4 style={{fontSize:13,fontWeight:700,color:'var(--danger-400)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>
+        <h4 style={{fontSize:13,fontWeight: 600,color:'var(--danger-400)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>
           ⚠ Zona Berbahaya
         </h4>
         <div style={{display:'flex', alignItems:'center', justifyContent:'space-between'}}>
@@ -170,7 +170,12 @@ export default function Profile() {
             <p style={{fontSize:14,fontWeight:600,marginBottom:4}}>Keluar dari Sesi</p>
             <p style={{fontSize:12,color:'var(--text-muted)'}}>Anda akan keluar dari semua session aktif</p>
           </div>
-          <button id="btn-logout-profile" className="btn btn-danger btn-sm" onClick={() => { const demoEmails = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']; logout(); navigate(demoEmails.includes(user?.email) ? '/' : '/login'); }}>Keluar Sekarang</button>
+           <button id="btn-logout-profile" className="btn btn-danger btn-sm" onClick={() => {
+            const demoEmails = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com'];
+            const isDemo = user?.email?.startsWith('demo-sandbox-') || user?.email?.startsWith('demo-kuliner-') || demoEmails.includes(user?.email);
+            logout();
+            navigate(isDemo ? '/' : '/login');
+          }}>Keluar Sekarang</button>
         </div>
       </div>
     </div>

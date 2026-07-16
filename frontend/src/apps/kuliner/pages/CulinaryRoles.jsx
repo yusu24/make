@@ -14,14 +14,14 @@ const CulinaryRoles = () => {
   });
 
   const availablePermissions = [
-    { id: 'orders', name: 'Pesanan & Kasir', icon: '📋' },
-    { id: 'menu', name: 'Menu & Produk', icon: '🍔' },
-    { id: 'marketing', name: 'Marketing & Promo', icon: '🎁' },
-    { id: 'reports', name: 'Laporan & Transaksi', icon: '📊' },
-    { id: 'analytics', name: 'Analitik Bisnis', icon: '📈' },
-    { id: 'staff', name: 'Manajemen Staff', icon: '👥' },
-    { id: 'settings', name: 'Pengaturan Toko', icon: '⚙️' },
+    { id: 'orders',    name: 'Pesanan & Kasir',      icon: '📋' },
+    { id: 'menu',      name: 'Menu & Produk',         icon: '🍔' },
+    { id: 'reports',   name: 'Laporan & Transaksi',   icon: '📊' },
+    { id: 'analytics', name: 'Analitik Bisnis',       icon: '📈' },
+    { id: 'staff',     name: 'Manajemen Staff',        icon: '👥' },
+    { id: 'settings',  name: 'Pengaturan Toko',       icon: '⚙️' },
   ];
+
 
   useEffect(() => {
     fetchRoles();
@@ -93,19 +93,21 @@ const CulinaryRoles = () => {
     <KulinerAdminLayout>
       <div className="kd-topbar">
         <h1 className="kd-page-title">Kelola Role & Hak Akses</h1>
-        <button 
-          className="kd-btn kd-btn-primary flex items-center gap-2"
-          onClick={() => {
-            setEditingRole(null);
-            setForm({ name: '', permissions: [] });
-            setShowModal(true);
-          }}
-        >
-          <Plus /> Tambah Role Baru
-        </button>
       </div>
 
       <div className="kd-content">
+        <div className="kd-page-actions">
+          <button 
+            className="kd-btn kd-btn-primary flex items-center gap-2"
+            onClick={() => {
+              setEditingRole(null);
+              setForm({ name: '', permissions: [] });
+              setShowModal(true);
+            }}
+          >
+            <Plus /> Tambah Role Baru
+          </button>
+        </div>
         <div className="kd-panel">
           <div className="kd-table-container">
             <table className="kd-table">

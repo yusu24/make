@@ -8,3 +8,4 @@ echo "USER 4: " . ($user ? json_encode($user->toArray()) : 'NOT FOUND') . PHP_EO
 
 $allUsers = \App\Models\User::all();
 echo "ALL USERS: " . json_encode($allUsers->toArray()) . PHP_EOL;
+echo "ALL USERS: " . json_encode($allUsers->toArray()) . PHP_EOL;

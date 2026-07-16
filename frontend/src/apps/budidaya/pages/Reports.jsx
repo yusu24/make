@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import { useNavigate } from 'react-router-dom'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
@@ -9,6 +10,7 @@ const fmtNum = (n, dec = 0) => (n || 0).toFixed(dec)
 
 export default function Reports() {
   const navigate = useNavigate()
+  const terms = useBudidayaTerms()
   const [loading, setLoading] = useState(true)
   const [kpi, setKpi] = useState(null)
   const [fcrData, setFcrData] = useState([])
@@ -123,26 +125,26 @@ export default function Reports() {
       <div style={cardStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h3 style={{ fontSize: 16, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>Konversi pakan (FCR) — siklus aktif</h3>
-            <p className="aq-kpi-label" style={{ marginTop: 4 }}>Feed Conversion Ratio per kolam yang sedang berjalan</p>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>{terms.isTanaman ? 'Konversi nutrisi (FCR) — siklus aktif' : 'Konversi pakan (FCR) — siklus aktif'}</h3>
+            <p className="aq-kpi-label" style={{ marginTop: 4 }}>{`Feed Conversion Ratio per ${terms.unitLower} yang sedang berjalan`}</p>
           </div>
           <span style={{ fontSize: 11, fontWeight: 600, color: '#64748B', background: '#F1F5F9', borderRadius: 8, padding: '4px 10px' }}>
-            {fcrData.length} kolam aktif
+            {fcrData.length} {terms.unitLower} aktif
           </span>
         </div>
 
         {fcrData.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', background: '#F8FAFC', borderRadius: 16, border: '1px dashed #E2E8F0' }}>
             <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#CBD5E1' }}>monitoring</span>
-            <p style={{ color: '#64748B', fontSize: 14, marginTop: 12 }}>Belum ada siklus aktif dengan data pakan.</p>
+            <p style={{ color: '#64748B', fontSize: 14, marginTop: 12 }}>{terms.isTanaman ? 'Belum ada siklus aktif dengan data nutrisi.' : 'Belum ada siklus aktif dengan data pakan.'}</p>
           </div>
         ) : (
           <div className="aq-table-container">
             <Table>
               <TableHeader>
                 <TableRow isHoverable={false}>
-                  <TableHeaderCell>Nama kolam</TableHeaderCell>
-                  <TableHeaderCell>Total pakan (kg)</TableHeaderCell>
+                  <TableHeaderCell>{terms.unitName}</TableHeaderCell>
+                  <TableHeaderCell>{terms.isTanaman ? 'Total nutrisi (kg)' : 'Total pakan (kg)'}</TableHeaderCell>
                   <TableHeaderCell>Biomassa (kg)</TableHeaderCell>
                   <TableHeaderCell>FCR</TableHeaderCell>
                   <TableHeaderCell>Status</TableHeaderCell>
@@ -196,8 +198,8 @@ export default function Reports() {
             <Table>
               <TableHeader>
                 <TableRow isHoverable={false}>
-                  <TableHeaderCell>Kolam</TableHeaderCell>
-                  <TableHeaderCell>Jenis ikan</TableHeaderCell>
+                  <TableHeaderCell>{terms.unit}</TableHeaderCell>
+                  <TableHeaderCell>{terms.isTanaman ? 'Jenis tanaman' : 'Jenis ikan'}</TableHeaderCell>
                   <TableHeaderCell>Tgl. Panen</TableHeaderCell>
                   <TableHeaderCell>Berat (kg)</TableHeaderCell>
                   <TableHeaderCell>Harga/kg</TableHeaderCell>

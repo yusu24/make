@@ -72,7 +72,7 @@ function MasterSection({ title, emoji, tenantId, endpoint, fields }) {
         justifyContent: 'space-between',
         borderRadius: '12px 12px 0 0',
       }}>
-        <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span>{emoji}</span> {title}
           <span style={{
             background: 'var(--bg-base)', border: '1px solid var(--border-subtle)',
@@ -93,7 +93,7 @@ function MasterSection({ title, emoji, tenantId, endpoint, fields }) {
         }}>
           {fields.map(f => (
             <div key={f.key} style={{ flex: 1, minWidth: 140 }}>
-              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
                 {f.label}
               </label>
               <input
@@ -143,11 +143,12 @@ function MasterSection({ title, emoji, tenantId, endpoint, fields }) {
                   ))}
                   <td>
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                      <button className="btn btn-sm btn-secondary" onClick={() => openEdit(item)}>✏️ Edit</button>
+                      <button className="btn btn-sm btn-secondary" onClick={() => openEdit(item)} title="Edit">✏️</button>
                       <button
                         className="btn btn-sm btn-ghost"
                         style={{ color: 'var(--danger-400)' }}
                         onClick={() => destroy(item.id)}
+                        title="Hapus"
                       >🗑️</button>
                     </div>
                   </td>
@@ -187,10 +188,11 @@ const RETAIL_SECTIONS = [
 ]
 
 const CAT_META = {
-  'Toko Retail':   { emoji: '🛒', color: '#3b82f6', sections: RETAIL_SECTIONS },
-  'Budidaya Ikan': { emoji: '🐟', color: '#10b981', sections: [] },
-  'Jasa':          { emoji: '🔧', color: '#8b5cf6', sections: [] },
-  'Manufaktur':    { emoji: '🏭', color: '#f59e0b', sections: [] },
+  'Toko Retail':      { emoji: '🛒', color: '#3b82f6', sections: RETAIL_SECTIONS },
+  'Budidaya Ikan':    { emoji: '🐟', color: '#10b981', sections: [] },
+  'Budidaya Tanaman': { emoji: '🌱', color: '#84cc16', sections: [] },
+  'Jasa':             { emoji: '🔧', color: '#8b5cf6', sections: [] },
+  'Manufaktur':       { emoji: '🏭', color: '#f59e0b', sections: [] },
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -252,7 +254,7 @@ export default function AdminRetailView() {
         {/* Tenant selector */}
         {tenants.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
               Tenant:
             </label>
             <select

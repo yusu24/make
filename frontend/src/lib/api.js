@@ -20,14 +20,24 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
+// Guard: prevent multiple simultaneous 401s from each triggering a redirect
+let isRedirecting = false;
+
 // Response interceptor for unified error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('umkm_token')
-      localStorage.removeItem('umkm_user')
-      window.location.href = '/login'
+      const hasToken = localStorage.getItem('umkm_token')
+      if (hasToken && !isRedirecting && window.location.pathname !== '/login') {
+        isRedirecting = true
+        localStorage.removeItem('umkm_token')
+        localStorage.removeItem('umkm_user')
+        setTimeout(() => {
+          window.location.href = '/login'
+          isRedirecting = false
+        }, 100)
+      }
     }
     return Promise.reject(error)
   }

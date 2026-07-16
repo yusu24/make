@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import '../retail.css';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Truck, Phone, MapPin, Edit3, Trash2, ChevronRight, PackageCheck, Plus, Building2 } from 'lucide-react';
+import { Truck, Phone, MapPin, Edit3, Trash2, ChevronRight, PackageCheck, Plus, Building2, RefreshCw } from 'lucide-react';
 
 import Modal from '../../../components/Modal';
+import RetailLoading from '../components/RetailLoading';
 
 export default function Suppliers() {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
+  const [search, setSearch] = useState('');
 
   const fetchSuppliers = async () => {
     try {
@@ -48,32 +53,51 @@ export default function Suppliers() {
     setShowModal(true);
   };
 
-  if (loading) return (
-    <div className="page-content">
-      <div className="loading-state-premium">
-        <div className="spinner-glow"></div>
-        <p className="loading-text">Memuat data mitra supplier...</p>
-      </div>
-    </div>
+  const filteredSuppliers = suppliers.filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase()) ||
+    (s.contact && s.contact.toLowerCase().includes(search.toLowerCase())) ||
+    (s.address && s.address.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(filteredSuppliers);
+
+  if (loading) return <RetailLoading text="Memuat data mitra supplier..." />;
+
+  
 
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
 
 
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex justify-end items-center gap-6">
-          <div className="flex items-center gap-3">
-            <button className="btn btn-primary h-[42px] px-6 whitespace-nowrap" onClick={() => { setEditingSupplier(null); setShowModal(true); }}>
-              + Registrasi Supplier
-            </button>
-            <span className="px-3 py-1 retail-bg-main retail-border rounded-lg retail-label whitespace-nowrap">
-               {suppliers.length} Partners Registered
-            </span>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+          <button className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }} onClick={() => { setEditingSupplier(null); setShowModal(true); }}>
+            <Plus size={15} className="mr-2 mobile-no-margin" />
+            <span className="btn-text-mobile-hide">Registrasi Supplier</span>
+          </button>
+          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+            <input
+              placeholder="Cari supplier..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
+          <button onClick={fetchSuppliers} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} />
+          </button>
         </div>
-        
-        <table className="table">
+
+        <div className="retail-table-responsive"><table className="table">
           <thead>
             <tr>
                <th className="pl-6 retail-table-header">Identitas Supplier</th>
@@ -83,17 +107,17 @@ export default function Suppliers() {
             </tr>
           </thead>
           <tbody>
-            {suppliers.length === 0 ? (
+            {filteredSuppliers.length === 0 ? (
               <tr>
                  <td colSpan="4" className="text-center" style={{ padding: 60 }}>
                     <div className="flex flex-col items-center gap-4 text-muted">
                        <Truck size={40} className="opacity-20" />
-                       <p className="font-800 text-sm">Belum ada data supplier.</p>
+                       <p className="text-sm">Belum ada data supplier.</p>
                     </div>
                  </td>
               </tr>
             ) : (
-              suppliers.map(s => (
+              paginatedData.map(s => (
                 <tr key={s.id}>
                   <td className="pl-6">
                      <div className="flex items-center gap-4">
@@ -133,7 +157,17 @@ export default function Suppliers() {
               ))
             )}
           </tbody>
-        </table>
+        </table></div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
 
       <Modal 

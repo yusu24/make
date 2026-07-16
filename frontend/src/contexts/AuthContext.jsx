@@ -10,31 +10,35 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     // Optimistic init: load from localStorage immediately to avoid waterfall
     const [user, setUser] = useState(() => {
+        const token = localStorage.getItem('umkm_token');
         const saved = localStorage.getItem('umkm_user');
-        return saved ? JSON.parse(saved) : null;
+        return (token && saved) ? JSON.parse(saved) : null;
     });
     const [loading, setLoading] = useState(() => !!localStorage.getItem('umkm_token'));
 
     useEffect(() => {
         const fetchMe = async () => {
             const token = localStorage.getItem('umkm_token');
-            if (token) {
-                try {
-                    const res = await api.get('/auth/me');
-                    const userData = res.data.data;
-                    setUser(userData);
-                    localStorage.setItem('umkm_user', JSON.stringify(userData));
-                } catch (err) {
-                    console.error('Failed to fetch user:', err);
-                    // If token is invalid, clear storage
-                    if (err.response?.status === 401) {
-                        localStorage.removeItem('umkm_token');
-                        localStorage.removeItem('umkm_user');
-                        setUser(null);
-                    }
-                } finally {
-                    setLoading(false);
+            if (!token) return;
+
+            try {
+                const res = await api.get('/auth/me');
+                const userData = res.data.data;
+                setUser(userData);
+                localStorage.setItem('umkm_user', JSON.stringify(userData));
+            } catch (err) {
+                // Only clear session if the server explicitly rejects the token (401)
+                // Network errors (err.code === 'ERR_NETWORK') or 5xx should NOT log user out
+                if (err.response?.status === 401) {
+                    console.warn('Token invalid — logging out');
+                    localStorage.removeItem('umkm_token');
+                    localStorage.removeItem('umkm_user');
+                    setUser(null);
+                } else {
+                    console.warn('Could not verify token (network/server error), keeping session:', err.message);
                 }
+            } finally {
+                setLoading(false);
             }
         };
         fetchMe();
@@ -42,6 +46,17 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         const res = await api.post('/auth/login', { email, password });
+        const { token, user: userData } = res.data.data;
+        
+        localStorage.setItem('umkm_token', token);
+        localStorage.setItem('umkm_user', JSON.stringify(userData));
+        
+        setUser(userData);
+        return userData;
+    };
+
+    const loginDemoSandbox = async (category) => {
+        const res = await api.post('/auth/demo-sandbox', { category });
         const { token, user: userData } = res.data.data;
         
         localStorage.setItem('umkm_token', token);
@@ -108,6 +123,33 @@ export const AuthProvider = ({ children }) => {
         return redirect;
     };
 
+    const impersonateDemoSandbox = async (categorySlug) => {
+        const res = await api.post('/auth/demo-sandbox', { category: categorySlug });
+        const { token, user: userData } = res.data.data;
+        
+        // Save current admin session to impersonator storage
+        const currentAdmin = {
+            token: localStorage.getItem('umkm_token'),
+            user: user,
+            returnUrl: '/categories'
+        };
+        localStorage.setItem('umkm_impersonator', JSON.stringify(currentAdmin));
+        
+        // Switch to target user session
+        localStorage.setItem('umkm_token', token);
+        localStorage.setItem('umkm_user', JSON.stringify(userData));
+        setUser(userData);
+        
+        const SLUG_ROUTES = {
+            'toko-retail': '/retail/dashboard',
+            'budidaya-ikan': '/budidaya/dashboard',
+            'budidaya-tanaman': '/budidaya/dashboard',
+            'kuliner': '/kuliner/admin',
+        };
+        
+        return SLUG_ROUTES[categorySlug] || '/coming-soon';
+    };
+
     const isSuperAdmin = () => user?.role === 'super_admin';
 
     const isImpersonating = () => !!localStorage.getItem('umkm_impersonator');
@@ -133,8 +175,8 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ 
-            user, login, logout, register, loading, updateUser,
-            impersonate, impersonateUser, isSuperAdmin, isImpersonating, exitImpersonate 
+            user, login, loginDemoSandbox, logout, register, loading, updateUser,
+            impersonate, impersonateUser, impersonateDemoSandbox, isSuperAdmin, isImpersonating, exitImpersonate 
         }}>
             {children}
         </AuthContext.Provider>

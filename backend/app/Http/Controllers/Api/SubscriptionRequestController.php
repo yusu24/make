@@ -97,10 +97,18 @@ class SubscriptionRequestController extends Controller
 
         $settings = \App\Models\LandingSetting::first();
 
+        $plans = $tenant
+            ? \App\Models\SubscriptionPlan::where('business_category_id', $tenant->business_category_id)
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get()
+            : collect();
+
         return response()->json([
             'data' => $req,
             'category_promo' => $promo,
-            'global_settings' => $settings
+            'global_settings' => $settings,
+            'plans' => $plans,
         ]);
     }
 

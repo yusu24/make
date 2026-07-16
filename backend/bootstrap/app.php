@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'is_super_admin' => \App\Http\Middleware\IsSuperAdmin::class,
             'tenant'         => \App\Http\Middleware\TenantMiddleware::class,
             'check_module'   => \App\Http\Middleware\CheckModule::class,
+            'check_category' => \App\Http\Middleware\CheckBusinessCategory::class,
+            'retail_permission' => \App\Http\Middleware\CheckRetailPermission::class,
+            'kuliner_permission' => \App\Http\Middleware\CheckKulinerPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

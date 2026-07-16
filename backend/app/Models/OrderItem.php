@@ -9,7 +9,15 @@ class OrderItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['order_id', 'product_id', 'qty', 'price', 'subtotal'];
+    protected $fillable = [
+        'order_id', 'product_id', 'qty', 'price', 'subtotal', 'name',
+        'kuliner_product_id', 'bundle_id', 'modifiers', 'addons', 'item_notes',
+    ];
+
+    protected $casts = [
+        'modifiers' => 'array',
+        'addons' => 'array',
+    ];
 
     public function order()
     {
@@ -19,5 +27,15 @@ class OrderItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function kulinerProduct()
+    {
+        return $this->belongsTo(KulinerProduct::class, 'kuliner_product_id');
+    }
+
+    public function bundle()
+    {
+        return $this->belongsTo(KulinerBundle::class, 'bundle_id');
     }
 }

@@ -3,13 +3,15 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
 import './Auth.css'
+import bizoraLogo from '../assets/bizora-logo.png'
 
 const CATEGORY_ICONS = {
-  'Budidaya Ikan': 'ti-fish',
-  'Toko Retail':   'ti-shopping-cart',
-  'Jasa':          'ti-briefcase',
-  'Manufaktur':    'ti-building-factory-2',
-  'Kuliner':       'ti-tools-kitchen-2',
+  'Budidaya Ikan':    'ti-fish',
+  'Budidaya Tanaman': 'ti-leaf',
+  'Toko Retail':      'ti-shopping-cart',
+  'Jasa':             'ti-briefcase',
+  'Manufaktur':       'ti-building-factory-2',
+  'Kuliner':          'ti-tools-kitchen-2',
 }
 
 export default function Register() {
@@ -24,6 +26,7 @@ export default function Register() {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1)
+  const [logoUrl, setLogoUrl] = useState(null)
 
   useEffect(() => {
     api.get('/categories/public').then(res => {
@@ -37,6 +40,12 @@ export default function Register() {
         { id: 5, name: 'Kuliner' },
       ])
     })
+
+    api.get('/landing-settings').then(res => {
+      if (res.data?.data?.landing_logo_url) {
+        setLogoUrl(res.data.data.landing_logo_url)
+      }
+    }).catch(e => console.error('Failed to fetch register page logo:', e))
   }, [])
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
@@ -76,6 +85,8 @@ export default function Register() {
           navigate('/retail/dashboard')
         } else if (userData.business_category === 'Kuliner') {
           navigate('/kuliner/admin')
+        } else if (userData.business_category === 'Budidaya Ikan' || userData.business_category === 'Budidaya Tanaman') {
+          navigate('/budidaya/dashboard')
         } else {
           navigate('/coming-soon')
         }
@@ -96,8 +107,10 @@ export default function Register() {
     <div className="page">
       <nav className="topnav">
         <div className="nav-logo">
-          <div className="nav-logo-icon"><i className="ti ti-building-store" aria-hidden="true"></i></div>
-          <span className="nav-logo-name">UMKM Hub</span>
+          <div className="nav-logo-icon" style={{ background: '#fff', padding: '2px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src={logoUrl || bizoraLogo} alt="BIZORA Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} />
+          </div>
+          <span className="nav-logo-name">BIZORA</span>
         </div>
         <div className="nav-links">
           <Link to="/login" className="nav-link">Beranda</Link>
@@ -113,10 +126,10 @@ export default function Register() {
           <div style={{ flex: 1, minWidth: 260 }}>
             <div className="hero-badge">
               <i className="ti ti-rocket" aria-hidden="true"></i>
-              Gabung Bersama 24.000+ UMKM Lainnya
+              Gabung Bersama 24.000+ Pelaku Bisnis Lainnya
             </div>
             <h1 className="hero-title">Mulai Transformasi Digital<br /><span>Bisnis Anda Sekarang</span></h1>
-            <p className="hero-sub">Daftarkan akun dan nikmati kemudahan mengelola operasional bisnis dengan dashboard modern yang dirancang khusus untuk UMKM Indonesia.</p>
+            <p className="hero-sub">Daftarkan akun dan nikmati kemudahan mengelola operasional bisnis dengan dashboard modern yang dirancang khusus untuk pelaku bisnis Indonesia.</p>
             
             <div className="hero-stats" style={{ marginTop: '2rem' }}>
               <div className="hero-stat">

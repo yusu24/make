@@ -1,11 +1,12 @@
-import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
+import { useBudidayaTerms } from './hooks/useBudidayaTerms'
 import { useAuth } from '../../contexts/AuthContext'
-import { api } from '../../lib/api'
 import './budidaya.css'
 
-const NAV_ITEMS = [
+const getNavItems = (terms) => [
   { label: 'Dashboard',           icon: 'grid_view',     path: '/budidaya/dashboard' },
-  { label: 'Manajemen Kolam',     icon: 'water_drop',    path: '/budidaya/ponds'     },
+  { label: terms.isTanaman ? 'Manajemen Lahan' : 'Manajemen Kolam', icon: terms.isTanaman ? 'grass' : 'water_drop', path: '/budidaya/ponds' },
+  { label: 'Siklus Budidaya',     icon: 'cycle',         path: '/budidaya/cycles'    },
   { label: 'Gudang',              icon: 'inventory_2',   path: '/budidaya/inventory' },
   { label: 'Manajemen Pengguna',  icon: 'group',         path: '/budidaya/users'     },
   { label: 'Peran & Izin',        icon: 'verified_user', path: '/budidaya/roles'     },
@@ -17,17 +18,9 @@ const NAV_ITEMS = [
 
 export default function BudidayaSidebar({ mobileOpen, onToggle }) {
   const { pathname } = useLocation()
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-
-  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']
-
-  const handleLogout = async () => {
-    const isDemo = DEMO_EMAILS.includes(user?.email)
-    try { await api.post('/logout') } catch {}
-    logout()
-    navigate(isDemo ? '/' : '/login')
-  }
+  const { user } = useAuth()
+  const terms = useBudidayaTerms()
+  const NAV_ITEMS = getNavItems(terms)
 
   return (
     <>
@@ -63,7 +56,7 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                 lineHeight: 1,
               }}
             >
-              water_drop
+              {terms.isTanaman ? 'eco' : 'water_drop'}
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -89,7 +82,7 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                 textTransform: 'uppercase',
               }}
             >
-              Budidaya Pintar
+              {terms.isTanaman ? 'Pertanian Pintar' : 'Budidaya Pintar'}
             </span>
           </div>
         </div>
@@ -151,53 +144,6 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
           })}
         </nav>
 
-        {/* ── Spacer ── */}
-        <div style={{ flex: 1 }} />
-
-        {/* ── Logout ── */}
-        <div style={{ padding: '12px 12px 28px', borderTop: '1px solid #E9F0EC' }}>
-          <button
-            onClick={handleLogout}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '10px 14px',
-              width: '100%',
-              borderRadius: 10,
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#1A1C1A',
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 13.5,
-              fontWeight: 500,
-              transition: 'background 0.15s, color 0.15s',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#FEF2F2'
-              e.currentTarget.style.color = '#EF4444'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.color = '#1A1C1A'
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontVariationSettings: "'FILL' 0, 'wght' 300",
-                fontSize: 20,
-                flexShrink: 0,
-                color: 'inherit',
-                lineHeight: 1,
-              }}
-            >
-              logout
-            </span>
-            <span>Keluar</span>
-          </button>
-        </div>
       </aside>
 
       {/* Mobile overlay */}

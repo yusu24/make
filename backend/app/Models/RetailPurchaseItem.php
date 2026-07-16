@@ -15,6 +15,6 @@ class RetailPurchaseItem extends Model
 
     public function purchase()
     {
-        return $this->belongsTo(RetailPurchase::class, 'retail_purchase_id');
+        return $this->belongsTo(RetailPurchase::class, 'purchase_id');
     }
 }

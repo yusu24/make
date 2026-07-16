@@ -155,8 +155,8 @@ class KulinerAdminController extends Controller
         $tenantId = $request->user()->tenant_id;
         
         $data = $request->only([
-            'store_name', 'address', 'phone', 'opening_hours', 
-            'hero_title', 'hero_subtitle', 'promo_title', 'promo_desc', 
+            'store_name', 'address', 'phone', 'opening_hours',
+            'hero_title', 'hero_subtitle', 'promo_title', 'promo_desc',
             'instagram_url', 'whatsapp_number', 'logo_url'
         ]);
 

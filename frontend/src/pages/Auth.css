@@ -1,4 +1,4 @@
-/* ── UMKM HUB DESIGN SYSTEM ── */
+/* ── BIZORA DESIGN SYSTEM ── */
 :root {
   --color-background-primary: var(--bg-surface);
   --color-background-secondary: var(--bg-elevated);
@@ -30,7 +30,7 @@
 }
 .nav-logo { display: flex; align-items: center; gap: 8px; }
 .nav-logo-icon {
-  width: 30px; height: 30px; background: rgba(255,255,255,0.2);
+  width: 38px; height: 38px; background: rgba(255,255,255,0.2);
   border-radius: 8px; display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 16px;
 }

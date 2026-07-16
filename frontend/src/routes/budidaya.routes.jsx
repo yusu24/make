@@ -1,6 +1,7 @@
+/* eslint-disable react-refresh/only-export-components */
 import { lazy } from 'react';
 import { Route, Navigate } from 'react-router-dom';
-import { ProtectedRoute } from './guards';
+import { ProtectedRoute, CategoryRoute } from './guards';
 
 const BudidayaLayout = lazy(() => import('../apps/budidaya/BudidayaLayout'));
 const BudidayaDashboard = lazy(() => import('../apps/budidaya/pages/Dashboard'));
@@ -21,7 +22,13 @@ const TenantSupportCenter = lazy(() => import('../pages/TenantSupportCenter'));
 
 // Note: We'll wrap this in ProtectedRoute in App.jsx or here
 const budidayaRoutes = (
-  <Route path="/budidaya" element={<ProtectedRoute><BudidayaLayout /></ProtectedRoute>}>
+  <Route path="/budidaya" element={
+    <ProtectedRoute>
+      <CategoryRoute allowedCategory={["Budidaya Ikan", "Budidaya Tanaman"]}>
+        <BudidayaLayout />
+      </CategoryRoute>
+    </ProtectedRoute>
+  }>
     <Route index element={<Navigate to="dashboard" replace />} />
     <Route path="dashboard" element={<BudidayaDashboard />} />
     <Route path="ponds" element={<BudidayaPonds />} />

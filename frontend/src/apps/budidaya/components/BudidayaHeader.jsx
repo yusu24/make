@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../lib/api'
 import '../budidaya.css'
@@ -21,12 +21,15 @@ const NAV_ITEMS = [
 ]
 
 export default function BudidayaHeader({ onMenuToggle }) {
-  const { user } = useAuth()
+  const { user, isImpersonating, exitImpersonate, logout } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [alerts, setAlerts] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
   const dropdownRef = useRef(null)
+  const profileRef = useRef(null)
 
   let pageTitle = 'Budidaya'
   const exactMatch = NAV_ITEMS.find(item => item.path === location.pathname)
@@ -65,6 +68,9 @@ export default function BudidayaHeader({ onMenuToggle }) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false)
       }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfile(false)
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
@@ -79,6 +85,23 @@ export default function BudidayaHeader({ onMenuToggle }) {
       console.error('Failed to mark alerts as read:', err)
     }
   }
+
+  const handleLogout = async () => {
+    if (isImpersonating && isImpersonating()) {
+      const redirectPath = exitImpersonate()
+      navigate(redirectPath || '/tenants')
+    } else {
+      try { await logout() } catch {}
+      const isDemo = user?.email?.includes('demo-sandbox-')
+      navigate(isDemo ? '/' : '/login')
+    }
+  }
+
+  const logoutLabel = isImpersonating && isImpersonating()
+    ? 'Keluar dari Impersonate'
+    : user?.email?.includes('demo-sandbox-')
+      ? 'Keluar dari Akun Demo'
+      : 'Keluar'
 
   return (
     <header
@@ -109,7 +132,7 @@ export default function BudidayaHeader({ onMenuToggle }) {
             cursor: 'pointer',
             color: '#1B4332',
             borderRadius: 8,
-            display: 'flex', // Standardize to flex
+            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}
@@ -273,26 +296,79 @@ export default function BudidayaHeader({ onMenuToggle }) {
           )}
         </div>
 
-        {/* Avatar */}
-        <div
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: 10,
-            background: '#1B4332',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: 'pointer',
-            flexShrink: 0,
-            border: '1.5px solid #D8F3DC',
-            letterSpacing: '0.02em',
-          }}
-        >
-          {initials}
+        {/* Avatar + Profile Dropdown */}
+        <div style={{ position: 'relative' }} ref={profileRef}>
+          <div
+            onClick={() => setShowProfile(v => !v)}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 10,
+              background: '#1B4332',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              flexShrink: 0,
+              border: '1.5px solid #D8F3DC',
+              letterSpacing: '0.02em',
+            }}
+          >
+            {initials}
+          </div>
+
+          {showProfile && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 12px)',
+              right: 0,
+              width: 220,
+              background: '#fff',
+              borderRadius: 14,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05)',
+              border: '1px solid #E9F0EC',
+              overflow: 'hidden',
+              zIndex: 100,
+            }}>
+              {/* User info */}
+              <div style={{ padding: '14px 16px', borderBottom: '1px solid #F1F5F9' }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1A1C1A' }}>{user?.name || 'User'}</p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#94A3B8' }}>{user?.email || ''}</p>
+              </div>
+              {/* Settings */}
+              <button
+                onClick={() => { setShowProfile(false); navigate('/budidaya/settings') }}
+                style={{
+                  width: '100%', padding: '11px 16px', background: 'none', border: 'none',
+                  textAlign: 'left', cursor: 'pointer', fontSize: 13, color: '#374151',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#F8FAF9'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 17 }}>manage_accounts</span>
+                Setting Profil
+              </button>
+              <div style={{ height: 1, background: '#F1F5F9' }} />
+              {/* Logout */}
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '100%', padding: '11px 16px', background: 'none', border: 'none',
+                  textAlign: 'left', cursor: 'pointer', fontSize: 13, color: '#EF4444',
+                  display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#FEF2F2'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 17 }}>logout</span>
+                {logoutLabel}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

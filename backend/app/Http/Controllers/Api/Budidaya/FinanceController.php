@@ -61,4 +61,32 @@ class FinanceController extends Controller
         $expense->delete();
         return response()->json(['message' => 'Catatan pengeluaran dihapus']);
     }
+
+    public function update(Request $request, $id)
+    {
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $expense = BudidayaExpense::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $request->validate([
+            'category' => 'required|string',
+            'amount' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'notes' => 'nullable|string'
+        ]);
+
+        if ($expense->cycle) {
+            if ($expense->cycle->status === 'panen') {
+                return response()->json(['message' => 'Siklus sudah selesai (panen). Tidak dapat mengubah biaya.'], 400);
+            }
+        }
+
+        $expense->update([
+            'category' => $request->category,
+            'amount' => $request->amount,
+            'date' => $request->date,
+            'notes' => $request->notes
+        ]);
+
+        return response()->json(['message' => 'Pengeluaran berhasil diperbarui', 'data' => $expense]);
+    }
 }

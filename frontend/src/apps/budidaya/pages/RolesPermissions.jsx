@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import '../budidaya.css'
 import { LoadingButton } from '../components/UXComponents'
 
-const DEFAULT_PERMISSIONS = {
+const getPermissions = (terms) => ({
   lihat_laporan:    { label: 'Lihat Laporan',    desc: 'Akses semua bagan kinerja',         category: 'Data & Analitik', icon: 'analytics' },
   ekspor_data:      { label: 'Ekspor Data',       desc: 'Unduh laporan CSV/PDF',             category: 'Data & Analitik', icon: 'download' },
   bagikan_analitik: { label: 'Bagikan Analitik',  desc: 'Kirim laporan ke email eksternal',  category: 'Data & Analitik', icon: 'share' },
-  kelola_kolam:     { label: 'Kelola Kolam',      desc: 'Buat dan edit parameter kolam',     category: 'Operasi Tambak', icon: 'water_drop' },
-  hapus_kolam:      { label: 'Hapus Kolam',       desc: 'Hapus catatan kolam secara permanen',category: 'Operasi Tambak', icon: 'delete' },
-  ganti_alarm:      { label: 'Ganti Alarm',       desc: 'Abaikan peringatan kesehatan kritis',category: 'Operasi Tambak', icon: 'notifications_active' },
-  tambah_pengguna:  { label: 'Tambah Pengguna',   desc: 'Undang staf baru ke tambak',       category: 'Manajemen Tim', icon: 'person_add' },
+  kelola_kolam:     { label: terms.isTanaman ? 'Kelola Lahan' : 'Kelola Kolam',      desc: terms.isTanaman ? 'Buat dan edit parameter lahan' : 'Buat dan edit parameter kolam',     category: terms.isTanaman ? 'Operasi Kebun' : 'Operasi Tambak', icon: terms.isTanaman ? 'grass' : 'water_drop' },
+  hapus_kolam:      { label: terms.isTanaman ? 'Hapus Lahan' : 'Hapus Kolam',       desc: terms.isTanaman ? 'Hapus catatan lahan secara permanen' : 'Hapus catatan kolam secara permanen', category: terms.isTanaman ? 'Operasi Kebun' : 'Operasi Tambak', icon: 'delete' },
+  ganti_alarm:      { label: 'Ganti Alarm',       desc: 'Abaikan peringatan kesehatan kritis', category: terms.isTanaman ? 'Operasi Kebun' : 'Operasi Tambak', icon: 'notifications_active' },
+  tambah_pengguna:  { label: 'Tambah Pengguna',   desc: terms.isTanaman ? 'Undang staf baru ke kebun' : 'Undang staf baru ke tambak',       category: 'Manajemen Tim', icon: 'person_add' },
   edit_peran:       { label: 'Edit Peran Pengguna',desc: 'Ubah tingkat izin',                category: 'Manajemen Tim', icon: 'manage_accounts' },
   hapus_pengguna:   { label: 'Hapus Pengguna',    desc: 'Cabut semua akses segera',          category: 'Manajemen Tim', icon: 'person_remove' },
-}
+})
 
 export default function RolesPermissions() {
+  const terms = useBudidayaTerms()
+  const DEFAULT_PERMISSIONS = getPermissions(terms)
   const [roles, setRoles]           = useState([])
   const [loading, setLoading]       = useState(true)
   const [showModal, setShowModal]   = useState(false)
@@ -114,7 +117,7 @@ export default function RolesPermissions() {
   return (
     <div className="aq-container">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <button className="btn btn-primary" onClick={handleCreateNew} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_moderator</span>
           Buat Peran Baru
@@ -204,7 +207,7 @@ export default function RolesPermissions() {
                     <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>Nama Peran</label>
                     <input
                       required value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                      placeholder="Contoh: Teknisi Kolam"
+                      placeholder={terms.isTanaman ? "Contoh: Teknisi Lahan" : "Contoh: Teknisi Kolam"}
                       style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #E9F0EC', borderRadius: '10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
@@ -212,7 +215,7 @@ export default function RolesPermissions() {
                     <label style={{ fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>Deskripsi (Opsional)</label>
                     <input
                       value={form.description} onChange={e => setForm({...form, description: e.target.value})}
-                      placeholder="Contoh: Mengurus kolam harian"
+                      placeholder={terms.isTanaman ? "Contoh: Mengurus lahan harian" : "Contoh: Mengurus kolam harian"}
                       style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #E9F0EC', borderRadius: '10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>

@@ -63,12 +63,6 @@ const CulinaryReviews = () => {
     <KulinerAdminLayout>
       <div className="kd-topbar">
         <h1 className="kd-page-title">Ulasan Pelanggan</h1>
-        <div className="kd-topbar-actions">
-          <div style={{ textAlign: 'right' }}>
-            <div className="text-2xl font-black text-slate-800">{stats.averageRating} / 5.0</div>
-            <div className="text-[10px] text-amber-500 font-bold tracking-widest">Skor Kepuasan Rata-rata</div>
-          </div>
-        </div>
       </div>
 
       <div className="kd-content">
@@ -84,7 +78,14 @@ const CulinaryReviews = () => {
             <p className="text-sm text-slate-400">Ulasan dari pelanggan di storefront akan muncul di sini.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100%, 1fr))', gap: 20 }}>
+          <>
+            <div className="kd-page-actions">
+              <div style={{ textAlign: 'right' }}>
+                <div className="text-2xl font-black text-slate-800">{stats.averageRating} / 5.0</div>
+                <div className="text-[10px] text-amber-500 font-bold tracking-widest">Skor Kepuasan Rata-rata</div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100%, 1fr))', gap: 20 }}>
             {reviews.map(review => {
               const isLowRating = review.rating <= 2;
               return (
@@ -161,6 +162,7 @@ const CulinaryReviews = () => {
               );
             })}
           </div>
+          </>
         )}
 
         <div style={{ marginTop: 40, padding: 32, background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', borderRadius: 24, color: '#fff' }}>

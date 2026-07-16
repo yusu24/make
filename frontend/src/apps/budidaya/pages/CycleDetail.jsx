@@ -9,11 +9,13 @@ import {
 import Modal from '../../../components/Modal'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
 export default function CycleDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { setCustomTitle } = useOutletContext() || {}
+  const terms = useBudidayaTerms()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('ikhtisar_performa')
@@ -23,7 +25,7 @@ export default function CycleDetail() {
   // Form States
   const [feedStocks, setFeedStocks] = useState([])
   const [formFeed, setFormFeed] = useState({ feed_stock_id: '', amount_kg: '', date: new Date().toISOString().split('T')[0] })
-  const [formSampling, setFormSampling] = useState({ average_weight_gram: '', estimated_biomass_kg: '', date: new Date().toISOString().split('T')[0] })
+  const [formSampling, setFormSampling] = useState({ average_weight_gram: '', sample_count: '', date: new Date().toISOString().split('T')[0], notes: '' })
   const [formHealth, setFormHealth] = useState({ mortality_count: 0, disease_note: '', treatment_note: '', date: new Date().toISOString().split('T')[0] })
   const [formHarvest, setFormHarvest] = useState({ total_weight_kg: '', sale_price_per_kg: '', harvest_date: new Date().toISOString().split('T')[0], notes: '' })
 
@@ -51,6 +53,17 @@ export default function CycleDetail() {
     } catch (err) {}
   }
 
+  // Must be before any early returns to follow Rules of Hooks
+  useEffect(() => {
+    const cycle = data?.cycle
+    if (setCustomTitle && cycle) {
+      setCustomTitle(`Detail Siklus - ${cycle.pond?.name || ''}`)
+    }
+    return () => {
+      if (setCustomTitle) setCustomTitle('')
+    }
+  }, [data, setCustomTitle])
+
   const handleLogFeeding = async (e) => {
     e.preventDefault()
     setSaving(true)
@@ -58,7 +71,39 @@ export default function CycleDetail() {
       await api.post(`/budidaya/cycles/${id}/feedings`, formFeed)
       setModalType(null)
       fetchDetail()
-    } catch (err) { alert('Gagal menyimpan pakan') }
+    } catch (err) { alert(`Gagal menyimpan ${terms.feedLabelShort.toLowerCase()}`) }
+    finally { setSaving(false) }
+  }
+
+  const handleLogSampling = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      await api.post('/budidaya/samplings', {
+        ...formSampling,
+        cycle_id: id,
+        average_weight_gram: Number(formSampling.average_weight_gram),
+        sample_count: formSampling.sample_count ? Number(formSampling.sample_count) : undefined,
+      })
+      setModalType(null)
+      setFormSampling({ average_weight_gram: '', sample_count: '', date: new Date().toISOString().split('T')[0], notes: '' })
+      fetchDetail()
+    } catch (err) { alert(err.response?.data?.message || 'Gagal menyimpan sampling') }
+    finally { setSaving(false) }
+  }
+
+  const handleLogHealth = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      await api.post(`/budidaya/cycles/${id}/health`, {
+        ...formHealth,
+        mortality_count: Number(formHealth.mortality_count),
+      })
+      setModalType(null)
+      setFormHealth({ mortality_count: 0, disease_note: '', treatment_note: '', date: new Date().toISOString().split('T')[0] })
+      fetchDetail()
+    } catch (err) { alert(err.response?.data?.message || 'Gagal menyimpan laporan kesehatan') }
     finally { setSaving(false) }
   }
 
@@ -85,14 +130,6 @@ export default function CycleDetail() {
   const stats = data?.stats || { total_cost: 0, total_revenue: 0, profit: 0, current_population: 0, survival_rate: 0, total_feed_kg: 0, fcr: 0 }
   const doc = cycle ? Math.ceil(Math.abs(new Date() - new Date(cycle.seed_date)) / (1000 * 60 * 60 * 24)) : 0
 
-  useEffect(() => {
-    if (setCustomTitle && cycle) {
-      setCustomTitle(`Detail Siklus - ${cycle.pond?.name || ''}`)
-    }
-    return () => {
-      if (setCustomTitle) setCustomTitle('')
-    }
-  }, [cycle, setCustomTitle])
 
   return (
     <div className="aq-container">
@@ -124,7 +161,7 @@ export default function CycleDetail() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748B', fontWeight: 500, fontSize: '14px' }}>
                   <Calendar size={16} style={{ color: '#1B4332' }} />
-                  <span>Tebar: {cycle?.seed_date ? new Date(cycle.seed_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '---'}</span>
+                  <span>{terms.isTanaman ? 'Tanam' : 'Tebar'}: {cycle?.seed_date ? new Date(cycle.seed_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '---'}</span>
                </div>
                <div style={{ width: 1, height: 16, background: '#E2E8F0' }}></div>
                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748B', fontWeight: 500, fontSize: '14px' }}>
@@ -154,7 +191,7 @@ export default function CycleDetail() {
           </div>
           <div className="kpi-card-v3">
             <p className="aq-kpi-label" style={{ fontSize: '10px', textTransform: 'none' }}>Estimasi populasi</p>
-            <h2 className="aq-kpi-value" style={{ fontSize: '28px' }}>{(stats.current_population || 0).toLocaleString('id-ID')} <span style={{ fontSize: '12px', opacity: 0.5, fontWeight: 500 }}>Ekor</span></h2>
+            <h2 className="aq-kpi-value" style={{ fontSize: '28px' }}>{(stats.current_population || 0).toLocaleString('id-ID')} <span style={{ fontSize: '12px', opacity: 0.5, fontWeight: 500 }}>{terms.populationCount.charAt(0).toUpperCase() + terms.populationCount.slice(1)}</span></h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 12, color: '#059669', fontSize: '11px', fontWeight: 700 }}>
                <TrendingUp size={12} /> Status stabil
             </div>
@@ -167,7 +204,7 @@ export default function CycleDetail() {
             </div>
           </div>
           <div className="kpi-card-v3">
-            <p className="aq-kpi-label" style={{ fontSize: '10px', textTransform: 'none' }}>Total pakan</p>
+            <p className="aq-kpi-label" style={{ fontSize: '10px', textTransform: 'none' }}>{terms.isTanaman ? 'Total nutrisi' : 'Total pakan'}</p>
             <h2 className="aq-kpi-value" style={{ fontSize: '28px' }}>{(stats.total_feed_kg || 0).toLocaleString('id-ID')} <span style={{ fontSize: '12px', opacity: 0.5, fontWeight: 500 }}>KG</span></h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 12, color: '#64748B', fontSize: '11px', fontWeight: 600 }}>
                <ShoppingCart size={12} /> {data?.feedings?.length || 0} Log terpantau
@@ -184,7 +221,7 @@ export default function CycleDetail() {
           <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid #E2E8F0', marginBottom: '24px' }}>
             {[
                { id: 'ikhtisar_performa', label: 'Ikhtisar Performa', icon: BarChart3 },
-               { id: 'log_pakan', label: 'Log Pakan', icon: ShoppingCart },
+               { id: 'log_pakan', label: terms.isTanaman ? 'Log Nutrisi' : 'Log Pakan', icon: ShoppingCart },
                { id: 'laporan_keuangan', label: 'Laporan Keuangan', icon: ShieldCheck }
             ].map(tab => (
               <button 
@@ -279,26 +316,43 @@ export default function CycleDetail() {
               <div className="animate-slide-up">
                 <div className="premium-card" style={{ padding: '32px', background: '#fff' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#1B4332' }}>Evolusi Parameter Utama</h3>
-                      <div style={{ display: 'flex', gap: '16px', fontSize: '12px', fontWeight: 600, color: '#64748B' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1B4332' }}></div> DO (Oxygen)</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: 8, height: 8, borderRadius: '50%', background: '#D8F3DC' }}></div> Temperatur</div>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#1B4332' }}>{terms.isTanaman ? 'Evolusi Tinggi Rata-rata (Sampling)' : 'Evolusi Berat Rata-rata (Sampling)'}</h3>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748B', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1B4332' }}></div>
+                        {terms.isTanaman ? 'Tinggi rata-rata (cm)' : 'Berat rata-rata (gram)'}
                       </div>
                   </div>
 
-                  <div style={{ height: '300px', display: 'flex', alignItems: 'flex-end', gap: '24px', paddingBottom: '20px' }}>
-                      {[
-                        { label: 'MNG 1', h: 40 }, { label: 'MNG 2', h: 60 }, { label: 'MNG 3', h: 50 },
-                        { label: 'MNG 4', h: 80 }, { label: 'MNG 5', h: 70 }, { label: 'MNG 6', h: 90 }, { label: 'HARI INI', h: 100, active: true }
-                      ].map((bar, i) => (
-                        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                          <div className="chart-bar-v2" style={{ height: `${bar.h}%`, background: bar.active ? '#D8F3DC' : '#F1F5F9' }}>
-                             <div className="chart-dot-v2"></div>
-                          </div>
-                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8' }}>{bar.label}</span>
-                        </div>
-                      ))}
-                  </div>
+                  {(data?.samplings || []).length === 0 ? (
+                    <div style={{ height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', gap: 12 }}>
+                      <Scale size={36} style={{ opacity: 0.3 }} />
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Belum ada data sampling</p>
+                      <p style={{ margin: 0, fontSize: 12 }}>Catat sampling baru untuk melihat grafik pertumbuhan</p>
+                    </div>
+                  ) : (() => {
+                    const samplings = [...(data?.samplings || [])].sort((a, b) => new Date(a.date) - new Date(b.date))
+                    const maxW = Math.max(...samplings.map(s => Number(s.average_weight_gram))) * 1.2
+                    return (
+                      <div style={{ height: '300px', display: 'flex', alignItems: 'flex-end', gap: samplings.length > 8 ? '8px' : '24px', paddingBottom: '20px' }}>
+                        {samplings.map((s, i) => {
+                          const h = Math.max(8, (Number(s.average_weight_gram) / maxW) * 100)
+                          const isLast = i === samplings.length - 1
+                          const label = new Date(s.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                          return (
+                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }} title={`${label}: ${Number(s.average_weight_gram).toLocaleString('id-ID')} ${terms.isTanaman ? 'cm' : 'g'}`}>
+                              <span style={{ fontSize: '10px', fontWeight: 700, color: isLast ? '#1B4332' : '#94A3B8' }}>
+                                {Number(s.average_weight_gram).toLocaleString('id-ID')}{terms.isTanaman ? 'cm' : 'g'}
+                              </span>
+                              <div className="chart-bar-v2" style={{ height: `${h}%`, background: isLast ? '#D8F3DC' : '#F1F5F9', position: 'relative', width: '100%', borderRadius: '8px 8px 4px 4px' }}>
+                                <div className="chart-dot-v2" style={{ background: isLast ? '#1B4332' : '#94A3B8' }}></div>
+                              </div>
+                              <span style={{ fontSize: '10px', fontWeight: 700, color: '#94A3B8', whiteSpace: 'nowrap' }}>{label}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
@@ -326,13 +380,29 @@ export default function CycleDetail() {
                   </div>
 
                   <div className="premium-card" style={{ padding: '24px', background: '#fff' }}>
-                      <h4 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 800 }}>Efisiensi Pakan (FCR)</h4>
+                      <h4 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 800 }}>{terms.isTanaman ? 'Efisiensi Nutrisi (FCR)' : 'Efisiensi Pakan (FCR)'}</h4>
                       <div style={{ textAlign: 'center', padding: '12px 0' }}>
-                        <h2 className="aq-kpi-value" style={{ fontSize: '48px', margin: 0, letterSpacing: '-0.05em' }}>{stats.fcr || '0,00'}</h2>
-                        <p style={{ margin: '4px 0 24px', fontSize: '12px', fontWeight: 700, color: '#64748B' }}>TARGET IDEAL: 1.15</p>
+                        <h2 className="aq-kpi-value" style={{ fontSize: '48px', margin: 0, letterSpacing: '-0.05em' }}>
+                          {stats.fcr > 0 ? stats.fcr.toFixed(2).replace('.', ',') : '—'}
+                        </h2>
+                        <p style={{ margin: '4px 0 24px', fontSize: '12px', fontWeight: 700, color: '#64748B' }}>TARGET IDEAL: 1,15</p>
                         <div style={{ width: '100%', height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{ width: '85%', height: '100%', background: '#059669', borderRadius: '4px' }}></div>
+                          {stats.fcr > 0 ? (
+                            <div style={{
+                              width: `${Math.min(100, (1.15 / stats.fcr) * 100).toFixed(0)}%`,
+                              height: '100%',
+                              background: stats.fcr <= 1.15 ? '#059669' : '#F59E0B',
+                              borderRadius: '4px'
+                            }}></div>
+                          ) : (
+                            <div style={{ width: '0%', height: '100%', background: '#E2E8F0', borderRadius: '4px' }}></div>
+                          )}
                         </div>
+                        <p style={{ margin: '8px 0 0', fontSize: '11px', color: '#94A3B8' }}>
+                          {stats.fcr > 0
+                            ? stats.fcr <= 1.15 ? '✓ Di bawah target — efisiensi baik' : (terms.isTanaman ? '⚠ Di atas target — perlu evaluasi nutrisi' : '⚠ Di atas target — perlu evaluasi pakan')
+                            : 'FCR dihitung setelah ada data panen'}
+                        </p>
                       </div>
                   </div>
                 </div>
@@ -345,18 +415,22 @@ export default function CycleDetail() {
                     <TableHeader>
                       <TableRow isHoverable={false}>
                         <TableHeaderCell>Tanggal Log</TableHeaderCell>
-                        <TableHeaderCell>Jenis Pakan</TableHeaderCell>
+                        <TableHeaderCell>{terms.isTanaman ? 'Jenis Nutrisi' : 'Jenis Pakan'}</TableHeaderCell>
                         <TableHeaderCell>Kuantitas (kg)</TableHeaderCell>
                         <TableHeaderCell style={{ textAlign: 'right' }}>Waktu Input</TableHeaderCell>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {(data?.feedings || []).length === 0 ? (
-                         <TableRow><TableCell colSpan="4" style={{ padding: '80px', textAlign: 'center', color: '#94A3B8' }}>Belum ada log pemberian pakan.</TableCell></TableRow>
+                         <TableRow><TableCell colSpan="4" style={{ padding: '80px', textAlign: 'center', color: '#94A3B8' }}>{terms.isTanaman ? 'Belum ada log pemberian nutrisi.' : 'Belum ada log pemberian pakan.'}</TableCell></TableRow>
                       ) : (data?.feedings || []).map((f, i) => (
                         <TableRow key={i}>
                           <TableCell style={{ fontWeight: 700 }}>{new Date(f.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</TableCell>
-                          <TableCell><span style={{ padding: '4px 8px', background: '#E0F2FE', color: '#0369A1', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>{f.feed_name}</span></TableCell>
+                          <TableCell>
+                            <span style={{ padding: '4px 8px', background: '#E0F2FE', color: '#0369A1', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                              {f.feed_name && f.feed_name !== 'Pakan' ? f.feed_name : (f.inventory?.name || f.feed_name || (terms.isTanaman ? 'Nutrisi tidak diketahui' : 'Pakan tidak diketahui'))}
+                            </span>
+                          </TableCell>
                           <TableCell style={{ fontWeight: 800 }}>{(parseFloat(f.amount_kg) || 0).toLocaleString('id-ID')} <span style={{ fontSize: '11px', opacity: 0.5 }}>KG</span></TableCell>
                           <TableCell style={{ textAlign: 'right', color: '#94A3B8', fontSize: '12px' }}>{new Date(f.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</TableCell>
                         </TableRow>
@@ -377,7 +451,7 @@ export default function CycleDetail() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                <button onClick={() => setModalType('feed')} className="sidebar-op-btn-v2" disabled={cycle?.status === 'panen'}>
                   <div className="op-icon-v2"><Utensils size={18} /></div>
-                  <span>Input Pakan</span>
+                  <span>{terms.isTanaman ? 'Input Nutrisi' : 'Input Pakan'}</span>
                </button>
                <button onClick={() => setModalType('sampling')} className="sidebar-op-btn-v2" disabled={cycle?.status === 'panen'}>
                   <div className="op-icon-v2"><Scale size={18} /></div>
@@ -486,21 +560,18 @@ export default function CycleDetail() {
         }
       `}</style>
 
-      {/* Modals reuse same as before but styled consistent with V2 inputs */}
-
-
       {/* Modals */}
       <Modal isOpen={!!modalType} onClose={() => setModalType(null)} title={
-         modalType === 'feed' ? 'Catat Pemberian Pakan' :
+         modalType === 'feed' ? (terms.isTanaman ? 'Catat Pemberian Nutrisi' : 'Catat Pemberian Pakan') :
          modalType === 'sampling' ? 'Data Sampling Unit' :
          modalType === 'health' ? 'Laporan Kesehatan' : 'Finalisasi Produksi'
       }>
          {modalType === 'feed' && (
             <form onSubmit={handleLogFeeding} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                <div>
-                  <label className="aq-kpi-label">Pilih Pakan</label>
+                  <label className="aq-kpi-label">{terms.isTanaman ? 'Pilih Nutrisi' : 'Pilih Pakan'}</label>
                   <select required className="form-input" value={formFeed.feed_stock_id} onChange={e => setFormFeed({...formFeed, feed_stock_id: e.target.value})}>
-                     <option value="">-- Pilih Stok Pakan --</option>
+                     <option value="">{terms.isTanaman ? '-- Pilih Stok Nutrisi --' : '-- Pilih Stok Pakan --'}</option>
                      {feedStocks.map(fs => <option key={fs.id} value={fs.id}>{fs.name} (Sisa: {fs.stock_kg}kg)</option>)}
                   </select>
                </div>
@@ -514,7 +585,7 @@ export default function CycleDetail() {
                      <input required type="date" className="form-input" value={formFeed.date} onChange={e => setFormFeed({...formFeed, date: e.target.value})} />
                   </div>
                </div>
-               <LoadingButton loading={saving} type="submit" className="btn btn-primary btn-full">Simpan Pakan</LoadingButton>
+               <LoadingButton loading={saving} type="submit" className="btn btn-primary btn-full">{terms.isTanaman ? 'Simpan Nutrisi' : 'Simpan Pakan'}</LoadingButton>
             </form>
          )}
 
@@ -535,6 +606,54 @@ export default function CycleDetail() {
                   <input required type="date" className="form-input" value={formHarvest.harvest_date} onChange={e => setFormHarvest({...formHarvest, harvest_date: e.target.value})} />
                </div>
                <LoadingButton loading={saving} type="submit" className="btn btn-primary btn-full">Selesaikan & Panen</LoadingButton>
+            </form>
+         )}
+
+         {modalType === 'sampling' && (
+            <form onSubmit={handleLogSampling} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                     <label className="aq-kpi-label">{terms.isTanaman ? 'Tinggi Rata-rata (cm)' : 'Berat Rata-rata (gram)'}</label>
+                     <input required type="number" step="any" className="form-input" value={formSampling.average_weight_gram} onChange={e => setFormSampling({...formSampling, average_weight_gram: e.target.value})} />
+                  </div>
+                  <div>
+                     <label className="aq-kpi-label">{terms.isTanaman ? 'Jumlah Sampel (batang)' : 'Jumlah Sampel (ekor)'}</label>
+                     <input type="number" className="form-input" value={formSampling.sample_count} onChange={e => setFormSampling({...formSampling, sample_count: e.target.value})} />
+                  </div>
+               </div>
+               <div>
+                  <label className="aq-kpi-label">Tanggal Sampling</label>
+                  <input required type="date" className="form-input" value={formSampling.date} onChange={e => setFormSampling({...formSampling, date: e.target.value})} />
+               </div>
+               <div>
+                  <label className="aq-kpi-label">Catatan Tambahan</label>
+                  <textarea className="form-input" rows="2" style={{ resize: 'none' }} value={formSampling.notes} onChange={e => setFormSampling({...formSampling, notes: e.target.value})} placeholder={terms.isTanaman ? 'Kondisi tanaman sehat...' : 'Kondisi ikan sehat...'} />
+               </div>
+               <LoadingButton loading={saving} type="submit" className="btn btn-primary btn-full">Simpan Sampling</LoadingButton>
+            </form>
+         )}
+
+         {modalType === 'health' && (
+            <form onSubmit={handleLogHealth} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                     <label className="aq-kpi-label">{terms.isTanaman ? 'Mortalitas (batang)' : 'Mortalitas (ekor)'}</label>
+                     <input required type="number" className="form-input" value={formHealth.mortality_count} onChange={e => setFormHealth({...formHealth, mortality_count: e.target.value})} />
+                  </div>
+                  <div>
+                     <label className="aq-kpi-label">Tanggal Pencatatan</label>
+                     <input required type="date" className="form-input" value={formHealth.date} onChange={e => setFormHealth({...formHealth, date: e.target.value})} />
+                  </div>
+               </div>
+               <div>
+                  <label className="aq-kpi-label">Catatan Gejala/Penyakit</label>
+                  <textarea className="form-input" rows="2" style={{ resize: 'none' }} value={formHealth.disease_note} onChange={e => setFormHealth({...formHealth, disease_note: e.target.value})} placeholder={terms.isTanaman ? 'Tanaman layu...' : 'Ikan lemas...'} />
+               </div>
+               <div>
+                  <label className="aq-kpi-label">Tindakan</label>
+                  <textarea className="form-input" rows="2" style={{ resize: 'none' }} value={formHealth.treatment_note} onChange={e => setFormHealth({...formHealth, treatment_note: e.target.value})} placeholder="Pemberian vitamin..." />
+               </div>
+               <LoadingButton loading={saving} type="submit" className="btn btn-primary btn-full">Simpan Laporan Kesehatan</LoadingButton>
             </form>
          )}
       </Modal>

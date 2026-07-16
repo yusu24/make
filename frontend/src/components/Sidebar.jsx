@@ -4,84 +4,142 @@ import {
   LayoutDashboard, CreditCard, Package, Layers, Ruler, Users, Truck,
   BarChart2, ShoppingCart, UserCheck, RefreshCw,
   LogOut, Inbox, ClipboardList, Database, Wallet, Settings, User,
-  HelpCircle, ServerCog, FileText, Zap, Shield
+  HelpCircle, ServerCog, FileText, Zap, Shield, ChevronDown, ChevronRight,
+  Receipt, Tag
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { api } from '../lib/api'
 import Modal from './Modal'
+import bizoraLogo from '../assets/bizora-logo.png'
 import './Sidebar.css'
 
 // ─── Admin nav items ──────────────────────────────────────────────────────────
 const NAV_ITEMS = [
   {
     section: 'Overview',
+    icon: <LayoutDashboard size={18} />,
     items: [
-      { path: '/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' },
+      { path: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     ]
   },
   {
-    section: 'Tenant Management',
+    section: 'Tenant',
+    icon: <Users size={18} />,
     adminOnly: true,
     items: [
-      { path: '/tenants',    icon: <Truck size={24} />,     label: 'Tenant Management' },
-      { path: '/users',      icon: <Users size={24} />,     label: 'Users' },
-      { path: '/admins',     icon: <UserCheck size={24} />, label: 'Admins' },
-      { path: '/saas-roles', icon: <Shield size={24} />,    label: 'SaaS Roles' },
-      { path: '/categories', icon: <Layers size={24} />,    label: 'Business Categories' },
+      { path: '/tenants', icon: <Truck size={18} />,  label: 'Tenant Management' },
+      { path: '/users',   icon: <Users size={18} />,  label: 'Users' },
     ]
   },
   {
-    section: 'Subscription & Billing',
+    section: 'Admin Settings',
+    icon: <Shield size={18} />,
     adminOnly: true,
     items: [
-      { path: '/subscriptions', icon: <CreditCard size={24} />, label: 'Subscription & Billing' },
+      { path: '/admins',     icon: <UserCheck size={18} />, label: 'Admins' },
+      { path: '/saas-roles', icon: <Shield size={18} />,    label: 'SaaS Roles' },
+      { path: '/categories', icon: <Layers size={18} />,    label: 'Business Categories' },
     ]
   },
   {
-    section: 'Packages & Features',
+    section: 'Billing',
+    icon: <CreditCard size={18} />,
     adminOnly: true,
     items: [
-      { path: '/packages-features', icon: <Package size={24} />, label: 'Packages & Features' },
-      { path: '/finance',          icon: <Wallet size={24} />,  label: 'Finance' },
+      { path: '/subscriptions',     icon: <CreditCard size={18} />, label: 'Subscriptions' },
+      { path: '/packages-features', icon: <Package size={18} />,    label: 'Packages & Features' },
+      { path: '/finance',           icon: <Wallet size={18} />,     label: 'Finance' },
     ]
   },
   {
     section: 'Operations',
+    icon: <ServerCog size={18} />,
     adminOnly: true,
     items: [
-      { path: '/support-center',      icon: <HelpCircle size={24} />,  label: 'Support Center' },
-      { path: '/system-monitoring',   icon: <ServerCog size={24} />,  label: 'System Monitoring' },
-      { path: '/content-announcement', icon: <FileText size={24} />,   label: 'Content & Announcement' },
+      { path: '/support-center',       icon: <HelpCircle size={18} />,    label: 'Support Center' },
+      { path: '/system-monitoring',    icon: <ServerCog size={18} />,     label: 'System Monitoring' },
+      { path: '/content-announcement', icon: <FileText size={18} />,      label: 'Content & Announcement' },
     ]
   },
   {
     section: 'Reports',
+    icon: <BarChart2 size={18} />,
     adminOnly: true,
     items: [
-      { path: '/reports-analytics', icon: <BarChart2 size={24} />,   label: 'Reports & Analytics' },
-      { path: '/logs',              icon: <ClipboardList size={24} />, label: 'Security & Audit' },
+      { path: '/reports-analytics', icon: <BarChart2 size={18} />,    label: 'Reports & Analytics' },
+      { path: '/logs',              icon: <ClipboardList size={18} />, label: 'Security & Audit' },
     ]
   },
   {
     section: 'Platform',
+    icon: <Zap size={18} />,
     adminOnly: true,
     items: [
-      { path: '/settings', icon: <Settings size={24} />, label: 'Settings' },
-      { path: '/developer-integrations', icon: <Zap size={24} />, label: 'Developer & Integrations' },
+      { path: '/settings',               icon: <Settings size={18} />, label: 'Settings' },
+      { path: '/developer-integrations', icon: <Zap size={18} />,     label: 'Developer & Integrations' },
     ]
   },
   {
     section: 'Akun',
+    icon: <User size={18} />,
     items: [
-      { path: '/profile', icon: <User size={24} />, label: 'Profil Saya' },
+      { path: '/profile', icon: <User size={18} />, label: 'Profil Saya' },
     ]
   }
 ]
 
+// Maps retail nav paths to the permission module that gates them server-side
+// (backend/routes/api.php `retail_permission:{module}` groups). Paths not listed
+// are always visible (dashboard, subscription, support, profile).
+const RETAIL_PATH_PERMISSIONS = {
+  '/retail/products': 'catalog',
+  '/retail/stock': 'purchasing',
+  '/retail/inventory': 'inventory',
+  '/retail/stock-movements': 'inventory',
+  '/retail/stock-opname': 'inventory',
+  '/retail/supplier-returns': 'purchasing',
+  '/retail/transactions': 'pos',
+  '/retail/customer-returns': 'pos',
+  '/retail/discounts': 'discounts',
+  '/retail/pricelists': 'discounts',
+  '/retail/categories': 'master',
+  '/retail/units': 'master',
+  '/retail/suppliers': 'master',
+  '/retail/customers': 'master',
+  '/retail/expense-categories': 'master',
+  '/retail/settings': 'master',
+  '/retail/staff': 'staff',
+  '/retail/roles': 'roles',
+  '/retail/reports/sales': 'reports',
+  '/retail/reports/products': 'reports',
+  '/retail/reports/customers': 'reports',
+  '/retail/finance/summary': 'finance',
+  '/retail/finance/expenses': 'finance',
+  '/retail/finance/payables': 'finance',
+  '/retail/finance/receivables': 'finance',
+}
+
+function filterNavByPermission(sections, user) {
+  const permissions = user?.permissions
+  if (permissions === 'all' || !Array.isArray(permissions)) return sections // owner/super_admin or ungated
+
+  return sections
+    .map(section => ({
+      ...section,
+      items: section.items.filter(item => {
+        const required = RETAIL_PATH_PERMISSIONS[item.path]
+        return !required || permissions.includes(required)
+      }),
+    }))
+    .filter(section => section.items.length > 0)
+}
+
 const CATEGORY_COLORS = {
-  'Budidaya Ikan': '#10b981',
-  'Toko Retail':   '#3b82f6',
-  'Jasa':          '#8b5cf6',
-  'Manufaktur':    '#f59e0b',
+  'Budidaya Ikan':    '#10b981',
+  'Budidaya Tanaman': '#84cc16',
+  'Toko Retail':      '#3b82f6',
+  'Jasa':             '#8b5cf6',
+  'Manufaktur':       '#f59e0b',
 }
 
 // ─── Retail nav items ─────────────────────────────────────────────────────────
@@ -98,8 +156,21 @@ const RETAIL_NAV_ITEMS = [
     section: 'Logistik & Stok',
     icon: <Truck size={20} />,
     items: [
-      { path: '/retail/stock',     icon: <Inbox size={24} />,        label: 'Penerimaan Barang' },
-      { path: '/retail/inventory', icon: <ClipboardList size={24} />, label: 'Stok Barang' },
+      { path: '/retail/stock',           icon: <Inbox size={24} />,          label: 'Penerimaan Barang' },
+      { path: '/retail/inventory',       icon: <ClipboardList size={24} />, label: 'Stok Barang' },
+      { path: '/retail/stock-movements', icon: <RefreshCw size={24} />,      label: 'Riwayat Stok' },
+      { path: '/retail/stock-opname',    icon: <UserCheck size={24} />,      label: 'Stock Opname' },
+      { path: '/retail/supplier-returns', icon: <Truck size={24} />,         label: 'Retur ke Supplier' },
+    ]
+  },
+  {
+    section: 'Penjualan',
+    icon: <Receipt size={20} />,
+    items: [
+      { path: '/retail/transactions',     icon: <ClipboardList size={24} />, label: 'Riwayat Transaksi' },
+      { path: '/retail/customer-returns', icon: <RefreshCw size={24} />,     label: 'Retur Pelanggan' },
+      { path: '/retail/discounts',        icon: <Tag size={24} />,           label: 'Kode Diskon' },
+      { path: '/retail/pricelists',       icon: <Layers size={24} />,        label: 'Pricelist' },
     ]
   },
   {
@@ -135,16 +206,20 @@ const RETAIL_NAV_ITEMS = [
     section: 'Keuangan',
     icon: <Wallet size={20} />,
     items: [
-      { path: '/retail/finance/summary',  icon: <BarChart2 size={24} />, label: 'Laba Rugi' },
-      { path: '/retail/finance/expenses', icon: <Wallet size={24} />,    label: 'Pengeluaran' },
+      { path: '/retail/finance/summary',     icon: <BarChart2 size={24} />, label: 'Laba Rugi' },
+      { path: '/retail/finance/expenses',    icon: <Wallet size={24} />,    label: 'Pengeluaran' },
+      { path: '/retail/finance/payables',    icon: <Wallet size={24} />,    label: 'Hutang Supplier' },
+      { path: '/retail/finance/receivables', icon: <Wallet size={24} />,    label: 'Piutang Pelanggan' },
     ]
   },
   {
     section: 'Sistem & Paket',
-    icon: <Database size={20} />,
+    icon: <Settings size={20} />,
     items: [
+      { path: '/retail/settings',     icon: <Settings size={24} />,   label: 'Pengaturan Toko' },
       { path: '/retail/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
       { path: '/retail/support',      icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
+      { path: '/retail/profile',      icon: <UserCheck size={24} />,  label: 'Profil Saya' },
     ]
   }
 ]
@@ -186,94 +261,110 @@ const KULINER_NAV_ITEMS = [
     section: 'Sistem & Paket',
     icon: <Database size={20} />,
     items: [
-      { path: '/kuliner/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
-      { path: '/kuliner/support',      icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
+      { path: '/kuliner/subscription',   icon: <CreditCard size={24} />, label: 'Paket Langganan' },
+      { path: '/kuliner/admin/support',  icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
+      { path: '/kuliner/admin/profile',  icon: <UserCheck size={24} />,  label: 'Profil Saya' },
     ]
   }
 ]
 
-// ─── Flyout Popover (Collapsed Mode) ─────────────────────────────────────────
-function RetailPopover({ section, anchorY, sidebarWidth = 68, onClose, onPaywall, pathname }) {
+// ─── Collapsed-rail flyout: plain text list, shown on click, hidden by
+// default. Needed because the collapsed rail has no room for labels and,
+// on pages like POS, there's no way to expand the sidebar to see them.
+function CollapsedGroupFlyout({ section, anchorY, sidebarWidth, onClose, pathname }) {
   const ref = useRef(null)
 
   useEffect(() => {
-    // Delay adding listener so the click that opened this popover doesn't close it immediately
-    const timer = setTimeout(() => {
-      const handler = (e) => {
-        if (!ref.current) return
-        // Don't close if click is inside popover
-        if (ref.current.contains(e.target)) return
-        // Don't close if click is inside the sidebar rail (allow switching sections)
-        const rail = document.querySelector('.sidebar--retail')
-        if (rail && rail.contains(e.target)) return
-        onClose()
-      }
-      document.addEventListener('mousedown', handler)
-      // Store cleanup on ref so we can remove it
-      ref.current._removeHandler = () => document.removeEventListener('mousedown', handler)
-    }, 50)
-
+    const handler = (e) => {
+      if (ref.current?.contains(e.target)) return
+      const rail = document.querySelector('.sidebar--retail')
+      if (rail && rail.contains(e.target)) return
+      onClose()
+    }
+    // Delay adding the listener so the click that opened this flyout doesn't close it immediately
+    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 50)
     return () => {
       clearTimeout(timer)
-      if (ref.current?._removeHandler) ref.current._removeHandler()
+      document.removeEventListener('mousedown', handler)
     }
   }, [onClose])
 
-  // Position: 8px gap after sidebar rail (68px wide)
-  const style = {
-    position: 'fixed',
-    left: sidebarWidth + 8,
-    top: Math.max(8, Math.min(anchorY, window.innerHeight - 400)),
-    zIndex: 200,
-    animation: 'slideFadeIn 0.18s cubic-bezier(0.16,1,0.3,1) forwards',
-  }
-
   return (
-    <div ref={ref} style={style}>
-      <div className="sidebar__popover">
-        <div className="sidebar__popover-header">
-          <h3 className="sidebar__popover-title">{section.section}</h3>
-        </div>
-        <div className="sidebar__popover-grid">
-          {section.items.map(item => {
-            const isActive =
-              pathname === item.path ||
-              (item.path === '/retail/dashboard' && pathname === '/retail')
-            return (
-              <NavLink
-                key={item.path}
-                to={section.isLocked ? '#' : item.path}
-                className={`sidebar__popover-item ${isActive ? 'sidebar__popover-item--active' : ''}`}
-                onClick={(e) => {
-                  if (section.isLocked) { e.preventDefault(); onPaywall() }
-                  else { onClose() }
-                }}
-                style={section.isLocked ? { opacity: 0.55 } : {}}
-              >
-                <span className="sidebar__popover-item-icon">
-                  {item.icon && (typeof item.icon === 'string' ? item.icon : React.cloneElement(item.icon, { size: 24 }))}
-                </span>
-                <span className="sidebar__popover-item-label">{item.label}</span>
-              </NavLink>
-            )
-          })}
-        </div>
+    <div
+      ref={ref}
+      style={{
+        position: 'fixed',
+        left: sidebarWidth + 4,
+        top: Math.max(8, Math.min(anchorY, window.innerHeight - 8)),
+        zIndex: 200,
+        minWidth: 190,
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 10,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+        padding: 6,
+      }}
+    >
+      <div style={{ padding: '6px 10px 8px', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>
+        {section.section}
       </div>
+      {section.items.map(item => {
+        const isActive = pathname === item.path || (item.path === '/retail/dashboard' && pathname === '/retail')
+        return (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            onClick={onClose}
+            className={`sidebar__submenu-item ${isActive ? 'sidebar__submenu-item--active' : ''}`}
+            style={{ padding: '8px 10px' }}
+          >
+            <span className="sidebar__submenu-icon">
+              {item.icon && React.cloneElement(item.icon, { size: 16 })}
+            </span>
+            <span>{item.label}</span>
+          </NavLink>
+        )
+      })}
     </div>
   )
 }
 
 // ─── Main Sidebar ─────────────────────────────────────────────────────────────
 export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
-  const { user, logout, isSuperAdmin } = useAuth()
-  const navigate = useNavigate()
+  const { user, isSuperAdmin, isImpersonating } = useAuth()
   const { pathname } = useLocation()
-  const [openSection, setOpenSection] = useState(null)
-  const [popoverAnchorY, setPopoverAnchorY] = useState(60)
   const [paywallOpen, setPaywallOpen] = useState(false)
+  const [logoUrl, setLogoUrl] = useState(null)
+  const [expandedGroup, setExpandedGroup] = useState(null)
+  const [openSection, setOpenSection] = useState(null)
+  const [flyoutAnchorY, setFlyoutAnchorY] = useState(60)
 
-  // Close popover on route change
-  useEffect(() => { setOpenSection(null) }, [pathname])
+  const toggleGroup = useCallback((sectionName) => {
+    setExpandedGroup(prev => prev === sectionName ? null : sectionName)
+  }, [])
+
+  const handleGroupIconClick = useCallback((sectionName, e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setFlyoutAnchorY(rect.top)
+    setOpenSection(prev => prev === sectionName ? null : sectionName)
+  }, [])
+
+  // Fetch logo dynamically
+  useEffect(() => {
+    api.get('/landing-settings')
+      .then(r => {
+        if (r.data?.data?.admin_logo_url) {
+          setLogoUrl(r.data.data.admin_logo_url)
+        }
+      })
+      .catch(e => console.error('Failed to fetch sidebar logo:', e))
+  }, [])
+
+  // Reset expanded group / open flyout on route change
+  useEffect(() => {
+    setExpandedGroup(null)
+    setOpenSection(null)
+  }, [pathname])
 
   const isRetail = pathname.startsWith('/retail')
 
@@ -289,59 +380,95 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
   if (isSaasAdmin) {
     currentNavItems = [...NAV_ITEMS]
   } else {
-    // Basic items (skip for Retail as it has its own Menu Utama)
-    if (user?.business_category !== 'Toko Retail') {
+    // ── When on a specific category route, show ONLY that category's nav ──
+    const isOnRetail   = pathname.startsWith('/retail')
+    const isOnBudidaya = pathname.startsWith('/budidaya')
+    const isOnKuliner  = pathname.startsWith('/kuliner')
+    // Each category's own nav array already ships its own "Sistem & Paket"
+    // section (support/subscription/profile) — track whether one was used so
+    // the generic "Akun & Bantuan" fallback below isn't appended on top of it.
+    let hasCategoryNav = isOnRetail || isOnBudidaya || isOnKuliner
+
+    if (isOnRetail) {
+      // Only retail nav items — no cross-category links, filtered by staff permission
+      currentNavItems = filterNavByPermission(RETAIL_NAV_ITEMS, user)
+    } else if (isOnBudidaya) {
+      // Only budidaya nav items (mapped dynamically for Tanaman category)
+      const isTanaman = user?.business_category === 'Budidaya Tanaman';
+      currentNavItems = BUDIDAYA_NAV_ITEMS.map(sec => {
+        if (isTanaman && sec.section === 'Budidaya') {
+          return {
+            ...sec,
+            section: 'Pertanian',
+            items: sec.items.map(item => {
+              if (item.label === 'Kolam') return { ...item, label: 'Lahan' };
+              return item;
+            })
+          };
+        }
+        return sec;
+      });
+    } else if (isOnKuliner) {
+      // Only kuliner nav items
+      currentNavItems = [...KULINER_NAV_ITEMS]
+    } else {
+      // Generic dashboard (not inside any category module)
       currentNavItems.push({
         section: 'Utama',
         items: [{ path: '/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' }]
       })
+
+      // Show category modules as nav sections only on the generic dashboard
+      if (user?.business_category === 'Toko Retail' || activeModules.includes('retail_pos') || activeModules.includes('inventory')) {
+        currentNavItems = [...currentNavItems, ...filterNavByPermission(RETAIL_NAV_ITEMS, user)]
+        hasCategoryNav = true
+      }
+      if (user?.business_category === 'Budidaya Ikan' || user?.business_category === 'Budidaya Tanaman' || activeModules.includes('budidaya_cycle')) {
+        const isTanaman = user?.business_category === 'Budidaya Tanaman';
+        const navItems = BUDIDAYA_NAV_ITEMS.map(sec => {
+          if (isTanaman && sec.section === 'Budidaya') {
+            return {
+              ...sec,
+              section: 'Pertanian',
+              items: sec.items.map(item => {
+                if (item.label === 'Kolam') return { ...item, label: 'Lahan' };
+                return item;
+              })
+            };
+          }
+          return sec;
+        });
+        currentNavItems = [...currentNavItems, ...navItems]
+        hasCategoryNav = true
+      }
+      if (user?.business_category === 'Kuliner' || activeModules.includes('website_order')) {
+        currentNavItems = [...currentNavItems, ...KULINER_NAV_ITEMS]
+        hasCategoryNav = true
+      }
     }
 
-    // Retail Module
-    if (user?.business_category === 'Toko Retail' || activeModules.includes('retail_pos') || activeModules.includes('inventory')) {
-      currentNavItems = [...currentNavItems, ...RETAIL_NAV_ITEMS]
+    // Only the true no-category dashboard needs this fallback — every
+    // category nav array above already ships its own "Sistem & Paket"
+    // section with support/subscription/profile links.
+    if (!hasCategoryNav) {
+      currentNavItems.push({
+        section: 'Akun & Bantuan',
+        icon: <User size={20} />,
+        items: [
+          { path: '/support', icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
+          { path: '/profile', icon: <UserCheck size={24} />, label: 'Profil Saya' }
+        ]
+      })
     }
-
-    // Budidaya Module
-    if (user?.business_category === 'Budidaya Ikan' || activeModules.includes('budidaya_cycle')) {
-      currentNavItems = [...currentNavItems, ...BUDIDAYA_NAV_ITEMS]
-    }
-
-    // Kuliner Module
-    if (user?.business_category === 'Kuliner' || activeModules.includes('website_order')) {
-      currentNavItems = [...currentNavItems, ...KULINER_NAV_ITEMS]
-    }
-
-    currentNavItems.push({
-      section: 'Akun & Bantuan',
-      items: [
-        { path: '/support', icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
-        { path: '/profile', icon: <UserCheck size={24} />, label: 'Profil Saya' }
-      ]
-    })
   }
 
   const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']
-  const isDemo = DEMO_EMAILS.includes(user?.email)
+  const isDemo = user?.email?.startsWith('demo-sandbox-') || user?.email?.startsWith('demo-kuliner-') || DEMO_EMAILS.includes(user?.email)
 
-  const handleLogout = () => { logout(); navigate(isDemo ? '/' : '/login') }
 
-  const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    : 'U'
 
-  const catColor = CATEGORY_COLORS[user?.business_category] || 'var(--primary-500)'
 
-  // ── Toggle section flyout (collapsed retail mode) ─────────────────
-  const handleSectionIconClick = useCallback((sectionName, e) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    setPopoverAnchorY(rect.top)
-    setOpenSection(prev => prev === sectionName ? null : sectionName)
-  }, [])
-
-  const activePopoverSection = openSection
-    ? currentNavItems.find(s => s.section === openSection)
-    : null
+  const topOffset = '0px'
 
   return (
     <>
@@ -352,6 +479,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
           mobileOpen       ? 'sidebar--mobile-open'  : '',
           isRetail         ? 'sidebar--retail'       : '',
         ].join(' ')}
+        style={{ top: topOffset, height: `calc(100vh - ${topOffset})` }}
       >
         {/* ── Logo ── */}
         <div
@@ -361,10 +489,10 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
             justifyContent: isMini ? 'center' : 'flex-start',
           }}
         >
-          <div className="sidebar__logo-icon"><span>U</span></div>
+          <div className="sidebar__logo-icon" style={{ overflow: 'hidden' }}><img src={logoUrl || bizoraLogo} alt="BIZORA" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 4 }} /></div>
           {!isMini && (
             <div className="sidebar__logo-text">
-              <span className="sidebar__logo-brand">UMKM</span>
+              <span className="sidebar__logo-brand">BIZORA</span>
               <span className="sidebar__logo-sub">SaaS Platform</span>
             </div>
           )}
@@ -376,7 +504,38 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
             if (section.adminOnly && !isSuperAdmin() && user?.role !== 'admin') return null
 
             // ============================================================
-            // RETAIL + COLLAPSED → Icon rail: click opens flyout popover
+            // RETAIL + COLLAPSED, "Menu Utama" → direct icon links, no
+            // popover (it's just flat items, same treatment as expanded).
+            // ============================================================
+            if (isRetail && isMini && section.section === 'Menu Utama') {
+              const isActiveItem = (i) =>
+                pathname === i.path || (i.path === '/retail/dashboard' && pathname === '/retail')
+              return (
+                <div key={section.section} className="sidebar__section" style={{ margin: 0 }}>
+                  {section.items.map(item => (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      title={item.label}
+                      className={({ isActive }) =>
+                        `sidebar__item ${isActive || isActiveItem(item) ? 'sidebar__item--active' : ''}`
+                      }
+                      style={{ justifyContent: 'center', paddingLeft: 0 }}
+                    >
+                      <span className="sidebar__item-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {item.icon}
+                      </span>
+                    </NavLink>
+                  ))}
+                </div>
+              )
+            }
+
+            // ============================================================
+            // RETAIL + COLLAPSED → Icon rail, hidden labels by default.
+            // Clicking opens a plain text-list flyout (not a fancy grid
+            // popover) so pages like POS — which have no way to expand
+            // the sidebar — can still reach these sections.
             // ============================================================
             if (isRetail && isMini && section.section !== 'Mode Admin') {
               const isOpen    = openSection === section.section
@@ -389,54 +548,77 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
                   <div
                     role="button"
                     className={`sidebar__item ${isOpen || hasActive ? 'sidebar__item--active' : ''}`}
-                    onClick={(e) => handleSectionIconClick(section.section, e)}
+                    onClick={(e) => handleGroupIconClick(section.section, e)}
                     title={section.section}
-                    style={{ cursor: 'pointer', paddingLeft: 0, justifyContent: 'center', position: 'relative' }}
+                    style={{ cursor: 'pointer', paddingLeft: 0, justifyContent: 'center' }}
                   >
                     <span className="sidebar__item-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {section.icon || <Database size={20} />}
                     </span>
-                    {/* Active dot */}
-                    {hasActive && (
-                      <span style={{
-                        position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
-                        width: 5, height: 5, borderRadius: '50%', background: catColor,
-                      }} />
-                    )}
                   </div>
                 </div>
               )
             }
 
             // ============================================================
-            // RETAIL + EXPANDED → Same icon buttons but with label text
+            // RETAIL + EXPANDED → "Menu Utama" flat, everything else an
+            // inline collapsible accordion (NeedPOS-style dark sidebar)
             // ============================================================
             if (isRetail && !isMini && section.section !== 'Mode Admin') {
-              const isOpen    = openSection === section.section
-              const hasActive = section.items.some(i =>
-                pathname === i.path ||
-                (i.path === '/retail/dashboard' && pathname === '/retail')
-              )
+              const isActiveItem = (i) =>
+                pathname === i.path || (i.path === '/retail/dashboard' && pathname === '/retail')
+              const hasActive = section.items.some(isActiveItem)
+
+              if (section.section === 'Menu Utama') {
+                return (
+                  <div key={section.section} className="sidebar__section">
+                    {section.items.map(item => (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        className={({ isActive }) =>
+                          `sidebar__item ${isActive || isActiveItem(item) ? 'sidebar__item--active' : ''}`
+                        }
+                      >
+                        <span className="sidebar__item-icon">{item.icon}</span>
+                        <span className="sidebar__item-label">{item.label}</span>
+                      </NavLink>
+                    ))}
+                  </div>
+                )
+              }
+
+              const isExpanded = expandedGroup === section.section || (expandedGroup === null && hasActive)
               return (
                 <div key={section.section} className="sidebar__section" style={{ margin: 0 }}>
-                  <div
-                    role="button"
-                    className={`sidebar__item ${isOpen || hasActive ? 'sidebar__item--active' : ''}`}
-                    onClick={(e) => handleSectionIconClick(section.section, e)}
-                    title={section.section}
-                    style={{ cursor: 'pointer', paddingLeft: 12, justifyContent: 'flex-start', position: 'relative' }}
+                  <button
+                    type="button"
+                    className={`sidebar__item sidebar__item--group ${hasActive ? 'sidebar__item--group-active' : ''}`}
+                    onClick={() => toggleGroup(section.section)}
                   >
-                    <span className="sidebar__item-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {section.icon || <Database size={20} />}
-                    </span>
-                    <span className="sidebar__item-label" style={{ flex: 1 }}>{section.section}</span>
-                    {/* Active dot */}
-                    {hasActive && (
-                      <span style={{
-                        width: 6, height: 6, borderRadius: '50%', background: catColor, flexShrink: 0,
-                      }} />
-                    )}
-                  </div>
+                    <span className="sidebar__item-icon">{section.icon || <Database size={20} />}</span>
+                    <span className="sidebar__item-label" style={{ flex: 1, textAlign: 'left' }}>{section.section}</span>
+                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  </button>
+                  {isExpanded && (
+                    <div className="sidebar__submenu">
+                      {section.items.map(item => {
+                        const active = isActiveItem(item)
+                        return (
+                          <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={`sidebar__submenu-item ${active ? 'sidebar__submenu-item--active' : ''}`}
+                          >
+                            <span className="sidebar__submenu-icon">
+                              {item.icon && React.cloneElement(item.icon, { size: 16 })}
+                            </span>
+                            <span>{item.label}</span>
+                          </NavLink>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               )
             }
@@ -467,74 +649,106 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
             }
 
             // ============================================================
-            // ADMIN → Classic flat list (unchanged)
+            // ADMIN → Collapsible accordion (compact)
             // ============================================================
-            return (
-              <div key={section.section} className="sidebar__section">
-                {!isMini && (
-                  <span className="sidebar__section-label">{section.section}</span>
-                )}
-                {section.items.map(item => (
+            const isAdminActiveItem = (i) => pathname === i.path
+            const hasActive = section.items.some(isAdminActiveItem)
+
+            // Dashboard (Overview) single item — render flat, no accordion
+            if (section.items.length === 1) {
+              const item = section.items[0]
+              return (
+                <div key={section.section} className="sidebar__section" style={{ margin: 0 }}>
                   <NavLink
-                    key={item.path}
-                    to={section.isLocked ? '#' : item.path}
+                    to={item.path}
                     className={({ isActive }) =>
-                      `sidebar__item ${isActive && !section.isLocked ? 'sidebar__item--active' : ''}`
+                      `sidebar__item ${isActive ? 'sidebar__item--active' : ''}`
                     }
                     title={isMini ? item.label : undefined}
-                    onClick={(e) => {
-                      if (section.isLocked) { e.preventDefault(); setPaywallOpen(true) }
-                    }}
                   >
                     <span className="sidebar__item-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {item.icon}
                     </span>
                     {!isMini && <span className="sidebar__item-label">{item.label}</span>}
                   </NavLink>
-                ))}
+                </div>
+              )
+            }
+
+            // Multi-item groups → accordion
+            const isExpanded = isMini
+              ? false
+              : expandedGroup === section.section || (expandedGroup === null && hasActive)
+
+            return (
+              <div key={section.section} className="sidebar__section" style={{ margin: 0 }}>
+                {isMini ? (
+                  /* Collapsed admin: show group icon with tooltip */
+                  <div
+                    role="button"
+                    className={`sidebar__item ${hasActive ? 'sidebar__item--active' : ''}`}
+                    title={section.section}
+                    style={{ cursor: 'default', paddingLeft: 0, justifyContent: 'center' }}
+                  >
+                    <span className="sidebar__item-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {section.icon || <Database size={18} />}
+                    </span>
+                  </div>
+                ) : (
+                  /* Expanded admin: accordion header */
+                  <>
+                    <button
+                      type="button"
+                      className={`sidebar__item sidebar__item--group ${hasActive ? 'sidebar__item--group-active' : ''}`}
+                      onClick={() => toggleGroup(section.section)}
+                    >
+                      <span className="sidebar__item-icon">
+                        {section.icon || <Database size={18} />}
+                      </span>
+                      <span className="sidebar__item-label" style={{ flex: 1, textAlign: 'left' }}>
+                        {section.section}
+                      </span>
+                      {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                    </button>
+                    {isExpanded && (
+                      <div className="sidebar__submenu">
+                        {section.items.map(item => {
+                          const active = isAdminActiveItem(item)
+                          return (
+                            <NavLink
+                              key={item.path}
+                              to={section.isLocked ? '#' : item.path}
+                              className={`sidebar__submenu-item ${active ? 'sidebar__submenu-item--active' : ''}`}
+                              onClick={(e) => {
+                                if (section.isLocked) { e.preventDefault(); setPaywallOpen(true) }
+                              }}
+                            >
+                              <span className="sidebar__submenu-icon">
+                                {item.icon && React.cloneElement(item.icon, { size: 14 })}
+                              </span>
+                              <span>{item.label}</span>
+                            </NavLink>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             )
           })}
         </nav>
 
-        {/* ── Footer ── */}
-        <div className="sidebar__footer">
-          {!isMini && (
-            <div className="sidebar__user">
-              <div className="avatar" style={{ background: catColor, width: 36, height: 36, fontSize: 13 }}>
-                {initials}
-              </div>
-              <div className="sidebar__user-info">
-                <p className="sidebar__user-name truncate">{user?.name || 'User'}</p>
-                <p className="sidebar__user-role">
-                  {user?.role === 'super_admin' ? '⭐ Super Admin'
-                    : user?.role === 'admin' ? '🔧 Admin'
-                    : user?.business_category || 'Customer'}
-                </p>
-              </div>
-            </div>
-          )}
-                      <button
-              id="btn-logout"
-              onClick={handleLogout}
-              className={`sidebar__logout ${isMini ? 'sidebar__logout--icon' : ''}`}
-              title="Keluar"
-            >
-              <span>⇥</span>
-              {!isMini && <span>Keluar</span>}
-            </button>
-        </div>
       </aside>
 
-      {/* ── Retail Flyout Popover (both collapsed & expanded) ── */}
-      {isRetail && activePopoverSection && (
-        <RetailPopover
+      {/* ── Collapsed-rail flyout (retail only, click-triggered, hidden by default) ── */}
+      {isRetail && isMini && openSection && (
+        <CollapsedGroupFlyout
           key={openSection}
-          section={activePopoverSection}
-          anchorY={popoverAnchorY}
-          sidebarWidth={isMini ? 68 : 260}
+          section={currentNavItems.find(s => s.section === openSection)}
+          anchorY={flyoutAnchorY}
+          sidebarWidth={68}
           onClose={() => setOpenSection(null)}
-          onPaywall={() => { setOpenSection(null); setPaywallOpen(true) }}
           pathname={pathname}
         />
       )}
@@ -543,7 +757,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
       <Modal isOpen={paywallOpen} onClose={() => setPaywallOpen(false)} title="🌟 Fitur Premium" maxWidth="450px">
         <div style={{ textAlign: 'center', padding: '10px 0' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>💼</div>
-          <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Fitur Dibatasi</h3>
+          <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>Fitur Dibatasi</h3>
           <p style={{ color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 24 }}>
             Akses ke modul analitik canggih (Laporan Penjualan, Laba Rugi, dll) hanya tersedia pada langganan <strong>Basic / Pro</strong>.
           </p>

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import usePagination from '../../../hooks/usePagination'
+import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
 
 const DUMMY = [
@@ -55,6 +57,18 @@ export default function Users() {
     const matchFilter = filter === 'all' || u.role === filter || u.status === filter
     return matchSearch && matchFilter
   })
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex,
+  } = usePagination(filtered)
 
   const handleDelete = async (id) => {
     try {
@@ -152,9 +166,9 @@ export default function Users() {
                   </div>
                 </td>
               </tr>
-            ) : filtered.map((u, i) => (
+            ) : paginatedData.map((u, i) => (
               <tr key={u.id}>
-                <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{i + 1}</td>
+                <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div className="avatar" style={{
@@ -215,6 +229,18 @@ export default function Users() {
             )}
           </tbody>
         </table>
+        {!loading && filtered.length > 0 && (
+          <SaasPagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
+        )}
       </div>
 
       </div>

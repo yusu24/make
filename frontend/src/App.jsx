@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { ToastProvider } from './components/Toast'
+import { ConfirmDialogProvider } from './components/ConfirmDialog'
 import { Suspense } from 'react'
 
 import DashboardLayout from './layouts/DashboardLayout'
@@ -24,6 +26,8 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <ToastProvider>
+        <ConfirmDialogProvider>
         <BrowserRouter>
           <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
@@ -64,6 +68,8 @@ function App() {
             </Suspense>
           </ErrorBoundary>
         </BrowserRouter>
+        </ConfirmDialogProvider>
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   )

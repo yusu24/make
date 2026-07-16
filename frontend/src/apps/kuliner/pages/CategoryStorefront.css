@@ -100,7 +100,7 @@
   z-index: 0;
 }
 
-.kl-hero-parallax > * {
+.kl-hero-parallax > *:not(.kl-hero-overlay) {
   position: relative;
   z-index: 1;
 }
@@ -119,6 +119,16 @@
   border-color: rgba(255, 255, 255, 0.2);
   color: #fff;
   backdrop-filter: blur(4px);
+}
+
+.kl-hero-parallax .kl-btn-ghost {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.kl-hero-parallax .kl-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
 }
 
 .kl-hero-text h1 {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import '../budidaya.css'
 
 const CHART_DATA = {
@@ -11,6 +12,7 @@ const CHART_DATA = {
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const terms = useBudidayaTerms()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [chartRange, setChartRange] = useState('3B')
@@ -45,19 +47,19 @@ export default function Dashboard() {
       {/* ── KPI Cards ── */}
       <div className="aq-grid-4">
 
-        {/* Total Kolam */}
+        {/* Total Kolam / Lahan */}
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
             <div style={iconBox('#D1FAE5', '#059669')}>
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>waves</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{terms.iconMain}</span>
             </div>
             <span style={badge('#D1FAE5', '#059669')}>Aktif</span>
           </div>
-          <p className="aq-kpi-label">Total kolam</p>
+          <p className="aq-kpi-label">{terms.totalUnitsLabel}</p>
           <p className="aq-kpi-value">{stats?.total_ponds || 12}</p>
           <p style={{ fontSize: 12, color: '#059669', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
             <span className="material-symbols-outlined" style={{ fontSize: 14 }}>trending_up</span>
-            2 Kolam baru bulan ini
+            {`2 ${terms.unit} baru bulan ini`}
           </p>
         </div>
 
@@ -72,35 +74,35 @@ export default function Dashboard() {
           <p className="aq-kpi-label">Butuh perhatian</p>
           <p className="aq-kpi-value">02</p>
           <p style={{ fontSize: 12, color: '#E11D48', marginTop: 6 }}>
-            Kadar Oksigen Rendah (Kolam B3)
+            {terms.warningLabel}
           </p>
         </div>
 
-        {/* Jadwal Pakan */}
+        {/* Jadwal Pakan / Pemupukan */}
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
             <div style={iconBox('#ECFDF5', '#10B981')}>
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>restaurant</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{terms.iconFeed}</span>
             </div>
           </div>
-          <p className="aq-kpi-label">Jadwal pakan berikutnya</p>
+          <p className="aq-kpi-label">{terms.nextFeedLabel}</p>
           <p className="aq-kpi-value">16:30</p>
           <p style={{ fontSize: 12, color: '#475569', marginTop: 6 }}>
-            Pakan Protein Tinggi – 45 Menit lagi
+            {terms.nextFeedDetail}
           </p>
         </div>
 
-        {/* Suhu Air */}
+        {/* Suhu Rata-rata */}
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
             <div style={iconBox('#E0F2FE', '#0EA5E9')}>
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>thermostat</span>
             </div>
           </div>
-          <p className="aq-kpi-label">Suhu air rata-rata</p>
-          <p className="aq-kpi-value">28.5°C</p>
+          <p className="aq-kpi-label">{terms.tempAvgLabel}</p>
+          <p className="aq-kpi-value">{terms.isTanaman ? '26.4°C' : '28.5°C'}</p>
           <p style={{ fontSize: 12, color: '#059669', marginTop: 6 }}>
-            Kondisi Ideal untuk Nila
+            {terms.idealConditionLabel}
           </p>
         </div>
       </div>
@@ -117,8 +119,8 @@ export default function Dashboard() {
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <div>
-              <p className="aq-section-title">Grafik pertumbuhan ikan</p>
-              <p className="aq-small-text" style={{ marginTop: 3 }}>Kenaikan berat rata-rata (gram) per minggu</p>
+              <p className="aq-section-title">{terms.growthLabel}</p>
+              <p className="aq-small-text" style={{ marginTop: 3 }}>{terms.growthSub}</p>
             </div>
             {/* Toggle 1B / 3B / 6B */}
             <div style={{ display: 'flex', background: '#F1F5F9', borderRadius: 8, padding: 3, gap: 2 }}>
@@ -180,11 +182,15 @@ export default function Dashboard() {
             {/* Notif 1 */}
             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
               <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#D1FAE5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 17, color: '#059669' }}>water_drop</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 17, color: '#059669' }}>{terms.isTanaman ? 'spa' : 'water_drop'}</span>
               </div>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Penggantian Air Selesai</p>
-                <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>Kolam A1 telah mencapai level target.</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>
+                  {terms.isTanaman ? 'Penyiraman Selesai' : 'Penggantian Air Selesai'}
+                </p>
+                <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>
+                  {terms.isTanaman ? `${terms.unit} A1 telah mencapai target kelembaban.` : `Kolam A1 telah mencapai level target.`}
+                </p>
                 <p style={{ fontSize: 10, color: '#64748B', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>10 Menit lalu</p>
               </div>
             </div>
@@ -192,11 +198,15 @@ export default function Dashboard() {
             {/* Notif 2 – alert */}
             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: '#FFF8F8', borderRadius: 10, padding: '10px 12px', borderLeft: '3px solid #EF4444', margin: '0 -4px' }}>
               <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 17, color: '#EF4444' }}>bolt</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 17, color: '#EF4444' }}>{terms.isTanaman ? 'sensors_off' : 'bolt'}</span>
               </div>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#DC2626', margin: 0 }}>Gagal Pompa Udara</p>
-                <p style={{ fontSize: 12, color: '#EF4444', marginTop: 2 }}>Periksa sambungan listrik Kolam B3!</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#DC2626', margin: 0 }}>
+                  {terms.isTanaman ? 'Sensor Offline' : 'Gagal Pompa Udara'}
+                </p>
+                <p style={{ fontSize: 12, color: '#EF4444', marginTop: 2 }}>
+                  {terms.isTanaman ? `Periksa baterai sensor di ${terms.unit} B3!` : `Periksa sambungan listrik Kolam B3!`}
+                </p>
                 <p style={{ fontSize: 10, color: '#FCA5A5', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2 Jam lalu</p>
               </div>
             </div>
@@ -207,8 +217,12 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined" style={{ fontSize: 17, color: '#10B981' }}>inventory_2</span>
               </div>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>Stok Pakan Menipis</p>
-                <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>Tersisa 5kg untuk Pakan Benih.</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>
+                  {terms.isTanaman ? 'Stok Pupuk Menipis' : 'Stok Pakan Menipis'}
+                </p>
+                <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>
+                  {terms.isTanaman ? 'Tersisa 5kg untuk Pupuk Benih/Bibit.' : 'Tersisa 5kg untuk Pakan Benih.'}
+                </p>
                 <p style={{ fontSize: 10, color: '#64748B', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>5 Jam lalu</p>
               </div>
             </div>
@@ -237,11 +251,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Status Kolam Unggulan ── */}
+      {/* ── Status Kolam / Lahan Unggulan ── */}
       <div>
         {/* Section header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <p className="aq-section-title">Status kolam unggulan</p>
+          <p className="aq-section-title">{`Status ${terms.unitLower} unggulan`}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#475569' }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
@@ -260,21 +274,21 @@ export default function Dashboard() {
           {/* Pond A1 – Sehat */}
           <div style={{ ...cardStyle, display: 'flex', gap: 0, padding: 0, overflow: 'hidden' }}>
             <div style={{ width: 110, flexShrink: 0, background: 'linear-gradient(135deg, #D1FAE5 0%, #6EE7B7 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#059669', fontVariationSettings: "'FILL' 1" }}>water</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#059669', fontVariationSettings: "'FILL' 1" }}>{terms.iconMain}</span>
             </div>
             <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>Kolam A1 - Pembesaran Nila</p>
-                  <p style={{ fontSize: 11, color: '#64748B', marginTop: 3 }}>Usia: 45 Hari | Populasi: 2000 Ekor</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>{terms.mockA1Title}</p>
+                  <p style={{ fontSize: 11, color: '#64748B', marginTop: 3 }}>{terms.mockA1Details}</p>
                 </div>
                 <span style={badge('#D1FAE5', '#059669')}>SEHAT</span>
               </div>
               <div style={{ display: 'flex', gap: 20, marginTop: 14, paddingTop: 12, borderTop: '1px solid #F1F5F9' }}>
-                {[['PH', '7.2', '#1A1C1A'], ['O2', '6.5 mg/L', '#1A1C1A'], ['AMONIAK', '0.01 ppm', '#1A1C1A']].map(([label, val, color]) => (
+                {terms.mockKPIs.map(({ label, val }) => (
                   <div key={label}>
                     <p style={{ fontSize: 9, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
-                    <p style={{ fontSize: 13, fontWeight: 800, color, margin: '2px 0 0' }}>{val}</p>
+                    <p style={{ fontSize: 13, fontWeight: 800, color: '#1A1C1A', margin: '2px 0 0' }}>{val}</p>
                   </div>
                 ))}
               </div>
@@ -289,16 +303,16 @@ export default function Dashboard() {
             <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>Kolam B3 - Pemijahan Gurame</p>
-                  <p style={{ fontSize: 11, color: '#64748B', marginTop: 3 }}>Usia: 12 Hari | Populasi: 500 Ekor</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1C1A', margin: 0 }}>{terms.mockB3Title}</p>
+                  <p style={{ fontSize: 11, color: '#64748B', marginTop: 3 }}>{terms.mockB3Details}</p>
                 </div>
                 <span style={badge('#FEE2E2', '#EF4444')}>PERHATIAN</span>
               </div>
               <div style={{ display: 'flex', gap: 20, marginTop: 14, paddingTop: 12, borderTop: '1px solid #FEF2F2' }}>
-                {[['PH', '6.8', '#1A1C1A'], ['O2', '3.2 mg/L', '#EF4444'], ['AMONIAK', '0.05 ppm', '#1A1C1A']].map(([label, val, color]) => (
+                {terms.mockB3KPIs.map(({ label, val, alert }) => (
                   <div key={label}>
                     <p style={{ fontSize: 9, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
-                    <p style={{ fontSize: 13, fontWeight: 800, color, margin: '2px 0 0' }}>{val}</p>
+                    <p style={{ fontSize: 13, fontWeight: 800, color: alert ? '#EF4444' : '#1A1C1A', margin: '2px 0 0' }}>{val}</p>
                   </div>
                 ))}
               </div>

@@ -9,7 +9,7 @@ export default function BudidayaLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { user, isImpersonating, exitImpersonate } = useAuth()
+  const { user } = useAuth()
 
   useEffect(() => {
     setMobileOpen(false)
@@ -21,49 +21,8 @@ export default function BudidayaLayout() {
     return <div style={{padding: 24}}>Unauthorized module access.</div>
   }
 
-  const handleExitImpersonate = () => {
-    const redirectTo = exitImpersonate()
-    navigate(redirectTo || '/tenants')
-  }
-
   return (
     <div className="budidaya-scope h-screen overflow-hidden bg-[#F8FAF9] flex flex-col">
-      {/* Impersonation Banner */}
-      {isImpersonating() && (
-        <div style={{ 
-          background: 'linear-gradient(90deg, #ef4444, #f97316)', 
-          color: 'white', 
-          padding: '10px 20px', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          flexShrink: 0,
-          zIndex: 9999,
-          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)',
-          fontSize: '13px',
-          fontWeight: '600'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span>⚠️ Anda sedang dalam mode penyamaran (Impersonate): <strong>{user?.name}</strong> — {user?.business_category}</span>
-          </div>
-          <button 
-            onClick={handleExitImpersonate}
-            style={{ 
-              background: 'white', 
-              color: '#ef4444', 
-              border: 'none', 
-              padding: '4px 12px', 
-              borderRadius: '6px', 
-              cursor: 'pointer',
-              fontSize: '11px',
-              fontWeight: 'bold'
-            }}
-          >
-            Kembali ke Admin SaaS
-          </button>
-        </div>
-      )}
-
       <div className="flex flex-1 overflow-hidden relative">
         <BudidayaSidebar
           mobileOpen={mobileOpen}

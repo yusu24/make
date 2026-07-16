@@ -143,7 +143,7 @@ export default function Dashboard() {
           </h2>
           <p className="dashboard__greeting-sub">
             {isSuperAdmin()
-              ? 'Berikut ringkasan statistik platform UMKM SaaS Anda hari ini.'
+              ? 'Berikut ringkasan statistik platform BIZORA SaaS Anda hari ini.'
               : `Anda masuk sebagai Customer — Kategori: ${user?.business_category || '-'}`}
           </p>
         </div>

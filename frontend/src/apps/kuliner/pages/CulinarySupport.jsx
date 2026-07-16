@@ -9,11 +9,7 @@ export default function CulinarySupport() {
     <KulinerAdminLayout>
       <div className="kd-topbar">
         <h1 className="kd-page-title">Pusat Bantuan</h1>
-        <div className="kd-topbar-actions">
-          <button className="kd-btn kd-btn-primary" onClick={() => supportRef.current?.openNewTicketModal()}>
-            + Buat Tiket Baru
-          </button>
-        </div>
+        <div className="kd-topbar-actions" />
       </div>
       <div className="kd-content" style={{ padding: '24px 32px' }}>
         <TenantSupportCenter hideAction={true} ref={supportRef} />

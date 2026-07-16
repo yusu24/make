@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import '../retail.css';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
+import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import { Edit3, Trash2 } from 'lucide-react';
 
 
@@ -8,6 +12,7 @@ export default function ExpenseCategories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [search, setSearch] = useState('');
 
   const fetchCategories = async () => {
     try {
@@ -42,6 +47,22 @@ export default function ExpenseCategories() {
     } catch (e) {}
   };
 
+  const filteredCategories = categories.filter(c =>
+    c.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(filteredCategories);
+
   return (
     <div className="retail-page-classic">
       <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
@@ -49,10 +70,17 @@ export default function ExpenseCategories() {
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex justify-end">
+        <div className="p-6 flex justify-between items-center gap-3 flex-wrap">
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
+            <input
+              placeholder="Cari kategori..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
           <form onSubmit={addCategory} className="flex items-center gap-3">
              <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
-                <input 
+                <input
                   name="name"
                   placeholder="Kategori pengeluaran baru..."
                   required
@@ -64,7 +92,7 @@ export default function ExpenseCategories() {
           </form>
         </div>
 
-        <table className="table">
+        <div className="retail-table-responsive"><table className="table">
           <thead>
             <tr>
               <th className="pl-6 retail-table-header" style={{ width: 100 }}>ID</th>
@@ -74,14 +102,14 @@ export default function ExpenseCategories() {
           </thead>
           <tbody>
             {loading ? (
-               <tr><td colSpan="3" className="py-20 text-center text-slate-400 font-800">Menyinkronkan Kategori...</td></tr>
-            ) : categories.length === 0 ? (
+               <RetailTableLoadingRow colSpan={3} text="Menyinkronkan Kategori..." />
+            ) : filteredCategories.length === 0 ? (
                <tr><td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada master kategori pengeluaran.</td></tr>
             ) : (
-              categories.map(c => (
+              paginatedData.map(c => (
                 <tr key={c.id}>
                   <td className="pl-6">
-                    <span className="font-800 text-slate-400">#{c.id}</span>
+                    <span className="text-slate-400">#{c.id}</span>
                   </td>
                   <td>
                     <span className="badge badge-gray">{c.name}</span>
@@ -96,7 +124,17 @@ export default function ExpenseCategories() {
               ))
             )}
           </tbody>
-        </table>
+        </table></div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
 
       <Modal 
