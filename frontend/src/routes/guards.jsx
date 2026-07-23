@@ -30,7 +30,7 @@ export const GuestRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
   if (user) {
-    if (user.role === 'super_admin') return <Navigate to="/dashboard" replace />;
+    if (user.role === 'super_admin' || user.role === 'admin') return <Navigate to="/dashboard" replace />;
     if (user.business_category === 'Toko Retail') return <Navigate to="/retail/dashboard" replace />;
     if (user.business_category === 'Budidaya Ikan' || user.business_category === 'Budidaya Tanaman') return <Navigate to="/budidaya/dashboard" replace />;
     if (user.business_category === 'Kuliner') return <Navigate to="/kuliner/admin" replace />;
@@ -41,8 +41,8 @@ export const GuestRoute = ({ children }) => {
 
 export const RootRedirect = () => {
   const { user } = useAuth();
-  if (user?.role === 'super_admin') return <Navigate to="/dashboard" replace />;
-  
+  if (user?.role === 'super_admin' || user?.role === 'admin') return <Navigate to="/dashboard" replace />;
+
   if (user?.business_category === 'Toko Retail') {
     return <Navigate to="/retail/dashboard" replace />;
   }
