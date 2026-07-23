@@ -32,7 +32,7 @@ export default function Login() {
     setLoading(true)
     try {
       const userData = await login(form.email, form.password)
-      if (userData.role === 'super_admin') {
+      if (userData.role === 'super_admin' || userData.role === 'admin') {
         navigate('/dashboard')
       } else {
         if (userData.business_category === 'Toko Retail') {

@@ -30,6 +30,9 @@ export default function Users() {
   const [showModal, setShowModal] = useState(false)
   const [delId, setDelId]       = useState(null)
   const [impersonating, setImpersonating] = useState(null)
+  const [categories, setCategories] = useState([])
+  const [formError, setFormError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -37,6 +40,9 @@ export default function Users() {
       .then(r => setUsers(r.data?.data || []))
       .catch(() => {})
       .finally(() => setLoading(false))
+    api.get('/categories/public')
+      .then(r => setCategories(r.data?.data || []))
+      .catch(() => {})
   }, [])
 
   const handleImpersonate = async (id) => {
@@ -88,19 +94,36 @@ export default function Users() {
 
   const handleAddUser = async (e) => {
     e.preventDefault()
+    setFormError('')
     const fd = new FormData(e.target)
-    const newUser = {
-      id: Date.now(),
+    const payload = {
       name: fd.get('name'),
       email: fd.get('email'),
+      password: fd.get('password'),
       role: 'customer',
-      category: '-',
-      status: 'active',
-      joined: new Date().toISOString().slice(0, 10)
+      business_category_id: fd.get('business_category_id') || null,
     }
-    setUsers(v => [...v, newUser])
-    setShowModal(false)
-    try { await api.post('/users', newUser) } catch {}
+    setSaving(true)
+    try {
+      const res = await api.post('/users', payload)
+      const created = res.data?.data
+      const category = categories.find(c => String(c.id) === String(payload.business_category_id))
+      setUsers(v => [...v, {
+        id: created?.id ?? Date.now(),
+        name: payload.name,
+        email: payload.email,
+        role: 'customer',
+        category: category?.name || '-',
+        status: 'active',
+        joined: new Date().toISOString().slice(0, 10),
+      }])
+      setShowModal(false)
+      e.target.reset()
+    } catch (err) {
+      setFormError(err.response?.data?.errors ? Object.values(err.response.data.errors).flat().join(', ') : (err.response?.data?.message || 'Gagal membuat pengguna'))
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -246,10 +269,15 @@ export default function Users() {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={() => !saving && setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h3 className="modal__title">Tambah Pengguna Baru</h3>
             <form onSubmit={handleAddUser} style={{ display:'flex', flexDirection:'column', gap:16, marginTop:16 }}>
+              {formError && (
+                <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', color: '#ef4444', fontSize: 13 }}>
+                  {formError}
+                </div>
+              )}
               <div className="form-group">
                 <label className="form-label">Nama Lengkap</label>
                 <input name="name" className="form-input" required placeholder="Nama Pengguna" />
@@ -258,10 +286,23 @@ export default function Users() {
                 <label className="form-label">Email</label>
                 <input name="email" className="form-input" required type="email" placeholder="email@contoh.com" />
               </div>
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input name="password" className="form-input" required type="password" minLength={8} placeholder="Minimal 8 karakter" />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Kategori Bisnis</label>
+                <select name="business_category_id" className="form-input">
+                  <option value="">— Tidak ada / belum ditentukan —</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
 
               <div className="modal__actions mt-4">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
-                <button type="submit" className="btn btn-primary">Simpan</button>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)} disabled={saving}>Batal</button>
+                <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
               </div>
             </form>
           </div>

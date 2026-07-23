@@ -69,18 +69,21 @@ class ImpersonateController extends Controller
             'data' => [
                 'token'    => $token,
                 'user'     => $userData,
-                'redirect' => $this->resolveRedirect($businessCategory),
+                'redirect' => $this->resolveRedirect($businessCategory, $targetUser->role),
             ],
         ]);
     }
 
-    public function resolveRedirect(?string $category): string
+    public function resolveRedirect(?string $category, ?string $role = null): string
     {
-        $cat = trim($category);
-        if (strcasecmp($cat, 'Budidaya Ikan') === 0) return '/budidaya/dashboard';
-        if (strcasecmp($cat, 'Toko Retail') === 0)   return '/retail/dashboard';
-        if (strcasecmp($cat, 'Kuliner') === 0)       return '/kuliner/admin/categories';
-        
+        if ($role === 'super_admin' || $role === 'admin') return '/dashboard';
+
+        $cat = trim((string) $category);
+        if (strcasecmp($cat, 'Budidaya Ikan') === 0)     return '/budidaya/dashboard';
+        if (strcasecmp($cat, 'Budidaya Tanaman') === 0)  return '/budidaya/dashboard';
+        if (strcasecmp($cat, 'Toko Retail') === 0)       return '/retail/dashboard';
+        if (strcasecmp($cat, 'Kuliner') === 0)           return '/kuliner/admin/categories';
+
         return '/coming-soon';
     }
 }
