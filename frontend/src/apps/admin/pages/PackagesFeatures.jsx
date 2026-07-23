@@ -385,6 +385,7 @@ export default function PackagesFeatures() {
   const [saving, setSaving] = useState(false)
   const [activeView, setActiveView] = useState('cards')
   const [toast, setToast] = useState(null)
+  const [creatingDefaults, setCreatingDefaults] = useState(false)
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type })
@@ -435,6 +436,19 @@ export default function PackagesFeatures() {
       showToast(e.response?.data?.message || 'Gagal menyimpan perubahan paket', 'error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleCreateDefaults = async () => {
+    setCreatingDefaults(true)
+    try {
+      const res = await api.post('/admin/subscription-plans/defaults', { category: activeCategory })
+      setPlansByCategory(prev => ({ ...prev, [activeCategory]: res.data }))
+      showToast('Paket Free/Basic/Pro berhasil dibuat ✓')
+    } catch (e) {
+      showToast(e.response?.data?.message || 'Gagal membuat paket default', 'error')
+    } finally {
+      setCreatingDefaults(false)
     }
   }
 
@@ -545,7 +559,15 @@ export default function PackagesFeatures() {
         }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
           <p style={{ fontWeight: 600, fontSize: 15 }}>Belum ada paket untuk {activeCat.name}</p>
-          <p style={{ fontSize: 13, marginTop: 6 }}>Seed data paket terlebih dahulu via artisan atau database seeder.</p>
+          <p style={{ fontSize: 13, marginTop: 6, marginBottom: 20 }}>Buat struktur paket Free/Basic/Pro, lalu atur harga dan fitur yang aktif.</p>
+          <button
+            className="btn btn-primary"
+            style={{ background: activeCat.gradient, border: 'none' }}
+            onClick={handleCreateDefaults}
+            disabled={creatingDefaults}
+          >
+            {creatingDefaults ? 'Membuat...' : `✨ Buat Paket untuk ${activeCat.name}`}
+          </button>
         </div>
       )}
 

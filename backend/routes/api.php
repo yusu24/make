@@ -472,6 +472,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Categories & Subscription Requests
         Route::get('categories', [BusinessCategoryController::class, 'index']);
         Route::get('subscription-plans', [\App\Http\Controllers\Api\SubscriptionPlanController::class, 'index']);
+        Route::post('subscription-plans/defaults', [\App\Http\Controllers\Api\SubscriptionPlanController::class, 'createDefaults']);
         Route::put('subscription-plans/{id}', [\App\Http\Controllers\Api\SubscriptionPlanController::class, 'update']);
         Route::get('subscription/requests', [SubscriptionRequestController::class, 'index']);
         Route::post('subscription/requests/{id}/approve', [SubscriptionRequestController::class, 'approve']);

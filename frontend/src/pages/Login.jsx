@@ -53,7 +53,7 @@ export default function Login() {
   }
 
   return (
-    <div style={{
+    <div className="login-root" style={{
       minHeight: '100vh',
       display: 'grid',
       gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)',
@@ -62,6 +62,9 @@ export default function Login() {
     }}>
       <style>{`
         @media (max-width: 900px) {
+          .login-root {
+            grid-template-columns: 1fr !important;
+          }
           .login-brand-panel {
             display: none !important;
           }
