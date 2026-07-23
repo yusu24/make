@@ -113,8 +113,8 @@ export default function Register() {
           <span className="nav-logo-name">BIZORA</span>
         </div>
         <div className="nav-links">
-          <Link to="/login" className="nav-link">Beranda</Link>
-          <Link to="/login" className="nav-link">Fitur</Link>
+          <Link to="/" className="nav-link">Beranda</Link>
+          <Link to="/#fitur" className="nav-link">Fitur</Link>
         </div>
         <Link to="/login" className="nav-cta">Masuk Akun</Link>
       </nav>

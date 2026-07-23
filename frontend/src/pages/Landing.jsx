@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate, Navigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
 import {
@@ -36,11 +36,12 @@ const STEPS = [
 export default function Landing() {
   const { user, login, loginDemoSandbox, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState('all')
   const [demoLoading, setDemoLoading] = useState(false)
   const [testimonials, setTestimonials] = useState([])
   const [testimonialsLoading, setTestimonialsLoading] = useState(true)
-  const [slideIndex, setSlideIndex] = useState(0)
+  const testiTrackRef = useRef(null)
   const [submitForm, setSubmitForm] = useState({ name: '', role: '', stars: 5, text: '' })
   const [submitting, setSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
@@ -94,6 +95,14 @@ export default function Landing() {
       .finally(() => setTestimonialsLoading(false))
   }, [])
 
+  // Scroll to the section named in the URL hash (e.g. coming from /register's "Fitur" link)
+  useEffect(() => {
+    if (!location.hash) return
+    const id = location.hash.slice(1)
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }, [location.hash])
+
   // Smooth scroll for nav links
   const scrollTo = (id) => {
     const el = document.getElementById(id)
@@ -133,17 +142,16 @@ export default function Landing() {
     }
   }
 
-  const nextSlide = () => {
-    if (slideIndex < testimonials.length - 3) {
-      setSlideIndex(slideIndex + 1)
-    }
+  const scrollTesti = (dir) => {
+    const el = testiTrackRef.current
+    if (!el) return
+    const card = el.querySelector('.lp-testi-card')
+    const step = card ? card.offsetWidth + 24 : el.clientWidth * 0.8
+    el.scrollBy({ left: dir * step, behavior: 'smooth' })
   }
 
-  const prevSlide = () => {
-    if (slideIndex > 0) {
-      setSlideIndex(slideIndex - 1)
-    }
-  }
+  const nextSlide = () => scrollTesti(1)
+  const prevSlide = () => scrollTesti(-1)
 
   const features = categories
     .filter(c => settings.featured_categories ? settings.featured_categories.includes(c.slug) : true)
@@ -362,25 +370,25 @@ export default function Landing() {
             <div className="lp-tag">Testimoni</div>
             <h2 className="lp-title">Dipercaya ribuan pelaku bisnis Indonesia</h2>
 
-            {!testimonialsLoading && testimonials.length > 3 && (
+            {!testimonialsLoading && testimonials.length > 2 && (
               <div className="lp-testi-nav">
-                <button type="button" onClick={prevSlide} disabled={slideIndex === 0} className="lp-testi-nav-btn" aria-label="Sebelumnya">
+                <button type="button" onClick={prevSlide} className="lp-testi-nav-btn" aria-label="Sebelumnya">
                   <ChevronLeft size={17} />
                 </button>
-                <button type="button" onClick={nextSlide} disabled={slideIndex >= testimonials.length - 3} className="lp-testi-nav-btn" aria-label="Berikutnya">
+                <button type="button" onClick={nextSlide} className="lp-testi-nav-btn" aria-label="Berikutnya">
                   <ChevronRight size={17} />
                 </button>
               </div>
             )}
           </div>
 
-          <div className="lp-testi-grid">
+          <div className="lp-testi-grid" ref={testiTrackRef}>
             {testimonialsLoading ? (
               <div className="lp-testi-empty">Memuat ulasan...</div>
             ) : testimonials.length === 0 ? (
               <div className="lp-testi-empty">Belum ada ulasan aktif yang dipublikasikan.</div>
             ) : (
-              testimonials.slice(slideIndex, slideIndex + 3).map(testi => (
+              testimonials.map(testi => (
                 <div key={testi.id} className="lp-testi-card">
                   <div className="lp-testi-stars">
                     {'★'.repeat(testi.stars)}{'☆'.repeat(5 - testi.stars)}
