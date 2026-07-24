@@ -43,12 +43,14 @@ Route::get('testimonials/public', [TestimonialController::class, 'publicIndex'])
 Route::post('testimonials/public-submit', [TestimonialController::class, 'publicSubmit']);
 
 // ─── AUTHENTICATED ROUTES ────────────────────────────────────────────────────
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () {
 
     // Auth
     Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('me',     [AuthController::class, 'me']);
+        Route::put('profile', [AuthController::class, 'updateProfile']);
+        Route::put('password', [AuthController::class, 'updatePassword']);
         Route::post('impersonate/{id}', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonateUser']);
     });
 
@@ -145,6 +147,8 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::put('settings', [RetailMasterController::class, 'updateSettings']);
                 Route::post('settings/qris', [RetailMasterController::class, 'uploadQris']);
                 Route::delete('settings/qris', [RetailMasterController::class, 'deleteQris']);
+                Route::post('settings/store-icon', [RetailMasterController::class, 'uploadStoreIcon']);
+                Route::delete('settings/store-icon', [RetailMasterController::class, 'deleteStoreIcon']);
             });
 
             // Roles
@@ -217,6 +221,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::middleware('retail_permission:purchasing')->group(function () {
                 Route::get('purchases', [RetailPurchaseController::class, 'index']);
                 Route::post('purchases', [RetailPurchaseController::class, 'store']);
+                Route::get('purchases/{id}', [RetailPurchaseController::class, 'show']);
+                Route::delete('purchases/{id}', [RetailPurchaseController::class, 'destroy']);
 
                 Route::get('supplier-returns', [\App\Http\Controllers\Api\Retail\RetailSupplierReturnController::class, 'index']);
                 Route::post('supplier-returns', [\App\Http\Controllers\Api\Retail\RetailSupplierReturnController::class, 'store']);

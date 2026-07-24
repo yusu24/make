@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'check_category' => \App\Http\Middleware\CheckBusinessCategory::class,
             'retail_permission' => \App\Http\Middleware\CheckRetailPermission::class,
             'kuliner_permission' => \App\Http\Middleware\CheckKulinerPermission::class,
+            'expire_on_date_change' => \App\Http\Middleware\ExpireSessionOnDateChange::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

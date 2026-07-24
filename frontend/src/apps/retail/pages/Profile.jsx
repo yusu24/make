@@ -1,19 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { User, Mail, Phone, Store, MapPin, Lock, Save, Camera } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
+import { api } from '../../../lib/api'
 import '../retail.css'
 
 export default function RetailProfile() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const [activeTab, setActiveTab] = useState('info')
   const [saving, setSaving] = useState(false)
 
   const [profile, setProfile] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    phone: user?.phone || '08123456789',
-    storeName: user?.store_name || 'Toko Saya',
-    address: user?.address || 'Jl. Contoh No. 1, Jakarta',
+    phone: user?.phone || '',
+  })
+
+  const [store, setStore] = useState({
+    storeName: '',
+    address: '',
   })
 
   const [passwords, setPasswords] = useState({
@@ -22,6 +26,15 @@ export default function RetailProfile() {
     confirm: '',
   })
 
+  useEffect(() => {
+    api.get('/retail/settings')
+      .then(res => setStore({
+        storeName: res.data?.store_name || '',
+        address: res.data?.store_address || '',
+      }))
+      .catch(() => {})
+  }, [])
+
   const initials = profile.name
     ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U'
@@ -29,10 +42,28 @@ export default function RetailProfile() {
   const handleSaveProfile = async (e) => {
     e.preventDefault()
     setSaving(true)
-    // Simulate save
-    await new Promise(r => setTimeout(r, 800))
-    setSaving(false)
-    alert('Profil berhasil disimpan!')
+    try {
+      const res = await api.put('/auth/profile', { name: profile.name, phone: profile.phone })
+      updateUser(res.data.data)
+      alert('Profil berhasil disimpan!')
+    } catch (err) {
+      alert(err.response?.data?.errors ? Object.values(err.response.data.errors).flat().join(', ') : 'Gagal menyimpan profil')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSaveStore = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      await api.put('/retail/settings', { store_name: store.storeName, store_address: store.address })
+      alert('Pengaturan toko berhasil disimpan!')
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal menyimpan pengaturan toko')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleChangePassword = async (e) => {
@@ -42,10 +73,19 @@ export default function RetailProfile() {
       return
     }
     setSaving(true)
-    await new Promise(r => setTimeout(r, 800))
-    setSaving(false)
-    setPasswords({ current: '', new: '', confirm: '' })
-    alert('Password berhasil diubah!')
+    try {
+      await api.put('/auth/password', {
+        current_password: passwords.current,
+        password: passwords.new,
+        password_confirmation: passwords.confirm,
+      })
+      setPasswords({ current: '', new: '', confirm: '' })
+      alert('Password berhasil diubah!')
+    } catch (err) {
+      alert(err.response?.data?.errors?.current_password?.[0] || err.response?.data?.errors ? Object.values(err.response?.data?.errors || {}).flat().join(', ') : 'Gagal mengubah password')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const tabs = [
@@ -77,6 +117,8 @@ export default function RetailProfile() {
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}
             title="Ganti foto"
+            type="button"
+            onClick={() => alert('Fitur unggah foto profil belum tersedia.')}
           >
             <Camera size={13} className="retail-text-secondary" />
           </button>
@@ -171,7 +213,7 @@ export default function RetailProfile() {
       )}
 
       {activeTab === 'store' && (
-        <form onSubmit={handleSaveProfile} className="airy-card" style={{ padding: '32px' }}>
+        <form onSubmit={handleSaveStore} className="airy-card" style={{ padding: '32px' }}>
           <h3 className="retail-card-title text-lg mb-6" style={{ borderBottom: '1px dashed var(--retail-border)', paddingBottom: 12 }}>
             Pengaturan Toko
           </h3>
@@ -183,8 +225,8 @@ export default function RetailProfile() {
               </label>
               <input
                 type="text" className="form-input"
-                value={profile.storeName}
-                onChange={(e) => setProfile({ ...profile, storeName: e.target.value })}
+                value={store.storeName}
+                onChange={(e) => setStore({ ...store, storeName: e.target.value })}
                 required
               />
             </div>
@@ -196,8 +238,8 @@ export default function RetailProfile() {
               <textarea
                 className="form-input"
                 rows={4}
-                value={profile.address}
-                onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                value={store.address}
+                onChange={(e) => setStore({ ...store, address: e.target.value })}
                 style={{ resize: 'vertical', minHeight: 100 }}
                 required
               />

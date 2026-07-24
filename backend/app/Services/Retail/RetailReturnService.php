@@ -31,8 +31,10 @@ class RetailReturnService
                 'total_amount' => collect($data['items'])->sum(fn ($i) => $i['quantity'] * $i['unit_price']),
             ]);
 
+            $products = RetailProduct::whereIn('id', collect($data['items'])->pluck('product_id'))->get()->keyBy('id');
+
             foreach ($data['items'] as $item) {
-                $product = RetailProduct::find($item['product_id']);
+                $product = $products->get($item['product_id']);
                 RetailSupplierReturnItem::create([
                     'return_id' => $return->id,
                     'product_id' => $item['product_id'],
@@ -87,8 +89,10 @@ class RetailReturnService
                 'total_amount' => collect($data['items'])->sum(fn ($i) => $i['quantity'] * $i['unit_price']),
             ]);
 
+            $products = RetailProduct::whereIn('id', collect($data['items'])->pluck('product_id'))->get()->keyBy('id');
+
             foreach ($data['items'] as $item) {
-                $product = RetailProduct::find($item['product_id']);
+                $product = $products->get($item['product_id']);
                 RetailCustomerReturnItem::create([
                     'return_id' => $return->id,
                     'transaction_item_id' => $item['transaction_item_id'],

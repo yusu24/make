@@ -22,6 +22,7 @@ export default function StockEntry() {
   const [supplierId, setSupplierId] = useState('');
   const [items, setItems] = useState([{ product_id: '', qty: 1, cost_per_item: 0 }]);
   const [notes, setNotes] = useState('');
+  const [detailPurchase, setDetailPurchase] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -75,7 +76,17 @@ export default function StockEntry() {
     }
   };
 
-  const filteredPurchases = purchases.filter(p => 
+  const handleDelete = async (purchase) => {
+    if (!confirm(`Batalkan penerimaan barang dari "${purchase.supplier?.name || 'supplier ini'}"? Stok yang sudah masuk akan dikurangi kembali.`)) return;
+    try {
+      await api.delete(`/retail/purchases/${purchase.id}`);
+      fetchData();
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal membatalkan transaksi');
+    }
+  };
+
+  const filteredPurchases = purchases.filter(p =>
     p.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.notes?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -198,8 +209,8 @@ export default function StockEntry() {
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                      <button className="btn btn-sm btn-secondary" title="Detail"><Edit3 size={14} /></button>
-                      <button className="btn btn-sm btn-ghost retail-text-danger" title="Hapus"><Trash2 size={14} /></button>
+                      <button className="btn btn-sm btn-secondary" title="Detail" onClick={() => setDetailPurchase(p)}><Edit3 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost retail-text-danger" title="Hapus" onClick={() => handleDelete(p)}><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -328,6 +339,62 @@ export default function StockEntry() {
               <button type="submit" className="btn btn-primary">Simpan Transaksi</button>
            </div>
         </form>
+      </Modal>
+
+      <Modal isOpen={!!detailPurchase} onClose={() => setDetailPurchase(null)} title="Detail Penerimaan Barang">
+        {detailPurchase && (
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Supplier</p>
+                <p className="retail-text-primary font-medium">{detailPurchase.supplier?.name || '-'}</p>
+              </div>
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Tanggal</p>
+                <p className="retail-text-primary font-medium">{new Date(detailPurchase.created_at).toLocaleString('id-ID')}</p>
+              </div>
+            </div>
+
+            <div className="table-wrap" style={{ maxHeight: 260, overflow: 'auto' }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th className="retail-table-header">Produk</th>
+                    <th className="retail-table-header text-center">Qty</th>
+                    <th className="retail-table-header text-right">Harga Beli</th>
+                    <th className="retail-table-header text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(detailPurchase.items || []).map(item => (
+                    <tr key={item.id}>
+                      <td>{item.product?.name || `#${item.product_id}`}</td>
+                      <td className="text-center">{item.qty}</td>
+                      <td className="text-right">Rp {Number(item.cost_per_item).toLocaleString('id-ID')}</td>
+                      <td className="text-right">Rp {Number(item.subtotal).toLocaleString('id-ID')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {detailPurchase.notes && (
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Catatan</p>
+                <p className="retail-text-primary text-sm">{detailPurchase.notes}</p>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center pt-3" style={{ borderTop: '1px solid var(--retail-border, #e2e8f0)' }}>
+              <span className="text-sm font-semibold retail-text-primary">Total Tagihan</span>
+              <span className="text-lg font-bold retail-text-primary">Rp {Number(detailPurchase.total_cost).toLocaleString('id-ID')}</span>
+            </div>
+
+            <div className="modal__actions">
+              <button type="button" className="btn btn-secondary" onClick={() => setDetailPurchase(null)}>Tutup</button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

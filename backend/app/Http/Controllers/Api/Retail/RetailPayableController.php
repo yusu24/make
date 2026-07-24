@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\RetailPayable;
 use App\Models\RetailPayablePayment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class RetailPayableController extends Controller
 {
@@ -26,6 +27,17 @@ class RetailPayableController extends Controller
 
     public function store(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'supplier_id' => 'required|integer|exists:retail_suppliers,id',
+            'purchase_id' => 'nullable|integer|exists:retail_purchases,id',
+            'total_amount' => 'required|numeric|min:0.01',
+            'due_date' => 'nullable|date',
+            'note' => 'nullable|string',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $payable = RetailPayable::create($request->only([
             'supplier_id', 'purchase_id', 'total_amount', 'due_date', 'note',
         ]));
@@ -34,6 +46,16 @@ class RetailPayableController extends Controller
 
     public function recordPayment(Request $request, int $id)
     {
+        $validator = Validator::make($request->all(), [
+            'amount_paid' => 'required|numeric|min:0.01',
+            'payment_method' => 'nullable|string|max:255',
+            'paid_at' => 'nullable|date',
+            'note' => 'nullable|string',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $payable = RetailPayable::findOrFail($id);
 
         if ($request->amount_paid > $payable->remaining) {

@@ -110,6 +110,19 @@ class RetailStockService
             return;
         }
 
+        // Avoid spamming a "stok menipis" notification every single time a
+        // fast-moving low-stock item is sold — one alert per product is
+        // enough within a cooldown window.
+        $recentlyNotified = Notification::where('tenant_id', $product->tenant_id)
+            ->where('type', 'warning')
+            ->where('data->product_id', $product->id)
+            ->where('created_at', '>=', now()->subHours(6))
+            ->exists();
+
+        if ($recentlyNotified) {
+            return;
+        }
+
         Notification::create([
             'user_id' => auth()->id(),
             'tenant_id' => $product->tenant_id,

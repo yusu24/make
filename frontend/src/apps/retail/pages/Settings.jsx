@@ -99,8 +99,10 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
   const [qrisUploading, setQrisUploading] = useState(false);
+  const [iconUploading, setIconUploading] = useState(false);
   const [previewStruk, setPreviewStruk] = useState(false);
   const qrisInputRef = useRef(null);
+  const iconInputRef = useRef(null);
 
   /* ── fetch ── */
   const fetchSettings = async () => {
@@ -160,6 +162,37 @@ export default function Settings() {
       showToast('QRIS dihapus');
     } catch (e) {
       showToast('Gagal hapus QRIS', 'error');
+    }
+  };
+
+  /* ── Store icon upload ── */
+  const handleIconUpload = async (file) => {
+    if (!file) return;
+    setIconUploading(true);
+    try {
+      const form = new FormData();
+      form.append('store_icon', file);
+      const res = await api.post('/retail/settings/store-icon', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setSettings(prev => ({ ...prev, store_icon_path: res.data.store_icon_path, store_icon_url: res.data.store_icon_url }));
+      showToast('Icon toko berhasil diupload');
+    } catch (e) {
+      showToast('Gagal upload icon toko', 'error');
+    } finally {
+      setIconUploading(false);
+    }
+  };
+
+  /* ── Store icon delete ── */
+  const handleIconDelete = async () => {
+    if (!window.confirm('Hapus icon toko? Sidebar akan kembali memakai logo BIZORA.')) return;
+    try {
+      await api.delete('/retail/settings/store-icon');
+      setSettings(prev => ({ ...prev, store_icon_path: null, store_icon_url: null }));
+      showToast('Icon toko dihapus');
+    } catch (e) {
+      showToast('Gagal hapus icon toko', 'error');
     }
   };
 
@@ -356,6 +389,51 @@ export default function Settings() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                <Field label="Icon Toko" hint="Menggantikan logo BIZORA di sidebar khusus untuk toko Anda. Kosongkan untuk memakai logo default.">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{
+                      width: 56, height: 56, borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+                      background: '#f8fafc', border: '1px solid var(--retail-border, #e2e8f0)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      {settings.store_icon_url ? (
+                        <img src={settings.store_icon_url} alt="Icon Toko" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <Store size={22} color="var(--retail-text-secondary)" />
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => iconInputRef.current?.click()}
+                        disabled={iconUploading}
+                      >
+                        <Upload size={14} style={{ marginRight: 6 }} />
+                        {iconUploading ? 'Mengupload...' : (settings.store_icon_url ? 'Ganti Icon' : 'Upload Icon')}
+                      </button>
+                      {settings.store_icon_url && (
+                        <button
+                          type="button"
+                          className="btn btn-sm"
+                          style={{ background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5' }}
+                          onClick={handleIconDelete}
+                        >
+                          <Trash2 size={14} style={{ marginRight: 6 }} />
+                          Hapus
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      ref={iconInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      style={{ display: 'none' }}
+                      onChange={e => handleIconUpload(e.target.files[0])}
+                    />
+                  </div>
+                </Field>
+
                 <Field label="Nama Toko" hint="Ditampilkan di bagian atas struk belanja">
                   <div style={{ position: 'relative' }}>
                     <Building2 size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--retail-text-secondary)' }} />

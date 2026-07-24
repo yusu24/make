@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Plus, Wallet, TrendingDown, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Plus, Wallet, TrendingDown, CheckCircle, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
@@ -39,6 +39,16 @@ export default function Payables() {
       });
       setShowModal(false); fetchData();
     } catch (e) { alert(e.response?.data?.message || 'Gagal menyimpan'); }
+  };
+
+  const handleDelete = async (payable) => {
+    if (!confirm(`Hapus catatan hutang ke "${payable.supplier?.name || 'supplier ini'}"?`)) return;
+    try {
+      await api.delete(`/retail/payables/${payable.id}`);
+      fetchData();
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal menghapus catatan hutang');
+    }
   };
 
   const submitPayment = async (e) => {
@@ -161,9 +171,12 @@ export default function Payables() {
                     <span className={`retail-badge ${p.status === 'paid' ? 'retail-badge-primary' : ''}`}>{p.status === 'paid' ? 'Lunas' : p.status === 'partial' ? 'Sebagian' : 'Belum Bayar'}</span>
                   </td>
                   <td className="pr-6 text-right">
-                    {p.status !== 'paid' && (
-                      <button className="btn btn-sm btn-ghost" onClick={() => { setPayModal(p); setPayAmount(p.remaining ?? (p.total_amount - p.paid_amount)); }} title="Bayar"><Wallet size={15} /></button>
-                    )}
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                      {p.status !== 'paid' && (
+                        <button className="btn btn-sm btn-ghost" onClick={() => { setPayModal(p); setPayAmount(p.remaining ?? (p.total_amount - p.paid_amount)); }} title="Bayar"><Wallet size={15} /></button>
+                      )}
+                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(p)} title="Hapus"><Trash2 size={15} /></button>
+                    </div>
                   </td>
                 </tr>
               ))

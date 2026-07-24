@@ -31,10 +31,12 @@ export default function Units() {
     e.preventDefault();
     const fd = new FormData(e.target);
     try { 
-      await api.post('/retail/units', { name: fd.get('name') }); 
-      fetchUnits(); 
-      e.target.reset(); 
-    } catch (e) {}
+      await api.post('/retail/units', { name: fd.get('name') });
+      fetchUnits();
+      e.target.reset();
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal menambah satuan');
+    }
   };
 
   const handleUpdate = async (e) => {
@@ -44,7 +46,9 @@ export default function Units() {
       await api.put(`/retail/units/${editingUnit.id}`, { name: fd.get('name') });
       fetchUnits();
       setEditingUnit(null);
-    } catch (e) {}
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal menyimpan perubahan satuan');
+    }
   };
 
   const filteredUnits = units.filter(u =>

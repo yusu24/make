@@ -126,7 +126,7 @@ export default function Roles() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
+          <button onClick={fetchRoles} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
             <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>

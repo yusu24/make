@@ -52,8 +52,10 @@ class RetailStockOpnameService
             throw new \RuntimeException('Stock opname yang sudah difinalisasi tidak dapat diubah.');
         }
 
+        $opnameItems = $opname->items()->get()->keyBy('product_id');
+
         foreach ($items as $item) {
-            $opnameItem = $opname->items()->where('product_id', $item['product_id'])->first();
+            $opnameItem = $opnameItems->get($item['product_id']);
             if (!$opnameItem) {
                 continue;
             }

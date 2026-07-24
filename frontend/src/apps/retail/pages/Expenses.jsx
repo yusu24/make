@@ -50,7 +50,7 @@ export default function Expenses() {
       tanggal: fd.get('tanggal'),
       keterangan: fd.get('keterangan'),
       nominal: parseFloat(fd.get('nominal')),
-      kategori: fd.get('kategori') || 'Lainnya'
+      expense_category_id: fd.get('expense_category_id') || null
     };
     
     try {
@@ -182,10 +182,10 @@ export default function Expenses() {
             </div>
             <div className="form-group">
               <label className="form-label">Kategori</label>
-              <select name="kategori" className="form-input" defaultValue={editingExpense?.kategori || ''} required>
+              <select name="expense_category_id" className="form-input" defaultValue={editingExpense?.expense_category_id || ''} required>
                 <option value="" disabled>Pilih Kategori...</option>
                 {categories.map(c => (
-                  <option key={c.id} value={c.name}>{c.name}</option>
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
               {categories.length === 0 && (

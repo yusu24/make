@@ -45,7 +45,9 @@ export default function Suppliers() {
       fetchSuppliers();
       setShowModal(false);
       setEditingSupplier(null);
-    } catch (e) {}
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal menyimpan data supplier');
+    }
   };
 
   const openEdit = (s) => {

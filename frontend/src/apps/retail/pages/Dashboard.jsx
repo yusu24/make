@@ -67,29 +67,35 @@ function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
 const fmtRp = (val) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
 
-let _cache = null;
-let _cacheTime = 0;
+// Keyed by tenant so switching accounts (impersonate, logout/login) within
+// the same browser tab can never show a previous user's cached numbers.
+const _cacheStore = {};
 const CACHE_TTL = 60_000;
+const EMPTY_DASHBOARD = {
+  today_transactions: 0,
+  today_income: 0,
+  active_products: 0,
+  active_staff: 0,
+  recent_transactions: [],
+  low_stock: []
+};
 
 export default function RetailDashboard() {
   const { user } = useAuth();
   const { getDashboard } = useCore();
-  const [data, setData] = useState(_cache || {
-    today_transactions: 0,
-    today_income: 0,
-    active_products: 0,
-    active_staff: 0,
-    recent_transactions: [],
-    low_stock: []
-  });
-  const [loading, setLoading] = useState(!_cache);
+  const cacheKey = user?.tenant_id || user?.id || 'anon';
+  const cached = _cacheStore[cacheKey];
+  const [data, setData] = useState(cached?.data || EMPTY_DASHBOARD);
+  const [loading, setLoading] = useState(!cached);
 
   useEffect(() => {
     const now = Date.now();
-    if (_cache && (now - _cacheTime) < CACHE_TTL) {
-      setData(_cache); setLoading(false); return;
+    const cached = _cacheStore[cacheKey];
+    if (cached && (now - cached.time) < CACHE_TTL) {
+      setData(cached.data); setLoading(false); return;
     }
 
+    setLoading(true);
     getDashboard().then(res => {
       if (!res) { setLoading(false); return; }
       const summary = res.summary || {};
@@ -101,15 +107,14 @@ export default function RetailDashboard() {
         recent_transactions: res.recent_transactions || [],
         low_stock: res.low_stock || [],
       };
-      _cache = sanitizedData;
-      _cacheTime = Date.now();
+      _cacheStore[cacheKey] = { data: sanitizedData, time: Date.now() };
       setData(sanitizedData);
       setLoading(false);
     }).catch(err => {
       console.error('Dashboard load failed:', err);
       setLoading(false);
     });
-  }, [getDashboard]);
+  }, [getDashboard, cacheKey]);
 
   if (loading) return <RetailLoading text="Menyinkronkan dashboard..." />;
 

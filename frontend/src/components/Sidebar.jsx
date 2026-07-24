@@ -335,6 +335,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
   const { pathname } = useLocation()
   const [paywallOpen, setPaywallOpen] = useState(false)
   const [logoUrl, setLogoUrl] = useState(null)
+  const [storeIconUrl, setStoreIconUrl] = useState(null)
   const [expandedGroup, setExpandedGroup] = useState(null)
   const [openSection, setOpenSection] = useState(null)
   const [flyoutAnchorY, setFlyoutAnchorY] = useState(60)
@@ -359,6 +360,18 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
       })
       .catch(e => console.error('Failed to fetch sidebar logo:', e))
   }, [])
+
+  // Retail tenants can upload their own store icon to replace the BIZORA
+  // mark in their own sidebar (Settings → Informasi Toko).
+  useEffect(() => {
+    if (!pathname.startsWith('/retail')) {
+      setStoreIconUrl(null)
+      return
+    }
+    api.get('/retail/settings')
+      .then(r => setStoreIconUrl(r.data?.store_icon_url || null))
+      .catch(() => {})
+  }, [pathname.startsWith('/retail')])
 
   // Reset expanded group / open flyout on route change
   useEffect(() => {
@@ -489,7 +502,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
             justifyContent: isMini ? 'center' : 'flex-start',
           }}
         >
-          <div className="sidebar__logo-icon" style={{ overflow: 'hidden' }}><img src={logoUrl || bizoraLogo} alt="BIZORA" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 4 }} /></div>
+          <div className="sidebar__logo-icon" style={{ overflow: 'hidden' }}><img src={storeIconUrl || logoUrl || bizoraLogo} alt="BIZORA" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 4 }} /></div>
           {!isMini && (
             <div className="sidebar__logo-text">
               <span className="sidebar__logo-brand">BIZORA</span>
@@ -588,7 +601,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
                 )
               }
 
-              const isExpanded = expandedGroup === section.section || (expandedGroup === null && hasActive)
+              const isExpanded = hasActive || expandedGroup === section.section
               return (
                 <div key={section.section} className="sidebar__section" style={{ margin: 0 }}>
                   <button

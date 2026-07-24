@@ -38,7 +38,9 @@ export default function Categories() {
       fetchCategories();
       setNewName('');
       setShowAddModal(false);
-    } catch (e) {}
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal menambah kategori');
+    }
     finally { setAdding(false); }
   };
 
@@ -49,7 +51,9 @@ export default function Categories() {
       await api.put(`/retail/categories/${editingCategory.id}`, { name: fd.get('name') });
       fetchCategories();
       setEditingCategory(null);
-    } catch (e) {}
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal menyimpan perubahan kategori');
+    }
   };
 
   const filteredCategories = categories.filter(c =>

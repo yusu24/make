@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import { 
-  Package, RefreshCw, 
+import {
+  Package, RefreshCw, Plus,
   Edit3, Trash2, AlertCircle
 } from 'lucide-react';
 import Modal from '../../../components/Modal';

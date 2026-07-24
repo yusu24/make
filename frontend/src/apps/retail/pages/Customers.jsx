@@ -49,7 +49,20 @@ export default function Customers() {
       fetchCustomers();
       setShowModal(false);
       setEditingCustomer(null);
-    } catch (e) {}
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal menyimpan data pelanggan');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (confirm('Hapus pelanggan ini?')) {
+      try {
+        await api.delete(`/retail/customers/${id}`);
+        fetchCustomers();
+      } catch (e) {
+        alert(e.response?.data?.message || 'Gagal menghapus pelanggan');
+      }
+    }
   };
 
   const openEdit = (c) => {
@@ -185,7 +198,7 @@ export default function Customers() {
                   <td className="pr-6 text-right">
                      <div className="flex justify-end gap-2">
                         <button className="btn btn-sm btn-ghost" onClick={() => openEdit(c)}><Edit3 size={14} /></button>
-                        <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => alert('Delete logic placeholder')}><Trash2 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(c.id)}><Trash2 size={14} /></button>
                      </div>
                   </td>
                 </tr>

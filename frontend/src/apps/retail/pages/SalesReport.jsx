@@ -31,7 +31,7 @@ export default function SalesReport() {
   }));
 
   const filteredTransactions = (data.transactions || []).filter(tx =>
-    String(tx.invoice_number || '').toLowerCase().includes(search.toLowerCase()) ||
+    String(tx.invoice_no || '').toLowerCase().includes(search.toLowerCase()) ||
     (tx.customer?.name || '').toLowerCase().includes(search.toLowerCase())
   );
 
@@ -176,7 +176,7 @@ export default function SalesReport() {
               paginatedData.map(tx => (
                 <tr key={tx.id}>
                   <td className="pl-6">
-                    <code className="text-[11px] retail-text-primary retail-bg-main retail-border px-2 py-1 rounded">#{tx.invoice_number}</code>
+                    <code className="text-[11px] retail-text-primary retail-bg-main retail-border px-2 py-1 rounded">#{tx.invoice_no}</code>
                   </td>
                   <td>
                     <span className="retail-text-primary">{new Date(tx.created_at).toLocaleString('id-ID')}</span>
@@ -185,10 +185,12 @@ export default function SalesReport() {
                     <span className="retail-text-primary uppercase tracking-tight">{tx.customer?.name || 'Walk-in Customer'}</span>
                   </td>
                   <td>
-                    <span className="retail-text-primary">Rp {Number(tx.total_price).toLocaleString('id-ID')}</span>
+                    <span className="retail-text-primary">Rp {Number(tx.total_amount).toLocaleString('id-ID')}</span>
                   </td>
                   <td className="text-right pr-6">
-                    <span className="retail-badge retail-badge-success">Paid</span>
+                    <span className={`retail-badge ${tx.status === 'paid' ? 'retail-badge-success' : 'retail-badge-warning'}`}>
+                      {tx.status === 'paid' ? 'Paid' : tx.status}
+                    </span>
                   </td>
                 </tr>
               ))

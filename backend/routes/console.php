@@ -17,3 +17,10 @@ Schedule::call(function () {
 
     \Log::info("ActivityLog cleanup: {$deleted} records dihapus (> 3 hari).");
 })->daily()->at('02:00')->name('cleanup-activity-logs')->withoutOverlapping();
+
+// Auto-cleanup: hapus demo sandbox tenant yang sudah lebih dari 2 jam, setiap 30 menit.
+// Dipindah dari inline call di AuthController::createDemoSandbox() supaya klik demo
+// sandbox pengguna tidak ikut menunggu proses cleanup (cascading delete banyak tabel).
+Schedule::call(function () {
+    app(\App\Http\Controllers\Api\AuthController::class)->cleanupOldDemoSandboxes();
+})->everyThirtyMinutes()->name('cleanup-demo-sandboxes')->withoutOverlapping();

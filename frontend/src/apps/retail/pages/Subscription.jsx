@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
@@ -12,6 +13,7 @@ const PLAN_COLOR = {
 
 export default function Subscription() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [tenantInfo, setTenantInfo] = useState(null);
   const [staffCount, setStaffCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -262,7 +264,7 @@ export default function Subscription() {
            <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>
               Jika Anda mengalami kendala saat proses upgrade atau ingin melakukan pembayaran via Transfer Bank Manual, silakan hubungi tim support kami.
            </p>
-           <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }}>Hubungi Support BIZORA</button>
+           <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} onClick={() => navigate('/support')}>Hubungi Support BIZORA</button>
         </div>
 
       </div>

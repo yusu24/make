@@ -159,6 +159,51 @@ class AuthController extends Controller
         return response()->json(['success' => true, 'data' => $this->formatUser($user)]);
     }
 
+    /**
+     * PUT /api/auth/profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name'  => 'required|string|max:255',
+            'phone' => 'nullable|string|max:30',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = $request->user();
+        $user->update($validator->validated());
+
+        return response()->json(['success' => true, 'data' => $this->formatUser($user->fresh()->load('businessCategory', 'tenant'))]);
+    }
+
+    /**
+     * PUT /api/auth/password
+     */
+    public function updatePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'password'         => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['errors' => ['current_password' => ['Password saat ini salah.']]], 422);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+
+        return response()->json(['success' => true, 'message' => 'Password berhasil diubah']);
+    }
+
     private function formatUser(User $user): array
     {
         $tenant = $user->tenant;
@@ -243,8 +288,6 @@ class AuthController extends Controller
      */
     public function createDemoSandbox(Request $request)
     {
-        $this->cleanupOldDemoSandboxes();
-
         $categorySlug = $request->input('category', 'kuliner');
         
         // Normalize slug
@@ -330,7 +373,7 @@ class AuthController extends Controller
         ]);
     }
 
-    private function cleanupOldDemoSandboxes()
+    public function cleanupOldDemoSandboxes()
     {
         try {
             $oldDemoUsers = User::where(function($q) {

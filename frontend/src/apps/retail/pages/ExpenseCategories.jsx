@@ -31,10 +31,12 @@ export default function ExpenseCategories() {
     e.preventDefault();
     const fd = new FormData(e.target);
     try { 
-      await api.post('/retail/expense-categories', { name: fd.get('name') }); 
-      fetchCategories(); 
-      e.target.reset(); 
-    } catch (e) {}
+      await api.post('/retail/expense-categories', { name: fd.get('name') });
+      fetchCategories();
+      e.target.reset();
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal menambah kategori pengeluaran');
+    }
   };
 
   const handleUpdate = async (e) => {
@@ -44,7 +46,9 @@ export default function ExpenseCategories() {
       await api.put(`/retail/expense-categories/${editingCategory.id}`, { name: fd.get('name') });
       fetchCategories();
       setEditingCategory(null);
-    } catch (e) {}
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal menyimpan perubahan kategori pengeluaran');
+    }
   };
 
   const filteredCategories = categories.filter(c =>

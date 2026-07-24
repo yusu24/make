@@ -19,11 +19,21 @@ class RetailMasterController extends Controller
     }
 
     public function storeCategory(Request $request) {
+        $validator = Validator::make($request->all(), ['name' => 'required|string|max:255']);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $cat = RetailCategory::create(['name' => $request->name]);
         return response()->json($cat);
     }
 
     public function updateCategory(Request $request, int $id) {
+        $validator = Validator::make($request->all(), ['name' => 'required|string|max:255']);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $cat = RetailCategory::findOrFail($id);
         $cat->update(['name' => $request->name]);
         return response()->json($cat);
@@ -38,7 +48,20 @@ class RetailMasterController extends Controller
         return response()->json(RetailSupplier::latest()->get());
     }
 
+    private function supplierRules(): array {
+        return [
+            'name' => 'required|string|max:255',
+            'contact' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+        ];
+    }
+
     public function storeSupplier(Request $request) {
+        $validator = Validator::make($request->all(), $this->supplierRules());
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $sup = RetailSupplier::create([
             'name' => $request->name,
             'contact' => $request->contact,
@@ -48,6 +71,11 @@ class RetailMasterController extends Controller
     }
 
     public function updateSupplier(Request $request, int $id) {
+        $validator = Validator::make($request->all(), $this->supplierRules());
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $sup = RetailSupplier::findOrFail($id);
         $sup->update([
             'name' => $request->name,
@@ -66,7 +94,21 @@ class RetailMasterController extends Controller
         return response()->json(RetailCustomer::latest()->get());
     }
 
+    private function customerRules(): array {
+        return [
+            'name' => 'required|string|max:255',
+            'contact' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'address' => 'nullable|string',
+        ];
+    }
+
     public function storeCustomer(Request $request) {
+        $validator = Validator::make($request->all(), $this->customerRules());
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $cus = RetailCustomer::create([
             'name' => $request->name,
             'contact' => $request->contact,
@@ -77,6 +119,11 @@ class RetailMasterController extends Controller
     }
 
     public function updateCustomer(Request $request, int $id) {
+        $validator = Validator::make($request->all(), $this->customerRules());
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $cus = RetailCustomer::findOrFail($id);
         $cus->update([
             'name' => $request->name,
@@ -98,11 +145,21 @@ class RetailMasterController extends Controller
     }
 
     public function storeUnit(Request $request) {
+        $validator = Validator::make($request->all(), ['name' => 'required|string|max:255']);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $unit = RetailUnit::create(['name' => $request->name]);
         return response()->json($unit);
     }
 
     public function updateUnit(Request $request, int $id) {
+        $validator = Validator::make($request->all(), ['name' => 'required|string|max:255']);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $unit = RetailUnit::findOrFail($id);
         $unit->update(['name' => $request->name]);
         return response()->json($unit);
@@ -119,11 +176,21 @@ class RetailMasterController extends Controller
     }
 
     public function storeExpenseCategory(Request $request) {
+        $validator = Validator::make($request->all(), ['name' => 'required|string|max:255']);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $cat = RetailExpenseCategory::create(['name' => $request->name]);
         return response()->json($cat);
     }
 
     public function updateExpenseCategory(Request $request, int $id) {
+        $validator = Validator::make($request->all(), ['name' => 'required|string|max:255']);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $cat = RetailExpenseCategory::findOrFail($id);
         $cat->update(['name' => $request->name]);
         return response()->json($cat);
@@ -155,6 +222,9 @@ class RetailMasterController extends Controller
     {
         $data['qris_image_url'] = !empty($data['qris_image_path'])
             ? asset('storage/' . $data['qris_image_path'])
+            : null;
+        $data['store_icon_url'] = !empty($data['store_icon_path'])
+            ? asset('storage/' . $data['store_icon_path'])
             : null;
         return $data;
     }
@@ -223,5 +293,38 @@ class RetailMasterController extends Controller
         }
 
         return response()->json(['message' => 'QRIS dihapus']);
+    }
+
+    public function uploadStoreIcon(Request $request)
+    {
+        $request->validate([
+            'store_icon' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $settings = $this->getOrCreateSettings($request);
+
+        if ($settings->store_icon_path) {
+            Storage::disk('public')->delete($settings->store_icon_path);
+        }
+
+        $path = $request->file('store_icon')->store('retail/store-icon', 'public');
+        $settings->update(['store_icon_path' => $path]);
+
+        return response()->json([
+            'store_icon_path' => $path,
+            'store_icon_url'  => asset('storage/' . $path),
+        ]);
+    }
+
+    public function deleteStoreIcon(Request $request)
+    {
+        $settings = $this->getOrCreateSettings($request);
+
+        if ($settings->store_icon_path) {
+            Storage::disk('public')->delete($settings->store_icon_path);
+            $settings->update(['store_icon_path' => null]);
+        }
+
+        return response()->json(['message' => 'Icon toko dihapus']);
     }
 }
