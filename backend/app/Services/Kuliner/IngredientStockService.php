@@ -79,6 +79,19 @@ class IngredientStockService
             return;
         }
 
+        // Avoid spamming a "stok menipis" notification every time an
+        // already-low ingredient is consumed again — one alert per
+        // ingredient is enough within a cooldown window.
+        $recentlyNotified = Notification::where('tenant_id', $ingredient->tenant_id)
+            ->where('type', 'warning')
+            ->where('data->ingredient_id', $ingredient->id)
+            ->where('created_at', '>=', now()->subHours(6))
+            ->exists();
+
+        if ($recentlyNotified) {
+            return;
+        }
+
         Notification::create([
             'user_id' => auth()->id(),
             'tenant_id' => $ingredient->tenant_id,

@@ -25,6 +25,14 @@ const CulinaryTransactions = () => {
   // Modal States
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isReconModalOpen, setIsReconModalOpen] = useState(false);
+  const [detailItem, setDetailItem] = useState(null);
+  const [physicalBalance, setPhysicalBalance] = useState('');
+  const [reconDifference, setReconDifference] = useState(null);
+  const handleCloseRecon = () => {
+    setIsReconModalOpen(false);
+    setPhysicalBalance('');
+    setReconDifference(null);
+  };
   const [expenseForm, setExpenseForm] = useState({ date: new Date().toISOString().split('T')[0], category: 'Bahan Baku', description: '', amount: '' });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -156,8 +164,12 @@ const CulinaryTransactions = () => {
                     onChange={(e) => { setFilterCategory(e.target.value); setCurrentPage(1); }}
                   >
                     <option value="all">Semua Kategori</option>
-                    <option value="Operasional">Operasional</option>
-                    <option value="Pajak">Pajak</option>
+                    <option value="Penjualan">Penjualan</option>
+                    <option value="Bahan Baku">Bahan Baku</option>
+                    <option value="Operasional">Operasional (Listrik, Air)</option>
+                    <option value="Gaji Karyawan">Gaji Karyawan</option>
+                    <option value="Marketing">Marketing / Iklan</option>
+                    <option value="Lainnya">Lainnya</option>
                   </select>
                   {(filterDate || filterType !== 'all' || filterCategory !== 'all') && (
                     <button 
@@ -210,7 +222,7 @@ const CulinaryTransactions = () => {
                             {item.type === 'income' ? '+' : '-'}{formatRp(item.amount)}
                           </td>
                           <td className="text-right">
-                            <button className="kd-icon-btn" title="Detail"><Eye size={16} /></button>
+                            <button className="kd-icon-btn" title="Detail" onClick={() => setDetailItem(item)}><Eye size={16} /></button>
                           </td>
                         </tr>
                       ))
@@ -330,11 +342,11 @@ const CulinaryTransactions = () => {
 
             {/* RECONCILIATION MODAL */}
             {isReconModalOpen && (
-              <div className="kd-modal-overlay visible" onClick={() => setIsReconModalOpen(false)}>
+              <div className="kd-modal-overlay visible" onClick={() => handleCloseRecon()}>
                 <div className="kd-modal" onClick={e => e.stopPropagation()}>
                   <div className="kd-modal-header">
                     <h2 className="kd-modal-title">Rekonsiliasi Kas</h2>
-                    <button className="kd-close-btn" onClick={() => setIsReconModalOpen(false)}>✕</button>
+                    <button className="kd-close-btn" onClick={() => handleCloseRecon()}>✕</button>
                   </div>
                   <div className="kd-modal-body">
                     <div className="p-4 bg-slate-50 rounded-xl mb-4 border border-slate-100">
@@ -346,12 +358,84 @@ const CulinaryTransactions = () => {
                     </p>
                     <div className="kd-form-group">
                       <label className="kd-form-label">Saldo Aktual Fisik / Rekening</label>
-                      <input type="number" className="kd-form-input" placeholder="Masukkan jumlah uang riil..." />
+                      <input
+                        type="number"
+                        className="kd-form-input"
+                        placeholder="Masukkan jumlah uang riil..."
+                        value={physicalBalance}
+                        onChange={e => { setPhysicalBalance(e.target.value); setReconDifference(null); }}
+                      />
+                    </div>
+                    {reconDifference !== null && (
+                      <div className={`p-4 rounded-xl mt-2 border ${reconDifference === 0 ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
+                        <p className="text-sm text-slate-600 mb-1">Selisih:</p>
+                        <h3 className={`text-2xl font-black ${reconDifference === 0 ? 'text-green-700' : 'text-red-700'}`}>
+                          {reconDifference > 0 ? '+' : ''}{formatRp(reconDifference)}
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {reconDifference === 0 ? 'Saldo fisik sesuai dengan sistem.' : reconDifference > 0 ? 'Saldo fisik lebih besar dari sistem.' : 'Saldo fisik kurang dari sistem.'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="kd-modal-footer">
+                    <button className="kd-btn kd-btn-secondary" onClick={() => handleCloseRecon()}>Tutup</button>
+                    <button
+                      className="kd-btn kd-btn-primary"
+                      onClick={() => setReconDifference(Number(physicalBalance || 0) - Number(balanceSummary.netBalance || 0))}
+                      disabled={physicalBalance === ''}
+                    >
+                      Hitung Selisih
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* DETAIL MODAL */}
+            {detailItem && (
+              <div className="kd-modal-overlay visible" onClick={() => setDetailItem(null)}>
+                <div className="kd-modal" onClick={e => e.stopPropagation()}>
+                  <div className="kd-modal-header">
+                    <h2 className="kd-modal-title">Detail Transaksi</h2>
+                    <button className="kd-close-btn" onClick={() => setDetailItem(null)}>✕</button>
+                  </div>
+                  <div className="kd-modal-body">
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Referensi</p>
+                        <p className="font-bold text-slate-800">{detailItem.id}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Deskripsi</p>
+                        <p className="font-bold text-slate-800">{detailItem.description}</p>
+                      </div>
+                      <div className="flex gap-6">
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">Kategori</p>
+                          <p className="font-bold text-slate-800">{detailItem.category}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">Tanggal</p>
+                          <p className="font-bold text-slate-800">{new Date(detailItem.date).toLocaleString('id-ID')}</p>
+                        </div>
+                      </div>
+                      {detailItem.status && (
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">Status</p>
+                          <p className="font-bold text-slate-800">{detailItem.status}</p>
+                        </div>
+                      )}
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <p className="text-xs text-slate-500 mb-1">{detailItem.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</p>
+                        <h3 className={`text-2xl font-black ${detailItem.type === 'income' ? 'text-green-700' : 'text-red-700'}`}>
+                          {detailItem.type === 'income' ? '+' : '-'}{formatRp(detailItem.amount)}
+                        </h3>
+                      </div>
                     </div>
                   </div>
                   <div className="kd-modal-footer">
-                    <button className="kd-btn kd-btn-secondary" onClick={() => setIsReconModalOpen(false)}>Tutup</button>
-                    <button className="kd-btn kd-btn-primary">Hitung Selisih</button>
+                    <button className="kd-btn kd-btn-secondary" onClick={() => setDetailItem(null)}>Tutup</button>
                   </div>
                 </div>
               </div>

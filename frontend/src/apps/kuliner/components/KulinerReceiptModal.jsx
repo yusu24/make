@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Printer, Download, MessageCircle, X } from 'lucide-react';
+import { Printer, MessageCircle, X } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
@@ -63,11 +63,10 @@ export default function KulinerReceiptModal({ isOpen, order, storeName, onClose 
         </div>
 
         <div className="p-4 border-t border-slate-100 flex gap-2">
+          {/* Browser print dialog already offers "Save as PDF" as a destination,
+              so a separate PDF button here would just duplicate this one. */}
           <button onClick={handlePrint} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 text-white text-xs font-semibold">
-            <Printer size={14} /> Cetak
-          </button>
-          <button onClick={handlePrint} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold">
-            <Download size={14} /> PDF
+            <Printer size={14} /> Cetak / Simpan PDF
           </button>
           <a
             href={`https://wa.me/?text=${shareText}`}

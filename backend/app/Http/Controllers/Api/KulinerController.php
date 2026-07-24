@@ -268,12 +268,12 @@ class KulinerController extends Controller
 
         return DB::transaction(function () use ($request, $tenantId) {
             try {
-                $total = 0;
+                $subtotal = 0;
                 $orderItems = [];
 
                 foreach ($request->items as $itemData) {
                     $product = KulinerProduct::withoutGlobalScopes()->find($itemData['id']);
-                    
+
                     if (!$product) {
                         $price = (float) ($itemData['price'] ?? 0);
                     } else {
@@ -281,8 +281,8 @@ class KulinerController extends Controller
                     }
 
                     $qty = (float) ($itemData['quantity'] ?? 1);
-                    $subtotal = $price * $qty;
-                    $total += $subtotal;
+                    $lineSubtotal = $price * $qty;
+                    $subtotal += $lineSubtotal;
 
                     $orderItems[] = [
                         'product_id' => $product->id ?? null,
@@ -290,14 +290,52 @@ class KulinerController extends Controller
                         'name' => $itemData['name'],
                         'qty' => $qty,
                         'price' => $price,
-                        'subtotal' => $subtotal
+                        'subtotal' => $lineSubtotal
                     ];
                 }
+
+                // Service fee shown to the customer on the storefront cart (FullMenu.jsx)
+                $serviceFee = 2000;
+
+                // Re-validate the promo server-side instead of trusting the client's
+                // discount_amount/total — a customer could otherwise apply an expired,
+                // exhausted, or invalid code and still get charged the discounted price.
+                $promo = null;
+                $discountAmount = 0;
+                if ($request->filled('promo_code')) {
+                    $candidate = KulinerPromo::where('tenant_id', $tenantId)
+                        ->where('code', strtoupper($request->promo_code))
+                        ->where('status', 'active')
+                        ->first();
+
+                    $promoValid = $candidate
+                        && (!$candidate->expired_at || !$candidate->expired_at->isPast())
+                        && (!$candidate->quota || $candidate->used_count < $candidate->quota);
+
+                    if ($promoValid) {
+                        $promo = $candidate;
+                        if ($promo->type === 'discount') {
+                            $percent = (float) preg_replace('/\D/', '', $promo->value);
+                            $discountAmount = round($subtotal * $percent / 100);
+                        } elseif ($promo->type === 'nominal') {
+                            $amount = (float) preg_replace('/\D/', '', $promo->value);
+                            $discountAmount = min($amount, $subtotal);
+                        }
+                    }
+                }
+
+                $total = $subtotal + $serviceFee - $discountAmount;
 
                 // 1. Save order
                 $orderNumber = 'ORD-' . strtoupper(substr(uniqid(), -6));
                 $source = $request->input('source', 'pos');
                 $initialStatus = $request->is_staff_order ? 'processing' : ($source === 'qr_selforder' ? 'waiting' : 'pending');
+                $notes = $request->notes;
+                if ($promo) {
+                    $promoNote = "Promo {$promo->code} (-Rp " . number_format($discountAmount, 0, ',', '.') . ")";
+                    $notes = $notes ? "{$notes} | {$promoNote}" : $promoNote;
+                }
+
                 $order = Order::withoutGlobalScopes()->create([
                     'tenant_id' => $tenantId,
                     'order_number' => $orderNumber,
@@ -306,7 +344,7 @@ class KulinerController extends Controller
                     'order_type' => $request->order_type,
                     'table_number' => $request->table_number,
                     'payment_method' => $request->payment_method,
-                    'notes' => $request->notes,
+                    'notes' => $notes,
                     'source' => $source,
                     'total' => $total,
                     'status' => $initialStatus
@@ -319,6 +357,10 @@ class KulinerController extends Controller
                         'created_at' => now(),
                         'updated_at' => now()
                     ]));
+                }
+
+                if ($promo) {
+                    $promo->increment('used_count');
                 }
 
                 // 3. If staff order, record income immediately
@@ -414,7 +456,7 @@ class KulinerController extends Controller
     public function getProducts()
     {
         $tenantId = auth()->user()->tenant_id;
-        $products = KulinerProduct::with('category')
+        $products = KulinerProduct::with(['category', 'modifierGroups', 'addons'])
             ->where('tenant_id', $tenantId)
             ->get();
         return response()->json($products);
@@ -746,7 +788,7 @@ class KulinerController extends Controller
         $orders = Order::where('tenant_id', $tenantId)
             ->with(['items'])
             ->orderBy('created_at', 'desc')
-            ->limit(100)
+            ->limit(1000)
             ->get();
         return response()->json($orders);
     }
@@ -773,7 +815,7 @@ class KulinerController extends Controller
                     'date' => $order->created_at,
                     'category' => 'Penjualan',
                     'description' => 'Pesanan: ' . $order->customer_name,
-                    'amount' => $order->total_amount,
+                    'amount' => $order->total,
                     'status' => $order->status,
                     'raw_data' => $order
                 ];
@@ -1093,6 +1135,11 @@ class KulinerController extends Controller
             ->where('status', 'completed')
             ->sum('total');
 
+        $revenueYesterday = Order::where('tenant_id', $tenantId)
+            ->whereDate('created_at', now()->subDay()->toDateString())
+            ->where('status', 'completed')
+            ->sum('total');
+
         $ordersToday = Order::where('tenant_id', $tenantId)
             ->whereDate('created_at', $today)
             ->count();
@@ -1144,6 +1191,7 @@ class KulinerController extends Controller
 
         return response()->json([
             'revenue_today' => $revenueToday,
+            'revenue_yesterday' => $revenueYesterday,
             'orders_today' => $ordersToday,
             'revenue_month' => $revenueMonth,
             'total_orders' => $totalOrders,
@@ -1282,18 +1330,18 @@ class KulinerController extends Controller
 
         // Fetch same analytics data to feed the "AI logic"
         // 1. Top Products
-        $topProducts = DB::table('kuliner_order_items')
-            ->join('kuliner_orders', 'kuliner_order_items.order_id', '=', 'kuliner_orders.id')
-            ->select('kuliner_order_items.name', DB::raw('SUM(kuliner_order_items.qty) as total_orders'))
-            ->where('kuliner_orders.tenant_id', $tenantId)
-            ->where('kuliner_orders.status', '!=', 'cancelled')
-            ->groupBy('kuliner_order_items.name')
+        $topProducts = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->select('order_items.name', DB::raw('SUM(order_items.qty) as total_orders'))
+            ->where('orders.tenant_id', $tenantId)
+            ->where('orders.status', '!=', 'cancelled')
+            ->groupBy('order_items.name')
             ->orderBy('total_orders', 'desc')
             ->limit(3)
             ->get();
 
         // 2. Peak Hours
-        $peakHours = DB::table('kuliner_orders')
+        $peakHours = DB::table('orders')
             ->select(DB::raw('HOUR(created_at) as hour'), DB::raw('COUNT(*) as count'))
             ->where('tenant_id', $tenantId)
             ->where('created_at', '>=', now()->subDays(30))
@@ -1302,8 +1350,8 @@ class KulinerController extends Controller
             ->first(); // Get the single busiest hour
 
         // 3. Loyalty
-        $totalCustomers = DB::table('kuliner_orders')->where('tenant_id', $tenantId)->distinct('customer_phone')->count('customer_phone');
-        $returningCustomers = DB::table('kuliner_orders')
+        $totalCustomers = DB::table('orders')->where('tenant_id', $tenantId)->distinct('customer_phone')->count('customer_phone');
+        $returningCustomers = DB::table('orders')
             ->where('tenant_id', $tenantId)
             ->select('customer_phone')
             ->groupBy('customer_phone')
@@ -1313,7 +1361,7 @@ class KulinerController extends Controller
         $loyaltyRate = $totalCustomers > 0 ? round(($returningCustomers / $totalCustomers) * 100) : 0;
 
         // 4. Payment
-        $favoriteMethod = DB::table('kuliner_orders')
+        $favoriteMethod = DB::table('orders')
             ->select('payment_method', DB::raw('COUNT(*) as count'))
             ->where('tenant_id', $tenantId)
             ->groupBy('payment_method')

@@ -29,7 +29,7 @@ export default function BahanBaku() {
   );
 
   useEffect(() => {
-    api.get('/kuliner/admin/suppliers').then((r) => setSuppliers(r.data)).catch(() => {});
+    api.get('/kuliner/admin/suppliers').then((r) => setSuppliers(r.data)).catch(() => console.error('Gagal memuat daftar supplier'));
   }, []);
 
   const openCreate = () => {

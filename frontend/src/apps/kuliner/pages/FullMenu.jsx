@@ -74,9 +74,6 @@ const FullMenu = () => {
           desc: p.description || '',
           price: p.price,
           discount_price: p.discount_price,
-          rating: 4.8, // Default
-          votes: 12,
-          cal: 0,
           tag: null,
           tagLabel: null
         }));
@@ -117,7 +114,6 @@ const FullMenu = () => {
 
     if (sortMode === 'price-asc') data.sort((a, b) => a.price - b.price);
     else if (sortMode === 'price-desc') data.sort((a, b) => b.price - a.price);
-    else if (sortMode === 'rating') data.sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
     return data;
   }, [activeCat, searchQuery, sortMode, products]);
@@ -430,7 +426,6 @@ const FullMenu = () => {
           <option value="default">Urutan default</option>
           <option value="price-asc">Harga: Termurah</option>
           <option value="price-desc">Harga: Termahal</option>
-          <option value="rating">Rating tertinggi</option>
         </select>
         <div className="kl-view-toggle">
           <button 
@@ -481,10 +476,6 @@ const FullMenu = () => {
               <div className="kl-item-desc">{item.desc}</div>
               <div className="kl-item-footer">
                 <div>
-                  <div className="kl-item-meta">
-                    <div className="kl-item-rating"><span>★</span> {item.rating} ({item.votes})</div>
-                    <div className="kl-item-cal">{item.cal} kal</div>
-                  </div>
                   <div className="kl-item-price" style={{marginTop:6}}>
                     {item.discount_price ? (
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+import { api } from '../../../lib/api';
 import '../pages/KulinerDashboard.css';
 
 const KulinerAdminLayout = ({ children }) => {
@@ -45,7 +46,7 @@ const KulinerAdminLayout = ({ children }) => {
         path === '/kuliner/admin/kitchen-queue' || path === '/kuliner/admin/shift' ||
         path === '/kuliner/admin/stock-opname' || path === '/kuliner/admin/waste' ||
         path === '/kuliner/admin/tables',
-      finance: path === '/kuliner/admin/reports' || path === '/kuliner/admin/analytics' || path === '/kuliner/admin/transactions' || path === '/kuliner/admin/reports-advanced',
+      finance: path === '/kuliner/admin/reports' || path === '/kuliner/admin/analytics' || path === '/kuliner/admin/transactions' || path === '/kuliner/admin/reports-advanced' || path === '/kuliner/admin/promos' || path === '/kuliner/admin/reviews',
 
       settings: path === '/kuliner/admin/staff' || path === '/kuliner/admin/settings' || path === '/kuliner/admin/support'
     });
@@ -55,11 +56,31 @@ const KulinerAdminLayout = ({ children }) => {
     setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
-  const notifications = [
-    { id: 1, type: 'warning', title: 'Stok Menipis', message: 'Menu "Rendang Padang" sisa 3 porsi.', time: '2 menit yang lalu' },
-    { id: 2, type: 'success', title: 'Pesanan Baru', message: 'Meja 05 memesan 4 item baru.', time: '10 menit yang lalu' },
-    { id: 3, type: 'info', title: 'Update Sistem', message: 'Fitur Laporan Bulanan sudah tersedia.', time: '1 jam yang lalu' }
-  ];
+  const [notifications, setNotifications] = useState([]);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get('/notifications');
+      setNotifications(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch notifications');
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await api.post('/notifications/read-all');
+      fetchNotifications();
+    } catch (err) {}
+  };
+
+  const unreadCount = notifications.filter(n => !n.read_at).length;
 
   // Sync storeName with user context whenever it changes
   useEffect(() => {
@@ -74,9 +95,6 @@ const KulinerAdminLayout = ({ children }) => {
   };
 
   const hasPermission = (permId) => {
-    // Temporary: Grant all users full access
-    return true;
-
     // Owners and Super Admins have all permissions
     if (user?.role === 'customer' || user?.role === 'super_admin' || user?.permissions === 'all') {
       return true;
@@ -323,12 +341,30 @@ const KulinerAdminLayout = ({ children }) => {
                     </Link>
                   )}
                   {hasPermission('reports') && (
-                    <Link 
-                      to="/kuliner/admin/transactions" 
+                    <Link
+                      to="/kuliner/admin/transactions"
                       className={`kd-nav-item ${location.pathname === '/kuliner/admin/transactions' ? 'active' : ''}`}
                     >
                       <span className="kd-nav-icon">🧾</span>
                       <span>Daftar Transaksi</span>
+                    </Link>
+                  )}
+                  {hasPermission('reports') && (
+                    <Link
+                      to="/kuliner/admin/promos"
+                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/promos' ? 'active' : ''}`}
+                    >
+                      <span className="kd-nav-icon">🎁</span>
+                      <span>Kelola Promo</span>
+                    </Link>
+                  )}
+                  {hasPermission('reports') && (
+                    <Link
+                      to="/kuliner/admin/reviews"
+                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/reviews' ? 'active' : ''}`}
+                    >
+                      <span className="kd-nav-icon">⭐</span>
+                      <span>Moderasi Testimoni</span>
                     </Link>
                   )}
                 </div>
@@ -413,11 +449,13 @@ const KulinerAdminLayout = ({ children }) => {
                 title="Notifikasi"
               >
                 🔔
-                <span style={{
-                  position: 'absolute', top: 6, right: 6,
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: '#ef4444', border: '1.5px solid white',
-                }} />
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute', top: 6, right: 6,
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: '#ef4444', border: '1.5px solid white',
+                  }} />
+                )}
               </button>
 
               {/* Dropdown notification panel */}
@@ -441,7 +479,7 @@ const KulinerAdminLayout = ({ children }) => {
                   }}>
                     <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1e293b' }}>Notifikasi</h4>
                     <button
-                      onClick={() => setShowNotif(false)}
+                      onClick={handleMarkAllRead}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#b48c36', fontWeight: 600 }}
                     >
                       Tandai dibaca
@@ -449,22 +487,27 @@ const KulinerAdminLayout = ({ children }) => {
                   </div>
                   {/* Items */}
                   <div style={{ maxHeight: 300, overflowY: 'auto' }}>
-                    {notifications.map(n => (
+                    {notifications.length === 0 ? (
+                      <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: 13, color: '#94a3b8' }}>
+                        Belum ada notifikasi.
+                      </div>
+                    ) : notifications.map(n => (
                       <div key={n.id} style={{
                         padding: '12px 16px',
                         borderBottom: '1px solid #f8fafc',
                         cursor: 'default',
                         transition: 'background 0.15s',
+                        background: n.read_at ? 'transparent' : '#fffbeb',
                       }}
                       onMouseEnter={e => e.currentTarget.style.background='#f8fafc'}
-                      onMouseLeave={e => e.currentTarget.style.background='transparent'}
+                      onMouseLeave={e => e.currentTarget.style.background=n.read_at ? 'transparent' : '#fffbeb'}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
                           <span style={{
                             fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
                             color: n.type === 'warning' ? '#f59e0b' : n.type === 'success' ? '#10b981' : '#3b82f6',
                           }}>{n.title}</span>
-                          <span style={{ fontSize: 10, color: '#94a3b8' }}>{n.time}</span>
+                          <span style={{ fontSize: 10, color: '#94a3b8' }}>{new Date(n.created_at).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <p style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.4 }}>{n.message}</p>
                       </div>

@@ -85,6 +85,7 @@ class ModifierGroupController extends Controller
 
     private function syncOptions(KulinerModifierGroup $group, array $options): void
     {
+        $existing = $group->options()->get()->keyBy('id');
         $keepIds = [];
 
         foreach ($options as $index => $option) {
@@ -97,13 +98,9 @@ class ModifierGroupController extends Controller
                 'is_active' => true,
             ];
 
-            if (!empty($option['id'])) {
-                $record = $group->options()->find($option['id']);
-                if ($record) {
-                    $record->update($attributes);
-                } else {
-                    $record = $group->options()->create($attributes);
-                }
+            $record = !empty($option['id']) ? $existing->get($option['id']) : null;
+            if ($record) {
+                $record->update($attributes);
             } else {
                 $record = $group->options()->create($attributes);
             }

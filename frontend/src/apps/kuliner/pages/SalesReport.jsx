@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import api from '../../../services/api';
 import KulinerLoading from '../components/KulinerLoading';
+import { useAuth } from '../../../contexts/AuthContext';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell
@@ -9,6 +10,7 @@ import {
 import './KulinerDashboard.css';
 
 const SalesReport = () => {
+  const { user } = useAuth();
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -187,7 +189,7 @@ const SalesReport = () => {
 
             {/* PRINT HEADER */}
             <div className="print-only" style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '2px solid #000' }}>
-              <h2 style={{ fontSize: 24, fontWeight: 'bold', margin: 0, color: '#000' }}>Laporan Penjualan - Dapur Nusantara</h2>
+              <h2 style={{ fontSize: 24, fontWeight: 'bold', margin: 0, color: '#000' }}>Laporan Penjualan - {user?.tenant_name || 'Toko Kuliner'}</h2>
               <p style={{ margin: '4px 0', fontSize: 14, color: '#333' }}>
                 Periode: {dateFilter === 'today' ? 'Hari Ini' : dateFilter === 'week' ? '7 Hari Terakhir' : dateFilter === 'month' ? 'Bulan Ini' : 'Semua'}
               </p>

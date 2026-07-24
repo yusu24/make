@@ -31,7 +31,7 @@ class ShiftService
 
         $closedAt = now();
         $cashSales = (float) Order::where('tenant_id', $shift->tenant_id)
-            ->where('payment_method', 'cash')
+            ->where('payment_method', 'cash_cashier')
             ->where('status', '!=', 'cancelled')
             ->whereBetween('created_at', [$shift->opened_at, $closedAt])
             ->sum('total');

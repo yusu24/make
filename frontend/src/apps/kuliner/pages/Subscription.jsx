@@ -342,7 +342,7 @@ export default function Subscription() {
           <div style={{ background: '#fff', border: '1px solid #FEF3C7', borderRadius: 20, padding: 28, boxShadow: '0 4px 12px rgba(234, 88, 12, 0.02)' }}>
             <h3 style={{ margin: '0 0 16px 0', fontSize: 16, fontWeight: 800, color: '#EA580C' }}>Informasi Pembayaran</h3>
             <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.5, marginBottom: 24 }}>
-              Pembayaran menggunakan transfer bank manual. Rekening pembayaran resmi platform Dapur Nusantara:
+              Pembayaran menggunakan transfer bank manual. Rekening pembayaran resmi platform BIZORA:
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

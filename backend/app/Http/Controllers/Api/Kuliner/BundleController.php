@@ -41,12 +41,7 @@ class BundleController extends Controller
                 'is_active' => $request->input('is_active', true),
             ]);
 
-            foreach ($request->items as $item) {
-                $bundle->items()->create([
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                ]);
-            }
+            $this->insertItems($bundle, $request->items);
 
             return response()->json($bundle->fresh('items.product'), 201);
         });
@@ -66,12 +61,7 @@ class BundleController extends Controller
             ]);
 
             $bundle->items()->delete();
-            foreach ($request->items as $item) {
-                $bundle->items()->create([
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                ]);
-            }
+            $this->insertItems($bundle, $request->items);
 
             return response()->json($bundle->fresh('items.product'));
         });
@@ -83,5 +73,21 @@ class BundleController extends Controller
         $bundle->delete();
 
         return response()->json(['message' => 'Bundle dihapus']);
+    }
+
+    private function insertItems(KulinerBundle $bundle, array $items): void
+    {
+        if (empty($items)) {
+            return;
+        }
+
+        $now = now();
+        $bundle->items()->insert(array_map(fn ($item) => [
+            'bundle_id' => $bundle->id,
+            'product_id' => $item['product_id'],
+            'quantity' => $item['quantity'],
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $items));
     }
 }

@@ -12,7 +12,6 @@ const KulinerDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeModal, setActiveModal] = useState(null);
 
   useEffect(() => {
     fetchStats();
@@ -34,8 +33,22 @@ const KulinerDashboard = () => {
     return 'Rp ' + new Intl.NumberFormat('id-ID').format(parseInt(n));
   };
 
-  const openModal = (type) => setActiveModal(type);
-  const closeModal = () => setActiveModal(null);
+  const revenueChange = (() => {
+    const today = Number(stats?.revenue_today || 0);
+    const yesterday = Number(stats?.revenue_yesterday || 0);
+    if (yesterday === 0) return today > 0 ? { label: 'Naik dari Rp 0 kemarin', up: true } : { label: 'Belum ada pendapatan', up: null };
+    const pct = ((today - yesterday) / yesterday) * 100;
+    return { label: `${pct >= 0 ? '↑' : '↓'} ${Math.abs(pct).toFixed(1)}% dari kemarin`, up: pct >= 0 };
+  })();
+
+  const timeAgo = (dateStr) => {
+    const diffMin = Math.max(0, Math.round((Date.now() - new Date(dateStr).getTime()) / 60000));
+    if (diffMin < 1) return 'Baru saja';
+    if (diffMin < 60) return `${diffMin} menit yang lalu`;
+    const diffHour = Math.round(diffMin / 60);
+    if (diffHour < 24) return `${diffHour} jam yang lalu`;
+    return `${Math.round(diffHour / 24)} hari yang lalu`;
+  };
 
   return (
     <KulinerAdminLayout>
@@ -57,7 +70,7 @@ const KulinerDashboard = () => {
                   <span className="kd-stat-label">Pendapatan Hari Ini</span>
                 </div>
                 <div className="kd-stat-value">{formatRp(stats?.revenue_today)}</div>
-                <div className="kd-stat-change kd-change-up">↑ 12.5% dari kemarin</div>
+                <div className={`kd-stat-change ${revenueChange.up === false ? 'kd-change-down' : 'kd-change-up'}`}>{revenueChange.label}</div>
               </div>
 
               <div className="kd-stat-card">
@@ -143,19 +156,19 @@ const KulinerDashboard = () => {
                 </div>
               </button>
 
-              <button className="kd-action-btn" onClick={() => openModal('flyer')}>
+              <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/promos')}>
                 <div className="kd-action-icon kd-ai-design">🎨</div>
                 <div className="kd-action-text">
-                  <h4>Buat Flyer Promo</h4>
-                  <p>Desain banner & promosi</p>
+                  <h4>Kelola Promo</h4>
+                  <p>Buat & atur kode promo</p>
                 </div>
               </button>
 
-              <button className="kd-action-btn" onClick={() => openModal('finance')}>
+              <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/reports')}>
                 <div className="kd-action-icon kd-ai-finance">📊</div>
                 <div className="kd-action-text">
                   <h4>Laporan Keuangan</h4>
-                  <p>Lihat & export data</p>
+                  <p>Lihat & cetak laporan penjualan</p>
                 </div>
               </button>
             </div>
@@ -205,84 +218,44 @@ const KulinerDashboard = () => {
                   <h3 className="kd-panel-title">Aktivitas Terkini</h3>
                 </div>
                 <div className="kd-activity-list">
-                  <div className="kd-activity-item">
-                    <div className="kd-activity-icon kd-act-order">📦</div>
-                    <div className="kd-activity-content">
-                      <h4>Pesanan baru masuk</h4>
-                      <p>Sistem otomatis memproses</p>
+                  {(stats?.recent_orders || []).slice(0, 3).map((order) => (
+                    <div className="kd-activity-item" key={order.id}>
+                      <div className="kd-activity-icon kd-act-order">📦</div>
+                      <div className="kd-activity-content">
+                        <h4>Pesanan dari {order.customer_name}</h4>
+                        <p>{formatRp(order.total_amount)} · {timeAgo(order.created_at)}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="kd-activity-item">
-                    <div className="kd-activity-icon kd-act-menu">🍛</div>
-                    <div className="kd-activity-content">
-                      <h4>Menu Terlaris</h4>
-                      <p>Rendang Padang naik 12%</p>
+                  ))}
+                  {stats?.top_menu && (
+                    <div className="kd-activity-item">
+                      <div className="kd-activity-icon kd-act-menu">🍛</div>
+                      <div className="kd-activity-content">
+                        <h4>Menu Terlaris</h4>
+                        <p>{stats.top_menu} (30 hari terakhir)</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="kd-activity-item">
-                    <div className="kd-activity-icon kd-act-review">⭐</div>
-                    <div className="kd-activity-content">
-                      <h4>Review Pelanggan</h4>
-                      <p>Rata-rata 4.8 bintang</p>
+                  )}
+                  {(stats?.low_stock_ingredients || []).length > 0 && (
+                    <div className="kd-activity-item">
+                      <div className="kd-activity-icon kd-act-review">⚠️</div>
+                      <div className="kd-activity-content">
+                        <h4>Bahan Baku Menipis</h4>
+                        <p>{stats.low_stock_ingredients.slice(0, 3).map((i) => i.name).join(', ')}</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  {(!stats?.recent_orders || stats.recent_orders.length === 0) && !stats?.top_menu && (stats?.low_stock_ingredients || []).length === 0 && (
+                    <div className="kd-activity-item">
+                      <div className="kd-activity-content">
+                        <p style={{ color: '#94a3b8' }}>Belum ada aktivitas untuk ditampilkan.</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* FLYER MODAL */}
-            {activeModal === 'flyer' && (
-              <div className="kd-modal-overlay visible" onClick={closeModal}>
-                <div className="kd-modal" onClick={e => e.stopPropagation()}>
-                  <div className="kd-modal-header">
-                    <h2 className="kd-modal-title">Buat Flyer Promo</h2>
-                    <button className="kd-close-btn" onClick={closeModal}>×</button>
-                  </div>
-                  <div className="kd-modal-body">
-                    <div className="kd-form-group">
-                      <label className="kd-form-label">Judul Promo</label>
-                      <input type="text" className="kd-form-input" placeholder="Diskon Weekend 20%" />
-                    </div>
-                    <div className="kd-form-group">
-                      <label className="kd-form-label">Upload Desain Flyer</label>
-                      <div className="kd-upload-area">
-                        <div className="kd-upload-icon">🎨</div>
-                        <div className="kd-upload-text">Upload gambar flyer (JPG, PNG max 2MB)</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="kd-modal-footer">
-                    <button className="kd-btn kd-btn-secondary" onClick={closeModal}>Batal</button>
-                    <button className="kd-btn kd-btn-primary">Publikasikan Promo</button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* FINANCE MODAL */}
-            {activeModal === 'finance' && (
-              <div className="kd-modal-overlay visible" onClick={closeModal}>
-                <div className="kd-modal" onClick={e => e.stopPropagation()}>
-                  <div className="kd-modal-header">
-                    <h2 className="kd-modal-title">Laporan Keuangan</h2>
-                    <button className="kd-close-btn" onClick={closeModal}>×</button>
-                  </div>
-                  <div className="kd-modal-body">
-                    <div className="kd-form-group">
-                      <label className="kd-form-label">Periode Laporan</label>
-                      <select className="kd-form-select">
-                        <option>Bulan Ini</option>
-                        <option>Bulan Lalu</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="kd-modal-footer">
-                    <button className="kd-btn kd-btn-secondary" onClick={closeModal}>Tutup</button>
-                    <button className="kd-btn kd-btn-primary">Download Laporan</button>
-                  </div>
-                </div>
-              </div>
-            )}
           </>
         )}
       </div>

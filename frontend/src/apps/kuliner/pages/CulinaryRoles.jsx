@@ -13,13 +13,26 @@ const CulinaryRoles = () => {
     permissions: []
   });
 
+  // 'orders', 'ingredients', 'recipes', 'modifiers', 'addons', 'bundles',
+  // 'shift' and 'reports' are enforced server-side (kuliner_permission:<key>
+  // middleware in routes/api.php) — this list previously omitted most of
+  // them, so staff could never be granted access to Bahan Baku/Resep/
+  // Modifier/Add-on/Bundle/Shift no matter what role they were assigned.
+  // 'menu', 'analytics', 'staff' and 'settings' aren't backend-gated; they
+  // only control which sidebar sections a role sees.
   const availablePermissions = [
-    { id: 'orders',    name: 'Pesanan & Kasir',      icon: '📋' },
-    { id: 'menu',      name: 'Menu & Produk',         icon: '🍔' },
-    { id: 'reports',   name: 'Laporan & Transaksi',   icon: '📊' },
-    { id: 'analytics', name: 'Analitik Bisnis',       icon: '📈' },
-    { id: 'staff',     name: 'Manajemen Staff',        icon: '👥' },
-    { id: 'settings',  name: 'Pengaturan Toko',       icon: '⚙️' },
+    { id: 'orders',      name: 'Pesanan & Kasir',        icon: '📋' },
+    { id: 'menu',        name: 'Menu & Produk',          icon: '🍔' },
+    { id: 'ingredients', name: 'Bahan Baku',              icon: '🥬' },
+    { id: 'recipes',     name: 'Resep Menu',              icon: '📖' },
+    { id: 'modifiers',   name: 'Modifier',                icon: '🧩' },
+    { id: 'addons',      name: 'Add-on',                  icon: '➕' },
+    { id: 'bundles',     name: 'Paket Bundling',          icon: '🎁' },
+    { id: 'shift',       name: 'Buka/Tutup Shift Kasir',  icon: '💰' },
+    { id: 'reports',     name: 'Laporan & Transaksi',     icon: '📊' },
+    { id: 'analytics',   name: 'Analitik Bisnis',        icon: '📈' },
+    { id: 'staff',       name: 'Manajemen Staff',        icon: '👥' },
+    { id: 'settings',    name: 'Pengaturan Toko',        icon: '⚙️' },
   ];
 
 

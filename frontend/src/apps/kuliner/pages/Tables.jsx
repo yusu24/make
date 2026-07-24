@@ -37,7 +37,7 @@ export default function Tables() {
 
   useEffect(() => {
     load();
-    api.get('/kuliner/admin/settings').then((r) => setDineInEnabled(!!r.data?.dine_in_enabled)).catch(() => {});
+    api.get('/kuliner/admin/settings').then((r) => setDineInEnabled(!!r.data?.dine_in_enabled)).catch(() => console.error('Gagal memuat pengaturan dine-in'));
   }, []);
 
   const openCreate = () => { setEditingTable(null); setForm(emptyForm); setShowModal(true); };

@@ -78,13 +78,9 @@ const CategoryStorefront = () => {
             text: r.comment,
             stars: r.rating
           })));
-        } else {
-          // Fallback placeholders if empty
-          setTestimonials([
-            { name: 'Budi Santoso', initial: 'B', role: 'Food Enthusiast', text: 'Makanannya benar-benar autentik dan lezat! Sangat direkomendasikan.', stars: 5 },
-            { name: 'Siti Aminah', initial: 'S', role: 'Pelanggan Setia', text: 'Porsinya pas, rasanya mantap. Pengiriman juga cepat.', stars: 5 }
-          ]);
         }
+        // No fallback to fake reviews — an empty testimonials list simply
+        // renders no cards rather than showing invented customer names.
 
         // 5. Fetch Best Sellers
         const bestRes = await api.get(`/kuliner/public/best-sellers${tenantQuery}`);
@@ -200,7 +196,9 @@ const CategoryStorefront = () => {
           <p>{settings.hero_subtitle || 'Nikmati kelezatan hidangan istimewa yang kami sajikan dengan bahan pilihan.'}</p>
           <div className="kl-hero-actions">
             <Link to={menuUrl} className="kl-btn-primary">Lihat Menu</Link>
-            <button className="kl-btn-ghost">Reservasi Meja</button>
+            {/* Dine-in is already FullMenu.jsx's default order type, so this
+                just takes the customer straight to ordering for a table. */}
+            <Link to={menuUrl} className="kl-btn-ghost">Reservasi Meja</Link>
           </div>
         </div>
 
@@ -303,7 +301,7 @@ const CategoryStorefront = () => {
         <div>
           <h2>{(settings.promo_title || 'Promo Spesial Akhir Pekan').split(' ').map((w, i) => i === 1 ? <em key={i}>{w} </em> : w + ' ')}</h2>
           <p>{settings.promo_desc || 'Dapatkan diskon menarik setiap hari.'}</p>
-          <button className="kl-btn-primary">Klaim Promo</button>
+          <Link to={menuUrl} className="kl-btn-primary">Klaim Promo</Link>
         </div>
         <div className="kl-banner-right">🎉</div>
       </div>
@@ -374,7 +372,6 @@ const CategoryStorefront = () => {
         <div className="kl-footer-links">
           {settings.instagram_url && <a href={settings.instagram_url}>Instagram</a>}
           {settings.whatsapp_number && <a href={`https://wa.me/${settings.whatsapp_number}`}>WhatsApp</a>}
-          <a href="#">Kontak</a>
         </div>
       </footer>
     </div>

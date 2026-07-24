@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
@@ -6,6 +7,7 @@ import KulinerLoading from '../components/KulinerLoading';
 import './KulinerDashboard.css';
 
 const AdminSettings = () => {
+  const navigate = useNavigate();
   const { updateUser } = useAuth();
   const [settings, setSettings] = useState({
     store_name: '',
@@ -321,7 +323,7 @@ const AdminSettings = () => {
                     <div className="kd-panel" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#fff' }}>
                       <h4 className="font-bold mb-2">Butuh Bantuan?</h4>
                       <p className="text-[11px] text-slate-400 leading-relaxed mb-6">Jika Anda kesulitan mengatur profil toko, hubungi tim support kami melalui tombol di bawah ini.</p>
-                      <button type="button" className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all">Hubungi Support 💬</button>
+                      <button type="button" onClick={() => navigate('/kuliner/admin/support')} className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all">Hubungi Support 💬</button>
                     </div>
 
                     {/* SAVE BUTTON PANEL */}
