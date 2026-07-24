@@ -204,7 +204,7 @@ const KulinerDashboard = () => {
                     <tbody>
                       {stats?.recent_orders?.map((order) => (
                         <tr key={order.id}>
-                          <td><span className="font-bold text-[#b48c36]">{order.order_number}</span></td>
+                          <td><span className="font-medium text-[#b48c36]">{order.order_number}</span></td>
                           <td>
                             <div className="kd-menu-name">{order.customer_name}</div>
                             <div className="text-[10px] text-slate-400">{order.customer_phone}</div>
