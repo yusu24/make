@@ -631,28 +631,52 @@
 .kd-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .kd-table thead th {
   text-align: left;
   font-weight: 600;
   color: #000000;
-  padding: 0 16px 16px 0;
+  padding: 0 16px 12px 0;
   border-bottom: 1px solid #f1f5f9;
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .kd-table tbody td {
-  padding: 16px 16px 16px 0;
+  padding: 12px 16px 12px 0;
   border-bottom: 1px solid #f8fafc;
   color: #475569;
 }
 
+.kd-table tbody tr:nth-child(even) td {
+  background: #fbfaf8;
+}
+
 .kd-table tbody tr:hover td {
   background: #f8fafc;
+}
+
+.kd-table-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  background: #1e293b;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.kd-table-view-btn:hover {
+  background: #0f172a;
 }
 
 .kd-menu-item-cell {
@@ -729,17 +753,17 @@
 
 .kd-activity-item {
   display: flex;
-  gap: 14px;
+  gap: 12px;
 }
 
 .kd-activity-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 15px;
   flex-shrink: 0;
 }
 
@@ -748,16 +772,26 @@
 .kd-act-review { background: #fef2f2; color: #ef4444; }
 .kd-act-promo { background: #f0fdf4; color: #10b981; }
 
+.kd-activity-content {
+  /* Without this, a flex child refuses to shrink below its text's
+     intrinsic width — a long customer name would push .kd-panel wider
+     than the viewport instead of wrapping, breaking layout on mobile. */
+  min-width: 0;
+  flex: 1;
+}
+
 .kd-activity-content h4 {
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #334155;
   margin-bottom: 2px;
+  overflow-wrap: break-word;
 }
 
 .kd-activity-content p {
-  font-size: 12px;
+  font-size: 11px;
   color: #94a3b8;
+  overflow-wrap: break-word;
 }
 
 /* CHART CONTAINER */

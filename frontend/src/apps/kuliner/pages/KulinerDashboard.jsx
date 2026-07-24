@@ -41,6 +41,16 @@ const KulinerDashboard = () => {
     return { label: `${pct >= 0 ? '↑' : '↓'} ${Math.abs(pct).toFixed(1)}% dari kemarin`, up: pct >= 0 };
   })();
 
+  const getOrderStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'pending': return 'kd-status-draft';
+      case 'processing': return 'kd-status-active';
+      case 'completed': return 'kd-status-active';
+      case 'cancelled': return 'kd-status-hidden';
+      default: return '';
+    }
+  };
+
   const timeAgo = (dateStr) => {
     const diffMin = Math.max(0, Math.round((Date.now() - new Date(dateStr).getTime()) / 60000));
     if (diffMin < 1) return 'Baru saja';
@@ -188,6 +198,7 @@ const KulinerDashboard = () => {
                         <th>Total</th>
                         <th>Status</th>
                         <th>Waktu</th>
+                        <th className="text-right">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -196,16 +207,21 @@ const KulinerDashboard = () => {
                           <td><span className="font-bold text-[#b48c36]">{order.order_number}</span></td>
                           <td>
                             <div className="kd-menu-name">{order.customer_name}</div>
-                            <div className="text-[11px] text-slate-400">{order.customer_phone}</div>
+                            <div className="text-[10px] text-slate-400">{order.customer_phone}</div>
                           </td>
                           <td>{formatRp(order.total_amount)}</td>
-                          <td><span className="kd-status-badge kd-status-draft">{order.status}</span></td>
+                          <td><span className={`kd-status-badge ${getOrderStatusBadgeClass(order.status)}`}>{order.status}</span></td>
                           <td>{new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
+                          <td className="text-right">
+                            <button className="kd-table-view-btn" onClick={() => navigate('/kuliner/admin/orders')}>
+                              👁 Lihat
+                            </button>
+                          </td>
                         </tr>
                       ))}
                       {(!stats?.recent_orders || stats.recent_orders.length === 0) && (
                         <tr>
-                          <td colSpan="5" className="text-center py-10 text-slate-400">Belum ada pesanan masuk.</td>
+                          <td colSpan="6" className="text-center py-10 text-slate-400">Belum ada pesanan masuk.</td>
                         </tr>
                       )}
                     </tbody>
