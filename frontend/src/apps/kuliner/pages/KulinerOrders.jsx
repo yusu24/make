@@ -194,21 +194,18 @@ const KulinerOrders = () => {
                   <button
                     className={`kd-btn ${filterStatus === 'all' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
                     onClick={() => setFilterStatus('all')}
-                    style={{ padding: '8px 16px', fontSize: 12 }}
                   >
                     Semua
                   </button>
                   <button
                     className={`kd-btn ${filterStatus === 'pending' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
                     onClick={() => setFilterStatus('pending')}
-                    style={{ padding: '8px 16px', fontSize: 12 }}
                   >
                     Menunggu Verifikasi
                   </button>
                   <button
                     className={`kd-btn ${filterStatus === 'processing' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
                     onClick={() => setFilterStatus('processing')}
-                    style={{ padding: '8px 16px', fontSize: 12 }}
                   >
                     Dalam Proses
                   </button>

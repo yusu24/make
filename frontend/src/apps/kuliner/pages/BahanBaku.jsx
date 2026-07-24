@@ -136,7 +136,7 @@ export default function BahanBaku() {
         <div className="kd-page-actions" style={{ flexWrap: 'wrap', gap: 10 }}>
           <input
             className="kd-form-input"
-            style={{ maxWidth: 260 }}
+            style={{ maxWidth: 260, height: 38, fontSize: 12 }}
             placeholder="Cari nama atau kode..."
             value={table.search}
             onChange={(e) => table.setSearch(e.target.value)}
