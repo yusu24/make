@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye } from 'lucide-react';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
@@ -190,31 +191,31 @@ const KulinerDashboard = () => {
                   <button className="kd-panel-action" onClick={() => navigate('/kuliner/admin/orders')}>Lihat semua →</button>
                 </div>
                 <div className="kd-table-container">
-                  <table className="kd-table kd-table--cards-on-mobile">
+                  <table className="kd-table kd-table--compact-mobile">
                     <thead>
                       <tr>
                         <th>Order ID</th>
                         <th>Pelanggan</th>
                         <th>Total</th>
                         <th>Status</th>
-                        <th>Waktu</th>
+                        <th className="kd-col-waktu">Waktu</th>
                         <th className="text-right">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {stats?.recent_orders?.map((order) => (
                         <tr key={order.id}>
-                          <td data-label="Order ID"><span className="font-medium text-[#b48c36]">{order.order_number}</span></td>
-                          <td data-label="Pelanggan">
+                          <td><span className="font-medium text-[#b48c36]">{order.order_number}</span></td>
+                          <td>
                             <div className="kd-menu-name">{order.customer_name}</div>
                             <div className="text-[10px] text-slate-400">{order.customer_phone}</div>
                           </td>
-                          <td data-label="Total">{formatRp(order.total_amount)}</td>
-                          <td data-label="Status"><span className={`kd-status-badge ${getOrderStatusBadgeClass(order.status)}`}>{order.status}</span></td>
-                          <td data-label="Waktu">{new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
-                          <td className="text-right kd-table-cell-action">
-                            <button className="kd-table-view-btn" onClick={() => navigate('/kuliner/admin/orders')}>
-                              👁 Lihat
+                          <td>{formatRp(order.total_amount)}</td>
+                          <td><span className={`kd-status-badge ${getOrderStatusBadgeClass(order.status)}`}>{order.status}</span></td>
+                          <td className="kd-col-waktu">{new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
+                          <td className="text-right">
+                            <button className="kd-icon-btn" title="Lihat Detail" onClick={() => navigate('/kuliner/admin/orders')}>
+                              <Eye size={16} />
                             </button>
                           </td>
                         </tr>
