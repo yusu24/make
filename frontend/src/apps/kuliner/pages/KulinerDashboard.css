@@ -679,6 +679,73 @@
   background: #a07a2f;
 }
 
+/* On real phones, a horizontally-scrolling table often can't be swiped
+   reliably and hides the action button off-screen with no way to reach
+   it. Below 640px, turn each row into a self-contained card instead —
+   every field (and the action button) is fully visible, no scrolling
+   needed at all. */
+@media (max-width: 640px) {
+  .kd-table--cards-on-mobile thead {
+    display: none;
+  }
+
+  .kd-table--cards-on-mobile,
+  .kd-table--cards-on-mobile tbody,
+  .kd-table--cards-on-mobile tr {
+    display: block;
+    width: 100%;
+  }
+
+  .kd-table--cards-on-mobile tbody tr {
+    margin-bottom: 12px;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    padding: 4px 14px;
+    background: #ffffff !important;
+  }
+
+  .kd-table--cards-on-mobile td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #f1f5f9;
+    text-align: right;
+  }
+
+  .kd-table--cards-on-mobile td:last-of-type {
+    border-bottom: none;
+  }
+
+  .kd-table--cards-on-mobile td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  .kd-table--cards-on-mobile td.kd-table-cell-action {
+    display: block;
+    text-align: center;
+    padding: 10px 0 8px;
+  }
+
+  .kd-table--cards-on-mobile td.kd-table-cell-action::before {
+    content: none;
+  }
+
+  .kd-table--cards-on-mobile .kd-table-view-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 14px;
+  }
+}
+
 .kd-menu-item-cell {
   display: flex;
   align-items: center;
