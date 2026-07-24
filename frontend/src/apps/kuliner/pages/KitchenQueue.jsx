@@ -56,7 +56,7 @@ export default function KitchenQueue() {
         <h1 className="kd-page-title">Kitchen Queue</h1>
       </div>
       <div className="kd-content">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        <div className="kd-kanban-grid">
           {COLUMNS.map((col) => {
             const colOrders = orders
               .filter((o) => col.statuses.includes(o.status))
