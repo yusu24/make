@@ -49,6 +49,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('me',     [AuthController::class, 'me']);
+        Route::post('heartbeat', [AuthController::class, 'heartbeat']);
         Route::put('profile', [AuthController::class, 'updateProfile']);
         Route::put('password', [AuthController::class, 'updatePassword']);
         Route::post('impersonate/{id}', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonateUser']);

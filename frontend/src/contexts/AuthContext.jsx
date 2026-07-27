@@ -50,6 +50,22 @@ export const AuthProvider = ({ children }) => {
         fetchMe();
     }, []);
 
+    // Demo sandbox accounts (tenant_id starting with TN-DS-/TN-DK-) are
+    // auto-deleted once their heartbeat goes stale for 5 minutes (see
+    // AuthController::cleanupOldDemoSandboxes) — this is what keeps sending
+    // that heartbeat while the tab stays open, so closing the tab is what
+    // actually stops it and triggers cleanup, not a fixed 2-hour timer.
+    useEffect(() => {
+        const tenantId = user?.tenant_id || '';
+        const isDemoSandbox = tenantId.startsWith('TN-DS-') || tenantId.startsWith('TN-DK-');
+        if (!isDemoSandbox) return;
+
+        const ping = () => { api.post('/auth/heartbeat').catch(() => {}); };
+        ping();
+        const interval = setInterval(ping, 60000);
+        return () => clearInterval(interval);
+    }, [user?.tenant_id]);
+
     const login = async (email, password) => {
         const res = await api.post('/auth/login', { email, password });
         const { token, user: userData } = res.data.data;

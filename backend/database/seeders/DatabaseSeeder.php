@@ -324,8 +324,11 @@ class DatabaseSeeder extends Seeder
             ['tenant_id' => $tenantId, 'name' => 'Manajer Toko'],
             ['permissions' => ['catalog', 'purchasing', 'inventory', 'pos', 'discounts', 'master', 'reports', 'finance']]
         );
+        // Scoped per tenant_id, not a fixed global email — every tenant that
+        // runs this seeder (including each public demo-sandbox visitor) gets
+        // its own cashier account instead of reassigning one shared row.
         User::updateOrCreate(
-            ['email' => 'kasir@toko-demo.com'],
+            ['email' => 'kasir-' . strtolower($tenantId) . '@toko-demo.com'],
             [
                 'name' => 'Ani Kasir',
                 'password' => Hash::make('password'),
@@ -688,12 +691,13 @@ class DatabaseSeeder extends Seeder
             : null;
         if ($returnTx && $returnItemSrc) {
             $product = $productModels['Paket Hampers Lebaran A'];
+            $existingCustReturn = RetailCustomerReturn::where('tenant_id', $tenantId)->where('transaction_id', $returnTx->id)->first();
             $custReturn = RetailCustomerReturn::updateOrCreate(
                 ['tenant_id' => $tenantId, 'transaction_id' => $returnTx->id],
                 [
                     'customer_id' => $returnTx->customer_id,
                     'user_id' => $user->id,
-                    'return_number' => 'CRT-' . now()->subDays(1)->format('Ymd') . '-00001',
+                    'return_number' => $existingCustReturn->return_number ?? $this->generateReturnNumber(RetailCustomerReturn::class, 'CRT'),
                     'type' => 'refund',
                     'status' => 'draft',
                     'total_amount' => $product->price_sell,
@@ -717,11 +721,12 @@ class DatabaseSeeder extends Seeder
         $returnSupplier = 'Toko Grosir Berkah Jaya';
         if (isset($purchaseModels[$returnSupplier])) {
             $product = $productModels['Sabun Cuci Piring Sunlight'];
+            $existingSuppReturn = RetailSupplierReturn::where('tenant_id', $tenantId)->where('supplier_id', $supplierModels[$returnSupplier]->id)->where('reason', 'Barang cacat produksi')->first();
             $suppReturn = RetailSupplierReturn::updateOrCreate(
                 ['tenant_id' => $tenantId, 'supplier_id' => $supplierModels[$returnSupplier]->id, 'reason' => 'Barang cacat produksi'],
                 [
                     'user_id' => $user->id,
-                    'return_number' => 'SRT-' . now()->subDays(3)->format('Ymd') . '-00001',
+                    'return_number' => $existingSuppReturn->return_number ?? $this->generateReturnNumber(RetailSupplierReturn::class, 'SRT'),
                     'status' => 'draft',
                     'total_amount' => $product->price_buy * 5,
                     'note' => 'Ditemukan 5 pcs rusak saat unboxing',
@@ -732,6 +737,22 @@ class DatabaseSeeder extends Seeder
                 ['product_name' => $product->name, 'quantity' => 5, 'unit_price' => $product->price_buy, 'subtotal' => $product->price_buy * 5]
             );
         }
+    }
+
+    // return_number on retail_customer_returns / retail_supplier_returns is
+    // unique GLOBALLY (not per-tenant, see the migrations) — mirrors
+    // RetailReturnService::generateNumber() so seeding a second tenant on
+    // the same calendar day doesn't collide on a hardcoded "-00001" suffix.
+    private function generateReturnNumber(string $modelClass, string $prefix): string
+    {
+        $date = now()->format('Ymd');
+        $last = $modelClass::where('return_number', 'like', "{$prefix}-{$date}-%")
+            ->orderByDesc('id')
+            ->first();
+
+        $seq = $last ? ((int) substr($last->return_number, -5)) + 1 : 1;
+
+        return sprintf('%s-%s-%05d', $prefix, $date, $seq);
     }
 
     public function seedBudidayaData(string $tenantId)

@@ -13,7 +13,8 @@ class User extends Authenticatable
 
     protected $fillable = [
         'tenant_id', 'name', 'email', 'password', 'role',
-        'status', 'business_category_id', 'phone', 'kuliner_role_id', 'saas_role_id', 'retail_role_id'
+        'status', 'business_category_id', 'phone', 'kuliner_role_id', 'saas_role_id', 'retail_role_id',
+        'last_seen_at',
     ];
 
     protected $hidden = [

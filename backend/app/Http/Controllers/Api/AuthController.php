@@ -353,6 +353,7 @@ class AuthController extends Controller
         $seeder = new \Database\Seeders\DatabaseSeeder();
         if ($categorySlug === 'toko-retail') {
             $seeder->seedRetailData($tenantId);
+            $seeder->seedRetailDataExtras($tenantId);
         } elseif ($categorySlug === 'budidaya-ikan') {
             $seeder->seedBudidayaData($tenantId);
         } elseif ($categorySlug === 'budidaya-tanaman') {
@@ -373,14 +374,38 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * POST /api/auth/heartbeat
+     *
+     * Called periodically by the frontend while a demo sandbox tab is open,
+     * so cleanupOldDemoSandboxes() can tell "tab still open" apart from
+     * "tab was closed" instead of only going off account-creation time.
+     */
+    public function heartbeat(Request $request)
+    {
+        $request->user()->update(['last_seen_at' => now()]);
+        return response()->json(['success' => true]);
+    }
+
     public function cleanupOldDemoSandboxes()
     {
         try {
+            // A tab left open keeps pinging /auth/heartbeat, so last_seen_at
+            // going stale for 5 minutes means the tab was actually closed —
+            // not just idle mid-session. Sandboxes never pinged yet (closed
+            // before the first heartbeat, or heartbeat failed) fall back to
+            // created_at so they still get swept up eventually.
+            $staleSince = now()->subMinutes(5);
             $oldDemoUsers = User::where(function($q) {
                                     $q->where('email', 'like', 'demo-sandbox-%')
                                       ->orWhere('email', 'like', 'demo-kuliner-%');
                                 })
-                                ->where('created_at', '<', now()->subHours(2))
+                                ->where(function($q) use ($staleSince) {
+                                    $q->where('last_seen_at', '<', $staleSince)
+                                      ->orWhere(function($q2) use ($staleSince) {
+                                          $q2->whereNull('last_seen_at')->where('created_at', '<', $staleSince);
+                                      });
+                                })
                                 ->get();
                                 
             foreach ($oldDemoUsers as $oldUser) {
@@ -411,7 +436,7 @@ class AuthController extends Controller
 
         $retailCustomerReturnIds = \Illuminate\Support\Facades\DB::table('retail_customer_returns')->where('tenant_id', $tenantId)->pluck('id');
         if ($retailCustomerReturnIds->isNotEmpty()) {
-            \Illuminate\Support\Facades\DB::table('retail_customer_return_items')->whereIn('customer_return_id', $retailCustomerReturnIds)->delete();
+            \Illuminate\Support\Facades\DB::table('retail_customer_return_items')->whereIn('return_id', $retailCustomerReturnIds)->delete();
         }
 
         $retailPayableIds = \Illuminate\Support\Facades\DB::table('retail_payables')->where('tenant_id', $tenantId)->pluck('id');
@@ -436,12 +461,12 @@ class AuthController extends Controller
 
         $retailStockOpnameIds = \Illuminate\Support\Facades\DB::table('retail_stock_opnames')->where('tenant_id', $tenantId)->pluck('id');
         if ($retailStockOpnameIds->isNotEmpty()) {
-            \Illuminate\Support\Facades\DB::table('retail_stock_opname_items')->whereIn('stock_opname_id', $retailStockOpnameIds)->delete();
+            \Illuminate\Support\Facades\DB::table('retail_stock_opname_items')->whereIn('opname_id', $retailStockOpnameIds)->delete();
         }
 
         $retailSupplierReturnIds = \Illuminate\Support\Facades\DB::table('retail_supplier_returns')->where('tenant_id', $tenantId)->pluck('id');
         if ($retailSupplierReturnIds->isNotEmpty()) {
-            \Illuminate\Support\Facades\DB::table('retail_supplier_return_items')->whereIn('supplier_return_id', $retailSupplierReturnIds)->delete();
+            \Illuminate\Support\Facades\DB::table('retail_supplier_return_items')->whereIn('return_id', $retailSupplierReturnIds)->delete();
         }
 
         $retailTransactionIds = \Illuminate\Support\Facades\DB::table('retail_transactions')->where('tenant_id', $tenantId)->pluck('id');
