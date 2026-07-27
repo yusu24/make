@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Edit3, Trash2 } from 'lucide-react';
+import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
+import ClientPagination from '../components/ClientPagination';
 import './KulinerDashboard.css';
 
 const AdminMenu = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -17,10 +20,17 @@ const AdminMenu = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  // Filter states (at component level — correct hook placement)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState('');
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery, selectedCategory, availabilityFilter]);
 
   // Form states
   const [productForm, setProductForm] = useState({
@@ -79,6 +89,12 @@ const AdminMenu = () => {
       return matchesSearch && matchesCategory && matchesAvailability;
     });
   }, [products, searchQuery, selectedCategory, availabilityFilter]);
+
+  const totalPagesProducts = Math.ceil(filteredProducts.length / itemsPerPage);
+  const currentProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const totalPagesCategories = Math.ceil(categories.length / itemsPerPage);
+  const currentCategories = categories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const hasActiveFilters = searchQuery !== '' || selectedCategory !== '' || availabilityFilter !== '';
 
@@ -141,24 +157,24 @@ const AdminMenu = () => {
       } else {
         await api.post('/kuliner/admin/products', payload);
       }
-      alert('Menu berhasil disimpan! ✨');
+      alert(t('adminMenu.alertSaveMenuSuccess'));
       fetchData();
       setShowProductModal(false);
     } catch (error) {
-      alert('Gagal menyimpan produk: ' + (error.response?.data?.message || error.message));
+      alert(t('adminMenu.alertSaveMenuFail') + (error.response?.data?.message || error.message));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeleteProduct = async (id) => {
-    if (window.confirm('Hapus menu ini?')) {
+    if (window.confirm(t('adminMenu.confirmDeleteMenu'))) {
       try {
         await api.delete(`/kuliner/admin/products/${id}`);
-        alert('Menu berhasil dihapus.');
+        alert(t('adminMenu.alertDeleteMenuSuccess'));
         fetchData();
       } catch (error) {
-        alert('Gagal menghapus produk');
+        alert(t('adminMenu.alertDeleteMenuFail'));
       }
     }
   };
@@ -184,17 +200,17 @@ const AdminMenu = () => {
     try {
       if (editingItem) {
         await api.put(`/kuliner/admin/categories/${editingItem.id}`, categoryForm);
-        alert('Kategori berhasil diperbarui! ✨');
+        alert(t('adminMenu.alertSaveCategorySuccess'));
       } else {
         await api.post('/kuliner/admin/categories', categoryForm);
-        alert('Kategori berhasil ditambahkan! 📁');
+        alert(t('adminMenu.alertSaveCategorySuccess'));
       }
       setShowCategoryModal(false);
       setCategoryForm({ name: '', description: '', image_url: '📁' });
       fetchData();
     } catch (error) {
       console.error('Failed to save category:', error);
-      const msg = error.response?.data?.message || 'Gagal menyimpan kategori';
+      const msg = error.response?.data?.message || t('adminMenu.alertSaveCategoryFail');
       alert(msg);
     } finally {
       setSaving(false);
@@ -202,12 +218,12 @@ const AdminMenu = () => {
   };
 
   const handleDeleteCategory = async (id) => {
-    if (window.confirm('Hapus kategori ini? Semua produk dalam kategori ini tetap ada tapi tidak memiliki kategori.')) {
+    if (window.confirm(t('adminMenu.confirmDeleteCategory'))) {
       try {
         await api.delete(`/kuliner/admin/categories/${id}`);
         fetchData();
       } catch (error) {
-        alert('Gagal menghapus kategori');
+        alert(t('adminMenu.alertDeleteCategoryFail'));
       }
     }
   };
@@ -215,17 +231,17 @@ const AdminMenu = () => {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Manajemen Katalog</h1>
+        <h1 className="kd-page-title">{t('adminMenu.pageTitle')}</h1>
       </div>
       <div className="kd-content">
         <div className="kd-page-actions">
           {activeTab === 'products' ? (
             <button className="kd-btn kd-btn-primary" onClick={() => handleOpenProductModal()}>
-              + Tambah Menu Baru
+              {t('adminMenu.addMenu')}
             </button>
           ) : (
             <button className="kd-btn kd-btn-primary" onClick={() => handleOpenCategoryModal()}>
-              + Tambah Kategori Baru
+              {t('adminMenu.addCategory')}
             </button>
           )}
         </div>
@@ -240,14 +256,14 @@ const AdminMenu = () => {
                 onClick={() => setActiveTab('products')}
                 style={{ padding: '8px 18px', fontSize: 12, whiteSpace: 'nowrap' }}
               >
-                Daftar Menu
+                {t('adminMenu.tabMenuList')}
               </button>
               <button
                 className={`kd-btn flex-shrink-0 ${activeTab === 'categories' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
                 onClick={() => setActiveTab('categories')}
                 style={{ padding: '8px 18px', fontSize: 12, whiteSpace: 'nowrap' }}
               >
-                Kategori Menu
+                {t('adminMenu.tabCategoryList')}
               </button>
             </div>
 
@@ -257,7 +273,6 @@ const AdminMenu = () => {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                 gap: 10,
-                paddingTop: 4,
                 borderTop: '1px solid var(--border-subtle)',
                 paddingTop: 14
               }}>
@@ -270,7 +285,7 @@ const AdminMenu = () => {
                     type="text"
                     className="kd-form-input"
                     style={{ height: 38, fontSize: 12, paddingLeft: 32, margin: 0 }}
-                    placeholder="Cari nama / deskripsi menu..."
+                    placeholder={t('adminMenu.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -283,7 +298,7 @@ const AdminMenu = () => {
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                 >
-                  <option value="">Semua Kategori</option>
+                  <option value="">{t('adminMenu.allCategories')}</option>
                   {categories.map(c => (
                     <option key={c.id} value={c.id}>{c.image_url ? `${c.image_url} ` : ''}{c.name}</option>
                   ))}
@@ -296,9 +311,9 @@ const AdminMenu = () => {
                   value={availabilityFilter}
                   onChange={(e) => setAvailabilityFilter(e.target.value)}
                 >
-                  <option value="">Semua Status Stok</option>
-                  <option value="available">✅ Tersedia</option>
-                  <option value="out_of_stock">❌ Habis</option>
+                  <option value="">{t('adminMenu.allStatus')}</option>
+                  <option value="available">✅ {t('adminMenu.statusAvailable')}</option>
+                  <option value="out_of_stock">❌ {t('adminMenu.statusOutOfStock')}</option>
                 </select>
 
                 {/* Reset Filter Button — appears only when filters are active */}
@@ -308,7 +323,7 @@ const AdminMenu = () => {
                     onClick={resetFilters}
                     style={{ height: 38, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   >
-                    ✕ Hapus Filter
+                    ✕ {t('adminMenu.clearFilter')}
                   </button>
                 )}
               </div>
@@ -317,7 +332,7 @@ const AdminMenu = () => {
             {/* Result count summary when filters active */}
             {activeTab === 'products' && hasActiveFilters && (
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: -4 }}>
-                Menampilkan <strong style={{ color: 'var(--text-primary)' }}>{filteredProducts.length}</strong> dari <strong style={{ color: 'var(--text-primary)' }}>{products.length}</strong> menu
+                Menampilkan <strong style={{ color: 'var(--text-primary)' }}>{filteredProducts.length}</strong> dari <strong style={{ color: 'var(--text-primary)' }}>{products.length}</strong> {t('adminMenu.headerMenuName').toLowerCase()}
               </div>
             )}
           </div>
@@ -330,27 +345,28 @@ const AdminMenu = () => {
               <table className="kd-table">
                 <thead>
                   <tr>
-                    <th>Menu</th>
-                    <th>Kategori</th>
-                    <th>Harga</th>
-                    <th>Status</th>
-                    <th className="text-right">Aksi</th>
+                    <th>{t('adminMenu.headerMenuName')}</th>
+                    <th>Deskripsi</th>
+                    <th>{t('adminMenu.headerCategory')}</th>
+                    <th>{t('adminMenu.headerPrice')}</th>
+                    <th>{t('adminMenu.headerStatus')}</th>
+                    <th className="text-right">{t('adminMenu.headerAction')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan="5" className="text-center py-10 text-slate-400">Sedang memuat menu lezat...</td></tr>
+                    <tr><td colSpan="6" className="text-center py-10 text-slate-400">{t('adminMenu.loadingMenu')}</td></tr>
                   ) : filteredProducts.length === 0 ? (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         {hasActiveFilters
-                          ? <><div style={{ fontSize: 28, marginBottom: 8 }}>🔍</div><div style={{ fontWeight: 600, marginBottom: 4 }}>Tidak ada menu yang cocok</div><div style={{ fontSize: 11 }}>Coba ubah atau <button onClick={resetFilters} style={{ color: 'var(--primary-600)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>hapus filter</button></div></>
-                          : <><div style={{ fontSize: 28, marginBottom: 8 }}>🍽️</div><div>Belum ada menu di katalog ini.</div></>
+                          ? <><div style={{ fontSize: 28, marginBottom: 8 }}>🔍</div><div style={{ fontWeight: 600, marginBottom: 4 }}>{t('adminMenu.emptyMatch')}</div><div style={{ fontSize: 11 }}>{t('adminMenu.tryChangeFilter')} <button onClick={resetFilters} style={{ color: 'var(--primary-600)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>{t('adminMenu.clearFilter')}</button></div></>
+                          : <><div style={{ fontSize: 28, marginBottom: 8 }}>🍽️</div><div>{t('adminMenu.emptyMenu')}</div></>
                         }
                       </td>
                     </tr>
                   ) : (
-                    filteredProducts.map(product => (
+                    currentProducts.map(product => (
                       <tr key={product.id}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -358,20 +374,22 @@ const AdminMenu = () => {
                               {product.image_url || '🍲'}
                             </div>
                             <div>
-                              <div className="kd-menu-name">{product.name}</div>
-                              <div className="text-[10px] text-slate-400 line-clamp-1 max-w-[200px]">{product.description}</div>
+                                <div style={{ color: '#1e293b' }}>{product.name}</div>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>
+                          </td>
+                          <td className="text-xs text-slate-500 italic">
+                            <div className="max-w-[200px] line-clamp-1">{product.description || '-'}</div>
+                          </td>
+                          <td>
                           <span className="text-xs font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded border border-slate-100">
-                            {categories.find(c => c.id === product.category_id)?.name || 'Uncategorized'}
+                            {categories.find(c => c.id === product.category_id)?.name || t('adminMenu.uncategorized')}
                           </span>
                         </td>
-                        <td className="font-bold text-slate-700">{formatRp(product.price)}</td>
+                          <td style={{ color: '#1e293b' }}>{formatRp(product.price)}</td>
                         <td>
                           <span className={`kd-status-badge ${product.is_available ? 'kd-status-active' : 'kd-status-hidden'}`}>
-                            {product.is_available ? 'Tersedia' : 'Habis'}
+                            {product.is_available ? t('adminMenu.statusAvailable') : t('adminMenu.statusOutOfStock')}
                           </span>
                         </td>
                         <td className="text-right">
@@ -402,22 +420,24 @@ const AdminMenu = () => {
                   {loading ? (
                     <tr><td colSpan="4" className="text-center py-10 text-slate-400">Sedang mengambil daftar kategori...</td></tr>
                   ) : categories.length === 0 ? (
-                    <tr><td colSpan="4" className="text-center py-10 text-slate-400">Belum ada kategori yang dibuat.</td></tr>
+                    <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerCommon.emptyData') || 'Belum ada kategori yang dibuat.'}</td></tr>
                   ) : (
-                    categories.map(cat => (
+                    currentCategories.map(cat => (
                       <tr key={cat.id}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <div className="text-2xl">{cat.image_url || '📂'}</div>
-                            <div className="kd-menu-name">{cat.name}</div>
+                              <div style={{ color: '#1e293b' }}>{cat.name}</div>
                           </div>
                         </td>
-                        <td className="text-xs text-slate-500 italic max-w-[300px] line-clamp-1">{cat.description || '-'}</td>
+                          <td className="text-xs text-slate-500 italic">
+                            <div className="max-w-[300px] line-clamp-1">{cat.description || '-'}</div>
+                          </td>
                         <td>
-                          <span className="font-bold text-[#b48c36]">
-                            {products.filter(p => p.category_id === cat.id).length}
-                          </span>
-                          <span className="text-[10px] text-slate-400 ml-1 font-bold">Menu</span>
+                            <span style={{ color: '#1e293b' }}>
+                              {products.filter(p => p.category_id === cat.id).length}
+                            </span>
+                          <span className="text-[10px] text-slate-400 ml-1">Menu</span>
                         </td>
                         <td className="text-right">
                           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
@@ -433,44 +453,65 @@ const AdminMenu = () => {
             )}
 
           </div>
+          
+          {activeTab === 'products' && (
+            <ClientPagination setItemsPerPage={setItemsPerPage} 
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPagesProducts}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredProducts.length}
+            />
+          )}
+
+          {activeTab === 'categories' && (
+            <ClientPagination setItemsPerPage={setItemsPerPage} 
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPagesCategories}
+              itemsPerPage={itemsPerPage}
+              totalItems={categories.length}
+            />
+          )}
         </div>
       </div>
 
       {/* PRODUCT MODAL */}
       {showProductModal && (
         <div className="kd-modal-overlay visible" onClick={() => setShowProductModal(false)}>
-          <div className="kd-modal max-w-lg" onClick={e => e.stopPropagation()}>
+          <div className="kd-modal max-w-md" onClick={e => e.stopPropagation()}>
             <div className="kd-modal-header">
-              <h2 className="kd-modal-title">{editingItem ? 'Edit' : 'Tambah'} Menu Kuliner</h2>
+              <h2 className="kd-modal-title">{editingItem ? t('adminMenu.editMenuTitle') : t('adminMenu.addMenuTitle')}</h2>
               <button className="kd-close-btn" onClick={() => setShowProductModal(false)}>✕</button>
             </div>
             <form onSubmit={handleSaveProduct}>
               <div className="kd-modal-body">
                 <div className="kd-form-group">
-                  <label className="kd-form-label">Nama Menu</label>
+                  <label className="kd-form-label">{t('adminMenu.formMenuName')}</label>
                   <input
                     required
                     className="kd-form-input"
-                    placeholder="Contoh: Rendang Daging"
+                    placeholder={t('adminMenu.formMenuNamePlaceholder')}
                     value={productForm.name}
                     onChange={e => setProductForm({...productForm, name: e.target.value})}
                   />
                 </div>
 
+                <div className="kd-form-group">
+                  <label className="kd-form-label">{t('adminMenu.formCategoryLabel')}</label>
+                  <select
+                    className="kd-form-select"
+                    value={productForm.category_id}
+                    onChange={e => setProductForm({...productForm, category_id: e.target.value})}
+                  >
+                    <option value="">{t('adminMenu.formCategorySelect')}</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+
                 <div className="kd-form-row">
                   <div className="kd-form-group">
-                    <label className="kd-form-label">Kategori</label>
-                    <select
-                      className="kd-form-select"
-                      value={productForm.category_id}
-                      onChange={e => setProductForm({...productForm, category_id: e.target.value})}
-                    >
-                      <option value="">Pilih Kategori</option>
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                  </div>
-                  <div className="kd-form-group">
-                    <label className="kd-form-label">Harga Asli (Rp)</label>
+                    <label className="kd-form-label">{t('adminMenu.formPriceOriginal')}</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold" style={{ fontSize: '13px' }}>Rp</span>
                       <input
@@ -485,14 +526,14 @@ const AdminMenu = () => {
                     </div>
                   </div>
                   <div className="kd-form-group">
-                    <label className="kd-form-label text-green-600 font-bold">Harga Promo (Rp)</label>
+                    <label className="kd-form-label text-green-600 font-bold">{t('adminMenu.formPricePromo')}</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-green-400 font-bold" style={{ fontSize: '13px' }}>Rp</span>
                       <input
                         type="text"
                         className="kd-form-input border-green-200 focus:border-green-500"
                         style={{ paddingLeft: '40px' }}
-                        placeholder="Kosongkan jika tidak promo"
+                        placeholder={t('adminMenu.formPricePromoPlaceholder')}
                         value={displayPrice(productForm.discount_price)}
                         onChange={handleDiscountPriceChange}
                       />
@@ -501,18 +542,18 @@ const AdminMenu = () => {
                 </div>
 
                 <div className="kd-form-group">
-                  <label className="kd-form-label">Deskripsi Lezat</label>
+                  <label className="kd-form-label">{t('adminMenu.formDescription')}</label>
                   <textarea
                     rows="3"
                     className="kd-form-textarea"
-                    placeholder="Ceritakan keunggulan menu ini..."
+                    placeholder={t('adminMenu.formDescriptionPlaceholder')}
                     value={productForm.description}
                     onChange={e => setProductForm({...productForm, description: e.target.value})}
                   />
                 </div>
 
                 <div className="kd-form-group">
-                  <label className="kd-form-label">URL Foto Menu (Opsional)</label>
+                  <label className="kd-form-label">{t('adminMenu.formImageUrl')}</label>
                   <input
                     className="kd-form-input"
                     placeholder="https://..."
@@ -530,14 +571,14 @@ const AdminMenu = () => {
                     onChange={e => setProductForm({...productForm, is_available: e.target.checked})}
                   />
                   <label htmlFor="status" className="text-sm font-medium text-slate-600 cursor-pointer select-none">
-                    Tandai sebagai menu yang tersedia
+                    {t('adminMenu.formAvailableCheck')}
                   </label>
                 </div>
               </div>
               <div className="kd-modal-footer">
-                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowProductModal(false)}>Batal</button>
+                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowProductModal(false)}>{t('adminMenu.cancel')}</button>
                 <button type="submit" className="kd-btn kd-btn-primary" disabled={saving}>
-                  {saving ? 'Menyimpan...' : 'Simpan Menu'}
+                  {saving ? t('adminMenu.saving') : t('adminMenu.saveMenu')}
                 </button>
               </div>
             </form>
@@ -550,13 +591,13 @@ const AdminMenu = () => {
         <div className="kd-modal-overlay visible" onClick={() => setShowCategoryModal(false)}>
           <div className="kd-modal max-w-md" onClick={e => e.stopPropagation()}>
             <div className="kd-modal-header">
-              <h2 className="kd-modal-title">{editingItem ? 'Edit' : 'Tambah'} Kategori</h2>
+              <h2 className="kd-modal-title">{editingItem ? t('adminMenu.editCategoryTitle') : t('adminMenu.addCategoryTitle')}</h2>
               <button className="kd-close-btn" onClick={() => setShowCategoryModal(false)}>✕</button>
             </div>
             <form onSubmit={handleSaveCategory}>
               <div className="kd-modal-body">
                 <div className="kd-form-group">
-                  <label className="kd-form-label">Ikon Kategori</label>
+                  <label className="kd-form-label">{t('adminMenu.formCategoryIcon')}</label>
                   <select
                     className="kd-form-select"
                     style={{ fontSize: '14px' }}
@@ -564,32 +605,32 @@ const AdminMenu = () => {
                     onChange={e => setCategoryForm({...categoryForm, image_url: e.target.value})}
                   >
                     <option value="📁">📁 Default</option>
-                    <option value="🍛">🍛 Makanan</option>
-                    <option value="🥤">🥤 Minuman</option>
-                    <option value="🍰">🍰 Dessert</option>
-                    <option value="🍜">🍜 Mie & Bakso</option>
-                    <option value="🔥">🔥 Promo Panas</option>
-                    <option value="🥗">🥗 Sehat</option>
+                    <option value="🍛">🍛 {t('adminMenu.iconFood')}</option>
+                    <option value="🥤">🥤 {t('adminMenu.iconDrink')}</option>
+                    <option value="🍰">🍰 {t('adminMenu.iconDessert')}</option>
+                    <option value="🍜">🍜 {t('adminMenu.iconNoodle')}</option>
+                    <option value="🔥">🔥 {t('adminMenu.iconHotPromo')}</option>
+                    <option value="🥗">🥗 {t('adminMenu.iconHealthy')}</option>
                   </select>
                 </div>
 
                 <div className="kd-form-group">
-                  <label className="kd-form-label">Nama Kategori</label>
+                  <label className="kd-form-label">{t('adminMenu.formCategoryName')}</label>
                   <input
                     required
                     type="text"
                     className="kd-form-input"
-                    placeholder="Contoh: Makanan Utama"
+                    placeholder={t('adminMenu.formCategoryNamePlaceholder')}
                     value={categoryForm.name}
                     onChange={e => setCategoryForm({...categoryForm, name: e.target.value})}
                   />
                 </div>
 
                 <div className="kd-form-group" style={{ marginBottom: 0 }}>
-                  <label className="kd-form-label">Deskripsi (Opsional)</label>
+                  <label className="kd-form-label">{t('adminMenu.formCategoryDesc')}</label>
                   <textarea
                     className="kd-form-textarea"
-                    placeholder="Berikan keterangan singkat..."
+                    placeholder={t('adminMenu.formCategoryDescPlaceholder')}
                     rows="3"
                     value={categoryForm.description}
                     onChange={e => setCategoryForm({...categoryForm, description: e.target.value})}
@@ -597,9 +638,9 @@ const AdminMenu = () => {
                 </div>
               </div>
               <div className="kd-modal-footer">
-                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowCategoryModal(false)}>Batal</button>
+                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowCategoryModal(false)}>{t('adminMenu.cancel')}</button>
                 <button type="submit" className="kd-btn kd-btn-primary" disabled={saving}>
-                  {saving ? 'Menyimpan...' : 'Simpan Kategori'}
+                  {saving ? t('adminMenu.saving') : t('adminMenu.saveCategory')}
                 </button>
               </div>
             </form>

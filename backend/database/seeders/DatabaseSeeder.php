@@ -19,6 +19,19 @@ use App\Models\RetailTransactionItem;
 use App\Models\RetailStockMovement;
 use App\Models\RetailPurchase;
 use App\Models\RetailPurchaseItem;
+use App\Models\RetailDiscount;
+use App\Models\RetailPricelist;
+use App\Models\RetailPricelistItem;
+use App\Models\RetailStockOpname;
+use App\Models\RetailStockOpnameItem;
+use App\Models\RetailPayable;
+use App\Models\RetailPayablePayment;
+use App\Models\RetailReceivable;
+use App\Models\RetailReceivablePayment;
+use App\Models\RetailCustomerReturn;
+use App\Models\RetailCustomerReturnItem;
+use App\Models\RetailSupplierReturn;
+use App\Models\RetailSupplierReturnItem;
 use App\Models\BudidayaPond;
 use App\Models\BudidayaCycle;
 use App\Models\BudidayaInventory;
@@ -83,6 +96,7 @@ class DatabaseSeeder extends Seeder
         foreach ($retailTenants as $rt) {
             $this->createDemoTenant($rt['email'], $rt['name'], 'toko-retail', $rt['tenant_id'], $rt['business_name'] ?? null);
             $this->seedRetailData($rt['tenant_id']);
+            $this->seedRetailDataExtras($rt['tenant_id']);
         }
         $this->command->info('✅ Toko Retail demo accounts seeded.');
 
@@ -524,6 +538,199 @@ class DatabaseSeeder extends Seeder
                 $earned = (int) floor($subtotal / 10000);
                 $customer->increment('points', $earned);
             }
+        }
+    }
+
+    // ─── Retail extras: discounts, pricelists, stock opname, payables,
+    // receivables, and returns. Split from seedRetailData() and keyed off
+    // records that already exist (by name/invoice, not fresh inserts) so
+    // it's safe to re-run against a tenant that was seeded previously —
+    // unlike the purchases/transactions above, which always insert new
+    // rows and would duplicate demo history on a second run.
+    public function seedRetailDataExtras(string $tenantId)
+    {
+        $user = User::where('tenant_id', $tenantId)->first();
+        if (!$user) {
+            return;
+        }
+
+        $productModels = RetailProduct::where('tenant_id', $tenantId)->get()->keyBy('name');
+        $supplierModels = RetailSupplier::where('tenant_id', $tenantId)->get()->keyBy('name');
+        $customerModels = RetailCustomer::where('tenant_id', $tenantId)->get()->keyBy('name');
+        $purchaseModels = RetailPurchase::with('supplier')->where('tenant_id', $tenantId)->orderBy('id')->get()->keyBy(fn ($p) => $p->supplier?->name);
+
+        if ($productModels->isEmpty() || $supplierModels->isEmpty()) {
+            return; // base catalog hasn't been seeded yet for this tenant
+        }
+
+        // 11. Discounts
+        $discounts = [
+            ['code' => 'HEMAT10',    'name' => 'Diskon 10% Belanja Hemat',        'type' => 'percentage', 'value' => 10, 'min_purchase' => 50000,  'max_uses' => 100,  'used_count' => 12, 'is_active' => true,  'expires_at' => now()->addMonths(2)],
+            ['code' => 'GAJIAN25K', 'name' => 'Potongan Gajian Rp25.000',         'type' => 'flat',       'value' => 25000, 'min_purchase' => 150000, 'max_uses' => 50, 'used_count' => 8,  'is_active' => true,  'expires_at' => now()->addMonth()],
+            ['code' => 'PROMO17AGT','name' => 'Promo Kemerdekaan (Sudah Berakhir)', 'type' => 'percentage', 'value' => 17, 'min_purchase' => 0, 'max_uses' => null, 'used_count' => 34, 'is_active' => false, 'expires_at' => now()->subMonths(3)],
+        ];
+        foreach ($discounts as $d) {
+            RetailDiscount::updateOrCreate(
+                ['tenant_id' => $tenantId, 'code' => $d['code']],
+                [
+                    'name' => $d['name'],
+                    'type' => $d['type'],
+                    'value' => $d['value'],
+                    'min_purchase' => $d['min_purchase'],
+                    'max_uses' => $d['max_uses'],
+                    'used_count' => $d['used_count'],
+                    'is_active' => $d['is_active'],
+                    'starts_at' => now()->subMonth(),
+                    'expires_at' => $d['expires_at'],
+                ]
+            );
+        }
+
+        // 12. Pricelists — wholesale & member pricing for select products
+        $grosirList = RetailPricelist::updateOrCreate(
+            ['tenant_id' => $tenantId, 'name' => 'Harga Grosir'],
+            ['type' => 'wholesale']
+        );
+        foreach ([['Air Mineral 600ml', 3500, 12], ['Teh Botol Sosro', 5000, 12], ['Keripik Singkong Balado', 13000, 10]] as [$name, $price, $minQty]) {
+            RetailPricelistItem::updateOrCreate(
+                ['pricelist_id' => $grosirList->id, 'product_id' => $productModels[$name]->id],
+                ['price' => $price, 'min_qty' => $minQty]
+            );
+        }
+
+        $memberList = RetailPricelist::updateOrCreate(
+            ['tenant_id' => $tenantId, 'name' => 'Harga Member'],
+            ['type' => 'member']
+        );
+        foreach ([['Beras Pandan Wangi 5kg', 72000, 1], ['Minyak Goreng Bimoli 1L', 17000, 1]] as [$name, $price, $minQty]) {
+            RetailPricelistItem::updateOrCreate(
+                ['pricelist_id' => $memberList->id, 'product_id' => $productModels[$name]->id],
+                ['price' => $price, 'min_qty' => $minQty]
+            );
+        }
+
+        // 13. Stock opname — one finalized session with a couple of discrepancies
+        $opname = RetailStockOpname::updateOrCreate(
+            ['tenant_id' => $tenantId, 'note' => 'Opname bulanan - akhir periode'],
+            ['status' => 'finalized', 'user_id' => $user->id, 'finalized_at' => now()->subDays(2)]
+        );
+        $opnameItems = [
+            ['Keripik Singkong Balado', $productModels['Keripik Singkong Balado']->stock + 2, $productModels['Keripik Singkong Balado']->stock],
+            ['Stick Balado Pedas',      $productModels['Stick Balado Pedas']->stock,           $productModels['Stick Balado Pedas']->stock],
+            ['Pulpen Standard AE7',     $productModels['Pulpen Standard AE7']->stock - 1,      $productModels['Pulpen Standard AE7']->stock],
+        ];
+        foreach ($opnameItems as [$name, $systemQty, $physicalQty]) {
+            RetailStockOpnameItem::updateOrCreate(
+                ['opname_id' => $opname->id, 'product_id' => $productModels[$name]->id],
+                ['system_qty' => $systemQty, 'physical_qty' => $physicalQty, 'difference' => $physicalQty - $systemQty]
+            );
+        }
+
+        // 14. Payables — one purchase batch left partially unpaid to the supplier
+        $payableSupplier = 'PT Indofood Distribusi Wilayah';
+        if (isset($purchaseModels[$payableSupplier])) {
+            $purchase = $purchaseModels[$payableSupplier];
+            $payable = RetailPayable::updateOrCreate(
+                ['tenant_id' => $tenantId, 'purchase_id' => $purchase->id],
+                [
+                    'supplier_id' => $supplierModels[$payableSupplier]->id,
+                    'total_amount' => $purchase->total_cost,
+                    'due_date' => now()->addDays(20),
+                    'status' => 'unpaid',
+                    'note' => 'Termin 30 hari sejak penerimaan barang',
+                ]
+            );
+            RetailPayablePayment::updateOrCreate(
+                ['payable_id' => $payable->id, 'note' => 'Cicilan pertama'],
+                ['user_id' => $user->id, 'amount_paid' => round($purchase->total_cost * 0.4), 'payment_method' => 'Transfer Bank', 'paid_at' => now()->subDays(4)]
+            );
+            $payable->recalculate();
+        }
+
+        // 15. Receivables — a credit sale to a gold-tier customer, partially settled
+        $creditTx = isset($customerModels['Budi Santoso'], $productModels['Beras Pandan Wangi 5kg'])
+            ? RetailTransaction::where('tenant_id', $tenantId)
+                ->where('customer_id', $customerModels['Budi Santoso']->id)
+                ->whereHas('items', fn ($q) => $q->where('product_id', $productModels['Beras Pandan Wangi 5kg']->id))
+                ->orderBy('id')
+                ->first()
+            : null;
+        if ($creditTx) {
+            $receivable = RetailReceivable::updateOrCreate(
+                ['tenant_id' => $tenantId, 'transaction_id' => $creditTx->id],
+                [
+                    'customer_id' => $creditTx->customer_id,
+                    'total_amount' => $creditTx->total_amount,
+                    'due_date' => now()->addDays(14),
+                    'status' => 'unpaid',
+                    'note' => 'Bayar tempo - langganan lama',
+                ]
+            );
+            RetailReceivablePayment::updateOrCreate(
+                ['receivable_id' => $receivable->id, 'note' => 'Cicilan pertama dari pelanggan'],
+                ['user_id' => $user->id, 'amount_paid' => round($creditTx->total_amount * 0.5), 'payment_method' => 'Cash', 'paid_at' => now()->subDay()]
+            );
+            $receivable->recalculate();
+        }
+
+        // 16. Customer return — Budi Santoso returns the hampers package (pending review)
+        $returnTx = isset($customerModels['Budi Santoso'], $productModels['Paket Hampers Lebaran A'])
+            ? RetailTransaction::where('tenant_id', $tenantId)
+                ->where('customer_id', $customerModels['Budi Santoso']->id)
+                ->whereHas('items', fn ($q) => $q->where('product_id', $productModels['Paket Hampers Lebaran A']->id))
+                ->orderBy('id')
+                ->first()
+            : null;
+        $returnItemSrc = $returnTx
+            ? RetailTransactionItem::where('transaction_id', $returnTx->id)
+                ->where('product_id', $productModels['Paket Hampers Lebaran A']->id)
+                ->first()
+            : null;
+        if ($returnTx && $returnItemSrc) {
+            $product = $productModels['Paket Hampers Lebaran A'];
+            $custReturn = RetailCustomerReturn::updateOrCreate(
+                ['tenant_id' => $tenantId, 'transaction_id' => $returnTx->id],
+                [
+                    'customer_id' => $returnTx->customer_id,
+                    'user_id' => $user->id,
+                    'return_number' => 'CRT-' . now()->subDays(1)->format('Ymd') . '-00001',
+                    'type' => 'refund',
+                    'status' => 'draft',
+                    'total_amount' => $product->price_sell,
+                    'note' => 'Kemasan hampers rusak saat pengiriman',
+                ]
+            );
+            RetailCustomerReturnItem::updateOrCreate(
+                ['return_id' => $custReturn->id, 'transaction_item_id' => $returnItemSrc->id],
+                [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'quantity' => 1,
+                    'unit_price' => $product->price_sell,
+                    'subtotal' => $product->price_sell,
+                    'reason' => 'Kemasan rusak',
+                ]
+            );
+        }
+
+        // 17. Supplier return — a batch of damaged goods sent back (pending review)
+        $returnSupplier = 'Toko Grosir Berkah Jaya';
+        if (isset($purchaseModels[$returnSupplier])) {
+            $product = $productModels['Sabun Cuci Piring Sunlight'];
+            $suppReturn = RetailSupplierReturn::updateOrCreate(
+                ['tenant_id' => $tenantId, 'supplier_id' => $supplierModels[$returnSupplier]->id, 'reason' => 'Barang cacat produksi'],
+                [
+                    'user_id' => $user->id,
+                    'return_number' => 'SRT-' . now()->subDays(3)->format('Ymd') . '-00001',
+                    'status' => 'draft',
+                    'total_amount' => $product->price_buy * 5,
+                    'note' => 'Ditemukan 5 pcs rusak saat unboxing',
+                ]
+            );
+            RetailSupplierReturnItem::updateOrCreate(
+                ['return_id' => $suppReturn->id, 'product_id' => $product->id],
+                ['product_name' => $product->name, 'quantity' => 5, 'unit_price' => $product->price_buy, 'subtotal' => $product->price_buy * 5]
+            );
         }
     }
 

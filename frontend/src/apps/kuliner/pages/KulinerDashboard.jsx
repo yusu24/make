@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
@@ -9,23 +11,40 @@ import './KulinerDashboard.css';
 import { useAuth } from '../../../contexts/AuthContext';
 
 const KulinerDashboard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Filter states
+  const [chartFilter, setChartFilter] = useState('today');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [chartFilter]);
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/kuliner/admin/dashboard/stats');
+      if (!stats) setLoading(true);
+      let query = `?filter=${chartFilter}`;
+      if (chartFilter === 'custom' && customStartDate && customEndDate) {
+        query += `&start_date=${customStartDate}&end_date=${customEndDate}`;
+      }
+      const response = await api.get(`/kuliner/admin/dashboard/stats${query}`);
       setStats(response.data);
     } catch (error) {
       console.error('Failed to fetch dashboard stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const applyCustomFilter = () => {
+    if (customStartDate && customEndDate) {
+      fetchStats();
     }
   };
 
@@ -37,9 +56,9 @@ const KulinerDashboard = () => {
   const revenueChange = (() => {
     const today = Number(stats?.revenue_today || 0);
     const yesterday = Number(stats?.revenue_yesterday || 0);
-    if (yesterday === 0) return today > 0 ? { label: 'Naik dari Rp 0 kemarin', up: true } : { label: 'Belum ada pendapatan', up: null };
+    if (yesterday === 0) return today > 0 ? { label: t('kulinerDashboard.upFromZero'), up: true } : { label: t('kulinerDashboard.noRevenue'), up: null };
     const pct = ((today - yesterday) / yesterday) * 100;
-    return { label: `${pct >= 0 ? '↑' : '↓'} ${Math.abs(pct).toFixed(1)}% dari kemarin`, up: pct >= 0 };
+    return { label: `${pct >= 0 ? '↑' : '↓'} ${Math.abs(pct).toFixed(1)}% ${t('kulinerDashboard.fromYesterday')}`, up: pct >= 0 };
   })();
 
   const getOrderStatusBadgeClass = (status) => {
@@ -54,23 +73,23 @@ const KulinerDashboard = () => {
 
   const timeAgo = (dateStr) => {
     const diffMin = Math.max(0, Math.round((Date.now() - new Date(dateStr).getTime()) / 60000));
-    if (diffMin < 1) return 'Baru saja';
-    if (diffMin < 60) return `${diffMin} menit yang lalu`;
+    if (diffMin < 1) return t('kulinerDashboard.justNow');
+    if (diffMin < 60) return `${diffMin} ${t('kulinerDashboard.minutesAgo')}`;
     const diffHour = Math.round(diffMin / 60);
-    if (diffHour < 24) return `${diffHour} jam yang lalu`;
-    return `${Math.round(diffHour / 24)} hari yang lalu`;
+    if (diffHour < 24) return `${diffHour} ${t('kulinerDashboard.hoursAgo')}`;
+    return `${Math.round(diffHour / 24)} ${t('kulinerDashboard.daysAgo')}`;
   };
 
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Dashboard Overview</h1>
+        <h1 className="kd-page-title">{t('kulinerDashboard.dashboardOverview')}</h1>
         <div className="kd-topbar-actions" />
       </div>
 
       <div className="kd-content">
         {loading ? (
-          <KulinerLoading message="Menyiapkan Dapur..." />
+          <KulinerLoading message={t('kulinerDashboard.preparingKitchen')} />
         ) : (
           <>
             {/* STATS */}
@@ -78,7 +97,7 @@ const KulinerDashboard = () => {
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
                   <div className="kd-stat-icon kd-icon-revenue">💰</div>
-                  <span className="kd-stat-label">Pendapatan Hari Ini</span>
+                  <span className="kd-stat-label">{t('kulinerDashboard.todaysRevenue')}</span>
                 </div>
                 <div className="kd-stat-value">{formatRp(stats?.revenue_today)}</div>
                 <div className={`kd-stat-change ${revenueChange.up === false ? 'kd-change-down' : 'kd-change-up'}`}>{revenueChange.label}</div>
@@ -87,64 +106,79 @@ const KulinerDashboard = () => {
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
                   <div className="kd-stat-icon kd-icon-orders">📦</div>
-                  <span className="kd-stat-label">Pesanan Hari Ini</span>
+                  <span className="kd-stat-label">{t('kulinerDashboard.todaysOrders')}</span>
                 </div>
                 <div className="kd-stat-value">{stats?.orders_today || 0}</div>
-                <div className="kd-stat-change kd-change-up">↑ {stats?.orders_today || 0} pesanan baru</div>
+                <div className="kd-stat-change kd-change-up">↑ {stats?.orders_today || 0} {t('kulinerDashboard.newOrders')}</div>
               </div>
 
-              <div className="kd-stat-card">
-                <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-menu">📊</div>
-                  <span className="kd-stat-label">Pendapatan Bulan Ini</span>
-                </div>
-                <div className="kd-stat-value">{formatRp(stats?.revenue_month)}</div>
-                <div className="kd-stat-change kd-change-up">Trend positif bulan ini</div>
-              </div>
-
-              <div className="kd-stat-card">
-                <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-users">📈</div>
-                  <span className="kd-stat-label">Total Pesanan</span>
-                </div>
-                <div className="kd-stat-value">{stats?.total_orders || 0}</div>
-                <div className="kd-stat-change kd-change-up">Seluruh periode</div>
-              </div>
-            </div>
-
-            {/* PHASE 4: ADDITIONAL WIDGETS */}
-            <div className="kd-stats-grid" style={{ marginTop: 16 }}>
-              <div className="kd-stat-card">
-                <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-revenue">📈</div>
-                  <span className="kd-stat-label">Profit Hari Ini</span>
-                </div>
-                <div className="kd-stat-value">{formatRp(stats?.profit_today)}</div>
-                <div className="kd-stat-change" style={{ color: '#94a3b8' }}>Estimasi: pendapatan − HPP − beban</div>
-              </div>
+              {/* REPLACED CARDS HERE */}
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
                   <div className="kd-stat-icon kd-icon-menu">🏆</div>
-                  <span className="kd-stat-label">Menu Terlaris (30 hari)</span>
+                  <span className="kd-stat-label">{t('kulinerDashboard.bestSellingMenu')}</span>
                 </div>
-                <div className="kd-stat-value" style={{ fontSize: 18 }}>{stats?.top_menu || '-'}</div>
+                <div className="kd-stat-value" style={{ fontSize: 18, marginTop: 4 }}>{stats?.top_menu || '-'}</div>
+                <div className="kd-stat-change kd-change-up">{t('kulinerDashboard.positiveTrend')}</div>
               </div>
-              <div className="kd-stat-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/kuliner/admin/kitchen-queue')}>
-                <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-orders">👨‍🍳</div>
-                  <span className="kd-stat-label">Kitchen Queue Aktif</span>
-                </div>
-                <div className="kd-stat-value">{stats?.kitchen_queue_count || 0}</div>
-                <div className="kd-stat-change" style={{ color: '#94a3b8' }}>Klik untuk lihat papan dapur →</div>
-              </div>
+
               <div className="kd-stat-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/kuliner/admin/ingredients')}>
                 <div className="kd-stat-header">
                   <div className="kd-stat-icon kd-icon-users">⚠️</div>
-                  <span className="kd-stat-label">Bahan Baku Hampir Habis</span>
+                  <span className="kd-stat-label">{t('kulinerDashboard.lowStockIngredients')}</span>
                 </div>
                 <div className="kd-stat-value">{stats?.low_stock_ingredients?.length || 0}</div>
                 <div className="kd-stat-change" style={{ color: '#94a3b8' }}>
-                  {(stats?.low_stock_ingredients || []).slice(0, 3).map((i) => i.name).join(', ') || 'Semua stok aman'}
+                  {(stats?.low_stock_ingredients || []).slice(0, 3).map((i) => i.name).join(', ') || t('kulinerDashboard.allStockSafe')}
+                </div>
+              </div>
+            </div>
+
+            {/* CHART & WIDGETS */}
+            <div className="kd-panels" style={{ gridTemplateColumns: '1fr', marginTop: 16 }}>
+              <div className="kd-panel">
+                <div className="kd-panel-header" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 className="kd-panel-title">
+                    {t('kulinerDashboard.revenueTrend')} 
+                  </h3>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    {chartFilter === 'custom' && (
+                      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                        <input type="date" className="kd-form-input" style={{ padding: '4px 8px', fontSize: 12, height: 'auto', borderRadius: 6 }} value={customStartDate} onChange={e => setCustomStartDate(e.target.value)} />
+                        <span style={{ fontSize: 12, color: '#64748b' }}>-</span>
+                        <input type="date" className="kd-form-input" style={{ padding: '4px 8px', fontSize: 12, height: 'auto', borderRadius: 6 }} value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} />
+                        <button className="kd-btn-primary" style={{ padding: '4px 8px', fontSize: 12, borderRadius: 6 }} onClick={applyCustomFilter}>Cari</button>
+                      </div>
+                    )}
+                    <select 
+                      className="kd-form-input" 
+                      style={{ padding: '4px 12px', fontSize: 12, height: 'auto', borderRadius: 6, width: 'auto' }}
+                      value={chartFilter}
+                      onChange={e => setChartFilter(e.target.value)}
+                    >
+                      <option value="today">Harian</option>
+                      <option value="week">Mingguan</option>
+                      <option value="month">Bulanan</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ height: 260, width: '100%', marginTop: 20 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={stats?.chart_data || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#b48c36" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#b48c36" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="date" tick={{fontSize: 11, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                      <YAxis width={80} tickFormatter={(val) => `Rp ${val / 1000}k`} tick={{fontSize: 11, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                      <Tooltip formatter={(value) => formatRp(value)} labelStyle={{color: '#1e293b', fontWeight: 'bold'}} contentStyle={{borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'}} />
+                      <Area type="monotone" dataKey="revenue" stroke="#b48c36" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
@@ -154,32 +188,32 @@ const KulinerDashboard = () => {
               <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/categories')}>
                 <div className="kd-action-icon kd-ai-add">➕</div>
                 <div className="kd-action-text">
-                  <h4>Tambah Menu Baru</h4>
-                  <p>Upload menu dan atur harga</p>
+                  <h4>{t('kulinerDashboard.addNewMenu')}</h4>
+                  <p>{t('kulinerDashboard.uploadMenuDesc')}</p>
                 </div>
               </button>
 
               <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/categories')}>
                 <div className="kd-action-icon kd-ai-edit">🏷️</div>
                 <div className="kd-action-text">
-                  <h4>Kelola Kategori</h4>
-                  <p>Edit & atur kategori menu</p>
+                  <h4>{t('kulinerDashboard.manageCategories')}</h4>
+                  <p>{t('kulinerDashboard.manageCategoriesDesc')}</p>
                 </div>
               </button>
 
               <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/promos')}>
                 <div className="kd-action-icon kd-ai-design">🎨</div>
                 <div className="kd-action-text">
-                  <h4>Kelola Promo</h4>
-                  <p>Buat & atur kode promo</p>
+                  <h4>{t('kulinerDashboard.managePromos')}</h4>
+                  <p>{t('kulinerDashboard.managePromosDesc')}</p>
                 </div>
               </button>
 
               <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/reports')}>
                 <div className="kd-action-icon kd-ai-finance">📊</div>
                 <div className="kd-action-text">
-                  <h4>Laporan Keuangan</h4>
-                  <p>Lihat & cetak laporan penjualan</p>
+                  <h4>{t('kulinerDashboard.financialReports')}</h4>
+                  <p>{t('kulinerDashboard.financialReportsDesc')}</p>
                 </div>
               </button>
             </div>
@@ -272,7 +306,6 @@ const KulinerDashboard = () => {
                 </div>
               </div>
             </div>
-
           </>
         )}
       </div>

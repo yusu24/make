@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
 import './KulinerDashboard.css';
 
 const CulinaryAnalytics = () => {
+  const { t } = useTranslation();
   // Real data state
   const [topProducts, setTopProducts] = useState([]);
   const [peakHours, setPeakHours] = useState([]);
@@ -22,10 +24,10 @@ const CulinaryAnalytics = () => {
   const [aiStep, setAiStep] = useState(0);
 
   const steps = [
-    'Menghubungkan ke Mesin Analitik Bizora AI...',
-    'Membaca riwayat transaksi & jam sibuk...',
-    'Mengalkulasi tingkat retensi pelanggan...',
-    'Menyusun rekomendasi taktis bisnis...'
+    t('kulinerAnalytics.aiStep1') || 'Menghubungkan ke Mesin Analitik Bizora AI...',
+    t('kulinerAnalytics.aiStep2') || 'Membaca riwayat transaksi & jam sibuk...',
+    t('kulinerAnalytics.aiStep3') || 'Mengalkulasi tingkat retensi pelanggan...',
+    t('kulinerAnalytics.aiStep4') || 'Menyusun rekomendasi taktis bisnis...'
   ];
 
   useEffect(() => {
@@ -70,7 +72,7 @@ const CulinaryAnalytics = () => {
       setAiData(response.data.insights || null);
     } catch (error) {
       console.error('Failed to generate AI insights:', error);
-      alert('Gagal menghasilkan analisis AI.');
+      alert(t('kulinerAnalytics.alertAiFail') || 'Gagal menghasilkan analisis AI.');
     } finally {
       clearInterval(interval);
       setAiLoading(false);
@@ -80,18 +82,18 @@ const CulinaryAnalytics = () => {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Analitik Bisnis</h1>
+        <h1 className="kd-page-title">{t('kulinerAnalytics.title') || 'Analitik Bisnis'}</h1>
       </div>
 
       <div className="kd-content">
         {loading ? (
-          <KulinerLoading message="Menganalisis data transaksi Anda..." />
+          <KulinerLoading message={t('kulinerAnalytics.loading') || 'Menganalisis data transaksi Anda...'} />
         ) : (
           <>
             <div className="kd-page-actions">
-              <div className="text-xs font-medium text-slate-400">Data terakhir diperbarui: Baru saja</div>
+              <div className="text-xs font-medium text-slate-400">{t('kulinerAnalytics.lastUpdated') || 'Data terakhir diperbarui: Baru saja'}</div>
               <button className="kd-btn kd-btn-primary" onClick={handleGenerateAi}>
-                ⚡ Generate Insight AI
+                {t('kulinerAnalytics.generateAiBtn') || '⚡ Generate Insight AI'}
               </button>
             </div>
             <div className="kd-settings-layout">
@@ -99,17 +101,17 @@ const CulinaryAnalytics = () => {
               {/* TOP PRODUCTS CHART */}
               <div className="kd-panel">
                 <div className="kd-panel-header">
-                  <div className="text-sm font-bold text-slate-800">Menu Paling Dicari (Top 5)</div>
+                  <div className="text-sm font-bold text-slate-800">{t('kulinerAnalytics.topProductsTitle') || 'Menu Paling Dicari (Top 5)'}</div>
                 </div>
                 <div className="p-6">
                   {topProducts.length === 0 ? (
-                    <div className="text-center py-10 text-slate-400 text-xs italic">Belum ada data penjualan menu.</div>
+                    <div className="text-center py-10 text-slate-400 text-xs italic">{t('kulinerAnalytics.topProductsEmpty') || 'Belum ada data penjualan menu.'}</div>
                   ) : (
                     topProducts.map((product, index) => (
                       <div key={index} style={{ marginBottom: 20 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                           <span className="text-xs font-bold text-slate-700">{product.name}</span>
-                          <span className="text-xs font-mono text-slate-400">{product.orders} Pesanan</span>
+                          <span className="text-xs font-mono text-slate-400">{product.orders} {t('kulinerAnalytics.orders') || 'Pesanan'}</span>
                         </div>
                         <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
                           <div 
@@ -131,11 +133,11 @@ const CulinaryAnalytics = () => {
               {/* PEAK HOURS CHART */}
               <div className="kd-panel">
                 <div className="kd-panel-header">
-                  <div className="text-sm font-bold text-slate-800">Analisis Jam Sibuk</div>
+                  <div className="text-sm font-bold text-slate-800">{t('kulinerAnalytics.peakHoursTitle') || 'Analisis Jam Sibuk'}</div>
                 </div>
                 <div className="p-6" style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {peakHours.every(ph => ph.intensity === 0) ? (
-                    <div className="text-center text-slate-400 text-xs italic">Data jam sibuk akan muncul setelah ada transaksi.</div>
+                    <div className="text-center text-slate-400 text-xs italic">{t('kulinerAnalytics.peakHoursEmpty') || 'Data jam sibuk akan muncul setelah ada transaksi.'}</div>
                   ) : (
                     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 4 }}>
                       {peakHours.map((data, index) => (
@@ -173,17 +175,17 @@ const CulinaryAnalytics = () => {
               <div className="kd-panel text-center p-8">
                 <div className="text-3xl mb-2">👥</div>
                 <div className="text-xl font-black text-slate-800">{stats.loyaltyRate}%</div>
-                <div className="text-[10px] text-slate-400 font-bold tracking-widest">Pelanggan Setia</div>
+                <div className="text-[10px] text-slate-400 font-bold tracking-widest">{t('kulinerAnalytics.statLoyaltySub') || 'Pelanggan Setia'}</div>
               </div>
               <div className="kd-panel text-center p-8">
                 <div className="text-3xl mb-2">💳</div>
                 <div className="text-xl font-black text-slate-800">{stats.favoriteMethod}</div>
-                <div className="text-[10px] text-slate-400 font-bold tracking-widest">Metode Terfavorit</div>
+                <div className="text-[10px] text-slate-400 font-bold tracking-widest">{t('kulinerAnalytics.statFavoriteMethod') || 'Metode Terfavorit'}</div>
               </div>
               <div className="kd-panel text-center p-8">
                 <div className="text-3xl mb-2">⭐</div>
                 <div className="text-xl font-black text-slate-800">{stats.serviceRating > 0 ? stats.serviceRating + '/5.0' : '-'}</div>
-                <div className="text-[10px] text-slate-400 font-bold tracking-widest">Rating Layanan</div>
+                <div className="text-[10px] text-slate-400 font-bold tracking-widest">{t('kulinerAnalytics.statServiceRating') || 'Rating Layanan'}</div>
               </div>
             </div>
           </>
@@ -196,7 +198,7 @@ const CulinaryAnalytics = () => {
           <div className="kd-modal max-w-2xl" onClick={e => e.stopPropagation()} style={{ border: '1px solid rgba(99, 102, 241, 0.2)', boxShadow: '0 20px 40px -15px rgba(99, 102, 241, 0.3)' }}>
             <div className="kd-modal-header" style={{ background: 'linear-gradient(to right, #e0e7ff, #f3e8ff)', borderBottom: '1px solid #e2e8f0' }}>
               <h2 className="kd-modal-title" style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#4f46e5' }}>
-                <span>⚡</span> Bizora Business Intelligence AI
+                <span>⚡</span> {t('kulinerAnalytics.aiModalTitle') || 'Bizora Business Intelligence AI'}
               </h2>
               {!aiLoading && (
                 <button className="kd-close-btn" onClick={() => setShowAiModal(false)}>✕</button>
@@ -211,7 +213,7 @@ const CulinaryAnalytics = () => {
                     <span style={{ position: 'absolute', fontSize: 24 }}>⚡</span>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Sedang Menganalisis Bisnis Anda</div>
+                    <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>{t('kulinerAnalytics.aiModalGenerating') || 'Sedang Menganalisis Bisnis Anda'}</div>
                     <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, minHeight: 20 }}>
                       {steps[aiStep]}
                     </div>
@@ -268,7 +270,7 @@ const CulinaryAnalytics = () => {
                   {aiData.recommendations && (
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 12, color: '#475569', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span>🎯</span> Rekomendasi Taktis &amp; Strategis
+                        <span>🎯</span> {t('kulinerAnalytics.aiInsightRecommendation') || 'Rekomendasi Taktis & Strategis'}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {aiData.recommendations.map((rec, i) => (
@@ -282,7 +284,7 @@ const CulinaryAnalytics = () => {
                   )}
                 </div>
               ) : (
-                <div className="text-center py-10 text-slate-400">Gagal memuat analisis AI.</div>
+                <div className="text-center py-10 text-slate-400">{t('kulinerAnalytics.alertAiFail') || 'Gagal memuat analisis AI.'}</div>
               )}
             </div>
             
@@ -293,7 +295,7 @@ const CulinaryAnalytics = () => {
                 disabled={aiLoading} 
                 onClick={() => setShowAiModal(false)}
               >
-                Tutup Panel
+                {t('kulinerAnalytics.closeBtn') || 'Tutup Panel'}
               </button>
             </div>
           </div>

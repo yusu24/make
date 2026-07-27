@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { api } from '../../../lib/api';
 import { Users, Plus, Edit2, Trash2, Shield } from 'lucide-react';
+import ClientPagination from '../components/ClientPagination';
+import { useTranslation } from '../../../contexts/I18nContext';
 
 const CulinaryRoles = () => {
+  const { t } = useTranslation();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -13,13 +16,12 @@ const CulinaryRoles = () => {
     permissions: []
   });
 
-  // 'orders', 'ingredients', 'recipes', 'modifiers', 'addons', 'bundles',
-  // 'shift' and 'reports' are enforced server-side (kuliner_permission:<key>
-  // middleware in routes/api.php) — this list previously omitted most of
-  // them, so staff could never be granted access to Bahan Baku/Resep/
-  // Modifier/Add-on/Bundle/Shift no matter what role they were assigned.
-  // 'menu', 'analytics', 'staff' and 'settings' aren't backend-gated; they
-  // only control which sidebar sections a role sees.
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(roles.length / itemsPerPage);
+  const currentRoles = roles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const availablePermissions = [
     { id: 'orders',      name: 'Pesanan & Kasir',        icon: '📋' },
     { id: 'menu',        name: 'Menu & Produk',          icon: '🍔' },
@@ -34,7 +36,6 @@ const CulinaryRoles = () => {
     { id: 'staff',       name: 'Manajemen Staff',        icon: '👥' },
     { id: 'settings',    name: 'Pengaturan Toko',        icon: '⚙️' },
   ];
-
 
   useEffect(() => {
     fetchRoles();
@@ -73,9 +74,22 @@ const CulinaryRoles = () => {
 
   const handleEdit = (role) => {
     setEditingRole(role);
+    
+    // Convert old flat permissions to granular if needed
+    let perms = role.permissions || [];
+    const normalizedPerms = [];
+    perms.forEach(p => {
+      if (!p.includes('.')) {
+        // It's an old flat permission, give them all CRUD for it to avoid breaking existing access
+        normalizedPerms.push(`${p}.view`, `${p}.create`, `${p}.edit`, `${p}.delete`);
+      } else {
+        normalizedPerms.push(p);
+      }
+    });
+
     setForm({
       name: role.name,
-      permissions: role.permissions || []
+      permissions: normalizedPerms
     });
     setShowModal(true);
   };
@@ -91,14 +105,84 @@ const CulinaryRoles = () => {
     }
   };
 
-  const togglePermission = (permId) => {
+  const togglePermission = (moduleId, action = null) => {
     setForm(prev => {
-      const isExist = prev.permissions.includes(permId);
-      if (isExist) {
-        return { ...prev, permissions: prev.permissions.filter(p => p !== permId) };
+      let newPerms = [...prev.permissions];
+      
+      if (!action) {
+        // Toggle ALL actions for this module
+        const allActions = ['view', 'create', 'edit', 'delete'].map(a => `${moduleId}.${a}`);
+        const hasAll = allActions.every(p => newPerms.includes(p));
+        
+        if (hasAll) {
+          // Remove all
+          newPerms = newPerms.filter(p => !p.startsWith(`${moduleId}.`));
+        } else {
+          // Add all
+          allActions.forEach(p => {
+            if (!newPerms.includes(p)) newPerms.push(p);
+          });
+        }
       } else {
-        return { ...prev, permissions: [...prev.permissions, permId] };
+        // Toggle specific action
+        const permId = `${moduleId}.${action}`;
+        if (newPerms.includes(permId)) {
+          newPerms = newPerms.filter(p => p !== permId);
+        } else {
+          newPerms.push(permId);
+        }
       }
+      
+      return { ...prev, permissions: newPerms };
+    });
+  };
+
+  const renderPermissionsList = (permissions) => {
+    if (!permissions || permissions.length === 0) return null;
+    
+    // Group by module
+    const grouped = {};
+    permissions.forEach(p => {
+      if (!p.includes('.')) {
+        // Flat legacy permission, treat as all
+        if (!grouped[p]) grouped[p] = [];
+        grouped[p].push('all');
+      } else {
+        const parts = p.split('.');
+        const mod = parts[0];
+        const act = parts[1];
+        if (!grouped[mod]) grouped[mod] = [];
+        grouped[mod].push(act);
+      }
+    });
+
+    return Object.keys(grouped).map(mod => {
+      const detail = availablePermissions.find(ap => ap.id === mod);
+      const modName = detail ? detail.name : mod;
+      
+      // If it's old flat permission, wildcard, or has all 4 actions
+      if (grouped[mod].includes('all') || grouped[mod].includes('*') || grouped[mod].length === 4) {
+        return (
+          <span key={mod} className="text-[10px] px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-medium mb-1 mr-1 inline-block">
+            {modName} (Semua)
+          </span>
+        );
+      }
+
+      // Specific actions
+      const actionsTrans = grouped[mod].map(a => {
+        if (a === 'view') return 'Lihat';
+        if (a === 'create') return 'Tambah';
+        if (a === 'edit') return 'Ubah';
+        if (a === 'delete') return 'Hapus';
+        return a;
+      }).join(', ');
+
+      return (
+        <span key={mod} className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-full mb-1 mr-1 inline-block">
+          {modName}: <span className="opacity-70">{actionsTrans}</span>
+        </span>
+      );
     });
   };
 
@@ -133,33 +217,26 @@ const CulinaryRoles = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="3" className="text-center py-10">Memuat data...</td></tr>
+                  <tr><td colSpan="3" className="text-center py-10">{t('kulinerCommon.loadingData') || 'Memuat data...'}</td></tr>
                 ) : roles.length === 0 ? (
-                  <tr><td colSpan="3" className="text-center py-10">Belum ada role terdaftar.</td></tr>
+                  <tr><td colSpan="3" className="text-center py-10">{t('kulinerCommon.emptyData') || 'Belum ada role terdaftar.'}</td></tr>
                 ) : (
-                  roles.map((role) => (
+                  currentRoles.map((role) => (
                     <tr key={role.id}>
-                      <td>
+                      <td style={{ verticalAlign: 'top', paddingTop: '16px' }}>
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                          <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
                             <Shield />
                           </div>
-                          <span className="font-bold text-slate-700">{role.name}</span>
+                          <span style={{ color: '#1e293b', fontWeight: 600 }}>{role.name}</span>
                         </div>
                       </td>
-                      <td>
-                        <div className="flex flex-wrap gap-1">
-                          {role.permissions?.map(p => {
-                            const detail = availablePermissions.find(ap => ap.id === p);
-                            return (
-                              <span key={p} className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full">
-                                {detail ? detail.name : p}
-                              </span>
-                            );
-                          })}
+                      <td style={{ verticalAlign: 'top', paddingTop: '16px' }}>
+                        <div className="flex flex-wrap">
+                          {renderPermissionsList(role.permissions)}
                         </div>
                       </td>
-                      <td>
+                      <td style={{ verticalAlign: 'top', paddingTop: '16px' }}>
                         <div className="flex justify-end gap-2">
                           <button className="kd-icon-btn" onClick={() => handleEdit(role)}><Edit2 /></button>
                           <button className="kd-icon-btn text-red-500" onClick={() => handleDelete(role.id)}><Trash2 /></button>
@@ -171,13 +248,20 @@ const CulinaryRoles = () => {
               </tbody>
             </table>
           </div>
+          <ClientPagination setItemsPerPage={setItemsPerPage} 
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={roles.length}
+          />
         </div>
       </div>
 
       {/* MODAL ROLE */}
       {showModal && (
         <div className="kd-modal-overlay active">
-          <div className="kd-modal" style={{ maxWidth: 500 }}>
+          <div className="kd-modal" style={{ maxWidth: 650, width: '90%' }}>
             <div className="kd-modal-header">
               <h2 className="text-lg font-bold text-slate-800">
                 {editingRole ? 'Edit Role' : 'Tambah Role Baru'}
@@ -185,7 +269,7 @@ const CulinaryRoles = () => {
               <button className="text-slate-400 hover:text-slate-600" onClick={() => setShowModal(false)}>×</button>
             </div>
             <form onSubmit={handleSubmit}>
-              <div className="kd-modal-body">
+              <div className="kd-modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                 <div className="form-group mb-6">
                   <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-2 block">Nama Role / Posisi</label>
                   <input 
@@ -195,22 +279,61 @@ const CulinaryRoles = () => {
                   />
                 </div>
                 
-                <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-3 block">Hak Akses</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {availablePermissions.map(perm => (
-                    <div 
-                      key={perm.id}
-                      onClick={() => togglePermission(perm.id)}
-                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                        form.permissions.includes(perm.id) 
-                          ? 'bg-amber-50 border-amber-200 text-amber-700' 
-                          : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-slate-200'
-                      }`}
-                    >
-                      <span className="text-xl">{perm.icon}</span>
-                      <span className="text-xs font-bold">{perm.name}</span>
-                    </div>
-                  ))}
+                <label className="form-label text-xs uppercase tracking-wider font-bold text-slate-400 mb-3 block">Hak Akses Detail (Granular)</label>
+                <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+                      <tr>
+                        <th className="py-2.5 px-3 font-semibold">Modul Aplikasi</th>
+                        <th className="py-2.5 px-2 text-center font-semibold border-l border-slate-200" title="Pilih Semua Aksi">Semua</th>
+                        <th className="py-2.5 px-2 text-center font-semibold border-l border-slate-200 text-blue-600">Lihat (View)</th>
+                        <th className="py-2.5 px-2 text-center font-semibold text-emerald-600">Tambah (Create)</th>
+                        <th className="py-2.5 px-2 text-center font-semibold text-amber-600">Ubah (Edit)</th>
+                        <th className="py-2.5 px-2 text-center font-semibold text-red-600">Hapus (Delete)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {availablePermissions.map(perm => {
+                        const allActions = ['view', 'create', 'edit', 'delete'].map(a => `${perm.id}.${a}`);
+                        const isAllSelected = allActions.every(p => form.permissions.includes(p));
+                        
+                        return (
+                          <tr key={perm.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="py-2.5 px-3 font-medium text-slate-700 flex items-center gap-2">
+                              <span className="text-base">{perm.icon}</span> 
+                              <span>{perm.name}</span>
+                            </td>
+                            <td className="py-2.5 px-2 text-center border-l border-slate-100 bg-slate-50/30">
+                              <input 
+                                type="checkbox" 
+                                checked={isAllSelected} 
+                                onChange={() => togglePermission(perm.id)} 
+                                className="w-4 h-4 rounded border-slate-300 text-slate-700 focus:ring-slate-700 cursor-pointer" 
+                              />
+                            </td>
+                            {['view', 'create', 'edit', 'delete'].map(action => {
+                              const actionColors = {
+                                'view': 'text-blue-500 focus:ring-blue-500',
+                                'create': 'text-emerald-500 focus:ring-emerald-500',
+                                'edit': 'text-amber-500 focus:ring-amber-500',
+                                'delete': 'text-red-500 focus:ring-red-500',
+                              };
+                              return (
+                                <td key={action} className={`py-2.5 px-2 text-center ${action === 'view' ? 'border-l border-slate-100' : ''}`}>
+                                  <input 
+                                    type="checkbox" 
+                                    checked={form.permissions.includes(`${perm.id}.${action}`)} 
+                                    onChange={() => togglePermission(perm.id, action)} 
+                                    className={`w-4 h-4 rounded border-slate-300 cursor-pointer transition-all ${actionColors[action]}`} 
+                                  />
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
               <div className="kd-modal-footer">

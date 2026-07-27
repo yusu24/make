@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import api from '../../../services/api';
+import { PageLoader } from '../../../routes/guards';
+import { useTranslation } from '../../../contexts/I18nContext';
 import './CategoryStorefront.css';
 
 const CategoryStorefront = () => {
@@ -8,7 +10,8 @@ const CategoryStorefront = () => {
   const tenant = new URLSearchParams(location.search).get('tenant_id') || 
                  new URLSearchParams(location.search).get('tenant');
   
-  const [activeCat, setActiveCat] = useState('Semua');
+  const { t, language, toggleLanguage } = useTranslation();
+  const [activeCat, setActiveCat] = useState(t('storefront.all'));
   const [settings, setSettings] = useState({
     store_name: 'Loading...',
     opening_hours: 'Senin - Minggu',
@@ -17,7 +20,7 @@ const CategoryStorefront = () => {
     hero_image_url: ''
   });
 
-  const [categories, setCategories] = useState(['Semua']);
+  const [categories, setCategories] = useState([t('storefront.all')]);
   const [products, setProducts] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -47,14 +50,18 @@ const CategoryStorefront = () => {
         const currentTenantId = settingsRes.data?.tenant_id || tenant;
         const tenantQuery = currentTenantId ? `?tenant_id=${currentTenantId}` : query;
 
-        // 2. Fetch Categories
-        const catsRes = await api.get(`/kuliner/public/categories${tenantQuery}`);
+        // 2. Fetch remaining data concurrently
+        const [catsRes, productsRes, reviewsRes, bestRes] = await Promise.all([
+          api.get(`/kuliner/public/categories${tenantQuery}`),
+          api.get(`/kuliner/public/products${tenantQuery}`),
+          api.get(`/kuliner/public/testimonials${tenantQuery}`),
+          api.get(`/kuliner/public/best-sellers${tenantQuery}`)
+        ]);
+
         if (catsRes.data) {
-          setCategories(['Semua', ...catsRes.data.map(c => c.name)]);
+          setCategories([t('storefront.all'), ...catsRes.data.map(c => c.name)]);
         }
 
-        // 3. Fetch Products (Take only first 6 for featured)
-        const productsRes = await api.get(`/kuliner/public/products${tenantQuery}`);
         if (productsRes.data) {
           setProducts(productsRes.data.map((p, idx) => ({
             id: p.id,
@@ -62,14 +69,12 @@ const CategoryStorefront = () => {
             desc: p.description || '',
             price: p.price,
             discount_price: p.discount_price,
-            category: catsRes.data.find(c => c.id === p.category_id)?.name || 'Lainnya',
+            category: catsRes.data?.find(c => c.id === p.category_id)?.name || 'Lainnya',
             emoji: p.image_url || '🍛',
             class: `kl-mi-${(idx % 6) + 1}`
           })));
         }
 
-        // 4. Fetch Testimonials
-        const reviewsRes = await api.get(`/kuliner/public/testimonials${tenantQuery}`);
         if (reviewsRes.data && reviewsRes.data.length > 0) {
           setTestimonials(reviewsRes.data.map(r => ({
             name: r.customer_name,
@@ -79,11 +84,7 @@ const CategoryStorefront = () => {
             stars: r.rating
           })));
         }
-        // No fallback to fake reviews — an empty testimonials list simply
-        // renders no cards rather than showing invented customer names.
 
-        // 5. Fetch Best Sellers
-        const bestRes = await api.get(`/kuliner/public/best-sellers${tenantQuery}`);
         if (bestRes.data) {
           setBestSellers(bestRes.data);
         }
@@ -105,7 +106,7 @@ const CategoryStorefront = () => {
         tenant_id: settings.tenant_id
       };
       await api.post('/kuliner/public/testimonials', payload);
-      alert('Terima kasih! Testimoni Anda sangat berarti bagi kami. ✨');
+      alert(t('storefront.reviewSuccess'));
       setShowReviewModal(false);
       setReviewForm({ customer_name: '', rating: 5, comment: '', customer_role: '' });
       
@@ -122,7 +123,7 @@ const CategoryStorefront = () => {
         })));
       }
     } catch (error) {
-      alert('Gagal mengirim testimoni. Silakan coba lagi.');
+      alert(t('storefront.reviewFail'));
     } finally {
       setSubmittingReview(false);
     }
@@ -130,9 +131,9 @@ const CategoryStorefront = () => {
 
   const [loading, setLoading] = useState(true);
 
-  if (loading) return <div style={{background: '#ffffff', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Playfair Display, serif', fontSize: 24, color: '#b48c36'}}>{settings.store_name || 'Loading...'}</div>;
+  if (loading) return <PageLoader />;
 
-  const filteredItems = activeCat === 'Semua' 
+  const filteredItems = activeCat === t('storefront.all') 
     ? products.slice(0, 6) 
     : products.filter(p => p.category === activeCat).slice(0, 6);
 
@@ -165,13 +166,25 @@ const CategoryStorefront = () => {
                 }
               }}
             >
-              Beranda
+              {t('storefront.home')}
             </Link>
           </li>
-          <li><Link to={menuUrl}>Daftar Menu</Link></li>
-          <li><a href="#testimoni">Testimoni</a></li>
+          <li><Link to={menuUrl}>{t('storefront.menuList')}</Link></li>
+          <li><a href="#testimoni">{t('storefront.testimonials')}</a></li>
         </ul>
-        <Link to={menuUrl} className="kl-nav-cta">Pesan Sekarang</Link>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <button
+            onClick={toggleLanguage}
+            style={{
+              padding: '6px 12px', borderRadius: 8, background: 'transparent',
+              border: '1px solid #b48c36', color: '#b48c36', fontSize: 13,
+              fontWeight: 'bold', cursor: 'pointer',
+            }}
+          >
+            {language === 'id' ? 'ID' : 'EN'}
+          </button>
+          <Link to={menuUrl} className="kl-nav-cta">{t('storefront.orderNow')}</Link>
+        </div>
       </nav>
 
       <section 
@@ -182,7 +195,7 @@ const CategoryStorefront = () => {
         <div className="kl-hero-text">
           <div className="kl-badge">
             <div className="kl-badge-dot"></div>
-            {settings.operational_days || 'Senin - Minggu'} • {
+            {settings.operational_days || t('storefront.operationalDays')} • {
               (settings.opening_hours && 
                settings.opening_hours.toLowerCase().trim() !== (settings.operational_days || '').toLowerCase().trim() &&
                settings.opening_hours.toLowerCase().trim() !== 'senin - minggu')
@@ -195,10 +208,10 @@ const CategoryStorefront = () => {
           }}></h1>
           <p>{settings.hero_subtitle || 'Nikmati kelezatan hidangan istimewa yang kami sajikan dengan bahan pilihan.'}</p>
           <div className="kl-hero-actions">
-            <Link to={menuUrl} className="kl-btn-primary">Lihat Menu</Link>
+            <Link to={menuUrl} className="kl-btn-primary">{t('storefront.viewMenu')}</Link>
             {/* Dine-in is already FullMenu.jsx's default order type, so this
                 just takes the customer straight to ordering for a table. */}
-            <Link to={menuUrl} className="kl-btn-ghost">Reservasi Meja</Link>
+            <Link to={menuUrl} className="kl-btn-ghost">{t('storefront.reserveTable')}</Link>
           </div>
         </div>
 
@@ -208,7 +221,7 @@ const CategoryStorefront = () => {
               <div className="kl-mini-emoji">{bestSellers.daily_food.image_url || '🍲'}</div>
               <div className="kl-mini-info">
                 <h4>{bestSellers.daily_food.name}</h4>
-                <span>Terlaris hari ini</span>
+                <span>{t('storefront.bestSellerToday')}</span>
                 <span className="kl-stars">★★★★★</span>
               </div>
             </div>
@@ -217,14 +230,14 @@ const CategoryStorefront = () => {
           <div className="kl-food-card-main">
             <div className="kl-food-img">{bestSellers.monthly?.image_url || '🍛'}</div>
             <div className="kl-food-card-body">
-              <span className="kl-food-tag">Unggulan Bulan Ini</span>
-              <h3>{bestSellers.monthly?.name || 'Menu Unggulan'}</h3>
-              <p>{bestSellers.monthly?.description || 'Nikmati hidangan istimewa kami yang paling digemari pelanggan.'}</p>
+              <span className="kl-food-tag">{t('storefront.monthlyHighlight')}</span>
+              <h3>{bestSellers.monthly?.name || t('storefront.defaultMonthlyName')}</h3>
+              <p>{bestSellers.monthly?.description || t('storefront.defaultMonthlyDesc')}</p>
               <div className="kl-food-footer">
                 <div className="kl-price">
                   {bestSellers.monthly?.price 
                     ? `Rp ${new Intl.NumberFormat('id-ID').format(bestSellers.monthly.price)}` 
-                    : 'Harga Spesial'}
+                    : t('storefront.specialPrice')}
                 </div>
                 <Link to={menuUrl} className="kl-add-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</Link>
               </div>
@@ -236,8 +249,8 @@ const CategoryStorefront = () => {
               <div className="kl-mini-emoji">{bestSellers.daily_drink.image_url || '🥤'}</div>
               <div className="kl-mini-info">
                 <h4>{bestSellers.daily_drink.name}</h4>
-                <span>Minuman Terlaris</span>
-                <span className="kl-stars">Pilihan Favorit 🥤</span>
+                <span>{t('storefront.bestSellingDrink')}</span>
+                <span className="kl-stars">{t('storefront.favoriteChoice')} 🥤</span>
               </div>
             </div>
           )}
@@ -246,8 +259,8 @@ const CategoryStorefront = () => {
 
       <section className="kl-section">
         <div className="kl-section-header">
-          <h2>Menu <em>Pilihan</em><br />Kami</h2>
-          <Link to={menuUrl} className="kl-see-all">Lihat semua →</Link>
+          <h2>{t('storefront.ourFeaturedMenu1')} <em>{t('storefront.ourFeaturedMenu2')}</em><br />{t('storefront.ourFeaturedMenu3')}</h2>
+          <Link to={menuUrl} className="kl-see-all">{t('storefront.seeAll')}</Link>
         </div>
 
         <div className="kl-categories">
@@ -291,7 +304,7 @@ const CategoryStorefront = () => {
           ))}
           {filteredItems.length === 0 && (
             <div className="col-span-full text-center py-20 text-slate-400">
-              Belum ada menu untuk kategori ini.
+              {t('storefront.emptyMenu')}
             </div>
           )}
         </div>
@@ -308,9 +321,9 @@ const CategoryStorefront = () => {
 
       <section id="testimoni" className="kl-reviews-section">
         <div className="kl-section-header">
-          <h2>Apa Kata <em>Pelanggan</em></h2>
-          <p>Testimoni jujur dari mereka yang telah mencicipi kelezatan hidangan kami.</p>
-          <button className="kl-btn-ghost mt-4" onClick={() => setShowReviewModal(true)}>+ Tulis Testimoni</button>
+          <h2>{t('storefront.whatCustomersSay1')} <em>{t('storefront.whatCustomersSay2')}</em> {t('storefront.whatCustomersSay3')}</h2>
+          <p>{t('storefront.whatCustomersSayDesc')}</p>
+          <button className="kl-btn-ghost mt-4" onClick={() => setShowReviewModal(true)}>{t('storefront.writeTestimonial')}</button>
         </div>
         <div className="kl-reviews-container">
           {testimonials.map((rev, idx) => (
@@ -334,20 +347,20 @@ const CategoryStorefront = () => {
         <div className="kl-cart-overlay active" style={{ zIndex: 2000 }} onClick={() => setShowReviewModal(false)}>
           <div className="kl-cart-drawer active" style={{ maxWidth: '450px', height: 'auto', borderRadius: '32px 32px 0 0', bottom: 0, top: 'auto', padding: '32px' }} onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-black text-slate-800">Tulis Testimoni</h2>
+              <h2 className="text-xl font-black text-slate-800">{t('storefront.reviewFormTitle')}</h2>
               <button onClick={() => setShowReviewModal(false)} className="text-2xl text-slate-400">✕</button>
             </div>
             <form onSubmit={handleSubmitReview}>
               <div className="kl-form-group mb-4">
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nama Anda</label>
-                <input required type="text" className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm" placeholder="Masukkan nama Anda" value={reviewForm.customer_name} onChange={e => setReviewForm({...reviewForm, customer_name: e.target.value})} />
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('storefront.reviewFormName')}</label>
+                <input required type="text" className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm" placeholder={t('storefront.reviewFormNamePlaceholder')} value={reviewForm.customer_name} onChange={e => setReviewForm({...reviewForm, customer_name: e.target.value})} />
               </div>
               <div className="kl-form-group mb-4">
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Pekerjaan / Status (Opsional)</label>
-                <input type="text" className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm" placeholder="Contoh: Food Enthusiast" value={reviewForm.customer_role} onChange={e => setReviewForm({...reviewForm, customer_role: e.target.value})} />
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('storefront.reviewFormRole')}</label>
+                <input type="text" className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm" placeholder={t('storefront.reviewFormRolePlaceholder')} value={reviewForm.customer_role} onChange={e => setReviewForm({...reviewForm, customer_role: e.target.value})} />
               </div>
               <div className="kl-form-group mb-4">
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Rating</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('storefront.reviewFormRating')}</label>
                 <div className="flex gap-2">
                   {[1,2,3,4,5].map(s => (
                     <button key={s} type="button" onClick={() => setReviewForm({...reviewForm, rating: s})} className={`text-2xl ${reviewForm.rating >= s ? 'text-amber-400' : 'text-slate-200'}`}>★</button>
@@ -355,11 +368,11 @@ const CategoryStorefront = () => {
                 </div>
               </div>
               <div className="kl-form-group mb-6">
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Komentar</label>
-                <textarea required className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm min-h-[100px]" placeholder="Bagaimana pengalaman Anda mencicipi masakan kami?" value={reviewForm.comment} onChange={e => setReviewForm({...reviewForm, comment: e.target.value})} />
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('storefront.reviewFormComment')}</label>
+                <textarea required className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm min-h-[100px]" placeholder={t('storefront.reviewFormCommentPlaceholder')} value={reviewForm.comment} onChange={e => setReviewForm({...reviewForm, comment: e.target.value})} />
               </div>
               <button type="submit" disabled={submittingReview} className="w-full py-4 bg-[#b48c36] text-white rounded-2xl font-bold shadow-lg shadow-amber-900/20">
-                {submittingReview ? 'Mengirim...' : 'Kirim Testimoni ✨'}
+                {submittingReview ? t('storefront.reviewFormSubmitting') : t('storefront.reviewFormSubmit')}
               </button>
             </form>
           </div>
@@ -368,7 +381,7 @@ const CategoryStorefront = () => {
 
       <footer className="kl-footer">
         <div className="kl-footer-logo">{settings.store_name}</div>
-        <p>© 2026 {settings.store_name} · {settings.address && settings.address !== 'Alamat belum diatur' ? settings.address : 'Alamat Toko Belum Diatur'}</p>
+        <p>© 2026 {settings.store_name} · {settings.address && settings.address !== 'Alamat belum diatur' ? settings.address : t('storefront.addressNotSet')}</p>
         <div className="kl-footer-links">
           {settings.instagram_url && <a href={settings.instagram_url}>Instagram</a>}
           {settings.whatsapp_number && <a href={`https://wa.me/${settings.whatsapp_number}`}>WhatsApp</a>}

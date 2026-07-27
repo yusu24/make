@@ -48,3 +48,9 @@
 .sp-btn:hover:not(:disabled) { border-color: var(--primary-500); color: var(--primary-500); }
 .sp-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .sp-btn.active { background: var(--primary-500); border-color: var(--primary-500); color: #fff; }
+
+.sp-container.sp-compact {
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 12px;
+}

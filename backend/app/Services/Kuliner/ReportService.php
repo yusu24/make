@@ -15,10 +15,8 @@ class ReportService
             ->whereDate('created_at', '>=', $dateFrom)
             ->whereDate('created_at', '<=', $dateTo);
 
-        // 'kasir' filter: this app has no per-order cashier/user column on Order today,
-        // so this is a no-op until that relationship exists (flagged in the build plan).
         if ($kasirId) {
-            $query->whereRaw('1 = 0');
+            $query->where('cashier_id', $kasirId);
         }
 
         return $query;

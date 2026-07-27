@@ -113,7 +113,7 @@ export default function Units() {
               paginatedData.map(u => (
                 <tr key={u.id}>
                   <td className="pl-6">
-                    <span className="retail-text-secondary">#{u.id}</span>
+                    <span className="retail-text-primary">#{u.id}</span>
                   </td>
                   <td>
                     <span className="retail-text-primary">{u.name}</span>

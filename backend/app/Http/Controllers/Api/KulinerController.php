@@ -346,6 +346,7 @@ class KulinerController extends Controller
                     'payment_method' => $request->payment_method,
                     'notes' => $notes,
                     'source' => $source,
+                    'cashier_id' => auth('sanctum')->id(),
                     'total' => $total,
                     'status' => $initialStatus
                 ]);
@@ -1189,6 +1190,94 @@ class KulinerController extends Controller
             report($e);
         }
 
+        $filter = $request->query('filter', 'week');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+
+        $chartData = [];
+        try {
+            if ($filter === 'today') {
+                $ordersByHour = Order::where('tenant_id', $tenantId)
+                    ->where('status', 'completed')
+                    ->whereDate('created_at', $today)
+                    ->selectRaw('HOUR(created_at) as hour, SUM(total) as revenue, COUNT(id) as orders')
+                    ->groupBy('hour')
+                    ->get()
+                    ->keyBy('hour');
+
+                for ($i = 0; $i < 24; $i++) {
+                    $chartData[] = [
+                        'date' => sprintf('%02d:00', $i),
+                        'revenue' => $ordersByHour->has($i) ? (float) $ordersByHour[$i]->revenue : 0,
+                        'orders' => $ordersByHour->has($i) ? (int) $ordersByHour[$i]->orders : 0,
+                    ];
+                }
+            } elseif ($filter === 'month') {
+                $daysInMonth = now()->daysInMonth;
+                $ordersByDate = Order::where('tenant_id', $tenantId)
+                    ->where('status', 'completed')
+                    ->where('created_at', 'like', "$thisMonth%")
+                    ->selectRaw('DATE(created_at) as date, SUM(total) as revenue, COUNT(id) as orders')
+                    ->groupBy('date')
+                    ->get()
+                    ->keyBy('date');
+
+                for ($i = 1; $i <= $daysInMonth; $i++) {
+                    $dateStr = now()->format('Y-m-') . sprintf('%02d', $i);
+                    $chartData[] = [
+                        'date' => $i . ' ' . now()->locale('id')->isoFormat('MMM'),
+                        'revenue' => $ordersByDate->has($dateStr) ? (float) $ordersByDate[$dateStr]->revenue : 0,
+                        'orders' => $ordersByDate->has($dateStr) ? (int) $ordersByDate[$dateStr]->orders : 0,
+                    ];
+                }
+            } elseif ($filter === 'custom' && $startDate && $endDate) {
+                $start = \Carbon\Carbon::parse($startDate);
+                $end = \Carbon\Carbon::parse($endDate);
+                
+                $ordersByDate = Order::where('tenant_id', $tenantId)
+                    ->where('status', 'completed')
+                    ->whereDate('created_at', '>=', $start->toDateString())
+                    ->whereDate('created_at', '<=', $end->toDateString())
+                    ->selectRaw('DATE(created_at) as date, SUM(total) as revenue, COUNT(id) as orders')
+                    ->groupBy('date')
+                    ->get()
+                    ->keyBy('date');
+
+                // Generate dates between start and end
+                for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+                    $dateStr = $date->toDateString();
+                    $chartData[] = [
+                        'date' => $date->locale('id')->isoFormat('DD MMM'),
+                        'revenue' => $ordersByDate->has($dateStr) ? (float) $ordersByDate[$dateStr]->revenue : 0,
+                        'orders' => $ordersByDate->has($dateStr) ? (int) $ordersByDate[$dateStr]->orders : 0,
+                    ];
+                }
+            } else {
+                // week (default)
+                $last7Days = collect(range(6, 0))->map(function($i) {
+                    return now()->subDays($i)->toDateString();
+                });
+                
+                $ordersByDate = Order::where('tenant_id', $tenantId)
+                    ->where('status', 'completed')
+                    ->whereDate('created_at', '>=', now()->subDays(6)->toDateString())
+                    ->selectRaw('DATE(created_at) as date, SUM(total) as revenue, COUNT(id) as orders')
+                    ->groupBy('date')
+                    ->get()
+                    ->keyBy('date');
+    
+                foreach ($last7Days as $date) {
+                    $chartData[] = [
+                        'date' => \Carbon\Carbon::parse($date)->locale('id')->isoFormat('dddd'),
+                        'revenue' => $ordersByDate->has($date) ? (float) $ordersByDate[$date]->revenue : 0,
+                        'orders' => $ordersByDate->has($date) ? (int) $ordersByDate[$date]->orders : 0,
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         return response()->json([
             'revenue_today' => $revenueToday,
             'revenue_yesterday' => $revenueYesterday,
@@ -1200,6 +1289,7 @@ class KulinerController extends Controller
             'top_menu' => $topMenu,
             'low_stock_ingredients' => $lowStockIngredients,
             'kitchen_queue_count' => $kitchenQueueCount,
+            'chart_data' => $chartData,
         ]);
     }
 

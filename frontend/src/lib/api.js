@@ -11,7 +11,7 @@ export const api = axios.create({
 // Request interceptor to attach token dynamically
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('umkm_token')
+    const token = sessionStorage.getItem('umkm_token') || localStorage.getItem('umkm_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -28,9 +28,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const hasToken = localStorage.getItem('umkm_token')
+      const hasToken = sessionStorage.getItem('umkm_token') || localStorage.getItem('umkm_token')
       if (hasToken && !isRedirecting && window.location.pathname !== '/login') {
         isRedirecting = true
+        sessionStorage.removeItem('umkm_token')
+        sessionStorage.removeItem('umkm_user')
         localStorage.removeItem('umkm_token')
         localStorage.removeItem('umkm_user')
         setTimeout(() => {

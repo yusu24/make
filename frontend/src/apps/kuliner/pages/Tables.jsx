@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { QrCode, Edit3, Trash2 } from 'lucide-react';
+import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import './KulinerDashboard.css';
 
-const STATUS_LABEL = { empty: 'Kosong', occupied: 'Terisi', reserved: 'Dipesan', cleaning: 'Dibersihkan' };
 const STATUS_COLOR = { empty: '#22c55e', occupied: '#ef4444', reserved: '#f59e0b', cleaning: '#94a3b8' };
 const STATUS_CYCLE = ['empty', 'occupied', 'reserved', 'cleaning'];
 const emptyForm = { name: '', capacity: 4 };
@@ -18,6 +18,9 @@ const selfOrderUrl = (tableName) => {
 };
 
 export default function Tables() {
+  const { t } = useTranslation();
+  const STATUS_LABEL = { empty: t('kulinerOrders.statusAvailable') || 'Kosong', occupied: t('kulinerOrders.statusOccupied') || 'Terisi', reserved: t('kulinerOrders.statusReserved') || 'Dipesan', cleaning: 'Dibersihkan' };
+
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -49,10 +52,10 @@ export default function Tables() {
     try {
       if (editingTable) {
         await api.put(`/kuliner/admin/tables/${editingTable.id}`, form);
-        toast.success('Meja diperbarui');
+        toast.success(t('kulinerOrders.alertSaveSuccess') || 'Meja diperbarui');
       } else {
         await api.post('/kuliner/admin/tables', form);
-        toast.success('Meja ditambahkan');
+        toast.success(t('kulinerOrders.alertSaveSuccess') || 'Meja ditambahkan');
       }
       setShowModal(false);
       load();
@@ -74,11 +77,11 @@ export default function Tables() {
   };
 
   const handleDelete = async (t) => {
-    const ok = await confirm(`Hapus meja "${t.name}"?`, { title: 'Hapus Meja' });
+    const ok = await confirm(`${t('kulinerOrders.deleteConfirm') || 'Hapus meja'} "${t.name}"?`);
     if (!ok) return;
     try {
       await api.delete(`/kuliner/admin/tables/${t.id}`);
-      toast.success('Meja dihapus');
+      toast.success(t('kulinerOrders.alertDeleteSuccess') || 'Meja dihapus');
       load();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Gagal menghapus meja');
@@ -90,7 +93,7 @@ export default function Tables() {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Manajemen Meja & QR Self Order</h1>
+        <h1 className="kd-page-title">{t('kulinerOrders.tablesTitle') || 'Manajemen Meja & QR Self Order'}</h1>
       </div>
       <div className="kd-content">
         {!dineInEnabled && (
@@ -100,14 +103,14 @@ export default function Tables() {
         )}
 
         <div className="kd-page-actions">
-          <button className="kd-btn kd-btn-primary" onClick={openCreate}>+ Tambah Meja</button>
+          <button className="kd-btn kd-btn-primary" onClick={openCreate}>{t('kulinerOrders.addTableBtn') || '+ Tambah Meja'}</button>
         </div>
 
         <div className="kd-panel">
           {loading ? (
-            <div className="text-center py-10 text-slate-400">Memuat...</div>
+            <div className="text-center py-10 text-slate-400">{t('kulinerCommon.loadingData') || 'Memuat...'}</div>
           ) : tables.length === 0 ? (
-            <div className="text-center py-10 text-slate-400">Belum ada meja. Tambahkan meja pertama Anda.</div>
+            <div className="text-center py-10 text-slate-400">{t('kulinerCommon.emptyData') || 'Belum ada meja. Tambahkan meja pertama Anda.'}</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 14, padding: 16 }}>
               {tables.map((t) => (
@@ -148,23 +151,23 @@ export default function Tables() {
         <div className="kd-modal-overlay visible" onClick={() => setShowModal(false)}>
           <div className="kd-modal max-w-lg" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
-              <h2 className="kd-modal-title">{editingTable ? 'Edit Meja' : 'Tambah Meja'}</h2>
+              <h2 className="kd-modal-title">{editingTable ? t('kulinerOrders.editTableModalTitle') || 'Edit Meja' : t('kulinerOrders.addTableModalTitle') || 'Tambah Meja'}</h2>
               <button className="kd-close-btn" onClick={() => setShowModal(false)}>✕</button>
             </div>
             <form onSubmit={handleSave}>
               <div className="kd-modal-body">
                 <div className="kd-form-group">
-                  <label className="kd-form-label">Nama / Nomor Meja</label>
+                  <label className="kd-form-label">{t('kulinerOrders.formTableName') || 'Nama / Nomor Meja'}</label>
                   <input required className="kd-form-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Meja 01" />
                 </div>
                 <div className="kd-form-group">
-                  <label className="kd-form-label">Kapasitas</label>
+                  <label className="kd-form-label">{t('kulinerOrders.formTableCapacity') || 'Kapasitas'}</label>
                   <input required type="number" min="1" className="kd-form-input" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} />
                 </div>
               </div>
               <div className="kd-modal-footer">
-                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
-                <button type="submit" className="kd-btn kd-btn-primary" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowModal(false)}>{t('kulinerOrders.cancel') || 'Batal'}</button>
+                <button type="submit" className="kd-btn kd-btn-primary" disabled={saving}>{saving ? t('kulinerOrders.savingBtn') || 'Menyimpan...' : t('kulinerOrders.saveBtn') || 'Simpan'}</button>
               </div>
             </form>
           </div>

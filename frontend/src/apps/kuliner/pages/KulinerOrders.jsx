@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Receipt } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
 import KulinerReceiptModal from '../components/KulinerReceiptModal';
+import ClientPagination from '../components/ClientPagination';
 import './KulinerDashboard.css';
 
 import { useAuth } from '../../../contexts/AuthContext';
 
 const KulinerOrders = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -20,6 +23,10 @@ const KulinerOrders = () => {
   const [isPaymentMode, setIsPaymentMode] = useState(false);
   const [cashReceived, setCashReceived] = useState('');
   const [receiptOrder, setReceiptOrder] = useState(null);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchOrders(true); // initial load = show spinner
@@ -57,6 +64,10 @@ const KulinerOrders = () => {
   };
 
   const filteredOrders = orders.filter(o => filterStatus === 'all' || o.status === filterStatus);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const currentOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
@@ -138,7 +149,7 @@ const KulinerOrders = () => {
           <span>${formatRp(selectedOrder.total)}</span>
         </div>
         <div class="text-xs flex justify-between mt-1">
-          <span>Metode Bayar</span>
+          <span>{t('kulinerCommon.paymentMethod') || 'Metode Bayar'}</span>
           <span>${selectedOrder.payment_method === 'cash_cashier' ? 'Tunai Kasir' : 'QRIS Kasir'}</span>
         </div>
         
@@ -174,13 +185,13 @@ const KulinerOrders = () => {
     <KulinerAdminLayout>
       {/* Topbar selalu tampil, tidak ikut loading */}
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Manajemen Pesanan</h1>
+        <h1 className="kd-page-title">{t('kulinerOrders.ordersTitle')}</h1>
       </div>
 
       {/* Hanya konten yang loading */}
       <div className="kd-content">
         {loading ? (
-          <KulinerLoading message="Memuat Pesanan..." />
+          <KulinerLoading message={t('kulinerOrders.loadingOrders') || 'Memuat Pesanan...'} />
         ) : (
           <>
             <div className="kd-page-actions">
@@ -193,21 +204,21 @@ const KulinerOrders = () => {
                 <div style={{ display: 'flex', gap: 12 }}>
                   <button
                     className={`kd-btn ${filterStatus === 'all' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
-                    onClick={() => setFilterStatus('all')}
+                    onClick={() => { setFilterStatus('all'); setCurrentPage(1); }}
                   >
-                    Semua
+                    {t('kulinerOrders.tabAll')}
                   </button>
                   <button
                     className={`kd-btn ${filterStatus === 'pending' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
-                    onClick={() => setFilterStatus('pending')}
+                    onClick={() => { setFilterStatus('pending'); setCurrentPage(1); }}
                   >
-                    Menunggu Verifikasi
+                    {t('kulinerOrders.tabNew') || 'Baru / Menunggu'}
                   </button>
                   <button
                     className={`kd-btn ${filterStatus === 'processing' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
-                    onClick={() => setFilterStatus('processing')}
+                    onClick={() => { setFilterStatus('processing'); setCurrentPage(1); }}
                   >
-                    Dalam Proses
+                    {t('kulinerOrders.tabProcess') || 'Dalam Proses'}
                   </button>
                 </div>
                 <button className="kd-panel-action" onClick={() => fetchOrders(false)}>Refresh Data ↻</button>
@@ -217,27 +228,35 @@ const KulinerOrders = () => {
                 <table className="kd-table">
                   <thead>
                     <tr>
-                      <th>Order ID</th>
-                      <th>Pelanggan</th>
+                      <th>{t('kulinerOrders.headerId') || 'Order ID'}</th>
+                      <th>{t('kulinerOrders.headerDate') || 'Tanggal'}</th>
+                      <th>{t('kulinerOrders.headerCustomer') || 'Pelanggan'}</th>
+                      <th>No HP</th>
                       <th>Tipe</th>
-                      <th>Total Tagihan</th>
-                      <th>Status</th>
-                      <th>Metode Bayar</th>
-                      <th className="text-right">Aksi</th>
+                      <th>{t('kulinerOrders.headerTotal') || 'Total Tagihan'}</th>
+                      <th>{t('kulinerOrders.headerStatus') || 'Status'}</th>
+                      <th>{t('kulinerCommon.paymentMethod') || 'Metode Bayar'}</th>
+                      <th className="text-right">{t('kulinerOrders.headerAction') || 'Aksi'}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredOrders.length === 0 ? (
-                      <tr><td colSpan="7" className="text-center py-10 text-slate-400">Belum ada pesanan.</td></tr>
-                    ) : filteredOrders.map(order => (
+                    {currentOrders.length === 0 ? (
+                      <tr><td colSpan="9" className="text-center py-10 text-slate-400">{t('kulinerOrders.emptyOrders') || 'Belum ada pesanan.'}</td></tr>
+                    ) : currentOrders.map(order => (
                       <tr key={order.id}>
-                        <td>
-                          <span className="font-bold text-[#b48c36]">{order.order_number || `#ORD-${order.id}`}</span>
-                          <div className="text-[10px] text-slate-400">{new Date(order.created_at).toLocaleTimeString()}</div>
+                        <td style={{ color: '#1e293b' }}>
+                          {order.order_number || `#ORD-${order.id}`}
                         </td>
                         <td>
-                          <div className="kd-menu-name">{order.customer_name}</div>
-                          <div className="text-[11px] text-slate-400">{order.customer_phone}</div>
+                          <span className="text-[11px] text-slate-500">
+                            {new Date(order.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'})}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ color: '#1e293b' }}>{order.customer_name}</div>
+                        </td>
+                        <td>
+                          <div className="text-[11px] text-slate-500">{order.customer_phone || '-'}</div>
                         </td>
                         <td>
                           <span className="text-[11px] font-bold tracking-wider text-slate-500">
@@ -252,14 +271,14 @@ const KulinerOrders = () => {
                         </td>
                         <td>
                           <span className="text-[11px] text-slate-500">
-                            {order.payment_method === 'cash_cashier' ? '💵 Tunai Kasir' : '📱 QRIS Kasir'}
+                            {order.payment_method === 'cash_cashier' ? t('kulinerCommon.cashPayment') || '💵 Tunai Kasir' : t('kulinerCommon.qrisPayment') || '📱 QRIS Kasir'}
                           </span>
                         </td>
                         <td className="text-right">
                           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                             <button
                               className="kd-icon-btn"
-                              title="Detail / Proses"
+                              title={t('kulinerOrders.viewBtn') || 'Detail / Proses'}
                               onClick={() => { setSelectedOrder(order); setIsModalOpen(true); setIsPaymentMode(false); setCashReceived(''); }}
                             >
                               <Eye size={16} />
@@ -278,6 +297,13 @@ const KulinerOrders = () => {
                   </tbody>
                 </table>
               </div>
+              <ClientPagination setItemsPerPage={setItemsPerPage} 
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                itemsPerPage={itemsPerPage}
+                totalItems={filteredOrders.length}
+              />
             </div>
 
             {/* ORDER DETAIL MODAL */}

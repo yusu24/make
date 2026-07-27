@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Truck, Phone, MapPin, Edit3, Trash2, ChevronRight, PackageCheck, Plus, Building2, RefreshCw } from 'lucide-react';
+import { Truck, Edit3, Trash2, ChevronRight, PackageCheck, Plus, RefreshCw } from 'lucide-react';
 
 import Modal from '../../../components/Modal';
 import RetailLoading from '../components/RetailLoading';
@@ -122,25 +122,18 @@ export default function Suppliers() {
               paginatedData.map(s => (
                 <tr key={s.id}>
                   <td className="pl-6">
-                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl retail-bg-primary-subtle flex items-center justify-center retail-text-primary retail-border">
-                           <Building2 size={18} />
-                        </div>
-                        <div>
-                           <div className="retail-text-primary">{s.name}</div>
-                           <div className="text-[10px] retail-text-secondary uppercase tracking-widest">{s.id.toString().padStart(4, '0')}</div>
-                        </div>
+                     <div>
+                        <div className="retail-text-primary">{s.name}</div>
+                        <div className="text-[10px] retail-text-secondary uppercase tracking-widest">{s.id.toString().padStart(4, '0')}</div>
                      </div>
                   </td>
                   <td>
-                     <div className="flex items-center gap-2 text-sm retail-text-primary">
-                        <Phone size={13} className="retail-text-secondary" />
+                     <div className="text-sm retail-text-primary">
                         {s.contact || '-'}
                      </div>
                   </td>
                   <td>
-                     <div className="flex items-center gap-2 text-sm retail-text-secondary max-w-xs truncate">
-                        <MapPin size={13} className="retail-text-secondary shrink-0" />
+                     <div className="text-sm retail-text-secondary max-w-xs truncate">
                         {s.address || '-'}
                      </div>
                   </td>

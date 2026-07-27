@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
@@ -11,8 +12,17 @@ const COLUMNS = [
 ];
 
 export default function KitchenQueue() {
+  const { t } = useTranslation();
   const toast = useToast();
   const [orders, setOrders] = useState([]);
+
+  // Use translation inside the component, but we have COLUMNS array outside.
+  // We can redefine COLUMNS inside or map it. Let's map it in render.
+  const COLUMNS_DEF = [
+    { key: 'waiting', label: t('kulinerOrders.tabNew') || 'Menunggu', statuses: ['pending', 'waiting'], color: '#f59e0b', next: 'cooking' },
+    { key: 'cooking', label: t('kulinerOrders.tabProcess') || 'Diproses', statuses: ['processing', 'cooking'], color: '#3b82f6', next: 'ready' },
+    { key: 'ready', label: t('kulinerOrders.tabReady') || 'Siap', statuses: ['ready'], color: '#10b981', next: 'served' },
+  ];
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const timerRef = useRef(null);
@@ -53,11 +63,11 @@ export default function KitchenQueue() {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Kitchen Queue</h1>
+        <h1 className="kd-page-title">{t('kulinerOrders.kitchenTitle')}</h1>
       </div>
       <div className="kd-content">
         <div className="kd-kanban-grid">
-          {COLUMNS.map((col) => {
+          {COLUMNS_DEF.map((col) => {
             const colOrders = orders
               .filter((o) => col.statuses.includes(o.status))
               .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -70,9 +80,9 @@ export default function KitchenQueue() {
                 </div>
                 <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {loading ? (
-                    <div className="text-center text-slate-400 py-10">Memuat...</div>
+                    <div className="text-center text-slate-400 py-10">{t('kulinerOrders.loadingOrders') || 'Memuat...'}</div>
                   ) : colOrders.length === 0 ? (
-                    <div className="text-center text-slate-400 py-10" style={{ fontSize: 13 }}>Tidak ada pesanan</div>
+                    <div className="text-center text-slate-400 py-10" style={{ fontSize: 13 }}>{t('kulinerOrders.emptyOrders') || 'Tidak ada pesanan'}</div>
                   ) : (
                     colOrders.map((o) => (
                       <div

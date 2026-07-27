@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { History, Edit3, Trash2 } from 'lucide-react';
+import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import useServerTable from '../../../hooks/useServerTable';
@@ -11,6 +12,7 @@ import './KulinerDashboard.css';
 const emptyForm = { name: '', code: '', category: '', unit: '', supplier_id: '', last_price: '', min_stock: '', stock: '' };
 
 export default function BahanBaku() {
+  const { t } = useTranslation();
   const toast = useToast();
   const confirm = useConfirm();
   const fileInputRef = useRef(null);
@@ -56,10 +58,10 @@ export default function BahanBaku() {
       if (editingItem) {
         delete payload.stock; // stock is only changed via adjust-stock, not direct edit
         await api.put(`/kuliner/admin/ingredients/${editingItem.id}`, payload);
-        toast.success('Bahan baku diperbarui');
+        toast.success(t('kulinerInventory.alertSaveSuccess'));
       } else {
         await api.post('/kuliner/admin/ingredients', payload);
-        toast.success('Bahan baku ditambahkan');
+        toast.success(t('kulinerInventory.alertSaveSuccess'));
       }
       setShowModal(false);
       table.reload();
@@ -71,11 +73,11 @@ export default function BahanBaku() {
   };
 
   const handleDelete = async (item) => {
-    const ok = await confirm(`Hapus bahan baku "${item.name}"? Tindakan ini tidak bisa dibatalkan.`, { title: 'Hapus Bahan Baku' });
+    const ok = await confirm(`${t('kulinerInventory.deleteConfirm')} "${item.name}"?`);
     if (!ok) return;
     try {
       await api.delete(`/kuliner/admin/ingredients/${item.id}`);
-      toast.success('Bahan baku dihapus');
+      toast.success(t('kulinerInventory.alertDeleteSuccess'));
       table.reload();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Gagal menghapus bahan baku');
@@ -130,14 +132,14 @@ export default function BahanBaku() {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Bahan Baku</h1>
+        <h1 className="kd-page-title">{t('kulinerInventory.bahanBakuTitle')}</h1>
       </div>
       <div className="kd-content">
         <div className="kd-page-actions" style={{ flexWrap: 'wrap', gap: 10 }}>
           <input
             className="kd-form-input"
             style={{ maxWidth: 260, height: 38, fontSize: 12 }}
-            placeholder="Cari nama atau kode..."
+            placeholder={t('kulinerInventory.searchBahanPlaceholder')}
             value={table.search}
             onChange={(e) => table.setSearch(e.target.value)}
           />
@@ -145,7 +147,7 @@ export default function BahanBaku() {
             <button className="kd-btn kd-btn-secondary" onClick={handleExport}>⬇ Export Excel</button>
             <button className="kd-btn kd-btn-secondary" onClick={() => fileInputRef.current?.click()}>⬆ Import Excel</button>
             <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: 'none' }} onChange={handleImport} />
-            <button className="kd-btn kd-btn-primary" onClick={openCreate}>+ Tambah Bahan Baku</button>
+            <button className="kd-btn kd-btn-primary" onClick={openCreate}>{t('kulinerInventory.addBahanBakuBtn')}</button>
           </div>
         </div>
 
@@ -154,26 +156,27 @@ export default function BahanBaku() {
             <table className="kd-table">
               <thead>
                 <tr>
-                  <th onClick={() => table.toggleSort('name')} style={{ cursor: 'pointer' }}>Nama {table.sortBy === 'name' ? (table.sortDir === 'asc' ? '↑' : '↓') : ''}</th>
+                  <th onClick={() => table.toggleSort('name')} style={{ cursor: 'pointer' }}>{t('kulinerInventory.headerBahanName')} {table.sortBy === 'name' ? (table.sortDir === 'asc' ? '↑' : '↓') : ''}</th>
+                  <th>Kode</th>
                   <th>Kategori</th>
                   <th>Supplier</th>
-                  <th onClick={() => table.toggleSort('stock')} style={{ cursor: 'pointer' }}>Stok {table.sortBy === 'stock' ? (table.sortDir === 'asc' ? '↑' : '↓') : ''}</th>
-                  <th onClick={() => table.toggleSort('last_price')} style={{ cursor: 'pointer' }}>Harga Terakhir</th>
-                  <th className="text-right">Aksi</th>
+                  <th onClick={() => table.toggleSort('stock')} style={{ cursor: 'pointer' }}>{t('kulinerInventory.headerStock')} {table.sortBy === 'stock' ? (table.sortDir === 'asc' ? '↑' : '↓') : ''}</th>
+                  <th onClick={() => table.toggleSort('last_price')} style={{ cursor: 'pointer' }}>{t('kulinerInventory.headerAvgCost')}</th>
+                  <th className="text-right">{t('kulinerInventory.headerAction')}</th>
                 </tr>
               </thead>
               <tbody>
                 {table.loading ? (
-                  <tr><td colSpan="6" className="text-center py-10 text-slate-400">Memuat bahan baku...</td></tr>
+                  <tr><td colSpan="7" className="text-center py-10 text-slate-400">{t('kulinerInventory.loadingBahan')}</td></tr>
                 ) : table.rows.length === 0 ? (
-                  <tr><td colSpan="6" className="text-center py-10 text-slate-400">Belum ada bahan baku.</td></tr>
+                  <tr><td colSpan="7" className="text-center py-10 text-slate-400">{t('kulinerInventory.emptyBahan')}</td></tr>
                 ) : (
                   table.rows.map((ing) => (
                     <tr key={ing.id}>
                       <td>
-                        <div className="kd-menu-name">{ing.name}</div>
-                        {ing.code && <div className="text-[10px] text-slate-400">{ing.code}</div>}
+                        <div style={{ color: '#1e293b' }}>{ing.name}</div>
                       </td>
+                      <td>{ing.code || '-'}</td>
                       <td>{ing.category || '-'}</td>
                       <td>{ing.supplier?.name || '-'}</td>
                       <td>
@@ -201,17 +204,17 @@ export default function BahanBaku() {
 
       {showModal && (
         <div className="kd-modal-overlay visible" onClick={() => setShowModal(false)}>
-          <div className="kd-modal max-w-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
-              <h2 className="kd-modal-title">{editingItem ? 'Edit' : 'Tambah'} Bahan Baku</h2>
+              <h2 className="kd-modal-title">{editingItem ? t('kulinerInventory.editBahanModalTitle') : t('kulinerInventory.addBahanModalTitle')}</h2>
               <button className="kd-close-btn" onClick={() => setShowModal(false)}>✕</button>
             </div>
             <form onSubmit={handleSave}>
               <div className="kd-modal-body">
                 <div className="kd-form-row">
                   <div className="kd-form-group">
-                    <label className="kd-form-label">Nama</label>
-                    <input required className="kd-form-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                    <label className="kd-form-label">{t('kulinerInventory.formBahanName')}</label>
+                    <input required className="kd-form-input" placeholder={t('kulinerInventory.formBahanNamePlaceholder')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                   </div>
                   <div className="kd-form-group">
                     <label className="kd-form-label">Kode (opsional)</label>
@@ -224,7 +227,7 @@ export default function BahanBaku() {
                     <input className="kd-form-input" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
                   </div>
                   <div className="kd-form-group">
-                    <label className="kd-form-label">Satuan</label>
+                    <label className="kd-form-label">{t('kulinerInventory.formUnitLabel')}</label>
                     <input required className="kd-form-input" placeholder="gram, ml, pcs" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
                   </div>
                 </div>
@@ -237,24 +240,24 @@ export default function BahanBaku() {
                 </div>
                 <div className="kd-form-row">
                   <div className="kd-form-group">
-                    <label className="kd-form-label">Harga Terakhir (Rp)</label>
+                    <label className="kd-form-label">{t('kulinerInventory.formCostLabel')}</label>
                     <input type="number" min="0" className="kd-form-input" value={form.last_price} onChange={(e) => setForm({ ...form, last_price: e.target.value })} />
                   </div>
                   <div className="kd-form-group">
-                    <label className="kd-form-label">Stok Minimum</label>
+                    <label className="kd-form-label">{t('kulinerInventory.formMinStockLabel')}</label>
                     <input type="number" min="0" className="kd-form-input" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })} />
                   </div>
                   {!editingItem && (
                     <div className="kd-form-group">
-                      <label className="kd-form-label">Stok Awal</label>
+                      <label className="kd-form-label">{t('kulinerInventory.formStockLabel')}</label>
                       <input type="number" min="0" className="kd-form-input" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
                     </div>
                   )}
                 </div>
               </div>
               <div className="kd-modal-footer">
-                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
-                <button type="submit" className="kd-btn kd-btn-primary" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowModal(false)}>{t('kulinerInventory.cancel')}</button>
+                <button type="submit" className="kd-btn kd-btn-primary" disabled={saving}>{saving ? t('kulinerInventory.savingBtn') : t('kulinerInventory.saveBtn')}</button>
               </div>
             </form>
           </div>
@@ -263,14 +266,14 @@ export default function BahanBaku() {
 
       {movementsFor && (
         <div className="kd-modal-overlay visible" onClick={() => setMovementsFor(null)}>
-          <div className="kd-modal max-w-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">Riwayat Stok — {movementsFor.name}</h2>
               <button className="kd-close-btn" onClick={() => setMovementsFor(null)}>✕</button>
             </div>
             <div className="kd-modal-body" style={{ maxHeight: 400, overflowY: 'auto' }}>
               {movements.length === 0 ? (
-                <p className="text-center text-slate-400 py-6">Belum ada riwayat pergerakan stok.</p>
+                <p className="text-center text-slate-400 py-6">{t('kulinerCommon.emptyData') || 'Belum ada riwayat pergerakan stok.'}</p>
               ) : (
                 movements.map((m) => (
                   <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>

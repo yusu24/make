@@ -108,14 +108,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Main Row: Chart + Notifikasi ── */}
-      <div className="aq-grid-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 16 }}>
-        <style>{`
-          @media (max-width: 1024px) {
-            .aq-grid-2 { grid-template-columns: 1fr !important; }
-          }
-        `}</style>
-
-        {/* Chart Card */}
+      <div className="aq-grid-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 16 }}>        {/* Chart Card */}
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <div>

@@ -14,7 +14,7 @@ const apiClient = axios.create({
 
 // Attach Token to every request
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('umkm_token');
+    const token = sessionStorage.getItem('umkm_token') || localStorage.getItem('umkm_token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -30,9 +30,11 @@ apiClient.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             // Only act if token exists (avoid loop) and not already redirecting
-            const hasToken = localStorage.getItem('umkm_token');
+            const hasToken = sessionStorage.getItem('umkm_token') || localStorage.getItem('umkm_token');
             if (hasToken && !isRedirecting && window.location.pathname !== '/login') {
                 isRedirecting = true;
+                sessionStorage.removeItem('umkm_token');
+                sessionStorage.removeItem('umkm_user');
                 localStorage.removeItem('umkm_token');
                 localStorage.removeItem('umkm_user');
                 // Small delay so any in-flight state updates settle first

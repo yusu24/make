@@ -49,7 +49,7 @@ export default function CustomerReport() {
                     <span className="text-slate-800">{tc.customer?.name || 'Umum'}</span>
                   </td>
                   <td>
-                    <span className="text-slate-500">{tc.customer?.contact || '-'}</span>
+                    <span className="text-slate-800">{tc.customer?.contact || '-'}</span>
                   </td>
                   <td className="text-center">
                     <span className="badge badge-gray">{tc.visit_count}x Visit</span>

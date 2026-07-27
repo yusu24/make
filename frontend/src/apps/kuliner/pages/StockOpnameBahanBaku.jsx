@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Eye } from 'lucide-react';
+import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
+import ClientPagination from '../components/ClientPagination';
 import './KulinerDashboard.css';
 
 const STATUS_LABEL = {
@@ -11,6 +13,7 @@ const STATUS_LABEL = {
 };
 
 export default function StockOpnameBahanBaku() {
+  const { t } = useTranslation();
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -18,6 +21,12 @@ export default function StockOpnameBahanBaku() {
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
   const [counts, setCounts] = useState({});
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(opnames.length / itemsPerPage);
+  const currentOpnames = opnames.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const load = () => {
     setLoading(true);
@@ -101,11 +110,11 @@ export default function StockOpnameBahanBaku() {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Stock Opname Bahan Baku</h1>
+        <h1 className="kd-page-title">{t('kulinerInventory.stockOpnameTitle')}</h1>
       </div>
       <div className="kd-content">
         <div className="kd-page-actions">
-          <button className="kd-btn kd-btn-primary" onClick={startOpname}>+ Mulai Stock Opname</button>
+          <button className="kd-btn kd-btn-primary" onClick={startOpname}>{t('kulinerInventory.addOpnameBtn')}</button>
         </div>
 
         <div className="kd-panel">
@@ -113,7 +122,7 @@ export default function StockOpnameBahanBaku() {
             <table className="kd-table">
               <thead>
                 <tr>
-                  <th>Tanggal Mulai</th>
+                  <th>{t('kulinerInventory.headerOpnameDate')}</th>
                   <th>Petugas</th>
                   <th>Status</th>
                   <th className="text-right">Aksi</th>
@@ -121,11 +130,11 @@ export default function StockOpnameBahanBaku() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">Memuat...</td></tr>
+                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerInventory.loadingOpname')}</td></tr>
                 ) : opnames.length === 0 ? (
-                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">Belum ada stock opname.</td></tr>
+                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerInventory.emptyOpname')}</td></tr>
                 ) : (
-                  opnames.map((o) => (
+                  currentOpnames.map((o) => (
                     <tr key={o.id}>
                       <td>{new Date(o.created_at).toLocaleString('id-ID')}</td>
                       <td>{o.user?.name || '-'}</td>
@@ -139,12 +148,19 @@ export default function StockOpnameBahanBaku() {
               </tbody>
             </table>
           </div>
+          <ClientPagination setItemsPerPage={setItemsPerPage} 
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={opnames.length}
+          />
         </div>
       </div>
 
       {detail && (
         <div className="kd-modal-overlay visible" onClick={() => setDetail(null)}>
-          <div className="kd-modal max-w-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">Stock Opname #{detail.id} — {STATUS_LABEL[detail.status]}</h2>
               <button className="kd-close-btn" onClick={() => setDetail(null)}>✕</button>
@@ -153,10 +169,10 @@ export default function StockOpnameBahanBaku() {
               <table className="kd-table">
                 <thead>
                   <tr>
-                    <th>Bahan Baku</th>
-                    <th className="text-center">Stok Sistem</th>
-                    <th className="text-center">Hitung Fisik</th>
-                    <th className="text-center">Selisih</th>
+                    <th>{t('kulinerInventory.headerOpnameItem')}</th>
+                    <th className="text-center">{t('kulinerInventory.headerOpnameSysStock')}</th>
+                    <th className="text-center">{t('kulinerInventory.headerOpnameActualStock')}</th>
+                    <th className="text-center">{t('kulinerInventory.headerOpnameDiff')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -185,7 +201,7 @@ export default function StockOpnameBahanBaku() {
             <div className="kd-modal-footer">
               {detail.status === 'draft' && (
                 <>
-                  <button className="kd-btn kd-btn-secondary" onClick={saveCounts}>Simpan Hitungan</button>
+                  <button className="kd-btn kd-btn-secondary" onClick={saveCounts}>{t('kulinerInventory.saveBtn')}</button>
                   <button className="kd-btn kd-btn-primary" onClick={submitForApproval}>Ajukan Persetujuan</button>
                 </>
               )}

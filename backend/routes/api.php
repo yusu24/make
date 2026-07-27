@@ -429,8 +429,9 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::delete('wastes/{id}', [\App\Http\Controllers\Api\Kuliner\WasteController::class, 'destroy']);
             });
 
-            // ── Phase 4: Reporting ──
+            // 💰 Phase 4: Reporting 💰
             Route::middleware('kuliner_permission:reports')->group(function () {
+                Route::get('reports/cashiers', [\App\Http\Controllers\Api\Kuliner\ReportController::class, 'getCashiers']);
                 Route::get('reports/profit-loss', [\App\Http\Controllers\Api\Kuliner\ReportController::class, 'profitLoss']);
                 Route::get('reports/menu-margin', [\App\Http\Controllers\Api\Kuliner\ReportController::class, 'menuMargin']);
                 Route::get('reports/best-sellers', [\App\Http\Controllers\Api\Kuliner\ReportController::class, 'bestSellers']);

@@ -139,22 +139,12 @@ export default function Categories() {
                 paginatedData.map(c => (
                   <tr key={c.id}>
                     <td className="pl-6">
-                      <span className="retail-text-secondary" style={{ fontSize: 13 }}>#{c.id}</span>
+                      <span className="retail-text-primary" style={{ fontSize: 13 }}>#{c.id}</span>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{
-                          width: 30, height: 30, borderRadius: 8,
-                          background: 'var(--retail-primary-light, #ede9fe)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          flexShrink: 0,
-                        }}>
-                          <Tag size={14} color="var(--retail-primary, #6366f1)" />
-                        </div>
-                        <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--retail-text-primary)' }}>
-                          {c.name}
-                        </span>
-                      </div>
+                      <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--retail-text-primary)' }}>
+                        {c.name}
+                      </span>
                     </td>
                     <td className="pr-6" style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>

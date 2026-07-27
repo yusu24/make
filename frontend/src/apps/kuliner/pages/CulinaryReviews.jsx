@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../contexts/I18nContext';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import api from '../../../services/api';
 import './KulinerDashboard.css';
 
 const CulinaryReviews = () => {
+  const { t } = useTranslation();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -69,12 +71,12 @@ const CulinaryReviews = () => {
         {loading ? (
           <div style={{ padding: '40px', textAlign: 'center' }}>
             <div className="spinner" style={{ width: 40, height: 40, margin: '0 auto 20px' }}></div>
-            <p className="text-slate-400">Memuat ulasan pelanggan...</p>
+            <p className="text-slate-400">{t('kulinerCommon.loadingData') || 'Memuat ulasan pelanggan...'}</p>
           </div>
         ) : reviews.length === 0 ? (
           <div className="kd-panel text-center py-20">
             <div className="text-4xl mb-4">💬</div>
-            <h3 className="font-bold text-slate-800 text-lg">Belum ada ulasan</h3>
+            <h3 className="font-bold text-slate-800 text-lg">{t('kulinerCommon.emptyData') || 'Belum ada ulasan'}</h3>
             <p className="text-sm text-slate-400">Ulasan dari pelanggan di storefront akan muncul di sini.</p>
           </div>
         ) : (

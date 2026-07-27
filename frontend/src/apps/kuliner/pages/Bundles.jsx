@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Edit3, Trash2 } from 'lucide-react';
+import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
+import ClientPagination from '../components/ClientPagination';
 import './KulinerDashboard.css';
 
 const emptyForm = { name: '', description: '', bundle_price: '', items: [{ product_id: '', quantity: 1 }] };
 
 export default function Bundles() {
+  const { t } = useTranslation();
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -19,6 +22,12 @@ export default function Bundles() {
   const [editingItem, setEditingItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(bundles.length / itemsPerPage);
+  const currentBundles = bundles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const load = () => {
     setLoading(true);
@@ -59,7 +68,7 @@ export default function Bundles() {
         toast.success('Bundle diperbarui');
       } else {
         await api.post('/kuliner/admin/bundles', payload);
-        toast.success('Bundle ditambahkan');
+        toast.success(t('kulinerExtra.alertSaveSuccess'));
       }
       setShowModal(false);
       load();
@@ -71,11 +80,11 @@ export default function Bundles() {
   };
 
   const handleDelete = async (b) => {
-    const ok = await confirm(`Hapus paket "${b.name}"?`, { title: 'Hapus Paket' });
+    const ok = await confirm(`${t('kulinerExtra.deleteConfirm')} "${b.name}"?`);
     if (!ok) return;
     try {
       await api.delete(`/kuliner/admin/bundles/${b.id}`);
-      toast.success('Paket dihapus');
+      toast.success(t('kulinerExtra.alertDeleteSuccess'));
       load();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Gagal menghapus paket');
@@ -85,11 +94,11 @@ export default function Bundles() {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Paket / Bundle Menu</h1>
+        <h1 className="kd-page-title">{t('kulinerExtra.bundlesTitle')}</h1>
       </div>
       <div className="kd-content">
         <div className="kd-page-actions">
-          <button className="kd-btn kd-btn-primary" onClick={openCreate}>+ Tambah Paket</button>
+          <button className="kd-btn kd-btn-primary" onClick={openCreate}>{t('kulinerExtra.addBundleBtn')}</button>
         </div>
 
         <div className="kd-panel">
@@ -97,21 +106,21 @@ export default function Bundles() {
             <table className="kd-table">
               <thead>
                 <tr>
-                  <th>Nama Paket</th>
-                  <th>Isi</th>
-                  <th>Harga Paket</th>
-                  <th className="text-right">Aksi</th>
+                  <th>{t('kulinerExtra.headerBundleName')}</th>
+                  <th>{t('kulinerExtra.headerItems')}</th>
+                  <th>{t('kulinerExtra.headerPrice')}</th>
+                  <th className="text-right">{t('kulinerExtra.headerAction')}</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">Memuat paket...</td></tr>
+                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerExtra.loadingData')}</td></tr>
                 ) : bundles.length === 0 ? (
-                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">Belum ada paket bundle.</td></tr>
+                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerExtra.emptyBundle')}</td></tr>
                 ) : (
-                  bundles.map((b) => (
+                  currentBundles.map((b) => (
                     <tr key={b.id}>
-                      <td><div className="kd-menu-name">{b.name}</div></td>
+                      <td><div style={{ color: '#1e293b' }}>{b.name}</div></td>
                       <td style={{ fontSize: 12 }}>{b.items.map((i) => `${i.product?.name} x${i.quantity}`).join(', ')}</td>
                       <td>Rp {Number(b.bundle_price).toLocaleString('id-ID')}</td>
                       <td className="text-right">
@@ -126,28 +135,35 @@ export default function Bundles() {
               </tbody>
             </table>
           </div>
+          <ClientPagination setItemsPerPage={setItemsPerPage} 
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={bundles.length}
+          />
         </div>
       </div>
 
       {showModal && (
         <div className="kd-modal-overlay visible" onClick={() => setShowModal(false)}>
-          <div className="kd-modal max-w-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
-              <h2 className="kd-modal-title">{editingItem ? 'Edit' : 'Tambah'} Paket</h2>
+              <h2 className="kd-modal-title">{editingItem ? t('kulinerExtra.editBundleModalTitle') : t('kulinerExtra.addBundleModalTitle')}</h2>
               <button className="kd-close-btn" onClick={() => setShowModal(false)}>✕</button>
             </div>
             <form onSubmit={handleSave}>
               <div className="kd-modal-body">
                 <div className="kd-form-group">
-                  <label className="kd-form-label">Nama Paket</label>
-                  <input required className="kd-form-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                  <label className="kd-form-label">{t('kulinerExtra.formBundleName')}</label>
+                  <input required className="kd-form-input" placeholder={t('kulinerExtra.formBundleNamePlaceholder')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                 </div>
                 <div className="kd-form-group">
-                  <label className="kd-form-label">Deskripsi</label>
-                  <textarea rows="2" className="kd-form-textarea" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                  <label className="kd-form-label">{t('kulinerExtra.formDesc')}</label>
+                  <textarea rows="2" className="kd-form-textarea" placeholder={t('kulinerExtra.formDescPlaceholder')} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                 </div>
 
-                <p style={{ fontWeight: 700, fontSize: 12, marginTop: 12, marginBottom: 8 }}>ISI PAKET</p>
+                <p style={{ fontWeight: 700, fontSize: 12, marginTop: 12, marginBottom: 8 }}>{t('kulinerExtra.formItemsTitle')}</p>
                 {form.items.map((it, idx) => (
                   <div key={idx} className="kd-form-row" style={{ alignItems: 'center', marginBottom: 8 }}>
                     <select className="kd-form-select" value={it.product_id} onChange={(e) => updateRow(idx, 'product_id', e.target.value)}>
@@ -174,8 +190,8 @@ export default function Bundles() {
                 </div>
               </div>
               <div className="kd-modal-footer">
-                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
-                <button type="submit" className="kd-btn kd-btn-primary" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+                <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setShowModal(false)}>{t('kulinerExtra.cancel')}</button>
+                <button type="submit" className="kd-btn kd-btn-primary" disabled={saving}>{saving ? t('kulinerExtra.savingBtn') : t('kulinerExtra.saveBtn')}</button>
               </div>
             </form>
           </div>

@@ -113,10 +113,10 @@ export default function ExpenseCategories() {
               paginatedData.map(c => (
                 <tr key={c.id}>
                   <td className="pl-6">
-                    <span className="text-slate-400">#{c.id}</span>
+                    <span className="text-slate-800">#{c.id}</span>
                   </td>
                   <td>
-                    <span className="badge badge-gray">{c.name}</span>
+                    <span className="text-slate-800">{c.name}</span>
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>

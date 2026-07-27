@@ -118,6 +118,9 @@
 .kd-main {
   scrollbar-width: thin;
   scrollbar-color: #e2e8f0 transparent;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .kd-main::-webkit-scrollbar {
@@ -472,7 +475,7 @@
 
 .kd-stat-label {
   font-size: 14px;
-  font-weight: 500;                /* matches retail font-medium */
+  font-weight: 600;
   color: #64748b;                  /* matches retail text-slate-500 */
   letter-spacing: 0;
 }
@@ -533,6 +536,7 @@
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  min-width: 0;
 }
 
 .kd-panel-header {
@@ -544,7 +548,7 @@
 
 .kd-panel-title {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
   color: #1e293b;
   letter-spacing: -0.01em;
 }
@@ -564,7 +568,7 @@
 /* QUICK ACTIONS */
 .kd-quick-actions {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 32px;
 }
@@ -648,7 +652,7 @@
 .kd-table tbody td {
   padding: 12px 16px 12px 0;
   border-bottom: 1px solid #f8fafc;
-  color: #475569;
+  color: #1e293b;
 }
 
 .kd-table tbody tr:nth-child(even) td {
@@ -659,24 +663,21 @@
   background: #f8fafc;
 }
 
-/* Keep the real table layout on mobile (a card-per-row alternative was
-   tried, but it made the list scroll too far vertically). Instead just
-   trim it to fit: drop the least-essential column and use a compact
-   icon-only action button — same pattern as /kuliner/admin/orders —
-   so nothing is pushed off-screen and no horizontal scroll is needed. */
-@media (max-width: 480px) {
-  .kd-table--compact-mobile .kd-col-waktu {
-    display: none;
-  }
-
-  .kd-table--compact-mobile {
-    font-size: 11.5px;
-  }
-
-  .kd-table--compact-mobile .text-\[10px\] {
-    display: none;
-  }
+/* Override all bold fonts inside kuliner tables as requested, except headers */
+.kd-table td,
+.kd-table span,
+.kd-table div {
+  font-weight: normal !important;
 }
+
+/* Match kitchen-queue empty/loading state (text-slate-400 py-10 with fontSize 13px) */
+.kd-table td.text-center.text-slate-400 {
+  font-size: 13px !important;
+  color: #94a3b8 !important; /* text-slate-400 */
+  padding-top: 40px !important; /* py-10 */
+  padding-bottom: 40px !important;
+}
+
 
 .kd-menu-item-cell {
   display: flex;
@@ -823,16 +824,19 @@
 .kd-modal {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 24px;
+  border-radius: 20px;
   width: 90%;
-  max-width: 560px;
+  max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
 }
 
+.kd-modal.max-w-md { max-width: 400px !important; }
+.kd-modal.max-w-sm { max-width: 320px !important; }
+
 .kd-modal-header {
-  padding: 32px 32px 24px;
+  padding: 20px 24px 16px;
   border-bottom: 1px solid #f1f5f9;
   display: flex;
   align-items: center;
@@ -840,7 +844,7 @@
 }
 
 .kd-modal-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #1e293b;
   letter-spacing: -0.01em;
@@ -861,11 +865,11 @@
 }
 
 .kd-modal-body {
-  padding: 32px;
+  padding: 24px;
 }
 
 .kd-form-group {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .kd-form-label {
@@ -880,9 +884,9 @@
   width: 100%;
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 15px;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
   color: #1e293b;
   font-family: inherit;
   outline: none;
@@ -933,11 +937,12 @@
 }
 
 .kd-modal-footer {
-  padding: 24px 32px 32px;
+  padding: 20px 24px;
   border-top: 1px solid #f1f5f9;
   display: flex;
-  gap: 12px;
+  align-items: center;
   justify-content: flex-end;
+  gap: 12px;
 }
 
 .kd-kanban-grid {
@@ -955,14 +960,18 @@
 }
 
 .kd-btn {
-  padding: 8px 16px;
+  padding: 10px 16px;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  border: none;
   font-family: inherit;
+  cursor: pointer;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1.5px solid transparent;
 }
 
 .kd-btn-secondary {

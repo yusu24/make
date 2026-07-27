@@ -212,6 +212,7 @@ export default function Products() {
           <thead>
             <tr>
               <th className="pl-6 retail-table-header">Identitas Barang</th>
+              <th className="retail-table-header">SKU</th>
               <th className="retail-table-header">Kategori</th>
               <th className="retail-table-header">Posisi Stok</th>
               <th className="retail-table-header">Harga Jual</th>
@@ -220,10 +221,10 @@ export default function Products() {
           </thead>
           <tbody>
             {loading ? (
-              <RetailTableLoadingRow colSpan={5} text="Memuat katalog..." />
+              <RetailTableLoadingRow colSpan={6} text="Memuat katalog..." />
             ) : filteredProducts.length === 0 ? (
               <tr>
-                 <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
+                 <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
                     Belum ada data produk di katalog.
                  </td>
               </tr>
@@ -231,13 +232,10 @@ export default function Products() {
               paginatedData.map(p => (
                 <tr key={p.id}>
                   <td className="pl-6">
-                      <div className="flex items-center gap-4">
-                         <div className="w-1 h-8 retail-bg-primary-subtle rounded-full" />
-                         <div>
-                            <p className="text-base mb-0.5 retail-text-primary">{p.name}</p>
-                            <code className="text-[10px] retail-text-secondary uppercase tracking-wider">{p.sku}</code>
-                         </div>
-                      </div>
+                     <p className="retail-text-primary">{p.name}</p>
+                  </td>
+                  <td>
+                     <code className="retail-text-primary uppercase tracking-wider">{p.sku}</code>
                   </td>
                   <td>
                      <span className="px-3 py-1 retail-bg-primary-subtle rounded-lg text-[10px] retail-text-secondary uppercase">

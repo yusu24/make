@@ -12,6 +12,16 @@ class ReportController extends Controller
     {
     }
 
+    public function getCashiers(Request $request)
+    {
+        $cashiers = \App\Models\User::where('tenant_id', $request->user()->tenant_id)
+            ->where('role', 'cashier')
+            ->select('id', 'name')
+            ->get();
+            
+        return response()->json($cashiers);
+    }
+
     private function range(Request $request): array
     {
         $to = $request->query('date_to') ?: now()->toDateString();

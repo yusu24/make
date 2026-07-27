@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ToastProvider } from './components/Toast'
 import { ConfirmDialogProvider } from './components/ConfirmDialog'
+import { I18nProvider } from './contexts/I18nContext'
 import { Suspense, useEffect } from 'react'
 
 import DashboardLayout from './layouts/DashboardLayout'
@@ -58,6 +59,7 @@ function App() {
       <AuthProvider>
         <ToastProvider>
         <ConfirmDialogProvider>
+        <I18nProvider>
         <BrowserRouter>
           <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
@@ -102,6 +104,7 @@ function App() {
             </Suspense>
           </ErrorBoundary>
         </BrowserRouter>
+        </I18nProvider>
         </ConfirmDialogProvider>
         </ToastProvider>
       </AuthProvider>
@@ -110,3 +113,4 @@ function App() {
 }
 
 export default App
+// Force reload

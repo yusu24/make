@@ -160,17 +160,19 @@ export default function Customers() {
           <thead>
             <tr>
               <th className="pl-6 retail-table-header">Informasi Profil</th>
-              <th className="retail-table-header">Akses Kontak</th>
+              <th className="retail-table-header">ID Pelanggan</th>
+              <th className="retail-table-header">No. Telepon</th>
+              <th className="retail-table-header">Email</th>
               <th className="retail-table-header">Alamat Terdaftar</th>
               <th className="pr-6 text-right retail-table-header">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <RetailTableLoadingRow colSpan={4} text="Memuat database..." />
+              <RetailTableLoadingRow colSpan={6} text="Memuat database..." />
             ) : filtered.length === 0 ? (
               <tr>
-                 <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
+                 <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
                     Belum ada data pelanggan terdaftar.
                  </td>
               </tr>
@@ -178,22 +180,19 @@ export default function Customers() {
               paginatedData.map(c => (
                 <tr key={c.id}>
                   <td className="pl-6">
-                      <div className="flex items-center gap-4">
-                         <div className="w-1 h-8 retail-bg-primary-subtle rounded-full" />
-                         <div>
-                            <p className="text-base mb-0.5 retail-text-primary">{c.name}</p>
-                            <code className="text-[10px] retail-text-secondary uppercase">#{c.id.toString().padStart(4, '0')}</code>
-                         </div>
-                      </div>
+                     <p className="retail-text-primary">{c.name}</p>
                   </td>
                   <td>
-                     <div className="flex flex-col">
-                        <span className="retail-text-primary">{c.contact || '-'}</span>
-                        <span className="text-[11px] retail-text-secondary">{c.email || 'No email registered'}</span>
-                     </div>
+                     <code className="retail-text-primary uppercase tracking-wider">#{c.id.toString().padStart(4, '0')}</code>
                   </td>
                   <td>
-                     <span className="text-xs retail-text-secondary line-clamp-1 max-w-[200px]">{c.address || 'Alamat belum diinput'}</span>
+                     <span className="retail-text-primary">{c.contact || '-'}</span>
+                  </td>
+                  <td>
+                     <span className="retail-text-primary">{c.email || '-'}</span>
+                  </td>
+                  <td>
+                     <span className="retail-text-primary line-clamp-1 max-w-[200px]">{c.address || 'Alamat belum diinput'}</span>
                   </td>
                   <td className="pr-6 text-right">
                      <div className="flex justify-end gap-2">

@@ -3,10 +3,13 @@ import { KeyRound, Edit3, Trash2 } from 'lucide-react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useTranslation } from '../../../contexts/I18nContext';
 import { useNavigate } from 'react-router-dom';
+import ClientPagination from '../components/ClientPagination';
 import './KulinerDashboard.css';
 
 const CulinaryStaff = () => {
+  const { t } = useTranslation();
   const { impersonateUser } = useAuth();
   const navigate = useNavigate();
   const [staff, setStaff] = useState([]);
@@ -23,6 +26,12 @@ const CulinaryStaff = () => {
     kuliner_role_id: '', // dynamic role
     phone: ''
   });
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(staff.length / itemsPerPage);
+  const currentStaff = staff.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   useEffect(() => {
     fetchStaff();
@@ -157,38 +166,38 @@ const CulinaryStaff = () => {
                   <tr>
                     <td colSpan="5" className="text-center py-10">
                       <div className="spinner" style={{ margin: '0 auto 10px' }} />
-                      <span className="text-slate-400 text-xs">Memuat data staff...</span>
+                      <span className="text-slate-400 text-xs">{t('kulinerCommon.loadingData') || 'Memuat data staff...'}</span>
                     </td>
                   </tr>
                 ) : staff.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="text-center py-10 text-slate-400 text-xs italic">
-                      Belum ada staff terdaftar.
+                      {t('kulinerCommon.emptyData') || 'Belum ada staff terdaftar.'}
                     </td>
                   </tr>
                 ) : (
-                  staff.map(member => (
+                  currentStaff.map(member => (
                     <tr key={member.id}>
                       <td>
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 uppercase">
                             {member.name.charAt(0)}
                           </div>
-                          <span className="font-bold text-slate-700">{member.name}</span>
+                            <span style={{ color: '#1e293b' }}>{member.name}</span>
                         </div>
                       </td>
                       <td><span className="text-xs text-slate-500">{member.email}</span></td>
                       <td>
-                        <div className="flex flex-col gap-1">
-                          <span className={`badge ${member.role === 'chef' ? 'badge-violet' : 'badge-green'}`}>
-                            {member.role === 'chef' ? '👨‍🍳 Koki / Dapur' : '💰 Kasir'}
-                          </span>
-                          {member.kuliner_role && (
-                            <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tight bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 mt-1">
-                              {member.kuliner_role.name}
+                          <div className="flex flex-row items-center flex-wrap gap-2">
+                            <span className={`badge ${member.role === 'chef' ? 'badge-violet' : 'badge-green'}`}>
+                              {member.role === 'chef' ? '👨‍🍳 Koki / Dapur' : '👩‍💻 Kasir'}
                             </span>
-                          )}
-                        </div>
+                            {member.kuliner_role && (
+                              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tight bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                                {member.kuliner_role.name}
+                              </span>
+                            )}
+                          </div>
                       </td>
                       <td><span className="text-xs text-slate-500">{member.phone || '-'}</span></td>
                       <td style={{ textAlign: 'right' }}>
@@ -212,6 +221,13 @@ const CulinaryStaff = () => {
               </tbody>
             </table>
           </div>
+          <ClientPagination setItemsPerPage={setItemsPerPage} 
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={staff.length}
+          />
         </div>
       </div>
 

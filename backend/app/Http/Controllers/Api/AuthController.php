@@ -499,13 +499,31 @@ class AuthController extends Controller
         }
 
         $products = [
-            ['cat' => 'Makanan Utama', 'name' => 'Nasi Goreng Spesial', 'price' => 22000, 'desc' => 'Nasi goreng bumbu legendaris dengan telur, ayam suwir, dan kerupuk.'],
+            // Makanan Utama
+            ['cat' => 'Makanan Utama', 'name' => 'Nasi Goreng Spesial', 'price' => 22000, 'desc' => 'Nasi goreng bumbu legendaris dengan telur, ayam suwir, baso, dan kerupuk udang.'],
             ['cat' => 'Makanan Utama', 'name' => 'Mie Goreng Jawa', 'price' => 20000, 'desc' => 'Mie goreng tebal dengan kol, bakso, ayam suwir, dan aroma asap sedap.'],
-            ['cat' => 'Makanan Utama', 'name' => 'Ayam Bakar Madu', 'price' => 28000, 'desc' => 'Ayam potong bakar bumbu karamel madu manis legit.'],
-            ['cat' => 'Sup & Soto', 'name' => 'Soto Ayam Lamongan', 'price' => 18000, 'desc' => 'Soto ayam kuah kuning kental bertabur koya gurih melimpah.'],
-            ['cat' => 'Camilan & Dessert', 'name' => 'Pisang Goreng Keju', 'price' => 12000, 'desc' => 'Pisang goreng tepung renyah dengan parutan keju cheddar.'],
-            ['cat' => 'Minuman', 'name' => 'Es Teh Manis Jumbo', 'price' => 5000, 'desc' => 'Teh seduh wangi melati dingin menyegarkan.'],
+            ['cat' => 'Makanan Utama', 'name' => 'Ayam Bakar Madu', 'price' => 28000, 'desc' => 'Ayam potong bakar bumbu karamel madu manis legit, disajikan dengan sambal dan lalapan.'],
+            ['cat' => 'Makanan Utama', 'name' => 'Nasi Bakar Cumi Asin', 'price' => 25000, 'desc' => 'Nasi gurih dibakar dalam daun pisang dengan isian cumi asin pedas nikmat.'],
+            ['cat' => 'Makanan Utama', 'name' => 'Sate Ayam Madura (10 Tusuk)', 'price' => 30000, 'desc' => 'Sate ayam empuk dengan bumbu kacang kental khas Madura.'],
+            
+            // Sup & Soto
+            ['cat' => 'Sup & Soto', 'name' => 'Soto Ayam Lamongan', 'price' => 18000, 'desc' => 'Soto ayam kuah kuning kental bertabur koya gurih melimpah dan telur rebus.'],
+            ['cat' => 'Sup & Soto', 'name' => 'Sop Buntut Sapi', 'price' => 65000, 'desc' => 'Sup buntut sapi empuk berkuah bening segar dengan potongan wortel dan kentang.'],
+            ['cat' => 'Sup & Soto', 'name' => 'Soto Betawi Daging Sapi', 'price' => 35000, 'desc' => 'Soto Betawi kuah santan gurih dengan potongan daging sapi, tomat, dan emping.'],
+            ['cat' => 'Sup & Soto', 'name' => 'Sup Iga Bakar Kuah Terpisah', 'price' => 55000, 'desc' => 'Iga sapi bakar disajikan dengan kuah kaldu sapi hangat terpisah.'],
+            
+            // Camilan & Dessert
+            ['cat' => 'Camilan & Dessert', 'name' => 'Pisang Goreng Keju Susu', 'price' => 15000, 'desc' => 'Pisang goreng tepung renyah dengan topping parutan keju cheddar dan susu kental manis.'],
+            ['cat' => 'Camilan & Dessert', 'name' => 'Tempe Mendoan (Isi 5)', 'price' => 12000, 'desc' => 'Tempe mendoan hangat disajikan dengan sambal kecap pedas manis.'],
+            ['cat' => 'Camilan & Dessert', 'name' => 'Roti Bakar Coklat Keju', 'price' => 18000, 'desc' => 'Roti tawar tebal dibakar dengan taburan meses coklat, keju, dan susu.'],
+            ['cat' => 'Camilan & Dessert', 'name' => 'Puding Coklat Vla Vanilla', 'price' => 10000, 'desc' => 'Puding coklat lembut disiram dengan vla vanilla lumer.'],
+            
+            // Minuman
+            ['cat' => 'Minuman', 'name' => 'Es Teh Manis Jumbo', 'price' => 5000, 'desc' => 'Teh seduh wangi melati dingin menyegarkan dalam gelas jumbo.'],
             ['cat' => 'Minuman', 'name' => 'Kopi Susu Gula Aren', 'price' => 15000, 'desc' => 'Espresso creamy dipadu susu cair dan pemanis gula aren cair.'],
+            ['cat' => 'Minuman', 'name' => 'Es Jeruk Peras Murni', 'price' => 12000, 'desc' => 'Perasan jeruk asli yang manis dan menyegarkan kaya vitamin C.'],
+            ['cat' => 'Minuman', 'name' => 'Jus Mangga Kental', 'price' => 15000, 'desc' => 'Jus mangga harum manis murni dengan sedikit tambahan susu.'],
+            ['cat' => 'Minuman', 'name' => 'Lemon Tea Selasih', 'price' => 10000, 'desc' => 'Teh lemon segar dipadukan dengan biji selasih dingin.'],
         ];
 
         $prodModels = [];
@@ -602,6 +620,81 @@ class AuthController extends Controller
             'business_category_id' => $kulinerCategory?->id,
             'kuliner_role_id' => $role->id
         ]);
+
+        // ── Phase 1: Ingredients, Modifiers, Addons, Bundles, BOM ──
+        $ingredients = [
+            ['code' => 'ING-01', 'name' => 'Beras Putih Premium', 'category' => 'Bahan Pokok', 'unit' => 'Kg', 'last_price' => 15000, 'min_stock' => 5, 'stock' => 50],
+            ['code' => 'ING-02', 'name' => 'Minyak Goreng', 'category' => 'Bahan Pokok', 'unit' => 'Liter', 'last_price' => 18000, 'min_stock' => 2, 'stock' => 10],
+            ['code' => 'ING-03', 'name' => 'Daging Ayam', 'category' => 'Daging', 'unit' => 'Kg', 'last_price' => 35000, 'min_stock' => 3, 'stock' => 15],
+            ['code' => 'ING-04', 'name' => 'Telur Ayam', 'category' => 'Daging', 'unit' => 'Pcs', 'last_price' => 2000, 'min_stock' => 30, 'stock' => 120],
+            ['code' => 'ING-05', 'name' => 'Bawang Merah', 'category' => 'Bumbu', 'unit' => 'Kg', 'last_price' => 40000, 'min_stock' => 1, 'stock' => 5],
+            ['code' => 'ING-06', 'name' => 'Bawang Putih', 'category' => 'Bumbu', 'unit' => 'Kg', 'last_price' => 35000, 'min_stock' => 1, 'stock' => 4],
+            ['code' => 'ING-07', 'name' => 'Cabai Rawit Merah', 'category' => 'Sayuran', 'unit' => 'Kg', 'last_price' => 60000, 'min_stock' => 1, 'stock' => 3],
+            ['code' => 'ING-08', 'name' => 'Kecap Manis', 'category' => 'Bumbu', 'unit' => 'Botol', 'last_price' => 25000, 'min_stock' => 2, 'stock' => 8],
+        ];
+        $ingModels = [];
+        foreach ($ingredients as $ing) {
+            $ingModels[$ing['code']] = \App\Models\KulinerIngredient::firstOrCreate(
+                ['tenant_id' => $tenantId, 'code' => $ing['code']],
+                ['name' => $ing['name'], 'category' => $ing['category'], 'unit' => $ing['unit'], 'last_price' => $ing['last_price'], 'min_stock' => $ing['min_stock'], 'stock' => $ing['stock'], 'is_active' => true]
+            );
+        }
+
+        $modifierGroup = \App\Models\KulinerModifierGroup::firstOrCreate(
+            ['tenant_id' => $tenantId, 'name' => 'Level Pedas'],
+            ['is_required' => false, 'max_choices' => 1]
+        );
+        $modifiers = [
+            ['name' => 'Tidak Pedas', 'price' => 0, 'sort_order' => 1],
+            ['name' => 'Sedang (Level 1)', 'price' => 0, 'sort_order' => 2],
+            ['name' => 'Pedas (Level 2)', 'price' => 0, 'sort_order' => 3],
+            ['name' => 'Sangat Pedas (Level 3)', 'price' => 2000, 'sort_order' => 4],
+        ];
+        foreach ($modifiers as $m) {
+            \App\Models\KulinerModifierOption::firstOrCreate(
+                ['modifier_group_id' => $modifierGroup->id, 'name' => $m['name']],
+                ['price' => $m['price'], 'sort_order' => $m['sort_order'], 'is_active' => true]
+            );
+        }
+
+        $addons = [
+            ['name' => 'Telur Mata Sapi', 'price' => 5000],
+            ['name' => 'Telur Dadar', 'price' => 5000],
+            ['name' => 'Kerupuk Tambahan', 'price' => 2000],
+            ['name' => 'Nasi Putih', 'price' => 6000],
+        ];
+        $addonModels = [];
+        foreach ($addons as $idx => $a) {
+            $addonModels[] = \App\Models\KulinerAddon::firstOrCreate(
+                ['tenant_id' => $tenantId, 'name' => $a['name']],
+                ['price' => $a['price'], 'sort_order' => $idx + 1, 'is_active' => true]
+            );
+        }
+
+        $nasiGoreng = \App\Models\KulinerProduct::where('tenant_id', $tenantId)->where('name', 'Nasi Goreng Spesial')->first();
+        if ($nasiGoreng) {
+            \App\Models\KulinerRecipeItem::firstOrCreate(['tenant_id' => $tenantId, 'product_id' => $nasiGoreng->id, 'ingredient_id' => $ingModels['ING-01']->id], ['quantity' => 0.2]);
+            \App\Models\KulinerRecipeItem::firstOrCreate(['tenant_id' => $tenantId, 'product_id' => $nasiGoreng->id, 'ingredient_id' => $ingModels['ING-02']->id], ['quantity' => 0.05]);
+            \App\Models\KulinerRecipeItem::firstOrCreate(['tenant_id' => $tenantId, 'product_id' => $nasiGoreng->id, 'ingredient_id' => $ingModels['ING-03']->id], ['quantity' => 0.05]);
+            \App\Models\KulinerRecipeItem::firstOrCreate(['tenant_id' => $tenantId, 'product_id' => $nasiGoreng->id, 'ingredient_id' => $ingModels['ING-04']->id], ['quantity' => 1]);
+            \App\Models\KulinerRecipeItem::firstOrCreate(['tenant_id' => $tenantId, 'product_id' => $nasiGoreng->id, 'ingredient_id' => $ingModels['ING-05']->id], ['quantity' => 0.02]);
+            \App\Models\KulinerRecipeItem::firstOrCreate(['tenant_id' => $tenantId, 'product_id' => $nasiGoreng->id, 'ingredient_id' => $ingModels['ING-08']->id], ['quantity' => 1]);
+            
+            $nasiGoreng->modifierGroups()->syncWithoutDetaching([$modifierGroup->id => ['sort_order' => 1]]);
+            foreach ($addonModels as $idx => $addon) {
+                $nasiGoreng->addons()->syncWithoutDetaching([$addon->id => ['sort_order' => $idx + 1]]);
+            }
+        }
+
+        $esTeh = \App\Models\KulinerProduct::where('tenant_id', $tenantId)->where('name', 'Es Teh Manis Jumbo')->first();
+        if ($nasiGoreng && $esTeh) {
+            $bundle = \App\Models\KulinerBundle::firstOrCreate(
+                ['tenant_id' => $tenantId, 'name' => 'Paket Hemat 1 (Nasi Goreng + Es Teh)'],
+                ['bundle_price' => 25000, 'is_active' => true]
+            );
+            \App\Models\KulinerBundleItem::firstOrCreate(['bundle_id' => $bundle->id, 'product_id' => $nasiGoreng->id], ['quantity' => 1]);
+            \App\Models\KulinerBundleItem::firstOrCreate(['bundle_id' => $bundle->id, 'product_id' => $esTeh->id], ['quantity' => 1]);
+        }
 
         $customerNames = ['Arif', 'Dewi', 'Beni', 'Citra', 'Eko', 'Fitri', 'Gani', 'Hesti', 'Indra', 'Joni'];
         

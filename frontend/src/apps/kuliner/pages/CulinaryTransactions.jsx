@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../contexts/I18nContext';
 import { Eye } from 'lucide-react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import api from '../../../services/api';
@@ -6,6 +7,7 @@ import KulinerLoading from '../components/KulinerLoading';
 import './KulinerDashboard.css';
 
 const CulinaryTransactions = () => {
+  const { t } = useTranslation();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -71,7 +73,7 @@ const CulinaryTransactions = () => {
       setExpenseForm({ date: new Date().toISOString().split('T')[0], category: 'Bahan Baku', description: '', amount: '' });
       fetchTransactions();
     } catch (error) {
-      alert('Gagal mencatat pengeluaran.');
+      alert(t('kulinerTransactions.alertExpenseFail') || 'Gagal mencatat pengeluaran.');
     } finally {
       setIsSaving(false);
     }
@@ -108,37 +110,37 @@ const CulinaryTransactions = () => {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Buku Kas & Transaksi</h1>
+        <h1 className="kd-page-title">{t('kulinerTransactions.title') || 'Buku Kas & Transaksi'}</h1>
       </div>
 
       <div className="kd-content">
         {loading ? (
-          <KulinerLoading message="Menyiapkan buku kas..." />
+          <KulinerLoading message={t('kulinerTransactions.loading') || 'Menyiapkan buku kas...'} />
         ) : (
           <>
             <div className="kd-page-actions">
-              <button className="kd-btn kd-btn-secondary" onClick={() => setIsExpenseModalOpen(true)}>+ Catat Pengeluaran</button>
-              <button className="kd-btn kd-btn-primary" onClick={() => setIsReconModalOpen(true)}>📊 Rekonsiliasi Kas</button>
+              <button className="kd-btn kd-btn-secondary" onClick={() => setIsExpenseModalOpen(true)}>{t('kulinerTransactions.addExpenseBtn') || '+ Catat Pengeluaran'}</button>
+              <button className="kd-btn kd-btn-primary" onClick={() => setIsReconModalOpen(true)}>{t('kulinerTransactions.reconBtn') || '📊 Rekonsiliasi Kas'}</button>
             </div>
             {/* LEDGER CARDS */}
             <div className="kd-ledger-grid" style={{ marginBottom: 32 }}>
               <div className="kd-panel" style={{ background: '#ecfdf5', borderColor: '#10b981' }}>
-                <div className="text-[10px] text-green-600 font-bold tracking-wider mb-2">Total Kas Masuk</div>
+                <div className="text-[10px] text-green-600 font-bold tracking-wider mb-2">{t('kulinerTransactions.summaryTotalIncome') || 'Total Kas Masuk'}</div>
                 <div className="text-2xl font-black text-green-700">{formatRp(balanceSummary.totalIncome)}</div>
               </div>
               <div className="kd-panel" style={{ background: '#fef2f2', borderColor: '#ef4444' }}>
-                <div className="text-[10px] text-red-600 font-bold tracking-wider mb-2">Total Kas Keluar</div>
+                <div className="text-[10px] text-red-600 font-bold tracking-wider mb-2">{t('kulinerTransactions.summaryTotalExpense') || 'Total Kas Keluar'}</div>
                 <div className="text-2xl font-black text-red-700">{formatRp(balanceSummary.totalExpense)}</div>
               </div>
               <div className="kd-panel" style={{ background: '#f8fafc', borderLeft: '4px solid #1e293b' }}>
-                <div className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">Saldo Bersih (Profit)</div>
+                <div className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">{t('kulinerTransactions.summaryNetBalance') || 'Saldo Bersih (Profit)'}</div>
                 <div className="text-2xl font-black text-slate-800">{formatRp(balanceSummary.netBalance)}</div>
               </div>
             </div>
 
             <div className="kd-panel">
               <div className="kd-panel-header">
-                <div className="text-sm font-bold text-slate-800">Jurnal Transaksi Terbaru</div>
+                <div className="text-sm font-bold text-slate-800">{t('kulinerTransactions.journalTitle') || 'Jurnal Transaksi Terbaru'}</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <input 
                     type="date" 
@@ -153,9 +155,9 @@ const CulinaryTransactions = () => {
                     value={filterType}
                     onChange={(e) => { setFilterType(e.target.value); setCurrentPage(1); }}
                   >
-                    <option value="all">Semua Tipe</option>
-                    <option value="income">Pemasukan</option>
-                    <option value="expense">Pengeluaran</option>
+                    <option value="all">{t('kulinerTransactions.filterAllType') || 'Semua Tipe'}</option>
+                    <option value="income">{t('kulinerTransactions.filterIncome') || 'Pemasukan'}</option>
+                    <option value="expense">{t('kulinerTransactions.filterExpense') || 'Pengeluaran'}</option>
                   </select>
                   <select 
                     className="kd-form-select" 
@@ -163,7 +165,7 @@ const CulinaryTransactions = () => {
                     value={filterCategory}
                     onChange={(e) => { setFilterCategory(e.target.value); setCurrentPage(1); }}
                   >
-                    <option value="all">Semua Kategori</option>
+                    <option value="all">{t('kulinerTransactions.filterAllCategory') || 'Semua Kategori'}</option>
                     <option value="Penjualan">Penjualan</option>
                     <option value="Bahan Baku">Bahan Baku</option>
                     <option value="Operasional">Operasional (Listrik, Air)</option>
@@ -187,42 +189,42 @@ const CulinaryTransactions = () => {
                 <table className="kd-table">
                   <thead>
                     <tr>
-                      <th>Tanggal</th>
-                      <th>Keterangan</th>
-                      <th>Kategori</th>
+                        <th>{t('kulinerTransactions.tableHeaderDate') || 'Tanggal'}</th>
+                        <th>{t('kulinerTransactions.tableHeaderDesc') || 'Keterangan'}</th>
+                        <th>Ref ID</th>
+                      <th>{t('kulinerTransactions.tableHeaderCategory') || 'Kategori / Tipe'}</th>
                       <th>Tipe</th>
-                      <th>Nominal</th>
-                      <th className="text-right">Aksi</th>
+                      <th>{t('kulinerTransactions.tableHeaderAmount') || 'Nominal'}</th>
+                      <th className="text-right">{t('kulinerTransactions.tableHeaderAction') || 'Aksi'}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredTransactions.length === 0 ? (
-                      <tr><td colSpan="6" className="text-center py-10 text-slate-400">Tidak ada transaksi yang cocok dengan filter.</td></tr>
+                        <tr><td colSpan="7" className="text-center py-10 text-slate-400">{t('kulinerTransactions.emptyTransactions') || 'Tidak ada transaksi yang cocok dengan filter.'}</td></tr>
                     ) : (
                       currentTransactions.map(item => (
                         <tr key={item.id}>
-                          <td className="text-xs text-slate-500">
-                            {new Date(item.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                            <div className="text-[10px] text-slate-300">{new Date(item.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</div>
-                          </td>
-                          <td>
-                            <div className="font-bold text-slate-700">{item.description}</div>
-                            <div className="text-[10px] text-slate-400">Ref: {item.id}</div>
-                          </td>
+                            <td className="text-xs text-slate-500">
+                              {new Date(item.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(item.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
+                            </td>
+                            <td>
+                              <div style={{ color: '#1e293b' }}>{item.description}</div>
+                            </td>
+                            <td><span className="text-xs text-slate-400">{item.id}</span></td>
                           <td><span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">{item.category}</span></td>
                           <td>
                             <div className="flex items-center gap-1">
                               <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.type === 'income' ? '#10b981' : '#ef4444' }} />
                               <span className={`text-xs font-medium ${item.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                                {item.type === 'income' ? 'Masuk' : 'Keluar'}
+                                {item.type === 'income' ? t('kulinerTransactions.detailIncome') || 'Masuk' : t('kulinerTransactions.detailExpense') || 'Keluar'}
                               </span>
                             </div>
                           </td>
-                          <td className={`font-bold ${item.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                          <td className={item.type === 'income' ? 'text-green-600' : 'text-red-600'}>
                             {item.type === 'income' ? '+' : '-'}{formatRp(item.amount)}
                           </td>
                           <td className="text-right">
-                            <button className="kd-icon-btn" title="Detail" onClick={() => setDetailItem(item)}><Eye size={16} /></button>
+                            <button className="kd-icon-btn" title={t('kulinerTransactions.detailBtn') || 'Detail'} onClick={() => setDetailItem(item)}><Eye size={16} /></button>
                           </td>
                         </tr>
                       ))
@@ -276,13 +278,13 @@ const CulinaryTransactions = () => {
               <div className="kd-modal-overlay visible" onClick={() => setIsExpenseModalOpen(false)}>
                 <div className="kd-modal" onClick={e => e.stopPropagation()}>
                   <div className="kd-modal-header">
-                    <h2 className="kd-modal-title">Catat Pengeluaran</h2>
+                    <h2 className="kd-modal-title">{t('kulinerTransactions.expenseModalTitle') || 'Catat Pengeluaran (Expense)'}</h2>
                     <button className="kd-close-btn" onClick={() => setIsExpenseModalOpen(false)}>✕</button>
                   </div>
                   <form onSubmit={handleExpenseSubmit}>
                     <div className="kd-modal-body">
                       <div className="kd-form-group">
-                        <label className="kd-form-label">Tanggal Pengeluaran</label>
+                        <label className="kd-form-label">{t('kulinerTransactions.expenseFormDate') || 'Tanggal Pengeluaran'}</label>
                         <input 
                           type="date" 
                           required 
@@ -292,7 +294,7 @@ const CulinaryTransactions = () => {
                         />
                       </div>
                       <div className="kd-form-group">
-                        <label className="kd-form-label">Kategori</label>
+                        <label className="kd-form-label">{t('kulinerTransactions.expenseFormCategory') || 'Kategori Pengeluaran'}</label>
                         <select 
                           required 
                           className="kd-form-select"
@@ -307,7 +309,7 @@ const CulinaryTransactions = () => {
                         </select>
                       </div>
                       <div className="kd-form-group">
-                        <label className="kd-form-label">Nominal (Rp)</label>
+                        <label className="kd-form-label">{t('kulinerTransactions.expenseFormAmount') || 'Nominal (Rp)'}</label>
                         <input 
                           type="number" 
                           required 
@@ -319,7 +321,7 @@ const CulinaryTransactions = () => {
                         />
                       </div>
                       <div className="kd-form-group">
-                        <label className="kd-form-label">Keterangan / Catatan</label>
+                        <label className="kd-form-label">{t('kulinerTransactions.expenseFormDesc') || 'Keterangan / Catatan'}</label>
                         <textarea 
                           className="kd-form-textarea"
                           rows="3"
@@ -330,9 +332,9 @@ const CulinaryTransactions = () => {
                       </div>
                     </div>
                     <div className="kd-modal-footer">
-                      <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setIsExpenseModalOpen(false)}>Batal</button>
+                      <button type="button" className="kd-btn kd-btn-secondary" onClick={() => setIsExpenseModalOpen(false)}>{t('kulinerTransactions.cancelBtn') || 'Batal'}</button>
                       <button type="submit" className="kd-btn kd-btn-primary" disabled={isSaving}>
-                        {isSaving ? 'Menyimpan...' : 'Simpan Pengeluaran'}
+                        {isSaving ? t('kulinerTransactions.savingBtn') || 'Menyimpan...' : t('kulinerTransactions.saveBtn') || 'Simpan Pengeluaran'}
                       </button>
                     </div>
                   </form>
@@ -345,19 +347,19 @@ const CulinaryTransactions = () => {
               <div className="kd-modal-overlay visible" onClick={() => handleCloseRecon()}>
                 <div className="kd-modal" onClick={e => e.stopPropagation()}>
                   <div className="kd-modal-header">
-                    <h2 className="kd-modal-title">Rekonsiliasi Kas</h2>
+                    <h2 className="kd-modal-title">{t('kulinerTransactions.reconModalTitle') || 'Rekonsiliasi Kas / Cash Opname'}</h2>
                     <button className="kd-close-btn" onClick={() => handleCloseRecon()}>✕</button>
                   </div>
                   <div className="kd-modal-body">
                     <div className="p-4 bg-slate-50 rounded-xl mb-4 border border-slate-100">
-                      <p className="text-sm text-slate-600 mb-2">Saldo Bersih Sistem Saat Ini:</p>
+                      <p className="text-sm text-slate-600 mb-2">{t('kulinerTransactions.reconSystemBalance') || 'Saldo Sistem Saat Ini'}:</p>
                       <h3 className="text-3xl font-black text-slate-800">{formatRp(balanceSummary.netBalance)}</h3>
                     </div>
                     <p className="text-sm text-slate-500 mb-4">
                       Gunakan fitur ini untuk mencocokkan saldo sistem dengan uang fisik yang ada di kasir atau rekening Anda.
                     </p>
                     <div className="kd-form-group">
-                      <label className="kd-form-label">Saldo Aktual Fisik / Rekening</label>
+                      <label className="kd-form-label">{t('kulinerTransactions.reconPhysicalBalance') || 'Hitung Fisik Uang di Laci/Bank (Rp)'}</label>
                       <input
                         type="number"
                         className="kd-form-input"
@@ -373,19 +375,19 @@ const CulinaryTransactions = () => {
                           {reconDifference > 0 ? '+' : ''}{formatRp(reconDifference)}
                         </h3>
                         <p className="text-xs text-slate-500 mt-1">
-                          {reconDifference === 0 ? 'Saldo fisik sesuai dengan sistem.' : reconDifference > 0 ? 'Saldo fisik lebih besar dari sistem.' : 'Saldo fisik kurang dari sistem.'}
+                          {reconDifference === 0 ? t('kulinerTransactions.reconDiffZero') || 'Uang Pas (Tidak ada selisih)' : reconDifference > 0 ? t('kulinerTransactions.reconDiffPhysicalGtr') || 'Uang Lebih (Selisih Positif)' : t('kulinerTransactions.reconDiffSystemGtr') || 'Uang Kurang (Selisih Negatif)'}
                         </p>
                       </div>
                     )}
                   </div>
                   <div className="kd-modal-footer">
-                    <button className="kd-btn kd-btn-secondary" onClick={() => handleCloseRecon()}>Tutup</button>
+                    <button className="kd-btn kd-btn-secondary" onClick={() => handleCloseRecon()}>{t('kulinerTransactions.cancelBtn') || 'Batal'}</button>
                     <button
                       className="kd-btn kd-btn-primary"
                       onClick={() => setReconDifference(Number(physicalBalance || 0) - Number(balanceSummary.netBalance || 0))}
                       disabled={physicalBalance === ''}
                     >
-                      Hitung Selisih
+                      {t('kulinerTransactions.reconCalculateBtn') || 'Hitung Selisih'}
                     </button>
                   </div>
                 </div>
@@ -397,7 +399,7 @@ const CulinaryTransactions = () => {
               <div className="kd-modal-overlay visible" onClick={() => setDetailItem(null)}>
                 <div className="kd-modal" onClick={e => e.stopPropagation()}>
                   <div className="kd-modal-header">
-                    <h2 className="kd-modal-title">Detail Transaksi</h2>
+                    <h2 className="kd-modal-title">{t('kulinerTransactions.detailModalTitle') || 'Detail Transaksi'}</h2>
                     <button className="kd-close-btn" onClick={() => setDetailItem(null)}>✕</button>
                   </div>
                   <div className="kd-modal-body">
@@ -407,16 +409,16 @@ const CulinaryTransactions = () => {
                         <p className="font-bold text-slate-800">{detailItem.id}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-500 mb-1">Deskripsi</p>
+                        <p className="text-xs text-slate-500 mb-1">{t('kulinerTransactions.detailDesc') || 'Deskripsi'}</p>
                         <p className="font-bold text-slate-800">{detailItem.description}</p>
                       </div>
                       <div className="flex gap-6">
                         <div>
-                          <p className="text-xs text-slate-500 mb-1">Kategori</p>
+                          <p className="text-xs text-slate-500 mb-1">{t('kulinerTransactions.detailCategory') || 'Kategori'}</p>
                           <p className="font-bold text-slate-800">{detailItem.category}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-slate-500 mb-1">Tanggal</p>
+                          <p className="text-xs text-slate-500 mb-1">{t('kulinerTransactions.detailDate') || 'Tanggal'}</p>
                           <p className="font-bold text-slate-800">{new Date(detailItem.date).toLocaleString('id-ID')}</p>
                         </div>
                       </div>
@@ -427,7 +429,7 @@ const CulinaryTransactions = () => {
                         </div>
                       )}
                       <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                        <p className="text-xs text-slate-500 mb-1">{detailItem.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</p>
+                        <p className="text-xs text-slate-500 mb-1">{detailItem.type === 'income' ? t('kulinerTransactions.detailIncome') || 'Pemasukan' : t('kulinerTransactions.detailExpense') || 'Pengeluaran'}</p>
                         <h3 className={`text-2xl font-black ${detailItem.type === 'income' ? 'text-green-700' : 'text-red-700'}`}>
                           {detailItem.type === 'income' ? '+' : '-'}{formatRp(detailItem.amount)}
                         </h3>
@@ -435,7 +437,7 @@ const CulinaryTransactions = () => {
                     </div>
                   </div>
                   <div className="kd-modal-footer">
-                    <button className="kd-btn kd-btn-secondary" onClick={() => setDetailItem(null)}>Tutup</button>
+                    <button className="kd-btn kd-btn-secondary" onClick={() => setDetailItem(null)}>{t('kulinerTransactions.closeBtn') || 'Tutup'}</button>
                   </div>
                 </div>
               </div>

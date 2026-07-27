@@ -22,8 +22,21 @@ export default function ErrorPage() {
     navigate('/')
   }
 
+  const handleReload = () => {
+    sessionStorage.removeItem('umkm_last_error')
+    if (errorInfo?.path) {
+      const p = errorInfo.path;
+      if (p.startsWith('/kuliner')) window.location.href = '/kuliner/admin';
+      else if (p.startsWith('/budidaya')) window.location.href = '/budidaya/dashboard';
+      else if (p.startsWith('/retail')) window.location.href = '/retail/dashboard';
+      else window.history.back();
+    } else {
+      window.history.back()
+    }
+  }
+
   return (
-    <div className="auth-page" style={{ justifyContent: 'center', alignItems: 'center' }}>
+    <div className="auth-page" style={{ display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center' }}>
       <div className="auth-bg">
         <div className="auth-bg__orb auth-bg__orb--1" />
         <div className="auth-bg__orb auth-bg__orb--2" />
@@ -85,7 +98,7 @@ export default function ErrorPage() {
         )}
 
         <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => window.location.reload()}>
+          <button className="btn btn-secondary" style={{ flex: 1 }} onClick={handleReload}>
             Muat Ulang
           </button>
           <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleBackHome}>

@@ -494,3 +494,7 @@
   color: var(--aq-primary);
   background: var(--aq-primary-light);
 }
+
+@media (max-width: 1024px) {
+  .aq-grid-2 { grid-template-columns: 1fr !important; }
+}

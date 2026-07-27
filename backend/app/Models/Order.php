@@ -23,10 +23,16 @@ class Order extends Model
         'payment_method',
         'notes',
         'source',
+        'cashier_id',
     ];
 
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function cashier()
+    {
+        return $this->belongsTo(User::class, 'cashier_id');
     }
 }
