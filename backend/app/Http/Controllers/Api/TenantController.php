@@ -131,4 +131,15 @@ class TenantController extends Controller
         $tenant->update(['subscription_plan' => $request->plan]);
         return response()->json(['message' => 'Paket berhasil diperbarui']);
     }
+
+    public function updateStatus(Request $request, string $tenant_id)
+    {
+        $request->validate(['status' => 'required|in:active,inactive,pending']);
+
+        $tenant = Tenant::where('tenant_id', $tenant_id)->firstOrFail();
+        $tenant->update(['status' => $request->status]);
+        ActivityLog::record('update_tenant_status', "Tenant: {$tenant->tenant_id} -> {$request->status}", 'info');
+
+        return response()->json(['success' => true, 'message' => 'Status tenant berhasil diperbarui', 'data' => $tenant]);
+    }
 }

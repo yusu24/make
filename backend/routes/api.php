@@ -466,6 +466,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::get('tenants', [TenantController::class, 'index']);
         Route::post('tenants', [TenantController::class, 'store']);
         Route::put('tenants/{tenant_id}/plan', [TenantController::class, 'updatePlan']);
+        Route::put('tenants/{tenant_id}/status', [TenantController::class, 'updateStatus']);
         Route::get('tenants/{tenant_id}/modules', [TenantController::class, 'getModules']);
         Route::post('tenants/{tenant_id}/modules', [TenantController::class, 'updateModules']);
         Route::get('stats', [DashboardController::class, 'stats']);

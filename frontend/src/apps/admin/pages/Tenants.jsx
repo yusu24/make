@@ -93,9 +93,9 @@ export default function Tenants() {
       await api.put(`/admin/tenants/${tenant.tenant_id}/status`, { status: newStatus })
       setTenants(prev => prev.map(t => t.id === tenant.id ? { ...t, status: newStatus } : t))
     } catch (err) {
-      // Mock update if API fails so UI feels responsive
-      setTenants(prev => prev.map(t => t.id === tenant.id ? { ...t, status: newStatus } : t))
-      // alert('Gagal merubah status: ' + (err.response?.data?.message || err.message))
+      // Don't fake success on failure — that just hides the bug until reload
+      // reverts it, which is exactly what happened before this endpoint existed.
+      alert('Gagal merubah status: ' + (err.response?.data?.message || err.message))
     }
   }
 
