@@ -27,3 +27,6 @@ Schedule::call(function () {
 Schedule::call(function () {
     app(\App\Http\Controllers\Api\AuthController::class)->cleanupOldDemoSandboxes();
 })->everyMinute()->name('cleanup-demo-sandboxes')->withoutOverlapping();
+
+// Cek tagihan penunggakan (overdue) dan kirim notifikasi setiap hari
+Schedule::command('invoices:check-overdue')->daily()->at('01:00');
