@@ -18,17 +18,26 @@ const KulinerAdminLayout = ({ children }) => {
 
   // Close dropdowns when clicking outside
   useEffect(() => {
+    if (!showProfileMenu) return;
     const handleClickOutside = (e) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
         setShowProfileMenu(false);
       }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProfileMenu]);
+
+  useEffect(() => {
+    if (!showNotif) return;
+    const handleClickOutside = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target)) {
         setShowNotif(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [showNotif]);
   // Prioritize user data from context for instant display
   const [storeName, setStoreName] = useState(user?.tenant_name || user?.name || 'Toko Kuliner');
 

@@ -64,17 +64,26 @@ export default function BudidayaHeader({ onMenuToggle }) {
   }, [])
 
   useEffect(() => {
+    if (!showDropdown) return
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false)
       }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showDropdown])
+
+  useEffect(() => {
+    if (!showProfile) return
+    const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setShowProfile(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [showProfile])
 
   const markAllAsRead = async () => {
     try {
