@@ -239,13 +239,13 @@ class SaasAdminDummySeeder extends Seeder
             'paid_at' => null,
         ]);
 
-        // 8.3. Penunggakan (Overdue)
+        // 8.3. Penunggakan (Overdue) - diset 'unpaid' agar terdeteksi oleh command
         TenantInvoice::create([
             'id' => 'INV-' . now()->subMonth()->format('Ym') . '0045',
             'tenant_id' => 'TN-TANAMAN',
             'plan' => 'basic',
             'amount' => 149000,
-            'status' => 'overdue',
+            'status' => 'unpaid',
             'date' => now()->subDays(40)->toDateString(),
             'due_date' => now()->subDays(33)->toDateString(),
             'paid_at' => null,
@@ -256,7 +256,7 @@ class SaasAdminDummySeeder extends Seeder
             'tenant_id' => 'TN-MANUFAKTUR',
             'plan' => 'pro',
             'amount' => 299000,
-            'status' => 'overdue',
+            'status' => 'unpaid',
             'date' => now()->subDays(35)->toDateString(),
             'due_date' => now()->subDays(28)->toDateString(),
             'paid_at' => null,
