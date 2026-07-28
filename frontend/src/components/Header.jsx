@@ -62,7 +62,7 @@ export default function Header({ onMenuToggle, collapsed }) {
   const navigate = useNavigate()
   const { user, isImpersonating, exitImpersonate, logout } = useAuth()
   const isRetail = pathname.startsWith('/retail')
-  const page = PAGE_TITLES[pathname] || { title: 'BIZORA SaaS', sub: '' }
+  const page = PAGE_TITLES[pathname] || { title: '', sub: '' }
   const hideAdminPageTitle = [
     '/dashboard', '/users', '/tenants', '/subscriptions', '/packages-features', '/finance',
     '/support-center', '/system-monitoring', '/content-announcement', '/reports-analytics',
