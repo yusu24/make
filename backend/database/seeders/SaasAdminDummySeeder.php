@@ -11,6 +11,7 @@ use App\Models\PackageFeature;
 use App\Models\SaasRole;
 use App\Models\SupportTicket;
 use App\Models\User;
+use App\Models\Webhook;
 use App\Models\TenantInvoice;
 
 class SaasAdminDummySeeder extends Seeder
