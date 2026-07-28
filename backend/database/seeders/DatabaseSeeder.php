@@ -153,6 +153,8 @@ class DatabaseSeeder extends Seeder
 
         $this->command->info('🚀 All Category Demo Accounts Seeded Successfully!');
         
+        // --- SAAS ADMIN DATA ---
+        $this->call(SaasAdminDummySeeder::class);
     }
 
     private function createDemoTenant(string $email, string $name, string $categorySlug, string $tenantId, ?string $businessName = null)

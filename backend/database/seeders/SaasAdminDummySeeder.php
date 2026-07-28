@@ -11,7 +11,7 @@ use App\Models\PackageFeature;
 use App\Models\SaasRole;
 use App\Models\SupportTicket;
 use App\Models\User;
-use App\Models\Webhook;
+use App\Models\TenantInvoice;
 
 class SaasAdminDummySeeder extends Seeder
 {
@@ -198,6 +198,67 @@ class SaasAdminDummySeeder extends Seeder
             'priority' => 'high',
             'status' => 'resolved',
             'assigned' => 'Finance Staff A',
+        ]);
+
+        // 8. Tenant Invoices (Tagihan/Transaksi SaaS)
+        TenantInvoice::truncate();
+        
+        // 8.1. Tagihan yang sudah dibayar (Paid)
+        TenantInvoice::create([
+            'id' => 'INV-' . now()->format('Ym') . '0001',
+            'tenant_id' => 'TN-0001',
+            'plan' => 'pro',
+            'amount' => 299000,
+            'status' => 'paid',
+            'date' => now()->subDays(15)->toDateString(),
+            'due_date' => now()->subDays(8)->toDateString(),
+            'paid_at' => now()->subDays(14),
+        ]);
+        
+        TenantInvoice::create([
+            'id' => 'INV-' . now()->format('Ym') . '0002',
+            'tenant_id' => 'TN-BUDIDAYA',
+            'plan' => 'basic',
+            'amount' => 149000,
+            'status' => 'paid',
+            'date' => now()->subDays(10)->toDateString(),
+            'due_date' => now()->subDays(3)->toDateString(),
+            'paid_at' => now()->subDays(9),
+        ]);
+
+        // 8.2. Tagihan belum dibayar (Unpaid - masih dalam tenggang waktu)
+        TenantInvoice::create([
+            'id' => 'INV-' . now()->format('Ym') . '0003',
+            'tenant_id' => 'TN-KULINER',
+            'plan' => 'pro',
+            'amount' => 299000,
+            'status' => 'unpaid',
+            'date' => now()->subDays(2)->toDateString(),
+            'due_date' => now()->addDays(5)->toDateString(),
+            'paid_at' => null,
+        ]);
+
+        // 8.3. Penunggakan (Overdue)
+        TenantInvoice::create([
+            'id' => 'INV-' . now()->subMonth()->format('Ym') . '0045',
+            'tenant_id' => 'TN-TANAMAN',
+            'plan' => 'basic',
+            'amount' => 149000,
+            'status' => 'overdue',
+            'date' => now()->subDays(40)->toDateString(),
+            'due_date' => now()->subDays(33)->toDateString(),
+            'paid_at' => null,
+        ]);
+        
+        TenantInvoice::create([
+            'id' => 'INV-' . now()->subMonth()->format('Ym') . '0046',
+            'tenant_id' => 'TN-MANUFAKTUR',
+            'plan' => 'pro',
+            'amount' => 299000,
+            'status' => 'overdue',
+            'date' => now()->subDays(35)->toDateString(),
+            'due_date' => now()->subDays(28)->toDateString(),
+            'paid_at' => null,
         ]);
 
         $this->command->info('✅ SaaS Admin Dummy Data Seeded Successfully!');
