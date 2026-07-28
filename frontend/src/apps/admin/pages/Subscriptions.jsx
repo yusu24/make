@@ -178,7 +178,7 @@ export default function Subscriptions() {
                     </tr>
                   ) : tPaginatedData.map(t => (
                     <tr key={t.id}>
-                      <td><code style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.tenant_id}</code></td>
+                      <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.tenant_id}</code></td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div className="avatar" style={{ background: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', width: 32, height: 32, fontSize: 11 }}>
@@ -186,7 +186,7 @@ export default function Subscriptions() {
                           </div>
                           <div>
                             <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{t.name}</p>
-                            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t.email}</p>
+                            <p style={{ fontSize: 11, color: 'var(--text-primary)' }}>{t.email}</p>
                           </div>
                         </div>
                       </td>
@@ -203,7 +203,7 @@ export default function Subscriptions() {
                         </select>
                       </td>
                       <td><span className={`badge ${STATUS_BADGE[t.status] || 'badge-gray'}`}>{t.status}</span></td>
-                      <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.joined}</td>
+                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.joined}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => setBillingTenant(t)} title="Riwayat Tagihan">👁</button>
@@ -292,7 +292,7 @@ export default function Subscriptions() {
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
             <h3 className="modal__title">Riwayat Tagihan</h3>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-              Menampilkan riwayat pembayaran untuk <strong>{billingTenant.name}</strong> ({billingTenant.tenant_id})
+              Menampilkan riwayat pembayaran untuk <strong style={{ fontWeight: 600 }}>{billingTenant.name}</strong> ({billingTenant.tenant_id})
             </p>
             
             <div className="table-wrap table-responsive">

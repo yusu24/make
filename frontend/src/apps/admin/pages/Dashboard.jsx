@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../lib/api'
 import {
@@ -30,6 +30,14 @@ const CustomTooltip = ({ active, payload, label }) => {
   }
   return null
 }
+
+const PERIOD_OPTIONS = [
+  { value: 'today', label: 'Harian Ini' },
+  { value: 'week', label: 'Minggu Ini' },
+  { value: 'month', label: 'Bulan Ini' },
+  { value: 'year', label: 'Tahun Ini' },
+  { value: 'custom', label: 'Custom' },
+]
 
 const STAT_CARDS = (stats) => [
   {
@@ -88,7 +96,13 @@ export default function Dashboard() {
   const [monthlyData, setMonthlyData] = useState([])
   const [recentUsers, setRecentUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [chartLoading, setChartLoading] = useState(false)
+  const [period, setPeriod] = useState('year')
+  const [customRange, setCustomRange] = useState({ start: '', end: '' })
 
+  // Categories/KPI cards/recent users are always "as of now" — only the two
+  // trend charts (monthly_data) change shape with the period filter, so this
+  // is split from the chart-only fetch below instead of re-running together.
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -107,7 +121,7 @@ export default function Dashboard() {
         })
         setRecentUsers(sData.recent_users || [])
         setMonthlyData(sData.monthly_data || [])
-        
+
         // Map category data dynamically so that Recharts PieChart value is linked to tenants_count
         const mappedCats = (catRes.data?.data || []).map(c => ({
           name: c.name,
@@ -124,7 +138,38 @@ export default function Dashboard() {
     fetchDashboard()
   }, [])
 
+  // Re-fetch just the chart series whenever the period filter changes
+  // (skip the very first "year" render — that data already came from the
+  // initial fetchDashboard() above).
+  const isFirstPeriodRun = useRef(true)
+  useEffect(() => {
+    if (isFirstPeriodRun.current) {
+      isFirstPeriodRun.current = false
+      return
+    }
+    if (period === 'custom' && (!customRange.start || !customRange.end)) return
+
+    const fetchChart = async () => {
+      setChartLoading(true)
+      try {
+        const params = { period }
+        if (period === 'custom') {
+          params.start_date = customRange.start
+          params.end_date = customRange.end
+        }
+        const res = await api.get('/admin/stats', { params })
+        setMonthlyData(res.data?.data?.monthly_data || [])
+      } catch {
+        // keep whatever was showing before
+      } finally {
+        setChartLoading(false)
+      }
+    }
+    fetchChart()
+  }, [period, customRange.start, customRange.end])
+
   const cards = STAT_CARDS(stats)
+  const periodLabel = PERIOD_OPTIONS.find(p => p.value === period)?.label || 'Tahun Ini'
   const greeting = () => {
     const h = new Date().getHours()
     if (h < 12) return 'Selamat Pagi'
@@ -163,21 +208,62 @@ export default function Dashboard() {
         ) : cards.map(card => (
           <div key={card.id} id={`stat-card-${card.id}`} className="kpi-card animate-fade-in">
             <div className="kpi-card__top">
-              <div className="kpi-card__icon-wrap" style={{ background: card.color + '20' }}>
-                <span className="kpi-card__icon" style={{ color: card.color }}>{card.icon}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+                <div className="kpi-card__icon-wrap" style={{ background: card.color + '20', flexShrink: 0 }}>
+                  <span className="kpi-card__icon" style={{ color: card.color }}>{card.icon}</span>
+                </div>
+                <div className="kpi-card__label" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={card.label}>{card.label}</div>
               </div>
-              <span className={`kpi-card__trend ${card.up ? 'kpi-card__trend--up' : 'kpi-card__trend--down'}`}>
+              <span className={`kpi-card__trend ${card.up ? 'kpi-card__trend--up' : 'kpi-card__trend--down'}`} style={{ flexShrink: 0 }}>
                 {card.up ? '↑' : '↓'} {card.trend}
               </span>
             </div>
             <div className="kpi-card__value stat-number">{card.value}</div>
-            <div className="kpi-card__label">{card.label}</div>
             <div className="kpi-card__sub">{card.sub}</div>
             <div className="kpi-card__bar" style={{ background: card.color + '30' }}>
               <div className="kpi-card__bar-fill" style={{ background: card.color, width: '65%' }} />
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Chart Period Filter — shared by both trend charts below, since
+          they're driven by the same monthly_data series. */}
+      <div className="card card-pad" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Tampilkan data:</span>
+        <select
+          className="form-input"
+          style={{ width: 'auto', minWidth: 150 }}
+          value={period}
+          onChange={e => setPeriod(e.target.value)}
+        >
+          {PERIOD_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        {period === 'custom' && (
+          <>
+            <input
+              type="date"
+              className="form-input"
+              style={{ width: 'auto' }}
+              value={customRange.start}
+              max={customRange.end || new Date().toISOString().slice(0, 10)}
+              onChange={e => setCustomRange(r => ({ ...r, start: e.target.value }))}
+            />
+            <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>s/d</span>
+            <input
+              type="date"
+              className="form-input"
+              style={{ width: 'auto' }}
+              value={customRange.end}
+              min={customRange.start || undefined}
+              max={new Date().toISOString().slice(0, 10)}
+              onChange={e => setCustomRange(r => ({ ...r, end: e.target.value }))}
+            />
+          </>
+        )}
+        {chartLoading && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Memuat data...</span>}
       </div>
 
       {/* Charts Row */}
@@ -187,9 +273,9 @@ export default function Dashboard() {
           <div className="chart-header">
             <div>
               <h3 className="chart-title">Pertumbuhan Pengguna</h3>
-              <p className="chart-sub">Tren bulanan tahun 2026</p>
+              <p className="chart-sub">Tren · {periodLabel}</p>
             </div>
-            <span className="badge badge-blue">2026</span>
+            <span className="badge badge-blue">{periodLabel}</span>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -214,7 +300,7 @@ export default function Dashboard() {
           <div className="chart-header">
             <div>
               <h3 className="chart-title">Pendapatan Platform</h3>
-              <p className="chart-sub">Dalam jutaan rupiah</p>
+              <p className="chart-sub">Dalam jutaan rupiah · {periodLabel}</p>
             </div>
             <span className="badge badge-yellow">Revenue</span>
           </div>

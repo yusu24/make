@@ -204,7 +204,7 @@ export default function Users() {
                     </div>
                     <div>
                       <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{u.name}</p>
-                      <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{u.email}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-primary)' }}>{u.email}</p>
                     </div>
                   </div>
                 </td>
@@ -219,7 +219,7 @@ export default function Users() {
                     {u.status}
                   </button>
                 </td>
-                <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{u.joined}</td>
+                <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{u.joined}</td>
                 <td>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button 

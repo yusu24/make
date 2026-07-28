@@ -87,7 +87,7 @@ export default function StockOpname() {
             <ClipboardCheck size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Mulai Stock Opname</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari petugas/status..."
               value={search}

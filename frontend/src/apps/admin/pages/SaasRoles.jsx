@@ -168,7 +168,7 @@ export default function SaasRoles() {
                       {role.name}
                     </span>
                   </td>
-                  <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{role.description || '-'}</td>
+                  <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{role.description || '-'}</td>
                   <td>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 450 }}>
                       {role.permissions && role.permissions.length > 0 ? (

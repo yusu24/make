@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { api } from '../../../lib/api'
+import CurrencyInput from '../../../components/CurrencyInput'
 import './Shared.css'
 
 // ─── Per-category feature definitions ────────────────────────────────────────
@@ -94,9 +95,8 @@ function EditPlanModal({ plan, categorySlug, onClose, onSave, saving }) {
           </div>
           <div>
             <label className="form-label">Harga (Rp / bulan)</label>
-            <input
+            <CurrencyInput
               className="form-input"
-              type="number"
               placeholder="0 = Gratis"
               value={form.price ?? ''}
               onChange={e => set('price', e.target.value === '' ? null : Number(e.target.value))}

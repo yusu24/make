@@ -6,6 +6,7 @@ import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import ClientPagination from '../components/ClientPagination';
+import CurrencyInput from '../../../components/CurrencyInput';
 import './KulinerDashboard.css';
 
 const emptyForm = { name: '', price: '' };
@@ -137,7 +138,7 @@ export default function Addons() {
                 </div>
                 <div className="kd-form-group">
                   <label className="kd-form-label">{t('kulinerExtra.formPricePlaceholder')}</label>
-                  <input required type="number" min="0" className="kd-form-input" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+                  <CurrencyInput required className="kd-form-input" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
                 </div>
               </div>
               <div className="kd-modal-footer">

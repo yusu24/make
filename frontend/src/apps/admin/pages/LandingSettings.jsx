@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import CurrencyInput from '../../../components/CurrencyInput'
 import bizoraLogo from '../../../assets/bizora-logo.png'
-
 export default function LandingSettings() {
   const [activeTab, setActiveTab] = useState('general') // 'general' or 'testimonials'
   
@@ -879,8 +879,7 @@ export default function LandingSettings() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>HARGA PAKET BASIC (RP)</label>
-                  <input 
-                    type="number"
+                  <CurrencyInput 
                     className="form-input" 
                     value={form.price_basic || 0}
                     onChange={e => setForm({...form, price_basic: parseInt(e.target.value) || 0})}
@@ -890,8 +889,7 @@ export default function LandingSettings() {
 
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>HARGA PAKET PRO (RP)</label>
-                  <input 
-                    type="number"
+                  <CurrencyInput 
                     className="form-input" 
                     value={form.price_pro || 0}
                     onChange={e => setForm({...form, price_pro: parseInt(e.target.value) || 0})}
@@ -946,7 +944,7 @@ export default function LandingSettings() {
                   </div>
                   <span style={{ fontSize: 10, background: 'var(--border-default)', padding: '4px 8px', borderRadius: 6, fontWeight: 600 }}>Salin</span>
                 </div>
-                <div style={{ fontSize: 11, textAlign: 'center', color: 'var(--text-muted)' }}>a.n. <strong>{form.bank_account_name}</strong></div>
+                <div style={{ fontSize: 11, textAlign: 'center', color: 'var(--text-muted)' }}>a.n. <strong style={{ fontWeight: 600 }}>{form.bank_account_name}</strong></div>
               </div>
             </div>
 

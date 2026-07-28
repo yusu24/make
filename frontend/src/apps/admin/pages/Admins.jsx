@@ -214,7 +214,7 @@ export default function Admins() {
                       </div>
                       <div>
                         <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{admin.name}</p>
-                        <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{admin.email}</p>
+                        <p style={{ fontSize: 11, color: 'var(--text-primary)' }}>{admin.email}</p>
                       </div>
                     </div>
                   </td>

@@ -4,6 +4,7 @@ import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton, EmptyState } from '../components/UXComponents'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
+import CurrencyInput from '../../../components/CurrencyInput'
 
 const UNITS = ['kg', 'gram', 'liter', 'ml', 'ekor', 'pcs', 'zak', 'botol', 'box', 'karung']
 
@@ -23,7 +24,7 @@ export default function Inventory() {
   const [formData, setFormData] = useState({
     name: '', category: defaultCat, stock: 0, unit: 'kg', min_stock: 0, price_per_unit: 0, description: ''
   })
-  const [stockData, setStockData] = useState({ type: 'in', quantity: '', note: '' })
+  const [stockData, setStockData] = useState({ type: 'in', quantity: '', note: '', total_cost: 0 })
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -72,7 +73,7 @@ export default function Inventory() {
       await api.post(`/budidaya/inventory/${selectedItem.id}/stock`, stockData)
       setShowStockModal(false)
       setShowReceiveModal(false)
-      setStockData({ type: 'in', quantity: '', note: '' })
+      setStockData({ type: 'in', quantity: '', note: '', total_cost: 0 })
       fetchItems()
       alert('Stok berhasil diperbarui')
     } catch (err) {
@@ -114,7 +115,7 @@ export default function Inventory() {
         <div style={{ display: 'flex', gap: '12px' }}>
           <button 
             className="btn btn-secondary"
-            onClick={() => { setSelectedItem(null); setStockData({ type: 'in', quantity: '', note: terms.stockReceiveNote }); setShowReceiveModal(true) }}
+            onClick={() => { setSelectedItem(null); setStockData({ type: 'in', quantity: '', note: terms.stockReceiveNote, total_cost: 0 }); setShowReceiveModal(true) }}
             style={{ width: '200px', justifyContent: 'center' }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>download</span>
@@ -245,7 +246,7 @@ export default function Inventory() {
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                           <button 
                             title="Update Stok"
-                            onClick={() => { setSelectedItem(item); setStockData({ type: 'in', quantity: '', note: '' }); setShowStockModal(true) }}
+                            onClick={() => { setSelectedItem(item); setStockData({ type: 'in', quantity: '', note: '', total_cost: 0 }); setShowStockModal(true) }}
                             style={{ 
                               width: '36px', height: '36px', borderRadius: '10px', border: 'none', background: '#D8F3DC', 
                               color: '#1B4332', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -358,7 +359,7 @@ export default function Inventory() {
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', textTransform: 'capitalize', display: 'block', marginBottom: '6px' }}>Harga Beli Satuan (Rp)</label>
-                <input type="number" value={formData.price_per_unit} onChange={e => setFormData({ ...formData, price_per_unit: e.target.value })}
+                <CurrencyInput value={formData.price_per_unit} onChange={e => setFormData({ ...formData, price_per_unit: e.target.value })}
                   style={{ width: '100%', padding: '12px', border: '1.5px solid #E9F0EC', borderRadius: '12px', fontSize: '14px', outline: 'none' }} />
               </div>
               <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>

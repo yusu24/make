@@ -15,9 +15,21 @@ class AdminAnalyticsController extends Controller
     {
         // For general stats, you might want to fetch actual counts from other tables 
         // like User and Tenant, but for now we return static or basic queries.
-        $total_tenants = \App\Models\Tenant::count();
-        $total_users = \App\Models\User::count();
-        $active_subscriptions = \App\Models\Tenant::where('status', 'active')->count() ?? 0;
+        // Exclude demo accounts (typically having 'demo' in email or name)
+        $demoUserQuery = function($query) {
+            $query->where('email', 'not like', '%demo%')
+                  ->where('name', 'not like', '%Demo%');
+        };
+
+        $total_tenants = \App\Models\Tenant::whereHas('users', $demoUserQuery)->count();
+        
+        $total_users = \App\Models\User::where('email', 'not like', '%demo%')
+                                       ->where('name', 'not like', '%Demo%')
+                                       ->count();
+                                       
+        $active_subscriptions = \App\Models\Tenant::where('status', 'active')
+                                                  ->whereHas('users', $demoUserQuery)
+                                                  ->count() ?? 0;
         
         return response()->json([
             'success' => true,

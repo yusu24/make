@@ -49,6 +49,40 @@ class RetailReturnService
         });
     }
 
+    public function updateSupplierReturn(RetailSupplierReturn $return, array $data): RetailSupplierReturn
+    {
+        if ($return->status === 'confirmed') {
+            throw new \RuntimeException('Retur supplier ini sudah dikonfirmasi dan tidak dapat diubah.');
+        }
+
+        return DB::transaction(function () use ($return, $data) {
+            $return->update([
+                'supplier_id' => $data['supplier_id'],
+                'reason' => $data['reason'] ?? null,
+                'note' => $data['note'] ?? null,
+                'total_amount' => collect($data['items'])->sum(fn ($i) => $i['quantity'] * $i['unit_price']),
+            ]);
+
+            $return->items()->delete();
+
+            $products = RetailProduct::whereIn('id', collect($data['items'])->pluck('product_id'))->get()->keyBy('id');
+
+            foreach ($data['items'] as $item) {
+                $product = $products->get($item['product_id']);
+                RetailSupplierReturnItem::create([
+                    'return_id' => $return->id,
+                    'product_id' => $item['product_id'],
+                    'product_name' => $product?->name ?? $item['product_name'] ?? 'Produk',
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                    'subtotal' => $item['quantity'] * $item['unit_price'],
+                ]);
+            }
+
+            return $return->load('items');
+        });
+    }
+
     public function confirmSupplierReturn(RetailSupplierReturn $return): RetailSupplierReturn
     {
         if ($return->status === 'confirmed') {
@@ -88,6 +122,49 @@ class RetailReturnService
                 'note' => $data['note'] ?? null,
                 'total_amount' => collect($data['items'])->sum(fn ($i) => $i['quantity'] * $i['unit_price']),
             ]);
+
+            $products = RetailProduct::whereIn('id', collect($data['items'])->pluck('product_id'))->get()->keyBy('id');
+
+            foreach ($data['items'] as $item) {
+                $product = $products->get($item['product_id']);
+                RetailCustomerReturnItem::create([
+                    'return_id' => $return->id,
+                    'transaction_item_id' => $item['transaction_item_id'],
+                    'product_id' => $item['product_id'],
+                    'product_name' => $product?->name ?? $item['product_name'] ?? 'Produk',
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                    'subtotal' => $item['quantity'] * $item['unit_price'],
+                    'reason' => $item['reason'] ?? null,
+                ]);
+            }
+
+            return $return->load('items');
+        });
+    }
+
+    public function updateCustomerReturn(RetailCustomerReturn $return, array $data): RetailCustomerReturn
+    {
+        if ($return->status === 'confirmed') {
+            throw new \RuntimeException('Retur pelanggan ini sudah dikonfirmasi dan tidak dapat diubah.');
+        }
+
+        $transaction = RetailTransaction::findOrFail($data['transaction_id']);
+
+        if (!$transaction->isPaid()) {
+            throw new \RuntimeException('Hanya transaksi berstatus paid yang dapat diretur.');
+        }
+
+        return DB::transaction(function () use ($return, $data, $transaction) {
+            $return->update([
+                'transaction_id' => $transaction->id,
+                'customer_id' => $transaction->customer_id,
+                'type' => $data['type'] ?? 'refund',
+                'note' => $data['note'] ?? null,
+                'total_amount' => collect($data['items'])->sum(fn ($i) => $i['quantity'] * $i['unit_price']),
+            ]);
+
+            $return->items()->delete();
 
             $products = RetailProduct::whereIn('id', collect($data['items'])->pluck('product_id'))->get()->keyBy('id');
 

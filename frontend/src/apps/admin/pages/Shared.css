@@ -74,6 +74,19 @@
   padding-left: 56px !important;
 }
 
+/* Admin SaaS: .form-input inherits body's line-height:1.6, which makes text
+   inputs (search box included) render ~8px taller than .btn/.select next to
+   them (.btn sets line-height:1 explicitly). Match that here so search boxes,
+   dropdowns, and text inputs line up with the buttons beside them.
+   !important: this rule and the global .form-input one (index.css) have
+   equal specificity, and Vite's dev-server module order happens to load
+   this file's CSS before index.css, so without it the global rule wins. */
+.form-input {
+  line-height: 1 !important;
+  padding-top: 9px !important;
+  padding-bottom: 9px !important;
+}
+
 .filter-tabs {
   display: flex;
   gap: 6px;
@@ -170,9 +183,22 @@
     max-width: 100%;
   }
   .modal {
-    padding: 20px;
-    width: 95%;
+    width: 90%;
+    max-height: 90vh;
+    padding: 24px;
+    border-radius: 20px;
+    margin: 0;
   }
+}
+
+/* Admin SaaS: the global .table td rule (index.css) defaults to
+   var(--text-secondary), a muted gray — make table body text read as
+   primary/black here since it's the main data, not a secondary label.
+   No !important: cells that set their own inline color (row numbers,
+   dates, top-3 rank highlights, code/id pills) are deliberately muted
+   and should keep winning over this default. */
+.table-wrap table td {
+  color: var(--text-primary);
 }
 
 /* Horizontal Table scroll */

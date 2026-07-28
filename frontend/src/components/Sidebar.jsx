@@ -337,11 +337,21 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
   const [logoUrl, setLogoUrl] = useState(null)
   const [storeIconUrl, setStoreIconUrl] = useState(null)
   const [expandedGroup, setExpandedGroup] = useState(null)
+  // A group containing the active page auto-expands (hasActive below) — this
+  // tracks a group the user explicitly collapsed anyway, so even the active
+  // group's menu can be hidden instead of being stuck open.
+  const [closedGroup, setClosedGroup] = useState(null)
   const [openSection, setOpenSection] = useState(null)
   const [flyoutAnchorY, setFlyoutAnchorY] = useState(60)
 
-  const toggleGroup = useCallback((sectionName) => {
-    setExpandedGroup(prev => prev === sectionName ? null : sectionName)
+  const toggleGroup = useCallback((sectionName, isCurrentlyExpanded) => {
+    if (isCurrentlyExpanded) {
+      setClosedGroup(sectionName)
+      setExpandedGroup(prev => prev === sectionName ? null : prev)
+    } else {
+      setExpandedGroup(sectionName)
+      setClosedGroup(prev => prev === sectionName ? null : prev)
+    }
   }, [])
 
   const handleGroupIconClick = useCallback((sectionName, e) => {
@@ -373,9 +383,10 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
       .catch(() => {})
   }, [pathname.startsWith('/retail')])
 
-  // Reset expanded group / open flyout on route change
+  // Reset expanded/closed group overrides + open flyout on route change
   useEffect(() => {
     setExpandedGroup(null)
+    setClosedGroup(null)
     setOpenSection(null)
   }, [pathname])
 
@@ -601,13 +612,13 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
                 )
               }
 
-              const isExpanded = hasActive || expandedGroup === section.section
+              const isExpanded = closedGroup === section.section ? false : (hasActive || expandedGroup === section.section)
               return (
                 <div key={section.section} className="sidebar__section" style={{ margin: 0 }}>
                   <button
                     type="button"
                     className={`sidebar__item sidebar__item--group ${hasActive ? 'sidebar__item--group-active' : ''}`}
-                    onClick={() => toggleGroup(section.section)}
+                    onClick={() => toggleGroup(section.section, isExpanded)}
                   >
                     <span className="sidebar__item-icon">{section.icon || <Database size={20} />}</span>
                     <span className="sidebar__item-label" style={{ flex: 1, textAlign: 'left' }}>{section.section}</span>
@@ -688,10 +699,13 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
               )
             }
 
-            // Multi-item groups → accordion
+            // Multi-item groups → accordion. The group containing the active
+            // page always stays expanded on navigation (same as Retail/Kuliner),
+            // instead of only the first time before any manual toggle — but
+            // closedGroup lets the user explicitly hide it anyway.
             const isExpanded = isMini
               ? false
-              : expandedGroup === section.section || (expandedGroup === null && hasActive)
+              : closedGroup === section.section ? false : (expandedGroup === section.section || hasActive)
 
             return (
               <div key={section.section} className="sidebar__section" style={{ margin: 0 }}>
@@ -713,7 +727,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
                     <button
                       type="button"
                       className={`sidebar__item sidebar__item--group ${hasActive ? 'sidebar__item--group-active' : ''}`}
-                      onClick={() => toggleGroup(section.section)}
+                      onClick={() => toggleGroup(section.section, isExpanded)}
                     >
                       <span className="sidebar__item-icon">
                         {section.icon || <Database size={18} />}

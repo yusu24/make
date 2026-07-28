@@ -73,7 +73,7 @@ export default function StockMovements() {
     <div className="animate-fade-in retail-dashboard-spacing">
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari produk/catatan..."
               value={search}

@@ -5,6 +5,7 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import { Edit3, Trash2, Plus, RefreshCw } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 export default function Pricelists() {
@@ -82,7 +83,7 @@ export default function Pricelists() {
             <Plus size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Pricelist Baru</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari pricelist..."
               value={search}
@@ -181,7 +182,7 @@ export default function Pricelists() {
                   </div>
                   <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
                     <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Harga Khusus</label>
-                    <input type="number" className="form-input bg-white" placeholder="Rp 0" value={item.price} onChange={e => setItems(prev => prev.map((it, idx) => idx === i ? { ...it, price: Number(e.target.value) } : it))} required />
+                    <CurrencyInput className="form-input bg-white" placeholder="Rp 0" value={item.price} onChange={e => setItems(prev => prev.map((it, idx) => idx === i ? { ...it, price: Number(e.target.value) } : it))} required />
                   </div>
                   <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
                     <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Min. Qty</label>

@@ -3,8 +3,9 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Plus, Trash2, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, RotateCcw, Edit2 } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 export default function SupplierReturns() {
@@ -17,6 +18,7 @@ export default function SupplierReturns() {
   const [reason, setReason] = useState('');
   const [items, setItems] = useState([{ product_id: '', quantity: 1, unit_price: 0 }]);
   const [search, setSearch] = useState('');
+  const [editId, setEditId] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -41,14 +43,38 @@ export default function SupplierReturns() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/retail/supplier-returns', { supplier_id: supplierId, reason, items });
+      if (editId) {
+        await api.put(`/retail/supplier-returns/${editId}`, { supplier_id: supplierId, reason, items });
+      } else {
+        await api.post('/retail/supplier-returns', { supplier_id: supplierId, reason, items });
+      }
       setShowModal(false);
       setItems([{ product_id: '', quantity: 1, unit_price: 0 }]);
-      setSupplierId(''); setReason('');
+      setSupplierId(''); setReason(''); setEditId(null);
       fetchData();
     } catch (e) {
       alert(e.response?.data?.message || 'Gagal menyimpan retur');
     }
+  };
+
+  const openEdit = (ret) => {
+    setEditId(ret.id);
+    setSupplierId(ret.supplier_id || '');
+    setReason(ret.reason || '');
+    setItems(ret.items?.map(it => ({
+      product_id: it.product_id,
+      quantity: it.quantity,
+      unit_price: it.unit_price
+    })) || []);
+    setShowModal(true);
+  };
+
+  const openAdd = () => {
+    setEditId(null);
+    setSupplierId('');
+    setReason('');
+    setItems([{ product_id: '', quantity: 1, unit_price: 0 }]);
+    setShowModal(true);
   };
 
   const confirmReturn = async (id) => {
@@ -90,12 +116,12 @@ export default function SupplierReturns() {
           <button
             className="btn btn-primary"
             style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
-            onClick={() => setShowModal(true)}
+            onClick={openAdd}
           >
             <RotateCcw size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Retur ke Supplier</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari no. retur/supplier..."
               value={search}
@@ -137,6 +163,9 @@ export default function SupplierReturns() {
                           <button className="btn btn-sm btn-secondary" onClick={() => confirmReturn(r.id)} title="Konfirmasi">
                             <CheckCircle2 size={14} />
                           </button>
+                          <button className="btn btn-sm btn-ghost" onClick={() => openEdit(r)} title="Edit">
+                            <Edit2 size={14} />
+                          </button>
                           <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => removeReturn(r.id)} title="Hapus">
                             <Trash2 size={14} />
                           </button>
@@ -164,7 +193,7 @@ export default function SupplierReturns() {
       <Modal 
         isOpen={showModal} 
         onClose={() => setShowModal(false)} 
-        title="Retur Barang ke Supplier"
+        title={editId ? "Edit Retur Supplier" : "Retur Barang ke Supplier"}
         maxWidth="680px"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -209,7 +238,7 @@ export default function SupplierReturns() {
                   </div>
                   <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
                     <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Harga Satuan</label>
-                    <input type="number" className="form-input bg-white" placeholder="Rp 0" value={item.unit_price} onChange={e => handleItemChange(i, 'unit_price', Number(e.target.value))} required />
+                    <CurrencyInput className="form-input bg-white" placeholder="Rp 0" value={item.unit_price} onChange={e => handleItemChange(i, 'unit_price', Number(e.target.value))} required />
                   </div>
                   <div className="col-span-1 md:col-span-1 flex justify-end md:justify-center">
                     <button 

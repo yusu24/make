@@ -38,6 +38,45 @@ class RetailFinanceController extends Controller
         ]);
     }
 
+    // GET /api/retail/finance/ledger
+    public function getLedger(Request $request)
+    {
+        $startDate = $request->query('startDate');
+        $endDate = $request->query('endDate');
+
+        $salesQuery = RetailTransaction::where('status', 'paid');
+        $expensesQuery = RetailExpense::query();
+
+        if ($startDate && $endDate) {
+            $salesQuery->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+            $expensesQuery->whereBetween('tanggal', [$startDate, $endDate]);
+        }
+
+        $sales = $salesQuery->get()->map(function ($s) {
+            return [
+                'id' => 'sale_' . $s->id,
+                'date' => $s->created_at->toDateTimeString(),
+                'type' => 'income',
+                'description' => 'Penjualan ' . $s->invoice_no,
+                'amount' => $s->total_amount,
+            ];
+        });
+
+        $expenses = $expensesQuery->get()->map(function ($e) {
+            return [
+                'id' => 'exp_' . $e->id,
+                'date' => $e->tanggal . ' 00:00:00',
+                'type' => 'expense',
+                'description' => 'Pengeluaran: ' . $e->kategori . ' - ' . $e->keterangan,
+                'amount' => $e->nominal,
+            ];
+        });
+
+        $ledger = $sales->concat($expenses)->sortByDesc('date')->values()->all();
+
+        return response()->json($ledger);
+    }
+
     // GET /api/retail/finance/cash-summary?date=YYYY-MM-DD
     public function getCashSummary(Request $request)
     {

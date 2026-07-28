@@ -5,6 +5,7 @@ import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import ClientPagination from '../components/ClientPagination';
+import CurrencyInput from '../../../components/CurrencyInput';
 import './KulinerDashboard.css';
 
 const formatRp = (v) => `Rp ${Number(v || 0).toLocaleString('id-ID')}`;
@@ -167,7 +168,7 @@ export default function Shift() {
               <div className="kd-modal-body">
                 <div className="kd-form-group">
                   <label className="kd-form-label">{t('kulinerShift.formOpeningCash') || 'Kas Awal (Rp)'}</label>
-                  <input required type="number" min="0" className="kd-form-input" value={openingCash} onChange={(e) => setOpeningCash(e.target.value)} />
+                  <CurrencyInput required className="kd-form-input" value={openingCash} onChange={(e) => setOpeningCash(e.target.value)} />
                 </div>
               </div>
               <div className="kd-modal-footer">
@@ -190,7 +191,7 @@ export default function Shift() {
               <div className="kd-modal-body">
                 <div className="kd-form-group">
                   <label className="kd-form-label">{t('kulinerShift.formClosingCash') || 'Kas Akhir (Rp) — hitung fisik uang di laci kasir'}</label>
-                  <input required type="number" min="0" className="kd-form-input" value={closingCash} onChange={(e) => setClosingCash(e.target.value)} />
+                  <CurrencyInput required className="kd-form-input" value={closingCash} onChange={(e) => setClosingCash(e.target.value)} />
                 </div>
               </div>
               <div className="kd-modal-footer">

@@ -216,13 +216,13 @@ export default function SupportCenter() {
                 <tbody>
                   {paginatedData.map(t => (
                     <tr key={t.id}>
-                      <td><code style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.id}</code></td>
+                      <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.id}</code></td>
                       <td style={{ fontWeight: 600, fontSize: 13 }}>{t.tenant}</td>
                       <td style={{ fontSize: 13, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.subject}</td>
                       <td><span style={{ fontSize: 12 }}>{CAT_ICON[t.category]} {CAT_LABEL[t.category]}</span></td>
                       <td><span className={`badge ${PRIORITY_BADGE[t.priority]}`}>{PRIORITY_LABEL[t.priority]}</span></td>
                       <td><span className={`badge ${STATUS_BADGE[t.status]}`}>{STATUS_LABEL[t.status]}</span></td>
-                      <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.date}</td>
+                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.date}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => setSelected(t)} title="Lihat Detail">👁</button>

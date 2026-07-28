@@ -6,6 +6,7 @@ import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import ClientPagination from '../components/ClientPagination';
+import CurrencyInput from '../../../components/CurrencyInput';
 import './KulinerDashboard.css';
 
 const emptyOption = () => ({ name: '', price_delta: 0, is_default: false });
@@ -168,7 +169,7 @@ export default function Modifiers() {
                 {form.options.map((o, idx) => (
                   <div key={idx} className="kd-form-row" style={{ alignItems: 'center', marginBottom: 8 }}>
                     <input className="kd-form-input" placeholder={t('kulinerExtra.formOptionName')} value={o.name} onChange={(e) => updateOption(idx, 'name', e.target.value)} />
-                    <input type="number" className="kd-form-input" placeholder={t('kulinerExtra.formPricePlaceholder')} value={o.price_delta} onChange={(e) => updateOption(idx, 'price_delta', e.target.value)} />
+                    <CurrencyInput className="kd-form-input" placeholder={t('kulinerExtra.formPricePlaceholder')} value={o.price_delta} onChange={(e) => updateOption(idx, 'price_delta', e.target.value)} />
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, whiteSpace: 'nowrap' }}>
                       <input type="checkbox" checked={o.is_default} onChange={(e) => updateOption(idx, 'is_default', e.target.checked)} /> Default
                     </label>

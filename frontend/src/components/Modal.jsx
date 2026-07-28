@@ -13,7 +13,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = '50
       <div 
         className="modal" 
         onClick={e => e.stopPropagation()} 
-        style={{ maxWidth, padding: hideHeader ? 0 : undefined, overflow: 'hidden' }}
+        style={{ maxWidth, padding: hideHeader ? 0 : undefined, overflowY: 'auto', overflowX: 'hidden' }}
       >
         {!hideHeader && (
           <div className="modal__header" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 20 }}>

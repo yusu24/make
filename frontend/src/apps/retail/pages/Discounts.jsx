@@ -5,6 +5,7 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import { Edit3, Trash2, Tag } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 export default function Discounts() {
@@ -13,6 +14,7 @@ export default function Discounts() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState('');
+  const [type, setType] = useState('percentage');
 
   const fetchData = async () => {
     setLoading(true);
@@ -65,12 +67,12 @@ export default function Discounts() {
           <button
             className="btn btn-primary"
             style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
-            onClick={() => { setEditing(null); setShowModal(true); }}
+            onClick={() => { setEditing(null); setType('percentage'); setShowModal(true); }}
           >
             <Tag size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Kode Diskon Baru</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari kode/nama diskon..."
               value={search}
@@ -108,7 +110,7 @@ export default function Discounts() {
                   </td>
                   <td className="pr-6 text-right">
                     <div className="flex gap-2 justify-end">
-                      <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(d); setShowModal(true); }}><Edit3 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(d); setType(d.type || 'percentage'); setShowModal(true); }}><Edit3 size={14} /></button>
                       <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if (confirm('Hapus kode diskon ini?')) { await api.delete(`/retail/discounts/${d.id}`); fetchData(); } }}><Trash2 size={14} /></button>
                     </div>
                   </td>
@@ -141,18 +143,22 @@ export default function Discounts() {
           </div>
           <div className="form-group">
             <label className="form-label">Tipe</label>
-            <select name="type" className="form-input" defaultValue={editing?.type || 'percentage'}>
+            <select name="type" className="form-input" defaultValue={editing?.type || 'percentage'} onChange={(e) => setType(e.target.value)}>
               <option value="percentage">Persentase (%)</option>
               <option value="flat">Nominal (Rp)</option>
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Nilai</label>
-            <input name="value" type="number" className="form-input" defaultValue={editing?.value} required />
+            <label className="form-label">Nominal Potongan {type === 'percentage' ? '(%)' : '(Rp)'}</label>
+            {type === 'percentage' ? (
+              <input name="value" type="number" className="form-input" defaultValue={editing?.value} required />
+            ) : (
+              <CurrencyInput name="value" className="form-input" defaultValue={editing?.value} required />
+            )}
           </div>
           <div className="form-group">
-            <label className="form-label">Minimal Pembelian (Rp)</label>
-            <input name="min_purchase" type="number" className="form-input" defaultValue={editing?.min_purchase || 0} />
+            <label className="form-label">Minimal Belanja (Rp)</label>
+            <CurrencyInput name="min_purchase" className="form-input" defaultValue={editing?.min_purchase || 0} />
           </div>
           <div className="form-group">
             <label className="form-label">Maks. Penggunaan (kosongkan jika tanpa batas)</label>

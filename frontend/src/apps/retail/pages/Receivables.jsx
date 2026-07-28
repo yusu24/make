@@ -5,6 +5,7 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import { Wallet, TrendingUp, CheckCircle, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 export default function Receivables() {
@@ -131,7 +132,7 @@ export default function Receivables() {
             <Wallet size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Catat Piutang Baru</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari pelanggan..."
               value={search}
@@ -206,7 +207,7 @@ export default function Receivables() {
           </div>
           <div className="form-group">
             <label className="form-label">Total Piutang (Rp)</label>
-            <input name="total_amount" type="number" className="form-input" required />
+            <CurrencyInput name="total_amount" className="form-input" required />
           </div>
           <div className="form-group">
             <label className="form-label">Jatuh Tempo</label>
@@ -227,7 +228,7 @@ export default function Receivables() {
         <form onSubmit={submitPayment} className="flex flex-col gap-5">
           <div className="form-group">
             <label className="form-label">Jumlah Diterima (Rp)</label>
-            <input type="number" className="form-input" value={payAmount} onChange={e => setPayAmount(Number(e.target.value))} required />
+            <CurrencyInput className="form-input" value={payAmount} onChange={e => setPayAmount(Number(e.target.value))} required />
           </div>
           <div className="modal__actions">
             <button type="button" className="btn btn-secondary" onClick={() => setPayModal(null)}>Batal</button>

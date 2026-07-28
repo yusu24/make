@@ -5,6 +5,7 @@ import {
   Edit3, Trash2, AlertCircle
 } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
@@ -145,44 +146,11 @@ export default function Products() {
 
 
   return (
-    <div className="animate-fade-in retail-dashboard-spacing">
+    <div className="retail-page-classic">
       {/* Page Header (Synced with Finance) */}
 
 
-      {/* Stats Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 52 }}>
-         {/* Total Katalog Card */}
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
-                  <Package size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Total Katalog</span>
-            </div>
-            <div>
-               <p className="text-2xl text-slate-900 leading-tight font-normal">
-                  {products.length} <span className="text-sm text-slate-400 font-medium ml-1">Varian</span>
-               </p>
-               <p className="text-xs text-slate-400 mt-1">Jumlah variasi produk aktif dalam katalog.</p>
-            </div>
-         </div>
 
-         {/* Stok Kritis Card */}
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0">
-                  <AlertCircle size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Stok Kritis</span>
-            </div>
-            <div>
-               <p className="text-2xl text-slate-900 leading-tight font-normal">
-                  {products.filter(p => Number(p.stock) <= Number(p.stock_min)).length} <span className="text-sm text-slate-400 font-medium ml-1">Items</span>
-               </p>
-               <p className="text-xs text-slate-400 mt-1">Jumlah produk dengan stok di bawah batas aman.</p>
-            </div>
-         </div>
-      </div>
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
@@ -191,7 +159,7 @@ export default function Products() {
             <Plus size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Tambah baru</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input 
               placeholder="Cari Produk..."
               value={search}
@@ -314,18 +282,18 @@ export default function Products() {
                  {errors.unit && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.unit}</span>}
               </div>
            </div>
-           <div className="grid-2">
-              <div className="form-group">
-                 <label className="form-label">Harga Modal (Rp)</label>
-                 <input name="price_buy" type="number" className={`form-input ${errors.price_buy ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.price_buy} />
-                 {errors.price_buy && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.price_buy}</span>}
-              </div>
-              <div className="form-group">
-                 <label className="form-label">Harga Jual (Rp)</label>
-                 <input name="price_sell" type="number" className={`form-input ${errors.price_sell ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.price_sell} />
-                 {errors.price_sell && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.price_sell}</span>}
-              </div>
-           </div>
+            <div className="grid-2">
+               <div className="form-group">
+                  <label className="form-label">Harga Modal (Rp)</label>
+                  <CurrencyInput name="price_buy" className={`form-input ${errors.price_buy ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.price_buy} />
+                  {errors.price_buy && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.price_buy}</span>}
+               </div>
+               <div className="form-group">
+                  <label className="form-label">Harga Jual (Rp)</label>
+                  <CurrencyInput name="price_sell" className={`form-input ${errors.price_sell ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.price_sell} />
+                  {errors.price_sell && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.price_sell}</span>}
+               </div>
+            </div>
            <div className="grid-2">
               <div className="form-group">
                  <label className="form-label">Stok Awal</label>

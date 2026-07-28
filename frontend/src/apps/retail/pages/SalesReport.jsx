@@ -66,7 +66,7 @@ export default function SalesReport() {
       </div>
 
       {/* Finance KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ marginBottom: 52 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ marginBottom: 24 }}>
          {/* Total Omzet Card */}
          <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export default function SalesReport() {
       {/* Transactions Table (Synced with Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari invoice/pelanggan..."
               value={search}

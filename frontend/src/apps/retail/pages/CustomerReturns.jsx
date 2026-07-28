@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Search, CheckCircle2, Trash2, RotateCcw } from 'lucide-react';
+import { Search, CheckCircle2, Trash2, RotateCcw, Edit2 } from 'lucide-react';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
@@ -19,6 +19,7 @@ export default function CustomerReturns() {
   const [selectedItems, setSelectedItems] = useState({});
   const [returnType, setReturnType] = useState('refund');
   const [note, setNote] = useState('');
+  const [editId, setEditId] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -60,21 +61,66 @@ export default function CustomerReturns() {
     const items = Object.values(selectedItems);
     if (items.length === 0) { alert('Pilih minimal satu barang untuk diretur.'); return; }
     try {
-      await api.post('/retail/customer-returns', {
-        transaction_id: transaction.id,
-        type: returnType,
-        note,
-        items,
-      });
+      if (editId) {
+        await api.put(`/retail/customer-returns/${editId}`, {
+          transaction_id: transaction.id,
+          type: returnType,
+          note,
+          items,
+        });
+      } else {
+        await api.post('/retail/customer-returns', {
+          transaction_id: transaction.id,
+          type: returnType,
+          note,
+          items,
+        });
+      }
       setShowModal(false);
       setTransaction(null);
       setInvoiceQuery('');
       setSelectedItems({});
       setNote('');
+      setEditId(null);
       fetchData();
     } catch (e) {
       alert(e.response?.data?.message || 'Gagal menyimpan retur');
     }
+  };
+
+  const openEdit = async (ret) => {
+    setEditId(ret.id);
+    setInvoiceQuery(ret.transaction_id.toString());
+    setReturnType(ret.type || 'refund');
+    setNote(ret.note || '');
+    setLookupError('');
+    setShowModal(true);
+
+    try {
+      const res = await api.get(`/retail/customer-returns/order/${ret.transaction_id}`);
+      setTransaction(res.data);
+      const preSelected = {};
+      ret.items?.forEach(it => {
+        const tItem = res.data.items?.find(tx => tx.id === it.transaction_item_id);
+        if (tItem) {
+          preSelected[tItem.id] = { transaction_item_id: tItem.id, product_id: tItem.product_id, product_name: tItem.product?.name, quantity: tItem.qty, unit_price: tItem.price };
+        }
+      });
+      setSelectedItems(preSelected);
+    } catch {
+      setLookupError('Gagal memuat detail transaksi.');
+    }
+  };
+
+  const openAdd = () => {
+    setEditId(null);
+    setInvoiceQuery('');
+    setTransaction(null);
+    setSelectedItems({});
+    setReturnType('refund');
+    setNote('');
+    setLookupError('');
+    setShowModal(true);
   };
 
   const confirmReturn = async (id) => {
@@ -112,12 +158,12 @@ export default function CustomerReturns() {
           <button
             className="btn btn-primary"
             style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
-            onClick={() => setShowModal(true)}
+            onClick={openAdd}
           >
             <RotateCcw size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Retur dari Pelanggan</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari no. retur/pelanggan..."
               value={listSearch}
@@ -157,6 +203,7 @@ export default function CustomerReturns() {
                       {r.status === 'draft' && (
                         <>
                           <button className="btn btn-sm btn-secondary" onClick={() => confirmReturn(r.id)} title="Konfirmasi"><CheckCircle2 size={14} /></button>
+                          <button className="btn btn-sm btn-ghost" onClick={() => openEdit(r)} title="Edit"><Edit2 size={14} /></button>
                           <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => removeReturn(r.id)} title="Hapus"><Trash2 size={14} /></button>
                         </>
                       )}
@@ -179,13 +226,13 @@ export default function CustomerReturns() {
         />
       </div>
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setTransaction(null); }} title="Retur Barang dari Pelanggan">
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setTransaction(null); }} title={editId ? "Edit Retur Pelanggan" : "Retur Barang dari Pelanggan"}>
         <div className="flex flex-col gap-5">
           <div className="form-group">
             <label className="form-label">ID Transaksi</label>
             <div className="flex gap-2">
-              <input className="form-input" placeholder="cth. 42" value={invoiceQuery} onChange={e => setInvoiceQuery(e.target.value)} />
-              <button type="button" className="btn btn-secondary" onClick={lookupTransaction}><Search size={16} /></button>
+              <input className="form-input" placeholder="cth. 42" value={invoiceQuery} onChange={e => setInvoiceQuery(e.target.value)} disabled={!!editId} />
+              <button type="button" className="btn btn-secondary" onClick={lookupTransaction} disabled={!!editId}><Search size={16} /></button>
             </div>
             {lookupError && <p style={{ color: 'var(--retail-danger, #ef4444)', fontSize: 12, marginTop: 6 }}>{lookupError}</p>}
           </div>
@@ -198,7 +245,7 @@ export default function CustomerReturns() {
               <div className="flex flex-col gap-2">
                 {transaction.items?.map(item => (
                   <label key={item.id} className="stock-entry-row" style={{ alignItems: 'center', cursor: 'pointer' }}>
-                    <input type="checkbox" onChange={e => toggleItem(item, e.target.checked)} />
+                    <input type="checkbox" checked={!!selectedItems[item.id]} onChange={e => toggleItem(item, e.target.checked)} />
                     <span>{item.product?.name}</span>
                     <span className="retail-text-secondary">Qty dibeli: {item.qty}</span>
                     <span className="retail-text-secondary">Rp {Number(item.price).toLocaleString('id-ID')}</span>

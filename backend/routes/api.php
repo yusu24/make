@@ -201,6 +201,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::get('customer-returns', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'index']);
                 Route::get('customer-returns/order/{transaction}', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'orderDetails']);
                 Route::post('customer-returns', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'store']);
+                Route::put('customer-returns/{id}', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'update']);
                 Route::post('customer-returns/{id}/confirm', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'confirm']);
                 Route::delete('customer-returns/{id}', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'destroy']);
             });
@@ -227,6 +228,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
 
                 Route::get('supplier-returns', [\App\Http\Controllers\Api\Retail\RetailSupplierReturnController::class, 'index']);
                 Route::post('supplier-returns', [\App\Http\Controllers\Api\Retail\RetailSupplierReturnController::class, 'store']);
+                Route::put('supplier-returns/{id}', [\App\Http\Controllers\Api\Retail\RetailSupplierReturnController::class, 'update']);
                 Route::post('supplier-returns/{id}/confirm', [\App\Http\Controllers\Api\Retail\RetailSupplierReturnController::class, 'confirm']);
                 Route::delete('supplier-returns/{id}', [\App\Http\Controllers\Api\Retail\RetailSupplierReturnController::class, 'destroy']);
             });
@@ -234,6 +236,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             // Finance (expenses, payables, receivables, cash summary)
             Route::middleware('retail_permission:finance')->group(function () {
                 Route::get('finance/summary', [\App\Http\Controllers\Api\RetailFinanceController::class, 'getSummary']);
+                Route::get('finance/ledger', [\App\Http\Controllers\Api\RetailFinanceController::class, 'getLedger']);
                 Route::get('finance/cash-summary', [\App\Http\Controllers\Api\RetailFinanceController::class, 'getCashSummary']);
                 Route::get('finance/expenses', [\App\Http\Controllers\Api\RetailFinanceController::class, 'index']);
                 Route::post('finance/expenses', [\App\Http\Controllers\Api\RetailFinanceController::class, 'store']);
@@ -471,6 +474,15 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::post('tenants/{tenant_id}/modules', [TenantController::class, 'updateModules']);
         Route::get('stats', [DashboardController::class, 'stats']);
         Route::post('tenants/{tenant_id}/impersonate', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonateUser']);
+
+        // Developer & Integrations
+        Route::get('developer/api-keys', [\App\Http\Controllers\Api\DeveloperIntegrationController::class, 'indexKeys']);
+        Route::post('developer/api-keys', [\App\Http\Controllers\Api\DeveloperIntegrationController::class, 'storeKey']);
+        Route::delete('developer/api-keys/{id}', [\App\Http\Controllers\Api\DeveloperIntegrationController::class, 'destroyKey']);
+        Route::get('developer/webhooks', [\App\Http\Controllers\Api\DeveloperIntegrationController::class, 'indexWebhooks']);
+        Route::post('developer/webhooks', [\App\Http\Controllers\Api\DeveloperIntegrationController::class, 'storeWebhook']);
+        Route::patch('developer/webhooks/{id}/toggle', [\App\Http\Controllers\Api\DeveloperIntegrationController::class, 'toggleWebhook']);
+        Route::delete('developer/webhooks/{id}', [\App\Http\Controllers\Api\DeveloperIntegrationController::class, 'destroyWebhook']);
 
         // Analytics
         Route::get('analytics/monthly-revenue', [AdminAnalyticsController::class, 'monthlyRevenue']);

@@ -217,14 +217,14 @@ export default function Tenants() {
           <table className="table">
             <thead>
               <tr>
-                <th>Tenant ID</th><th>Nama</th><th>Kategori Bisnis</th>
+                <th>Tenant ID</th><th>Nama</th><th>Email</th><th>Kategori Bisnis</th>
                 <th>Paket</th><th>Status</th><th>Bergabung</th><th>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                       <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
                       <span>Memuat data tenant...</span>
@@ -233,30 +233,28 @@ export default function Tenants() {
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                     Tidak ada tenant ditemukan
                   </td>
                 </tr>
               ) : paginatedData.map(t => (
                 <tr key={t.id}>
-                  <td><code style={{fontSize:11,color:'var(--text-muted)',background:'var(--bg-elevated)',padding:'2px 6px',borderRadius:4}}>{t.tenant_id}</code></td>
+                  <td><code style={{fontSize:11,color:'var(--text-primary)',background:'var(--bg-elevated)',padding:'2px 6px',borderRadius:4}}>{t.tenant_id}</code></td>
                   <td>
                     <div style={{display:'flex',alignItems:'center',gap:10}}>
                       <div className="avatar" style={{background:'linear-gradient(135deg,#3b82f6,#1d4ed8)',width:32,height:32,fontSize:11}}>
                         {t.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
                       </div>
-                      <div>
-                        <p style={{fontWeight:600,color:'var(--text-primary)',fontSize:13}}>{t.name}</p>
-                        <p style={{fontSize:11,color:'var(--text-muted)'}}>{t.email}</p>
-                      </div>
+                      <p style={{fontWeight:600,color:'var(--text-primary)',fontSize:13}}>{t.name}</p>
                     </div>
                   </td>
-                  <td>{t.category}</td>
+                  <td>{t.email}</td>
+                  <td><span className="badge badge-outline">{t.category}</span></td>
                   <td>
                     <span className={`badge ${PLAN_BADGE[t.plan] || 'badge-gray'}`}>{t.plan}</span>
                   </td>
                   <td><span className={`badge ${STATUS_BADGE[t.status] || ''}`}>{t.status}</span></td>
-                  <td style={{fontSize:12,color:'var(--text-muted)'}}>{t.joined}</td>
+                  <td style={{fontSize:12,color:'var(--text-primary)'}}>{t.joined}</td>
                   <td>
                     <div style={{display:'flex', gap:6, alignItems:'center', flexWrap:'wrap'}}>
                       {(t.category === 'Toko Retail' || t.category === 'Budidaya Ikan' || t.category === 'Budidaya Tanaman' || t.category === 'Kuliner') && (

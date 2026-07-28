@@ -7,6 +7,7 @@ import {
   TrendingDown, Package, Edit3, Trash2
 } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import '../retail.css';
 
@@ -109,7 +110,7 @@ export default function StockEntry() {
 
 
       {/* KPI Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 52 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 24 }}>
          {/* Total Investment Card */}
          <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center gap-3">
@@ -156,7 +157,7 @@ export default function StockEntry() {
             <Plus size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Input barang masuk</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input 
               placeholder="Cari Supplier..." 
               value={searchQuery}
@@ -292,8 +293,7 @@ export default function StockEntry() {
                     </div>
                     <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
                        <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Harga Beli (HPP)</label>
-                       <input 
-                          type="number" 
+                       <CurrencyInput 
                           className="form-input bg-white" 
                           placeholder="Rp 0"
                           value={item.cost_per_item}

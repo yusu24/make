@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import { BarChart2, TrendingUp, TrendingDown, Wallet, Calendar } from 'lucide-react';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
 import './FinanceSummary.css';
 
 export default function FinanceSummary() {
   const [summary, setSummary] = useState({ total_sales: 0, total_expenses: 0, profit: 0 });
+  const [ledger, setLedger] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // Default filter: Bulan Ini
@@ -21,6 +24,8 @@ export default function FinanceSummary() {
     try {
       const res = await api.get(`/retail/finance/summary?startDate=${start}&endDate=${end}`);
       setSummary(res.data);
+      const ledgerRes = await api.get(`/retail/finance/ledger?startDate=${start}&endDate=${end}`);
+      setLedger(ledgerRes.data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -55,6 +60,18 @@ export default function FinanceSummary() {
   };
 
   const isProfit = summary.profit >= 0;
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(ledger);
 
   return (
     <div className="finance-summary animate-fade-in">
@@ -131,6 +148,55 @@ export default function FinanceSummary() {
             <p className="text-xs text-slate-400 mt-1">Pendapatan dikurangi Pengeluaran.</p>
           </div>
         </div>
+      </div>
+
+      {/* Ledger Table */}
+      <div className="card table-wrap animate-fade-in mt-6">
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--retail-text-primary)' }}>Rincian Transaksi Laba Rugi</h3>
+        </div>
+        <div className="retail-table-responsive">
+          <table className="table">
+            <thead>
+              <tr>
+                <th className="pl-6 retail-table-header">Tanggal</th>
+                <th className="retail-table-header">Keterangan</th>
+                <th className="retail-table-header text-right">Pendapatan</th>
+                <th className="pr-6 retail-table-header text-right">Pengeluaran</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={4} className="text-center py-4 text-slate-500">Memuat rincian...</td></tr>
+              ) : ledger.length === 0 ? (
+                <tr><td colSpan={4} className="text-center py-8 text-slate-500">Tidak ada transaksi pada periode ini.</td></tr>
+              ) : (
+                paginatedData.map(item => (
+                  <tr key={item.id}>
+                    <td className="pl-6 text-sm">{new Date(item.date).toLocaleString('id-ID')}</td>
+                    <td className="text-sm">{item.description}</td>
+                    <td className="text-right text-emerald-600 font-medium text-sm">
+                      {item.type === 'income' ? formatRp(item.amount) : '-'}
+                    </td>
+                    <td className="pr-6 text-right text-rose-600 font-medium text-sm">
+                      {item.type === 'expense' ? formatRp(item.amount) : '-'}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
     </div>
   )

@@ -786,6 +786,24 @@ body {
   padding: 28px;
   z-index: 10000;
   animation: modalScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* A default (unstyled) scrollbar can run 15-17px wide on Windows Chrome/
+     Edge, eating into the modal's right-side padding enough to look
+     off-center even though the box itself is centered — keep it thin. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
+}
+
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background-color: var(--border-default);
+  border-radius: 3px;
 }
 
 .modal__title {
@@ -821,9 +839,11 @@ body {
   /* Tables: always horizontally scrollable on mobile */
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  /* Modal: full-width on mobile */
-  .modal-overlay { padding: 12px; align-items: flex-end; }
-  .modal { max-height: 85vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 20px; }
+  /* Modal: full-width on mobile, vertically centered (not pinned to the
+     bottom edge — that read as "off-center" with a big gap above and none
+     below) */
+  .modal-overlay { padding: 0; align-items: center; justify-content: center; display: flex; }
+  .modal { max-height: 90vh; width: 90%; margin: 0; border-radius: 20px; padding: 24px; }
   /* Form grid 2-col -> 1-col */
   .form-grid-2 { grid-template-columns: 1fr !important; }
   /* Report KPI grid */

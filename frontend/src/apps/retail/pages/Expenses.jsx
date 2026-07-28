@@ -5,6 +5,7 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import { Edit3, Trash2, Plus } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 export default function Expenses() {
@@ -109,7 +110,7 @@ export default function Expenses() {
             <Plus size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Tambah Pengeluaran</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari pengeluaran..."
               value={search}
@@ -203,7 +204,7 @@ export default function Expenses() {
 
           <div className="form-group">
             <label className="form-label">Nominal Pengeluaran (Rp)</label>
-            <input name="nominal" type="number" min="0" className="form-input" placeholder="Contoh: 50000" defaultValue={editingExpense?.nominal} required />
+            <CurrencyInput name="nominal" className="form-input" placeholder="Contoh: 50000" defaultValue={editingExpense?.nominal} required />
           </div>
 
           <div className="modal__actions">

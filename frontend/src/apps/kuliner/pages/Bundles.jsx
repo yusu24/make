@@ -6,6 +6,7 @@ import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import ClientPagination from '../components/ClientPagination';
+import CurrencyInput from '../../../components/CurrencyInput';
 import './KulinerDashboard.css';
 
 const emptyForm = { name: '', description: '', bundle_price: '', items: [{ product_id: '', quantity: 1 }] };
@@ -178,7 +179,7 @@ export default function Bundles() {
 
                 <div className="kd-form-group" style={{ marginTop: 16 }}>
                   <label className="kd-form-label">Harga Paket (Rp)</label>
-                  <input required type="number" min="0" className="kd-form-input" value={form.bundle_price} onChange={(e) => setForm({ ...form, bundle_price: e.target.value })} />
+                  <CurrencyInput required className="kd-form-input" value={form.bundle_price} onChange={(e) => setForm({ ...form, bundle_price: e.target.value })} />
                   {normalTotal > 0 && (
                     <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
                       Harga normal jika dibeli satuan: Rp {normalTotal.toLocaleString('id-ID')}

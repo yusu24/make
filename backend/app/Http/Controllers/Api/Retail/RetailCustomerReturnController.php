@@ -33,6 +33,17 @@ class RetailCustomerReturnController extends Controller
         }
     }
 
+    public function update(Request $request, int $id)
+    {
+        try {
+            $return = RetailCustomerReturn::findOrFail($id);
+            $updated = $this->returns->updateCustomerReturn($return, $request->all());
+            return response()->json($updated);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
     public function confirm(Request $request, int $id)
     {
         try {

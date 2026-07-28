@@ -94,7 +94,7 @@ export default function Customers() {
 
 
       {/* CRM Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 52 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 24 }}>
          {/* Total Member Card */}
          <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center gap-3">
@@ -139,7 +139,7 @@ export default function Customers() {
             <User size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Tambah pelanggan</span>
           </button>
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input 
               placeholder="Cari Pelanggan..."
               value={search}

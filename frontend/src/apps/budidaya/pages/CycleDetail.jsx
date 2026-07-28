@@ -9,6 +9,7 @@ import {
 import Modal from '../../../components/Modal'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
+import CurrencyInput from '../../../components/CurrencyInput'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
 export default function CycleDetail() {
@@ -598,7 +599,7 @@ export default function CycleDetail() {
                   </div>
                   <div>
                      <label className="aq-kpi-label">Harga per kg</label>
-                     <input required type="number" className="form-input" value={formHarvest.sale_price_per_kg} onChange={e => setFormHarvest({...formHarvest, sale_price_per_kg: e.target.value})} />
+                     <CurrencyInput required className="form-input" value={formHarvest.sale_price_per_kg} onChange={e => setFormHarvest({...formHarvest, sale_price_per_kg: e.target.value})} />
                   </div>
                </div>
                <div>

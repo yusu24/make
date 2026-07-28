@@ -288,9 +288,9 @@ export default function ReportsAnalytics() {
                     <td style={{ fontWeight: 600, color: i < 3 ? '#f59e0b' : 'var(--text-muted)' }}>{i + 1}</td>
                     <td style={{ fontWeight: 600 }}>{t.name}</td>
                     <td><span className={`badge ${t.plan === 'Pro' ? 'badge-violet' : 'badge-blue'}`}>{t.plan}</span></td>
-                    <td style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t.category}</td>
+                    <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{t.category}</td>
                     <td style={{ fontWeight: 600, color: '#10b981' }}>{fmtRp(t.revenue)}</td>
-                    <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.joined}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.joined}</td>
                   </tr>
                 ))}
               </tbody>

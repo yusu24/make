@@ -121,7 +121,7 @@ function MasterSection({ title, emoji, tenantId, endpoint, fields }) {
           <p style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Memuat...</p>
         ) : items.length === 0 ? (
           <p style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-            Belum ada data. Klik <strong>+ Tambah</strong> untuk menambahkan.
+            Belum ada data. Klik <strong style={{ fontWeight: 600 }}>+ Tambah</strong> untuk menambahkan.
           </p>
         ) : (
           <table className="table" style={{ marginTop: 12 }}>
@@ -135,7 +135,7 @@ function MasterSection({ title, emoji, tenantId, endpoint, fields }) {
             <tbody>
               {items.map(item => (
                 <tr key={item.id}>
-                  <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>#{item.id}</td>
+                  <td style={{ color: 'var(--text-primary)', fontSize: 12 }}>#{item.id}</td>
                   {fields.map(f => (
                     <td key={f.key} style={{ fontWeight: f.key === fields[0].key ? 600 : 400 }}>
                       {item[f.key] || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: 12 }}>—</span>}
@@ -293,7 +293,7 @@ export default function AdminRetailView() {
         <div className="card" style={{ padding: 48, textAlign: 'center' }}>
           <p style={{ fontSize: 36, marginBottom: 12 }}>🚧</p>
           <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-            Developer view untuk kategori <strong>{decodedName}</strong> belum tersedia.
+            Developer view untuk kategori <strong style={{ fontWeight: 600 }}>{decodedName}</strong> belum tersedia.
           </p>
         </div>
       ) : (

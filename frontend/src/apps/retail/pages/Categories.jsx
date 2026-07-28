@@ -92,7 +92,7 @@ export default function Categories() {
           </button>
 
           {/* Search */}
-          <div className="airy-search-wrapper" style={{ flex: 1, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari kategori..."
               value={search}

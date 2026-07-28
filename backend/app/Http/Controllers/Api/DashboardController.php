@@ -97,7 +97,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function stats()
+    public function stats(Request $request)
     {
         $totalUsers = \App\Models\User::count();
         $totalTenants = \App\Models\Tenant::count();
@@ -134,27 +134,14 @@ class DashboardController extends Controller
                 ];
             });
 
-        // 2. Fetch real monthly data (last 6 months) from invoices
-        $monthlyData = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $monthLabel = $date->format('M'); // e.g. Jan, Feb
-            
-            // Total users registered up to the end of this month
-            $usersCount = \App\Models\User::where('created_at', '<=', $date->endOfMonth())->count();
-            
-            // Real Monthly revenue from paid invoices in this month (in millions)
-            $monthRevenue = \App\Models\TenantInvoice::where('status', 'paid')
-                ->whereYear('date', $date->year)
-                ->whereMonth('date', $date->month)
-                ->sum('amount') / 1000000;
-
-            $monthlyData[] = [
-                'month' => $monthLabel,
-                'users' => $usersCount,
-                'revenue' => (float) $monthRevenue,
-            ];
-        }
+        // 2. Chart data for the two trend charts, bucketed to match whichever
+        // period the dashboard's filter dropdown is set to.
+        $period = $request->query('period', 'year');
+        $monthlyData = $this->buildChartData(
+            $period,
+            $request->query('start_date'),
+            $request->query('end_date')
+        );
 
         return response()->json(['data' => [
             'total_users' => $totalUsers,
@@ -166,5 +153,95 @@ class DashboardController extends Controller
             'recent_users' => $recentUsers,
             'monthly_data' => $monthlyData,
         ]]);
+    }
+
+    /**
+     * Resolves the dashboard chart filter (today/week/month/year/custom) into
+     * a [start, end, bucket unit] triple, then walks that range bucket by
+     * bucket. "users" is a cumulative count as of each bucket's end (a growth
+     * curve), "revenue" is the sum of paid invoices within that bucket alone.
+     */
+    private function buildChartData(string $period, ?string $customStart, ?string $customEnd): array
+    {
+        $now = now();
+
+        switch ($period) {
+            case 'today':
+                $start = $now->copy()->startOfDay();
+                $end = $now->copy()->endOfDay();
+                $unit = 'hour';
+                break;
+            case 'week':
+                $start = $now->copy()->startOfWeek();
+                $end = $now->copy()->endOfWeek();
+                $unit = 'day';
+                break;
+            case 'month':
+                $start = $now->copy()->startOfMonth();
+                $end = $now->copy()->endOfMonth();
+                $unit = 'day';
+                break;
+            case 'custom':
+                $start = $customStart ? \Carbon\Carbon::parse($customStart)->startOfDay() : $now->copy()->subDays(6)->startOfDay();
+                $end = $customEnd ? \Carbon\Carbon::parse($customEnd)->endOfDay() : $now->copy()->endOfDay();
+                if ($end->lt($start)) {
+                    [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+                }
+                $spanDays = $start->diffInDays($end);
+                $unit = $spanDays <= 1 ? 'hour' : ($spanDays <= 62 ? 'day' : 'month');
+                break;
+            case 'year':
+            default:
+                $start = $now->copy()->startOfYear();
+                $end = $now->copy()->endOfYear();
+                $unit = 'month';
+                break;
+        }
+
+        // Never chart into the future — clip the walk at "now".
+        if ($end->gt($now)) {
+            $end = $now->copy();
+        }
+
+        $points = [];
+        $cursor = $start->copy();
+
+        while ($cursor->lte($end)) {
+            if ($unit === 'hour') {
+                $bucketStart = $cursor->copy()->startOfHour();
+                $bucketEnd = $cursor->copy()->endOfHour();
+                $label = $cursor->format('H:00');
+                $next = $cursor->copy()->addHour();
+            } elseif ($unit === 'day') {
+                $bucketStart = $cursor->copy()->startOfDay();
+                $bucketEnd = $cursor->copy()->endOfDay();
+                $label = $cursor->format('d M');
+                $next = $cursor->copy()->addDay();
+            } else { // month
+                $bucketStart = $cursor->copy()->startOfMonth();
+                $bucketEnd = $cursor->copy()->endOfMonth();
+                $label = $cursor->format('M');
+                $next = $cursor->copy()->addMonth();
+            }
+
+            $usersCount = \App\Models\User::where('created_at', '<=', $bucketEnd)->count();
+
+            // created_at has real time-of-day precision, unlike the plain
+            // `date` column — needed for hour buckets ("today") to actually
+            // differ from each other instead of all showing the day's total.
+            $bucketRevenue = \App\Models\TenantInvoice::where('status', 'paid')
+                ->whereBetween('created_at', [$bucketStart, $bucketEnd])
+                ->sum('amount') / 1000000;
+
+            $points[] = [
+                'month' => $label,
+                'users' => $usersCount,
+                'revenue' => (float) $bucketRevenue,
+            ];
+
+            $cursor = $next;
+        }
+
+        return $points;
     }
 }

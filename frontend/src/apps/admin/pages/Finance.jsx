@@ -233,12 +233,12 @@ export default function Finance() {
                 <tbody>
                   {paginatedData.map(inv => (
                     <tr key={inv.id}>
-                      <td><code style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{inv.id}</code></td>
+                      <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{inv.id}</code></td>
                       <td style={{ fontWeight: 600, fontSize: 13 }}>{inv.tenant}</td>
                       <td><span className={`badge ${inv.plan === 'Pro' ? 'badge-violet' : 'badge-blue'}`}>{inv.plan}</span></td>
                       <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{fmtRp(inv.amount)}</td>
-                      <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{inv.date}</td>
-                      <td style={{ fontSize: 12, color: inv.status === 'overdue' ? 'var(--danger-400)' : 'var(--text-muted)' }}>{inv.due}</td>
+                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{inv.date}</td>
+                      <td style={{ fontSize: 12, color: inv.status === 'overdue' ? 'var(--danger-400)' : 'var(--text-primary)' }}>{inv.due}</td>
                       <td><span className={`badge ${STATUS_BADGE[inv.status]}`}>{STATUS_LABEL[inv.status]}</span></td>
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
@@ -317,9 +317,9 @@ export default function Finance() {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <p style={{ fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Informasi Pembayaran:</p>
-                <p style={{ margin: '0 0 4px', color: 'var(--text-muted)' }}>Tanggal Invoice: <strong>{selectedInvoice.date}</strong></p>
-                <p style={{ margin: '0 0 4px', color: 'var(--text-muted)' }}>Jatuh Tempo: <strong style={{ color: selectedInvoice.status === 'overdue' ? 'var(--danger-400)' : 'inherit' }}>{selectedInvoice.due}</strong></p>
-                <p style={{ margin: 0, color: 'var(--text-muted)' }}>Metode: <strong>Transfer Bank / VA</strong></p>
+                <p style={{ margin: '0 0 4px', color: 'var(--text-muted)' }}>Tanggal Invoice: <strong style={{ fontWeight: 600 }}>{selectedInvoice.date}</strong></p>
+                <p style={{ margin: '0 0 4px', color: 'var(--text-muted)' }}>Jatuh Tempo: <strong style={{ fontWeight: 600, color: selectedInvoice.status === 'overdue' ? 'var(--danger-400)' : 'inherit' }}>{selectedInvoice.due}</strong></p>
+                <p style={{ margin: 0, color: 'var(--text-muted)' }}>Metode: <strong style={{ fontWeight: 600 }}>Transfer Bank / VA</strong></p>
               </div>
             </div>
 
