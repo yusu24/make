@@ -104,6 +104,18 @@ export default function Header({ onMenuToggle, collapsed }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [showProfile])
 
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    if (!showNotif) return
+    const handler = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotif(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showNotif])
+
   const handleLogout = async () => {
     if (isImpersonating && isImpersonating()) {
       const redirectPath = exitImpersonate()
