@@ -95,20 +95,21 @@ export default function BudidayaHeader({ onMenuToggle }) {
     }
   }
 
+  const isDemo = user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com')
+
   const handleLogout = async () => {
     if (isImpersonating && isImpersonating()) {
       const redirectPath = exitImpersonate()
       navigate(redirectPath || '/tenants')
     } else {
       try { await logout() } catch {}
-      const isDemo = user?.email?.includes('demo-sandbox-')
       navigate(isDemo ? '/' : '/login')
     }
   }
 
   const logoutLabel = isImpersonating && isImpersonating()
     ? 'Keluar dari Impersonate'
-    : user?.email?.includes('demo-sandbox-')
+    : isDemo
       ? 'Keluar dari Akun Demo'
       : 'Keluar'
 

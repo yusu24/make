@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\BusinessCategory;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Notification;
 use App\Models\RetailCategory;
 use App\Models\RetailUnit;
 use App\Models\RetailProduct;
@@ -51,43 +52,62 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // ─── 1. Business Categories ───────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 1. Business Categories Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         $categories = [
-            ['name' => 'Toko Retail',      'slug' => 'toko-retail',      'description' => 'Manajemen stok & penjualan toko fisik/online', 'icon' => '🛒', 'color' => '#3b82f6', 'sort_order' => 1],
-            ['name' => 'Budidaya Hewan',    'slug' => 'budidaya-hewan',    'description' => 'Pemantauan kandang/kolam & siklus panen',          'icon' => '🐟', 'color' => '#10b981', 'sort_order' => 2],
-            ['name' => 'Budidaya Tanaman', 'slug' => 'budidaya-tanaman', 'description' => 'Pemantauan lahan pertanian & siklus tanam',    'icon' => '🌱', 'color' => '#84cc16', 'sort_order' => 3],
-            ['name' => 'Kuliner',          'slug' => 'kuliner',          'description' => 'Manajemen restoran & kasir digital',            'icon' => '🍱', 'color' => '#ef4444', 'sort_order' => 5],
+            ['name' => 'Toko Retail',      'slug' => 'toko-retail',      'description' => 'Manajemen stok & penjualan toko fisik/online', 'icon' => 'Ã°Å¸â€ºâ€™', 'color' => '#3b82f6', 'sort_order' => 1],
+            ['name' => 'Budidaya Hewan',    'slug' => 'budidaya-hewan',    'description' => 'Pemantauan kandang/kolam & siklus panen',          'icon' => 'Ã°Å¸ÂÅ¸', 'color' => '#10b981', 'sort_order' => 2],
+            ['name' => 'Budidaya Tanaman', 'slug' => 'budidaya-tanaman', 'description' => 'Pemantauan lahan pertanian & siklus tanam',    'icon' => 'Ã°Å¸Å’Â±', 'color' => '#84cc16', 'sort_order' => 3],
+            ['name' => 'Kuliner',          'slug' => 'kuliner',          'description' => 'Manajemen restoran & kasir digital',            'icon' => 'Ã°Å¸ÂÂ±', 'color' => '#ef4444', 'sort_order' => 5],
         ];
 
         foreach ($categories as $cat) {
             BusinessCategory::updateOrCreate(['slug' => $cat['slug']], $cat + ['active' => true]);
         }
-        $this->command->info('✅ Business categories seeded.');
+        $this->command->info('Ã¢Å“â€¦ Business categories seeded.');
 
         $this->call(SubscriptionPlanSeeder::class);
-        $this->command->info('✅ Subscription plans seeded.');
+        $this->command->info('Ã¢Å“â€¦ Subscription plans seeded.');
 
-        // ─── 2. Super Admin Logins ───────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 2. Super Admin Logins Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         $superAdmins = [
             ['email' => 'needleproject240696@gmail.com', 'name' => 'Super Admin SaaS', 'password' => 'Aku240696@'],
         ];
 
         foreach ($superAdmins as $sa) {
-            User::updateOrCreate(['email' => $sa['email']], [
+            $adminUser = User::updateOrCreate(['email' => $sa['email']], [
                 'name'     => $sa['name'],
                 'password' => Hash::make($sa['password']),
                 'role'     => 'super_admin',
                 'status'   => 'active',
             ]);
-        }
-        $this->command->info('✅ Super Admins seeded.');
 
-        // ─── 3. Demo Tenant Accounts for Each Category ────────────────────────
+            Notification::firstOrCreate([
+                'user_id' => $adminUser->id,
+                'title' => 'Tenant Telat Bayar',
+                'message' => 'Tenant "Toko ABC" (TN-0004) melewati batas waktu pembayaran langganan 3 hari. Mohon hubungi tenant.',
+                'type' => 'alert'
+            ]);
+            Notification::firstOrCreate([
+                'user_id' => $adminUser->id,
+                'title' => 'Langganan Expired',
+                'message' => 'Masa berlangganan "Klinik Sehat" (TN-0009) telah berakhir hari ini. Akses tenant telah ditangguhkan sementara.',
+                'type' => 'alert'
+            ]);
+            Notification::firstOrCreate([
+                'user_id' => $adminUser->id,
+                'title' => 'Peringatan Jatuh Tempo',
+                'message' => 'Langganan "Restoran Bintang" (TN-0012) akan jatuh tempo dalam 2 hari.',
+                'type' => 'info'
+            ]);
+        }
+        $this->command->info('Ã¢Å“â€¦ Super Admins seeded.');
+
+        // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 3. Demo Tenant Accounts for Each Category Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         
         // --- TOKO RETAIL ---
         // TN-0001 (ahmad@retail.com) is the account the landing page's
         // "Demo Toko Retail" card actually logs into (see Landing.jsx
-        // handleDemoLogin('retail')) — branded "Toko Demo" with rich
+        // handleDemoLogin('retail')) Ã¢â‚¬â€ branded "Toko Demo" with rich
         // dummy data so every retail menu has something to show.
         $retailTenants = [
             ['email' => 'ahmad@retail.com', 'name' => 'Toko Demo',   'tenant_id' => 'TN-0001',  'business_name' => 'Toko Demo'],
@@ -98,7 +118,7 @@ class DatabaseSeeder extends Seeder
             $this->seedRetailData($rt['tenant_id']);
             $this->seedRetailDataExtras($rt['tenant_id']);
         }
-        $this->command->info('✅ Toko Retail demo accounts seeded.');
+        $this->command->info('Ã¢Å“â€¦ Toko Retail demo accounts seeded.');
 
         // --- Budidaya Hewan ---
         $budidayaTenants = [
@@ -109,7 +129,7 @@ class DatabaseSeeder extends Seeder
             $this->createDemoTenant($bt['email'], $bt['name'], 'budidaya-hewan', $bt['tenant_id']);
             $this->seedBudidayaData($bt['tenant_id']);
         }
-        $this->command->info('✅ Budidaya Hewan demo accounts seeded.');
+        $this->command->info('Ã¢Å“â€¦ Budidaya Hewan demo accounts seeded.');
 
         // --- BUDIDAYA TANAMAN ---
         $tanamanTenants = [
@@ -120,7 +140,7 @@ class DatabaseSeeder extends Seeder
             $this->createDemoTenant($tt['email'], $tt['name'], 'budidaya-tanaman', $tt['tenant_id']);
             $this->seedTanamanData($tt['tenant_id']);
         }
-        $this->command->info('✅ Budidaya Tanaman demo accounts seeded.');
+        $this->command->info('Ã¢Å“â€¦ Budidaya Tanaman demo accounts seeded.');
 
         // --- KULINER ---
         $kulinerTenants = [
@@ -131,7 +151,7 @@ class DatabaseSeeder extends Seeder
             $this->createDemoTenant($kt['email'], $kt['name'], 'kuliner', $kt['tenant_id']);
             $this->seedKulinerData($kt['tenant_id']);
         }
-        $this->command->info('✅ Kuliner demo accounts seeded.');
+        $this->command->info('Ã¢Å“â€¦ Kuliner demo accounts seeded.');
 
         // --- JASA ---
         $jasaTenants = [
@@ -140,7 +160,7 @@ class DatabaseSeeder extends Seeder
         foreach ($jasaTenants as $jt) {
             $this->createDemoTenant($jt['email'], $jt['name'], 'jasa', $jt['tenant_id']);
         }
-        $this->command->info('✅ Jasa demo accounts seeded.');
+        $this->command->info('Ã¢Å“â€¦ Jasa demo accounts seeded.');
 
         // --- MANUFAKTUR ---
         $manufakturTenants = [
@@ -149,9 +169,9 @@ class DatabaseSeeder extends Seeder
         foreach ($manufakturTenants as $mt) {
             $this->createDemoTenant($mt['email'], $mt['name'], 'manufaktur', $mt['tenant_id']);
         }
-        $this->command->info('✅ Manufaktur demo accounts seeded.');
+        $this->command->info('Ã¢Å“â€¦ Manufaktur demo accounts seeded.');
 
-        $this->command->info('🚀 All Category Demo Accounts Seeded Successfully!');
+        $this->command->info('Ã°Å¸Å¡â‚¬ All Category Demo Accounts Seeded Successfully!');
         
         // --- SAAS ADMIN DATA ---
         $this->call(SaasAdminDummySeeder::class);
@@ -216,7 +236,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 3. Products (final/current stock snapshot — includes one low-stock
+        // 3. Products (final/current stock snapshot Ã¢â‚¬â€ includes one low-stock
         // and one out-of-stock item so Dashboard/Inventory alerts have data)
         $products = [
             ['cat' => 'Makanan',    'name' => 'Keripik Singkong Balado',    'price' => 15000,  'stock' => 143, 'unit' => 'Pack'],
@@ -326,7 +346,7 @@ class DatabaseSeeder extends Seeder
             ['tenant_id' => $tenantId, 'name' => 'Manajer Toko'],
             ['permissions' => ['catalog', 'purchasing', 'inventory', 'pos', 'discounts', 'master', 'reports', 'finance']]
         );
-        // Scoped per tenant_id, not a fixed global email — every tenant that
+        // Scoped per tenant_id, not a fixed global email Ã¢â‚¬â€ every tenant that
         // runs this seeder (including each public demo-sandbox visitor) gets
         // its own cashier account instead of reassigning one shared row.
         User::updateOrCreate(
@@ -342,7 +362,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 9. Purchases (penerimaan barang) — 3 historical batches from the
+        // 9. Purchases (penerimaan barang) Ã¢â‚¬â€ 3 historical batches from the
         // suppliers above, each writing a matching "in" stock movement.
         $purchaseBatches = [
             [
@@ -424,7 +444,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // Buku Tulis 38 Lembar was fully sold through before this seed's
-        // sales window — log the depletion explicitly so its "habis" status
+        // sales window Ã¢â‚¬â€ log the depletion explicitly so its "habis" status
         // in Inventory/Stock Movements has a paper trail.
         RetailStockMovement::create([
             'tenant_id' => $tenantId,
@@ -438,7 +458,7 @@ class DatabaseSeeder extends Seeder
             'created_at' => now()->subDays(3),
         ]);
 
-        // 10. Sales transactions — spread across the last 8 days (incl.
+        // 10. Sales transactions Ã¢â‚¬â€ spread across the last 8 days (incl.
         // today) so Dashboard/SalesReport/Transactions/Stock Movements all
         // have real history to show.
         $transactionPlans = [
@@ -546,10 +566,10 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    // ─── Retail extras: discounts, pricelists, stock opname, payables,
+    // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Retail extras: discounts, pricelists, stock opname, payables,
     // receivables, and returns. Split from seedRetailData() and keyed off
     // records that already exist (by name/invoice, not fresh inserts) so
-    // it's safe to re-run against a tenant that was seeded previously —
+    // it's safe to re-run against a tenant that was seeded previously Ã¢â‚¬â€
     // unlike the purchases/transactions above, which always insert new
     // rows and would duplicate demo history on a second run.
     public function seedRetailDataExtras(string $tenantId)
@@ -591,7 +611,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 12. Pricelists — wholesale & member pricing for select products
+        // 12. Pricelists Ã¢â‚¬â€ wholesale & member pricing for select products
         $grosirList = RetailPricelist::updateOrCreate(
             ['tenant_id' => $tenantId, 'name' => 'Harga Grosir'],
             ['type' => 'wholesale']
@@ -614,7 +634,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 13. Stock opname — one finalized session with a couple of discrepancies
+        // 13. Stock opname Ã¢â‚¬â€ one finalized session with a couple of discrepancies
         $opname = RetailStockOpname::updateOrCreate(
             ['tenant_id' => $tenantId, 'note' => 'Opname bulanan - akhir periode'],
             ['status' => 'finalized', 'user_id' => $user->id, 'finalized_at' => now()->subDays(2)]
@@ -631,7 +651,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 14. Payables — one purchase batch left partially unpaid to the supplier
+        // 14. Payables Ã¢â‚¬â€ one purchase batch left partially unpaid to the supplier
         $payableSupplier = 'PT Indofood Distribusi Wilayah';
         if (isset($purchaseModels[$payableSupplier])) {
             $purchase = $purchaseModels[$payableSupplier];
@@ -652,7 +672,7 @@ class DatabaseSeeder extends Seeder
             $payable->recalculate();
         }
 
-        // 15. Receivables — a credit sale to a gold-tier customer, partially settled
+        // 15. Receivables Ã¢â‚¬â€ a credit sale to a gold-tier customer, partially settled
         $creditTx = isset($customerModels['Budi Santoso'], $productModels['Beras Pandan Wangi 5kg'])
             ? RetailTransaction::where('tenant_id', $tenantId)
                 ->where('customer_id', $customerModels['Budi Santoso']->id)
@@ -678,7 +698,7 @@ class DatabaseSeeder extends Seeder
             $receivable->recalculate();
         }
 
-        // 16. Customer return — Budi Santoso returns the hampers package (pending review)
+        // 16. Customer return Ã¢â‚¬â€ Budi Santoso returns the hampers package (pending review)
         $returnTx = isset($customerModels['Budi Santoso'], $productModels['Paket Hampers Lebaran A'])
             ? RetailTransaction::where('tenant_id', $tenantId)
                 ->where('customer_id', $customerModels['Budi Santoso']->id)
@@ -719,7 +739,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 17. Supplier return — a batch of damaged goods sent back (pending review)
+        // 17. Supplier return Ã¢â‚¬â€ a batch of damaged goods sent back (pending review)
         $returnSupplier = 'Toko Grosir Berkah Jaya';
         if (isset($purchaseModels[$returnSupplier])) {
             $product = $productModels['Sabun Cuci Piring Sunlight'];
@@ -742,7 +762,7 @@ class DatabaseSeeder extends Seeder
     }
 
     // return_number on retail_customer_returns / retail_supplier_returns is
-    // unique GLOBALLY (not per-tenant, see the migrations) — mirrors
+    // unique GLOBALLY (not per-tenant, see the migrations) Ã¢â‚¬â€ mirrors
     // RetailReturnService::generateNumber() so seeding a second tenant on
     // the same calendar day doesn't collide on a hardcoded "-00001" suffix.
     private function generateReturnNumber(string $modelClass, string $prefix): string

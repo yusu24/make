@@ -517,7 +517,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
           {!isMini && (
             <div className="sidebar__logo-text">
               <span className="sidebar__logo-brand">BIZORA</span>
-              <span className="sidebar__logo-sub">SaaS Platform</span>
+              <span className="sidebar__logo-sub"></span>
             </div>
           )}
         </div>

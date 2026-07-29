@@ -122,7 +122,7 @@ export default function Header({ onMenuToggle, collapsed }) {
       navigate(redirectPath || '/tenants')
     } else {
       try { await logout() } catch {}
-      const isDemo = user?.email?.includes('demo-sandbox-')
+      const isDemo = user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com')
       navigate(isDemo ? '/' : '/login')
     }
   }
@@ -268,7 +268,7 @@ export default function Header({ onMenuToggle, collapsed }) {
                   </svg>
                   {isImpersonating && isImpersonating() 
                     ? 'Keluar dari Impersonate' 
-                    : (user?.email?.includes('demo-sandbox-') ? 'Keluar dari Akun Demo' : 'Keluar')}
+                    : ((user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com')) ? 'Keluar dari Akun Demo' : 'Keluar')}
                 </button>
               </div>
             )}
