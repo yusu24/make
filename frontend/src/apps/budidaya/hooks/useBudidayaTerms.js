@@ -156,7 +156,35 @@ export function useBudidayaTerms() {
       unitTabEmpty: 'Kosong',
       unitTabAll: 'Semua',
       titleUnitMgmt: 'Manajemen Kandang',
-      subUnitMgmt: 'Kelola data kandang dan kapasitas maksimal'
+      subUnitMgmt: 'Kelola data kandang dan kapasitas maksimal',
+      statsTemp: 'SUHU UDARA',
+      statsO2: 'KELEMBABAN',
+      statsPH: 'SIRKULASI',
+      statsTodayFeedVal: '124.5 kg',
+      statsTempVal: '28.4°C',
+      statsO2Val: '65 %',
+      statsPHVal: 'Normal',
+      totalUnitsLabel: 'Total kandang',
+      warningLabel: 'Kondisi Hewan Sakit (Kandang B3)',
+      nextFeedLabel: 'Jadwal pakan berikutnya',
+      nextFeedDetail: 'Pakan Utama – 45 Menit lagi',
+      tempAvgLabel: 'Suhu kandang rata-rata',
+      idealConditionLabel: 'Kondisi Ideal',
+      mockA1Title: 'Kandang A1 - Pembesaran',
+      mockA1Details: 'Usia: 45 Hari | Populasi: 2000 Ekor',
+      mockB3Title: 'Kandang B3 - Bibit Baru',
+      mockB3Details: 'Usia: 12 Hari | Populasi: 500 Ekor',
+      mockB3Warning: 'Kondisi Hewan Sakit',
+      mockKPIs: [
+        { label: 'SUHU', val: '28°C' },
+        { label: 'LEMBAB', val: '65%' },
+        { label: 'AMONIAK', val: 'Aman' }
+      ],
+      mockB3KPIs: [
+        { label: 'SUHU', val: '31°C', alert: true },
+        { label: 'LEMBAB', val: '80%', alert: true },
+        { label: 'AMONIAK', val: 'Tinggi' }
+      ]
     }
   }
 
