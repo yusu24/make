@@ -496,7 +496,7 @@ export default function Landing() {
       </div>
 
       {/* FOOTER */}
-      <div className="lp-footer">
+      <footer className="lp-footer">
         <div className="lp-footer-grid">
           <div>
             <div className="lp-footer-brand-logo">
