@@ -283,7 +283,7 @@ class AuthController extends Controller
     /**
      * POST /api/auth/demo-sandbox
      */
-    public function demoSandbox(Request $request)
+    public function createDemoSandbox(Request $request)
     {
         $categorySlug = $request->input('category', 'kuliner');
         $subtype = $request->input('subtype');
