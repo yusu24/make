@@ -1,7 +1,7 @@
 import React from 'react'
 
 /**
- * Standardized Table Components for Budidaya Ikan module
+ * Standardized Table Components for Budidaya Hewan module
  * Following strict SaaS design rules for consistency and readability.
  */
 

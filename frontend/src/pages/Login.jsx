@@ -39,7 +39,7 @@ export default function Login() {
           navigate('/retail/dashboard')
         } else if (userData.business_category === 'Kuliner') {
           navigate('/kuliner/admin')
-        } else if (userData.business_category === 'Budidaya Ikan' || userData.business_category === 'Budidaya Tanaman') {
+        } else if (userData.business_category === 'Budidaya Hewan' || userData.business_category === 'Budidaya Tanaman') {
           navigate('/budidaya/dashboard')
         } else {
           navigate('/coming-soon')
@@ -114,7 +114,7 @@ export default function Login() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 40 }}>
             {[
               { icon: '🛒', title: 'Toko Retail', desc: 'Kasir pintar POS, pencatatan otomatis, dan monitor stok.' },
-              { icon: '🐟', title: 'Budidaya Ikan', desc: 'Siklus hidup kolam, jadwal pemberian pakan, & panen.' },
+              { icon: '🐟', title: 'Budidaya Hewan', desc: 'Siklus hidup kolam, jadwal pemberian pakan, & panen.' },
               { icon: '🍱', title: 'Kuliner', desc: 'Menu interaktif, pesanan online, resep, dan HPP otomatis.' }
             ].map((item, idx) => (
               <div key={idx} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>

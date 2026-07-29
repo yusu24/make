@@ -79,7 +79,7 @@ class ImpersonateController extends Controller
         if ($role === 'super_admin' || $role === 'admin') return '/dashboard';
 
         $cat = trim((string) $category);
-        if (strcasecmp($cat, 'Budidaya Ikan') === 0)     return '/budidaya/dashboard';
+        if (strcasecmp($cat, 'Budidaya Hewan') === 0)     return '/budidaya/dashboard';
         if (strcasecmp($cat, 'Budidaya Tanaman') === 0)  return '/budidaya/dashboard';
         if (strcasecmp($cat, 'Toko Retail') === 0)       return '/retail/dashboard';
         if (strcasecmp($cat, 'Kuliner') === 0)           return '/kuliner/admin/categories';

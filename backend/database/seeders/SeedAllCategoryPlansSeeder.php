@@ -12,7 +12,7 @@ class SeedAllCategoryPlansSeeder extends Seeder
     public function run(): void
     {
         $data = [
-            'budidaya-ikan' => [
+            'budidaya-hewan' => [
                 [
                     'plan_key' => 'free', 'name' => 'Free', 'price' => null,
                     'max_products' => null, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true,

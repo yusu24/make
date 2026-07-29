@@ -13,7 +13,7 @@ import bizoraLogo from '../assets/bizora-logo.png'
 // Visual config per slug — sandbox panel appearance
 const SLUG_VISUALS = {
   'toko-retail':      { emoji: '🛒', bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', sub: 'Sistem POS Kasir & Stok Barang' },
-  'budidaya-ikan':    { emoji: '🐟', bg: 'linear-gradient(135deg,#10b981,#047857)', sub: 'Monitoring Siklus, Kolam & Pakan' },
+  'budidaya-hewan':    { emoji: '🐟', bg: 'linear-gradient(135deg,#10b981,#047857)', sub: 'Monitoring Siklus, Kolam & Pakan' },
   'budidaya-tanaman': { emoji: '🌱', bg: 'linear-gradient(135deg,#84cc16,#4d7c0f)', sub: 'Monitoring Siklus, Lahan & Pupuk' },
   'kuliner':          { emoji: '🍱', bg: 'linear-gradient(135deg,#ef4444,#b91c1c)', sub: 'Menu Digital & Manajemen Restoran' },
 }
@@ -21,7 +21,7 @@ const SLUG_VISUALS = {
 // Route map per slug — where to navigate after demo login
 const SLUG_ROUTES = {
   'toko-retail':      '/retail/dashboard',
-  'budidaya-ikan':    '/budidaya/dashboard',
+  'budidaya-hewan':    '/budidaya/dashboard',
   'budidaya-tanaman': '/budidaya/dashboard',
   'kuliner':          '/kuliner/admin',
 }
@@ -48,7 +48,7 @@ export default function Landing() {
   const [settings, setSettings] = useState({
     hero_title: 'Kelola Bisnis Anda',
     hero_subtitle: 'Lebih Cerdas & Mudah',
-    hero_desc: 'Satu platform untuk retail, budidaya ikan, kuliner, dan jasa. Kelola stok, pesanan, laporan keuangan, dan pelanggan dalam satu genggaman.',
+    hero_desc: 'Satu platform untuk retail, Budidaya Hewan, kuliner, dan jasa. Kelola stok, pesanan, laporan keuangan, dan pelanggan dalam satu genggaman.',
     campaign_text: 'Promo Spesial Kategori — Potongan Harga Upgrade Paket Aktif! Buat bisnis Anda naik tingkat. Hubungi admin untuk mendapatkan promo menarik per kategori bisnis Anda.',
     campaign_active: true,
     show_sandbox: true,
@@ -60,7 +60,7 @@ export default function Landing() {
   if (user) {
     if (user.role === 'super_admin') return <Navigate to="/dashboard" replace />
     if (user.business_category === 'Toko Retail') return <Navigate to="/retail/dashboard" replace />
-    if (user.business_category === 'Budidaya Ikan' || user.business_category === 'Budidaya Tanaman') return <Navigate to="/budidaya/dashboard" replace />
+    if (user.business_category === 'Budidaya Hewan' || user.business_category === 'Budidaya Tanaman') return <Navigate to="/budidaya/dashboard" replace />
     if (user.business_category === 'Kuliner') return <Navigate to="/kuliner/admin" replace />
     return <Navigate to="/coming-soon" replace />
   }

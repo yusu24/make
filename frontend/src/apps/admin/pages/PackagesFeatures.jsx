@@ -18,7 +18,7 @@ const FEATURES_BY_CATEGORY = {
     apiAccess:       { label: 'Akses API',            icon: '🔌' },
     prioritySupport: { label: 'Priority Support',     icon: '🎧' },
   },
-  'budidaya-ikan': {
+  'budidaya-hewan': {
     ponds:           { label: 'Manajemen Kolam',      icon: '🏊' },
     cycles:          { label: 'Siklus Budidaya',      icon: '🔄' },
     feeding:         { label: 'Jadwal Pakan',         icon: '🐟' },
@@ -372,7 +372,7 @@ function MatrixView({ plans, categorySlug, onEdit }) {
 // ─── Main Component ────────────────────────────────────────────────────────────
 const CATEGORIES = [
   { slug: 'toko-retail',      name: 'Toko Retail',       icon: '🛒', color: '#3b82f6', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
-  { slug: 'budidaya-ikan',    name: 'Budidaya Ikan',     icon: '🐟', color: '#10b981', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
+  { slug: 'budidaya-hewan',    name: 'Budidaya Hewan',     icon: '🐟', color: '#10b981', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
   { slug: 'budidaya-tanaman', name: 'Budidaya Tanaman',  icon: '🌱', color: '#84cc16', gradient: 'linear-gradient(135deg,#84cc16,#4d7c0f)' },
   { slug: 'kuliner',          name: 'Kuliner',           icon: '🍽️', color: '#f59e0b', gradient: 'linear-gradient(135deg,#f59e0b,#b45309)' },
 ]

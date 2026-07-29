@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
         // ─── 1. Business Categories ───────────────────────────────────────────
         $categories = [
             ['name' => 'Toko Retail',      'slug' => 'toko-retail',      'description' => 'Manajemen stok & penjualan toko fisik/online', 'icon' => '🛒', 'color' => '#3b82f6', 'sort_order' => 1],
-            ['name' => 'Budidaya Ikan',    'slug' => 'budidaya-ikan',    'description' => 'Pemantauan kolam ikan & siklus panen',          'icon' => '🐟', 'color' => '#10b981', 'sort_order' => 2],
+            ['name' => 'Budidaya Hewan',    'slug' => 'budidaya-hewan',    'description' => 'Pemantauan kandang/kolam & siklus panen',          'icon' => '🐟', 'color' => '#10b981', 'sort_order' => 2],
             ['name' => 'Budidaya Tanaman', 'slug' => 'budidaya-tanaman', 'description' => 'Pemantauan lahan pertanian & siklus tanam',    'icon' => '🌱', 'color' => '#84cc16', 'sort_order' => 3],
             ['name' => 'Kuliner',          'slug' => 'kuliner',          'description' => 'Manajemen restoran & kasir digital',            'icon' => '🍱', 'color' => '#ef4444', 'sort_order' => 5],
         ];
@@ -100,16 +100,16 @@ class DatabaseSeeder extends Seeder
         }
         $this->command->info('✅ Toko Retail demo accounts seeded.');
 
-        // --- BUDIDAYA IKAN ---
+        // --- Budidaya Hewan ---
         $budidayaTenants = [
             ['email' => 'siti@ikan.com', 'name' => 'Siti Budidaya', 'tenant_id' => 'TN-0002'],
             ['email' => 'budidaya@demo.com',  'name' => 'Budidaya Demo',  'tenant_id' => 'TN-BUDIDAYA'],
         ];
         foreach ($budidayaTenants as $bt) {
-            $this->createDemoTenant($bt['email'], $bt['name'], 'budidaya-ikan', $bt['tenant_id']);
+            $this->createDemoTenant($bt['email'], $bt['name'], 'budidaya-hewan', $bt['tenant_id']);
             $this->seedBudidayaData($bt['tenant_id']);
         }
-        $this->command->info('✅ Budidaya Ikan demo accounts seeded.');
+        $this->command->info('✅ Budidaya Hewan demo accounts seeded.');
 
         // --- BUDIDAYA TANAMAN ---
         $tanamanTenants = [

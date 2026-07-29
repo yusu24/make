@@ -189,7 +189,7 @@ const RETAIL_SECTIONS = [
 
 const CAT_META = {
   'Toko Retail':      { emoji: '🛒', color: '#3b82f6', sections: RETAIL_SECTIONS },
-  'Budidaya Ikan':    { emoji: '🐟', color: '#10b981', sections: [] },
+  'Budidaya Hewan':    { emoji: '🐟', color: '#10b981', sections: [] },
   'Budidaya Tanaman': { emoji: '🌱', color: '#84cc16', sections: [] },
   'Jasa':             { emoji: '🔧', color: '#8b5cf6', sections: [] },
   'Manufaktur':       { emoji: '🏭', color: '#f59e0b', sections: [] },

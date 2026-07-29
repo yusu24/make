@@ -135,7 +135,7 @@ function filterNavByPermission(sections, user) {
 }
 
 const CATEGORY_COLORS = {
-  'Budidaya Ikan':    '#10b981',
+  'Budidaya Hewan':    '#10b981',
   'Budidaya Tanaman': '#84cc16',
   'Toko Retail':      '#3b82f6',
   'Jasa':             '#8b5cf6',
@@ -447,7 +447,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
         currentNavItems = [...currentNavItems, ...filterNavByPermission(RETAIL_NAV_ITEMS, user)]
         hasCategoryNav = true
       }
-      if (user?.business_category === 'Budidaya Ikan' || user?.business_category === 'Budidaya Tanaman' || activeModules.includes('budidaya_cycle')) {
+      if (user?.business_category === 'Budidaya Hewan' || user?.business_category === 'Budidaya Tanaman' || activeModules.includes('budidaya_cycle')) {
         const isTanaman = user?.business_category === 'Budidaya Tanaman';
         const navItems = BUDIDAYA_NAV_ITEMS.map(sec => {
           if (isTanaman && sec.section === 'Budidaya') {

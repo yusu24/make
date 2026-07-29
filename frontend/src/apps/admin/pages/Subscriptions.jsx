@@ -6,7 +6,7 @@ import './Shared.css'
 
 const DUMMY_TENANTS = [
   { id:1, name:'Ahmad Suharto',  email:'ahmad@retail.com', category:'Toko Retail',   status:'active',   plan:'Pro',   tenant_id:'TN-001', joined:'2026-03-10' },
-  { id:2, name:'Siti Rahayu',   email:'siti@ikan.com',    category:'Budidaya Ikan', status:'active',   plan:'Basic', tenant_id:'TN-002', joined:'2026-03-15' },
+  { id:2, name:'Siti Rahayu',   email:'siti@ikan.com',    category:'Budidaya Hewan', status:'active',   plan:'Basic', tenant_id:'TN-002', joined:'2026-03-15' },
   { id:3, name:'Budi Santoso',  email:'budi@jasa.com',    category:'Jasa',          status:'pending',  plan:'-',     tenant_id:'TN-003', joined:'2026-04-01' },
   { id:4, name:'Dewi Lestari',  email:'dewi@mftr.com',    category:'Manufaktur',    status:'active',   plan:'Pro',   tenant_id:'TN-004', joined:'2026-03-28' },
   { id:5, name:'Teguh Prasetyo',email:'teguh@retail.com', category:'Toko Retail',   status:'inactive', plan:'Basic', tenant_id:'TN-005', joined:'2026-02-20' },

@@ -6,7 +6,7 @@ import './Auth.css'
 import bizoraLogo from '../assets/bizora-logo.png'
 
 const CATEGORY_ICONS = {
-  'Budidaya Ikan':    'ti-fish',
+  'Budidaya Hewan':    'ti-fish',
   'Budidaya Tanaman': 'ti-leaf',
   'Toko Retail':      'ti-shopping-cart',
   'Jasa':             'ti-briefcase',
@@ -33,7 +33,7 @@ export default function Register() {
       setCategories(res.data?.data || [])
     }).catch(() => {
       setCategories([
-        { id: 1, name: 'Budidaya Ikan' },
+        { id: 1, name: 'Budidaya Hewan' },
         { id: 2, name: 'Toko Retail' },
         { id: 3, name: 'Jasa' },
         { id: 4, name: 'Manufaktur' },
@@ -85,7 +85,7 @@ export default function Register() {
           navigate('/retail/dashboard')
         } else if (userData.business_category === 'Kuliner') {
           navigate('/kuliner/admin')
-        } else if (userData.business_category === 'Budidaya Ikan' || userData.business_category === 'Budidaya Tanaman') {
+        } else if (userData.business_category === 'Budidaya Hewan' || userData.business_category === 'Budidaya Tanaman') {
           navigate('/budidaya/dashboard')
         } else {
           navigate('/coming-soon')

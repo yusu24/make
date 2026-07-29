@@ -292,12 +292,12 @@ class AuthController extends Controller
         
         // Normalize slug
         if ($categorySlug === 'budidaya') {
-            $categorySlug = 'budidaya-ikan';
+            $categorySlug = 'budidaya-hewan';
         } elseif ($categorySlug === 'tanaman') {
             $categorySlug = 'budidaya-tanaman';
         }
 
-        $allowedSlugs = ['toko-retail', 'budidaya-ikan', 'budidaya-tanaman', 'kuliner'];
+        $allowedSlugs = ['toko-retail', 'budidaya-hewan', 'budidaya-tanaman', 'kuliner'];
         if (!in_array($categorySlug, $allowedSlugs)) {
             return response()->json(['success' => false, 'message' => 'Kategori bisnis tidak didukung untuk demo sandbox.'], 400);
         }
@@ -313,7 +313,7 @@ class AuthController extends Controller
         
         $namePrefixes = [
             'toko-retail'      => 'Demo Mart ',
-            'budidaya-ikan'    => 'Demo Ikan ',
+            'budidaya-hewan'    => 'Demo Hewan ',
             'budidaya-tanaman' => 'Demo Tani ',
             'kuliner'          => 'Demo Resto ',
         ];
@@ -354,7 +354,7 @@ class AuthController extends Controller
         if ($categorySlug === 'toko-retail') {
             $seeder->seedRetailData($tenantId);
             $seeder->seedRetailDataExtras($tenantId);
-        } elseif ($categorySlug === 'budidaya-ikan') {
+        } elseif ($categorySlug === 'budidaya-hewan') {
             $seeder->seedBudidayaData($tenantId);
         } elseif ($categorySlug === 'budidaya-tanaman') {
             $seeder->seedTanamanData($tenantId);

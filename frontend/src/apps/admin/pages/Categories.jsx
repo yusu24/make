@@ -11,7 +11,7 @@ const ICONS  = ['🛒','🐟','🔧','🏭','🍱','🏥','🏗️','📦']
 // Map kategori bisnis → URL sistem yang bersangkutan
 const SYSTEM_ROUTES = {
   'Toko Retail':      '/retail/dashboard',
-  'Budidaya Ikan':    '/budidaya/dashboard',
+  'Budidaya Hewan':    '/budidaya/dashboard',
   'Budidaya Tanaman': '/budidaya/dashboard',
   'Jasa':             '/coming-soon',
   'Manufaktur':       '/coming-soon',
@@ -20,7 +20,7 @@ const SYSTEM_ROUTES = {
 
 const DUMMY_CATS = [
   { id:1, name:'Toko Retail',   description:'Manajemen stok dan penjualan toko fisik',   tenant_count:142, active:true,  icon:'🛒', color:'#3b82f6' },
-  { id:2, name:'Budidaya Ikan', description:'Pemantauan kolam ikan dan siklus panen',    tenant_count:89,  active:true,  icon:'🐟', color:'#10b981' },
+  { id:2, name:'Budidaya Hewan', description:'Pemantauan kandang/kolam dan siklus panen',    tenant_count:89,  active:true,  icon:'🐟', color:'#10b981' },
   { id:3, name:'Jasa',          description:'Manajemen booking dan layanan jasa',         tenant_count:76,  active:true,  icon:'🔧', color:'#8b5cf6' },
   { id:4, name:'Manufaktur',    description:'Kontrol produksi dan manajemen bahan baku',  tenant_count:41,  active:true,  icon:'🏭', color:'#f59e0b' },
   { id:5, name:'Kuliner',       description:'Manajemen restoran, cafe, dan pesanan online', tenant_count:56, active:true,  icon:'🍱', color:'#ec4899' },
@@ -34,7 +34,7 @@ export default function Categories() {
   const handleEnterDemo = async (catName) => {
     const slugMap = {
       'Toko Retail': 'toko-retail',
-      'Budidaya Ikan': 'budidaya-ikan',
+      'Budidaya Hewan': 'budidaya-hewan',
       'Budidaya Tanaman': 'budidaya-tanaman',
       'Kuliner': 'kuliner',
     }

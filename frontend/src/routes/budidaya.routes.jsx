@@ -24,7 +24,7 @@ const TenantSupportCenter = lazy(() => import('../pages/TenantSupportCenter'));
 const budidayaRoutes = (
   <Route path="/budidaya" element={
     <ProtectedRoute>
-      <CategoryRoute allowedCategory={["Budidaya Ikan", "Budidaya Tanaman"]}>
+      <CategoryRoute allowedCategory={["Budidaya Hewan", "Budidaya Tanaman"]}>
         <BudidayaLayout />
       </CategoryRoute>
     </ProtectedRoute>

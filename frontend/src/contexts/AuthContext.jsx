@@ -169,7 +169,7 @@ export const AuthProvider = ({ children }) => {
         
         const SLUG_ROUTES = {
             'toko-retail': '/retail/dashboard',
-            'budidaya-ikan': '/budidaya/dashboard',
+            'budidaya-hewan': '/budidaya/dashboard',
             'budidaya-tanaman': '/budidaya/dashboard',
             'kuliner': '/kuliner/admin',
         };

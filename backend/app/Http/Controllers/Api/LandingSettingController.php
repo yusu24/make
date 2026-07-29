@@ -16,13 +16,13 @@ class LandingSettingController extends Controller
             $settings = LandingSetting::create([
                 'hero_title' => 'Kelola Bisnis UMKM',
                 'hero_subtitle' => 'Lebih Cerdas & Mudah',
-                'hero_desc' => 'Satu platform untuk retail, budidaya ikan, kuliner, dan jasa. Kelola stok, pesanan, laporan keuangan, dan pelanggan dalam satu genggaman.',
+                'hero_desc' => 'Satu platform untuk retail, Budidaya Hewan, kuliner, dan jasa. Kelola stok, pesanan, laporan keuangan, dan pelanggan dalam satu genggaman.',
                 'campaign_text' => 'Promo Spesial Kategori — Potongan Harga Upgrade Paket Aktif! Buat UMKM Anda naik tingkat. Hubungi admin untuk mendapatkan promo menarik per kategori bisnis Anda.',
                 'campaign_active' => true,
                 'show_sandbox' => true,
                 'show_features' => true,
                 'show_testimonials' => true,
-                'featured_categories' => ['toko-retail', 'budidaya-ikan', 'budidaya-tanaman', 'kuliner'],
+                'featured_categories' => ['toko-retail', 'budidaya-hewan', 'budidaya-tanaman', 'kuliner'],
                 'bank_name' => 'BANK BCA',
                 'bank_account_no' => '8837 001 992',
                 'bank_account_name' => 'PT Antigravity Global SaaS',
@@ -76,7 +76,7 @@ class LandingSettingController extends Controller
             $settings = LandingSetting::create([
                 'hero_title' => 'Kelola Bisnis Anda',
                 'hero_subtitle' => 'Lebih Cerdas & Mudah',
-                'hero_desc' => 'Satu platform untuk retail, budidaya ikan, kuliner, dan jasa.',
+                'hero_desc' => 'Satu platform untuk retail, Budidaya Hewan, kuliner, dan jasa.',
             ]);
         }
 

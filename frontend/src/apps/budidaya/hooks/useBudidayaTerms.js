@@ -88,7 +88,7 @@ export function useBudidayaTerms() {
     }
   }
 
-  // Budidaya Ikan (default)
+  // Budidaya Hewan (default)
   return {
     isTanaman: false,
     unit: 'Kolam',

@@ -269,7 +269,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         });
 
         // ─── BUDIDAYA (AQUACULTURE) ENDPOINTS ───────────────────────────────────
-        Route::prefix('budidaya')->middleware('check_category:budidaya-ikan')->group(function () {
+        Route::prefix('budidaya')->middleware('check_category:budidaya-hewan')->group(function () {
             Route::get('dashboard/stats', [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'dashboardStats']);
             Route::get('reports/ponds', [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'pondReport']);
             Route::get('reports/harvest', [\App\Http\Controllers\Api\Budidaya\ReportController::class, 'harvestSummary']);

@@ -8,12 +8,12 @@ import './Shared.css'
 
 const DUMMY = [
   { id: 1, name: 'Ahmad Suharto',  email: 'ahmad@retail.com',  role: 'customer', category: 'Toko Retail',   status: 'active',  joined: '2026-04-09' },
-  { id: 2, name: 'Siti Rahayu',    email: 'siti@ikan.com',    role: 'customer', category: 'Budidaya Ikan', status: 'active',  joined: '2026-04-08' },
+  { id: 2, name: 'Siti Rahayu',    email: 'siti@ikan.com',    role: 'customer', category: 'Budidaya Hewan', status: 'active',  joined: '2026-04-08' },
   { id: 3, name: 'Budi Santoso',   email: 'budi@jasa.com',    role: 'customer', category: 'Jasa',          status: 'pending', joined: '2026-04-08' },
   { id: 4, name: 'Dewi Lestari',   email: 'dewi@mftr.com',    role: 'customer', category: 'Manufaktur',    status: 'active',  joined: '2026-04-07' },
   { id: 5, name: 'Rizka Admin',    email: 'rizka@saas.com',   role: 'admin',    category: '-',             status: 'active',  joined: '2026-04-05' },
   { id: 6, name: 'Teguh Prasetyo', email: 'teguh@retail.com', role: 'customer', category: 'Toko Retail',   status: 'active',  joined: '2026-04-04' },
-  { id: 7, name: 'Nurul Hidayah',  email: 'nurul@ikan.com',   role: 'customer', category: 'Budidaya Ikan', status: 'inactive',joined: '2026-04-03' },
+  { id: 7, name: 'Nurul Hidayah',  email: 'nurul@ikan.com',   role: 'customer', category: 'Budidaya Hewan', status: 'inactive',joined: '2026-04-03' },
   { id: 8, name: 'Hendra Wijaya',  email: 'hendra@jasa.com',  role: 'customer', category: 'Jasa',          status: 'active',  joined: '2026-04-01' },
 ]
 

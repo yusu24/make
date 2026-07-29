@@ -138,7 +138,7 @@ class SaasAdminDummySeeder extends Seeder
                 'show_sandbox' => true,
                 'show_features' => true,
                 'show_testimonials' => true,
-                'featured_categories' => ['Toko Retail', 'Kuliner', 'Budidaya Ikan'],
+                'featured_categories' => ['Toko Retail', 'Kuliner', 'Budidaya Hewan'],
                 'bank_name' => 'BCA',
                 'bank_account_no' => '1234567890',
                 'bank_account_name' => 'PT UMKM Digital Nusantara',

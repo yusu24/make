@@ -9,7 +9,7 @@ export default function LandingSettings() {
   const [form, setForm] = useState({
     hero_title: 'Kelola Bisnis Anda',
     hero_subtitle: 'Lebih Cerdas & Mudah',
-    hero_desc: 'Satu platform untuk retail, budidaya ikan, kuliner, dan jasa.',
+    hero_desc: 'Satu platform untuk retail, Budidaya Hewan, kuliner, dan jasa.',
     campaign_text: 'Promo Spesial Kategori — Potongan Harga Upgrade Paket Aktif! Buat bisnis Anda naik tingkat.',
     campaign_active: true,
     show_sandbox: true,
@@ -537,7 +537,7 @@ export default function LandingSettings() {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <div style={{ background: '#3b82f6', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🛒 Demo Toko Retail</div>
-                      <div style={{ background: '#10b981', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🐟 Demo Budidaya Ikan</div>
+                      <div style={{ background: '#10b981', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🐟 Demo Budidaya Hewan</div>
                       <div style={{ background: '#84cc16', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🌱 Demo Budidaya Tanam</div>
                       <div style={{ background: '#ef4444', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🍱 Demo Kuliner Resto</div>
                     </div>
