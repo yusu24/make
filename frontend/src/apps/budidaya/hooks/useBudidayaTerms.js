@@ -88,7 +88,79 @@ export function useBudidayaTerms() {
     }
   }
 
-  // Budidaya Hewan (default)
+  const isAyam = user?.email?.includes('ayam')
+  const isSapi = user?.email?.includes('sapi')
+  const isHewanDarat = isAyam || isSapi
+
+  if (isHewanDarat) {
+    return {
+      isTanaman: false,
+      unit: 'Kandang',
+      unitLower: 'kandang',
+      unitCode: 'Kode kandang',
+      unitName: 'Nama kandang',
+      newUnit: 'Kandang Baru',
+      addUnit: 'Tambah Kandang',
+      registerUnit: 'Daftarkan Kandang',
+      typeUnit: 'Jenis kandang',
+      types: isAyam ? [
+        ['baterai', 'Baterai'],
+        ['postal', 'Postal'],
+        ['panggung', 'Panggung']
+      ] : [
+        ['terbuka', 'Terbuka'],
+        ['tertutup', 'Tertutup'],
+        ['semi', 'Semi Terbuka']
+      ],
+      selectUnit: 'Pilih Unit Kandang (Tersedia)',
+      noUnitEmpty: '* Tidak ada unit kandang kosong tersedia saat ini.',
+      seedTypeLabel: 'Jenis / Varietas',
+      seedCountLabel: 'Jumlah Masuk (Ekor)',
+      seedCountLabelShort: 'Jumlah Masuk',
+      seedDateLabel: 'Tanggal Masuk',
+      startCycleLabel: 'Mulai Siklus (Masuk Kandang)',
+      startCycleAction: 'Mulai Ternak',
+      emptyCyclesDesc: 'Masukkan hewan ternak ke kandang yang kosong untuk memulai monitoring',
+      phLabel: 'Suhu Kandang',
+      tempLabel: 'Kelembaban',
+      o2Label: 'Sirkulasi Udara',
+      feedLabel: 'Pakan',
+      feedLabelShort: 'Pakan',
+      feedUnit: 'Pakan',
+      healthLabel: 'Kesehatan',
+      populationLabel: 'Kapasitas (ekor)',
+      populationCount: 'ekor',
+      populationCountTitle: 'Populasi',
+      growthLabel: 'Grafik pertumbuhan',
+      growthSub: 'Kenaikan berat rata-rata per minggu',
+      iconMain: 'pets',
+      iconFeed: 'restaurant',
+      iconSeed: 'egg',
+      iconCycle: 'inventory',
+      iconUnitDefault: 'home_work',
+      inventoryCategories: ['Semua', 'Pakan', 'Bibit', 'Obat', 'Peralatan', 'Lainnya'],
+      defaultInventoryCategory: 'pakan',
+      emptyInventoryDesc: 'Mulai tambahkan pakan atau peralatan ke gudang Anda.',
+      stockReceiveNote: 'Penerimaan barang',
+      stockNotePlaceholder: 'Contoh: Pembelian baru, Pakan harian',
+      statsTodayFeed: 'TOTAL PAKAN HARI INI',
+      statsActiveUnit: 'KANDANG AKTIF',
+      statsPop: 'TOTAL POPULASI',
+      statsHarvest: 'PANEN BULAN INI',
+      btnDetailCycle: 'Detail Siklus',
+      btnEditCycle: 'Edit Siklus',
+      modalNewUnitTitle: 'Tambah Kandang Baru',
+      toastUnitSaved: 'Kandang berhasil disimpan',
+      toastUnitDeleted: 'Kandang dihapus',
+      unitTabActive: 'Aktif',
+      unitTabEmpty: 'Kosong',
+      unitTabAll: 'Semua',
+      titleUnitMgmt: 'Manajemen Kandang',
+      subUnitMgmt: 'Kelola data kandang dan kapasitas maksimal'
+    }
+  }
+
+  // Budidaya Hewan Air (default ikan)
   return {
     isTanaman: false,
     unit: 'Kolam',

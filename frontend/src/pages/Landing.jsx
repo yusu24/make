@@ -66,6 +66,7 @@ export default function Landing() {
   }
 
   const [categories, setCategories] = useState([])
+  const [showBudidayaModal, setShowBudidayaModal] = useState(false)
 
   // Load dynamic landing page settings and active public testimonials
   useEffect(() => {
@@ -109,7 +110,11 @@ export default function Landing() {
     if (el) el.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const handleDemoLogin = async (slug) => {
+  const handleDemoLogin = async (slug, subtype = null) => {
+    if (slug === 'budidaya-hewan' && !subtype) {
+      setShowBudidayaModal(true);
+      return;
+    }
     setDemoLoading(true)
     try {
       const path = SLUG_ROUTES[slug]
@@ -118,7 +123,7 @@ export default function Landing() {
         setDemoLoading(false)
         return
       }
-      await loginDemoSandbox(slug)
+      await loginDemoSandbox(slug, subtype)
       navigate(path)
     } catch (err) {
       alert('Gagal memproses demo sandbox: ' + (err.response?.data?.message || 'Koneksi bermasalah'))
@@ -534,7 +539,45 @@ export default function Landing() {
             <span>🇮🇩 Dibuat di Indonesia</span>
           </div>
         </div>
-      </div>
+      </footer>
+
+      {/* Budidaya Hewan Demo Selection Modal */}
+      {showBudidayaModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', maxWidth: '400px', width: '100%' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '20px', fontWeight: 600 }}>Pilih Jenis Ternak</h3>
+            <p style={{ margin: '0 0 24px', color: '#64748B', fontSize: '14px' }}>
+              Silakan pilih tipe simulasi hewan ternak yang ingin Anda coba:
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+              <button 
+                onClick={() => { setShowBudidayaModal(false); handleDemoLogin('budidaya-hewan', 'sapi'); }}
+                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#F8FAFC', cursor: 'pointer', textAlign: 'left', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '24px' }}>🐄</span> Sapi (Ruminansia)
+              </button>
+              <button 
+                onClick={() => { setShowBudidayaModal(false); handleDemoLogin('budidaya-hewan', 'ayam'); }}
+                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#F8FAFC', cursor: 'pointer', textAlign: 'left', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '24px' }}>🐔</span> Ayam (Unggas)
+              </button>
+              <button 
+                onClick={() => { setShowBudidayaModal(false); handleDemoLogin('budidaya-hewan', 'ikan'); }}
+                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#F8FAFC', cursor: 'pointer', textAlign: 'left', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '24px' }}>🐟</span> Ikan (Tambak/Kolam)
+              </button>
+            </div>
+            <button 
+              onClick={() => setShowBudidayaModal(false)}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', background: '#E2E8F0', cursor: 'pointer', fontWeight: 600, color: '#475569' }}>
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -77,8 +77,8 @@ export const AuthProvider = ({ children }) => {
         return userData;
     };
 
-    const loginDemoSandbox = async (category) => {
-        const res = await api.post('/auth/demo-sandbox', { category });
+    const loginDemoSandbox = async (category, subtype = null) => {
+        const res = await api.post('/auth/demo-sandbox', { category, subtype });
         const { token, user: userData } = res.data.data;
         
         sessionStorage.setItem('umkm_token', token);
@@ -149,8 +149,8 @@ export const AuthProvider = ({ children }) => {
         return redirect;
     };
 
-    const impersonateDemoSandbox = async (categorySlug) => {
-        const res = await api.post('/auth/demo-sandbox', { category: categorySlug });
+    const impersonateDemoSandbox = async (categorySlug, subtype = null) => {
+        const res = await api.post('/auth/demo-sandbox', { category: categorySlug, subtype });
         const { token, user: userData } = res.data.data;
         
         // Save current admin session to impersonator storage

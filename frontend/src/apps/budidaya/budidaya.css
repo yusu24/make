@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════ */
 
 /* ── Google Font ── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
   --aq-primary:        #1B4332;
@@ -29,7 +29,7 @@
 /* ── Typography Scale ── */
 .aq-page-title {
   font-size: 24px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: var(--aq-text-primary);
   margin: 0;
   letter-spacing: -0.02em;
@@ -37,7 +37,7 @@
 
 .aq-section-title {
   font-size: 18px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: var(--aq-text-primary);
   margin: 0;
 }
@@ -52,7 +52,7 @@
 
 .aq-kpi-value {
   font-size: 20px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: var(--aq-text-primary);
   margin: 4px 0 0;
   line-height: 1.1;
@@ -95,7 +95,7 @@
 .aq-table-header-cell {
   padding: 14px 16px !important; /* Slightly taller for elegance */
   font-size: 13px !important;
-  font-weight: 700 !important; /* Bolder headers for premium look */
+  font-weight: 600 !important; /* Bolder headers for premium look */
   color: #000000 !important;
   text-transform: none !important;
   letter-spacing: 0.01em;
@@ -146,7 +146,7 @@
 
 /* ── Scope reset ── */
 .budidaya-scope {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   background-color: var(--aq-bg);
   color: var(--aq-text-secondary);
   min-height: 100vh;
@@ -203,7 +203,7 @@
 
 /* Only apply Inter to non-icon elements — don't override Material Symbols! */
 .budidaya-scope *:not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp) {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ════════════════════════════════════════════════
@@ -319,7 +319,7 @@
 
 .aq-brand-name {
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--aq-text-primary);
   letter-spacing: -0.3px;
   line-height: 1.2;

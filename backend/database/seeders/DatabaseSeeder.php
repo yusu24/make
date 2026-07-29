@@ -757,63 +757,102 @@ class DatabaseSeeder extends Seeder
         return sprintf('%s-%s-%05d', $prefix, $date, $seq);
     }
 
-    public function seedBudidayaData(string $tenantId)
+    public function seedBudidayaData(string $tenantId, string $subtype = 'ikan')
     {
-        // 1. Ponds
-        $ponds = [
-            ['name' => 'Kolam A1 - Nila', 'type' => 'terpal', 'capacity_m3' => 15, 'status' => 'aktif'],
-            ['name' => 'Kolam A2 - Lele', 'type' => 'terpal', 'capacity_m3' => 15, 'status' => 'aktif'],
-            ['name' => 'Kolam B1 - Beton', 'type' => 'beton', 'capacity_m3' => 30, 'status' => 'kosong'],
-            ['name' => 'Kolam C1 - Tanah', 'type' => 'tanah', 'capacity_m3' => 50, 'status' => 'kosong'],
+        // Setup data based on subtype
+        $data = [
+            'ikan' => [
+                'unitName' => 'Kolam',
+                'types' => ['terpal', 'beton', 'tanah'],
+                'animals' => ['Nila', 'Lele'],
+                'feed' => ['Pelet PF-1000', 'pakan', 'Kg', 12000],
+                'seed1' => ['Bibit Nila Merah', 'bibit', 'Ekor', 200],
+                'seed2' => ['Bibit Lele Sangkuriang', 'bibit', 'Ekor', 150],
+                'vitamin' => ['Vitamin C Ikan', 'obat', 'Botol', 50000],
+                'manager_email' => 'agus.manajer@ikan.com',
+                'worker_email' => 'budi.pekerja@ikan.com',
+            ],
+            'ayam' => [
+                'unitName' => 'Kandang',
+                'types' => ['baterai', 'postal', 'panggung'],
+                'animals' => ['Broiler', 'Layer'],
+                'feed' => ['Pur B-11', 'pakan', 'Kg', 8000],
+                'seed1' => ['DOC Broiler Super', 'bibit', 'Ekor', 5000],
+                'seed2' => ['DOC Layer', 'bibit', 'Ekor', 6500],
+                'vitamin' => ['Vaksin ND', 'obat', 'Botol', 120000],
+                'manager_email' => 'agus.manajer@ayam.com',
+                'worker_email' => 'budi.pekerja@ayam.com',
+            ],
+            'sapi' => [
+                'unitName' => 'Kandang',
+                'types' => ['terbuka', 'tertutup', 'semi'],
+                'animals' => ['Limosin', 'Brahman'],
+                'feed' => ['Konsentrat Sapi', 'pakan', 'Kg', 5000],
+                'seed1' => ['Pedet Limosin', 'bibit', 'Ekor', 15000000],
+                'seed2' => ['Pedet Brahman', 'bibit', 'Ekor', 12000000],
+                'vitamin' => ['Vitamin B Kompleks', 'obat', 'Botol', 75000],
+                'manager_email' => 'agus.manajer@sapi.com',
+                'worker_email' => 'budi.pekerja@sapi.com',
+            ],
         ];
 
-        $pondModels = [];
-        foreach ($ponds as $p) {
-            $pondModels[] = BudidayaPond::updateOrCreate(
-                ['tenant_id' => $tenantId, 'name' => $p['name']],
+        $conf = $data[$subtype] ?? $data['ikan'];
+        $uName = $conf['unitName'];
+
+        // 1. Units (Ponds/Kandang)
+        $units = [
+            ['name' => "$uName A1 - {$conf['animals'][0]}", 'type' => $conf['types'][0], 'capacity_m3' => 15, 'status' => 'aktif'],
+            ['name' => "$uName A2 - {$conf['animals'][1]}", 'type' => $conf['types'][1], 'capacity_m3' => 15, 'status' => 'aktif'],
+            ['name' => "$uName B1 - Beton/Permanen", 'type' => $conf['types'][2], 'capacity_m3' => 30, 'status' => 'kosong'],
+            ['name' => "$uName C1 - Tanah/Area Luar", 'type' => $conf['types'][0], 'capacity_m3' => 50, 'status' => 'kosong'],
+        ];
+
+        $unitModels = [];
+        foreach ($units as $u) {
+            $unitModels[] = BudidayaPond::updateOrCreate(
+                ['tenant_id' => $tenantId, 'name' => $u['name']],
                 [
-                    'type' => $p['type'],
-                    'capacity_m3' => $p['capacity_m3'],
-                    'status' => $p['status'],
+                    'type' => $u['type'],
+                    'capacity_m3' => $u['capacity_m3'],
+                    'status' => $u['status'],
                 ]
             );
         }
 
         // 2. Inventory
-        // 2. Inventory
         $feed = BudidayaInventory::updateOrCreate(
-            ['tenant_id' => $tenantId, 'name' => 'Pelet PF-1000'],
-            ['category' => 'pakan', 'unit' => 'Kg', 'stock' => 500, 'price_per_unit' => 12000, 'min_stock' => 50]
+            ['tenant_id' => $tenantId, 'name' => $conf['feed'][0]],
+            ['category' => $conf['feed'][1], 'unit' => $conf['feed'][2], 'stock' => 500, 'price_per_unit' => $conf['feed'][3], 'min_stock' => 50]
         );
-        $seedNila = BudidayaInventory::updateOrCreate(
-            ['tenant_id' => $tenantId, 'name' => 'Bibit Nila Merah'],
-            ['category' => 'bibit', 'unit' => 'Ekor', 'stock' => 5000, 'price_per_unit' => 200, 'min_stock' => 1000]
+        $seed1 = BudidayaInventory::updateOrCreate(
+            ['tenant_id' => $tenantId, 'name' => $conf['seed1'][0]],
+            ['category' => $conf['seed1'][1], 'unit' => $conf['seed1'][2], 'stock' => 5000, 'price_per_unit' => $conf['seed1'][3], 'min_stock' => 1000]
         );
-        $seedLele = BudidayaInventory::updateOrCreate(
-            ['tenant_id' => $tenantId, 'name' => 'Bibit Lele Sangkuriang'],
-            ['category' => 'bibit', 'unit' => 'Ekor', 'stock' => 10000, 'price_per_unit' => 150, 'min_stock' => 2000]
+        $seed2 = BudidayaInventory::updateOrCreate(
+            ['tenant_id' => $tenantId, 'name' => $conf['seed2'][0]],
+            ['category' => $conf['seed2'][1], 'unit' => $conf['seed2'][2], 'stock' => 10000, 'price_per_unit' => $conf['seed2'][3], 'min_stock' => 2000]
         );
         BudidayaInventory::updateOrCreate(
-            ['tenant_id' => $tenantId, 'name' => 'Vitamin C Ikan'],
-            ['category' => 'obat', 'unit' => 'Botol', 'stock' => 20, 'price_per_unit' => 50000, 'min_stock' => 5]
+            ['tenant_id' => $tenantId, 'name' => $conf['vitamin'][0]],
+            ['category' => $conf['vitamin'][1], 'unit' => $conf['vitamin'][2], 'stock' => 20, 'price_per_unit' => $conf['vitamin'][3], 'min_stock' => 5]
         );
 
         // 2.5 Staff / Users
         BudidayaStaff::updateOrCreate(
-            ['tenant_id' => $tenantId, 'email' => 'agus.manajer@ikan.com'],
-            ['name' => 'Agus Manajer', 'phone' => '081122334455', 'position' => 'Manajer Tambak', 'status' => 'aktif']
+            ['tenant_id' => $tenantId, 'email' => $conf['manager_email']],
+            ['name' => 'Agus Manajer', 'phone' => '081122334455', 'position' => 'Manajer', 'status' => 'aktif']
         );
         BudidayaStaff::updateOrCreate(
-            ['tenant_id' => $tenantId, 'email' => 'budi.pekerja@ikan.com'],
+            ['tenant_id' => $tenantId, 'email' => $conf['worker_email']],
             ['name' => 'Budi Pekerja', 'phone' => '081566778899', 'position' => 'Pekerja Lapangan', 'status' => 'aktif']
         );
 
         // 3. Active Cycles & Logs
-        if (isset($pondModels[0]) && isset($pondModels[1])) {
+        if (isset($unitModels[0]) && isset($unitModels[1])) {
             $cycle1 = BudidayaCycle::updateOrCreate(
-                ['tenant_id' => $tenantId, 'pond_id' => $pondModels[0]->id, 'status' => 'aktif'],
+                ['tenant_id' => $tenantId, 'pond_id' => $unitModels[0]->id, 'status' => 'aktif'],
                 [
-                    'seed_type' => 'Nila Merah Super',
+                    'seed_type' => $conf['seed1'][0],
                     'seed_count' => 1000,
                     'seed_date' => now()->subDays(30),
                     'expected_harvest_date' => now()->addDays(90),
@@ -822,7 +861,7 @@ class DatabaseSeeder extends Seeder
 
             BudidayaExpense::updateOrCreate(
                 ['tenant_id' => $tenantId, 'cycle_id' => $cycle1->id, 'category' => 'benih'],
-                ['amount' => 200000, 'date' => now()->subDays(30), 'notes' => 'Tebar benih awal']
+                ['amount' => 200000, 'date' => now()->subDays(30), 'notes' => 'Masuk kandang awal']
             );
             
             BudidayaExpense::updateOrCreate(
@@ -833,17 +872,18 @@ class DatabaseSeeder extends Seeder
             BudidayaFeeding::updateOrCreate(
                 ['cycle_id' => $cycle1->id, 'date' => now()->subDays(2)],
                 ['inventory_id' => $feed->id, 'amount_kg' => 2.5, 'notes' => 'Pakan pagi dan sore']
+
             );
             
             BudidayaHealth::updateOrCreate(
                 ['cycle_id' => $cycle1->id, 'date' => now()->subDays(5)],
-                ['mortality_count' => 12, 'disease_note' => 'Ikan lemas', 'treatment_note' => 'Pemberian vitamin C']
+                ['mortality_count' => 12, 'disease_note' => 'Lemah/Sakit', 'treatment_note' => 'Pemberian vitamin']
             );
 
             $cycle2 = BudidayaCycle::updateOrCreate(
-                ['tenant_id' => $tenantId, 'pond_id' => $pondModels[1]->id, 'status' => 'aktif'],
+                ['tenant_id' => $tenantId, 'pond_id' => $unitModels[1]->id, 'status' => 'aktif'],
                 [
-                    'seed_type' => 'Lele Sangkuriang',
+                    'seed_type' => $conf['seed2'][0],
                     'seed_count' => 2000,
                     'seed_date' => now()->subDays(15),
                     'expected_harvest_date' => now()->addDays(75),

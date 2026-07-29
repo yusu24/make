@@ -283,12 +283,10 @@ class AuthController extends Controller
     /**
      * POST /api/auth/demo-sandbox
      */
-    /**
-     * POST /api/auth/demo-sandbox
-     */
-    public function createDemoSandbox(Request $request)
+    public function demoSandbox(Request $request)
     {
         $categorySlug = $request->input('category', 'kuliner');
+        $subtype = $request->input('subtype');
         
         // Normalize slug
         if ($categorySlug === 'budidaya') {
@@ -313,11 +311,15 @@ class AuthController extends Controller
         
         $namePrefixes = [
             'toko-retail'      => 'Demo Mart ',
-            'budidaya-hewan'    => 'Demo Hewan ',
+            'budidaya-hewan'    => 'Demo Ternak ' . ($subtype ? ucfirst($subtype) . ' ' : ''),
             'budidaya-tanaman' => 'Demo Tani ',
             'kuliner'          => 'Demo Resto ',
         ];
         $name = ($namePrefixes[$categorySlug] ?? 'Demo Usaha ') . strtoupper(substr($rand, 0, 4));
+
+        if ($categorySlug === 'budidaya-hewan' && $subtype) {
+            $email = 'demo-' . $subtype . '-' . $rand . '@umkm-demo.com';
+        }
 
         $user = User::create([
             'name'                 => $name,
@@ -355,7 +357,7 @@ class AuthController extends Controller
             $seeder->seedRetailData($tenantId);
             $seeder->seedRetailDataExtras($tenantId);
         } elseif ($categorySlug === 'budidaya-hewan') {
-            $seeder->seedBudidayaData($tenantId);
+            $seeder->seedBudidayaData($tenantId, $subtype);
         } elseif ($categorySlug === 'budidaya-tanaman') {
             $seeder->seedTanamanData($tenantId);
         } elseif ($categorySlug === 'kuliner') {
