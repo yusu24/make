@@ -1,0 +1,24 @@
+/* Custom emerald gradient glows used across the landing page sections */
+.bg-bizora-gradient {
+  background: radial-gradient(circle at 50% 20%, #0d3d32 0%, #051c17 55%, #03110e 100%);
+}
+
+.bizora-card-glow {
+  box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.15);
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #a7f3d0 0%, #34d399 50%, #10b981 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Hide scrollbar for the sector tabs bar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
