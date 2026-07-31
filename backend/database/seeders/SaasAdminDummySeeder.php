@@ -131,7 +131,7 @@ class SaasAdminDummySeeder extends Seeder
             ['id' => 1],
             [
                 'hero_title' => 'Solusi Manajemen UMKM Digital Terbaik',
-                'hero_subtitle' => 'Kelola bisnis retail, kuliner, dan budidaya dalam satu aplikasi',
+                'hero_subtitle' => '',
                 'hero_desc' => 'Tingkatkan produktivitas bisnis Anda dengan fitur terlengkap.',
                 'campaign_text' => 'Diskon 50% untuk langganan tahunan! Gunakan kode: MERDEKA50',
                 'campaign_active' => true,
