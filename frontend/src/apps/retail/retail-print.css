@@ -1,0 +1,41 @@
+/* Shared "Cetak / Export PDF" styling for retail report pages.
+   react-to-print clones the printRef node into a hidden iframe and
+   calls print() on it, so normal @media print rules apply there too. */
+
+.retail-print-header {
+  display: none;
+}
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .retail-print-header {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .retail-print-header h2 {
+    margin: 0 0 4px;
+    font-size: 18px;
+  }
+
+  .retail-print-header p {
+    margin: 0;
+    font-size: 12px;
+    color: #475569;
+  }
+
+  .retail-print-totals {
+    display: table-footer-group;
+  }
+}
