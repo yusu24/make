@@ -181,6 +181,94 @@ const KulinerOrders = () => {
     }, 250);
   };
 
+  const handlePrintKitchenReceipt = () => {
+    if (!selectedOrder) return;
+
+    const printContent = `
+      <html>
+      <head>
+        <title>Checker Dapur - ${selectedOrder.order_number || `#ORD-${selectedOrder.id}`}</title>
+        <style>
+          @page { margin: 0; size: 80mm auto; }
+          body { 
+            font-family: 'Courier New', Courier, monospace; 
+            margin: 0; 
+            padding: 10px; 
+            width: 80mm; 
+            color: #000;
+            background: #fff;
+          }
+          .text-center { text-align: center; }
+          .font-bold { font-weight: bold; }
+          .text-lg { font-size: 18px; }
+          .text-sm { font-size: 14px; }
+          .text-xs { font-size: 12px; }
+          .mb-1 { margin-bottom: 4px; }
+          .mb-2 { margin-bottom: 8px; }
+          .mt-2 { margin-top: 8px; }
+          .pb-2 { padding-bottom: 8px; }
+          .border-b { border-bottom: 1px dashed #000; }
+          .border-t { border-top: 1px dashed #000; }
+          .flex { display: flex; }
+          .justify-between { justify-content: space-between; }
+          .w-full { width: 100%; }
+        </style>
+      </head>
+      <body>
+        <div class="text-center font-bold text-lg mb-1">DAPUR</div>
+        <div class="text-center text-xs mb-2 border-b pb-2">Pesanan Masuk</div>
+        
+        <div class="text-xs mb-2 mt-2">
+          <div class="flex justify-between mb-1">
+            <span class="font-bold">No: ${selectedOrder.order_number || '#ORD-' + selectedOrder.id}</span>
+            <span>${new Date(selectedOrder.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+          </div>
+          <div class="mb-1">Pelanggan: ${selectedOrder.customer_name}</div>
+          <div class="font-bold text-sm mb-1">Tipe: ${selectedOrder.order_type === 'dine_in' ? 'DINE IN (Meja ' + (selectedOrder.table_number || '-') + ')' : 'TAKEAWAY'}</div>
+          ${selectedOrder.notes ? `<div class="mb-1" style="font-weight:bold; color: #d97706;">Catatan: ${selectedOrder.notes}</div>` : ''}
+        </div>
+        
+        <div class="border-t border-b mt-2 mb-2" style="padding: 5px 0;">
+          <table class="w-full text-sm" style="border-collapse: collapse;">
+            ${selectedOrder.items?.map(item => `
+              <tr>
+                <td style="width: 15%; vertical-align: top;" class="font-bold">${item.qty}x</td>
+                <td style="width: 85%; padding-bottom: 5px;">
+                  <span class="font-bold">${item.name}</span>
+                </td>
+              </tr>
+            `).join('')}
+          </table>
+        </div>
+        
+        <div class="text-center text-xs mt-2" style="padding-top: 10px;">
+          *** HARAP SEGERA DISIAPKAN ***
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printIframe = document.createElement('iframe');
+    printIframe.style.position = 'absolute';
+    printIframe.style.width = '0px';
+    printIframe.style.height = '0px';
+    printIframe.style.border = 'none';
+    document.body.appendChild(printIframe);
+
+    const doc = printIframe.contentWindow.document;
+    doc.open();
+    doc.write(printContent);
+    doc.close();
+
+    setTimeout(() => {
+      printIframe.contentWindow.focus();
+      printIframe.contentWindow.print();
+      setTimeout(() => {
+        document.body.removeChild(printIframe);
+      }, 1000);
+    }, 250);
+  };
+
   return (
     <KulinerAdminLayout>
       {/* Topbar selalu tampil, tidak ikut loading */}
@@ -436,9 +524,14 @@ const KulinerOrders = () => {
                           ✅ Tandai Selesai (Sajikan)
                         </button>
                       )}
-                      <button className="kd-btn kd-btn-secondary" style={{ flex: 1 }} onClick={handlePrintReceipt}>
-                        🖨️ Cetak Struk
-                      </button>
+                      <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+                        <button className="kd-btn kd-btn-secondary" style={{ flex: 1, padding: '8px 4px', fontSize: '13px' }} onClick={handlePrintReceipt}>
+                          🖨️ Struk
+                        </button>
+                        <button className="kd-btn kd-btn-secondary" style={{ flex: 1, padding: '8px 4px', fontSize: '13px' }} onClick={handlePrintKitchenReceipt}>
+                          🧑‍🍳 Dapur
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
