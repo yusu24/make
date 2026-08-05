@@ -467,11 +467,13 @@
 
 @media (max-width: 640px) {
   .retail-pagination-container {
-    flex-direction: column !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
     gap: 12px !important;
     align-items: center !important;
     padding: 16px 12px !important;
-    text-align: center !important;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 }
 

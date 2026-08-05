@@ -47,6 +47,11 @@ class CheckBusinessCategory
         // 4. Validate the business category slug
         $categorySlug = $tenant->businessCategory?->slug;
 
+        // Omnichannel sellers share retail APIs
+        if ($allowedCategorySlug === 'toko-retail' && $categorySlug === 'seller') {
+            return $next($request);
+        }
+
         if ($categorySlug !== $allowedCategorySlug) {
             return response()->json([
                 'success' => false,

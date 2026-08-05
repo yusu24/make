@@ -12,5 +12,8 @@ class KulinerSetting extends Model
         'hero_title', 'hero_subtitle', 'hero_image_url', 'promo_title', 'promo_desc', 
         'instagram_url', 'whatsapp_number', 'logo_url', 'website_url',
         'dine_in_enabled',
+        'enable_tax',
+        'tax_rate',
+        'service_charge_rate',
     ];
 }

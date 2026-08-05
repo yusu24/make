@@ -10,6 +10,9 @@ use App\Models\KulinerCategory;
 use App\Models\KulinerProduct;
 use App\Models\KulinerSetting;
 use App\Models\KulinerTestimonial;
+use App\Models\KulinerExpense;
+use App\Models\KulinerFinanceCategory;
+use App\Models\KulinerWaste;
 use App\Services\TransactionService;
 use App\Services\Kuliner\RecipeService;
 use App\Services\Kuliner\OrderStatusService;
@@ -19,7 +22,6 @@ use App\Models\KulinerIngredient;
 use App\Models\User;
 use App\Models\KulinerPromo;
 use App\Models\KulinerRole;
-use App\Models\KulinerExpense;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -191,6 +193,9 @@ class KulinerController extends Controller
             'logo_url' => optional($settings)->logo_url ?? null,
             'website_url' => optional($settings)->website_url ?? null,
             'total_tables' => optional($settings)->total_tables ?? 0,
+            'enable_tax' => (bool) (optional($settings)->enable_tax ?? false),
+            'tax_rate' => (float) (optional($settings)->tax_rate ?? 10),
+            'service_charge_rate' => (float) (optional($settings)->service_charge_rate ?? 0),
         ]);
     }
 
@@ -266,7 +271,9 @@ class KulinerController extends Controller
             return response()->json(['message' => 'Konfigurasi toko (Tenant) belum tersedia.'], 400);
         }
 
-        return DB::transaction(function () use ($request, $tenantId) {
+        $settings = KulinerSetting::where('tenant_id', $tenantId)->first();
+
+        return DB::transaction(function () use ($request, $tenantId, $settings) {
             try {
                 $subtotal = 0;
                 $orderItems = [];
@@ -295,7 +302,7 @@ class KulinerController extends Controller
                 }
 
                 // Service fee shown to the customer on the storefront cart (FullMenu.jsx)
-                $serviceFee = 2000;
+                $serviceFee = 0;
 
                 // Re-validate the promo server-side instead of trusting the client's
                 // discount_amount/total — a customer could otherwise apply an expired,
@@ -324,9 +331,23 @@ class KulinerController extends Controller
                     }
                 }
 
-                $total = $subtotal + $serviceFee - $discountAmount;
+                // 2. Calculate Service Charge & Tax
+                $serviceChargeAmount = 0;
+                $taxAmount = 0;
+                $serviceFee = 0; // Platform service fee if any (removed to use percentage)
 
-                // 1. Save order
+                if ($settings && $settings->enable_tax) {
+                    $taxRate = $settings->tax_rate ?? 10;
+                    $scRate = $settings->service_charge_rate ?? 0;
+
+                    $taxableSubtotal = $subtotal - $discountAmount;
+                    $serviceChargeAmount = round($taxableSubtotal * ($scRate / 100));
+                    $taxAmount = round(($taxableSubtotal + $serviceChargeAmount) * ($taxRate / 100));
+                }
+
+                $total = $subtotal + $serviceFee - $discountAmount + $serviceChargeAmount + $taxAmount;
+
+                // 3. Save order
                 $orderNumber = 'ORD-' . strtoupper(substr(uniqid(), -6));
                 $source = $request->input('source', 'pos');
                 $initialStatus = $request->is_staff_order ? 'processing' : ($source === 'qr_selforder' ? 'waiting' : 'pending');
@@ -347,11 +368,14 @@ class KulinerController extends Controller
                     'notes' => $notes,
                     'source' => $source,
                     'cashier_id' => auth('sanctum')->id(),
+                    'subtotal' => $subtotal,
+                    'tax_amount' => $taxAmount,
+                    'service_charge_amount' => $serviceChargeAmount,
                     'total' => $total,
                     'status' => $initialStatus
                 ]);
 
-                // 2. Save order items
+                // 4. Save order items
                 foreach ($orderItems as $item) {
                     DB::table('order_items')->insert(array_merge($item, [
                         'order_id' => $order->id,
@@ -721,6 +745,9 @@ class KulinerController extends Controller
             'logo_url' => optional($settings)->logo_url ?? '',
             'website_url' => optional($settings)->website_url ?? '',
             'dine_in_enabled' => (bool) (optional($settings)->dine_in_enabled ?? false),
+            'enable_tax' => (bool) (optional($settings)->enable_tax ?? false),
+            'tax_rate' => (float) (optional($settings)->tax_rate ?? 10),
+            'service_charge_rate' => (float) (optional($settings)->service_charge_rate ?? 0),
         ]);
     }
 
@@ -771,6 +798,9 @@ class KulinerController extends Controller
                     'logo_url' => $request->logo_url,
                     'website_url' => $request->website_url,
                     'dine_in_enabled' => $request->boolean('dine_in_enabled'),
+                    'enable_tax' => $request->boolean('enable_tax'),
+                    'tax_rate' => $request->tax_rate ?? 10,
+                    'service_charge_rate' => $request->service_charge_rate ?? 0,
                 ]
             );
 
@@ -797,18 +827,29 @@ class KulinerController extends Controller
     /**
      * Admin: GET /api/kuliner/admin/ledger
      */
-    public function getLedger()
+    public function getLedger(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
+        $startDate = $request->query('startDate');
+        $endDate = $request->query('endDate');
         
+        $orderQuery = Order::where('tenant_id', $tenantId)->with(['items']);
+        $expenseQuery = KulinerExpense::where('tenant_id', $tenantId);
+
+        if ($startDate && $endDate) {
+            $orderQuery->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+            $expenseQuery->whereBetween('date', [$startDate, $endDate]);
+        } else {
+            // Default limit if no date provided
+            $orderQuery->limit(500);
+            $expenseQuery->limit(500);
+        }
+
         // Ambil orders (income)
-        $orders = Order::where('tenant_id', $tenantId)
-            ->with(['items'])
+        $orders = $orderQuery
             ->orderBy('created_at', 'desc')
-            ->limit(100)
             ->get()
             ->map(function ($order) {
-                // Formatting for unified ledger
                 return [
                     'id' => 'ORD-' . $order->id,
                     'original_id' => $order->id,
@@ -823,16 +864,15 @@ class KulinerController extends Controller
             });
 
         // Ambil expenses
-        $expenses = KulinerExpense::where('tenant_id', $tenantId)
+        $expenses = $expenseQuery
             ->orderBy('date', 'desc')
-            ->limit(100)
             ->get()
             ->map(function ($expense) {
                 return [
                     'id' => 'EXP-' . $expense->id,
                     'original_id' => $expense->id,
                     'type' => 'expense',
-                    'date' => $expense->date . ' ' . $expense->created_at->format('H:i:s'), // Mocking datetime for sorting
+                    'date' => $expense->date . ' ' . $expense->created_at->format('H:i:s'),
                     'category' => $expense->category,
                     'description' => $expense->description,
                     'amount' => $expense->amount,
@@ -845,6 +885,78 @@ class KulinerController extends Controller
         $ledger = $orders->concat($expenses)->sortByDesc('date')->values();
         
         return response()->json($ledger);
+    }
+
+    // --- FINANCE CATEGORIES ---
+
+    public function getFinanceCategories(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $query = KulinerFinanceCategory::where('tenant_id', $tenantId);
+        
+        if ($request->has('type')) {
+            $query->where('type', $request->query('type'));
+        }
+        
+        return response()->json($query->orderBy('name')->get());
+    }
+
+    public function storeFinanceCategory(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:income,expense',
+            'is_active' => 'boolean'
+        ]);
+
+        $category = KulinerFinanceCategory::create([
+            'tenant_id' => auth()->user()->tenant_id,
+            'name' => $validated['name'],
+            'type' => $validated['type'],
+            'is_active' => $validated['is_active'] ?? true,
+        ]);
+
+        return response()->json($category, 201);
+    }
+
+    public function updateFinanceCategory(Request $request, $id)
+    {
+        $category = KulinerFinanceCategory::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:income,expense',
+            'is_active' => 'boolean'
+        ]);
+
+        $category->update($validated);
+        return response()->json($category);
+    }
+
+    public function destroyFinanceCategory($id)
+    {
+        $category = KulinerFinanceCategory::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+        $category->delete();
+        return response()->json(['message' => 'Deleted successfully']);
+    }
+
+    /**
+     * Admin: GET /api/kuliner/admin/expenses
+     */
+    public function getExpenses(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $startDate = $request->query('startDate');
+        $endDate = $request->query('endDate');
+
+        $query = KulinerExpense::where('tenant_id', $tenantId);
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('date', [$startDate, $endDate]);
+        }
+
+        $expenses = $query->orderBy('date', 'desc')->orderBy('created_at', 'desc')->get();
+        return response()->json($expenses);
     }
 
     /**
@@ -881,6 +993,80 @@ class KulinerController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal mencatat pengeluaran: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Admin: PUT /api/kuliner/admin/expenses/{id}
+     */
+    public function updateExpense(Request $request, $id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $validator = Validator::make($request->all(), [
+            'date' => 'required|date',
+            'category' => 'required|string',
+            'description' => 'nullable|string',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 400);
+        }
+
+        try {
+            $expense = KulinerExpense::where('tenant_id', $tenantId)->findOrFail($id);
+            $expense->update([
+                'date' => $request->date,
+                'category' => $request->category,
+                'description' => $request->description,
+                'amount' => $request->amount
+            ]);
+
+            return response()->json(['message' => 'Pengeluaran berhasil diperbarui', 'data' => $expense]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal memperbarui pengeluaran: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Admin: DELETE /api/kuliner/admin/expenses/{id}
+     */
+    public function destroyExpense($id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        try {
+            $expense = KulinerExpense::where('tenant_id', $tenantId)->findOrFail($id);
+            $expense->delete();
+            return response()->json(['message' => 'Pengeluaran berhasil dihapus']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal menghapus pengeluaran: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Admin: GET /api/kuliner/admin/finance/summary
+     */
+    public function getFinanceSummary(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $startDate = $request->query('startDate');
+        $endDate = $request->query('endDate');
+
+        $orderQuery = Order::where('tenant_id', $tenantId)->whereNotIn('status', ['cancelled']);
+        $expenseQuery = KulinerExpense::where('tenant_id', $tenantId);
+
+        if ($startDate && $endDate) {
+            $orderQuery->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+            $expenseQuery->whereBetween('date', [$startDate, $endDate]);
+        }
+
+        $totalSales = $orderQuery->sum('total');
+        $totalExpenses = $expenseQuery->sum('amount');
+        
+        return response()->json([
+            'total_sales' => $totalSales,
+            'total_expenses' => $totalExpenses,
+            'profit' => $totalSales - $totalExpenses
+        ]);
     }
 
 

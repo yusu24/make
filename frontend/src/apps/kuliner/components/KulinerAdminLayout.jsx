@@ -55,7 +55,7 @@ const KulinerAdminLayout = ({ children }) => {
       operational: path === '/kuliner/admin/orders' || path === '/kuliner/admin/kitchen-queue' || path === '/kuliner/admin/shift' || path === '/kuliner/admin/tables',
       catalog: path === '/kuliner/admin/categories' || path === '/kuliner/admin/modifiers' || path === '/kuliner/admin/addons' || path === '/kuliner/admin/bundles',
       inventory: path === '/kuliner/admin/ingredients' || path === '/kuliner/admin/recipes' || path === '/kuliner/admin/stock-opname' || path === '/kuliner/admin/waste',
-      finance: path === '/kuliner/admin/reports' || path === '/kuliner/admin/analytics' || path === '/kuliner/admin/transactions' || path === '/kuliner/admin/reports-advanced' || path === '/kuliner/admin/promos' || path === '/kuliner/admin/reviews',
+      finance: path === '/kuliner/admin/reports' || path === '/kuliner/admin/analytics' || path === '/kuliner/admin/transactions' || path === '/kuliner/admin/reports-advanced' || path === '/kuliner/admin/promos' || path === '/kuliner/admin/reviews' || path === '/kuliner/admin/expenses' || path === '/kuliner/admin/finance-summary' || path === '/kuliner/admin/finance-categories',
       settings: path === '/kuliner/admin/staff' || path === '/kuliner/admin/roles' || path === '/kuliner/admin/settings' || path === '/kuliner/admin/support'
     });
   }, [location.pathname]);
@@ -111,7 +111,7 @@ const KulinerAdminLayout = ({ children }) => {
     return perms.some(p => p === permId || p === `${permId}.*` || p.startsWith(`${permId}.`));
   };
 
-  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']
+  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','seller@demo.com']
 
   const handleLogout = () => {
     if (isImpersonating && isImpersonating()) {
@@ -316,6 +316,33 @@ const KulinerAdminLayout = ({ children }) => {
                     >
                       <span className="kd-nav-icon">📑</span>
                       <span>{t('sidebar.advancedReports')}</span>
+                    </Link>
+                  )}
+                  {hasPermission('reports') && (
+                    <Link 
+                      to="/kuliner/admin/finance-summary" 
+                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/finance-summary' ? 'active' : ''}`}
+                    >
+                      <span className="kd-nav-icon">📈</span>
+                      <span>Laba Rugi</span>
+                    </Link>
+                  )}
+                  {hasPermission('reports') && (
+                    <Link 
+                      to="/kuliner/admin/expenses" 
+                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/expenses' ? 'active' : ''}`}
+                    >
+                      <span className="kd-nav-icon">📉</span>
+                      <span>Pengeluaran Resto</span>
+                    </Link>
+                  )}
+                  {hasPermission('reports') && (
+                    <Link 
+                      to="/kuliner/admin/finance-categories" 
+                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/finance-categories' ? 'active' : ''}`}
+                    >
+                      <span className="kd-nav-icon">🏷️</span>
+                      <span>Kategori Keuangan</span>
                     </Link>
                   )}
                   {hasPermission('analytics') && (

@@ -1,6 +1,14 @@
 import { Building2, Phone, Mail, MapPin, Heart } from 'lucide-react'
 
-export default function Footer({ categories, logoUrl, onScrollTo }) {
+const DEFAULTS = {
+  brandDesc: 'Platform bisnis digital #1 Indonesia untuk kelola toko retail, kuliner, serta budidaya hewan dan tanaman dalam satu aplikasi terpadu.',
+  address: 'Jakarta & Bandung, Indonesia',
+  phone: '+62 812-3456-7890 (CS WhatsApp 24/7)',
+  email: 'bantuan@bizora.id',
+  securityText: 'Bizora menggunakan infrastruktur cloud terenkripsi SSL 256-bit dengan backup otomatis harian.',
+}
+
+export default function Footer({ categories, logoUrl, onScrollTo, brandDesc, address, phone, email, securityText }) {
   const handleNavClick = (e, id) => {
     e.preventDefault()
     onScrollTo(id)
@@ -25,21 +33,21 @@ export default function Footer({ categories, logoUrl, onScrollTo }) {
             </div>
 
             <p className="text-slate-300 leading-relaxed max-w-sm">
-              Platform bisnis digital #1 Indonesia untuk kelola toko retail, kuliner, serta budidaya hewan dan tanaman dalam satu aplikasi terpadu.
+              {brandDesc || DEFAULTS.brandDesc}
             </p>
 
             <div className="space-y-2 pt-2 text-slate-400">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Jakarta &amp; Bandung, Indonesia</span>
+                <span>{address || DEFAULTS.address}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>+62 812-3456-7890 (CS WhatsApp 24/7)</span>
+                <span>{phone || DEFAULTS.phone}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>bantuan@bizora.id</span>
+                <span>{email || DEFAULTS.email}</span>
               </div>
             </div>
           </div>
@@ -68,7 +76,7 @@ export default function Footer({ categories, logoUrl, onScrollTo }) {
           <div className="md:col-span-3 space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">Keamanan &amp; Layanan</h4>
             <p className="text-slate-400 leading-relaxed">
-              Bizora menggunakan infrastruktur cloud terenkripsi SSL 256-bit dengan backup otomatis harian.
+              {securityText || DEFAULTS.securityText}
             </p>
             <div className="pt-2 text-[11px] text-slate-500 space-y-1">
               <p>✓ Privasi Data Terjamin</p>

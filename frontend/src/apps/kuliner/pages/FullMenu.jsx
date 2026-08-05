@@ -186,7 +186,23 @@ const FullMenu = () => {
     return 0;
   };
 
-  const finalTotal = totalCartPrice + 2000 - calculateDiscount();
+  const calculateServiceCharge = () => {
+    if (!settings?.enable_tax || !settings?.service_charge_rate) return 0;
+    const taxableSubtotal = totalCartPrice - calculateDiscount();
+    return Math.round(taxableSubtotal * (settings.service_charge_rate / 100));
+  };
+
+  const calculateTax = () => {
+    if (!settings?.enable_tax || !settings?.tax_rate) return 0;
+    const taxableSubtotal = totalCartPrice - calculateDiscount();
+    const serviceCharge = calculateServiceCharge();
+    return Math.round((taxableSubtotal + serviceCharge) * (settings.tax_rate / 100));
+  };
+
+  const discountAmount = calculateDiscount();
+  const serviceChargeAmount = calculateServiceCharge();
+  const taxAmount = calculateTax();
+  const finalTotal = totalCartPrice - discountAmount + serviceChargeAmount + taxAmount;
 
   useEffect(() => {
     if (isCashierMode) {
@@ -361,14 +377,26 @@ const FullMenu = () => {
                 <span>{t('fullMenu.subtotal')}</span>
                 <span>{formatRp(totalCartPrice)}</span>
               </div>
-              <div className="kl-summary-row">
-                <span>{t('fullMenu.serviceFee')}</span>
-                <span>{formatRp(2000)}</span>
-              </div>
+              {/* Biaya Layanan lama (Rp 2.000) dihapus agar mengikuti pengaturan Service Charge */}
+              
+              {settings?.enable_tax && settings.service_charge_rate > 0 && (
+                <div className="kl-summary-row">
+                  <span>Service Charge ({settings.service_charge_rate}%)</span>
+                  <span>{formatRp(serviceChargeAmount)}</span>
+                </div>
+              )}
+              
+              {settings?.enable_tax && settings.tax_rate > 0 && (
+                <div className="kl-summary-row">
+                  <span>PB1 ({settings.tax_rate}%)</span>
+                  <span>{formatRp(taxAmount)}</span>
+                </div>
+              )}
+
               {promoData && (
-                <div className="kl-summary-row" style={{color: '#16a34a', fontWeight: 'bold'}}>
-                  <span>{t('fullMenu.promo')} ({promoData.code})</span>
-                  <span>-{formatRp(calculateDiscount())}</span>
+                <div className="kl-summary-row" style={{ color: '#10b981', fontWeight: 600 }}>
+                  <span>Diskon Promo</span>
+                  <span>- {formatRp(discountAmount)}</span>
                 </div>
               )}
               <div className="kl-summary-row total">

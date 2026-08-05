@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from '../../../contexts/I18nContext';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import api from '../../../services/api';
 import ClientPagination from '../components/ClientPagination';
 import KulinerLoading from '../components/KulinerLoading';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useReactToPrint } from 'react-to-print';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell
@@ -21,6 +22,13 @@ const SalesReport = () => {
   
   // Date filter: 'today' | 'week' | 'month' | 'all'
   const [dateFilter, setDateFilter] = useState('today');
+  const printRef = useRef(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Laporan-Penjualan-Kuliner-${new Date().toISOString().split('T')[0]}`,
+    pageStyle: "@page { size: A4; margin: 1cm !important; }",
+  });
 
   const fetchSalesReport = async () => {
     setLoading(true);
@@ -39,7 +47,7 @@ const SalesReport = () => {
     fetchSalesReport();
   }, []);
 
-  const formatRp = (n) => 'Rp ' + (n || 0).toLocaleString('id-ID');
+  const formatRp = (n) => `Rp ${Math.round(Number(n || 0)).toLocaleString('id-ID')}`;
 
   // Filtered orders based on active dateFilter
   const filteredSales = useMemo(() => {
@@ -186,33 +194,26 @@ const SalesReport = () => {
               
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="kd-btn kd-btn-secondary" onClick={fetchSalesReport}>↻ Segarkan Data</button>
-                <button className="kd-btn kd-btn-primary" onClick={() => window.print()}>💾 Cetak Laporan</button>
+                <button className="kd-btn kd-btn-primary" onClick={handlePrint}>💾 Cetak Laporan</button>
               </div>
             </div>
 
-            {/* PRINT HEADER */}
-            <div className="print-only" style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '2px solid #000' }}>
-              <h2 style={{ fontSize: 24, fontWeight: 'bold', margin: 0, color: '#000' }}>{t('kulinerSales.title')} - {user?.tenant_name || 'Toko Kuliner'}</h2>
-              <p style={{ margin: '4px 0', fontSize: 14, color: '#333' }}>
-                Periode: {dateFilter === 'today' ? t('kulinerSales.filterToday') || 'Hari Ini' : dateFilter === 'week' ? t('kulinerSales.filterWeek') || '7 Hari Terakhir' : dateFilter === 'month' ? t('kulinerSales.filterMonth') || 'Bulan Ini' : t('kulinerSales.filterAll') || 'Semua'}
-              </p>
-              <p style={{ margin: '4px 0', fontSize: 14, color: '#333' }}>Dicetak pada: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-            </div>
+            <div ref={printRef}>
 
             {/* SUMMARY CARDS */}
-            <div className="kd-ledger-grid" style={{ marginBottom: 24 }}>
+            <div className="kd-ledger-grid no-print" style={{ marginBottom: 24 }}>
               <div className="kd-panel" style={{ borderLeft: '4px solid #b48c36' }}>
-                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">{t('kulinerSales.summaryTotalSales') || 'Total Pendapatan'}</div>
+                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerSales.summaryTotalSales') || 'Total Pendapatan'}</div>
                 <div className="text-2xl font-black text-slate-800">{formatRp(summary.totalSales)}</div>
                 <div className="text-[10px] text-slate-400 mt-2">Performa periode ini</div>
               </div>
               <div className="kd-panel" style={{ borderLeft: '4px solid #3b82f6' }}>
-                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">{t('kulinerSales.summaryTotalOrders') || 'Total Pesanan'}</div>
+                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerSales.summaryTotalOrders') || 'Total Pesanan'}</div>
                 <div className="text-2xl font-black text-slate-800">{summary.totalOrders} <span className="text-sm font-normal text-slate-400">Pesanan</span></div>
                 <div className="text-[10px] text-slate-400 mt-2">Terhitung dari semua channel</div>
               </div>
               <div className="kd-panel" style={{ borderLeft: '4px solid #10b981' }}>
-                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">{t('kulinerSales.summaryAvgOrder') || 'Rata-rata Per Pesanan'}</div>
+                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerSales.summaryAvgOrder') || 'Rata-rata Per Pesanan'}</div>
                 <div className="text-2xl font-black text-slate-800">{formatRp(summary.avgOrderValue)}</div>
                 <div className="text-[10px] text-slate-400 mt-2">Efisiensi penjualan per transaksi</div>
               </div>
@@ -290,7 +291,7 @@ const SalesReport = () => {
             </div>
 
             {/* TRANSACTIONS TABLE */}
-            <div className="kd-panel">
+            <div className="kd-panel no-print">
               <div className="kd-panel-header no-print">
                 <div className="text-sm font-bold text-slate-800">
                   {t('kulinerSales.historyTitle') || 'Detail Transaksi Periode Ini'}
@@ -353,40 +354,82 @@ const SalesReport = () => {
                 itemsPerPage={itemsPerPage}
                 totalItems={filteredSales.length}
               />
-
-              {/* PRINT ONLY TABLE (ALL ITEMS) */}
-              <div className="print-only">
-                <h3 style={{ fontSize: 18, marginTop: 24, marginBottom: 12, borderBottom: '1px solid #ccc', paddingBottom: 8 }}>Detail Transaksi</h3>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                  <thead>
-                    <tr>
-                      <th style={{ borderBottom: '2px solid #000', padding: '8px 4px', textAlign: 'left' }}>ID Order</th>
-                      <th style={{ borderBottom: '2px solid #000', padding: '8px 4px', textAlign: 'left' }}>Pelanggan</th>
-                      <th style={{ borderBottom: '2px solid #000', padding: '8px 4px', textAlign: 'left' }}>Tipe</th>
-                      <th style={{ borderBottom: '2px solid #000', padding: '8px 4px', textAlign: 'left' }}>Metode</th>
-                      <th style={{ borderBottom: '2px solid #000', padding: '8px 4px', textAlign: 'left' }}>Tanggal</th>
-                      <th style={{ borderBottom: '2px solid #000', padding: '8px 4px', textAlign: 'right' }}>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredSales.length === 0 ? (
-                      <tr><td colSpan="6" style={{ padding: 16, textAlign: 'center' }}>Tidak ada transaksi.</td></tr>
-                    ) : (
-                      filteredSales.map(order => (
-                        <tr key={`print-${order.id}`}>
-                          <td style={{ borderBottom: '1px solid #e2e8f0', padding: '8px 4px' }}>#ORD-{order.id.toString().padStart(5, '0')}</td>
-                          <td style={{ borderBottom: '1px solid #e2e8f0', padding: '8px 4px', fontWeight: 'bold' }}>{order.customer_name}</td>
-                          <td style={{ borderBottom: '1px solid #e2e8f0', padding: '8px 4px' }}>{order.order_type === 'dine_in' ? 'Dine In' : 'Takeaway'}</td>
-                          <td style={{ borderBottom: '1px solid #e2e8f0', padding: '8px 4px' }}>{order.payment_method}</td>
-                          <td style={{ borderBottom: '1px solid #e2e8f0', padding: '8px 4px' }}>{new Date(order.created_at).toLocaleDateString('id-ID')}</td>
-                          <td style={{ borderBottom: '1px solid #e2e8f0', padding: '8px 4px', textAlign: 'right', fontWeight: 'bold' }}>{formatRp(order.total)}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
               </div>
 
+              {/* PRINT ONLY TABLE - TEMPLATE LABA RUGI GITHUB YUSU24 */}
+              <div className="print-only w-full">
+                {/* Print Wrapper */}
+                <div
+                  id="financial-report-sheet"
+                  className="w-full text-slate-900 font-sans"
+                >
+                  {/* HEADER LAPORAN */}
+                  <div className="text-center mb-4 leading-tight">
+                    <h2 className="text-lg sm:text-xl font-bold uppercase tracking-wider text-slate-900 print:text-black">
+                      {t('kulinerSales.title') || 'Laporan Penjualan'}
+                    </h2>
+                    <h1 className="text-base sm:text-lg font-bold uppercase tracking-wide text-slate-900 print:text-black">
+                      {user?.tenant_name || 'Toko Kuliner'}
+                    </h1>
+                    <p className="text-xs font-semibold text-slate-800 print:text-black mt-1">
+                      Periode: {dateFilter === 'today' ? t('kulinerSales.filterToday') || 'Hari Ini' : dateFilter === 'week' ? t('kulinerSales.filterWeek') || '7 Hari Terakhir' : dateFilter === 'month' ? t('kulinerSales.filterMonth') || 'Bulan Ini' : t('kulinerSales.filterAll') || 'Semua'}
+                    </p>
+                  </div>
+
+                  {/* TABEL FINANSIAL */}
+                  <div className="overflow-x-auto my-6">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-y-2 border-slate-900 print:border-black text-xs uppercase font-bold text-slate-800 print:text-black bg-slate-50 print:bg-transparent">
+                          <th className="py-2 px-2 text-left">ID Order</th>
+                          <th className="py-2 px-2 text-left">Pelanggan</th>
+                          <th className="py-2 px-2 text-left">Tipe</th>
+                          <th className="py-2 px-2 text-left">Tanggal</th>
+                          <th className="py-2 px-2 text-right">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredSales.length === 0 ? (
+                          <tr><td colSpan="5" className="py-4 text-center text-slate-400 italic text-sm">Tidak ada transaksi.</td></tr>
+                        ) : (
+                          filteredSales.map(order => (
+                            <tr key={`print-${order.id}`} className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
+                              <td className="py-1 px-2 text-slate-800 print:text-black font-mono border-b border-slate-100 print:border-transparent">
+                                #ORD-{order.id.toString().padStart(5, '0')}
+                              </td>
+                              <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
+                                {order.customer_name}
+                              </td>
+                              <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
+                                {order.order_type === 'dine_in' ? 'Makan di Tempat' : 'Bawa Pulang'}
+                              </td>
+                              <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
+                                {new Date(order.created_at).toLocaleDateString('id-ID')}
+                              </td>
+                              <td className="py-1 px-2 text-right font-mono text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
+                                {formatRp(order.total)}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                        <tr className="font-bold text-sm bg-slate-100/70 print:bg-transparent">
+                          <td colSpan="4" className="py-1.5 px-2 text-slate-900 print:text-black uppercase">
+                            TOTAL PENDAPATAN
+                          </td>
+                          <td className="py-1.5 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black font-extrabold" style={{ borderBottom: '3px double #000' }}>
+                            {formatRp(summary.totalSales)}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* FOOTER INFORMASI STANDAR */}
+                  <div className="mt-8 text-center text-[10px] text-slate-400 print:text-black italic border-t border-slate-100 print:border-slate-300 pt-2">
+                    Dokumen ini dicetak secara otomatis melalui Sistem Manajemen UMKM.
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         )}

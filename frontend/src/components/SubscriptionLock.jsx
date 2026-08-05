@@ -59,7 +59,7 @@ const SubscriptionLock = ({ status, daysLeft }) => {
             </div>
           </div>
           <button onClick={() => {
-            const demoEmails = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com'];
+            const demoEmails = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','seller@demo.com'];
             const isDemo = user?.email?.startsWith('demo-sandbox-') || user?.email?.startsWith('demo-kuliner-') || demoEmails.includes(user?.email);
             logout();
             navigate(isDemo ? '/' : '/login');

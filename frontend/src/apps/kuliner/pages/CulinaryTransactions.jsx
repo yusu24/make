@@ -124,17 +124,17 @@ const CulinaryTransactions = () => {
             </div>
             {/* LEDGER CARDS */}
             <div className="kd-ledger-grid" style={{ marginBottom: 32 }}>
-              <div className="kd-panel" style={{ background: '#ecfdf5', borderColor: '#10b981' }}>
-                <div className="text-[10px] text-green-600 font-bold tracking-wider mb-2">{t('kulinerTransactions.summaryTotalIncome') || 'Total Kas Masuk'}</div>
-                <div className="text-2xl font-black text-green-700">{formatRp(balanceSummary.totalIncome)}</div>
+              <div className="kd-panel" style={{ background: '#f0fdf4', borderColor: '#22c55e' }}>
+                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerTransactions.summaryTotalIncome') || 'Total Kas Masuk'}</div>
+                <div className="text-3xl font-black text-green-800">{formatRp(balanceSummary.totalIncome)}</div>
               </div>
               <div className="kd-panel" style={{ background: '#fef2f2', borderColor: '#ef4444' }}>
-                <div className="text-[10px] text-red-600 font-bold tracking-wider mb-2">{t('kulinerTransactions.summaryTotalExpense') || 'Total Kas Keluar'}</div>
-                <div className="text-2xl font-black text-red-700">{formatRp(balanceSummary.totalExpense)}</div>
+                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerTransactions.summaryTotalExpense') || 'Total Kas Keluar'}</div>
+                <div className="text-3xl font-black text-red-700">{formatRp(balanceSummary.totalExpense)}</div>
               </div>
               <div className="kd-panel" style={{ background: '#f8fafc', borderLeft: '4px solid #1e293b' }}>
-                <div className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">{t('kulinerTransactions.summaryNetBalance') || 'Saldo Bersih (Profit)'}</div>
-                <div className="text-2xl font-black text-slate-800">{formatRp(balanceSummary.netBalance)}</div>
+                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerTransactions.summaryNetBalance') || 'Saldo Bersih (Profit)'}</div>
+                <div className="text-3xl font-black text-slate-800">{formatRp(balanceSummary.netBalance)}</div>
               </div>
             </div>
 
@@ -211,16 +211,16 @@ const CulinaryTransactions = () => {
                               <div style={{ color: '#1e293b' }}>{item.description}</div>
                             </td>
                             <td><span className="text-xs text-slate-400">{item.id}</span></td>
-                          <td><span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">{item.category}</span></td>
+                          <td><span className="text-sm bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-bold">{item.category}</span></td>
                           <td>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                               <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.type === 'income' ? '#10b981' : '#ef4444' }} />
-                              <span className={`text-xs font-medium ${item.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                                {item.type === 'income' ? t('kulinerTransactions.detailIncome') || 'Masuk' : t('kulinerTransactions.detailExpense') || 'Keluar'}
+                              <span className={`text-sm font-medium ${item.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                                {item.type === 'income' ? t('kulinerTransactions.detailIncome') || 'Pemasukan' : t('kulinerTransactions.detailExpense') || 'Pengeluaran'}
                               </span>
                             </div>
                           </td>
-                          <td className={item.type === 'income' ? 'text-green-600' : 'text-red-600'}>
+                          <td className="text-slate-900 font-medium">
                             {item.type === 'income' ? '+' : '-'}{formatRp(item.amount)}
                           </td>
                           <td className="text-right">

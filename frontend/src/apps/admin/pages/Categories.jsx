@@ -57,7 +57,8 @@ export default function Categories() {
   const [cats, setCats]    = useState([])
   const [show, setShow]    = useState(false)
   const [editing, setEditing] = useState(null)
-  const [form, setForm]    = useState({ name:'', description:'', icon:'🛒', color:'#3b82f6', active:true, promo_text:'', discount_pct:0, promo_active:false, features_input:'' })
+  const emptyStats = [{ value:'', label:'' }, { value:'', label:'' }]
+  const [form, setForm]    = useState({ name:'', description:'', icon:'🛒', color:'#3b82f6', active:true, promo_text:'', discount_pct:0, promo_active:false, features_input:'', headline:'', badge:'', stats: emptyStats })
   const [saving, setSaving] = useState(false)
   const [msg, setMsg]      = useState('')
   const [search, setSearch] = useState('')
@@ -74,7 +75,7 @@ export default function Categories() {
 
   const openAdd = () => {
     setEditing(null)
-    setForm({ name:'', description:'', icon:'🛒', color:'#3b82f6', active:true, promo_text:'', discount_pct:0, promo_active:false, features_input:'' })
+    setForm({ name:'', description:'', icon:'🛒', color:'#3b82f6', active:true, promo_text:'', discount_pct:0, promo_active:false, features_input:'', headline:'', badge:'', stats: emptyStats })
     setMsg('')
     setShow(true)
   }
@@ -90,7 +91,10 @@ export default function Categories() {
       promo_text: cat.promo_text || '',
       discount_pct: cat.discount_pct || 0,
       promo_active: cat.promo_active || false,
-      features_input: cat.features_list ? cat.features_list.join(', ') : ''
+      features_input: cat.features_list ? cat.features_list.join(', ') : '',
+      headline: cat.headline || '',
+      badge: cat.badge || '',
+      stats: cat.stats?.length === 2 ? cat.stats : emptyStats,
     })
     setMsg('')
     setShow(true)
@@ -101,13 +105,18 @@ export default function Categories() {
     if (!form.name.trim()) return
     setSaving(true)
     
-    const parsedFeatures = form.features_input 
+    const parsedFeatures = form.features_input
       ? form.features_input.split(',').map(s => s.trim()).filter(Boolean)
       : []
 
+    // Only keep stats if the admin actually filled at least one field in —
+    // otherwise let the landing page fall back to its generic stat cards.
+    const hasStats = form.stats.some(st => st.value.trim() || st.label.trim())
+
     const payload = {
       ...form,
-      features_list: parsedFeatures
+      features_list: parsedFeatures,
+      stats: hasStats ? form.stats : null,
     }
 
     try {
@@ -297,6 +306,46 @@ export default function Categories() {
                     onClick={() => setForm({...form, color: c})}
                   />
                 ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Sector Detail Panel (Landing Page) Section */}
+          <div style={{ borderTop: '1px solid var(--border-default)', paddingTop: 16, marginTop: 8 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detail Panel Sektor (Landing Page)</h4>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>Ditampilkan di section "Spesialisasi Sektor Bisnis" saat kategori ini dipilih.</p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="form-group">
+                <label className="form-label">Badge (Label Kecil)</label>
+                <input className="form-input" placeholder="cth. Solusi Kasir & Stok" value={form.badge}
+                  onChange={e => setForm({...form, badge: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Headline</label>
+                <input className="form-input" placeholder="cth. Kasir POS Cepat, Stok Terintegrasi, Bebas Selisih Barang" value={form.headline}
+                  onChange={e => setForm({...form, headline: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Statistik Dampak (2 kartu)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  {form.stats.map((st, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: 8 }}>
+                      <input className="form-input" placeholder="cth. 3x" style={{ width: 70 }} value={st.value}
+                        onChange={e => {
+                          const next = [...form.stats]
+                          next[idx] = { ...next[idx], value: e.target.value }
+                          setForm({...form, stats: next})
+                        }} />
+                      <input className="form-input" placeholder="cth. Proses Transaksi Lebih Cepat" value={st.label}
+                        onChange={e => {
+                          const next = [...form.stats]
+                          next[idx] = { ...next[idx], label: e.target.value }
+                          setForm({...form, stats: next})
+                        }} />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

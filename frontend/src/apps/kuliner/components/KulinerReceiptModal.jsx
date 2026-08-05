@@ -55,6 +55,25 @@ export default function KulinerReceiptModal({ isOpen, order, storeName, onClose 
                 </div>
               ))}
             </div>
+
+            <div className="flex flex-col gap-1 text-[9px] mb-2 border-b border-dashed border-slate-300 pb-2">
+              {(order.subtotal > 0 && (order.tax_amount > 0 || order.service_charge_amount > 0)) && (
+                <div className="flex justify-between text-slate-600">
+                  <span>Subtotal</span><span>{fmtRp(order.subtotal)}</span>
+                </div>
+              )}
+              {order.service_charge_amount > 0 && (
+                <div className="flex justify-between text-slate-600">
+                  <span>Service Charge</span><span>{fmtRp(order.service_charge_amount)}</span>
+                </div>
+              )}
+              {order.tax_amount > 0 && (
+                <div className="flex justify-between text-slate-600">
+                  <span>PB1 / Pajak</span><span>{fmtRp(order.tax_amount)}</span>
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-between font-bold text-xs">
               <span>TOTAL</span><span>{fmtRp(order.total)}</span>
             </div>

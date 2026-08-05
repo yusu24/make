@@ -136,20 +136,36 @@ export default function FinanceSummary() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Income Card */}
           <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
                 <TrendingUp size={18} />
               </div>
-              <span className="text-sm font-medium text-slate-500">Total Pendapatan</span>
+              <span className="text-sm font-medium text-slate-500">Pendapatan Penjualan</span>
             </div>
             <div>
               <p className="text-2xl text-slate-900 leading-tight font-semibold">
                 {loading ? '...' : formatRp(summary.total_sales)}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Total kotor dari transaksi mesin kasir (POS).</p>
+              <p className="text-xs text-slate-400 mt-1">Dari transaksi mesin kasir (POS).</p>
+            </div>
+          </div>
+
+          {/* Other Income Card */}
+          <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 shrink-0">
+                <TrendingUp size={18} />
+              </div>
+              <span className="text-sm font-medium text-slate-500">Pemasukan Lain</span>
+            </div>
+            <div>
+              <p className="text-2xl text-slate-900 leading-tight font-semibold">
+                {loading ? '...' : formatRp(summary.total_incomes)}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">Catatan manual pemasukan tambahan.</p>
             </div>
           </div>
 
@@ -181,7 +197,7 @@ export default function FinanceSummary() {
               <p className={`text-2xl leading-tight font-semibold ${isProfit ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {loading ? '...' : formatRp(summary.profit)}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Pendapatan dikurangi Pengeluaran.</p>
+              <p className="text-xs text-slate-400 mt-1">(Penjualan + Pemasukan) - Pengeluaran.</p>
             </div>
           </div>
         </div>

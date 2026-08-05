@@ -172,6 +172,7 @@ export const AuthProvider = ({ children }) => {
             'budidaya-hewan': '/budidaya/dashboard',
             'budidaya-tanaman': '/budidaya/dashboard',
             'kuliner': '/kuliner/admin',
+            'seller': '/seller/dashboard',
         };
         
         return SLUG_ROUTES[categorySlug] || '/coming-soon';

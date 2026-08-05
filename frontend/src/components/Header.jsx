@@ -55,6 +55,14 @@ const PAGE_TITLES = {
   '/retail/pricelists':         { title: 'Pricelist' },
   '/retail/settings':           { title: 'Pengaturan Toko' },
   '/retail/support':            { title: 'Pusat Bantuan' },
+
+  // Seller Module
+  '/seller/dashboard':          { title: 'Omnichannel Dashboard' },
+  '/seller/orders':             { title: 'Semua Pesanan' },
+  '/seller/products':           { title: 'Katalog Produk' },
+  '/seller/inventory':          { title: 'Sinkronisasi Stok' },
+  '/seller/marketplace':        { title: 'Channel Penjualan' },
+  '/seller/ai-insight':         { title: 'AI Insight' },
 }
 
 export default function Header({ onMenuToggle, collapsed }) {

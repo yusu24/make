@@ -23,6 +23,7 @@ const SLUG_ROUTES = {
   'budidaya-hewan':    '/budidaya/dashboard',
   'budidaya-tanaman': '/budidaya/dashboard',
   'kuliner':          '/kuliner/admin',
+  'seller':           '/seller/dashboard',
 }
 
 export default function Landing() {
@@ -36,11 +37,13 @@ export default function Landing() {
   const [submitting, setSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [categories, setCategories] = useState([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [showBudidayaModal, setShowBudidayaModal] = useState(false)
+  const [settingsLoading, setSettingsLoading] = useState(true)
   const [settings, setSettings] = useState({
-    hero_title: 'Kelola Bisnis Anda',
-    hero_subtitle: 'Lebih Cerdas & Mudah',
-    hero_desc: 'Satu platform untuk retail, Budidaya Hewan, kuliner, dan jasa. Kelola stok, pesanan, laporan keuangan, dan pelanggan dalam satu genggaman.',
+    hero_title: 'Solusi Manajemen UMKM Digital Terbaik',
+    hero_subtitle: '',
+    hero_desc: 'Tingkatkan produktivitas bisnis Anda dengan fitur terlengkap.',
     campaign_text: 'Promo Spesial Kategori — Potongan Harga Upgrade Paket Aktif! Buat bisnis Anda naik tingkat.',
     campaign_active: true,
     show_sandbox: true,
@@ -53,10 +56,12 @@ export default function Landing() {
     api.get('/landing-settings')
       .then(r => { if (r.data?.data) setSettings(r.data.data) })
       .catch(e => console.error('Gagal mengambil pengaturan landing:', e))
+      .finally(() => setSettingsLoading(false))
 
     api.get('/categories/public')
       .then(r => { if (r.data?.data) setCategories(r.data.data) })
       .catch(e => console.error('Gagal mengambil kategori:', e))
+      .finally(() => setCategoriesLoading(false))
 
     api.get('/testimonials/public')
       .then(r => { if (r.data?.data) setTestimonials(r.data.data) })
@@ -115,12 +120,19 @@ export default function Landing() {
     }
   }
 
+  // Sandbox demo buttons & sector tabs only show admin-selected categories
+  // (settings.featured_categories); an empty/unset list means "show all".
+  const featuredCategories = settings.featured_categories?.length
+    ? categories.filter(c => settings.featured_categories.includes(c.slug))
+    : categories
+
   // Redirect to dashboard instantly if user is already authenticated
   if (user) {
-    if (user.role === 'super_admin') return <Navigate to="/dashboard" replace />
+    if (user.role === 'super_admin' || user.role === 'admin') return <Navigate to="/dashboard" replace />
     if (user.business_category === 'Toko Retail') return <Navigate to="/retail/dashboard" replace />
     if (user.business_category === 'Budidaya Hewan' || user.business_category === 'Budidaya Tanaman') return <Navigate to="/budidaya/dashboard" replace />
     if (user.business_category === 'Kuliner') return <Navigate to="/kuliner/admin" replace />
+    if (user.business_category === 'Seller') return <Navigate to="/seller/dashboard" replace />
     return <Navigate to="/coming-soon" replace />
   }
 
@@ -137,7 +149,9 @@ export default function Landing() {
 
       <Hero
         settings={settings}
-        categories={categories}
+        settingsLoading={settingsLoading}
+        categories={featuredCategories}
+        categoriesLoading={categoriesLoading}
         demoLoading={demoLoading}
         onOpenSandbox={handleDemoLogin}
         onScrollToFeatures={() => scrollTo('fitur')}
@@ -145,14 +159,14 @@ export default function Landing() {
 
       {settings.show_features && (
         <>
-          <SectorsSection categories={categories} onOpenSandbox={handleDemoLogin} />
-          <FeaturesSection />
+          <SectorsSection categories={featuredCategories} categoriesLoading={categoriesLoading} onOpenSandbox={handleDemoLogin} />
+          <FeaturesSection features={settings.features_platform} />
         </>
       )}
 
-      <HowItWorks />
+      <HowItWorks steps={settings.how_it_works_steps} />
 
-      <RoiCalculator />
+      <RoiCalculator title={settings.roi_title} desc={settings.roi_desc} />
 
       {settings.show_testimonials && (
         <Testimonials
@@ -166,16 +180,22 @@ export default function Landing() {
         />
       )}
 
-      <FaqSection />
+      <FaqSection faqs={settings.faq_items} />
 
       <Footer
         categories={categories}
         logoUrl={settings.landing_logo_url || bizoraLogo}
         onScrollTo={scrollTo}
+        brandDesc={settings.footer_brand_desc}
+        address={settings.footer_address}
+        phone={settings.footer_phone}
+        email={settings.footer_email}
+        securityText={settings.footer_security_text}
       />
 
       <PromoBanner
         active={settings.campaign_active}
+        loading={settingsLoading}
         text={settings.campaign_text}
         onClick={() => scrollTo('fitur')}
       />

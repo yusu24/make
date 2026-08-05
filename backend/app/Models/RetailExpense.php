@@ -16,7 +16,7 @@ class RetailExpense extends Model
         'keterangan',
         'nominal',
         'kategori',
-        'expense_category_id',
+        'finance_category_id',
     ];
 
     public function user()
@@ -26,6 +26,6 @@ class RetailExpense extends Model
 
     public function category()
     {
-        return $this->belongsTo(RetailExpenseCategory::class, 'expense_category_id');
+        return $this->belongsTo(RetailFinanceCategory::class, 'finance_category_id');
     }
 }

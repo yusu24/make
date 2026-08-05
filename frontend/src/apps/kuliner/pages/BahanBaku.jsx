@@ -127,7 +127,7 @@ export default function BahanBaku() {
     }
   };
 
-  const formatRp = (v) => `Rp ${Number(v || 0).toLocaleString('id-ID')}`;
+  const formatRp = (v) => `Rp ${Math.round(Number(v || 0)).toLocaleString('id-ID')}`;
 
   return (
     <KulinerAdminLayout>

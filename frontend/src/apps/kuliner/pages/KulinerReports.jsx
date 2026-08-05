@@ -4,24 +4,22 @@ import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import './KulinerDashboard.css';
 
-const formatRp = (v) => `Rp ${Number(v || 0).toLocaleString('id-ID')}`;
+const formatRp = (v) => `Rp ${Math.round(Number(v || 0)).toLocaleString('id-ID')}`;
 const today = new Date().toISOString().slice(0, 10);
 const monthAgo = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
 
 export default function KulinerReports() {
   const { t } = useTranslation();
   const TABS = [
-    { key: 'pl', label: t('kulinerReports.tabPL') || 'Laba Rugi' },
     { key: 'margin', label: t('kulinerReports.tabMargin') || 'Margin Menu' },
     { key: 'best', label: t('kulinerReports.tabBest') || 'Best Seller' },
     { key: 'worst', label: t('kulinerReports.tabWorst') || 'Worst Seller' },
   ];
 
-  const [tab, setTab] = useState('pl');
+  const [tab, setTab] = useState('margin');
   const [dateFrom, setDateFrom] = useState(monthAgo);
   const [dateTo, setDateTo] = useState(today);
   const [loading, setLoading] = useState(true);
-  const [pl, setPl] = useState(null);
   const [margin, setMargin] = useState([]);
   const [best, setBest] = useState([]);
   const [worst, setWorst] = useState([]);
@@ -33,13 +31,11 @@ export default function KulinerReports() {
     const params = { date_from: dateFrom, date_to: dateTo };
     if (selectedCashier) params.kasir = selectedCashier;
     try {
-      const [plRes, marginRes, bestRes, worstRes] = await Promise.all([
-        api.get('/kuliner/admin/reports/profit-loss', { params }),
+      const [marginRes, bestRes, worstRes] = await Promise.all([
         api.get('/kuliner/admin/reports/menu-margin', { params }),
         api.get('/kuliner/admin/reports/best-sellers', { params }),
         api.get('/kuliner/admin/reports/worst-sellers', { params }),
       ]);
-      setPl(plRes.data);
       setMargin(marginRes.data);
       setBest(bestRes.data);
       setWorst(worstRes.data);
@@ -99,35 +95,6 @@ export default function KulinerReports() {
           ))}
         </div>
 
-        {tab === 'pl' && (
-          <div className="kd-stats-grid">
-            <div className="kd-stat-card">
-              <div className="kd-stat-header"><span className="kd-stat-label">{t('kulinerReports.plRevenue') || 'Pendapatan'}</span></div>
-              <div className="kd-stat-value">{formatRp(pl?.revenue)}</div>
-            </div>
-            <div className="kd-stat-card">
-              <div className="kd-stat-header"><span className="kd-stat-label">{t('kulinerReports.plCogs') || 'HPP (Cost of Goods)'}</span></div>
-              <div className="kd-stat-value">{formatRp(pl?.cogs)}</div>
-            </div>
-            <div className="kd-stat-card">
-              <div className="kd-stat-header"><span className="kd-stat-label">{t('kulinerReports.plGrossProfit') || 'Laba Kotor'}</span></div>
-              <div className="kd-stat-value">{formatRp(pl?.gross_profit)}</div>
-            </div>
-            <div className="kd-stat-card">
-              <div className="kd-stat-header"><span className="kd-stat-label">{t('kulinerReports.plExpenses') || 'Beban Operasional'}</span></div>
-              <div className="kd-stat-value">{formatRp(pl?.expenses)}</div>
-            </div>
-            <div className="kd-stat-card">
-              <div className="kd-stat-header"><span className="kd-stat-label">{t('kulinerReports.plNetProfit') || 'Laba Bersih'}</span></div>
-              <div className="kd-stat-value" style={{ color: (pl?.net_profit || 0) >= 0 ? '#10b981' : '#ef4444' }}>{formatRp(pl?.net_profit)}</div>
-            </div>
-            <div className="kd-stat-card">
-              <div className="kd-stat-header"><span className="kd-stat-label">{t('kulinerReports.plOrderCount') || 'Jumlah Pesanan Selesai'}</span></div>
-              <div className="kd-stat-value">{pl?.order_count || 0}</div>
-            </div>
-          </div>
-        )}
-
         {tab === 'margin' && (
           <div className="kd-panel">
             <div className="kd-table-container" style={{ overflowX: 'auto' }}>
@@ -144,7 +111,7 @@ export default function KulinerReports() {
                       <td>{m.qty_sold}</td>
                       <td>{formatRp(m.revenue)}</td>
                       <td>{formatRp(m.cogs)}</td>
-                      <td style={{ color: m.margin >= 0 ? '#10b981' : '#ef4444', fontWeight: 700 }}>{formatRp(m.margin)}</td>
+                      <td style={{ color: '#000', fontWeight: 700 }}>{formatRp(m.margin)}</td>
                       <td>{m.margin_pct !== null ? `${m.margin_pct}%` : '-'}</td>
                     </tr>
                   ))}

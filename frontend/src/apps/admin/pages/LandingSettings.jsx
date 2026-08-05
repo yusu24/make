@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import CurrencyInput from '../../../components/CurrencyInput'
 import bizoraLogo from '../../../assets/bizora-logo.png'
@@ -21,6 +22,16 @@ export default function LandingSettings() {
     bank_account_name: 'PT Antigravity Global SaaS',
     price_basic: 149000,
     price_pro: 299000,
+    features_platform: [],
+    how_it_works_steps: [],
+    faq_items: [],
+    roi_title: '',
+    roi_desc: '',
+    footer_brand_desc: '',
+    footer_address: '',
+    footer_phone: '',
+    footer_email: '',
+    footer_security_text: '',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -74,19 +85,52 @@ export default function LandingSettings() {
       .catch(e => console.error(e))
   }
 
+  // Scrolls to top so the status banner (rendered near the top of the page)
+  // is actually visible, then shows it — otherwise a save made while scrolled
+  // down (e.g. editing the Fitur Platform list) goes unnoticed.
+  const showMsg = (text) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setMsg(text)
+    setTimeout(() => setMsg(''), 3000)
+  }
+
   const handleSaveGeneral = async (e) => {
     e.preventDefault()
     setSaving(true)
     setMsg('')
     try {
       await api.post('/admin/landing-settings', form)
-      setMsg('Pengaturan portal berhasil disimpan! 🎉')
-      setTimeout(() => setMsg(''), 3000)
+      showMsg('Pengaturan portal berhasil disimpan! 🎉')
     } catch (err) {
       alert('Gagal menyimpan pengaturan: ' + (err.response?.data?.message || 'Koneksi gagal'))
     } finally {
       setSaving(false)
     }
+  }
+
+  // --- Generic list-editing helpers, shared by the Fitur Platform, Cara
+  //     Kerja, and FAQ tabs (all three are just "array of objects" fields) ---
+  const addListItem = (key, emptyItem) => {
+    setForm(f => ({ ...f, [key]: [...(f[key] || []), emptyItem] }))
+  }
+  const removeListItem = (key, idx) => {
+    setForm(f => ({ ...f, [key]: f[key].filter((_, i) => i !== idx) }))
+  }
+  const moveListItem = (key, idx, dir) => {
+    setForm(f => {
+      const list = [...f[key]]
+      const target = idx + dir
+      if (target < 0 || target >= list.length) return f
+      ;[list[idx], list[target]] = [list[target], list[idx]]
+      return { ...f, [key]: list }
+    })
+  }
+  const updateListItem = (key, idx, field, value) => {
+    setForm(f => {
+      const list = [...f[key]]
+      list[idx] = { ...list[idx], [field]: value }
+      return { ...f, [key]: list }
+    })
   }
 
   // --- Testimonials CRUD Handlers ---
@@ -123,8 +167,7 @@ export default function LandingSettings() {
         setTestimonials(v => [r.data.data, ...v])
       }
       setShowModal(false)
-      setMsg('Testimoni berhasil disimpan! 💬')
-      setTimeout(() => setMsg(''), 3000)
+      showMsg('Testimoni berhasil disimpan! 💬')
     } catch (err) {
       alert('Gagal menyimpan testimoni: ' + (err.response?.data?.message || 'Koneksi gagal'))
     } finally {
@@ -137,8 +180,7 @@ export default function LandingSettings() {
     try {
       await api.delete(`/admin/testimonials/${id}`)
       setTestimonials(v => v.filter(t => t.id !== id))
-      setMsg('Testimoni berhasil dihapus! 🗑️')
-      setTimeout(() => setMsg(''), 3000)
+      showMsg('Testimoni berhasil dihapus! 🗑️')
     } catch (err) {
       alert('Gagal menghapus testimoni')
     }
@@ -174,79 +216,38 @@ export default function LandingSettings() {
       </div>
 
       {/* Tabs Menu */}
-      <div style={{ display: 'flex', gap: 12, borderBottom: '1px solid var(--border-default)', marginBottom: 24, paddingBottom: 2 }}>
-        <button 
-          type="button" 
-          onClick={() => setActiveTab('general')}
-          style={{
-            padding: '10px 20px',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'general' ? '3px solid var(--primary-500)' : '3px solid transparent',
-            color: activeTab === 'general' ? 'var(--text-primary)' : 'var(--text-muted)',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontSize: 14,
-            transition: 'all 0.2s ease',
-            outline: 'none'
-          }}
-        >
-          🚀 Pengaturan Teks & Elemen
-        </button>
-        <button 
-          type="button" 
-          onClick={() => setActiveTab('testimonials')}
-          style={{
-            padding: '10px 20px',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'testimonials' ? '3px solid var(--primary-500)' : '3px solid transparent',
-            color: activeTab === 'testimonials' ? 'var(--text-primary)' : 'var(--text-muted)',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontSize: 14,
-            transition: 'all 0.2s ease',
-            outline: 'none'
-          }}
-        >
-          💬 Kelola Testimoni Pelanggan
-        </button>
-        <button 
-          type="button" 
-          onClick={() => setActiveTab('billing')}
-          style={{
-            padding: '10px 20px',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'billing' ? '3px solid var(--primary-500)' : '3px solid transparent',
-            color: activeTab === 'billing' ? 'var(--text-primary)' : 'var(--text-muted)',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontSize: 14,
-            transition: 'all 0.2s ease',
-            outline: 'none'
-          }}
-        >
-          💳 Harga Paket & Rekening BCA
-        </button>
-        <button 
-          type="button" 
-          onClick={() => setActiveTab('logo')}
-          style={{
-            padding: '10px 20px',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'logo' ? '3px solid var(--primary-500)' : '3px solid transparent',
-            color: activeTab === 'logo' ? 'var(--text-primary)' : 'var(--text-muted)',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontSize: 14,
-            transition: 'all 0.2s ease',
-            outline: 'none'
-          }}
-        >
-          🎨 Logo & Branding
-        </button>
+      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border-default)', marginBottom: 24, paddingBottom: 2, flexWrap: 'wrap' }}>
+        {[
+          { key: 'general', label: '🚀 Pengaturan Teks & Elemen' },
+          { key: 'sectors', label: '🏷️ Sektor Bisnis' },
+          { key: 'features', label: '✨ Fitur Platform' },
+          { key: 'howitworks', label: '🧭 Cara Kerja' },
+          { key: 'faq', label: '❓ FAQ' },
+          { key: 'testimonials', label: '💬 Kelola Testimoni Pelanggan' },
+          { key: 'billing', label: '💳 Harga Paket & Rekening BCA' },
+          { key: 'logo', label: '🎨 Logo & Branding' },
+        ].map(tab => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              padding: '10px 16px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: activeTab === tab.key ? '3px solid var(--primary-500)' : '3px solid transparent',
+              color: activeTab === tab.key ? 'var(--text-primary)' : 'var(--text-muted)',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: 13,
+              whiteSpace: 'nowrap',
+              transition: 'all 0.2s ease',
+              outline: 'none'
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {msg && (
@@ -290,12 +291,12 @@ export default function LandingSettings() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>TEKS WARNA-WARNI (BARIS 2)</label>
-                  <input 
-                    className="form-input" 
-                    value={form.hero_subtitle}
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>TEKS WARNA-WARNI (BARIS 2) — OPSIONAL</label>
+                  <input
+                    className="form-input"
+                    placeholder="Kosongkan jika judul cukup 1 baris"
+                    value={form.hero_subtitle || ''}
                     onChange={e => setForm({...form, hero_subtitle: e.target.value})}
-                    required
                   />
                 </div>
 
@@ -326,7 +327,7 @@ export default function LandingSettings() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-elevated)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border-default)' }}>
                   <div>
                     <span style={{ fontSize: 13, fontWeight: 600, display: 'block', color: 'var(--text-primary)' }}>Aktifkan Banner Promo</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tampilkan garis promo oranye tepat di bawah hero</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tampilkan bar promo sticky di bagian bawah layar landing page</span>
                   </div>
                   <button
                     type="button"
@@ -386,8 +387,8 @@ export default function LandingSettings() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[
                   { key: 'show_sandbox', title: 'Panel Sandbox Instan', desc: 'Tombol uji coba demo kategori langsung di sisi hero' },
-                  { key: 'show_features', title: 'Section Fitur Unggulan', desc: 'Daftar card modul Retail, Budidaya, dan Kuliner' },
-                  { key: 'show_testimonials', title: 'Section Testimoni Pengguna', desc: 'Kartu review dari para pemilik usaha retail/kolam' }
+                  { key: 'show_features', title: 'Section Sektor Bisnis & Fitur', desc: 'Tab spesialisasi per kategori bisnis, plus daftar fitur unggulan platform' },
+                  { key: 'show_testimonials', title: 'Section Testimoni Pengguna', desc: 'Kartu review dari para pemilik usaha retail/kolam, bisa digeser' }
                 ].map(item => (
                   <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-elevated)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border-default)' }}>
                     <div>
@@ -428,7 +429,8 @@ export default function LandingSettings() {
 
               {form.show_features && (
                 <div style={{ marginTop: 20, background: 'var(--bg-elevated)', padding: '16px', borderRadius: 10, border: '1px solid var(--border-default)' }}>
-                  <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>Pilih Kategori Unggulan</h4>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Pilih Kategori Unggulan</h4>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>Menentukan kategori mana yang muncul di tombol demo Sandbox Instan dan tab Sektor Bisnis. Kosongkan semua centang untuk menampilkan seluruh kategori aktif.</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {dbCategories.map(cat => (
                       <label key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
@@ -451,8 +453,74 @@ export default function LandingSettings() {
               )}
             </div>
 
-            <button 
-              type="submit" 
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: 0 }} />
+
+            {/* Section: Footer */}
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>🦶</span> Footer
+              </h3>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Deskripsi brand, kontak, dan teks keamanan di bagian paling bawah landing page. Kolom "Sektor Usaha" di footer otomatis mengikuti kategori bisnis aktif.</p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>DESKRIPSI BRAND</label>
+                  <textarea className="form-input" rows="2" value={form.footer_brand_desc || ''}
+                    onChange={e => setForm({...form, footer_brand_desc: e.target.value})}
+                    style={{ resize: 'vertical', lineHeight: 1.5 }} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>ALAMAT</label>
+                    <input className="form-input" value={form.footer_address || ''}
+                      onChange={e => setForm({...form, footer_address: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>NOMOR WHATSAPP CS</label>
+                    <input className="form-input" value={form.footer_phone || ''}
+                      onChange={e => setForm({...form, footer_phone: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>EMAIL BANTUAN</label>
+                  <input className="form-input" type="email" value={form.footer_email || ''}
+                    onChange={e => setForm({...form, footer_email: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>TEKS KEAMANAN & LAYANAN</label>
+                  <textarea className="form-input" rows="2" value={form.footer_security_text || ''}
+                    onChange={e => setForm({...form, footer_security_text: e.target.value})}
+                    style={{ resize: 'vertical', lineHeight: 1.5 }} />
+                </div>
+              </div>
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: 0 }} />
+
+            {/* Section: ROI Calculator header */}
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>🧮</span> Judul Simulasi Penghematan ROI
+              </h3>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Kalkulator ROI sendiri (slider transaksi, staf, hasil hitung) tidak bisa diubah — hanya judul dan deskripsi pembukanya.</p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>JUDUL</label>
+                  <input className="form-input" value={form.roi_title || ''}
+                    onChange={e => setForm({...form, roi_title: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>DESKRIPSI</label>
+                  <textarea className="form-input" rows="3" value={form.roi_desc || ''}
+                    onChange={e => setForm({...form, roi_desc: e.target.value})}
+                    style={{ resize: 'vertical', lineHeight: 1.5 }} />
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
               disabled={saving}
               className="btn btn-primary"
               style={{ 
@@ -499,25 +567,27 @@ export default function LandingSettings() {
                   <span>Beranda</span>
                   <span>Fitur</span>
                   <span>Cara Kerja</span>
+                  <span>Testimoni</span>
                 </div>
               </div>
 
               {/* Hero Mock */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 12, padding: 18, flex: 1, alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 12, padding: 18, flex: 1, alignItems: 'center', overflow: 'hidden' }}>
                 <div>
                   <span style={{ fontSize: 7, fontWeight: 600, color: '#2dd4bf', background: 'rgba(45,212,191,0.15)', padding: '2px 6px', borderRadius: 10 }}>
-                    BISNIS DIGITAL #1 INDONESIA
+                    PLATFORM BISNIS DIGITAL #1 INDONESIA
                   </span>
                   <h1 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: '6px 0 4px 0', lineHeight: 1.2 }}>
-                    {form.hero_title}<br />
-                    <span style={{ color: '#2dd4bf' }}>{form.hero_subtitle}</span>
+                    {form.hero_title}
+                    {form.hero_subtitle && <span style={{ color: '#2dd4bf' }}> {form.hero_subtitle}</span>}
                   </h1>
                   <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', lineHeight: 1.4, margin: 0, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {form.hero_desc}
                   </p>
                 </div>
 
-                {/* Sandbox Mock */}
+                {/* Sandbox Mock — mirrors the real Hero's "Sandbox Instan" card,
+                    listing whichever categories are checked below (or all, if none checked) */}
                 {form.show_sandbox ? (
                   <div style={{
                     background: 'rgba(255,255,255,0.05)',
@@ -536,10 +606,26 @@ export default function LandingSettings() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <div style={{ background: '#3b82f6', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🛒 Demo Toko Retail</div>
-                      <div style={{ background: '#10b981', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🐟 Demo Budidaya Hewan</div>
-                      <div style={{ background: '#84cc16', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🌱 Demo Budidaya Tanam</div>
-                      <div style={{ background: '#ef4444', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600 }}>🍱 Demo Kuliner Resto</div>
+                      {(() => {
+                        const shown = form.featured_categories?.length
+                          ? dbCategories.filter(c => form.featured_categories.includes(c.slug))
+                          : dbCategories
+                        if (shown.length === 0) {
+                          return (
+                            <div style={{ fontSize: 6, color: 'rgba(255,255,255,0.4)', padding: '4px 2px' }}>
+                              Belum ada kategori dipilih
+                            </div>
+                          )
+                        }
+                        return shown.slice(0, 4).map(cat => (
+                          <div
+                            key={cat.slug}
+                            style={{ background: cat.color || '#3b82f6', height: 12, borderRadius: 3, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: 6, color: '#fff', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                          >
+                            {cat.icon || '📦'} Demo {cat.name}
+                          </div>
+                        ))
+                      })()}
                     </div>
                   </div>
                 ) : (
@@ -549,25 +635,158 @@ export default function LandingSettings() {
                 )}
               </div>
 
-              {/* Campaign Strip Mock */}
+              {/* Promo Banner Mock — sticky bar at the bottom of the page, matching PromoBanner.jsx */}
               {form.campaign_active && (
                 <div style={{
-                  background: 'linear-gradient(90deg, #ba7517, #ef4444)',
+                  background: '#062c23',
+                  borderTop: '1px solid #124d3f',
                   padding: '6px 12px',
                   fontSize: 7,
                   color: '#fff',
                   fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 6
+                  justifyContent: 'space-between',
+                  gap: 8
                 }}>
-                  <span>📣</span>
-                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{form.campaign_text}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                    <span style={{ fontSize: 8 }}>🎁</span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{form.campaign_text}</span>
+                  </div>
+                  <span style={{ background: '#10b981', color: '#03110e', padding: '3px 8px', borderRadius: 6, fontSize: 6, fontWeight: 700, whiteSpace: 'nowrap' }}>
+                    Mulai Test Kategori
+                  </span>
                 </div>
               )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB CONTENT: SEKTOR BISNIS (pointer — actual editor lives on the Kategori Bisnis page) */}
+      {activeTab === 'sectors' && (
+        <div className="card" style={{ padding: 28, maxWidth: 640 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>🏷️</span> Konten Section "Spesialisasi Sektor Bisnis"
+          </h3>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
+            Badge, headline, daftar fitur, dan statistik dampak yang tampil saat sebuah kategori dipilih di tab "Sektor Bisnis" pada landing page
+            diatur <strong>per kategori</strong> — bukan di sini, melainkan di halaman <strong>Kategori Bisnis</strong>. Buka menu itu, edit kategori
+            yang diinginkan, lalu isi bagian "Detail Panel Sektor (Landing Page)".
+          </p>
+          <Link to="/categories" className="btn btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
+            🏷️ Buka Kategori Bisnis
+          </Link>
+        </div>
+      )}
+
+      {/* TAB CONTENT: FITUR PLATFORM (6 kartu di section "Fitur Unggulan Platform") */}
+      {activeTab === 'features' && (
+        <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Fitur Unggulan Platform</h3>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Kartu-kartu fitur generik yang tampil untuk semua pengunjung, tidak terikat kategori bisnis tertentu.</p>
+          </div>
+
+          {(form.features_platform || []).map((feat, idx) => (
+            <div key={idx} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fitur #{idx + 1}</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={idx === 0} onClick={() => moveListItem('features_platform', idx, -1)}>↑</button>
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={idx === form.features_platform.length - 1} onClick={() => moveListItem('features_platform', idx, 1)}>↓</button>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('features_platform', idx)}>🗑</button>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr 1fr', gap: 10 }}>
+                <input className="form-input" placeholder="💳" value={feat.icon || ''} onChange={e => updateListItem('features_platform', idx, 'icon', e.target.value)} />
+                <input className="form-input" placeholder="Judul fitur" value={feat.title || ''} onChange={e => updateListItem('features_platform', idx, 'title', e.target.value)} />
+                <input className="form-input" placeholder="Tag (cth. Kasir Modern)" value={feat.tag || ''} onChange={e => updateListItem('features_platform', idx, 'tag', e.target.value)} />
+              </div>
+              <textarea className="form-input" rows={2} placeholder="Deskripsi fitur..." value={feat.description || ''}
+                onChange={e => updateListItem('features_platform', idx, 'description', e.target.value)} style={{ resize: 'vertical' }} />
+            </div>
+          ))}
+
+          <button type="button" className="btn btn-secondary" onClick={() => addListItem('features_platform', { icon: '✨', title: '', tag: '', description: '' })}>
+            + Tambah Fitur
+          </button>
+
+          <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: '14px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}>
+            {saving ? 'Menyimpan...' : '💾 Simpan Fitur Platform'}
+          </button>
+        </form>
+      )}
+
+      {/* TAB CONTENT: CARA KERJA (langkah-langkah di section "Kemudahan Akses") */}
+      {activeTab === 'howitworks' && (
+        <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Cara Kerja / Kemudahan Akses</h3>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Langkah-langkah bernomor yang menjelaskan cara mulai memakai Bizora. Nomor urut mengikuti urutan di sini.</p>
+          </div>
+
+          {(form.how_it_works_steps || []).map((step, idx) => (
+            <div key={idx} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Langkah {String(idx + 1).padStart(2, '0')}</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={idx === 0} onClick={() => moveListItem('how_it_works_steps', idx, -1)}>↑</button>
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={idx === form.how_it_works_steps.length - 1} onClick={() => moveListItem('how_it_works_steps', idx, 1)}>↓</button>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('how_it_works_steps', idx)}>🗑</button>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 10 }}>
+                <input className="form-input" placeholder="📝" value={step.icon || ''} onChange={e => updateListItem('how_it_works_steps', idx, 'icon', e.target.value)} />
+                <input className="form-input" placeholder="Judul langkah" value={step.title || ''} onChange={e => updateListItem('how_it_works_steps', idx, 'title', e.target.value)} />
+              </div>
+              <textarea className="form-input" rows={2} placeholder="Deskripsi langkah..." value={step.description || ''}
+                onChange={e => updateListItem('how_it_works_steps', idx, 'description', e.target.value)} style={{ resize: 'vertical' }} />
+            </div>
+          ))}
+
+          <button type="button" className="btn btn-secondary" onClick={() => addListItem('how_it_works_steps', { icon: '✅', title: '', description: '' })}>
+            + Tambah Langkah
+          </button>
+
+          <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: '14px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}>
+            {saving ? 'Menyimpan...' : '💾 Simpan Cara Kerja'}
+          </button>
+        </form>
+      )}
+
+      {/* TAB CONTENT: FAQ */}
+      {activeTab === 'faq' && (
+        <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Pertanyaan yang Sering Diajukan</h3>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Daftar FAQ di bagian bawah landing page, sebelum footer.</p>
+          </div>
+
+          {(form.faq_items || []).map((faq, idx) => (
+            <div key={idx} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>FAQ #{idx + 1}</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={idx === 0} onClick={() => moveListItem('faq_items', idx, -1)}>↑</button>
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={idx === form.faq_items.length - 1} onClick={() => moveListItem('faq_items', idx, 1)}>↓</button>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('faq_items', idx)}>🗑</button>
+                </div>
+              </div>
+              <input className="form-input" placeholder="Pertanyaan" value={faq.q || ''} onChange={e => updateListItem('faq_items', idx, 'q', e.target.value)} />
+              <textarea className="form-input" rows={3} placeholder="Jawaban..." value={faq.a || ''}
+                onChange={e => updateListItem('faq_items', idx, 'a', e.target.value)} style={{ resize: 'vertical' }} />
+            </div>
+          ))}
+
+          <button type="button" className="btn btn-secondary" onClick={() => addListItem('faq_items', { q: '', a: '' })}>
+            + Tambah FAQ
+          </button>
+
+          <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: '14px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}>
+            {saving ? 'Menyimpan...' : '💾 Simpan FAQ'}
+          </button>
+        </form>
       )}
 
       {/* TAB CONTENT: TESTIMONIALS CONFIG CRUD */}

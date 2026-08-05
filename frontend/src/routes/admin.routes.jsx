@@ -18,6 +18,7 @@ import SaasRoles from '../apps/admin/pages/SaasRoles';
 import ActivityLogs from '../apps/admin/pages/ActivityLogs';
 import Profile from '../apps/admin/pages/Profile';
 import LandingSettings from '../apps/admin/pages/LandingSettings';
+import Backups from '../apps/admin/pages/Backups';
 import { ProtectedRoute } from './guards';
 
 const adminRoutes = (
@@ -40,6 +41,7 @@ const adminRoutes = (
     <Route path="settings" element={<ProtectedRoute adminOnly><LandingSettings /></ProtectedRoute>} />
     <Route path="landing-settings" element={<ProtectedRoute adminOnly><LandingSettings /></ProtectedRoute>} />
     <Route path="developer-integrations" element={<ProtectedRoute adminOnly><DeveloperIntegrations /></ProtectedRoute>} />
+    <Route path="backups" element={<ProtectedRoute adminOnly><Backups /></ProtectedRoute>} />
     <Route path="profile" element={<Profile />} />
   </>
 );

@@ -25,11 +25,7 @@ export default function ErrorPage() {
   const handleReload = () => {
     sessionStorage.removeItem('umkm_last_error')
     if (errorInfo?.path) {
-      const p = errorInfo.path;
-      if (p.startsWith('/kuliner')) window.location.href = '/kuliner/admin';
-      else if (p.startsWith('/budidaya')) window.location.href = '/budidaya/dashboard';
-      else if (p.startsWith('/retail')) window.location.href = '/retail/dashboard';
-      else window.history.back();
+      window.location.href = errorInfo.path;
     } else {
       window.history.back()
     }

@@ -5,7 +5,8 @@ import {
   BarChart2, ShoppingCart, UserCheck, RefreshCw,
   LogOut, Inbox, ClipboardList, Database, Wallet, Settings, User,
   HelpCircle, ServerCog, FileText, Zap, Shield, ChevronDown, ChevronRight,
-  Receipt, Tag
+  Receipt, Tag, Archive, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight,
+  Store, Globe, Box
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
@@ -77,6 +78,7 @@ const NAV_ITEMS = [
     items: [
       { path: '/settings',               icon: <Settings size={18} />, label: 'Settings' },
       { path: '/developer-integrations', icon: <Zap size={18} />,     label: 'Developer & Integrations' },
+      { path: '/backups',                icon: <Archive size={18} />, label: 'Backup Data' },
     ]
   },
   {
@@ -106,7 +108,6 @@ const RETAIL_PATH_PERMISSIONS = {
   '/retail/units': 'master',
   '/retail/suppliers': 'master',
   '/retail/customers': 'master',
-  '/retail/expense-categories': 'master',
   '/retail/settings': 'master',
   '/retail/staff': 'staff',
   '/retail/roles': 'roles',
@@ -114,9 +115,11 @@ const RETAIL_PATH_PERMISSIONS = {
   '/retail/reports/products': 'reports',
   '/retail/reports/customers': 'reports',
   '/retail/finance/summary': 'finance',
+  '/retail/finance/incomes': 'finance',
   '/retail/finance/expenses': 'finance',
   '/retail/finance/payables': 'finance',
   '/retail/finance/receivables': 'finance',
+  '/retail/finance-categories': 'finance',
 }
 
 function filterNavByPermission(sections, user) {
@@ -139,7 +142,7 @@ const CATEGORY_COLORS = {
   'Budidaya Tanaman': '#84cc16',
   'Toko Retail':      '#3b82f6',
   'Jasa':             '#8b5cf6',
-  'Manufaktur':       '#f59e0b',
+  'Seller':           '#f59e0b',
 }
 
 // ─── Retail nav items ─────────────────────────────────────────────────────────
@@ -182,7 +185,6 @@ const RETAIL_NAV_ITEMS = [
       { path: '/retail/units',              icon: <Ruler size={24} />,   label: 'Satuan' },
       { path: '/retail/customers',          icon: <Users size={24} />,   label: 'Pelanggan' },
       { path: '/retail/suppliers',          icon: <Truck size={24} />,   label: 'Supplier' },
-      { path: '/retail/expense-categories', icon: <Wallet size={24} />,  label: 'Kategori Pengeluaran' },
     ]
   },
   {
@@ -207,9 +209,11 @@ const RETAIL_NAV_ITEMS = [
     icon: <Wallet size={20} />,
     items: [
       { path: '/retail/finance/summary',     icon: <BarChart2 size={24} />, label: 'Laba Rugi' },
-      { path: '/retail/finance/expenses',    icon: <Wallet size={24} />,    label: 'Pengeluaran' },
-      { path: '/retail/finance/payables',    icon: <Wallet size={24} />,    label: 'Hutang Supplier' },
-      { path: '/retail/finance/receivables', icon: <Wallet size={24} />,    label: 'Piutang Pelanggan' },
+      { path: '/retail/finance-categories',  icon: <Layers size={24} />,    label: 'Kategori Keuangan' },
+      { path: '/retail/finance/incomes',     icon: <TrendingUp size={24} />,    label: 'Pemasukan' },
+      { path: '/retail/finance/expenses',    icon: <TrendingDown size={24} />,    label: 'Pengeluaran' },
+      { path: '/retail/finance/payables',    icon: <ArrowDownLeft size={24} />,    label: 'Hutang Supplier' },
+      { path: '/retail/finance/receivables', icon: <ArrowUpRight size={24} />,    label: 'Piutang Pelanggan' },
     ]
   },
   {
@@ -246,6 +250,68 @@ const BUDIDAYA_NAV_ITEMS = [
   }
 ]
 
+// ─── Seller / Omnichannel nav items ───────────────────────────────────────────
+// Mirrors the tabs SellerApp.tsx's internal router actually recognizes
+// (frontend/src/apps/seller/repo/SellerApp.tsx) — every path here must match
+// one of the `p.includes(...)` branches there, or it silently fails to navigate.
+// There is no dedicated AI Insight route: the AI advisor is a drawer opened
+// from inside that app, not a page, so it's intentionally not listed here.
+const SELLER_NAV_ITEMS = [
+  {
+    section: 'Menu Utama',
+    icon: <LayoutDashboard size={20} />,
+    items: [
+      { path: '/seller/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' },
+      { path: '/seller/pos', icon: <CreditCard size={24} />, label: 'Kasir POS (Offline)' },
+    ]
+  },
+  {
+    section: 'Pesanan & E-Commerce',
+    icon: <ShoppingCart size={20} />,
+    items: [
+      { path: '/seller/orders', icon: <ShoppingCart size={24} />, label: 'Semua Pesanan' },
+    ]
+  },
+  {
+    section: 'Katalog & Gudang',
+    icon: <Package size={20} />,
+    items: [
+      { path: '/seller/products', icon: <Package size={24} />, label: 'Katalog Produk' },
+      { path: '/seller/inventory', icon: <Box size={24} />, label: 'Manajemen Gudang' },
+    ]
+  },
+  {
+    section: 'Keuangan',
+    icon: <Wallet size={20} />,
+    items: [
+      { path: '/seller/incomes', icon: <TrendingUp size={24} />, label: 'Pemasukan Lain' },
+      { path: '/seller/expenses', icon: <TrendingDown size={24} />, label: 'Pengeluaran' },
+      { path: '/seller/finance', icon: <BarChart2 size={24} />, label: 'Ringkasan Kas' },
+      { path: '/seller/sales-report', icon: <FileText size={24} />, label: 'Laporan Penjualan' },
+    ]
+  },
+  {
+    section: 'Master Data',
+    icon: <Database size={20} />,
+    items: [
+      { path: '/seller/suppliers', icon: <Truck size={24} />, label: 'Master Data & Integrasi' },
+      { path: '/seller/customers', icon: <Users size={24} />, label: 'Data Pelanggan' },
+      { path: '/seller/purchases', icon: <Truck size={24} />, label: 'Penerimaan Barang' },
+      { path: '/seller/stock-opname', icon: <ClipboardList size={24} />, label: 'Stock Opname' },
+    ]
+  },
+  {
+    section: 'Pengaturan',
+    icon: <Settings size={20} />,
+    items: [
+      { path: '/seller/settings/app', icon: <Store size={24} />, label: 'Pengaturan Aplikasi' },
+      { path: '/seller/settings/account', icon: <User size={24} />, label: 'Akun Saya' },
+      { path: '/seller/settings/roles', icon: <Shield size={24} />, label: 'Hak Akses & Peran' },
+      { path: '/seller/settings/users', icon: <Users size={24} />, label: 'Manajemen User' },
+    ]
+  }
+]
+
 // ─── Kuliner nav items ────────────────────────────────────────────────────────
 const KULINER_NAV_ITEMS = [
   {
@@ -267,6 +333,8 @@ const KULINER_NAV_ITEMS = [
     ]
   }
 ]
+
+
 
 // ─── Collapsed-rail flyout: plain text list, shown on click, hidden by
 // default. Needed because the collapsed rail has no room for labels and,
@@ -390,7 +458,8 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
     setOpenSection(null)
   }, [pathname])
 
-  const isRetail = pathname.startsWith('/retail')
+  const isPosPage = pathname === '/retail/pos' || pathname === '/seller/pos'
+  const isRetail = pathname.startsWith('/retail') || isPosPage
 
   // ── Retail: icon rail when collapsed, full sidebar when expanded ──
   // Admin: standard collapse behaviour
@@ -405,12 +474,14 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
     currentNavItems = [...NAV_ITEMS]
   } else {
     // ── When on a specific category route, show ONLY that category's nav ──
+    // Note: Seller has no branch here — /seller/* never renders this Sidebar
+    // (it's mounted outside DashboardLayout, see App.jsx), so a `pathname
+    // .startsWith('/seller')` case here would always be dead code.
     const isOnRetail   = pathname.startsWith('/retail')
     const isOnBudidaya = pathname.startsWith('/budidaya')
     const isOnKuliner  = pathname.startsWith('/kuliner')
     // Each category's own nav array already ships its own "Sistem & Paket"
     // section (support/subscription/profile) — track whether one was used so
-    // the generic "Akun & Bantuan" fallback below isn't appended on top of it.
     let hasCategoryNav = isOnRetail || isOnBudidaya || isOnKuliner
 
     if (isOnRetail) {
@@ -469,6 +540,10 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
         currentNavItems = [...currentNavItems, ...KULINER_NAV_ITEMS]
         hasCategoryNav = true
       }
+      if (user?.business_category === 'Seller') {
+        currentNavItems = [...currentNavItems, ...SELLER_NAV_ITEMS]
+        hasCategoryNav = true
+      }
     }
 
     // Only the true no-category dashboard needs this fallback — every
@@ -486,7 +561,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
     }
   }
 
-  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']
+  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','seller@demo.com']
   const isDemo = user?.email?.startsWith('demo-sandbox-') || user?.email?.startsWith('demo-kuliner-') || DEMO_EMAILS.includes(user?.email)
 
 
@@ -501,7 +576,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
           'sidebar',
           isMini           ? 'sidebar--collapsed'    : '',
           mobileOpen       ? 'sidebar--mobile-open'  : '',
-          isRetail         ? 'sidebar--retail'       : '',
+          pathname.startsWith('/retail') ? 'sidebar--retail'       : '',
         ].join(' ')}
         style={{ top: topOffset, height: `calc(100vh - ${topOffset})` }}
       >

@@ -7,7 +7,7 @@ export default function ComingSoon() {
   const navigate = useNavigate();
   const { logout, user, isImpersonating, exitImpersonate } = useAuth();
 
-  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com']
+  const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','seller@demo.com']
 
   const impersonating = isImpersonating && isImpersonating();
 

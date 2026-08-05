@@ -39,7 +39,7 @@ export default function DashboardLayout() {
   }, [pathname])
 
   // Leaving the page restores whatever collapsed/header state the user had.
-  const isPosPage = pathname === '/retail/pos'
+  const isPosPage = pathname === '/retail/pos' || pathname === '/seller/pos'
   const effectiveCollapsed = isPosPage ? true : collapsed
   const sidebarOffset = effectiveCollapsed ? 68 : 260
 
@@ -78,7 +78,7 @@ export default function DashboardLayout() {
             collapsed={effectiveCollapsed}
           />
         )}
-        <main className={`page-content ${pathname.startsWith('/retail') ? 'page-content--retail' : ''} ${isPosPage ? 'page-content--full' : ''}`}>
+        <main className={`page-content ${pathname.startsWith('/retail') || isPosPage ? 'page-content--retail' : ''} ${isPosPage ? 'page-content--full' : ''}`}>
           <SubscriptionLock status={user?.subscription_status} daysLeft={user?.subscription_days_left} />
           <Outlet context={{ onMenuToggle: () => {
             if (window.innerWidth < 768) setMobileOpen(v => !v)

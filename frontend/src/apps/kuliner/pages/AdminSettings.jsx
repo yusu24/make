@@ -206,6 +206,58 @@ const AdminSettings = () => {
                       </div>
                     </div>
 
+                    {/* FINANCIAL / TAX */}
+                    <div className="kd-panel">
+                      <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
+                        <span className="text-xl">💰</span>
+                        <h3 className="font-bold text-slate-800">Pajak & Biaya Tambahan</h3>
+                      </div>
+
+                      <div className="kd-form-group">
+                        <label className="kd-form-label flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={!!settings.enable_tax}
+                            onChange={e => setSettings({ ...settings, enable_tax: e.target.checked })}
+                          />
+                          Aktifkan Pajak & Service Charge
+                        </label>
+                        <p className="text-[10px] text-slate-400 mt-1">Jika aktif, pajak dan biaya ini akan dihitung otomatis saat transaksi Kasir (POS).</p>
+                      </div>
+
+                      {settings.enable_tax && (
+                        <div className="kd-form-row">
+                          <div className="kd-form-group">
+                            <label className="kd-form-label flex items-center gap-2">
+                              Besaran Pajak (PB1) %
+                            </label>
+                            <input 
+                              type="number" 
+                              className="kd-form-input"
+                              placeholder="10"
+                              value={settings.tax_rate ?? 10}
+                              onChange={e => setSettings({...settings, tax_rate: e.target.value})}
+                            />
+                            <p className="text-[10px] text-slate-400 mt-1">Standar pajak restoran (PB1) adalah 10%.</p>
+                          </div>
+                          
+                          <div className="kd-form-group">
+                            <label className="kd-form-label flex items-center gap-2">
+                              Service Charge %
+                            </label>
+                            <input 
+                              type="number" 
+                              className="kd-form-input"
+                              placeholder="0"
+                              value={settings.service_charge_rate ?? 0}
+                              onChange={e => setSettings({...settings, service_charge_rate: e.target.value})}
+                            />
+                            <p className="text-[10px] text-slate-400 mt-1">Biaya pelayanan restoran, jika tidak ada biarkan 0.</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* PROMO & MARKETING */}
                     <div className="kd-panel">
                       <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">

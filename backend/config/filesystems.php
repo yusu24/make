@@ -47,6 +47,19 @@ return [
             'report' => false,
         ],
 
+        // Local destination for spatie/laravel-backup, kept outside the
+        // public webroot and outside the 'local'/'public' disks used for
+        // app data so backup archives are never web-accessible.
+        'backups' => [
+            'driver' => 'local',
+            'root' => storage_path('app/backups'),
+            'throw' => false,
+            'report' => false,
+        ],
+
+        // S3-compatible offsite target (works as-is for DigitalOcean Spaces,
+        // Cloudflare R2, AWS S3, etc. — just fill in the AWS_* env vars).
+        // Add 's3' to config/backup.php's destination.disks once configured.
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

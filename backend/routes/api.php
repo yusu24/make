@@ -139,10 +139,10 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::put('units/{id}', [RetailMasterController::class, 'updateUnit']);
                 Route::delete('units/{id}', [RetailMasterController::class, 'destroyUnit']);
 
-                Route::get('expense-categories', [RetailMasterController::class, 'getExpenseCategories']);
-                Route::post('expense-categories', [RetailMasterController::class, 'storeExpenseCategory']);
-                Route::put('expense-categories/{id}', [RetailMasterController::class, 'updateExpenseCategory']);
-                Route::delete('expense-categories/{id}', [RetailMasterController::class, 'destroyExpenseCategory']);
+                Route::get('finance-categories', [RetailMasterController::class, 'getFinanceCategories']);
+                Route::post('finance-categories', [RetailMasterController::class, 'storeFinanceCategory']);
+                Route::put('finance-categories/{id}', [RetailMasterController::class, 'updateFinanceCategory']);
+                Route::delete('finance-categories/{id}', [RetailMasterController::class, 'destroyFinanceCategory']);
 
                 Route::get('settings', [RetailMasterController::class, 'getSettings']);
                 Route::put('settings', [RetailMasterController::class, 'updateSettings']);
@@ -174,6 +174,8 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::post('products', [RetailProductController::class, 'store']);
                 Route::put('products/{id}', [RetailProductController::class, 'update']);
                 Route::delete('products/{id}', [RetailProductController::class, 'destroy']);
+                Route::post('products/{id}/image', [RetailProductController::class, 'uploadImage']);
+                Route::delete('products/{id}/image', [RetailProductController::class, 'deleteImage']);
             });
 
             // Stock & audit trail (inventory)
@@ -242,6 +244,11 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::post('finance/expenses', [\App\Http\Controllers\Api\RetailFinanceController::class, 'store']);
                 Route::put('finance/expenses/{id}', [\App\Http\Controllers\Api\RetailFinanceController::class, 'update']);
                 Route::delete('finance/expenses/{id}', [\App\Http\Controllers\Api\RetailFinanceController::class, 'destroy']);
+
+                Route::get('finance/incomes', [\App\Http\Controllers\Api\RetailFinanceController::class, 'getIncomes']);
+                Route::post('finance/incomes', [\App\Http\Controllers\Api\RetailFinanceController::class, 'storeIncome']);
+                Route::put('finance/incomes/{id}', [\App\Http\Controllers\Api\RetailFinanceController::class, 'updateIncome']);
+                Route::delete('finance/incomes/{id}', [\App\Http\Controllers\Api\RetailFinanceController::class, 'destroyIncome']);
 
                 Route::get('payables', [\App\Http\Controllers\Api\Retail\RetailPayableController::class, 'index']);
                 Route::post('payables', [\App\Http\Controllers\Api\Retail\RetailPayableController::class, 'store']);
@@ -329,6 +336,8 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::delete('harvests/{id}', [\App\Http\Controllers\Api\Budidaya\HarvestController::class, 'destroy']);
 
             // Finance
+            Route::get('finance/summary', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'getSummary']);
+            Route::get('finance/ledger', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'getLedger']);
             Route::apiResource('expenses', \App\Http\Controllers\Api\Budidaya\FinanceController::class)->except(['show']);
             
             // Legacy / Helper endpoints
@@ -356,11 +365,25 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::put('staff/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'updateStaff']);
             Route::delete('staff/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'destroyStaff']);
             
-            // Orders
+            // Orders & Finance
             Route::get('orders', [\App\Http\Controllers\Api\KulinerController::class, 'getOrders']);
             Route::patch('orders/{id}/status', [\App\Http\Controllers\Api\KulinerController::class, 'updateOrderStatus']);
             Route::get('ledger', [\App\Http\Controllers\Api\KulinerController::class, 'getLedger']);
+            
+            // Finance Categories
+            Route::get('finance-categories', [\App\Http\Controllers\Api\KulinerController::class, 'getFinanceCategories']);
+            Route::post('finance-categories', [\App\Http\Controllers\Api\KulinerController::class, 'storeFinanceCategory']);
+            Route::put('finance-categories/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'updateFinanceCategory']);
+            Route::delete('finance-categories/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'destroyFinanceCategory']);
+            
+            // Expenses
+            Route::get('expenses', [\App\Http\Controllers\Api\KulinerController::class, 'getExpenses']);
             Route::post('expenses', [\App\Http\Controllers\Api\KulinerController::class, 'storeExpense']);
+            Route::put('expenses/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'updateExpense']);
+            Route::delete('expenses/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'destroyExpense']);
+            
+            Route::get('finance/summary', [\App\Http\Controllers\Api\KulinerController::class, 'getFinanceSummary']);
+            
             Route::get('dashboard/stats', [\App\Http\Controllers\Api\KulinerController::class, 'getDashboardStats']);
             Route::get('analytics', [\App\Http\Controllers\Api\KulinerController::class, 'getAnalytics']);
             Route::post('ai-insights', [\App\Http\Controllers\Api\KulinerController::class, 'getAiInsights']);
@@ -475,6 +498,11 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::get('stats', [DashboardController::class, 'stats']);
         Route::post('tenants/{tenant_id}/impersonate', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonateUser']);
 
+        // Backups
+        Route::get('backups', [\App\Http\Controllers\Api\BackupController::class, 'index']);
+        Route::post('backups/run', [\App\Http\Controllers\Api\BackupController::class, 'run']);
+        Route::get('backups/download', [\App\Http\Controllers\Api\BackupController::class, 'download']);
+
         // Developer & Integrations
         Route::get('developer/api-keys', [\App\Http\Controllers\Api\DeveloperIntegrationController::class, 'indexKeys']);
         Route::post('developer/api-keys', [\App\Http\Controllers\Api\DeveloperIntegrationController::class, 'storeKey']);
@@ -513,6 +541,16 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::put('announcements/{announcement}', [\App\Http\Controllers\Api\AnnouncementController::class, 'update']);
         Route::delete('announcements/{announcement}', [\App\Http\Controllers\Api\AnnouncementController::class, 'destroy']);
         Route::patch('announcements/{announcement}/toggle-publish', [\App\Http\Controllers\Api\AnnouncementController::class, 'togglePublish']);
+    });
+
+    // =========================================================================
+    // SELLER MODULE ROUTES
+    // =========================================================================
+    Route::prefix('seller')->group(function () {
+        Route::get('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'index']);
+        Route::post('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'store']);
+        Route::put('warehouses/{id}', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'update']);
+        Route::delete('warehouses/{id}', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'destroy']);
     });
 });
 

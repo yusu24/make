@@ -11,7 +11,7 @@ use App\Models\RetailUnit;
 use App\Models\RetailProduct;
 use App\Models\RetailSupplier;
 use App\Models\RetailCustomer;
-use App\Models\RetailExpenseCategory;
+use App\Models\RetailFinanceCategory;
 use App\Models\RetailExpense;
 use App\Models\RetailSetting;
 use App\Models\RetailRole;
@@ -58,6 +58,8 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Budidaya Hewan',    'slug' => 'budidaya-hewan',    'description' => 'Pemantauan kandang/kolam & siklus panen',          'icon' => '🐟', 'color' => '#10b981', 'sort_order' => 2],
             ['name' => 'Budidaya Tanaman', 'slug' => 'budidaya-tanaman', 'description' => 'Pemantauan lahan pertanian & siklus tanam',    'icon' => '🌱', 'color' => '#84cc16', 'sort_order' => 3],
             ['name' => 'Kuliner',          'slug' => 'kuliner',          'description' => 'Manajemen restoran & kasir digital',            'icon' => '🍱', 'color' => '#ef4444', 'sort_order' => 5],
+            ['name' => 'Jasa',             'slug' => 'jasa',             'description' => 'Pemesanan layanan & jadwal service',             'icon' => '🛠️', 'color' => '#8b5cf6', 'sort_order' => 4],
+            ['name' => 'Seller',           'slug' => 'seller',           'description' => 'Manajemen omnichannel commerce',                'icon' => '🌐', 'color' => '#f59e0b', 'sort_order' => 6],
         ];
 
         foreach ($categories as $cat) {
@@ -162,14 +164,14 @@ class DatabaseSeeder extends Seeder
         }
         $this->command->info('Ã¢Å“â€¦ Jasa demo accounts seeded.');
 
-        // --- MANUFAKTUR ---
-        $manufakturTenants = [
-            ['email' => 'manufaktur@demo.com', 'name' => 'Hendra Manufaktur Demo', 'tenant_id' => 'TN-MANUFAKTUR'],
+        // --- SELLER ---
+        $sellerTenants = [
+            ['email' => 'seller@demo.com', 'name' => 'Hendra Seller Demo', 'tenant_id' => 'TN-SELLER'],
         ];
-        foreach ($manufakturTenants as $mt) {
-            $this->createDemoTenant($mt['email'], $mt['name'], 'manufaktur', $mt['tenant_id']);
+        foreach ($sellerTenants as $st) {
+            $this->createDemoTenant($st['email'], $st['name'], 'seller', $st['tenant_id']);
         }
-        $this->command->info('Ã¢Å“â€¦ Manufaktur demo accounts seeded.');
+        $this->command->info('Ã¢Å“â€¦ Seller demo accounts seeded.');
 
         $this->command->info('Ã°Å¸Å¡â‚¬ All Category Demo Accounts Seeded Successfully!');
         
@@ -307,8 +309,8 @@ class DatabaseSeeder extends Seeder
         $expenseCats = ['Operasional Toko', 'Gaji Karyawan', 'Sewa Tempat', 'Listrik & Air', 'Lain-lain'];
         $expenseCatModels = [];
         foreach ($expenseCats as $ec) {
-            $expenseCatModels[$ec] = RetailExpenseCategory::updateOrCreate(
-                ['tenant_id' => $tenantId, 'name' => $ec]
+            $expenseCatModels[$ec] = RetailFinanceCategory::updateOrCreate(
+                ['tenant_id' => $tenantId, 'name' => $ec, 'type' => 'expense']
             );
         }
 

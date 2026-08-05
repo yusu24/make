@@ -8,7 +8,7 @@ import ClientPagination from '../components/ClientPagination';
 import CurrencyInput from '../../../components/CurrencyInput';
 import './KulinerDashboard.css';
 
-const formatRp = (v) => `Rp ${Number(v || 0).toLocaleString('id-ID')}`;
+const formatRp = (v) => `Rp ${Math.round(Number(v || 0)).toLocaleString('id-ID')}`;
 
 export default function Shift() {
   const { t } = useTranslation();

@@ -13,7 +13,7 @@ const RetailDashboard = lazy(() => import('../apps/retail/pages/Dashboard'));
 const RetailProducts = lazy(() => import('../apps/retail/pages/Products'));
 const RetailPos = lazy(() => import('../apps/retail/pages/Pos'));
 const RetailCategories = lazy(() => import('../apps/retail/pages/Categories'));
-const RetailExpenseCategories = lazy(() => import('../apps/retail/pages/ExpenseCategories'));
+const RetailFinanceCategories = lazy(() => import('../apps/retail/pages/FinanceCategories'));
 const RetailSuppliers = lazy(() => import('../apps/retail/pages/Suppliers'));
 const RetailCustomers = lazy(() => import('../apps/retail/pages/Customers'));
 const RetailStaff = lazy(() => import('../apps/retail/pages/Staff'));
@@ -26,6 +26,7 @@ const RetailStockEntry = lazy(() => import('../apps/retail/pages/StockEntry'));
 const RetailUnits = lazy(() => import('../apps/retail/pages/Units'));
 const RetailInventory = lazy(() => import('../apps/retail/pages/Inventory'));
 const RetailFinanceSummary = lazy(() => import('../apps/retail/pages/FinanceSummary'));
+const RetailIncomes = lazy(() => import('../apps/retail/pages/Incomes'));
 const RetailExpenses = lazy(() => import('../apps/retail/pages/Expenses'));
 const TenantSupportCenter = lazy(() => import('../pages/TenantSupportCenter'));
 const RetailProfile = lazy(() => import('../apps/retail/pages/Profile'));
@@ -56,7 +57,7 @@ const retailRoutes = (
     <Route path="units" element={<RetailUnits />} />
     <Route path="suppliers" element={<RetailSuppliers />} />
     <Route path="customers" element={<RetailCustomers />} />
-    <Route path="expense-categories" element={<RetailExpenseCategories />} />
+    <Route path="finance-categories" element={<RetailFinanceCategories />} />
     <Route path="staff" element={<RetailStaff />} />
     <Route path="roles" element={<RetailRoles />} />
     <Route path="subscription" element={<RetailSubscription />} />
@@ -83,6 +84,7 @@ const retailRoutes = (
     <Route path="finance">
       <Route index element={<Navigate to="summary" replace />} />
       <Route path="summary" element={<RetailFinanceSummary />} />
+      <Route path="incomes" element={<RetailIncomes />} />
       <Route path="expenses" element={<RetailExpenses />} />
       <Route path="payables" element={<RetailPayables />} />
       <Route path="receivables" element={<RetailReceivables />} />

@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Models\RetailProduct;
 
@@ -29,7 +30,11 @@ class RetailProductController extends Controller {
     ];
 
     public function index(Request $request) {
-        return response()->json(RetailProduct::with('supplier')->latest()->get());
+        $products = RetailProduct::with('supplier')->latest()->get();
+        $products->each(function ($product) {
+            $product->image_url = $product->image_path ? asset('storage/' . $product->image_path) : null;
+        });
+        return response()->json($products);
     }
 
     public function store(Request $request) {
@@ -67,5 +72,36 @@ class RetailProductController extends Controller {
     public function destroy(Request $request, $id) {
         RetailProduct::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
+    }
+
+    public function uploadImage(Request $request, $id) {
+        $product = RetailProduct::findOrFail($id);
+
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+        ]);
+
+        if ($product->image_path) {
+            Storage::disk('public')->delete($product->image_path);
+        }
+
+        $path = $request->file('image')->store('retail/products', 'public');
+        $product->update(['image_path' => $path]);
+
+        return response()->json([
+            'image_path' => $path,
+            'image_url'  => asset('storage/' . $path),
+        ]);
+    }
+
+    public function deleteImage(Request $request, $id) {
+        $product = RetailProduct::findOrFail($id);
+
+        if ($product->image_path) {
+            Storage::disk('public')->delete($product->image_path);
+            $product->update(['image_path' => null]);
+        }
+
+        return response()->json(['message' => 'Foto produk dihapus']);
     }
 }

@@ -11,6 +11,8 @@ const getNavItems = (terms) => [
   { label: 'Manajemen Pengguna',  icon: 'group',         path: '/budidaya/users'     },
   { label: 'Peran & Izin',        icon: 'verified_user', path: '/budidaya/roles'     },
   { label: 'Laporan & Analisa',   icon: 'bar_chart',     path: '/budidaya/reports'   },
+  { label: 'Laba Rugi',           icon: 'trending_up',   path: '/budidaya/finance-summary' },
+  { label: 'Pengeluaran',         icon: 'payments',      path: '/budidaya/expenses' },
   { label: 'Paket Langganan',     icon: 'credit_card',   path: '/budidaya/subscription' },
   { label: 'Pusat Bantuan',       icon: 'help',          path: '/budidaya/support'   },
   { label: 'Pengaturan Profil',   icon: 'settings',      path: '/budidaya/settings'  },

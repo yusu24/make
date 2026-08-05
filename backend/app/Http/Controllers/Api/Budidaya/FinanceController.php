@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\BudidayaExpense;
 use App\Models\BudidayaCycle;
+use App\Models\BudidayaHarvest;
 
 class FinanceController extends Controller
 {
@@ -88,5 +89,86 @@ class FinanceController extends Controller
         ]);
 
         return response()->json(['message' => 'Pengeluaran berhasil diperbarui', 'data' => $expense]);
+    }
+
+    public function getSummary(Request $request)
+    {
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $startDate = $request->query('startDate');
+        $endDate = $request->query('endDate');
+
+        $harvestQuery = BudidayaHarvest::whereHas('cycle', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        });
+        
+        $expenseQuery = BudidayaExpense::where('tenant_id', $tenantId);
+
+        if ($startDate && $endDate) {
+            $harvestQuery->whereBetween('harvest_date', [$startDate, $endDate]);
+            $expenseQuery->whereBetween('date', [$startDate, $endDate]);
+        }
+
+        $totalSales = $harvestQuery->sum('total_revenue');
+        $totalExpenses = $expenseQuery->sum('amount');
+
+        return response()->json([
+            'total_sales' => $totalSales,
+            'total_expenses' => $totalExpenses,
+            'profit' => $totalSales - $totalExpenses
+        ]);
+    }
+
+    public function getLedger(Request $request)
+    {
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $startDate = $request->query('startDate');
+        $endDate = $request->query('endDate');
+
+        $harvestQuery = BudidayaHarvest::whereHas('cycle', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        })->with(['cycle.pond']);
+        
+        $expenseQuery = BudidayaExpense::where('tenant_id', $tenantId)->with(['cycle.pond']);
+
+        if ($startDate && $endDate) {
+            $harvestQuery->whereBetween('harvest_date', [$startDate, $endDate]);
+            $expenseQuery->whereBetween('date', [$startDate, $endDate]);
+        } else {
+            $harvestQuery->limit(500);
+            $expenseQuery->limit(500);
+        }
+
+        $harvests = $harvestQuery->orderBy('harvest_date', 'desc')->get()->map(function ($h) {
+            return [
+                'id' => 'HAR-' . $h->id,
+                'original_id' => $h->id,
+                'type' => 'income',
+                'date' => $h->harvest_date,
+                'category' => 'Panen',
+                'description' => 'Panen Kolam: ' . ($h->cycle->pond->name ?? 'N/A') . ($h->notes ? ' - ' . $h->notes : ''),
+                'amount' => $h->total_revenue,
+                'status' => 'completed',
+                'raw_data' => $h
+            ];
+        });
+
+        $expenses = $expenseQuery->orderBy('date', 'desc')->get()->map(function ($e) {
+            $pondName = $e->cycle ? ($e->cycle->pond->name ?? 'N/A') : 'Umum';
+            return [
+                'id' => 'EXP-' . $e->id,
+                'original_id' => $e->id,
+                'type' => 'expense',
+                'date' => $e->date,
+                'category' => $e->category,
+                'description' => $e->notes ? $e->notes . " ($pondName)" : "Pengeluaran ($pondName)",
+                'amount' => $e->amount,
+                'status' => 'completed',
+                'raw_data' => $e
+            ];
+        });
+
+        $ledger = $harvests->concat($expenses)->sortByDesc('date')->values();
+        
+        return response()->json($ledger);
     }
 }

@@ -70,7 +70,7 @@ export default function Waste() {
     }
   };
 
-  const formatRp = (v) => `Rp ${Number(v || 0).toLocaleString('id-ID')}`;
+  const formatRp = (v) => `Rp ${Math.round(Number(v || 0)).toLocaleString('id-ID')}`;
 
   return (
     <KulinerAdminLayout>
@@ -112,7 +112,7 @@ export default function Waste() {
                       <td><div style={{ color: '#1e293b' }}>{w.ingredient?.name}</div></td>
                       <td>{w.quantity} {w.ingredient?.unit}</td>
                       <td>{REASON_LABEL[w.reason] || w.reason}</td>
-                      <td style={{ color: '#ef4444', fontWeight: 700 }}>{formatRp(w.value_lost)}</td>
+                      <td style={{ color: '#000', fontWeight: 700 }}>{formatRp(w.value_lost)}</td>
                       <td className="text-right">
                         <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(w)}><Trash2 size={16} /></button>
                       </td>

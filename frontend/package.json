@@ -10,11 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^2.15.0",
     "@material-tailwind/react": "^2.1.10",
     "@radix-ui/react-slot": "^1.2.4",
     "axios": "^1.15.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.11.0",
+    "motion": "^12.43.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

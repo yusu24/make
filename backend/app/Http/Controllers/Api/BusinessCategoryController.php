@@ -20,6 +20,7 @@ class BusinessCategoryController extends Controller
                 'id', 'name', 'slug', 'icon', 'color',
                 'description', 'features_list',
                 'promo_active', 'promo_text', 'discount_pct',
+                'headline', 'badge', 'stats',
             ]);
         return response()->json(['success' => true, 'data' => $categories]);
     }
@@ -43,6 +44,9 @@ class BusinessCategoryController extends Controller
             'discount_pct' => 'nullable|integer|min:0|max:100',
             'promo_active' => 'nullable|boolean',
             'features_list' => 'nullable|array',
+            'headline'     => 'nullable|string|max:255',
+            'badge'        => 'nullable|string|max:100',
+            'stats'        => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -60,6 +64,9 @@ class BusinessCategoryController extends Controller
             'discount_pct' => $request->discount_pct ?? 0,
             'promo_active' => $request->promo_active ?? false,
             'features_list' => $request->features_list,
+            'headline'     => $request->headline,
+            'badge'        => $request->badge,
+            'stats'        => $request->stats,
         ]);
 
         ActivityLog::record('create_category', 'Kategori: ' . $category->name, 'success');
@@ -80,6 +87,9 @@ class BusinessCategoryController extends Controller
             'discount_pct' => $request->has('discount_pct') ? $request->discount_pct : $businessCategory->discount_pct,
             'promo_active' => $request->has('promo_active') ? $request->promo_active : $businessCategory->promo_active,
             'features_list' => $request->has('features_list') ? $request->features_list : $businessCategory->features_list,
+            'headline'     => $request->has('headline') ? $request->headline : $businessCategory->headline,
+            'badge'        => $request->has('badge') ? $request->badge : $businessCategory->badge,
+            'stats'        => $request->has('stats') ? $request->stats : $businessCategory->stats,
         ]);
 
         ActivityLog::record('edit_category', 'Kategori: ' . $businessCategory->name, 'info');

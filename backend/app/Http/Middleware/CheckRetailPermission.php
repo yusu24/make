@@ -18,7 +18,7 @@ class CheckRetailPermission
         $user = $request->user();
 
         // Tenant owner account and platform super admin always have full access.
-        if (!$user || in_array($user->role, ['customer', 'super_admin'])) {
+        if (!$user || in_array($user->role, ['customer', 'super_admin', 'admin', 'tenant'])) {
             return $next($request);
         }
 

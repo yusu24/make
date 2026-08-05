@@ -22,20 +22,27 @@ export default function Profile() {
   const [showNewPass, setShowNewPass] = useState(false)
   const [showConfPass, setShowConfPass] = useState(false)
 
+  // Scrolls to top so the status banner (rendered near the top of the page,
+  // above the "Ubah Password" card) is actually visible — otherwise saving
+  // while scrolled down to the password form goes unnoticed.
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true); setMsg(''); setError('')
     try {
       await api.put('/profile', { name: form.name, email: form.email })
       setMsg('Profil berhasil diperbarui!')
+      scrollToTop()
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal memperbarui profil')
+      scrollToTop()
     } finally { setSaving(false) }
   }
 
   const handleChangePass = async (e) => {
     e.preventDefault()
-    if (form.new_password !== form.new_password_confirmation) { setError('Konfirmasi password tidak cocok'); return }
+    if (form.new_password !== form.new_password_confirmation) { setError('Konfirmasi password tidak cocok'); scrollToTop(); return }
     setSaving(true); setMsg(''); setError('')
     try {
       await api.put('/profile/password', {
@@ -45,8 +52,10 @@ export default function Profile() {
       })
       setMsg('Password berhasil diubah!')
       setForm(f => ({...f, current_password:'', new_password:'', new_password_confirmation:''}))
+      scrollToTop()
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal mengubah password')
+      scrollToTop()
     } finally { setSaving(false) }
   }
 
@@ -171,7 +180,7 @@ export default function Profile() {
             <p style={{fontSize:12,color:'var(--text-muted)'}}>Anda akan keluar dari semua session aktif</p>
           </div>
            <button id="btn-logout-profile" className="btn btn-danger btn-sm" onClick={() => {
-            const demoEmails = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','manufaktur@demo.com'];
+            const demoEmails = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','seller@demo.com'];
             const isDemo = user?.email?.startsWith('demo-sandbox-') || user?.email?.startsWith('demo-kuliner-') || demoEmails.includes(user?.email);
             logout();
             navigate(isDemo ? '/' : '/login');

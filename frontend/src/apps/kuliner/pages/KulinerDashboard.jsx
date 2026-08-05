@@ -230,6 +230,7 @@ const KulinerDashboard = () => {
                       <tr>
                         <th>Order ID</th>
                         <th>Pelanggan</th>
+                        <th>Kontak</th>
                         <th>Total</th>
                         <th>Status</th>
                         <th className="kd-col-waktu">Waktu</th>
@@ -239,12 +240,14 @@ const KulinerDashboard = () => {
                     <tbody>
                       {stats?.recent_orders?.map((order) => (
                         <tr key={order.id}>
-                          <td><span className="font-medium text-[#b48c36]">{order.order_number}</span></td>
-                          <td>
-                            <div className="kd-menu-name">{order.customer_name}</div>
-                            <div className="text-[10px] text-slate-400">{order.customer_phone}</div>
-                          </td>
-                          <td>{formatRp(order.total_amount)}</td>
+                            <td><span className="font-medium text-[#b48c36]">{order.order_number}</span></td>
+                            <td>
+                              <div className="kd-menu-name" style={{ marginBottom: 0 }}>{order.customer_name}</div>
+                            </td>
+                            <td>
+                              <div className="text-xs text-slate-500">{order.customer_phone || '-'}</div>
+                            </td>
+                            <td>{formatRp(order.total_amount)}</td>
                           <td><span className={`kd-status-badge ${getOrderStatusBadgeClass(order.status)}`}>{order.status}</span></td>
                           <td className="kd-col-waktu">{new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
                           <td className="text-right">

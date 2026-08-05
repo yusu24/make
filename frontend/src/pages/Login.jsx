@@ -41,6 +41,8 @@ export default function Login() {
           navigate('/kuliner/admin')
         } else if (userData.business_category === 'Budidaya Hewan' || userData.business_category === 'Budidaya Tanaman') {
           navigate('/budidaya/dashboard')
+        } else if (userData.business_category === 'Seller') {
+          navigate('/seller/dashboard')
         } else {
           navigate('/coming-soon')
         }

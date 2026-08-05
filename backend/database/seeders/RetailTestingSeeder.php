@@ -12,7 +12,7 @@ class RetailTestingSeeder extends Seeder
 {
     public function run()
     {
-        $tenant = Tenant::first();
+        $tenant = Tenant::where('name', 'like', '%Demo Seller%')->first();
         if (!$tenant) {
             echo "No tenant found. Please create one first.\n";
             return;

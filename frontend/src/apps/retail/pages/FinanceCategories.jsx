@@ -8,15 +8,17 @@ import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import { Edit3, Trash2 } from 'lucide-react';
 
 
-export default function ExpenseCategories() {
+export default function FinanceCategories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState(null);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('income'); // 'income' or 'expense'
 
   const fetchCategories = async () => {
     try {
-      const res = await api.get('/retail/expense-categories');
+      setLoading(true);
+      const res = await api.get(`/retail/finance-categories?type=${activeTab}`);
       setCategories(res.data);
     } catch (e) {
       console.error(e);
@@ -25,17 +27,17 @@ export default function ExpenseCategories() {
     }
   };
 
-  useEffect(() => { fetchCategories(); }, []);
+  useEffect(() => { fetchCategories(); }, [activeTab]);
 
   const addCategory = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
     try { 
-      await api.post('/retail/expense-categories', { name: fd.get('name') });
+      await api.post('/retail/finance-categories', { name: fd.get('name'), type: activeTab });
       fetchCategories();
       e.target.reset();
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menambah kategori pengeluaran');
+      alert(e.response?.data?.message || 'Gagal menambah kategori');
     }
   };
 
@@ -43,11 +45,11 @@ export default function ExpenseCategories() {
     e.preventDefault();
     const fd = new FormData(e.target);
     try {
-      await api.put(`/retail/expense-categories/${editingCategory.id}`, { name: fd.get('name') });
+      await api.put(`/retail/finance-categories/${editingCategory.id}`, { name: fd.get('name'), type: editingCategory.type });
       fetchCategories();
       setEditingCategory(null);
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menyimpan perubahan kategori pengeluaran');
+      alert(e.response?.data?.message || 'Gagal menyimpan perubahan');
     }
   };
 
@@ -69,7 +71,21 @@ export default function ExpenseCategories() {
 
   return (
     <div className="retail-page-classic">
-      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
+      <div className="page-header" style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button 
+            className={`btn ${activeTab === 'income' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setActiveTab('income')}
+          >
+            Pemasukan
+          </button>
+          <button 
+            className={`btn ${activeTab === 'expense' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setActiveTab('expense')}
+          >
+            Pengeluaran
+          </button>
+        </div>
       </div>
 
       {/* Table Section (Unified Style) */}
@@ -86,7 +102,7 @@ export default function ExpenseCategories() {
              <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
                 <input
                   name="name"
-                  placeholder="Kategori pengeluaran baru..."
+                  placeholder={`Kategori ${activeTab === 'income' ? 'pemasukan' : 'pengeluaran'} baru...`}
                   required
                 />
              </div>
@@ -108,7 +124,7 @@ export default function ExpenseCategories() {
             {loading ? (
                <RetailTableLoadingRow colSpan={3} text="Menyinkronkan Kategori..." />
             ) : filteredCategories.length === 0 ? (
-               <tr><td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada master kategori pengeluaran.</td></tr>
+               <tr><td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada master kategori {activeTab === 'income' ? 'pemasukan' : 'pengeluaran'}.</td></tr>
             ) : (
               paginatedData.map(c => (
                 <tr key={c.id}>
@@ -121,7 +137,7 @@ export default function ExpenseCategories() {
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
                       <button className="btn btn-sm btn-ghost" onClick={() => setEditingCategory(c)}><Edit3 size={14} /></button>
-                      <button className="btn btn-sm btn-ghost" style={{ color: 'var(--danger-600)' }} onClick={async () => { if(confirm('Hapus kategori ini? Data pengeluaran lama tidak akan kehilangan label teksnya.')) { await api.delete(`/retail/expense-categories/${c.id}`); fetchCategories(); } }}><Trash2 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost" style={{ color: 'var(--danger-600)' }} onClick={async () => { if(confirm('Hapus kategori ini? Data lama tidak akan kehilangan label teksnya.')) { await api.delete(`/retail/finance-categories/${c.id}`); fetchCategories(); } }}><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -144,7 +160,7 @@ export default function ExpenseCategories() {
       <Modal 
         isOpen={!!editingCategory} 
         onClose={() => setEditingCategory(null)}
-        title="Edit Kategori Pengeluaran"
+        title={`Edit Kategori ${editingCategory?.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}`}
       >
         <form onSubmit={handleUpdate} style={{ display:'flex', flexDirection:'column', gap: 20 }}>
           <div className="form-group">

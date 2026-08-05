@@ -1,30 +1,17 @@
 import { useState } from 'react'
 import { HelpCircle, ChevronDown } from 'lucide-react'
 
-const FAQS = [
-  {
-    q: 'Apakah Bizora tetap bisa digunakan jika toko/tambak saya susah sinyal internet?',
-    a: 'Ya, tentu saja! Bizora dilengkapi teknologi Offline-First. Semua transaksi kasir, pencatatan pakan, dan pemupukan tetap tersimpan di memori HP Anda saat offline, dan akan otomatis tersinkronisasi ke server cloud begitu koneksi internet terhubung kembali.',
-  },
-  {
-    q: 'Apakah saya wajib membeli mesin kasir atau printer mahal?',
-    a: 'Tidak perlu! Bizora dapat dijalankan di HP Android, iPhone, Tablet, maupun Laptop yang sudah Anda miliki. Anda cukup menyambungkan ke printer thermal Bluetooth murah (mulai dari Rp 100 ribuan) jika ingin mencetak struk fisik.',
-  },
-  {
-    q: 'Bagaimana jika perangkat HP saya rusak atau hilang?',
-    a: 'Seluruh data transaksi dan stok Anda tersimpan aman secara terenkripsi di Cloud server Bizora. Jika HP Anda rusak, Anda tinggal login dengan akun Anda di HP baru, dan seluruh data akan langsung muncul kembali tanpa hilang.',
-  },
-  {
-    q: 'Apakah saya bisa mengimpor data barang dari file Excel lama saya?',
-    a: 'Sangat bisa! Bizora menyediakan template impor Excel sederhana. Anda bisa langsung mengunggah ribuan nama produk, harga, dan jumlah stok hanya dalam hitungan detik.',
-  },
-  {
-    q: 'Apakah saya bisa mengelola lebih dari 1 jenis bisnis (misal: Toko Retail sekaligus Kolam Ikan)?',
-    a: 'Bisa! Dengan 1 akun Bizora, Anda dapat berpindah antar sektor usaha dengan sangat mudah melalui menu ganti profil bisnis di dashboard.',
-  },
+// Used only if settings.faq_items hasn't loaded / is empty (e.g. API error).
+const DEFAULT_FAQS = [
+  { q: 'Apakah saya bisa akses Bizora dari beberapa perangkat sekaligus?', a: 'Bisa! Karena berbasis cloud, Anda tinggal login dari HP, tablet, atau laptop kapan saja dan datanya selalu tersinkron real-time antar perangkat — tidak perlu install aplikasi khusus, cukup buka browser. Saat ini Bizora membutuhkan koneksi internet aktif untuk mencatat transaksi.' },
+  { q: 'Apakah saya wajib membeli mesin kasir atau printer mahal?', a: 'Tidak perlu! Bizora dapat dijalankan di HP Android, iPhone, Tablet, maupun Laptop yang sudah Anda miliki. Anda cukup menyambungkan ke printer thermal Bluetooth murah (mulai dari Rp 100 ribuan) jika ingin mencetak struk fisik.' },
+  { q: 'Bagaimana jika perangkat HP saya rusak atau hilang?', a: 'Seluruh data transaksi dan stok Anda tersimpan aman secara terenkripsi di Cloud server Bizora. Jika HP Anda rusak, Anda tinggal login dengan akun Anda di HP baru, dan seluruh data akan langsung muncul kembali tanpa hilang.' },
+  { q: 'Apakah saya bisa mengimpor data barang dari file Excel lama saya?', a: 'Sangat bisa! Bizora menyediakan template impor Excel sederhana. Anda bisa langsung mengunggah ribuan nama produk, harga, dan jumlah stok hanya dalam hitungan detik.' },
+  { q: 'Apakah saya bisa mengelola lebih dari 1 jenis bisnis (misal: Toko Retail sekaligus Kolam Ikan)?', a: 'Bisa! Dengan 1 akun Bizora, Anda dapat berpindah antar sektor usaha dengan sangat mudah melalui menu ganti profil bisnis di dashboard.' },
 ]
 
-export default function FaqSection() {
+export default function FaqSection({ faqs }) {
+  const items = faqs?.length ? faqs : DEFAULT_FAQS
   const [openIdx, setOpenIdx] = useState(0)
 
   return (
@@ -42,10 +29,10 @@ export default function FaqSection() {
         </div>
 
         <div className="space-y-3">
-          {FAQS.map((faq, i) => {
+          {items.map((faq, i) => {
             const isOpen = openIdx === i
             return (
-              <div key={faq.q} className="bg-slate-50 border border-slate-200/80 rounded-xl overflow-hidden transition-all shadow-sm">
+              <div key={faq.q || i} className="bg-slate-50 border border-slate-200/80 rounded-xl overflow-hidden transition-all shadow-sm">
                 <button
                   onClick={() => setOpenIdx(isOpen ? null : i)}
                   className="w-full text-left p-5 flex items-center justify-between text-sm font-bold text-slate-900 hover:text-emerald-700 transition-colors cursor-pointer gap-4"

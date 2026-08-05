@@ -6,6 +6,7 @@ import KulinerAdminLayout from '../apps/kuliner/components/KulinerAdminLayout';
 
 const KulinerAdminMenu = lazy(() => import('../apps/kuliner/pages/AdminMenu'));
 const KulinerAdminSettings = lazy(() => import('../apps/kuliner/pages/AdminSettings'));
+const KulinerFinanceCategories = lazy(() => import('../apps/kuliner/pages/KulinerFinanceCategories'));
 const KulinerCategoryStorefront = lazy(() => import('../apps/kuliner/pages/CategoryStorefront'));
 const KulinerFullMenu = lazy(() => import('../apps/kuliner/pages/FullMenu'));
 const KulinerDashboard = lazy(() => import('../apps/kuliner/pages/KulinerDashboard'));
@@ -38,6 +39,8 @@ const KulinerWaste = lazy(() => import('../apps/kuliner/pages/Waste'));
 
 // Phase 4: Reporting
 const KulinerAdvancedReports = lazy(() => import('../apps/kuliner/pages/KulinerReports'));
+const KulinerExpenses = lazy(() => import('../apps/kuliner/pages/KulinerExpenses'));
+const KulinerFinanceSummary = lazy(() => import('../apps/kuliner/pages/KulinerFinanceSummary'));
 
 // Phase 5: Table management (dine-in / QR self order)
 const KulinerTables = lazy(() => import('../apps/kuliner/pages/Tables'));
@@ -55,6 +58,7 @@ const kulinerRoutes = (
       <Route path="admin/reports" element={<KulinerReports />} />
       <Route path="admin/analytics" element={<KulinerAnalytics />} />
       <Route path="admin/transactions" element={<KulinerTransactions />} />
+      <Route path="admin/finance-categories" element={<KulinerFinanceCategories />} />
       <Route path="admin/settings" element={<KulinerAdminSettings />} />
       <Route path="admin/staff" element={<KulinerStaff />} />
       <Route path="admin/roles" element={<KulinerRoles />} />
@@ -81,6 +85,8 @@ const kulinerRoutes = (
 
       {/* Phase 4: Reporting */}
       <Route path="admin/reports-advanced" element={<KulinerAdvancedReports />} />
+      <Route path="admin/expenses" element={<KulinerExpenses />} />
+      <Route path="admin/finance-summary" element={<KulinerFinanceSummary />} />
 
       {/* Phase 5: Table management */}
       <Route path="admin/tables" element={<KulinerTables />} />

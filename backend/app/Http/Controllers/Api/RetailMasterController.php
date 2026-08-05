@@ -9,7 +9,7 @@ use App\Models\RetailCategory;
 use App\Models\RetailSupplier;
 use App\Models\RetailCustomer;
 use App\Models\RetailUnit;
-use App\Models\RetailExpenseCategory;
+use App\Models\RetailFinanceCategory;
 use App\Models\RetailSetting;
 
 class RetailMasterController extends Controller
@@ -170,34 +170,54 @@ class RetailMasterController extends Controller
         return response()->json(['message' => 'Deleted']);
     }
 
-    // Expense Categories
-    public function getExpenseCategories(Request $request) {
-        return response()->json(RetailExpenseCategory::get());
+    // ---------------------------------------------------------------------------------------------------
+    // FINANCE CATEGORIES (INCOME & EXPENSE)
+    // ---------------------------------------------------------------------------------------------------
+
+    public function getFinanceCategories(Request $request) {
+        $type = $request->query('type');
+        $query = RetailFinanceCategory::query();
+        if ($type) {
+            $query->where('type', $type);
+        }
+        return response()->json($query->get());
     }
 
-    public function storeExpenseCategory(Request $request) {
-        $validator = Validator::make($request->all(), ['name' => 'required|string|max:255']);
+    public function storeFinanceCategory(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:income,expense'
+        ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $cat = RetailExpenseCategory::create(['name' => $request->name]);
+        $cat = RetailFinanceCategory::create([
+            'name' => $request->name,
+            'type' => $request->type
+        ]);
         return response()->json($cat);
     }
 
-    public function updateExpenseCategory(Request $request, int $id) {
-        $validator = Validator::make($request->all(), ['name' => 'required|string|max:255']);
+    public function updateFinanceCategory(Request $request, int $id) {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:income,expense'
+        ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $cat = RetailExpenseCategory::findOrFail($id);
-        $cat->update(['name' => $request->name]);
+        $cat = RetailFinanceCategory::findOrFail($id);
+        $cat->update([
+            'name' => $request->name,
+            'type' => $request->type
+        ]);
         return response()->json($cat);
     }
 
-    public function destroyExpenseCategory(Request $request, int $id) {
-        RetailExpenseCategory::findOrFail($id)->delete();
+    public function destroyFinanceCategory(Request $request, int $id) {
+        RetailFinanceCategory::findOrFail($id)->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
@@ -263,8 +283,10 @@ class RetailMasterController extends Controller
 
     public function uploadQris(Request $request)
     {
+        // 5MB, not 2MB — real QRIS photos/screenshots from a phone routinely
+        // land in the 2-5MB range and were getting rejected by the old limit.
         $request->validate([
-            'qris_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'qris_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $settings = $this->getOrCreateSettings($request);
@@ -298,7 +320,7 @@ class RetailMasterController extends Controller
     public function uploadStoreIcon(Request $request)
     {
         $request->validate([
-            'store_icon' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'store_icon' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $settings = $this->getOrCreateSettings($request);

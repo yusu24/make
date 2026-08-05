@@ -32,6 +32,7 @@ import adminRoutes from './routes/admin.routes'
 import retailRoutes from './routes/retail.routes'
 import budidayaRoutes from './routes/budidaya.routes'
 import kulinerRoutes from './routes/kuliner.routes'
+import sellerRoutes from './routes/seller.routes'
 
 function App() {
   // Catches errors React's own ErrorBoundary can't: thrown inside event
@@ -91,6 +92,9 @@ function App() {
                   {/* Generic Tenant Modules */}
                   <Route path="/support" element={<TenantSupportCenter />} />
                 </Route>
+
+                {/* Seller / Omnichannel Module */}
+                {sellerRoutes}
 
                 {/* Budidaya Module */}
                 {budidayaRoutes}

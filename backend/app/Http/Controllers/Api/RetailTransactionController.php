@@ -21,7 +21,8 @@ class RetailTransactionController extends Controller {
             $query->where('invoice_no', 'like', '%' . $request->search . '%');
         }
 
-        return response()->json($query->paginate(20));
+        $perPage = min((int) $request->input('per_page', 20), 200);
+        return response()->json($query->paginate($perPage ?: 20));
     }
 
     public function show(Request $request, int $id) {

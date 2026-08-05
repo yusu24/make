@@ -87,6 +87,8 @@ export default function Register() {
           navigate('/kuliner/admin')
         } else if (userData.business_category === 'Budidaya Hewan' || userData.business_category === 'Budidaya Tanaman') {
           navigate('/budidaya/dashboard')
+        } else if (userData.business_category === 'Seller') {
+          navigate('/seller/dashboard')
         } else {
           navigate('/coming-soon')
         }
@@ -143,7 +145,7 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="login-card" style={{ width: 440 }}>
+          <div className="login-card">
             <div className="reg-steps">
                 <div className={`reg-step ${step >= 1 ? 'reg-step--active' : ''}`}>
                     <div className="reg-step__dot">1</div>

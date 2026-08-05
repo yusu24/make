@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { Calculator, TrendingUp, Clock, Sparkles } from 'lucide-react'
 
-export default function RoiCalculator() {
+const DEFAULT_TITLE = 'Berapa Banyak Waktu & Biaya yang Bisa Anda Hemat Setiap Bulan?'
+const DEFAULT_DESC = 'Pencatatan kertas, pembukuan manual yang salah hitung, serta selisih stok yang misterius menguras jam kerja bernilai jutaan rupiah setiap bulannya.'
+
+export default function RoiCalculator({ title, desc }) {
   const [sector, setSector] = useState('retail')
   const [dailyTransactions, setDailyTransactions] = useState(45)
   const [stafCount, setStafCount] = useState(2)
@@ -22,11 +25,11 @@ export default function RoiCalculator() {
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Berapa Banyak Waktu &amp; Biaya yang Bisa Anda Hemat Setiap Bulan?
+              {title || DEFAULT_TITLE}
             </h2>
 
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Pencatatan kertas, pembukuan manual yang salah hitung, serta selisih stok yang misterius menguras jam kerja bernilai jutaan rupiah setiap bulannya.
+              {desc || DEFAULT_DESC}
             </p>
 
             <div className="space-y-4 pt-2">

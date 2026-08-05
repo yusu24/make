@@ -14,7 +14,7 @@ const SLUG_VISUALS = {
 }
 const DEFAULT_VISUAL = { Icon: Building2, color: 'bg-slate-600', sub: '' }
 
-export default function Hero({ settings, categories, demoLoading, onOpenSandbox, onScrollToFeatures }) {
+export default function Hero({ settings, settingsLoading, categories, categoriesLoading, demoLoading, onOpenSandbox, onScrollToFeatures }) {
   return (
     <section id="beranda" className="relative min-h-[90vh] bg-bizora-gradient pt-10 pb-20 overflow-hidden">
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -29,14 +29,25 @@ export default function Hero({ settings, categories, demoLoading, onOpenSandbox,
               <span>Platform Bisnis Digital #1 Indonesia</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-5xl font-black text-white leading-[1.18] tracking-tight">
-              {settings.hero_title}
-              {settings.hero_subtitle && <> <span className="text-gradient-emerald">{settings.hero_subtitle}</span></>}
-            </h1>
+            {settingsLoading ? (
+              <div className="space-y-3 py-1" aria-hidden="true">
+                <div className="h-10 sm:h-12 w-full max-w-lg rounded-lg bg-white/10 animate-pulse" />
+                <div className="h-10 sm:h-12 w-2/3 max-w-sm rounded-lg bg-white/10 animate-pulse" />
+              </div>
+            ) : (
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-5xl font-black text-white leading-[1.18] tracking-tight">
+                {settings.hero_title}
+                {settings.hero_subtitle && <> <span className="text-gradient-emerald">{settings.hero_subtitle}</span></>}
+              </h1>
+            )}
 
-            <p className="text-base sm:text-lg text-slate-300 max-w-2xl font-normal leading-relaxed">
-              {settings.hero_desc}
-            </p>
+            {settingsLoading ? (
+              <div className="h-6 w-full max-w-2xl rounded bg-white/10 animate-pulse" aria-hidden="true" />
+            ) : (
+              <p className="text-base sm:text-lg text-slate-300 max-w-2xl font-normal leading-relaxed">
+                {settings.hero_desc}
+              </p>
+            )}
 
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <Link
@@ -90,31 +101,46 @@ export default function Hero({ settings, categories, demoLoading, onOpenSandbox,
                 </p>
 
                 <div className="space-y-3">
-                  {categories.map((cat) => {
-                    const visual = SLUG_VISUALS[cat.slug] || DEFAULT_VISUAL
-                    const { Icon } = visual
-                    return (
-                      <button
-                        key={cat.slug}
-                        onClick={() => onOpenSandbox(cat.slug)}
-                        disabled={demoLoading}
-                        className="w-full bg-[#0a3028] hover:bg-[#0e3f35] border border-[#155446] hover:border-emerald-500/50 rounded-xl p-3.5 flex items-center justify-between group transition-all text-left cursor-pointer shadow-sm disabled:opacity-60"
+                  {categoriesLoading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-full bg-[#0a3028] border border-[#155446] rounded-xl p-3.5 flex items-center gap-3.5 animate-pulse"
                       >
-                        <div className="flex items-center gap-3.5">
-                          <div className={`w-10 h-10 rounded-lg ${visual.color} flex items-center justify-center text-white shrink-0 shadow-md`}>
-                            <Icon className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
-                              Demo {cat.name}
-                            </h4>
-                            <p className="text-xs text-slate-400">{visual.sub || cat.description}</p>
-                          </div>
+                        <div className="w-10 h-10 rounded-lg bg-[#155446] shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3.5 w-32 rounded bg-[#155446]" />
+                          <div className="h-2.5 w-44 rounded bg-[#134a3d]" />
                         </div>
-                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
-                      </button>
-                    )
-                  })}
+                      </div>
+                    ))
+                  ) : (
+                    categories.map((cat) => {
+                      const visual = SLUG_VISUALS[cat.slug] || DEFAULT_VISUAL
+                      const { Icon } = visual
+                      return (
+                        <button
+                          key={cat.slug}
+                          onClick={() => onOpenSandbox(cat.slug)}
+                          disabled={demoLoading}
+                          className="w-full bg-[#0a3028] hover:bg-[#0e3f35] border border-[#155446] hover:border-emerald-500/50 rounded-xl p-3.5 flex items-center justify-between group transition-all text-left cursor-pointer shadow-sm disabled:opacity-60"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className={`w-10 h-10 rounded-lg ${visual.color} flex items-center justify-center text-white shrink-0 shadow-md`}>
+                              <Icon className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                                Demo {cat.name}
+                              </h4>
+                              <p className="text-xs text-slate-400">{visual.sub || cat.description}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                        </button>
+                      )
+                    })
+                  )}
                 </div>
 
                 <div className="mt-5 pt-4 border-t border-[#0f3d32] text-center flex items-center justify-center gap-1.5 text-xs text-slate-400">

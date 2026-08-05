@@ -262,7 +262,7 @@ class AuthController extends Controller
         // 3. Expense Categories
         $expCats = ['Gaji Pegawai', 'Sewa Tempat', 'Listrik & Air', 'Operasional', 'Pemasaran', 'Lain-lain'];
         foreach ($expCats as $ec) {
-            \App\Models\RetailExpenseCategory::create(['tenant_id' => $tenantId, 'name' => $ec]);
+            \App\Models\RetailFinanceCategory::create(['tenant_id' => $tenantId, 'name' => $ec, 'type' => 'expense']);
         }
 
         // 4. Default settings (tax rate, loyalty points ratio)
@@ -295,7 +295,7 @@ class AuthController extends Controller
             $categorySlug = 'budidaya-tanaman';
         }
 
-        $allowedSlugs = ['toko-retail', 'budidaya-hewan', 'budidaya-tanaman', 'kuliner'];
+        $allowedSlugs = ['toko-retail', 'budidaya-hewan', 'budidaya-tanaman', 'kuliner', 'seller'];
         if (!in_array($categorySlug, $allowedSlugs)) {
             return response()->json(['success' => false, 'message' => 'Kategori bisnis tidak didukung untuk demo sandbox.'], 400);
         }
@@ -314,6 +314,7 @@ class AuthController extends Controller
             'budidaya-hewan'    => 'Demo Ternak ' . ($subtype ? ucfirst($subtype) . ' ' : ''),
             'budidaya-tanaman' => 'Demo Tani ',
             'kuliner'          => 'Demo Resto ',
+            'seller'           => 'Demo Seller ',
         ];
         $name = ($namePrefixes[$categorySlug] ?? 'Demo Usaha ') . strtoupper(substr($rand, 0, 4));
 
@@ -362,6 +363,13 @@ class AuthController extends Controller
             $seeder->seedTanamanData($tenantId);
         } elseif ($categorySlug === 'kuliner') {
             $this->seedDemoSandboxKulinerData($tenantId);
+        } elseif ($categorySlug === 'seller') {
+            // The Seller app's product/expense/transaction views all read from
+            // the Retail tables (it has no commerce tables of its own), so it
+            // needs the same base dataset Retail demos get.
+            $seeder->seedRetailData($tenantId);
+            $seeder->seedRetailDataExtras($tenantId);
+            $this->seedSellerWarehouses($tenantId);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -398,9 +406,14 @@ class AuthController extends Controller
             // before the first heartbeat, or heartbeat failed) fall back to
             // created_at so they still get swept up eventually.
             $staleSince = now()->subMinutes(5);
+            // Match by tenant_id prefix, not email pattern — every demo sandbox
+            // (retail, kuliner, budidaya-tanaman, and any budidaya-hewan subtype
+            // like demo-sapi-/demo-ayam-/demo-ikan-) is created with tenant_id
+            // 'TN-DS-*' regardless of category, so this catches all of them
+            // without needing to enumerate every subtype's email prefix.
             $oldDemoUsers = User::where(function($q) {
-                                    $q->where('email', 'like', 'demo-sandbox-%')
-                                      ->orWhere('email', 'like', 'demo-kuliner-%');
+                                    $q->where('tenant_id', 'like', 'TN-DS-%')
+                                      ->orWhere('tenant_id', 'like', 'TN-DK-%');
                                 })
                                 ->where(function($q) use ($staleSince) {
                                     $q->where('last_seen_at', '<', $staleSince)
@@ -504,6 +517,31 @@ class AuthController extends Controller
         \Illuminate\Support\Facades\DB::table('users')->where('tenant_id', $tenantId)->where('id', '!=', $user->id)->delete();
         \Illuminate\Support\Facades\DB::table('tenants')->where('tenant_id', $tenantId)->delete();
         $user->delete();
+    }
+
+    private function seedSellerWarehouses(string $tenantId)
+    {
+        \App\Models\SellerWarehouse::create([
+            'tenant_id' => $tenantId,
+            'name' => 'Gudang Utama Jakarta',
+            'code' => 'JKT-01',
+            'city' => 'Jakarta Barat',
+            'address' => 'Jl. Meruya Ilir Raya No. 88, Jakarta Barat',
+            'pic_name' => 'Andi Wijaya',
+            'pic_phone' => '081234567890',
+            'is_default' => true,
+        ]);
+
+        \App\Models\SellerWarehouse::create([
+            'tenant_id' => $tenantId,
+            'name' => 'Gudang Cabang Surabaya',
+            'code' => 'SBY-01',
+            'city' => 'Surabaya',
+            'address' => 'Jl. Raya Darmo No. 45, Surabaya',
+            'pic_name' => 'Rina Kusuma',
+            'pic_phone' => '081298765432',
+            'is_default' => false,
+        ]);
     }
 
     private function seedDemoSandboxKulinerData(string $tenantId)
