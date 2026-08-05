@@ -212,12 +212,12 @@ export default function Products() {
                   </td>
                   <td>
                      <span className={`${Number(p.stock) <= Number(p.stock_min) ? 'retail-text-danger' : 'retail-text-primary'}`}>
-                        {p.stock} {p.unit}
+                        {Number(p.stock || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })} {p.unit}
                      </span>
                   </td>
                   <td>
                      <span className="retail-text-primary">
-                        Rp {Number(p.price_sell).toLocaleString('id-ID')}
+                         Rp {Number(p.price_sell || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}
                      </span>
                   </td>
                   <td className="pr-6 text-right">

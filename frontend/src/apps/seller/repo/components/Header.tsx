@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Menu,
@@ -15,9 +15,11 @@ import {
   ShieldCheck,
   Sparkles,
   LogOut,
+  Globe,
 } from 'lucide-react';
 import { StoreChannel, ActiveTab, Product } from '../types';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { useTranslation } from '../../../../contexts/I18nContext';
 
 interface HeaderProps {
   collapsed: boolean;
@@ -52,9 +54,38 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user, logout, isImpersonating, exitImpersonate } = useAuth();
+  const i18n = useTranslation();
+  const language = i18n?.language || 'id';
+  const toggleLanguage = i18n?.toggleLanguage || (() => {});
+  const t = i18n?.t || ((key: string) => key);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [storeMenuOpen, setStoreMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [notifOpen]);
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [profileMenuOpen]);
 
   const selectedStore = stores.find((s) => s.id === selectedStoreId);
   const lowStockProducts = products.filter((p) => p.status === 'Stok Menipis' || p.status === 'Habis');
@@ -78,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="h-16 bg-white dark:bg-[#101828] border-b border-gray-200 dark:border-slate-800 sticky top-0 z-30 w-full px-4 md:px-6 flex items-center justify-between shadow-xs shrink-0">
+    <header className={`h-16 bg-white dark:bg-[#101828] border-b border-gray-200 dark:border-slate-800 fixed top-0 right-0 left-0 ${collapsed ? 'md:left-20' : 'md:left-64'} z-30 transition-all duration-300 px-3 sm:px-4 md:px-6 flex items-center justify-between shadow-xs shrink-0`}>
       {/* Left section: Toggle & Date */}
       <div className="flex items-center gap-3">
         <button
@@ -109,6 +140,16 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
 
 
+        {/* Language Switcher Toggle */}
+        <button
+          onClick={toggleLanguage}
+          className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-extrabold transition-colors cursor-pointer shrink-0 flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow-xs"
+          title={language === 'id' ? 'Switch to English' : 'Beralih ke Bahasa Indonesia'}
+        >
+          <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+          <span className="uppercase tracking-wider">{language === 'id' ? 'ID 🇮🇩' : 'EN 🇬🇧'}</span>
+        </button>
+
         {/* Dark Mode Toggle */}
         <button
           onClick={() => setDarkMode(!darkMode)}
@@ -119,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         {/* Notification Bell */}
-        <div className="relative shrink-0">
+        <div className="relative shrink-0" ref={notifRef}>
           <button
             onClick={() => setNotifOpen(!notifOpen)}
             className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative cursor-pointer"
@@ -177,7 +218,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* User Profile Badge & Menu Dropdown */}
-        <div className="relative shrink-0">
+        <div className="relative shrink-0" ref={profileRef}>
           <button
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
             className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800 cursor-pointer group"

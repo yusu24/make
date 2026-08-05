@@ -92,7 +92,7 @@ export default function Transactions() {
                   <td className="retail-text-secondary" style={{ fontSize: 12 }}>{new Date(t.created_at).toLocaleString('id-ID')}</td>
                   <td>{t.customer?.name || 'Umum'}</td>
                   <td className="retail-text-secondary">{t.payment_method}</td>
-                  <td className="text-right font-semibold">Rp {Number(t.total_amount).toLocaleString('id-ID')}</td>
+                  <td className="text-right font-semibold">Rp {Number(t.total_amount || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
                   <td className="text-center">
                     <span className={`retail-badge ${t.status === 'voided' ? 'retail-text-danger' : 'retail-badge-primary'}`}>{t.status === 'voided' ? 'Dibatalkan' : 'Lunas'}</span>
                   </td>
@@ -137,17 +137,17 @@ export default function Transactions() {
                 {detail.items?.map(item => (
                   <tr key={item.id}>
                     <td>{item.product?.name || '-'}</td>
-                    <td className="text-center">{item.qty}</td>
-                    <td className="text-right">Rp {Number(item.price).toLocaleString('id-ID')}</td>
-                    <td className="text-right">Rp {Number(item.subtotal).toLocaleString('id-ID')}</td>
+                    <td className="text-center">{Number(item.qty || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
+                    <td className="text-right">Rp {Number(item.price || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
+                    <td className="text-right">Rp {Number(item.subtotal || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
                   </tr>
                 ))}
               </tbody>
             </table></div>
             <div className="flex flex-col gap-1 text-sm">
-              <div className="flex justify-between"><span>Diskon</span><span>Rp {Number(detail.discount_amount).toLocaleString('id-ID')}</span></div>
-              <div className="flex justify-between"><span>Pajak</span><span>Rp {Number(detail.tax_amount).toLocaleString('id-ID')}</span></div>
-              <div className="flex justify-between font-semibold"><span>Total</span><span>Rp {Number(detail.total_amount).toLocaleString('id-ID')}</span></div>
+              <div className="flex justify-between"><span>Diskon</span><span>Rp {Number(detail.discount_amount || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</span></div>
+              <div className="flex justify-between"><span>Pajak</span><span>Rp {Number(detail.tax_amount || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</span></div>
+              <div className="flex justify-between font-semibold"><span>Total</span><span>Rp {Number(detail.total_amount || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</span></div>
             </div>
           </div>
         )}

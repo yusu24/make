@@ -26,6 +26,7 @@ import {
 } from 'recharts';
 import { Order, Product, StoreChannel, ActiveTab } from '../../types';
 import { formatIDR, getPlatformBadgeColor } from '../../utils/formatters';
+import { useTranslation } from '../../../../../contexts/I18nContext';
 
 interface MainDashboardViewProps {
   orders: Order[];
@@ -44,6 +45,8 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
   setActiveTab,
   onPrintAwb,
 }) => {
+  const i18n = useTranslation();
+  const t = i18n?.t || ((key: string) => key);
   const pendingOrders = orders.filter((o) => o.status === 'Perlu Diproses');
   const lowStockProducts = products.filter((p) => p.status === 'Stok Menipis' || p.status === 'Habis');
 
@@ -103,14 +106,14 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <h2 className="text-[#667085] text-xs font-semibold uppercase tracking-wider">
-                  Total Pendapatan (30 Hari)
+                  {t('seller.totalRevenue30Days')}
                 </h2>
               </div>
               <div className="text-3xl md:text-4xl font-extrabold text-[#101828] dark:text-white tracking-tight">
                 {formatIDR(total30DaysRevenue)}
               </div>
               <p className="text-xs text-[#667085] mt-1">
-                Hari Ini: <span className="font-semibold text-[#101828] dark:text-slate-200">{formatIDR(totalOmsetToday)}</span> ({totalOrdersToday} Pesanan Masuk)
+                {t('seller.today')}: <span className="font-semibold text-[#101828] dark:text-slate-200">{formatIDR(totalOmsetToday)}</span> ({totalOrdersToday} {t('seller.ordersReceived')})
               </p>
             </div>
           </div>
@@ -155,7 +158,7 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-gray-400 text-xs font-semibold uppercase tracking-wider">
-                Channel Penjualan
+                {t('seller.salesChannels')}
               </h2>
               <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
                 {stores.filter((s) => s.connected).length} Terhubung
@@ -200,19 +203,19 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
-                Pesanan Hari Ini
+                {i18n?.language === 'en' ? 'Today Orders' : 'Pesanan Hari Ini'}
               </span>
               <div className="w-9 h-9 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                 <ShoppingBag className="w-4 h-4" />
               </div>
             </div>
             <div className="text-3xl font-extrabold text-[#101828] dark:text-white mt-1">
-              {totalOrdersToday} <span className="text-sm font-normal text-slate-400">Pesanan</span>
+              {totalOrdersToday} <span className="text-sm font-normal text-slate-400">{i18n?.language === 'en' ? 'Orders' : 'Pesanan'}</span>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs">
-            <span className="text-amber-600 font-semibold">{pendingOrders.length} Perlu Diproses</span>
-            <button onClick={() => setActiveTab('pesanan')} className="text-indigo-600 font-semibold hover:underline">Proses</button>
+            <span className="text-amber-600 font-semibold">{pendingOrders.length} {i18n?.language === 'en' ? 'Needs Process' : 'Perlu Diproses'}</span>
+            <button onClick={() => setActiveTab('pesanan')} className="text-indigo-600 font-semibold hover:underline">{i18n?.language === 'en' ? 'Process' : 'Proses'}</button>
           </div>
         </div>
 
@@ -221,7 +224,7 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
-                Saldo Escrow
+                {i18n?.language === 'en' ? 'Escrow Balance' : 'Saldo Escrow'}
               </span>
               <div className="w-9 h-9 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <DollarSign className="w-4 h-4" />
@@ -232,7 +235,7 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-800 text-xs text-slate-400 font-medium">
-            Belum ada integrasi pencairan marketplace
+            {i18n?.language === 'en' ? 'Marketplace payout integration pending' : 'Belum ada integrasi pencairan marketplace'}
           </div>
         </div>
 
@@ -241,7 +244,7 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
-                Rata-rata Nilai Transaksi
+                {i18n?.language === 'en' ? 'Average Order Value' : 'Rata-rata Nilai Transaksi'}
               </span>
               <div className="p-2.5 bg-amber-50 rounded-2xl text-amber-500">
                 <Star className="w-5 h-5 fill-amber-400 stroke-amber-500" />
@@ -253,7 +256,7 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
           </div>
           <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-800 text-xs text-emerald-600 font-semibold flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Dari {orders.length} transaksi tercatat</span>
+            <span>{i18n?.language === 'en' ? `From ${orders.length} recorded orders` : `Dari ${orders.length} transaksi tercatat`}</span>
           </div>
         </div>
 
@@ -261,11 +264,11 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
         <div className="bg-indigo-600 rounded-[28px] p-6 text-white relative overflow-hidden shadow-xs flex flex-col justify-between">
           <div className="relative z-10">
             <span className="text-xs font-semibold uppercase tracking-wider opacity-80 block mb-1">
-              Stok SKU Menipis
+              {i18n?.language === 'en' ? 'Low Stock SKUs' : 'Stok SKU Menipis'}
             </span>
             <div className="text-4xl font-extrabold mb-2">{lowStockProducts.length} SKU</div>
             <p className="text-xs opacity-85 leading-relaxed">
-              Diperlukan restock gudang utama segera.
+              {i18n?.language === 'en' ? 'Main warehouse restock required immediately.' : 'Diperlukan restock gudang utama segera.'}
             </p>
           </div>
           <div className="relative z-10 pt-3">
@@ -273,7 +276,7 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
               onClick={() => setActiveTab('katalog')}
               className="text-xs font-semibold underline hover:opacity-80 transition-opacity cursor-pointer"
             >
-              Atur Restock Stok Sekarang →
+              {i18n?.language === 'en' ? 'Restock Stock Now →' : 'Atur Restock Stok Sekarang →'}
             </button>
           </div>
           <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full pointer-events-none" />
@@ -286,13 +289,13 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
         <div className="lg:col-span-4 bg-white dark:bg-[#101828] rounded-[32px] border border-gray-200 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-semibold text-[#101828] dark:text-white">
-              Produk Terlaris
+              {i18n?.language === 'en' ? 'Top Selling Products' : 'Produk Terlaris'}
             </h3>
-            <p className="text-xs text-[#667085]">Berdasarkan jumlah unit terjual dari transaksi tercatat</p>
+            <p className="text-xs text-[#667085]">{i18n?.language === 'en' ? 'Based on units sold from recorded transactions' : 'Berdasarkan jumlah unit terjual dari transaksi tercatat'}</p>
 
             {topProducts.length === 0 ? (
               <div className="h-44 flex items-center justify-center text-xs text-slate-400 text-center px-4">
-                Belum ada transaksi tercatat untuk dihitung.
+                {i18n?.language === 'en' ? 'No recorded transactions yet.' : 'Belum ada transaksi tercatat untuk dihitung.'}
               </div>
             ) : (
               <div className="space-y-3 my-4">
@@ -322,14 +325,14 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
                 <h3 className="text-sm font-semibold text-[#101828] dark:text-white">
-                  Pesanan Masuk Perlu Resi ({pendingOrders.length})
+                  {i18n?.language === 'en' ? `Incoming Orders Needing AWB (${pendingOrders.length})` : `Pesanan Masuk Perlu Resi (${pendingOrders.length})`}
                 </h3>
               </div>
               <button
                 onClick={() => setActiveTab('pesanan')}
                 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <span>Lihat Semua Pesanan</span>
+                <span>{t('seller.viewAllOrders')}</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -338,11 +341,11 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider border-b border-gray-100 dark:border-slate-800">
-                    <th className="pb-3 pr-4">PESANAN</th>
-                    <th className="pb-3 px-4">PEMBELI</th>
-                    <th className="pb-3 px-4">PRODUK</th>
-                    <th className="pb-3 px-4">TOTAL</th>
-                    <th className="pb-3 pl-4 text-center">RESI AWB</th>
+                    <th className="pb-3 pr-4">{i18n?.language === 'en' ? 'ORDER' : 'PESANAN'}</th>
+                    <th className="pb-3 px-4">{i18n?.language === 'en' ? 'CUSTOMER' : 'PEMBELI'}</th>
+                    <th className="pb-3 px-4">{i18n?.language === 'en' ? 'ITEMS' : 'PRODUK'}</th>
+                    <th className="pb-3 px-4">{i18n?.language === 'en' ? 'TOTAL AMOUNT' : 'TOTAL BAYAR'}</th>
+                    <th className="pb-3 pl-4 text-center">{i18n?.language === 'en' ? 'AWB TRACKING' : 'RESI AWB'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-slate-800/80 text-xs">
@@ -377,7 +380,7 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
                             className="px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold shadow-xs flex items-center gap-1 mx-auto cursor-pointer"
                           >
                             <Printer className="w-3.5 h-3.5" />
-                            <span>Cetak Resi</span>
+                            <span>{i18n?.language === 'en' ? 'Print Label' : 'Cetak Resi'}</span>
                           </button>
                         </td>
                       </tr>

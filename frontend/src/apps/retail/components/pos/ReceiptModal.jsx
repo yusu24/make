@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Printer, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 
-const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
 const fmtDate = (dateStr) => new Date(dateStr).toLocaleString('id-ID', {
   day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
 });

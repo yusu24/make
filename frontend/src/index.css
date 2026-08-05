@@ -248,7 +248,11 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
 body {
   font-family: var(--font-body);
@@ -258,6 +262,7 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  max-width: 100%;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
 }

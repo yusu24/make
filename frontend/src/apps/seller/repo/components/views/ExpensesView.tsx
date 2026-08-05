@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Expense, ExpenseCategory, StoreChannel } from '../../types';
 import { formatIDR } from '../../utils/formatters';
+import { useTranslation } from '../../../../../contexts/I18nContext';
 
 interface ExpensesViewProps {
   expenses: Expense[];
@@ -36,6 +37,8 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
   stores,
   selectedStoreId,
 }) => {
+  const i18n = useTranslation();
+  const t = i18n?.t || ((key: string) => key);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedDateFilter, setSelectedDateFilter] = useState<string>('Semua Tanggal');
@@ -98,7 +101,7 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
         <div className="bg-white dark:bg-[#101828] p-6 rounded-[28px] border border-gray-200 dark:border-slate-800 shadow-xs relative overflow-hidden flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
-              Total Pengeluaran
+              {t('seller.expenses')}
             </span>
             <div className="w-9 h-9 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <TrendingDown className="w-4 h-4" />

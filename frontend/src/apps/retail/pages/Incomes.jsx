@@ -110,7 +110,7 @@ export default function Incomes() {
     (ex.kategori || '').toLowerCase().includes(search.toLowerCase())
   );
 
-  const formatRp = (num) => 'Rp ' + Number(num).toLocaleString('id-ID');
+  const formatRp = (num) => 'Rp ' + Number(num || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
 
   const formatDate = (d) => new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 

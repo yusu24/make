@@ -550,7 +550,7 @@ export default function Settings() {
                   <div style={{ marginTop: 16 }}>
                     <Field
                       label="Rasio Poin (Rp per 1 poin)"
-                      hint={`Setiap belanja Rp ${Number(settings.points_ratio || 0).toLocaleString('id-ID')} = 1 poin`}
+                      hint={`Setiap belanja Rp ${Math.round(Number(settings.points_ratio || 0)).toLocaleString('id-ID')} = 1 poin`}
                     >
                       <div style={{ position: 'relative', maxWidth: 220 }}>
                         <Star size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--retail-text-secondary)' }} />
@@ -686,7 +686,7 @@ export default function Settings() {
                       <hr />
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
                         <span>TOTAL</span>
-                        <span>Rp {(65000 * (1 + (settings.enable_tax ? Number(settings.tax_rate) / 100 : 0))).toLocaleString('id-ID')}</span>
+                        <span>Rp {Math.round(65000 * (1 + (settings.enable_tax ? Number(settings.tax_rate) / 100 : 0))).toLocaleString('id-ID')}</span>
                       </div>
                       {settings.receipt_footer && (
                         <>

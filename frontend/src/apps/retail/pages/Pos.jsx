@@ -141,7 +141,7 @@ export default function Pos() {
         >
           <ShoppingCart size={18} />
           <span className="pos-float-cart-badge">{cart.reduce((s, i) => s + i.qty, 0)}</span>
-          <span className="pos-float-cart-total">{'Rp ' + total.toLocaleString('id-ID')}</span>
+          <span className="pos-float-cart-total">{'Rp ' + Math.round(Number(total || 0)).toLocaleString('id-ID')}</span>
         </button>
       )}
 

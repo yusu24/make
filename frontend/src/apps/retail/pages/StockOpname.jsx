@@ -154,7 +154,7 @@ export default function StockOpname() {
                   {detail.items.map(item => (
                     <tr key={item.id}>
                       <td>{item.product?.name}</td>
-                      <td className="text-center">{item.system_qty}</td>
+                      <td className="text-center">{Number(item.system_qty || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
                       <td className="text-center">
                         <input
                           type="number"

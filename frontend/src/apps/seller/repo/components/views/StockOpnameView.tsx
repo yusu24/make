@@ -3,6 +3,7 @@ import { ClipboardCheck, CheckCircle2, Eye, X, Package } from 'lucide-react';
 import api from '../../../../../services/api';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
+import { useTranslation } from '../../../../../contexts/I18nContext';
 
 interface OpnameRow {
   id: number;
@@ -27,6 +28,8 @@ interface OpnameDetail extends OpnameRow {
 }
 
 export const StockOpnameView: React.FC = () => {
+  const i18n = useTranslation();
+  const t = i18n?.t || ((key: string) => key);
   const [opnames, setOpnames] = useState<OpnameRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<OpnameDetail | null>(null);
@@ -111,10 +114,10 @@ export const StockOpnameView: React.FC = () => {
         <div className="flex-1">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <ClipboardCheck className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">Stock Opname (Hitung Fisik Gudang)</span>
+            <span className="truncate">{i18n?.language === 'en' ? 'Stock Count (Physical Audit Opname)' : 'Stock Opname (Hitung Fisik Gudang)'}</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Cocokkan stok sistem dengan hasil hitung fisik. Saat difinalisasi, stok sistem otomatis disesuaikan.
+            {i18n?.language === 'en' ? 'Reconcile system stock with physical count. System stock automatically adjusts on finalization.' : 'Cocokkan stok sistem dengan hasil hitung fisik. Saat difinalisasi, stok sistem otomatis disesuaikan.'}
           </p>
         </div>
         <button
@@ -123,7 +126,7 @@ export const StockOpnameView: React.FC = () => {
           className="shrink-0 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
         >
           <ClipboardCheck className="w-4 h-4" />
-          <span>{starting ? 'Memulai...' : 'Mulai Stock Opname'}</span>
+          <span>{starting ? (i18n?.language === 'en' ? 'Starting...' : 'Memulai...') : (i18n?.language === 'en' ? 'Start Stock Opname' : 'Mulai Stock Opname')}</span>
         </button>
       </div>
 

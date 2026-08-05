@@ -197,7 +197,7 @@ export default function CustomerReturns() {
                   <td className="text-center">
                     <span className={`retail-badge ${r.status === 'confirmed' ? 'retail-badge-primary' : ''}`}>{r.status === 'confirmed' ? 'Dikonfirmasi' : 'Draft'}</span>
                   </td>
-                  <td className="text-right">Rp {Number(r.total_amount).toLocaleString('id-ID')}</td>
+                  <td className="text-right">Rp {Math.round(Number(r.total_amount || 0)).toLocaleString('id-ID')}</td>
                   <td className="pr-6 text-right">
                     <div className="flex gap-2 justify-end">
                       {r.status === 'draft' && (
@@ -248,7 +248,7 @@ export default function CustomerReturns() {
                     <input type="checkbox" checked={!!selectedItems[item.id]} onChange={e => toggleItem(item, e.target.checked)} />
                     <span>{item.product?.name}</span>
                     <span className="retail-text-secondary">Qty dibeli: {item.qty}</span>
-                    <span className="retail-text-secondary">Rp {Number(item.price).toLocaleString('id-ID')}</span>
+                    <span className="retail-text-secondary">Rp {Math.round(Number(item.price || 0)).toLocaleString('id-ID')}</span>
                   </label>
                 ))}
               </div>

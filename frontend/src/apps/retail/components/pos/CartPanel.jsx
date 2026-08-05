@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShoppingBag, X } from 'lucide-react';
 
-const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
 
 export default function CartPanel({
   items, discount, note, taxRate,

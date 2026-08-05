@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { FileSpreadsheet, TrendingUp, DollarSign, Calculator, ArrowUpRight, Percent, CalendarRange, RotateCcw } from 'lucide-react';
+import { FileSpreadsheet, TrendingUp, DollarSign, Calculator, ArrowUpRight, Percent, CalendarRange, RotateCcw, Download } from 'lucide-react';
 import { Expense, Order, Product } from '../../types';
 import { formatIDR } from '../../utils/formatters';
+import { exportToCsv } from '../../utils/excelExport';
+import { useTranslation } from '../../../../../contexts/I18nContext';
 
 interface SalesReportViewProps {
   orders: Order[];
@@ -17,6 +19,8 @@ const daysAgoStr = (days: number) => {
 };
 
 export const SalesReportView: React.FC<SalesReportViewProps> = ({ orders, expenses, products }) => {
+  const i18n = useTranslation();
+  const t = i18n?.t || ((key: string) => key);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
@@ -60,18 +64,47 @@ export const SalesReportView: React.FC<SalesReportViewProps> = ({ orders, expens
   const netProfit = totalGrossRevenue - totalHPP - totalPlatformFees - totalExpenses;
   const netMarginPercent = totalGrossRevenue > 0 ? ((netProfit / totalGrossRevenue) * 100).toFixed(1) : '0';
 
+  const handleExportExcel = () => {
+    const headers = ['Nomor Pesanan', 'Tanggal', 'Marketplace', 'Total Omset (Rp)', 'Total HPP (Rp)', 'Biaya Admin (Rp)', 'Status'];
+    const rows = orders_.map((o) => {
+      const hpp = o.items.reduce((sum, item) => {
+        const prod = products.find((p) => p.sku === item.sku);
+        return sum + (prod ? prod.hpp : item.price * 0.4) * item.quantity;
+      }, 0);
+      return [
+        o.orderNumber,
+        o.orderDate,
+        o.platform,
+        o.totalAmount,
+        hpp,
+        o.platformFee || 0,
+        o.status,
+      ];
+    });
+    exportToCsv('Laporan_Penjualan_Profit_Bizora', headers, rows);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header */}
       <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-indigo-600" />
-            Laporan Profit & Loss / Margin Penjualan
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Kalkulator profit bersih setelah dikurangi HPP modal, biaya admin platform marketplace, & pengeluaran operasional.
-          </p>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-indigo-600" />
+              {t('seller.cashSummary')}
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {t('seller.salesSubtitle')}
+            </p>
+          </div>
+          <button
+            onClick={handleExportExcel}
+            className="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0"
+          >
+            <Download className="w-4 h-4" />
+            <span>{t('seller.exportExcel')}</span>
+          </button>
         </div>
 
         {/* Date Range Filter */}
@@ -131,18 +164,18 @@ export const SalesReportView: React.FC<SalesReportViewProps> = ({ orders, expens
         <div className="flex flex-row items-center justify-between gap-4">
           <div>
             <span className="text-xs font-semibold text-emerald-300 uppercase tracking-widest bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-400/30">
-              ESTIMASI PROFIT BERSIH (NET PROFIT)
+              {i18n?.language === 'en' ? 'ESTIMATED NET PROFIT' : 'ESTIMASI PROFIT BERSIH (NET PROFIT)'}
             </span>
             <div className="text-2xl sm:text-4xl font-black mt-3 tracking-tight">{formatIDR(netProfit)}</div>
             <p className="text-xs text-emerald-100/80 mt-1">
-              Sudah dipotong seluruh HPP barang, komisi platform, & pengeluaran terdaftar.
+              {i18n?.language === 'en' ? 'Deducted product COGS, platform commissions, & operational expenses.' : 'Sudah dipotong seluruh HPP barang, komisi platform, & pengeluaran terdaftar.'}
             </p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center shrink-0">
             <span className="text-xs text-emerald-200 font-semibold uppercase block">NET MARGIN RATE</span>
             <div className="text-3xl font-black text-emerald-300 mt-1">{netMarginPercent}%</div>
-            <span className="text-[10px] text-white/80">Kategori Bisnis Sehat</span>
+            <span className="text-[10px] text-white/80">{i18n?.language === 'en' ? 'Healthy Business' : 'Kategori Bisnis Sehat'}</span>
           </div>
         </div>
       </div>
@@ -151,33 +184,33 @@ export const SalesReportView: React.FC<SalesReportViewProps> = ({ orders, expens
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
         <div className="p-4 bg-slate-50/60 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-            Rincian Komponen Laba Rugi (P&L Summary)
+            {i18n?.language === 'en' ? 'Profit & Loss Summary Breakdown' : 'Rincian Komponen Laba Rugi (P&L Summary)'}
           </h3>
         </div>
 
         <div className="p-5 space-y-3">
           <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl font-semibold text-sm text-slate-800 dark:text-slate-100">
-            <span>(+) Total Omset Kotor (Gross Revenue)</span>
+            <span>{i18n?.language === 'en' ? '(+) Total Gross Revenue' : '(+) Total Omset Kotor (Gross Revenue)'}</span>
             <span className="text-emerald-600 dark:text-emerald-400">{formatIDR(totalGrossRevenue)}</span>
           </div>
 
           <div className="flex items-center justify-between p-3.5 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300">
-            <span>(-) Total HPP / Modal Awal Produk</span>
+            <span>{i18n?.language === 'en' ? '(-) Total Product COGS' : '(-) Total HPP / Modal Awal Produk'}</span>
             <span className="text-rose-600 dark:text-rose-400">-{formatIDR(totalHPP)}</span>
           </div>
 
           <div className="flex items-center justify-between p-3.5 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300">
-            <span>(-) Biaya Admin & Komisi Platform Marketplace</span>
+            <span>{i18n?.language === 'en' ? '(-) Marketplace Admin & Commission Fees' : '(-) Biaya Admin & Komisi Platform Marketplace'}</span>
             <span className="text-rose-600 dark:text-rose-400">-{formatIDR(totalPlatformFees)}</span>
           </div>
 
           <div className="flex items-center justify-between p-3.5 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300">
-            <span>(-) Operational Expenses & Ads (Pengeluaran Kas)</span>
+            <span>{i18n?.language === 'en' ? '(-) Operational Expenses & Marketing Ads' : '(-) Operational Expenses & Ads (Pengeluaran Kas)'}</span>
             <span className="text-rose-600 dark:text-rose-400">-{formatIDR(totalExpenses)}</span>
           </div>
 
           <div className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-950/60 rounded-xl font-black text-base text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800">
-            <span>(=) LABA BERSIH OPERASIONAL (NET MARGIN)</span>
+            <span>{i18n?.language === 'en' ? '(=) OPERATIONAL NET MARGIN' : '(=) LABA BERSIH OPERASIONAL (NET MARGIN)'}</span>
             <span className="text-indigo-600 dark:text-indigo-400">{formatIDR(netProfit)}</span>
           </div>
         </div>

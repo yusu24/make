@@ -32,6 +32,13 @@ const getBadgeClass = (type) => {
   }
 };
 
+const formatQty = (val) => {
+  if (val === null || val === undefined || val === '') return '-';
+  const num = Number(val);
+  if (isNaN(num)) return val;
+  return num.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+};
+
 export default function StockMovements() {
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -117,9 +124,9 @@ export default function StockMovements() {
                       {TYPE_LABELS[m.type] || m.type}
                     </span>
                   </td>
-                  <td className="text-center">{m.quantity}</td>
-                  <td className="text-center retail-text-secondary">{m.quantity_before}</td>
-                  <td className="text-center retail-text-primary">{m.quantity_after}</td>
+                  <td className="text-center">{formatQty(m.quantity)}</td>
+                  <td className="text-center retail-text-secondary">{formatQty(m.quantity_before)}</td>
+                  <td className="text-center retail-text-primary">{formatQty(m.quantity_after)}</td>
                   <td className="retail-text-secondary" style={{ fontSize: 12 }}>{m.note || '-'}</td>
                 </tr>
               ))

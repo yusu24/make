@@ -77,7 +77,7 @@ export default function SalesReport() {
             </div>
             <div>
                <p className="text-2xl text-slate-900 leading-tight font-semibold">
-                  Rp {Number(data.total_sales).toLocaleString('id-ID')}
+                  Rp {Math.round(Number(data.total_sales || 0)).toLocaleString('id-ID')}
                </p>
                <p className="text-xs text-slate-400 mt-1">Akumulasi pendapatan kotor bulan ini.</p>
             </div>
@@ -185,7 +185,7 @@ export default function SalesReport() {
                     <span className="retail-text-primary uppercase tracking-tight">{tx.customer?.name || 'Walk-in Customer'}</span>
                   </td>
                   <td>
-                    <span className="retail-text-primary">Rp {Number(tx.total_amount).toLocaleString('id-ID')}</span>
+                    <span className="retail-text-primary">Rp {Math.round(Number(tx.total_amount || 0)).toLocaleString('id-ID')}</span>
                   </td>
                   <td className="text-right pr-6">
                     <span className={`retail-badge ${tx.status === 'paid' ? 'retail-badge-success' : 'retail-badge-warning'}`}>

@@ -5,6 +5,7 @@ import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
 import { AddPurchaseModal } from '../modals/AddPurchaseModal';
 import { formatIDR } from '../../utils/formatters';
+import { useTranslation } from '../../../../../contexts/I18nContext';
 
 interface PurchaseItemRow {
   id: number;
@@ -25,6 +26,8 @@ interface PurchaseRow {
 }
 
 export const PurchaseHistoryView: React.FC = () => {
+  const i18n = useTranslation();
+  const t = i18n?.t || ((key: string) => key);
   const [purchases, setPurchases] = useState<PurchaseRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -58,10 +61,10 @@ export const PurchaseHistoryView: React.FC = () => {
         <div className="flex-1">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Truck className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">Penerimaan Barang dari Supplier</span>
+            <span className="truncate">{i18n?.language === 'en' ? 'Goods Receiving from Supplier' : 'Penerimaan Barang dari Supplier'}</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Riwayat barang masuk ke gudang beserta biaya belinya. Setiap penerimaan otomatis menambah stok & tercatat di riwayat mutasi.
+            {i18n?.language === 'en' ? 'History of inventory items received with purchase costs. Automatically updates stock balance.' : 'Riwayat barang masuk ke gudang beserta biaya belinya. Setiap penerimaan otomatis menambah stok & tercatat di riwayat mutasi.'}
           </p>
         </div>
         <button
@@ -69,8 +72,8 @@ export const PurchaseHistoryView: React.FC = () => {
           className="shrink-0 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Catat Penerimaan Baru</span>
-          <span className="sm:hidden">Catat Baru</span>
+          <span className="hidden sm:inline">{i18n?.language === 'en' ? 'Record New Receiving' : 'Catat Penerimaan Baru'}</span>
+          <span className="sm:hidden">{i18n?.language === 'en' ? 'Record New' : 'Catat Baru'}</span>
         </button>
       </div>
 
@@ -79,11 +82,11 @@ export const PurchaseHistoryView: React.FC = () => {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700">
               <tr>
-                <th className="px-4 py-3 font-semibold whitespace-nowrap">Tanggal</th>
-                <th className="px-4 py-3 font-semibold whitespace-nowrap">Supplier</th>
-                <th className="px-4 py-3 font-semibold whitespace-nowrap">Total Biaya</th>
-                <th className="px-4 py-3 font-semibold">Catatan</th>
-                <th className="px-4 py-3 font-semibold text-right whitespace-nowrap">Aksi</th>
+                <th className="px-4 py-3 font-semibold whitespace-nowrap">{i18n?.language === 'en' ? 'Date' : 'Tanggal'}</th>
+                <th className="px-4 py-3 font-semibold whitespace-nowrap">{i18n?.language === 'en' ? 'Supplier' : 'Supplier'}</th>
+                <th className="px-4 py-3 font-semibold whitespace-nowrap">{i18n?.language === 'en' ? 'Total Cost' : 'Total Biaya'}</th>
+                <th className="px-4 py-3 font-semibold">{i18n?.language === 'en' ? 'Notes' : 'Catatan'}</th>
+                <th className="px-4 py-3 font-semibold text-right whitespace-nowrap">{i18n?.language === 'en' ? 'Action' : 'Aksi'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs text-slate-700 dark:text-slate-300">

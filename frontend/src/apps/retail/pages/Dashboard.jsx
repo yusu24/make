@@ -65,7 +65,7 @@ function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
 }
 
 const fmtRp = (val) =>
-  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
+  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(val || 0));
 
 // Keyed by tenant so switching accounts (impersonate, logout/login) within
 // the same browser tab can never show a previous user's cached numbers.

@@ -155,7 +155,7 @@ export default function SupplierReturns() {
                   <td className="text-center">
                     <span className={`retail-badge ${r.status === 'confirmed' ? 'retail-badge-primary' : ''}`}>{r.status === 'confirmed' ? 'Dikonfirmasi' : 'Draft'}</span>
                   </td>
-                  <td className="text-right">Rp {Number(r.total_amount).toLocaleString('id-ID')}</td>
+                  <td className="text-right">Rp {Math.round(Number(r.total_amount || 0)).toLocaleString('id-ID')}</td>
                   <td className="pr-6 text-right">
                     <div className="flex gap-2 justify-end">
                       {r.status === 'draft' && (

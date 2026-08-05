@@ -51,6 +51,7 @@ import { AddWarehouseModal } from './components/modals/AddWarehouseModal';
 import { PdfExportModal } from './components/modals/PdfExportModal';
 import { AwbPrintModal } from './components/modals/AwbPrintModal';
 import { AddProductModal } from './components/modals/AddProductModal';
+import { ImportProductsModal } from './components/modals/ImportProductsModal';
 import { AddStockModal } from './components/modals/AddStockModal';
 import { AiAdvisorDrawer } from './components/AiAdvisorDrawer';
 
@@ -255,6 +256,7 @@ export default function App() {
   const [isAwbPrintOpen, setIsAwbPrintOpen] = useState(false);
   const [selectedOrderForAwb, setSelectedOrderForAwb] = useState<Order | null>(null);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [isImportProductsOpen, setIsImportProductsOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isAddStockOpen, setIsAddStockOpen] = useState(false);
   const [productToRestock, setProductToRestock] = useState<Product | null>(null);
@@ -636,7 +638,7 @@ export default function App() {
 
   // Handler for Sync Marketplace
   return (
-    <div className="min-h-screen bg-[#F2F4F7] dark:bg-[#0B0F19] text-[#101828] dark:text-slate-100 font-sans antialiased flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen max-w-full overflow-x-hidden bg-[#F2F4F7] dark:bg-[#0B0F19] text-[#101828] dark:text-slate-100 font-sans antialiased flex flex-col selection:bg-indigo-500 selection:text-white">
       {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
@@ -662,7 +664,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+        className={`flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden transition-all duration-300 ${
           collapsed ? 'md:pl-20' : 'md:pl-64'
         } pl-0`}
       >
@@ -704,7 +706,7 @@ export default function App() {
         )}
 
         {/* Dynamic View Body */}
-        <main className={`flex-1 p-4 md:p-6 lg:p-8 w-full min-w-0 ${activeTab === 'toko-offline' ? 'pt-16 md:pt-20' : ''}`}>
+        <main className={`flex-1 px-4 pb-4 md:px-6 md:pb-6 lg:px-8 lg:pb-8 w-full min-w-0 ${activeTab === 'toko-offline' ? 'pt-4 md:pt-6' : 'pt-20 md:pt-24'}`}>
           {activeTab === 'menu-utama' && (
             <MainDashboardView
               orders={orders}
@@ -730,6 +732,7 @@ export default function App() {
                 setProductToEdit(null);
                 setIsAddProductOpen(true);
               }}
+              onOpenImportModal={() => setIsImportProductsOpen(true)}
               onEditProduct={handleEditProductClick}
               onDeleteProduct={handleDeleteProduct}
               onRestockClick={(prod) => {
@@ -891,6 +894,14 @@ export default function App() {
         onSaveProduct={handleSaveProduct}
         productToEdit={productToEdit}
         onImageUploaded={handleProductImageUploaded}
+      />
+
+      <ImportProductsModal
+        isOpen={isImportProductsOpen}
+        onClose={() => setIsImportProductsOpen(false)}
+        onImportSuccess={(newProducts) => {
+          setProducts((prev) => [...newProducts, ...prev]);
+        }}
       />
 
       <AddStockModal

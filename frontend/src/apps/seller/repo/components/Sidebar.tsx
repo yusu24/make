@@ -31,6 +31,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { ActiveTab, StoreChannel } from '../types';
+import { useTranslation } from '../../../../contexts/I18nContext';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -49,10 +50,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   collapsed,
   onToggleCollapse,
   openAiAdvisor,
-  mobileMenuOpen,
+  mobileMenuOpen = false,
   setMobileMenuOpen,
   stores = [],
 }) => {
+  const i18n = useTranslation();
+  const t = i18n?.t || ((key: string) => key);
   const isKeuanganActive = activeTab.startsWith('keuangan-');
   const [keuanganOpen, setKeuanganOpen] = useState(isKeuanganActive);
 
@@ -119,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Dashboard */}
         <button
           onClick={() => setActiveTab('menu-utama')}
-          title={collapsed ? 'Dashboard' : ''}
+          title={collapsed ? t('seller.dashboard') : ''}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
             activeTab === 'menu-utama'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -127,13 +130,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }`}
         >
           <LayoutDashboard className={`w-5 h-5 shrink-0 ${activeTab === 'menu-utama' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Dashboard</span>}
+          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.dashboard')}</span>}
         </button>
 
         {/* Pesanan & E-Commerce */}
         <button
           onClick={() => setActiveTab('pesanan')}
-          title={collapsed ? 'Pesanan & E-Commerce' : ''}
+          title={collapsed ? t('seller.allOrders') : ''}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
             activeTab === 'pesanan'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -141,13 +144,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }`}
         >
           <ShoppingBag className={`w-5 h-5 shrink-0 ${activeTab === 'pesanan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Pesanan & E-Commerce</span>}
+          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.allOrders')}</span>}
         </button>
 
         {/* Katalog Produk */}
         <button
           onClick={() => setActiveTab('katalog')}
-          title={collapsed ? 'Katalog Produk' : ''}
+          title={collapsed ? t('seller.katalog') : ''}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
             activeTab === 'katalog'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -155,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }`}
         >
           <Package className={`w-5 h-5 shrink-0 ${activeTab === 'katalog' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Katalog Produk</span>}
+          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.katalog')}</span>}
         </button>
 
         {/* Marketplace & Sync Section */}
@@ -169,7 +172,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setMarketplaceOpen(!marketplaceOpen);
               }
             }}
-            title={collapsed ? 'Marketplace & Sync' : ''}
+            title={collapsed ? t('seller.marketplace') : ''}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
               isMarketplaceActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -177,7 +180,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <Globe className={`w-5 h-5 shrink-0 ${isMarketplaceActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">Marketplace</span>}
+            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.marketplace')}</span>}
             {!collapsed && (
               marketplaceOpen ? (
                 <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -198,7 +201,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <LayoutDashboard className="w-3.5 h-3.5 text-blue-500" />
-                <span>Connection Status</span>
+                <span>{t('seller.connectionStatus')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-connected')}
@@ -209,7 +212,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Link className="w-3.5 h-3.5 text-indigo-500" />
-                <span>Akun Terhubung</span>
+                <span>{t('seller.connectedAccounts')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-mapping')}
@@ -220,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Layers className="w-3.5 h-3.5 text-purple-500" />
-                <span>Product Mapping</span>
+                <span>{t('seller.productMapping')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-sync')}
@@ -231,7 +234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <RefreshCw className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Sync Center</span>
+                <span>{t('seller.syncCenter')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-history')}
@@ -242,7 +245,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <History className="w-3.5 h-3.5 text-amber-500" />
-                <span>Sync History</span>
+                <span>{t('seller.syncHistory')}</span>
               </button>
             </div>
           )}
@@ -259,7 +262,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setGudangOpen(!gudangOpen);
               }
             }}
-            title={collapsed ? 'Gudang & Stok' : ''}
+            title={collapsed ? t('seller.gudangStok') : ''}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
               isGudangActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -267,7 +270,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <WarehouseIcon className={`w-5 h-5 shrink-0 ${isGudangActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">Gudang & Stok</span>}
+            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.gudangStok')}</span>}
             {!collapsed && (
               gudangOpen ? (
                 <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -289,7 +292,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <WarehouseIcon className="w-3.5 h-3.5 text-indigo-500" />
-                <span>Manajemen Gudang</span>
+                <span>{t('seller.gudang')}</span>
               </button>
 
               <button
@@ -301,7 +304,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Truck className="w-3.5 h-3.5 text-orange-500" />
-                <span>Penerimaan Barang</span>
+                <span>{t('seller.penerimaanBarang')}</span>
               </button>
 
               <button
@@ -313,7 +316,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <ClipboardCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Stock Opname</span>
+                <span>{t('seller.stockOpname')}</span>
               </button>
             </div>
           )}
@@ -330,7 +333,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setShippingOpen(!shippingOpen);
               }
             }}
-            title={collapsed ? 'Shipping & Fulfillment' : ''}
+            title={collapsed ? t('seller.pengiriman') : ''}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
               isShippingActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -338,7 +341,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <Truck className={`w-5 h-5 shrink-0 ${isShippingActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">Pengiriman</span>}
+            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pengiriman')}</span>}
             {!collapsed && (
               shippingOpen ? (
                 <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -359,7 +362,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <LayoutDashboard className="w-3.5 h-3.5 text-teal-500" />
-                <span>Fulfillment Dashboard</span>
+                <span>{t('seller.fulfillmentDashboard')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('shipping-management')}
@@ -370,7 +373,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Box className="w-3.5 h-3.5 text-orange-500" />
-                <span>Manajemen Ekspedisi</span>
+                <span>{t('seller.manajemenEkspedisi')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('shipping-packing')}
@@ -381,7 +384,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <QrCode className="w-3.5 h-3.5 text-indigo-500" />
-                <span>Packing Improvement</span>
+                <span>{t('seller.packingImprovement')}</span>
               </button>
             </div>
           )}
@@ -390,7 +393,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Toko Offline / Kasir POS */}
         <button
           onClick={() => setActiveTab('toko-offline')}
-          title={collapsed ? 'Kasir POS (Toko Offline)' : ''}
+          title={collapsed ? t('seller.kasirPos') : ''}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
             activeTab === 'toko-offline'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -398,7 +401,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }`}
         >
           <Store className={`w-5 h-5 shrink-0 ${activeTab === 'toko-offline' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Kasir POS (Offline)</span>}
+          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.kasirPos')}</span>}
           {!collapsed && (
             <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
               NEW
@@ -417,7 +420,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setKeuanganOpen(!keuanganOpen);
               }
             }}
-            title={collapsed ? 'Keuangan' : ''}
+            title={collapsed ? t('seller.keuangan') : ''}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
               isKeuanganActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -425,7 +428,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <Wallet className={`w-5 h-5 shrink-0 ${isKeuanganActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">Keuangan</span>}
+            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.keuangan')}</span>}
             {!collapsed && (
               keuanganOpen ? (
                 <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -447,7 +450,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Pemasukan Lain</span>
+                <span>{t('seller.pemasukanLain')}</span>
               </button>
 
               <button
@@ -459,7 +462,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
-                <span>Pengeluaran</span>
+                <span>{t('seller.pengeluaran')}</span>
               </button>
 
               <button
@@ -471,7 +474,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Coins className="w-3.5 h-3.5 text-amber-500" />
-                <span>Ringkasan Kas</span>
+                <span>{t('seller.ringkasanKas')}</span>
               </button>
 
               <button
@@ -483,16 +486,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-blue-500" />
-                <span>Laporan Penjualan</span>
+                <span>{t('seller.laporanPenjualan')}</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Data Master Section (Accordion) — Master Data (supplier/channel)
-            kept separate from Data Pelanggan under one group so a long
-            customer list doesn't turn one page into an endless scroll
-            alongside suppliers and channel status. */}
+        {/* Data Master Section (Accordion) */}
         <div>
           <button
             onClick={() => {
@@ -503,7 +503,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setMasterOpen(!masterOpen);
               }
             }}
-            title={collapsed ? 'Data Master' : ''}
+            title={collapsed ? t('seller.dataMaster') : ''}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
               isMasterActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -511,7 +511,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <Database className={`w-5 h-5 shrink-0 ${isMasterActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">Data Master</span>}
+            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.dataMaster')}</span>}
             {!collapsed && (
               masterOpen ? (
                 <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -533,7 +533,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Layers className="w-3.5 h-3.5 text-violet-500" />
-                <span>Master Data & Integrasi</span>
+                <span>{t('seller.masterDataIntegrasi')}</span>
               </button>
 
               <button
@@ -545,7 +545,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Users className="w-3.5 h-3.5 text-teal-500" />
-                <span>Data Pelanggan</span>
+                <span>{t('seller.dataPelanggan')}</span>
               </button>
             </div>
           )}
@@ -554,7 +554,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Notification Center */}
         <button
           onClick={() => setActiveTab('notification-center')}
-          title={collapsed ? 'Pusat Notifikasi' : ''}
+          title={collapsed ? t('seller.pusatNotifikasi') : ''}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
             activeTab === 'notification-center'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -562,7 +562,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }`}
         >
           <Bell className={`w-5 h-5 shrink-0 ${activeTab === 'notification-center' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Pusat Notifikasi</span>}
+          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pusatNotifikasi')}</span>}
         </button>
 
         {/* Pengaturan Sistem */}
@@ -576,7 +576,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setSettingsOpen(!settingsOpen);
               }
             }}
-            title={collapsed ? 'Pengaturan Sistem' : ''}
+            title={collapsed ? t('seller.pengaturanSistem') : ''}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
               isSettingsActive
                 ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -584,7 +584,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <Settings className={`w-5 h-5 shrink-0 ${isSettingsActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">Pengaturan Sistem</span>}
+            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pengaturanSistem')}</span>}
             {!collapsed && (
               settingsOpen ? (
                 <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -606,7 +606,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Store className="w-3.5 h-3.5 text-orange-500" />
-                <span>Pengaturan Aplikasi</span>
+                <span>{t('seller.pengaturanAplikasi')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings-account')}
@@ -617,7 +617,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <User className="w-3.5 h-3.5 text-sky-500" />
-                <span>Akun Saya</span>
+                <span>{t('seller.akunSaya')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings-roles')}
@@ -628,7 +628,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Shield className="w-3.5 h-3.5 text-violet-500" />
-                <span>Hak Akses & Peran</span>
+                <span>{t('seller.hakAksesPeran')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings-users')}
@@ -639,7 +639,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Users className="w-3.5 h-3.5 text-teal-500" />
-                <span>Manajemen User</span>
+                <span>{t('seller.manajemenUser')}</span>
               </button>
             </div>
           )}

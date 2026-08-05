@@ -26,6 +26,7 @@ import { ThermalReceiptModal } from '../modals/ThermalReceiptModal';
 import api from '../../../../../services/api';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
+import { useTranslation } from '../../../../../contexts/I18nContext';
 
 interface PosOfflineViewProps {
   products: Product[];
@@ -46,6 +47,8 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
   onAddNewOfflineOrder,
   onDeductStock,
 }) => {
+  const i18n = useTranslation();
+  const t = i18n?.t || ((key: string) => key);
   // Navigation tab state inside Offline POS view
   const [activeSubTab, setActiveSubTab] = useState<'register' | 'history'>('register');
 
@@ -279,7 +282,7 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
                 {storeSettings.name}
               </h2>
               <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                ● Kasir Aktif
+                ● {i18n?.language === 'en' ? 'Cashier Active' : 'Kasir Aktif'}
               </span>
             </div>
             {storeSettings.address && (
@@ -301,7 +304,7 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
             }`}
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>Mesin Kasir (POS)</span>
+            <span>{i18n?.language === 'en' ? 'POS Register' : 'Mesin Kasir (POS)'}</span>
           </button>
           <button
             onClick={() => setActiveSubTab('history')}
@@ -312,7 +315,7 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
             }`}
           >
             <Receipt className="w-4 h-4" />
-            <span>Riwayat Nota ({offlineOrdersAll.length})</span>
+            <span>{i18n?.language === 'en' ? `Receipt History (${offlineOrdersAll.length})` : `Riwayat Nota (${offlineOrdersAll.length})`}</span>
           </button>
         </div>
       </div>

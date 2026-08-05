@@ -61,7 +61,7 @@ export default function FinanceSummary() {
   };
 
   const formatRp = (num) => {
-    return 'Rp ' + Number(num).toLocaleString('id-ID');
+    return 'Rp ' + Number(num || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
   };
 
   const formatDate = (d) => new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });

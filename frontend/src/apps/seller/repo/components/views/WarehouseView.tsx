@@ -1,8 +1,10 @@
 import React from 'react';
-import { Warehouse as WarehouseIcon, MapPin, User, Phone, ArrowUpRight, ArrowDownLeft, RefreshCw, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Warehouse as WarehouseIcon, MapPin, User, Phone, ArrowUpRight, ArrowDownLeft, RefreshCw, Plus, Pencil, Trash2, Download } from 'lucide-react';
 import { Warehouse, StockMovement } from '../../types';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
+import { exportToCsv } from '../../utils/excelExport';
+import { useTranslation } from '../../../../../contexts/I18nContext';
 
 interface WarehouseViewProps {
   warehouses: Warehouse[];
@@ -13,30 +15,57 @@ interface WarehouseViewProps {
 }
 
 export const WarehouseView: React.FC<WarehouseViewProps> = ({ warehouses, stockMovements, onAddWarehouse, onEditWarehouse, onDeleteWarehouse }) => {
+  const i18n = useTranslation();
+  const t = i18n?.t || ((key: string) => key);
   const { paginatedItems: paginatedMovements, currentPage, totalPages, totalItems, pageSize, setPageSize, setCurrentPage } = usePagination(stockMovements);
+
+  const handleExportExcel = () => {
+    const headers = ['Tanggal', 'Produk', 'SKU', 'Tipe Mutasi', 'Jumlah (Qty)', 'Gudang Asal/Tujuan', 'Keterangan'];
+    const rows = stockMovements.map((sm) => [
+      sm.date,
+      sm.productName,
+      sm.sku,
+      sm.type,
+      sm.quantity,
+      sm.warehouseName,
+      sm.notes || '-',
+    ]);
+    exportToCsv('Riwayat_Mutasi_Stok_Gudang', headers, rows);
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header */}
       <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <WarehouseIcon className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">Manajemen Gudang & Multi-Warehouse Stock</span>
+            <span className="truncate">{t('seller.gudang')}</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Pantau stok fisik barang di Gudang Jakarta & Surabaya serta riwayat mutasi stok.
+            {t('seller.gudangSubtitle')}
           </p>
         </div>
-        
-        <button
-          onClick={onAddWarehouse}
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Tambah Gudang</span>
-          <span className="sm:hidden">Tambah</span>
-        </button>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleExportExcel}
+            className="px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+            title="Export Riwayat Mutasi ke Excel/CSV"
+          >
+            <Download className="w-4 h-4" />
+            <span>{t('seller.exportExcel')}</span>
+          </button>
+
+          <button
+            onClick={onAddWarehouse}
+            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('seller.addWarehouse')}</span>
+            <span className="sm:hidden">Tambah</span>
+          </button>
+        </div>
       </div>
 
       {/* Warehouse Cards */}
@@ -58,7 +87,7 @@ export const WarehouseView: React.FC<WarehouseViewProps> = ({ warehouses, stockM
               <div className="flex items-center gap-1.5 shrink-0">
                 {wh.isDefault && (
                   <span className="text-[10px] font-extrabold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-200">
-                    Gudang Utama
+                    {i18n?.language === 'en' ? 'Main Warehouse' : 'Gudang Utama'}
                   </span>
                 )}
                 <button
@@ -84,11 +113,11 @@ export const WarehouseView: React.FC<WarehouseViewProps> = ({ warehouses, stockM
 
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-700/60 text-xs">
               <div>
-                <span className="text-[10px] text-slate-400 font-semibold uppercase">TOTAL BARANG</span>
+                <span className="text-[10px] text-slate-400 font-semibold uppercase">{i18n?.language === 'en' ? 'TOTAL ITEMS' : 'TOTAL BARANG'}</span>
                 <div className="text-base font-black text-slate-900 dark:text-slate-100">{wh.totalItems.toLocaleString()} unit</div>
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 font-semibold uppercase">PENANGGUNG JAWAB (PIC)</span>
+                <span className="text-[10px] text-slate-400 font-semibold uppercase">{i18n?.language === 'en' ? 'PERSON IN CHARGE (PIC)' : 'PENANGGUNG JAWAB (PIC)'}</span>
                 <div className="font-semibold text-slate-800 dark:text-slate-200">{wh.picName}</div>
                 <div className="text-[11px] text-slate-400">{wh.picPhone}</div>
               </div>
@@ -101,7 +130,7 @@ export const WarehouseView: React.FC<WarehouseViewProps> = ({ warehouses, stockM
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
         <div className="p-4 bg-slate-50/60 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-            Riwayat Mutasi & Opname Stok
+            {i18n?.language === 'en' ? 'Stock Movement & Audit History' : 'Riwayat Mutasi & Opname Stok'}
           </h3>
         </div>
 
@@ -109,11 +138,11 @@ export const WarehouseView: React.FC<WarehouseViewProps> = ({ warehouses, stockM
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
-                <th className="py-3 px-4">WAKTU</th>
-                <th className="py-3 px-4">PRODUK & SKU</th>
-                <th className="py-3 px-4">JENIS MUTASI</th>
-                <th className="py-3 px-4">JUMLAH (QTY)</th>
-                <th className="py-3 px-4">CATATAN</th>
+                <th className="py-3 px-4">{i18n?.language === 'en' ? 'DATE / TIME' : 'WAKTU'}</th>
+                <th className="py-3 px-4">{i18n?.language === 'en' ? 'PRODUCT & SKU' : 'PRODUK & SKU'}</th>
+                <th className="py-3 px-4">{i18n?.language === 'en' ? 'MOVEMENT TYPE' : 'JENIS MUTASI'}</th>
+                <th className="py-3 px-4">{i18n?.language === 'en' ? 'QUANTITY' : 'JUMLAH (QTY)'}</th>
+                <th className="py-3 px-4">{i18n?.language === 'en' ? 'NOTES' : 'CATATAN'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
@@ -133,7 +162,7 @@ export const WarehouseView: React.FC<WarehouseViewProps> = ({ warehouses, stockM
                         : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                     }`}>
                       {mov.type === 'Masuk' ? <ArrowDownLeft className="w-3 h-3 text-emerald-600" /> : <ArrowUpRight className="w-3 h-3" />}
-                      {mov.type}
+                      {mov.type === 'Masuk' ? (i18n?.language === 'en' ? 'Stock In' : 'Masuk') : mov.type === 'Keluar' ? (i18n?.language === 'en' ? 'Stock Out' : 'Keluar') : mov.type}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 font-black text-slate-900 dark:text-slate-100">

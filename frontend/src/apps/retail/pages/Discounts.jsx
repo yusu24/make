@@ -103,7 +103,7 @@ export default function Discounts() {
                   <td className="pl-6"><span className="retail-badge retail-badge-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Tag size={11} /> {d.code}</span></td>
                   <td className="retail-text-primary">{d.name}</td>
                   <td className="retail-text-secondary">{d.type === 'percentage' ? 'Persentase' : d.type === 'flat' ? 'Nominal' : 'BOGO'}</td>
-                  <td className="text-center">{d.type === 'percentage' ? `${d.value}%` : `Rp ${Number(d.value).toLocaleString('id-ID')}`}</td>
+                  <td className="text-center">{d.type === 'percentage' ? `${d.value}%` : `Rp ${Math.round(Number(d.value || 0)).toLocaleString('id-ID')}`}</td>
                   <td className="text-center">{d.used_count}{d.max_uses ? ` / ${d.max_uses}` : ''}</td>
                   <td className="text-center">
                     <span className={`retail-badge ${d.is_active ? 'retail-badge-primary' : ''}`}>{d.is_active ? 'Aktif' : 'Nonaktif'}</span>

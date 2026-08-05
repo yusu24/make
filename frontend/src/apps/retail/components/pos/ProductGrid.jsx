@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Clock, Menu } from 'lucide-react';
 
-const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
 
 export default function ProductGrid({ products, categories, cart, cashierName, onAddItem, onMenuToggle }) {
   const [search, setSearch] = useState('');

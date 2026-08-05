@@ -9,12 +9,17 @@ import {
   Tag,
   Layers,
   ArrowUpDown,
-  PackagePlus
+  PackagePlus,
+  FileSpreadsheet,
+  Download,
+  Upload,
 } from 'lucide-react';
 import { Product, MarketplacePlatform } from '../../types';
 import { formatIDR } from '../../utils/formatters';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
+import { exportToCsv } from '../../utils/excelExport';
+import { useTranslation } from '../../../../../contexts/I18nContext';
 
 interface CatalogViewProps {
   products: Product[];
@@ -22,6 +27,7 @@ interface CatalogViewProps {
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (product: Product) => void;
   onRestockClick: (product: Product) => void;
+  onOpenImportModal?: () => void;
 }
 
 export const CatalogView: React.FC<CatalogViewProps> = ({
@@ -30,7 +36,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   onEditProduct,
   onDeleteProduct,
   onRestockClick,
+  onOpenImportModal,
 }) => {
+  const i18n = useTranslation();
+  const t = i18n?.t || ((key: string) => key);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -45,28 +54,74 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
   const { paginatedItems: paginatedProducts, currentPage, totalPages, totalItems, pageSize, setPageSize, setCurrentPage } = usePagination(filteredProducts);
 
+  const handleExportExcel = () => {
+    const headers = [
+      'SKU Master',
+      'Nama Produk',
+      'Kategori',
+      'HPP Modal (Rp)',
+      'Harga Tokopedia (Rp)',
+      'Harga Shopee (Rp)',
+      'Harga TikTok (Rp)',
+      'Total Stok',
+      'Status',
+    ];
+    const rows = filteredProducts.map((p) => [
+      p.sku,
+      p.name,
+      p.category,
+      p.costPrice,
+      p.tokopediaPrice,
+      p.shopeePrice,
+      p.tiktokPrice,
+      p.totalStock,
+      p.status,
+    ]);
+    exportToCsv('Katalog_Produk_Bizora_Seller', headers, rows);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header */}
       <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Package className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">Katalog Produk Master & Sync Harga</span>
+            <span className="truncate">{t('seller.katalog')}</span>
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Atur SKU Master, HPP modal, serta harga jual khusus Shopee, Tokopedia, & TikTok Shop.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full truncate">
+            {t('seller.katalogSubtitle')}
           </p>
         </div>
 
-        <button
-          onClick={onAddProductClick}
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Tambah Produk Master</span>
-          <span className="sm:hidden">Tambah</span>
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={onOpenImportModal}
+            className="px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Import Produk Awal via Excel/CSV"
+          >
+            <Upload className="w-4 h-4" />
+            <span className="hidden md:inline">{t('seller.importExcel')}</span>
+          </button>
+
+          <button
+            onClick={handleExportExcel}
+            className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Export Katalog ke Excel/CSV"
+          >
+            <Download className="w-4 h-4 text-emerald-600" />
+            <span className="hidden md:inline">{t('seller.exportExcel')}</span>
+          </button>
+
+          <button
+            onClick={onAddProductClick}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('seller.addProduct')}</span>
+            <span className="sm:hidden">Tambah</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Catalog Card */}
@@ -77,7 +132,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Cari Produk atau SKU..."
+              placeholder={t('seller.searchProduct')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none"
@@ -90,7 +145,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
             >
-              <option value="all">Semua Kategori</option>
+              <option value="all">{t('seller.allCategories')}</option>
               <option value="Beauty & Skincare">Beauty & Skincare</option>
               <option value="Electronics & Gadget">Electronics & Gadget</option>
               <option value="Fashion & Apparel">Fashion & Apparel</option>
@@ -103,12 +158,12 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
-                <th className="py-3 px-4">PRODUK & SKU MASTER</th>
-                <th className="py-3 px-4">HPP (MODAL)</th>
-                <th className="py-3 px-4">HARGA MARKTPLACE</th>
-                <th className="py-3 px-4">TOTAL STOK</th>
-                <th className="py-3 px-4">STATUS</th>
-                <th className="py-3 px-4 text-center">AKSI</th>
+                <th className="py-3 px-4">{t('seller.sku')}</th>
+                <th className="py-3 px-4">{t('seller.costPrice')}</th>
+                <th className="py-3 px-4">HARGA MARKETPLACE</th>
+                <th className="py-3 px-4">{t('seller.totalStock')}</th>
+                <th className="py-3 px-4">{t('seller.status')}</th>
+                <th className="py-3 px-4 text-center">{t('seller.action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
@@ -161,7 +216,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                         ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                         : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
                     }`}>
-                      {prod.status}
+                      {prod.status === 'Aktif' ? (i18n?.language === 'en' ? 'Active' : 'Stok Aman') : prod.status === 'Stok Menipis' ? t('seller.statusStockLow') : t('seller.statusStockOut')}
                     </span>
                   </td>
 

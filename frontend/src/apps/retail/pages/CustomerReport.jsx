@@ -55,7 +55,7 @@ export default function CustomerReport() {
                     <span className="badge badge-gray">{tc.visit_count}x Visit</span>
                   </td>
                   <td className="text-right">
-                    <span className="text-primary-600">Rp {Number(tc.total_spent).toLocaleString('id-ID')}</span>
+                    <span className="text-primary-600">Rp {Math.round(Number(tc.total_spent || 0)).toLocaleString('id-ID')}</span>
                   </td>
                   <td className="text-right pr-6">
                     <span className="text-slate-600">Rp {Math.round(tc.total_spent / tc.visit_count).toLocaleString('id-ID')}</span>

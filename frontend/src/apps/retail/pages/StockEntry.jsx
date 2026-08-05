@@ -121,7 +121,7 @@ export default function StockEntry() {
             </div>
             <div>
                <p className="text-2xl text-slate-900 leading-tight font-semibold">
-                  Rp {purchases.reduce((acc, p) => acc + Number(p.total_cost), 0).toLocaleString('id-ID')}
+                  Rp {Math.round(purchases.reduce((acc, p) => acc + Number(p.total_cost || 0), 0)).toLocaleString('id-ID')}
                </p>
                <p className="text-xs text-slate-400 mt-1">Total akumulasi dana untuk pengadaan barang bulan ini.</p>
             </div>
@@ -206,7 +206,7 @@ export default function StockEntry() {
                     <span className="retail-badge retail-badge-primary">{p.items?.length || 0} Varian</span>
                   </td>
                   <td>
-                    <span className="retail-text-primary">Rp {Number(p.total_cost).toLocaleString('id-ID')}</span>
+                     <span className="retail-text-primary">Rp {Math.round(Number(p.total_cost || 0)).toLocaleString('id-ID')}</span>
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -370,8 +370,8 @@ export default function StockEntry() {
                     <tr key={item.id}>
                       <td>{item.product?.name || `#${item.product_id}`}</td>
                       <td className="text-center">{item.qty}</td>
-                      <td className="text-right">Rp {Number(item.cost_per_item).toLocaleString('id-ID')}</td>
-                      <td className="text-right">Rp {Number(item.subtotal).toLocaleString('id-ID')}</td>
+                      <td className="text-right">Rp {Math.round(Number(item.cost_per_item || 0)).toLocaleString('id-ID')}</td>
+                      <td className="text-right">Rp {Math.round(Number(item.subtotal || 0)).toLocaleString('id-ID')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -387,7 +387,7 @@ export default function StockEntry() {
 
             <div className="flex justify-between items-center pt-3" style={{ borderTop: '1px solid var(--retail-border, #e2e8f0)' }}>
               <span className="text-sm font-semibold retail-text-primary">Total Tagihan</span>
-              <span className="text-lg font-bold retail-text-primary">Rp {Number(detailPurchase.total_cost).toLocaleString('id-ID')}</span>
+              <span className="text-lg font-bold retail-text-primary">Rp {Math.round(Number(detailPurchase.total_cost || 0)).toLocaleString('id-ID')}</span>
             </div>
 
             <div className="modal__actions">

@@ -88,7 +88,7 @@ export default function Payables() {
             <span className="text-sm font-medium text-slate-500">Total Hutang</span>
           </div>
           <div>
-            <p className="text-2xl text-slate-900 leading-tight font-semibold">Rp {Number(summary.total_debt || 0).toLocaleString('id-ID')}</p>
+            <p className="text-2xl text-slate-900 leading-tight font-semibold">Rp {Number(summary.total_debt || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</p>
             <p className="text-xs text-slate-400 mt-1">Total keseluruhan hutang ke supplier.</p>
           </div>
         </div>
@@ -102,7 +102,7 @@ export default function Payables() {
             <span className="text-sm font-medium text-slate-500">Sudah Dibayar</span>
           </div>
           <div>
-            <p className="text-2xl text-emerald-600 leading-tight font-semibold">Rp {Number(summary.total_paid || 0).toLocaleString('id-ID')}</p>
+            <p className="text-2xl text-emerald-600 leading-tight font-semibold">Rp {Number(summary.total_paid || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</p>
             <p className="text-xs text-slate-400 mt-1">Total pembayaran yang telah dilunasi.</p>
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function Payables() {
             <span className="text-sm font-medium text-slate-500">Sisa Hutang</span>
           </div>
           <div>
-            <p className="text-2xl text-amber-600 leading-tight font-semibold">Rp {Number(summary.total_outstanding || 0).toLocaleString('id-ID')}</p>
+            <p className="text-2xl text-amber-600 leading-tight font-semibold">Rp {Number(summary.total_outstanding || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</p>
             <p className="text-xs text-slate-400 mt-1">Hutang yang belum dilunasi.</p>
           </div>
         </div>
@@ -164,9 +164,9 @@ export default function Payables() {
               paginatedData.map(p => (
                 <tr key={p.id}>
                   <td className="pl-6 retail-text-primary">{p.supplier?.name || '-'}</td>
-                  <td className="text-right">Rp {Number(p.total_amount).toLocaleString('id-ID')}</td>
-                  <td className="text-right retail-text-secondary">Rp {Number(p.paid_amount).toLocaleString('id-ID')}</td>
-                  <td className="text-right font-semibold">Rp {Number(p.remaining ?? (p.total_amount - p.paid_amount)).toLocaleString('id-ID')}</td>
+                  <td className="text-right">Rp {Number(p.total_amount || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
+                  <td className="text-right retail-text-secondary">Rp {Number(p.paid_amount || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
+                  <td className="text-right font-semibold">Rp {Number(p.remaining ?? (p.total_amount - p.paid_amount) || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
                   <td className="text-center retail-text-secondary" style={{ fontSize: 12 }}>{p.due_date || '-'}</td>
                   <td className="text-center">
                     <span className={`retail-badge ${p.status === 'paid' ? 'retail-badge-primary' : ''}`}>{p.status === 'paid' ? 'Lunas' : p.status === 'partial' ? 'Sebagian' : 'Belum Bayar'}</span>

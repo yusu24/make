@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, Wallet, CreditCard, Banknote, Landmark, ArrowRight, CircleAlert } from 'lucide-react';
 
-const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
 
 const PAYMENT_METHODS = [
   { id: 'CASH', name: 'Tunai', icon: Banknote, color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
