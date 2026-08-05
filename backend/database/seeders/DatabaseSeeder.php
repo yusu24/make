@@ -328,7 +328,7 @@ class DatabaseSeeder extends Seeder
                     'user_id' => $user->id,
                     'tanggal' => now()->subDays($e['days_ago'])->toDateString(),
                     'nominal' => $e['nominal'],
-                    'expense_category_id' => $expenseCatModels[$e['cat']]->id,
+                    'finance_category_id' => $expenseCatModels[$e['cat']]->id,
                 ]
             );
         }
