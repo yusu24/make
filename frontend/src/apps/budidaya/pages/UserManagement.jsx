@@ -3,9 +3,10 @@ import { api } from '../../../lib/api'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
-
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
 export default function UserManagement() {
+  const terms = useBudidayaTerms()
   const [staff, setStaff]     = useState([])
   const [stats, setStats]     = useState({ total: 124, active: 48, managers: 12, security: 98 })
   const [roles, setRoles]     = useState([])
@@ -71,8 +72,8 @@ export default function UserManagement() {
     border: '1px solid #E9F0EC'
   }
   const badge = (bg, color) => ({
-    padding: '4px 12px', borderRadius: '40px', fontSize: '11px', fontWeight: '800',
-    background: bg, color, textTransform: 'uppercase', letterSpacing: '0.04em'
+    padding: '4px 12px', borderRadius: '40px', fontSize: '11px', fontWeight: '700',
+    background: bg, color
   })
 
   const totalPages = Math.ceil(total / PER_PAGE) || 1
@@ -95,7 +96,7 @@ export default function UserManagement() {
       <div className="aq-grid-4">
         {[
           { label: 'Total staf',         val: stats.total,    sub: '+4 bulan ini',       subColor: '#059669', icon: 'groups',             iconBg: '#D1FAE5', iconColor: '#059669' },
-          { label: 'Aktif sekarang',     val: stats.active,   sub: 'Di 12 tambak',       subColor: '#475569', icon: 'sensors',            iconBg: '#D1FAE5', iconColor: '#059669' },
+          { label: 'Aktif sekarang',     val: stats.active,   sub: `Di unit ${terms.unitLower}`, subColor: '#475569', icon: 'sensors',    iconBg: '#D1FAE5', iconColor: '#059669' },
           { label: 'Manajer',            val: stats.managers, sub: 'Administrator Sistem',subColor: '#475569', icon: 'admin_panel_settings',iconBg: '#F1F5F9', iconColor: '#475569' },
           { label: 'Kesehatan keamanan', val: `${stats.security}%`, sub: 'MFA diaktifkan', subColor: '#059669', icon: 'check_circle', iconBg: '#D1FAE5', iconColor: '#059669' },
         ].map((s, i) => (
@@ -225,7 +226,7 @@ export default function UserManagement() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             {[
-              { icon: 'security', title: 'Autentikasi multi-faktor', desc: 'Diterapkan untuk semua peran Manajer dan Admin. Direkomendasikan bagi Pekerja yang mengakses data tambak kritis.' },
+              { icon: 'security', title: 'Autentikasi multi-faktor', desc: 'Diterapkan untuk semua peran Manajer dan Admin. Direkomendasikan bagi Pekerja yang mengakses data operasional kritis.' },
               { icon: 'history', title: 'Sesi berakhir otomatis', desc: 'Sesi aktif secara otomatis dihentikan setelah 45 menit ketidakaktifan untuk memastikan keamanan.' },
             ].map(p => (
               <div key={p.title} style={{ padding: '24px', background: '#F8FAF9', borderRadius: '20px', border: '1px solid #E9F0EC' }}>

@@ -107,10 +107,21 @@ export default function SaasRoles() {
     <>
       <div className="animate-fade-in">
         <div className="page-header">
-          <div>
-            <h2 className="page-title">SaaS Roles & Permissions</h2>
-            <p className="page-sub">{roles.length} role terdaftar</p>
+          <h2 className="page-title">SaaS Roles & Permissions</h2>
+        </div>
+
+        <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+          <div className="search-wrap" style={{ flex: 1, minWidth: 200, maxWidth: 360 }}>
+            <span className="search-icon">🔍</span>
+            <input
+              id="input-search-roles"
+              className="form-input search-input"
+              placeholder="Cari nama role atau deskripsi..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
+
           <button
             id="btn-add-role"
             className="btn btn-primary"
@@ -123,19 +134,6 @@ export default function SaasRoles() {
           >
             + Tambah Role
           </button>
-        </div>
-
-        <div className="filter-bar">
-          <div className="search-wrap">
-            <span className="search-icon">🔍</span>
-            <input
-              id="input-search-roles"
-              className="form-input search-input"
-              placeholder="Cari nama role atau deskripsi..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
         </div>
 
         <div className="table-wrap table-responsive">

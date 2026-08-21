@@ -6,7 +6,7 @@ import {
   LogOut, Inbox, ClipboardList, Database, Wallet, Settings, User,
   HelpCircle, ServerCog, FileText, Zap, Shield, ChevronDown, ChevronRight,
   Receipt, Tag, Archive, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight,
-  Store, Globe, Box
+  Store, Globe, Box, Printer, ArrowRightLeft, BookOpen
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
@@ -24,61 +24,63 @@ const NAV_ITEMS = [
     ]
   },
   {
-    section: 'Tenant',
-    icon: <Users size={18} />,
+    section: 'Manajemen Tenant',
+    icon: <Store size={18} />,
     adminOnly: true,
     items: [
-      { path: '/tenants', icon: <Truck size={18} />,  label: 'Tenant Management' },
-      { path: '/users',   icon: <Users size={18} />,  label: 'Users' },
+      { path: '/tenants', icon: <Store size={18} />,  label: 'Daftar Tenant' },
+      { path: '/kyc',     icon: <Shield size={18} />, label: 'Verifikasi KYC' },
+      { path: '/users',   icon: <Users size={18} />,  label: 'Pengguna Platform' },
     ]
   },
   {
-    section: 'Admin Settings',
-    icon: <Shield size={18} />,
-    adminOnly: true,
-    items: [
-      { path: '/admins',     icon: <UserCheck size={18} />, label: 'Admins' },
-      { path: '/saas-roles', icon: <Shield size={18} />,    label: 'SaaS Roles' },
-      { path: '/categories', icon: <Layers size={18} />,    label: 'Business Categories' },
-    ]
-  },
-  {
-    section: 'Billing',
+    section: 'Langganan & Finansial',
     icon: <CreditCard size={18} />,
     adminOnly: true,
     items: [
-      { path: '/subscriptions',     icon: <CreditCard size={18} />, label: 'Subscriptions' },
-      { path: '/packages-features', icon: <Package size={18} />,    label: 'Packages & Features' },
-      { path: '/finance',           icon: <Wallet size={18} />,     label: 'Finance' },
+      { path: '/packages-features', icon: <Package size={18} />,    label: 'Paket & Fitur' },
+      { path: '/subscriptions',     icon: <CreditCard size={18} />, label: 'Langganan Aktif' },
+      { path: '/finance',           icon: <Wallet size={18} />,     label: 'Finansial & Faktur' },
     ]
   },
   {
-    section: 'Operations',
+    section: 'Modul & Kategori',
+    icon: <Layers size={18} />,
+    adminOnly: true,
+    items: [
+      { path: '/categories',  icon: <Layers size={18} />,   label: 'Kategori Bisnis' },
+      { path: '/module-docs', icon: <BookOpen size={18} />, label: 'Dokumentasi Modul' },
+    ]
+  },
+  {
+    section: 'Operasional & Layanan',
     icon: <ServerCog size={18} />,
     adminOnly: true,
     items: [
-      { path: '/support-center',       icon: <HelpCircle size={18} />,    label: 'Support Center' },
-      { path: '/system-monitoring',    icon: <ServerCog size={18} />,     label: 'System Monitoring' },
-      { path: '/content-announcement', icon: <FileText size={18} />,      label: 'Content & Announcement' },
+      { path: '/support-center',       icon: <HelpCircle size={18} />, label: 'Pusat Bantuan' },
+      { path: '/content-announcement', icon: <FileText size={18} />,   label: 'Pengumuman & Konten' },
+      { path: '/system-monitoring',    icon: <ServerCog size={18} />,  label: 'Monitoring Sistem' },
     ]
   },
   {
-    section: 'Reports',
+    section: 'Laporan & Keamanan',
     icon: <BarChart2 size={18} />,
     adminOnly: true,
     items: [
-      { path: '/reports-analytics', icon: <BarChart2 size={18} />,    label: 'Reports & Analytics' },
-      { path: '/logs',              icon: <ClipboardList size={18} />, label: 'Security & Audit' },
+      { path: '/reports-analytics', icon: <BarChart2 size={18} />,     label: 'Laporan & Analitik' },
+      { path: '/logs',              icon: <ClipboardList size={18} />, label: 'Log Audit & Aktivitas' },
     ]
   },
   {
-    section: 'Platform',
-    icon: <Zap size={18} />,
+    section: 'Pengaturan Platform',
+    icon: <Settings size={18} />,
     adminOnly: true,
     items: [
-      { path: '/settings',               icon: <Settings size={18} />, label: 'Settings' },
-      { path: '/developer-integrations', icon: <Zap size={18} />,     label: 'Developer & Integrations' },
-      { path: '/backups',                icon: <Archive size={18} />, label: 'Backup Data' },
+      { path: '/admins',                 icon: <UserCheck size={18} />, label: 'Kelola Admin' },
+      { path: '/saas-roles',             icon: <Shield size={18} />,    label: 'Role & Hak Akses' },
+      { path: '/developer-integrations', icon: <Zap size={18} />,       label: 'Integrasi & Developer' },
+      { path: '/settings',               icon: <Settings size={18} />,  label: 'Pengaturan Umum' },
+      { path: '/backups',                icon: <Archive size={18} />,   label: 'Cadangan Data' },
     ]
   },
   {
@@ -95,31 +97,44 @@ const NAV_ITEMS = [
 // are always visible (dashboard, subscription, support, profile).
 const RETAIL_PATH_PERMISSIONS = {
   '/retail/products': 'catalog',
+  '/retail/batches': 'catalog',
+  '/retail/serials': 'catalog',
+  '/retail/purchase-orders': 'purchasing',
   '/retail/stock': 'purchasing',
   '/retail/inventory': 'inventory',
   '/retail/stock-movements': 'inventory',
+  '/retail/stock-transfers': 'inventory',
   '/retail/stock-opname': 'inventory',
   '/retail/supplier-returns': 'purchasing',
   '/retail/transactions': 'pos',
+  '/retail/shifts': 'pos',
   '/retail/customer-returns': 'pos',
   '/retail/discounts': 'discounts',
   '/retail/pricelists': 'discounts',
+  '/retail/print-labels': 'master',
   '/retail/categories': 'master',
   '/retail/units': 'master',
   '/retail/suppliers': 'master',
   '/retail/customers': 'master',
+  '/retail/outlets': 'master',
   '/retail/settings': 'master',
   '/retail/staff': 'staff',
   '/retail/roles': 'roles',
   '/retail/reports/sales': 'reports',
   '/retail/reports/products': 'reports',
   '/retail/reports/customers': 'reports',
+  '/retail/reports/consignment': 'reports',
+  '/retail/reports/shifts': 'reports',
+  '/retail/reports/payments': 'reports',
   '/retail/finance/summary': 'finance',
   '/retail/finance/incomes': 'finance',
   '/retail/finance/expenses': 'finance',
   '/retail/finance/payables': 'finance',
   '/retail/finance/receivables': 'finance',
   '/retail/finance-categories': 'finance',
+  '/retail/finance/transfers': 'finance',
+  '/retail/finance/cash-flow': 'finance',
+  '/retail/finance/tax-report': 'finance',
 }
 
 function filterNavByPermission(sections, user) {
@@ -159,9 +174,11 @@ const RETAIL_NAV_ITEMS = [
     section: 'Logistik & Stok',
     icon: <Truck size={20} />,
     items: [
+      { path: '/retail/purchase-orders', icon: <ShoppingCart size={24} />, label: 'Purchase Order (PO)' },
       { path: '/retail/stock',           icon: <Inbox size={24} />,          label: 'Penerimaan Barang' },
       { path: '/retail/inventory',       icon: <ClipboardList size={24} />, label: 'Stok Barang' },
       { path: '/retail/stock-movements', icon: <RefreshCw size={24} />,      label: 'Riwayat Stok' },
+      { path: '/retail/stock-transfers', icon: <ArrowRightLeft size={24} />, label: 'Transfer Stok' },
       { path: '/retail/stock-opname',    icon: <UserCheck size={24} />,      label: 'Stock Opname' },
       { path: '/retail/supplier-returns', icon: <Truck size={24} />,         label: 'Retur ke Supplier' },
     ]
@@ -171,9 +188,10 @@ const RETAIL_NAV_ITEMS = [
     icon: <Receipt size={20} />,
     items: [
       { path: '/retail/transactions',     icon: <ClipboardList size={24} />, label: 'Riwayat Transaksi' },
+      { path: '/retail/shifts',           icon: <Wallet size={24} />,        label: 'Shift & Laci Kasir' },
       { path: '/retail/customer-returns', icon: <RefreshCw size={24} />,     label: 'Retur Pelanggan' },
       { path: '/retail/discounts',        icon: <Tag size={24} />,           label: 'Kode Diskon' },
-      { path: '/retail/pricelists',       icon: <Layers size={24} />,        label: 'Pricelist' },
+      { path: '/retail/pricelists',       icon: <Layers size={24} />,        label: 'Harga Grosir & Member' },
     ]
   },
   {
@@ -181,10 +199,19 @@ const RETAIL_NAV_ITEMS = [
     icon: <Database size={20} />,
     items: [
       { path: '/retail/products',           icon: <Package size={24} />, label: 'Daftar Barang' },
-      { path: '/retail/categories',         icon: <Layers size={24} />,  label: 'Kategori' },
-      { path: '/retail/units',              icon: <Ruler size={24} />,   label: 'Satuan' },
-      { path: '/retail/customers',          icon: <Users size={24} />,   label: 'Pelanggan' },
-      { path: '/retail/suppliers',          icon: <Truck size={24} />,   label: 'Supplier' },
+      { path: '/retail/batches',            icon: <Archive size={24} />, label: 'Batch & Expired Date' },
+      { path: '/retail/print-labels',       icon: <Printer size={24} />, label: 'Cetak Barcode' },
+    ]
+  },
+  {
+    section: 'Setup Master Data',
+    icon: <Settings size={20} />,
+    items: [
+      { path: '/retail/categories',   icon: <Layers size={24} />, label: 'Kategori Produk' },
+      { path: '/retail/units',        icon: <Tag size={24} />, label: 'Satuan Dasar' },
+      { path: '/retail/customers',    icon: <Users size={24} />, label: 'Data Pelanggan' },
+      { path: '/retail/suppliers',    icon: <Truck size={24} />, label: 'Data Supplier' },
+      { path: '/retail/outlets',      icon: <Store size={24} />, label: 'Daftar Cabang' },
     ]
   },
   {
@@ -202,6 +229,9 @@ const RETAIL_NAV_ITEMS = [
       { path: '/retail/reports/sales',     icon: <BarChart2 size={24} />,    label: 'Laporan Penjualan' },
       { path: '/retail/reports/products',  icon: <ShoppingCart size={24} />, label: 'Laporan Produk' },
       { path: '/retail/reports/customers', icon: <UserCheck size={24} />,    label: 'Laporan Pelanggan' },
+      { path: '/retail/reports/consignment', icon: <Package size={24} />,    label: 'Laporan Konsinyasi' },
+      { path: '/retail/reports/shifts',    icon: <Users size={24} />,        label: 'Laporan Kasir & Shift' },
+      { path: '/retail/reports/payments',  icon: <CreditCard size={24} />,   label: 'Laporan Metode & Pajak' },
     ]
   },
   {
@@ -210,10 +240,12 @@ const RETAIL_NAV_ITEMS = [
     items: [
       { path: '/retail/finance/summary',     icon: <BarChart2 size={24} />, label: 'Laba Rugi' },
       { path: '/retail/finance-categories',  icon: <Layers size={24} />,    label: 'Kategori Keuangan' },
-      { path: '/retail/finance/incomes',     icon: <TrendingUp size={24} />,    label: 'Pemasukan' },
-      { path: '/retail/finance/expenses',    icon: <TrendingDown size={24} />,    label: 'Pengeluaran' },
+      { path: '/retail/finance/cash',        icon: <TrendingUp size={24} />,    label: 'Catatan Kas' },
       { path: '/retail/finance/payables',    icon: <ArrowDownLeft size={24} />,    label: 'Hutang Supplier' },
       { path: '/retail/finance/receivables', icon: <ArrowUpRight size={24} />,    label: 'Piutang Pelanggan' },
+      { path: '/retail/finance/transfers',   icon: <ArrowRightLeft size={24} />,label: 'Mutasi Kas' },
+      { path: '/retail/finance/cash-flow',   icon: <RefreshCw size={24} />,     label: 'Arus Kas' },
+      { path: '/retail/finance/tax-report',  icon: <FileText size={24} />,      label: 'Laporan Pajak' },
     ]
   },
   {
@@ -294,7 +326,7 @@ const SELLER_NAV_ITEMS = [
     section: 'Master Data',
     icon: <Database size={20} />,
     items: [
-      { path: '/seller/suppliers', icon: <Truck size={24} />, label: 'Master Data & Integrasi' },
+      { path: '/seller/suppliers', icon: <Truck size={24} />, label: 'Master Data Supplier' },
       { path: '/seller/customers', icon: <Users size={24} />, label: 'Data Pelanggan' },
       { path: '/seller/purchases', icon: <Truck size={24} />, label: 'Penerimaan Barang' },
       { path: '/seller/stock-opname', icon: <ClipboardList size={24} />, label: 'Stock Opname' },

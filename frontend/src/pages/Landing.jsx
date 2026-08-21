@@ -24,6 +24,7 @@ const SLUG_ROUTES = {
   'budidaya-tanaman': '/budidaya/dashboard',
   'kuliner':          '/kuliner/admin',
   'seller':           '/seller/dashboard',
+  'jasa':             '/jasa/dashboard',
 }
 
 export default function Landing() {
@@ -133,6 +134,7 @@ export default function Landing() {
     if (user.business_category === 'Budidaya Hewan' || user.business_category === 'Budidaya Tanaman') return <Navigate to="/budidaya/dashboard" replace />
     if (user.business_category === 'Kuliner') return <Navigate to="/kuliner/admin" replace />
     if (user.business_category === 'Seller') return <Navigate to="/seller/dashboard" replace />
+    if (user.business_category === 'Jasa') return <Navigate to="/jasa/dashboard" replace />
     return <Navigate to="/coming-soon" replace />
   }
 
@@ -142,7 +144,7 @@ export default function Landing() {
 
       <Navbar
         user={user}
-        onLogout={() => { logout(); navigate('/') }}
+        onLogout={() => { logout(); }}
         onScrollTo={scrollTo}
         logoUrl={settings.landing_logo_url || bizoraLogo}
       />

@@ -871,7 +871,7 @@ class KulinerController extends Controller
                 return [
                     'id' => 'EXP-' . $expense->id,
                     'original_id' => $expense->id,
-                    'type' => 'expense',
+                    'type' => $expense->type,
                     'date' => $expense->date . ' ' . $expense->created_at->format('H:i:s'),
                     'category' => $expense->category,
                     'description' => $expense->description,
@@ -971,6 +971,7 @@ class KulinerController extends Controller
 
         $validator = Validator::make($request->all(), [
             'date' => 'required|date',
+            'type' => 'required|in:income,expense',
             'category' => 'required|string',
             'description' => 'nullable|string',
             'amount' => 'required|numeric|min:0',
@@ -984,6 +985,7 @@ class KulinerController extends Controller
             $expense = KulinerExpense::create([
                 'tenant_id' => $tenantId,
                 'date' => $request->date,
+                'type' => $request->type,
                 'category' => $request->category,
                 'description' => $request->description,
                 'amount' => $request->amount
@@ -1003,6 +1005,7 @@ class KulinerController extends Controller
         $tenantId = auth()->user()->tenant_id;
         $validator = Validator::make($request->all(), [
             'date' => 'required|date',
+            'type' => 'required|in:income,expense',
             'category' => 'required|string',
             'description' => 'nullable|string',
             'amount' => 'required|numeric|min:0',
@@ -1016,6 +1019,7 @@ class KulinerController extends Controller
             $expense = KulinerExpense::where('tenant_id', $tenantId)->findOrFail($id);
             $expense->update([
                 'date' => $request->date,
+                'type' => $request->type,
                 'category' => $request->category,
                 'description' => $request->description,
                 'amount' => $request->amount
@@ -1048,24 +1052,17 @@ class KulinerController extends Controller
     public function getFinanceSummary(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
-        $startDate = $request->query('startDate');
-        $endDate = $request->query('endDate');
+        $startDate = $request->query('startDate', '2000-01-01');
+        $endDate = $request->query('endDate', '2100-12-31');
 
-        $orderQuery = Order::where('tenant_id', $tenantId)->whereNotIn('status', ['cancelled']);
-        $expenseQuery = KulinerExpense::where('tenant_id', $tenantId);
+        $report = $this->reportService->profitLoss($tenantId, $startDate, $endDate);
 
-        if ($startDate && $endDate) {
-            $orderQuery->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
-            $expenseQuery->whereBetween('date', [$startDate, $endDate]);
-        }
-
-        $totalSales = $orderQuery->sum('total');
-        $totalExpenses = $expenseQuery->sum('amount');
-        
         return response()->json([
-            'total_sales' => $totalSales,
-            'total_expenses' => $totalExpenses,
-            'profit' => $totalSales - $totalExpenses
+            'total_sales' => $report['revenue'],
+            'total_cogs' => $report['cogs'],
+            'gross_profit' => $report['gross_profit'],
+            'total_expenses' => $report['expenses'],
+            'profit' => $report['net_profit']
         ]);
     }
 

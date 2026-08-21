@@ -158,25 +158,23 @@ export default function Categories() {
     <>
       <div className="animate-fade-in">
         <div className="page-header">
-        <div>
           <h2 className="page-title">Kategori Bisnis</h2>
-          <p className="page-sub">{cats.length} kategori tersedia</p>
         </div>
-        <button id="btn-add-category" className="btn btn-primary" onClick={openAdd}>+ Tambah Kategori</button>
-      </div>
 
-      <div className="filter-bar">
-        <div className="search-wrap">
-          <span className="search-icon">🔍</span>
-          <input
-            id="input-search-categories"
-            className="form-input search-input"
-            placeholder="Cari kategori..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+        <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+          <div className="search-wrap" style={{ flex: 1, minWidth: 200, maxWidth: 360 }}>
+            <span className="search-icon">🔍</span>
+            <input
+              id="input-search-categories"
+              className="form-input search-input"
+              placeholder="Cari kategori..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+
+          <button id="btn-add-category" className="btn btn-primary" onClick={openAdd}>+ Tambah Kategori</button>
         </div>
-      </div>
 
       <div className="grid-auto stagger">
         {loading ? (

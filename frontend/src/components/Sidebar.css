@@ -1,16 +1,21 @@
-/* === Sidebar Styles === */
+/* ==========================================================================
+   BIZORA SIDEBAR - SNEAT / GEOMETRIC BALANCE STYLING
+   ========================================================================== */
+
 .sidebar {
   position: fixed;
-  top: 0; left: 0;
-  width: var(--sidebar-width);
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width, 260px);
   height: 100vh;
-  background: var(--bg-surface);
-  border-right: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border-right: 1px solid #d9dee3;
   display: flex;
   flex-direction: column;
   z-index: 60;
-  transition: width var(--transition-base), transform var(--transition-base);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
+  box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.05);
 }
 
 .sidebar--mobile-open {
@@ -20,9 +25,8 @@
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    width: var(--sidebar-width); /* Default mobile drawer */
-    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
-    border-right: none;
+    width: 260px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
   }
   .sidebar.sidebar--collapsed {
     width: 68px !important;
@@ -30,399 +34,235 @@
 }
 
 .sidebar--collapsed {
-  width: 68px;
+  width: 68px !important;
 }
 
-/* Logo */
+/* ── Brand Logo Header ── */
 .sidebar__logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 16px;
-  border-bottom: 1px solid var(--border-subtle);
-  min-height: var(--header-height);
+  padding: 18px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  min-height: 68px;
   flex-shrink: 0;
 }
 
 .sidebar__logo-icon {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary-600), var(--accent-600));
+  background: #696cff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-heading);
-  font-size: 18px;
-  font-weight: 600;
   color: white;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(59,130,246,0.4);
-}
-
-.sidebar__logo-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(105, 108, 255, 0.35);
 }
 
 .sidebar__logo-brand {
-  font-family: var(--font-heading);
-  font-size: 17px;
-  font-weight: 600;
-  background: linear-gradient(135deg, var(--primary-400), var(--accent-400));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  white-space: nowrap;
+  font-size: 18px;
+  font-weight: 800;
+  color: #32475c;
+  letter-spacing: -0.02em;
 }
 
 .sidebar__logo-sub {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #696cff;
+  background: #eaeaff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-top: 2px;
+  text-transform: uppercase;
 }
 
-/* Nav */
+/* ── Navigation Container ── */
 .sidebar__nav {
   flex: 1;
-  padding: 20px 10px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   overflow-y: auto;
 }
 
-.sidebar__section {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 8px;
-}
-
-.sidebar__section-label {
-  font-size: 10px;
-  font-weight: 600;
+/* ── Category / Section Headers ── */
+.sidebar__section-header {
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #000000;
-  padding: 6px 10px 4px;
-  opacity: 0.7;
-  white-space: nowrap;
+  color: #a1acb8;
+  letter-spacing: 0.06em;
+  padding: 16px 12px 6px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
+.sidebar__section-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 10px 8px 6px;
+}
+
+/* ── Navigation Item Link ── */
 .sidebar__item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  color: #000000;
+  gap: 12px;
+  padding: 9.5px 14px;
+  border-radius: 8px;
   font-size: 13.5px;
-  font-weight: 600;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  border: 1px solid transparent;
+  font-weight: 500;
+  color: #566a7f;
+  text-decoration: none;
+  transition: all 0.18s ease-in-out;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
 }
 
 .sidebar__item:hover {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
+  background: #f5f5f9;
+  color: #696cff;
 }
 
-.sidebar__item--active {
-  background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.1));
-  color: var(--primary-400);
-  border-color: rgba(59,130,246,0.2);
+/* ── Active State (Signature Sneat Purple Glow) ── */
+.sidebar__item--active,
+.sidebar__item.active {
+  background: #696cff !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px 0 rgba(105, 108, 255, 0.48) !important;
 }
 
-.sidebar__item--active .sidebar__item-icon {
-  color: #000000;
+.sidebar__item--active .sidebar__item-icon,
+.sidebar__item.active .sidebar__item-icon {
+  color: #ffffff !important;
 }
 
 .sidebar__item-icon {
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
-  text-align: center;
+  height: 20px;
+  color: #8592a3;
+  transition: color 0.18s;
   flex-shrink: 0;
+}
+
+.sidebar__item:hover .sidebar__item-icon {
+  color: #696cff;
 }
 
 .sidebar__item-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Footer */
-.sidebar__footer {
-  padding: 12px 10px;
-  border-top: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.sidebar__user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-}
-
-.sidebar__user-info {
   flex: 1;
-  overflow: hidden;
-}
-
-.sidebar__user-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.sidebar__user-role {
-  font-size: 11px;
-  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.sidebar__logout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border-radius: var(--radius-md);
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  color: #000000;
-  font-size: 13px;
+/* ── Accordion Group Header ── */
+.sidebar__item--group {
   font-weight: 600;
-  transition: all var(--transition-fast);
-  width: 100%;
+  color: #566a7f;
 }
 
-.sidebar__logout:hover {
-  background: rgba(239,68,68,0.1);
-  border-color: var(--danger-500);
-  color: var(--danger-400);
+.sidebar__item--group-active {
+  color: #696cff;
+  background: #f5f5f9;
 }
 
-.sidebar__logout--icon {
-  width: 44px;
-  height: 38px;
-  padding: 0;
-}
-
-/* === Sidebar Submenu (Classic Accordion) === */
+/* ── Submenu Container ── */
 .sidebar__submenu {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding-left: 32px;
-  margin: 4px 0 8px;
-  overflow: hidden;
-  transition: all var(--transition-base);
+  padding: 4px 0 4px 28px;
+  position: relative;
+}
+
+.sidebar__submenu::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 4px;
+  bottom: 4px;
+  width: 1.5px;
+  background: #e2e8f0;
 }
 
 .sidebar__submenu-item {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
   padding: 8px 12px;
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-}
-
-.sidebar__submenu-item:hover {
-  color: var(--text-primary);
-  background: var(--bg-elevated);
-}
-
-.sidebar__submenu-item--active {
-  color: var(--primary-400);
-  background: rgba(59,130,246,0.08);
+  color: #64748b;
+  text-decoration: none;
+  transition: all 0.15s;
+  text-align: left;
 }
 
 .sidebar__submenu-icon {
-  font-size: 14px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
-/* Mini Sidebar Submenu adjustment */
-.sidebar--collapsed .sidebar__submenu {
-  display: none; /* Submenus hidden in mini mode */
-}
-
-/* === Admin Accordion Group Header === */
-.sidebar__item--group {
-  width: 100%;
+.sidebar__submenu-item span:not(.sidebar__submenu-icon):not(.sidebar__badge) {
+  flex: 1;
   text-align: left;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 600;
-  transition: all var(--transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sidebar__item--group:hover {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
+.sidebar__submenu-item:hover {
+  color: #696cff;
+  background: #f8fafc;
 }
 
-.sidebar__item--group-active {
-  color: var(--primary-600);
-  background: rgba(59,130,246,0.07);
+.sidebar__submenu-item--active,
+.sidebar__submenu-item.active {
+  color: #696cff !important;
+  font-weight: 700 !important;
+  background: #eaeaff !important;
 }
 
-.sidebar__item--group-active:hover {
-  background: rgba(59,130,246,0.12);
+/* ── Pill Badges in Sidebar ── */
+.sidebar__badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  line-height: 1;
 }
 
-/* ============================================================
-   RETAIL: Dark sidebar theme (ported from the NeedPOS reference)
-   Scoped entirely under .sidebar--retail so other categories
-   (admin/budidaya/kuliner) keep the default light sidebar.
-   ============================================================ */
-.sidebar--retail {
-  background: #0f172a;
-  border-right: 1px solid #1e293b;
-}
-
-.sidebar--retail .sidebar__logo {
-  border-bottom: 1px solid #1e293b;
-}
-
-.sidebar--retail .sidebar__logo-sub {
-  color: #94a3b8;
-}
-
-.sidebar--retail .sidebar__section-label {
-  color: #64748b;
-  opacity: 1;
-}
-
-.sidebar--retail .sidebar__item {
-  color: #94a3b8;
-  border: none;
-  background: transparent;
-  width: 100%;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.sidebar--retail .sidebar__item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f1f5f9;
-}
-
-.sidebar--retail .sidebar__item--active,
-.sidebar--retail .sidebar__item--active:hover {
-  background: #4f46e5;
+.sidebar__badge--amber {
+  background: #ffab00;
   color: #ffffff;
 }
 
-.sidebar--retail .sidebar__item--active .sidebar__item-icon {
+.sidebar__badge--rose {
+  background: #ff3e1d;
   color: #ffffff;
 }
 
-/* Group header: subtle highlight when it contains the active page,
-   distinct from the full-indigo fill used on real leaf links above. */
-.sidebar--retail .sidebar__item--group-active {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-  font-weight: 600;
-}
-
-.sidebar--retail .sidebar__submenu {
-  padding-left: 14px;
-  margin: 2px 0 6px 20px;
-  border-left: 1px solid #1e293b;
-}
-
-.sidebar--retail .sidebar__submenu-item {
-  color: #94a3b8;
-}
-
-.sidebar--retail .sidebar__submenu-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #f1f5f9;
-}
-
-.sidebar--retail .sidebar__submenu-item--active {
-  background: #4f46e5;
+.sidebar__badge--indigo {
+  background: #696cff;
   color: #ffffff;
-  font-weight: 600;
-}
-
-.sidebar--retail .sidebar__footer {
-  border-top: 1px solid #1e293b;
-}
-
-/* Scrollbar matches the dark navy sidebar instead of the browser's
-   default light/white scrollbar. */
-.sidebar--retail .sidebar__nav {
-  scrollbar-width: thin;
-  scrollbar-color: #334155 #0f172a;
-}
-
-.sidebar--retail .sidebar__nav::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar--retail .sidebar__nav::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-
-.sidebar--retail .sidebar__nav::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
-}
-
-.sidebar--retail .sidebar__nav::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-.sidebar--retail .sidebar__user {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: #1e293b;
-}
-
-.sidebar--retail .sidebar__user-name {
-  color: #f1f5f9;
-}
-
-.sidebar--retail .sidebar__user-role {
-  color: #94a3b8;
-}
-
-.sidebar--retail .sidebar__logout {
-  color: #94a3b8;
-  border-color: #1e293b;
-}
-
-.sidebar--retail .sidebar__logout:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: #ef4444;
-  color: #fca5a5;
 }

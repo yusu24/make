@@ -86,13 +86,17 @@ export default function SystemMonitoring() {
     <div className="animate-fade-in">
       {/* ── Header ── */}
       <div className="page-header">
-        <div>
-          <h2 className="page-title">System Monitoring</h2>
-          <p className="page-sub">Pantau kesehatan server, performa API, dan status layanan secara real-time.</p>
+        <h2 className="page-title">Monitoring Sistem</h2>
+      </div>
+
+      {/* ── Live Status Toolbar ── */}
+      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+          Kesehatan server, performa REST API, dan metrik latency diperbarui secara berkala
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', display: 'inline-block', animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: 13, color: '#10b981', fontWeight: 600 }}>Live Monitoring</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#dcfce7', padding: '6px 14px', borderRadius: 8, border: '1px solid #bbf7d0' }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block', animation: 'pulse 2s infinite' }} />
+          <span style={{ fontSize: 12.5, color: '#15803d', fontWeight: 700 }}>Live Monitoring Aktif</span>
         </div>
       </div>
 

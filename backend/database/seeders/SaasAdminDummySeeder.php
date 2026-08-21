@@ -251,16 +251,32 @@ class SaasAdminDummySeeder extends Seeder
             'paid_at' => null,
         ]);
         
-        TenantInvoice::create([
-            'id' => 'INV-' . now()->subMonth()->format('Ym') . '0046',
-            'tenant_id' => 'TN-MANUFAKTUR',
-            'plan' => 'pro',
-            'amount' => 299000,
-            'status' => 'unpaid',
-            'date' => now()->subDays(35)->toDateString(),
-            'due_date' => now()->subDays(28)->toDateString(),
-            'paid_at' => null,
-        ]);
+        // 9. Tenant KYC Verifications
+        $tenants = \App\Models\Tenant::take(10)->get();
+        if ($tenants->count() > 0) {
+            $kycTemplates = [
+                ['status' => 'pending',  'notes' => null,                                      'days_ago' => 1, 'verified_ago' => null],
+                ['status' => 'pending',  'notes' => null,                                      'days_ago' => 2, 'verified_ago' => null],
+                ['status' => 'pending',  'notes' => null,                                      'days_ago' => 3, 'verified_ago' => null],
+                ['status' => 'verified', 'notes' => 'Dokumen KTP dan NIB valid & terverifikasi.', 'days_ago' => 10, 'verified_ago' => 8],
+                ['status' => 'verified', 'notes' => 'Kelengkapan legalitas usaha lengkap.',     'days_ago' => 14, 'verified_ago' => 12],
+                ['status' => 'rejected', 'notes' => 'Foto KTP buram, mohon upload ulang.',     'days_ago' => 5,  'verified_ago' => null],
+                ['status' => 'rejected', 'notes' => 'NIB tidak sesuai dengan nama pemilik.',   'days_ago' => 7,  'verified_ago' => null],
+            ];
+
+            foreach ($tenants as $index => $tenant) {
+                if (isset($kycTemplates[$index])) {
+                    $tpl = $kycTemplates[$index];
+                    $tenant->update([
+                        'kyc_status' => $tpl['status'],
+                        'kyc_document_path' => 'kyc_documents/sample_ktp_' . ($index + 1) . '.jpg',
+                        'kyc_notes' => $tpl['notes'],
+                        'kyc_submitted_at' => now()->subDays($tpl['days_ago']),
+                        'kyc_verified_at' => $tpl['verified_ago'] ? now()->subDays($tpl['verified_ago']) : null,
+                    ]);
+                }
+            }
+        }
 
         $this->command->info('✅ SaaS Admin Dummy Data Seeded Successfully!');
         \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();

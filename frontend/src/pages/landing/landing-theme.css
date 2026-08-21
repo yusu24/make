@@ -8,10 +8,30 @@
 }
 
 .text-gradient-emerald {
-  background: linear-gradient(135deg, #a7f3d0 0%, #34d399 50%, #10b981 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: linear-gradient(135deg, #a7f3d0 0%, #34d399 50%, #10b981 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* ── Force clean bright white text on Landing Hero & Dark Sections ── */
+#beranda h1,
+#beranda h2,
+#beranda h3,
+#beranda h4,
+.bg-bizora-gradient h1,
+.bg-bizora-gradient h2,
+.bg-bizora-gradient h3,
+.bg-bizora-gradient h4,
+.landing-hero-title,
+.landing-hero-title * {
+  color: #ffffff !important;
+}
+
+#beranda p,
+.bg-bizora-gradient p,
+.landing-hero-desc {
+  color: #cbd5e1 !important;
 }
 
 /* Hide scrollbar for the sector tabs bar */

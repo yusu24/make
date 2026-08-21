@@ -208,11 +208,8 @@ export default function LandingSettings() {
     <div className="animate-fade-in" style={{ fontFamily: 'Outfit, Inter, sans-serif' }}>
       
       {/* Page Header */}
-      <div className="page-header" style={{ marginBottom: 20 }}>
-        <div>
-          <h2 className="page-title">Pengaturan Portal Web</h2>
-          <p className="page-sub">Kustomisasi teks banner, elemen visual, dan testimoni pelanggan yang ditampilkan pada Landing Page publik.</p>
-        </div>
+      <div className="page-header">
+        <h2 className="page-title">Pengaturan Umum &amp; Portal</h2>
       </div>
 
       {/* Tabs Menu */}

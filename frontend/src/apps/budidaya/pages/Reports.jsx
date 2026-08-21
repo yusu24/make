@@ -199,7 +199,7 @@ export default function Reports() {
               <TableHeader>
                 <TableRow isHoverable={false}>
                   <TableHeaderCell>{terms.unit}</TableHeaderCell>
-                  <TableHeaderCell>{terms.isTanaman ? 'Jenis tanaman' : 'Jenis ikan'}</TableHeaderCell>
+                  <TableHeaderCell>{terms.isTanaman ? 'Jenis tanaman' : `Jenis ${terms.populationUnit || 'komoditas'}`}</TableHeaderCell>
                   <TableHeaderCell>Tgl. Panen</TableHeaderCell>
                   <TableHeaderCell>Berat (kg)</TableHeaderCell>
                   <TableHeaderCell>Harga/kg</TableHeaderCell>

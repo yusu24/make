@@ -29,6 +29,23 @@ class SeedAllCategoryPlansSeeder extends Seeder
                     'features' => ['ponds'=>true,'cycles'=>true,'feeding'=>true,'harvest'=>true,'reports'=>true,'multiUser'=>true,'exportExcel'=>true,'prioritySupport'=>true],
                 ],
             ],
+            'seller' => [
+                [
+                    'plan_key' => 'free', 'name' => 'Free', 'price' => null,
+                    'max_products' => null, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true,
+                    'features' => ['omnichannel'=>true,'pos'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'prioritySupport'=>false],
+                ],
+                [
+                    'plan_key' => 'basic', 'name' => 'Basic', 'price' => 79000,
+                    'max_products' => null, 'max_staff' => 3, 'sort_order' => 1, 'is_active' => true,
+                    'features' => ['omnichannel'=>true,'pos'=>true,'reports'=>true,'multiUser'=>false,'exportExcel'=>true,'prioritySupport'=>false],
+                ],
+                [
+                    'plan_key' => 'pro', 'name' => 'Pro', 'price' => 149000,
+                    'max_products' => null, 'max_staff' => null, 'sort_order' => 2, 'is_active' => true,
+                    'features' => ['omnichannel'=>true,'pos'=>true,'reports'=>true,'multiUser'=>true,'exportExcel'=>true,'prioritySupport'=>true],
+                ],
+            ],
             'budidaya-tanaman' => [
                 [
                     'plan_key' => 'free', 'name' => 'Free', 'price' => null,

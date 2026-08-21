@@ -146,14 +146,7 @@ export default function Tenants() {
     <>
       <div className="animate-fade-in">
         <div className="page-header">
-          <div>
-            <h2 className="page-title">Manajemen Tenant</h2>
-            <p className="page-sub">{tenants.length} tenant terdaftar di platform</p>
-          </div>
-          <div style={{display:'flex', gap:10}}>
-            <button id="btn-export-tenants" className="btn btn-secondary">⬇ Export CSV</button>
-            <button id="btn-add-tenant" className="btn btn-primary" onClick={() => setShowModal(true)}>+ Tambah Tenant</button>
-          </div>
+          <h2 className="page-title">Manajemen Tenant</h2>
         </div>
 
         {/* Stats row */}
@@ -179,37 +172,44 @@ export default function Tenants() {
           ))}
         </div>
 
-        <div className="filter-bar" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 20 }}>
-          <div className="search-wrap" style={{ flex: 1, minWidth: 200, maxWidth: 360, margin: 0 }}>
-            <span className="search-icon">🔍</span>
-            <input id="input-search-tenants" className="form-input search-input" placeholder="Cari tenant..."
-              value={search} onChange={e => setSearch(e.target.value)} />
+        <div className="filter-bar" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
+            <div className="search-wrap" style={{ flex: 1, minWidth: 200, maxWidth: 360, margin: 0 }}>
+              <span className="search-icon">🔍</span>
+              <input id="input-search-tenants" className="form-input search-input" placeholder="Cari tenant..."
+                value={search} onChange={e => setSearch(e.target.value)} />
+            </div>
+
+            <div className="select-wrap" style={{ minWidth: 200 }}>
+              <select
+                id="select-filter-category"
+                className="form-input"
+                value={categoryFilter}
+                onChange={e => setCategoryFilter(e.target.value)}
+                style={{
+                  height: 40,
+                  borderRadius: 10,
+                  border: '1px solid var(--border-default, #e2e8f0)',
+                  background: 'var(--bg-surface, #ffffff)',
+                  color: 'var(--text-primary, #1e293b)',
+                  padding: '0 12px',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="all">Semua Kategori Bisnis</option>
+                {uniqueCategories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div className="select-wrap" style={{ minWidth: 200 }}>
-            <select
-              id="select-filter-category"
-              className="form-input"
-              value={categoryFilter}
-              onChange={e => setCategoryFilter(e.target.value)}
-              style={{
-                height: 40,
-                borderRadius: 10,
-                border: '1px solid var(--border-default, #e2e8f0)',
-                background: 'var(--bg-surface, #ffffff)',
-                color: 'var(--text-primary, #1e293b)',
-                padding: '0 12px',
-                fontSize: 13,
-                fontWeight: 500,
-                outline: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="all">Semua Kategori Bisnis</option>
-              {uniqueCategories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+          <div style={{display:'flex', gap:10, alignItems: 'center'}}>
+            <button id="btn-export-tenants" className="btn btn-secondary">⬇ Export CSV</button>
+            <button id="btn-add-tenant" className="btn btn-primary" onClick={() => setShowModal(true)}>+ Tambah Tenant</button>
           </div>
         </div>
 

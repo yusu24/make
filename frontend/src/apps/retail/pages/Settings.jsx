@@ -4,7 +4,7 @@ import {
   Save, Upload, Trash2, Check, AlertCircle,
   ChevronRight, ChevronDown, ToggleLeft, ToggleRight, Eye, EyeOff,
   Phone, MapPin, Building2, Percent, Star, Package,
-  Receipt
+  Receipt, Shield
 } from 'lucide-react';
 import { api } from '../../../lib/api';
 import RetailLoading from '../components/RetailLoading';
@@ -89,6 +89,7 @@ const TABS = [
   { id: 'cashier',  label: 'Transaksi & Kasir', icon: CreditCard },
   { id: 'receipt',  label: 'Struk & Print',     icon: Receipt },
   { id: 'payment',  label: 'Pembayaran',         icon: QrCode },
+  { id: 'kyc',      label: 'Verifikasi Usaha',   icon: Shield },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
@@ -100,9 +101,12 @@ export default function Settings() {
   const [toast, setToast] = useState(null);
   const [qrisUploading, setQrisUploading] = useState(false);
   const [iconUploading, setIconUploading] = useState(false);
+  const [kycUploading, setKycUploading] = useState(false);
   const [previewStruk, setPreviewStruk] = useState(false);
+  const [kyc, setKyc] = useState(null);
   const qrisInputRef = useRef(null);
   const iconInputRef = useRef(null);
+  const kycInputRef = useRef(null);
 
   /* ── fetch ── */
   const fetchSettings = async () => {
@@ -114,7 +118,19 @@ export default function Settings() {
     }
   };
 
-  useEffect(() => { fetchSettings(); }, []);
+  const fetchKyc = async () => {
+    try {
+      const res = await api.get('/settings/kyc');
+      setKyc(res.data?.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => { 
+    fetchSettings(); 
+    fetchKyc(); 
+  }, []);
 
   const showToast = (msg, type = 'success') => setToast({ msg, type });
 
@@ -193,6 +209,25 @@ export default function Settings() {
       showToast('Icon toko dihapus');
     } catch (e) {
       showToast('Gagal hapus icon toko', 'error');
+    }
+  };
+
+  /* ── KYC upload ── */
+  const handleKycUpload = async (file) => {
+    if (!file) return;
+    setKycUploading(true);
+    try {
+      const form = new FormData();
+      form.append('document', file);
+      const res = await api.post('/settings/kyc', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      showToast(res.data.message);
+      fetchKyc();
+    } catch (e) {
+      showToast('Gagal upload dokumen KYC', 'error');
+    } finally {
+      setKycUploading(false);
     }
   };
 
@@ -547,17 +582,32 @@ export default function Settings() {
                   description="Pelanggan mendapatkan poin dari setiap pembelian"
                 />
                 {settings.enable_loyalty && (
-                  <div style={{ marginTop: 16 }}>
+                  <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <Field
-                      label="Rasio Poin (Rp per 1 poin)"
+                      label="Syarat Mendapat Poin (Belanja Rp X = 1 Poin)"
                       hint={`Setiap belanja Rp ${Math.round(Number(settings.points_ratio || 0)).toLocaleString('id-ID')} = 1 poin`}
                     >
                       <div style={{ position: 'relative', maxWidth: 220 }}>
-                        <Star size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--retail-text-secondary)' }} />
+                        <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'var(--retail-text-secondary)', fontWeight: 600 }}>Rp</span>
                         <input
                           type="number" min="1" className="form-input"
                           value={settings.points_ratio || 10000}
                           onChange={e => set('points_ratio', e.target.value)}
+                          style={{ paddingLeft: 36, maxWidth: 220 }}
+                        />
+                      </div>
+                    </Field>
+
+                    <Field
+                      label="Nilai Penukaran Poin (1 Poin = Diskon Rp Y)"
+                      hint={`Saat ditukarkan, 1 Poin memotong tagihan sebesar Rp ${Math.round(Number(settings.point_value_rupiah || 1)).toLocaleString('id-ID')}`}
+                    >
+                      <div style={{ position: 'relative', maxWidth: 220 }}>
+                        <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'var(--retail-text-secondary)', fontWeight: 600 }}>Rp</span>
+                        <input
+                          type="number" min="1" step="0.01" className="form-input"
+                          value={settings.point_value_rupiah || 1}
+                          onChange={e => set('point_value_rupiah', e.target.value)}
                           style={{ paddingLeft: 36, maxWidth: 220 }}
                         />
                       </div>
@@ -589,7 +639,7 @@ export default function Settings() {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => handleSave(['enable_tax', 'tax_rate', 'enable_loyalty', 'points_ratio', 'low_stock_default_threshold'])}
+                  onClick={() => handleSave(['enable_tax', 'tax_rate', 'enable_loyalty', 'points_ratio', 'point_value_rupiah', 'low_stock_default_threshold'])}
                   disabled={saving}
                 >
                   <Save size={15} style={{ marginRight: 6 }} />
@@ -798,6 +848,67 @@ export default function Settings() {
                   <li>Pastikan kode QR terlihat jelas dan tidak terpotong</li>
                 </ul>
               </div>
+            </SectionCard>
+          )}
+
+          {/* ══ Tab 5: Verifikasi Usaha (KYC) ════════════════════════════════ */}
+          {activeTab === 'kyc' && (
+            <SectionCard>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Shield size={20} color="#8b5cf6" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--retail-text-primary)' }}>Verifikasi Usaha (KYC)</h3>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--retail-text-secondary)' }}>Unggah dokumen identitas untuk verifikasi akun</p>
+                </div>
+              </div>
+
+              {!kyc ? (
+                <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Memuat status verifikasi...</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {kyc.kyc_status === 'pending' && (
+                    <div className="alert" style={{ background: '#fef3c7', color: '#92400e', padding: 16, borderRadius: 10, fontSize: 13 }}>
+                      <strong>Menunggu Verifikasi:</strong> Dokumen Anda sedang ditinjau oleh tim kami. Harap menunggu hingga proses verifikasi selesai.
+                    </div>
+                  )}
+                  {kyc.kyc_status === 'verified' && (
+                    <div className="alert" style={{ background: '#dcfce7', color: '#166534', padding: 16, borderRadius: 10, fontSize: 13 }}>
+                      <strong>Terverifikasi:</strong> Akun usaha Anda telah diverifikasi. Terima kasih!
+                    </div>
+                  )}
+                  {kyc.kyc_status === 'rejected' && (
+                    <div className="alert" style={{ background: '#fee2e2', color: '#991b1b', padding: 16, borderRadius: 10, fontSize: 13 }}>
+                      <strong>Verifikasi Ditolak:</strong> {kyc.kyc_notes} <br/><br/>
+                      Silakan unggah ulang dokumen yang sesuai.
+                    </div>
+                  )}
+                  {(kyc.kyc_status === 'unverified' || kyc.kyc_status === 'rejected') && (
+                    <div>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        ref={kycInputRef} 
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          if (e.target.files[0]) handleKycUpload(e.target.files[0]);
+                          e.target.value = null;
+                        }}
+                      />
+                      <button 
+                        type="button" 
+                        className="btn btn-primary"
+                        onClick={() => kycInputRef.current?.click()}
+                        disabled={kycUploading}
+                      >
+                        {kycUploading ? 'Mengunggah...' : 'Unggah Dokumen (KTP / NIB)'}
+                      </button>
+                      <p style={{ fontSize: 12, color: 'var(--retail-text-secondary)', marginTop: 8 }}>Format: JPG, PNG. Maks: 2MB.</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </SectionCard>
           )}
 

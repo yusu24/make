@@ -31,15 +31,36 @@ class RetailFinanceController extends Controller
             $expensesQuery->whereBetween('tanggal', [$startDate, $endDate]);
         }
 
-        $totalSales = $salesQuery->sum('total_amount');
+        $transactions = $salesQuery->with('items')->get();
+        
+        $totalSales = 0;
+        $totalCogs = 0;
+        $totalDiscounts = 0;
+        $totalTax = 0;
+
+        foreach ($transactions as $tx) {
+            $totalDiscounts += $tx->discount_amount;
+            $totalTax += $tx->tax_amount;
+            
+            $itemSubtotal = 0;
+            foreach ($tx->items as $item) {
+                $itemSubtotal += ($item->price * $item->qty);
+                $totalCogs += ($item->cost_price * $item->qty);
+            }
+            $totalSales += $itemSubtotal; // Gross revenue before global discount and tax
+        }
+
         $totalIncomes = $incomesQuery->sum('nominal');
         $totalExpenses = $expensesQuery->sum('nominal');
-        $profit = ($totalSales + $totalIncomes) - $totalExpenses;
+        
+        $grossProfit = $totalSales - $totalDiscounts - $totalCogs;
+        $profit = $grossProfit + $totalIncomes - $totalExpenses;
 
         return response()->json([
-            'total_sales' => $totalSales,
+            'total_sales' => $totalSales - $totalDiscounts, // Net sales
             'total_incomes' => $totalIncomes,
             'total_expenses' => $totalExpenses,
+            'total_cogs' => $totalCogs,
             'profit' => $profit,
         ]);
     }
@@ -323,5 +344,138 @@ class RetailFinanceController extends Controller
 
         $income->delete();
         return response()->json(['message' => 'Pemasukan berhasil dihapus']);
+    }
+
+    // -------------------------------------------------------------------------
+    // ADVANCED FINANCE (CASH TRANSFERS, CASH FLOW, TAX REPORT)
+    // -------------------------------------------------------------------------
+    
+    // GET /api/retail/finance/transfers
+    public function getTransfers(Request $request)
+    {
+        $query = \App\Models\RetailCashTransfer::with(['user:id,name']);
+
+        if ($request->has('startDate') && $request->has('endDate')) {
+            $query->whereBetween('transfer_date', [$request->startDate, $request->endDate]);
+        }
+
+        $transfers = $query->orderBy('transfer_date', 'desc')->orderBy('created_at', 'desc')->get();
+        return response()->json($transfers);
+    }
+
+    // POST /api/retail/finance/transfers
+    public function storeTransfer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'transfer_date' => 'required|date',
+            'from_method' => 'required|string|max:50',
+            'to_method' => 'required|string|max:50',
+            'amount' => 'required|numeric|min:0',
+            'note' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $transfer = \App\Models\RetailCashTransfer::create([
+            'user_id' => Auth::id(),
+            'transfer_date' => $request->transfer_date,
+            'from_method' => $request->from_method,
+            'to_method' => $request->to_method,
+            'amount' => $request->amount,
+            'note' => $request->note,
+        ]);
+
+        return response()->json(['message' => 'Mutasi Kas berhasil ditambahkan', 'data' => $transfer], 201);
+    }
+    
+    // DELETE /api/retail/finance/transfers/{id}
+    public function destroyTransfer(int $id)
+    {
+        $transfer = \App\Models\RetailCashTransfer::find($id);
+
+        if (!$transfer) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        $transfer->delete();
+        return response()->json(['message' => 'Mutasi Kas berhasil dihapus']);
+    }
+
+    // GET /api/retail/finance/cash-flow
+    public function getCashFlow(Request $request)
+    {
+        $startDate = $request->query('startDate', now()->startOfMonth()->toDateString());
+        $endDate = $request->query('endDate', now()->endOfMonth()->toDateString());
+
+        // Inflows
+        // Cash Sales: using RetailTransactionPayment excluding PIUTANG
+        $sales = \App\Models\RetailTransactionPayment::whereHas('transaction', function($q) use ($startDate, $endDate) {
+            $q->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        })->where('payment_method', '!=', 'PIUTANG')->sum('amount');
+            
+        $receivablePayments = RetailReceivablePayment::whereBetween('paid_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->sum('amount_paid');
+            
+        $otherIncomes = RetailIncome::whereBetween('tanggal', [$startDate, $endDate])
+            ->sum('nominal');
+
+        // Outflows
+        // Purchases paid directly (no payable created for it)
+        $payablePurchaseIds = \App\Models\RetailPayable::whereNotNull('purchase_id')->pluck('purchase_id')->toArray();
+        $purchases = \App\Models\RetailPurchase::whereBetween('purchase_date', [$startDate, $endDate])
+            ->whereNotIn('id', $payablePurchaseIds)
+            ->sum('total_cost'); 
+            
+        $payablePayments = RetailPayablePayment::whereBetween('paid_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->sum('amount_paid');
+            
+        $otherExpenses = RetailExpense::whereBetween('tanggal', [$startDate, $endDate])
+            ->sum('nominal');
+
+        $totalInflow = $sales + $receivablePayments + $otherIncomes;
+        $totalOutflow = $purchases + $otherExpenses + $payablePayments; // purchases added
+        
+        $netCash = $totalInflow - $totalOutflow;
+
+        return response()->json([
+            'inflow' => [
+                'sales' => $sales,
+                'receivable_payments' => $receivablePayments,
+                'other_incomes' => $otherIncomes,
+                'total' => $totalInflow,
+            ],
+            'outflow' => [
+                'payable_payments' => $payablePayments,
+                'other_expenses' => $otherExpenses,
+                'total' => $totalOutflow,
+            ],
+            'net_cash' => $netCash,
+            'period' => compact('startDate', 'endDate')
+        ]);
+    }
+
+    // GET /api/retail/finance/tax-report
+    public function getTaxReport(Request $request)
+    {
+        $startDate = $request->query('startDate', now()->startOfMonth()->toDateString());
+        $endDate = $request->query('endDate', now()->endOfMonth()->toDateString());
+
+        $transactions = RetailTransaction::where('status', 'paid')
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('tax_amount', '>', 0)
+            ->get(['id', 'invoice_no', 'created_at', 'total_amount', 'tax_amount']);
+            
+        $totalTax = $transactions->sum('tax_amount');
+        $totalSalesWithTax = $transactions->sum('total_amount');
+
+        return response()->json([
+            'transactions' => $transactions,
+            'summary' => [
+                'total_tax' => $totalTax,
+                'total_sales_with_tax' => $totalSalesWithTax,
+            ]
+        ]);
     }
 }

@@ -16,7 +16,15 @@ class ImpersonateController extends Controller
     public function impersonateUser(Request $request, $id)
     {
         $requester = $request->user();
-        $targetUser = User::with(['businessCategory', 'tenant', 'retailRole', 'kulinerRole'])->findOrFail($id);
+        
+        // If $id is a tenant_id (e.g. starting with TN-), find the first user of that tenant
+        if (is_string($id) && str_starts_with($id, 'TN-')) {
+            $targetUser = User::with(['businessCategory', 'tenant', 'retailRole', 'kulinerRole'])
+                ->where('tenant_id', $id)
+                ->firstOrFail();
+        } else {
+            $targetUser = User::with(['businessCategory', 'tenant', 'retailRole', 'kulinerRole'])->findOrFail($id);
+        }
 
         // Authorization check
         $canImpersonate = false;

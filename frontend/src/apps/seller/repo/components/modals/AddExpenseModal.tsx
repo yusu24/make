@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, DollarSign, Calendar, Tag, CreditCard, Building2 } from 'lucide-react';
 import { Expense, ExpenseCategory, StoreChannel } from '../../types';
 import { useAuth } from '../../../../../contexts/AuthContext';
+import { formatNumberInput, parseFormattedNumber } from '../../utils/formatters';
 
 interface AddExpenseModalProps {
   isOpen: boolean;
@@ -60,7 +61,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         date,
         category,
         description,
-        amount: Number(amount),
+        amount: parseFormattedNumber(amount),
         storeId,
         storeName,
         paymentMethod,
@@ -152,10 +153,10 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                 Rp
               </span>
               <input
-                type="number"
-                placeholder="1500000"
+                type="text"
+                placeholder="1.500.000"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => setAmount(formatNumberInput(e.target.value))}
                 required
                 className="w-full pl-10 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold text-indigo-600 dark:text-indigo-400 focus:ring-2 focus:ring-indigo-500/40 text-sm"
               />

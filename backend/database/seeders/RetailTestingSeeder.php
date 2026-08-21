@@ -12,23 +12,33 @@ class RetailTestingSeeder extends Seeder
 {
     public function run()
     {
-        $tenant = Tenant::where('name', 'like', '%Demo Seller%')->first();
-        if (!$tenant) {
+        $tenants = Tenant::whereHas('businessCategory', function($q) {
+            $q->where('name', 'Toko Retail');
+        })->get();
+
+        if ($tenants->isEmpty()) {
             echo "No tenant found. Please create one first.\n";
             return;
         }
 
-        $tenantId = $tenant->id;
-        echo "Seeding data for Tenant: {$tenant->name} ({$tenantId})\n";
+        foreach ($tenants as $tenant) {
+            $tenantId = $tenant->tenant_id;
+            
+            // Skip if already seeded (has products)
+            if (\App\Models\RetailProduct::where('tenant_id', $tenantId)->exists()) {
+                continue;
+            }
 
-        // 1. Units
-        $units = ['Pcs', 'Box', 'Kg', 'Liter', 'Pack', 'Botol', 'Sachet'];
-        foreach ($units as $u) {
-            RetailUnit::updateOrCreate(
-                ['tenant_id' => $tenantId, 'name' => $u]
-            );
-        }
-        echo "Created " . count($units) . " units.\n";
+            echo "Seeding data for Tenant: {$tenant->name} ({$tenantId})\n";
+
+            // 1. Units
+            $units = ['Pcs', 'Box', 'Kg', 'Liter', 'Pack', 'Botol', 'Sachet'];
+            foreach ($units as $u) {
+                RetailUnit::updateOrCreate(
+                    ['tenant_id' => $tenantId, 'name' => $u]
+                );
+            }
+            echo "Created " . count($units) . " units.\n";
 
         // 2. Categories
         $cats = ['Makanan', 'Minuman', 'Sembako', 'Alat Tulis', 'Kebersihan'];
@@ -74,5 +84,6 @@ class RetailTestingSeeder extends Seeder
             );
         }
         echo "Created " . count($products) . " products.\n";
+        }
     }
 }

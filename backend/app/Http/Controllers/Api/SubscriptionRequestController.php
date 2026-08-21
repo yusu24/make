@@ -8,6 +8,8 @@ use App\Models\SubscriptionRequest;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\DB;
 
+use App\Services\PaymentGatewayService;
+
 class SubscriptionRequestController extends Controller
 {
     /**
@@ -29,7 +31,7 @@ class SubscriptionRequestController extends Controller
     }
 
     /**
-     * Tenant submits a new upgrade request
+     * Tenant submits a new upgrade request & generates payment gateway invoice
      */
     public function store(Request $request)
     {
@@ -39,6 +41,28 @@ class SubscriptionRequestController extends Controller
         }
 
         $tenantId = $user->tenant_id;
+        $tenant = Tenant::where('tenant_id', $tenantId)->firstOrFail();
+
+        // Determine price
+        $planKey = strtolower($request->plan ?? 'basic');
+        $planModel = \App\Models\SubscriptionPlan::where('business_category_id', $tenant->business_category_id)
+            ->where('plan_key', $planKey)
+            ->first();
+
+        $settings = \App\Models\LandingSetting::first();
+        $defaultPrice = match ($planKey) {
+            'pro'   => (float) ($settings->pricing_pro_monthly ?? 149000),
+            'basic' => (float) ($settings->pricing_basic_monthly ?? 49000),
+            default => 0
+        };
+
+        $amount = (float) ($planModel?->price ?? $defaultPrice);
+
+        // If promo active, apply discount
+        if ($tenant->businessCategory && $tenant->businessCategory->promo_active && $tenant->businessCategory->discount_pct > 0) {
+            $discountPct = (float) $tenant->businessCategory->discount_pct;
+            $amount = max(0, $amount - ($amount * ($discountPct / 100)));
+        }
 
         // Check if there's already a pending request
         $existing = SubscriptionRequest::where('tenant_id', $tenantId)
@@ -46,29 +70,36 @@ class SubscriptionRequestController extends Controller
             ->first();
 
         if ($existing) {
-            return response()->json(['message' => 'Anda sudah memiliki permintaan upgrade yang sedang diproses.'], 422);
+            $existing->delete();
         }
 
         $req = SubscriptionRequest::create([
             'tenant_id' => $tenantId,
-            'plan' => $request->plan,
-            'notes' => $request->notes,
-            'status' => 'pending'
+            'plan'      => $planKey,
+            'notes'     => $request->notes,
+            'status'    => 'pending'
         ]);
+
+        // Generate Payment Invoice Session (QRIS & VA)
+        $paymentData = PaymentGatewayService::createInvoice($tenant, $planKey, $amount);
 
         // Notify Super Admins
         $admins = \App\Models\User::where('role', 'super_admin')->get();
         foreach ($admins as $adm) {
             \App\Models\Notification::create([
                 'user_id' => $adm->id,
-                'type' => 'info',
-                'title' => 'Permintaan Langganan Baru',
-                'message' => "Tenant " . ($user->name) . " mengajukan upgrade ke paket " . strtoupper($request->plan),
-                'data' => ['link' => '/tenants', 'request_id' => $req->id]
+                'type'    => 'info',
+                'title'   => 'Permintaan Langganan Baru',
+                'message' => "Tenant " . ($user->name) . " mengajukan upgrade ke paket " . strtoupper($planKey),
+                'data'    => ['link' => '/tenants', 'request_id' => $req->id]
             ]);
         }
 
-        return response()->json($req);
+        return response()->json([
+            'success'      => true,
+            'request'      => $req,
+            'payment_data' => $paymentData,
+        ]);
     }
 
     /**

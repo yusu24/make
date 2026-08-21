@@ -14,12 +14,47 @@ class InventoryController extends Controller
     {
         $category = $request->query('category');
         $search = $request->query('search');
-        $perPage = $request->query('per_page', 15);
+        $perPage = $request->query('per_page', 50);
 
         $query = BudidayaInventory::query();
 
         if ($category && $category !== 'Semua') {
-            $query->where('category', strtolower($category));
+            $catLower = strtolower(trim($category));
+
+            $query->where(function ($q) use ($catLower) {
+                if (str_contains($catLower, 'pakan') || str_contains($catLower, 'konsentrat') || str_contains($catLower, 'pelet') || str_contains($catLower, 'starter') || str_contains($catLower, 'finisher') || str_contains($catLower, 'biji') || str_contains($catLower, 'hijauan') || str_contains($catLower, 'silase') || str_contains($catLower, 'fooding')) {
+                    $q->where('category', 'like', '%pakan%')
+                      ->orWhere('category', 'like', '%konsentrat%')
+                      ->orWhere('category', 'like', '%hijauan%')
+                      ->orWhere('category', 'like', '%silase%')
+                      ->orWhere('category', 'like', '%pelet%')
+                      ->orWhere('category', 'like', '%fooding%');
+                } elseif (str_contains($catLower, 'bibit') || str_contains($catLower, 'bakalan') || str_contains($catLower, 'pedet') || str_contains($catLower, 'doc') || str_contains($catLower, 'benih') || str_contains($catLower, 'indukan') || str_contains($catLower, 'anakan')) {
+                    $q->where('category', 'like', '%bibit%')
+                      ->orWhere('category', 'like', '%benih%')
+                      ->orWhere('category', 'like', '%bakalan%')
+                      ->orWhere('category', 'like', '%pedet%')
+                      ->orWhere('category', 'like', '%doc%')
+                      ->orWhere('category', 'like', '%indukan%')
+                      ->orWhere('category', 'like', '%anakan%');
+                } elseif (str_contains($catLower, 'obat') || str_contains($catLower, 'vitamin') || str_contains($catLower, 'vaksin') || str_contains($catLower, 'suplemen') || str_contains($catLower, 'probiotik') || str_contains($catLower, 'pestisida')) {
+                    $q->where('category', 'like', '%obat%')
+                      ->orWhere('category', 'like', '%vitamin%')
+                      ->orWhere('category', 'like', '%vaksin%')
+                      ->orWhere('category', 'like', '%suplemen%')
+                      ->orWhere('category', 'like', '%probiotik%')
+                      ->orWhere('category', 'like', '%pestisida%');
+                } elseif (str_contains($catLower, 'alat') || str_contains($catLower, 'peralatan') || str_contains($catLower, 'ring') || str_contains($catLower, 'sangkar')) {
+                    $q->where('category', 'like', '%alat%')
+                      ->orWhere('category', 'like', '%peralatan%')
+                      ->orWhere('category', 'like', '%ring%')
+                      ->orWhere('category', 'like', '%sangkar%');
+                } elseif (str_contains($catLower, 'pupuk')) {
+                    $q->where('category', 'like', '%pupuk%');
+                } else {
+                    $q->where('category', 'like', "%{$catLower}%");
+                }
+            });
         }
 
         if ($search) {

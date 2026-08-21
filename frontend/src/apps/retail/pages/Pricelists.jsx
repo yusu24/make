@@ -75,17 +75,17 @@ export default function Pricelists() {
     <div className="animate-fade-in retail-dashboard-spacing">
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button
+          <button title="Aturan Harga Baru"
             className="btn btn-primary"
             style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
             onClick={openNew}
           >
             <Plus size={15} className="mr-2 mobile-no-margin" />
-            <span className="btn-text-mobile-hide">Pricelist Baru</span>
+            <span className="btn-text-mobile-hide">Aturan Harga Baru</span>
           </button>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
-              placeholder="Cari pricelist..."
+              placeholder="Cari aturan harga..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -107,7 +107,7 @@ export default function Pricelists() {
             {loading ? (
               <RetailTableLoadingRow colSpan={4} />
             ) : filteredPricelists.length === 0 ? (
-              <tr><td colSpan="4" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada pricelist.</td></tr>
+              <tr><td colSpan="4" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada aturan harga khusus.</td></tr>
             ) : (
               paginatedData.map(pl => (
                 <tr key={pl.id}>
@@ -117,7 +117,7 @@ export default function Pricelists() {
                   <td className="pr-6 text-right">
                     <div className="flex gap-2 justify-end">
                       <button className="btn btn-sm btn-ghost" onClick={() => openEdit(pl)}><Edit3 size={14} /></button>
-                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if (confirm('Hapus pricelist ini?')) { await api.delete(`/retail/pricelists/${pl.id}`); fetchData(); } }}><Trash2 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if (confirm('Hapus aturan harga ini?')) { await api.delete(`/retail/pricelists/${pl.id}`); fetchData(); } }}><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -140,12 +140,12 @@ export default function Pricelists() {
       <Modal 
         isOpen={showModal} 
         onClose={() => setShowModal(false)} 
-        title={editing ? 'Edit Pricelist' : 'Pricelist Baru'}
+        title={editing ? 'Edit Aturan Harga' : 'Aturan Harga Baru'}
         maxWidth="680px"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="form-group">
-            <label className="form-label">Nama Pricelist</label>
+            <label className="form-label">Nama Aturan Harga</label>
             <input className="form-input" value={name} onChange={e => setName(e.target.value)} required placeholder="cth. Harga Grosir Toko" />
           </div>
           <div className="form-group">

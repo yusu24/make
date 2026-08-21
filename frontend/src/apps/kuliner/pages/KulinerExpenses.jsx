@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../../lib/api';
 import { Edit3, Trash2, Plus, Printer, Calendar } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import usePagination from '../../../hooks/usePagination';
@@ -18,7 +19,9 @@ export default function KulinerExpenses() {
   const [showModal, setShowModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [financeCategories, setFinanceCategories] = useState([]);
+  const [modalType, setModalType] = useState('expense');
   const printRef = useRef(null);
 
   const [dateFilter, setDateFilter] = useState('all'); 
@@ -42,7 +45,7 @@ export default function KulinerExpenses() {
 
   const fetchCategories = async () => {
     try {
-      const res = await api.get('/kuliner/admin/finance-categories?type=expense');
+      const res = await api.get('/kuliner/admin/finance-categories');
       setFinanceCategories(res.data.filter(c => c.is_active));
     } catch (e) {
       console.error('Gagal mengambil kategori', e);
@@ -79,6 +82,7 @@ export default function KulinerExpenses() {
     const fd = new FormData(e.target);
     const data = {
       date: fd.get('date'),
+      type: fd.get('type'),
       description: fd.get('description'),
       amount: parseFloat(fd.get('amount')),
       category: fd.get('category') || 'Lainnya'
@@ -100,6 +104,7 @@ export default function KulinerExpenses() {
 
   const openEdit = (ex) => {
     setEditingExpense(ex);
+    setModalType(ex.type || 'expense');
     setShowModal(true);
   };
 
@@ -108,16 +113,35 @@ export default function KulinerExpenses() {
     setEditingExpense(null);
   }
 
-  const filteredExpenses = expenses.filter(ex =>
-    (ex.description || '').toLowerCase().includes(search.toLowerCase()) ||
-    (ex.category || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredExpenses = expenses.filter(ex => {
+    const matchSearch = ((ex.description || '').toLowerCase().includes(search.toLowerCase()) || (ex.category || '').toLowerCase().includes(search.toLowerCase()));
+    const matchType = typeFilter === 'all' || (typeFilter === 'income' ? ex.type === 'income' : (!ex.type || ex.type === 'expense'));
+    return matchSearch && matchType;
+  });
 
   const formatRp = (num) => `Rp ${Math.round(Number(num || 0)).toLocaleString('id-ID')}`;
 
   const formatDate = (d) => new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const totalNominal = filteredExpenses.reduce((sum, ex) => sum + Number(ex.amount || 0), 0);
+  const totalIncome = filteredExpenses.filter(ex => ex.type === 'income').reduce((sum, ex) => sum + Number(ex.amount || 0), 0);
+  const totalExpense = filteredExpenses.filter(ex => (!ex.type || ex.type === 'expense')).reduce((sum, ex) => sum + Number(ex.amount || 0), 0);
+  const totalBalance = totalIncome - totalExpense;
+
+  const chartDataRaw = filteredExpenses.reduce((acc, curr) => {
+    const d = curr.date.split('T')[0];
+    if (!acc[d]) acc[d] = { dateRaw: d, Pemasukan: 0, Pengeluaran: 0 };
+    if (curr.type === 'income') {
+      acc[d].Pemasukan += Number(curr.amount || 0);
+    } else {
+      acc[d].Pengeluaran += Number(curr.amount || 0);
+    }
+    return acc;
+  }, {});
+  
+  const chartData = Object.values(chartDataRaw).sort((a, b) => a.dateRaw.localeCompare(b.dateRaw)).map(item => ({
+    ...item,
+    name: new Date(item.dateRaw).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+  }));
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -132,20 +156,26 @@ export default function KulinerExpenses() {
       </td>
       <td>
         <span style={{ 
-            background: '#fff7ed', color: '#ea580c', padding: '4px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, border: '1px solid #ffedd5' 
+            background: ex.type === 'income' ? '#dcfce7' : '#fff7ed', 
+            color: ex.type === 'income' ? '#166534' : '#ea580c', 
+            padding: '4px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, 
+            border: `1px solid ${ex.type === 'income' ? '#bbf7d0' : '#ffedd5'}` 
         }}>
             {ex.category}
         </span>
       </td>
       <td style={{ color: '#1e293b', fontWeight: 500 }}>{ex.description}</td>
-      <td style={{ color: '#000', fontWeight: 600, paddingRight: withActions ? 0 : 24, textAlign: 'right' }}>
-        - {formatRp(ex.amount)}
+      <td style={{ color: '#10b981', fontWeight: 600, textAlign: 'right' }}>
+        {ex.type === 'income' ? formatRp(ex.amount) : '-'}
+      </td>
+      <td style={{ color: '#ef4444', fontWeight: 600, paddingRight: withActions ? 0 : 24, textAlign: 'right' }}>
+        {(!ex.type || ex.type === 'expense') ? formatRp(ex.amount) : '-'}
       </td>
       {withActions && (
         <td style={{ textAlign: 'right', paddingRight: 24 }}>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
             <button className="kd-btn kd-btn-secondary" style={{ padding: '6px' }} onClick={() => openEdit(ex)} title="Edit"><Edit3 size={15} /></button>
-            <button className="kd-btn" style={{ padding: '6px', background: '#fef2f2', color: '#ef4444', borderColor: '#fee2e2' }} onClick={async () => { if (confirm('Hapus pencatatan pengeluaran ini?')) { await api.delete(`/kuliner/admin/expenses/${ex.id}`); fetchExpenses(startDate, endDate); } }} title="Hapus"><Trash2 size={15} /></button>
+            <button className="kd-btn" style={{ padding: '6px', background: '#fef2f2', color: '#ef4444', borderColor: '#fee2e2' }} onClick={async () => { if (confirm('Hapus pencatatan kas ini?')) { await api.delete(`/kuliner/admin/expenses/${ex.id}`); fetchExpenses(startDate, endDate); } }} title="Hapus"><Trash2 size={15} /></button>
           </div>
         </td>
       )}
@@ -169,7 +199,7 @@ export default function KulinerExpenses() {
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">Pengeluaran Resto</h1>
+        <h1 className="kd-page-title">Pencatatan Kas</h1>
       </div>
 
       <div className="kd-content">
@@ -178,22 +208,32 @@ export default function KulinerExpenses() {
         ) : (
           <>
             <div className="kd-page-actions no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-              
               <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   className="kd-btn kd-btn-primary"
                   style={{ display: 'flex', alignItems: 'center', height: 36 }}
-                  onClick={() => { setEditingExpense(null); setShowModal(true); }}
+                  onClick={() => { setEditingExpense(null); setModalType('expense'); setShowModal(true); }}
                 >
                   <Plus size={16} style={{ marginRight: 8 }} />
-                  Tambah
+                  Tambah Transaksi Kas
                 </button>
+
+                <select 
+                  className="kd-input" 
+                  style={{ height: 36, padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: 6, outline: 'none' }}
+                  value={typeFilter}
+                  onChange={e => { setTypeFilter(e.target.value); setCurrentPage(1); }}
+                >
+                  <option value="all">Semua Jenis Kas</option>
+                  <option value="income">Hanya Pemasukan</option>
+                  <option value="expense">Hanya Pengeluaran</option>
+                </select>
 
                 <div style={{ position: 'relative', width: 220 }}>
                   <input
                     className="kd-input"
                     style={{ width: '100%', height: 36, padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: 6, outline: 'none' }}
-                    placeholder="Cari pengeluaran..."
+                    placeholder="Cari transaksi..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                   />
@@ -225,14 +265,44 @@ export default function KulinerExpenses() {
               </div>
             </div>
 
+            {chartData.length > 0 && (
+              <div className="kd-panel no-print" style={{ marginBottom: 20 }}>
+                <div className="kd-panel-header">
+                  <div className="text-sm font-bold text-slate-800">Grafik Arus Kas</div>
+                </div>
+                <div style={{ height: 300, padding: '20px 20px 0 0' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                      <YAxis 
+                        tickFormatter={(v) => `Rp ${v / 1000}k`} 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 12, fill: '#64748b' }}
+                        width={80}
+                      />
+                      <Tooltip 
+                        formatter={(value) => [formatRp(value), undefined]}
+                        contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                      />
+                      <Legend wrapperStyle={{ paddingTop: 20 }} />
+                      <Bar dataKey="Pemasukan" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                      <Bar dataKey="Pengeluaran" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
             <div ref={printRef}>
               <div className="kd-panel no-print">
                 <div className="kd-panel-header no-print">
                   <div className="text-sm font-bold text-slate-800">
-                    Daftar Pengeluaran
+                    Daftar Pencatatan Kas
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
-                    Total: {formatRp(totalNominal)} ({filteredExpenses.length} data)
+                    Saldo: <span style={{ color: totalBalance >= 0 ? '#10b981' : '#ef4444' }}>{formatRp(totalBalance)}</span> ({filteredExpenses.length} data)
                   </div>
                 </div>
 
@@ -243,13 +313,14 @@ export default function KulinerExpenses() {
                         <th>Tanggal</th>
                         <th>Kategori</th>
                         <th>Keterangan</th>
-                        <th style={{ textAlign: 'right' }}>Nominal</th>
+                        <th style={{ textAlign: 'right' }}>Pemasukan</th>
+                        <th style={{ textAlign: 'right' }}>Pengeluaran</th>
                         <th style={{ textAlign: 'right', paddingRight: 24 }}>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredExpenses.length === 0 ? (
-                        <tr><td colSpan="5" className="text-center py-10 text-slate-400">Belum ada catatan pengeluaran.</td></tr>
+                        <tr><td colSpan="6" className="text-center py-10 text-slate-400">Belum ada pencatatan kas.</td></tr>
                       ) : (
                         renderExpenseRows(paginatedData, { withActions: true })
                       )}
@@ -278,7 +349,7 @@ export default function KulinerExpenses() {
                   {/* HEADER LAPORAN */}
                   <div className="text-center mb-4 leading-tight">
                     <h2 className="text-lg sm:text-xl font-bold uppercase tracking-wider text-slate-900 print:text-black">
-                      Laporan Pengeluaran Operasional
+                      Laporan Pencatatan Kas Operasional
                     </h2>
                     <h1 className="text-base sm:text-lg font-bold uppercase tracking-wide text-slate-900 print:text-black">
                       {user?.tenant_name || 'Toko Kuliner'}
@@ -290,18 +361,21 @@ export default function KulinerExpenses() {
 
                   {/* TABEL FINANSIAL */}
                   <div className="overflow-x-auto my-6">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="border-y-2 border-slate-900 print:border-black text-xs uppercase font-bold text-slate-800 print:text-black bg-slate-50 print:bg-transparent">
-                          <th className="py-2 px-2 text-left w-24">Tanggal</th>
-                          <th className="py-2 px-2 text-left">Kategori</th>
-                          <th className="py-2 px-2 text-left">Keterangan</th>
-                          <th className="py-2 px-2 text-right w-36">Nominal</th>
+                    <table className="w-full text-xs sm:text-sm text-left mb-6" style={{ borderCollapse: 'collapse' }}>
+                      <thead className="bg-slate-100 print:bg-gray-200">
+                        <tr>
+                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black">Tanggal</th>
+                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black">Kategori</th>
+                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black">Keterangan</th>
+                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black text-right">Pemasukan</th>
+                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black text-right">Pengeluaran</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredExpenses.length === 0 ? (
-                          <tr><td colSpan="4" className="py-4 text-center text-slate-400 italic text-sm">Tidak ada catatan.</td></tr>
+                          <tr>
+                            <td colSpan="5" className="text-center py-6 text-slate-500 italic">Belum ada pencatatan kas.</td>
+                          </tr>
                         ) : (
                            filteredExpenses.map(ex => (
                               <tr key={`print-${ex.id}`} className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
@@ -314,18 +388,37 @@ export default function KulinerExpenses() {
                                 <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
                                   {ex.description || '-'}
                                 </td>
-                                <td className="py-1 px-2 text-right font-mono text-slate-800 print:text-black w-36 border-b border-slate-100 print:border-transparent">
-                                  {formatRp(ex.amount)}
-                                </td>
-                              </tr>
+                            <td className="py-2 px-3 border border-slate-300 font-bold text-emerald-600 print:text-black text-right">
+                              {ex.type === 'income' ? formatRp(ex.amount) : '-'}
+                            </td>
+                            <td className="py-2 px-3 border border-slate-300 font-bold text-rose-600 print:text-black text-right">
+                              {(!ex.type || ex.type === 'expense') ? formatRp(ex.amount) : '-'}
+                            </td>
+                          </tr>
                            ))
                         )}
-                        <tr className="font-bold text-sm bg-slate-100/70 print:bg-transparent">
-                          <td colSpan="3" className="py-1.5 px-2 text-slate-900 print:text-black uppercase">
+                        <tr>
+                          <td colSpan="3" className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black text-right bg-slate-50 print:bg-gray-100">
+                            TOTAL PEMASUKAN
+                          </td>
+                          <td colSpan="2" className="py-2 px-3 border border-slate-300 font-bold text-emerald-600 print:text-black text-right bg-slate-50 print:bg-gray-100">
+                            {formatRp(totalIncome)}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colSpan="3" className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black text-right bg-slate-50 print:bg-gray-100">
                             TOTAL PENGELUARAN
                           </td>
-                          <td className="py-1.5 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black font-extrabold" style={{ borderBottom: '3px double #000' }}>
-                            {formatRp(totalNominal)}
+                          <td colSpan="2" className="py-2 px-3 border border-slate-300 font-bold text-rose-600 print:text-black text-right bg-slate-50 print:bg-gray-100">
+                            {formatRp(totalExpense)}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colSpan="3" className="py-2 px-3 border border-slate-300 font-bold text-slate-900 print:text-black text-right bg-slate-200 print:bg-gray-300 text-base">
+                            SALDO AKHIR
+                          </td>
+                          <td colSpan="2" className={`py-2 px-3 border border-slate-300 font-bold print:text-black text-right bg-slate-200 print:bg-gray-300 text-base ${totalBalance >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                            {formatRp(totalBalance)}
                           </td>
                         </tr>
                       </tbody>
@@ -346,7 +439,7 @@ export default function KulinerExpenses() {
           <div className="kd-modal-overlay visible" onClick={handleClose}>
             <div className="kd-modal max-w-md" onClick={e => e.stopPropagation()}>
               <div className="kd-modal-header">
-                <h2 className="kd-modal-title">{editingExpense ? 'Edit Catatan Pengeluaran' : 'Catat Pengeluaran Baru'}</h2>
+                <h2 className="kd-modal-title">{editingExpense ? 'Edit Pencatatan Kas' : 'Catat Kas Baru'}</h2>
                 <button className="kd-close-btn" onClick={handleClose}>✕</button>
               </div>
               <form onSubmit={handleSubmit}>
@@ -357,28 +450,36 @@ export default function KulinerExpenses() {
                       <input name="date" type="date" className="kd-form-input" defaultValue={editingExpense ? editingExpense.date : new Date().toISOString().split('T')[0]} required />
                     </div>
                     <div className="kd-form-group">
-                      <label className="kd-form-label">Kategori</label>
-                      <select name="category" className="kd-form-select" defaultValue={editingExpense?.category || ''} required>
-                        <option value="">-- Pilih Kategori --</option>
-                        {financeCategories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                      <label className="kd-form-label">Jenis Kas</label>
+                      <select name="type" className="kd-form-select" value={modalType} onChange={e => setModalType(e.target.value)} required>
+                        <option value="expense">Kas Keluar (Pengeluaran)</option>
+                        <option value="income">Kas Masuk (Pemasukan)</option>
                       </select>
                     </div>
                   </div>
                   
                   <div className="kd-form-group" style={{ marginBottom: 16 }}>
-                    <label className="kd-form-label">Keterangan</label>
-                    <input name="description" className="kd-form-input" placeholder="Tulis rincian pengeluaran..." defaultValue={editingExpense?.description} required />
+                    <label className="kd-form-label">Kategori</label>
+                    <select name="category" className="kd-form-select" defaultValue={editingExpense?.category || ''} required>
+                      <option value="">-- Pilih Kategori --</option>
+                      {financeCategories.filter(c => c.type === modalType).map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    </select>
                   </div>
 
                   <div className="kd-form-group" style={{ marginBottom: 16 }}>
-                    <label className="kd-form-label">Nominal Pengeluaran (Rp)</label>
+                    <label className="kd-form-label">Keterangan</label>
+                    <input name="description" className="kd-form-input" placeholder={modalType === 'expense' ? "Tulis rincian pengeluaran..." : "Tulis rincian pemasukan..."} defaultValue={editingExpense?.description} required />
+                  </div>
+
+                  <div className="kd-form-group" style={{ marginBottom: 16 }}>
+                    <label className="kd-form-label">Nominal (Rp)</label>
                     <CurrencyInput name="amount" className="kd-form-input" placeholder="Contoh: 50000" defaultValue={editingExpense?.amount} required />
                   </div>
                 </div>
                 
                 <div className="kd-modal-footer">
                   <button type="button" className="kd-btn kd-btn-secondary" onClick={handleClose}>Batal</button>
-                  <button type="submit" className="kd-btn kd-btn-primary">{editingExpense ? 'Simpan Perubahan' : 'Catat Pengeluaran'}</button>
+                  <button type="submit" className="kd-btn kd-btn-primary">{editingExpense ? 'Simpan Perubahan' : 'Catat Kas'}</button>
                 </div>
               </form>
             </div>

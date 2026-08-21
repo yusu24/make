@@ -53,13 +53,13 @@ function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
       className={`flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br ${colors[color] || colors.indigo} text-white shadow-md hover:shadow-lg transition-all duration-200 group`}
     >
       <div className="p-2.5 bg-white/15 rounded-xl shrink-0">
-        <Icon size={20} className="text-white" />
+        <Icon size={20} className="text-white" style={{ color: '#ffffff' }} />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-white">{title}</h3>
-        <p className="text-[11px] text-white truncate">{desc}</p>
+        <h3 className="font-bold text-sm text-white" style={{ color: '#ffffff' }}>{title}</h3>
+        <p className="text-[11px] text-white/90 truncate" style={{ color: '#ffffff' }}>{desc}</p>
       </div>
-      <ArrowRight size={16} className="text-white group-hover:translate-x-1 transition-transform duration-200 shrink-0" />
+      <ArrowRight size={16} className="text-white group-hover:translate-x-1 transition-transform duration-200 shrink-0" style={{ color: '#ffffff' }} />
     </Link>
   );
 }
@@ -138,7 +138,7 @@ export default function RetailDashboard() {
         <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
           <div>
             <p className="text-indigo-300 text-sm font-medium mb-1">{greeting}, 👋</p>
-            <h2 className="text-2xl font-extrabold leading-tight">{user?.name || 'User'}</h2>
+            <h2 className="text-2xl font-extrabold leading-tight text-white" style={{ color: '#ffffff' }}>{user?.name || 'User'}</h2>
             <p className="text-slate-400 text-sm mt-1">
               Role: <span className="text-indigo-300 font-normal">{roleLabel}</span>
               {user?.tenant_name && (

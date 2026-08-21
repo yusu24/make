@@ -104,7 +104,7 @@ export default function KulinerFinanceSummary() {
     endIndex
   } = usePagination(ledger);
 
-  // Kalkulasi kategori Laba Rugi untuk Cetak PDF (Dikelompokkan berdasarkan kategori)
+  // Kalkulasi kategori Laba Rugi untuk Grafik
   const groupByCategory = (items) => {
     const grouped = items.reduce((acc, item) => {
       const cat = item.category || 'Lainnya';
@@ -118,22 +118,9 @@ export default function KulinerFinanceSummary() {
     })).sort((a, b) => b.amount - a.amount);
   };
 
-  const pendapatan = groupByCategory(ledger.filter(l => l.type === 'income'));
-  
-  // Asumsi HPP = Bahan Baku
-  const hpp = groupByCategory(ledger.filter(l => l.type === 'expense' && l.category === 'Bahan Baku (Pasar/Supplier)'));
-  const totalHPP = hpp.reduce((sum, item) => sum + item.amount, 0);
-  
-  // Beban Operasional = Pengeluaran selain Bahan Baku
-  const bebanOperasional = groupByCategory(ledger.filter(l => l.type === 'expense' && l.category !== 'Bahan Baku (Pasar/Supplier)'));
-  const totalBebanOp = bebanOperasional.reduce((sum, item) => sum + item.amount, 0);
-
-  const labaKotor = summary.total_sales - totalHPP;
-  const labaBersih = summary.profit;
-
   const overviewData = [
-    { name: 'Pemasukan', value: Number(summary.total_sales) || 0, color: '#10b981' },
-    { name: 'Pengeluaran', value: Number(summary.total_expenses) || 0, color: '#ef4444' }
+    { name: 'Omset Penjualan', value: Number(summary.total_sales) || 0, color: '#10b981' },
+    { name: 'HPP & Pengeluaran', value: (Number(summary.total_cogs) || 0) + (Number(summary.total_expenses) || 0), color: '#ef4444' }
   ].filter(d => d.value > 0);
 
   const COLORS = ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#3b82f6', '#8b5cf6', '#ec4899'];
@@ -200,54 +187,65 @@ export default function KulinerFinanceSummary() {
             </div>
 
             <div ref={printRef}>
-              {/* SUMMARY CARDS */}
-              <div className="kd-ledger-grid no-print" style={{ marginBottom: 24, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                <div className="kd-panel" style={{ borderLeft: '4px solid #10b981' }}>
-                  <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <TrendingUp size={14} color="#10b981" /> Total Pendapatan
+              {/* Net Profit Banner */}
+              <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 rounded-3xl shadow-xl border border-emerald-700/40 relative overflow-hidden mb-6 mt-4 no-print">
+                <div className="flex flex-row items-center justify-between gap-4">
+                  <div>
+                    <span className="text-xs font-semibold text-emerald-300 uppercase tracking-widest bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-400/30">
+                      ESTIMASI PROFIT BERSIH (NET PROFIT)
+                    </span>
+                    <div className="text-2xl sm:text-4xl font-black mt-3 tracking-tight">{loading ? '...' : formatRp(summary.profit)}</div>
+                    <p className="text-xs text-emerald-100/80 mt-1">
+                      Sudah dipotong seluruh HPP resep & pengeluaran operasional terdaftar.
+                    </p>
                   </div>
-                  <div className="text-xl font-black text-slate-800">{formatRp(summary.total_sales)}</div>
-                  <div className="text-[10px] text-slate-400 mt-2">Pemasukan Kas & Penjualan</div>
+
+                  <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center shrink-0">
+                    <span className="text-xs text-emerald-200 font-semibold uppercase block">NET MARGIN RATE</span>
+                    <div className="text-3xl font-black text-emerald-300 mt-1">{loading ? '...' : `${(summary.total_sales || 0) > 0 ? ((summary.profit / (summary.total_sales || 0)) * 100).toFixed(1) : '0'}%`}</div>
+                    <span className="text-[10px] text-white/80">Kategori Bisnis Kuliner</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Profit & Loss Waterfall Breakdown Table */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden mb-8 no-print">
+                <div className="p-4 bg-slate-50 border-b border-slate-200/80">
+                  <h3 className="text-sm font-semibold text-slate-800">
+                    Rincian Komponen Laba Rugi (P&L Summary)
+                  </h3>
                 </div>
 
-                <div className="kd-panel" style={{ borderLeft: '4px solid #f59e0b' }}>
-                  <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <TrendingDown size={14} color="#f59e0b" /> HPP (Cost of Goods)
+                <div className="p-5 space-y-3">
+                  <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl font-semibold text-sm text-slate-800">
+                    <span>(+) Total Omset Kotor Penjualan (Revenue)</span>
+                    <span className="text-emerald-600">{loading ? '...' : formatRp(summary.total_sales || 0)}</span>
                   </div>
-                  <div className="text-xl font-black text-slate-800" style={{ color: '#f59e0b' }}>{formatRp(totalHPP)}</div>
-                  <div className="text-[10px] text-slate-400 mt-2">Bahan Baku & Persediaan</div>
-                </div>
 
-                <div className="kd-panel" style={{ borderLeft: '4px solid #3b82f6' }}>
-                  <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Wallet size={14} color="#3b82f6" /> Laba Kotor
+                  <div className="flex items-center justify-between p-3.5 bg-rose-50/40 rounded-xl text-xs font-semibold text-slate-700">
+                    <span>(-) Estimasi HPP / Cost of Goods Sold (Resep)</span>
+                    <span className="text-rose-600">-{loading ? '...' : formatRp(summary.total_cogs || 0)}</span>
                   </div>
-                  <div className="text-xl font-black text-slate-800" style={{ color: '#3b82f6' }}>{formatRp(labaKotor)}</div>
-                  <div className="text-[10px] text-slate-400 mt-2">Pendapatan dikurangi HPP</div>
-                </div>
 
-                <div className="kd-panel" style={{ borderLeft: '4px solid #f97316' }}>
-                  <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <TrendingDown size={14} color="#f97316" /> Beban Operasional
+                  <div className="flex items-center justify-between p-3.5 bg-emerald-50 rounded-xl font-bold text-sm text-emerald-800 border border-emerald-100">
+                    <span>(=) Laba Kotor (Gross Profit)</span>
+                    <span>{loading ? '...' : formatRp(summary.gross_profit || 0)}</span>
                   </div>
-                  <div className="text-xl font-black text-slate-800" style={{ color: '#f97316' }}>{formatRp(totalBebanOp)}</div>
-                  <div className="text-[10px] text-slate-400 mt-2">Pengeluaran selain Bahan Baku</div>
-                </div>
 
-                <div className="kd-panel" style={{ borderLeft: '4px solid #ef4444' }}>
-                  <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <TrendingDown size={14} color="#ef4444" /> Total Pengeluaran
+                  <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl font-semibold text-sm text-slate-800">
+                    <span>(+) Pemasukan Tambahan (Non-Sales)</span>
+                    <span className="text-emerald-600">{loading ? '...' : formatRp(summary.other_income || 0)}</span>
                   </div>
-                  <div className="text-xl font-black text-slate-800" style={{ color: '#ef4444' }}>{formatRp(summary.total_expenses)}</div>
-                  <div className="text-[10px] text-slate-400 mt-2">HPP + Beban Operasional</div>
-                </div>
-                
-                <div className="kd-panel" style={{ borderLeft: `4px solid ${isProfit ? '#10b981' : '#ef4444'}` }}>
-                  <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Wallet size={14} color={isProfit ? '#10b981' : '#ef4444'} /> Laba Bersih
+
+                  <div className="flex items-center justify-between p-3.5 bg-rose-50/40 rounded-xl text-xs font-semibold text-slate-700">
+                    <span>(-) Total Pengeluaran Operasional (Beban)</span>
+                    <span className="text-rose-600">-{loading ? '...' : formatRp(summary.total_expenses || 0)}</span>
                   </div>
-                  <div className="text-xl font-black text-slate-800" style={{ color: isProfit ? '#10b981' : '#ef4444' }}>{formatRp(summary.profit)}</div>
-                  <div className="text-[10px] text-slate-400 mt-2">Laba Kotor - Beban Operasional</div>
+
+                  <div className="flex items-center justify-between p-4 bg-slate-800 rounded-xl font-black text-base text-white mt-2 shadow-inner">
+                    <span>(=) Laba Bersih (Net Profit)</span>
+                    <span className="text-emerald-400">{loading ? '...' : formatRp(summary.profit || 0)}</span>
+                  </div>
                 </div>
               </div>
 
@@ -351,7 +349,7 @@ export default function KulinerFinanceSummary() {
                     {/* HEADER LAPORAN (JENIS LAPORAN -> NAMA PERUSAHAAN -> PERIODE / ALAMAT / MATA UANG) */}
                     <div className="text-center mb-4 leading-tight">
                       <h2 className="text-lg sm:text-xl font-bold uppercase tracking-wider text-slate-900 print:text-black">
-                        Laporan Laba Rugi
+                        Laporan Laba Rugi (P&L Summary)
                       </h2>
                       <h1 className="text-base sm:text-lg font-bold uppercase tracking-wide text-slate-900 print:text-black">
                         {user?.tenant_name || 'Toko Kuliner'}
@@ -371,98 +369,48 @@ export default function KulinerFinanceSummary() {
                           </tr>
                         </thead>
                         <tbody>
-                          {/* 1. PENDAPATAN OPERASIONAL */}
-                          <tr className="font-bold text-sm bg-slate-50/80 print:bg-transparent">
-                            <td colSpan="2" className="py-1.5 px-2 text-slate-900 print:text-black uppercase border-t border-slate-200 print:border-black">
-                              1. Pendapatan Operasional
+                          <tr className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
+                            <td className="py-2 px-2 text-slate-800 print:text-black font-semibold">
+                              (+) Total Omset Kotor Penjualan (Revenue)
+                            </td>
+                            <td className="py-2 px-2 text-right font-mono text-slate-800 print:text-black w-36">
+                              {formatRp(summary.total_sales || 0)}
                             </td>
                           </tr>
-                          {pendapatan.map((item, idx) => (
-                            <tr key={`print-inc-${idx}`} className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
-                              <td className="py-1 px-2 text-slate-800 print:text-black pl-6">
-                                {item.category}
-                              </td>
-                              <td className="py-1 px-2 text-right font-mono text-slate-800 print:text-black w-36">
-                                {formatRp(item.amount)}
-                              </td>
-                            </tr>
-                          ))}
-                          <tr className="font-bold text-sm bg-slate-100/70 print:bg-transparent">
-                            <td className="py-1.5 px-2 text-slate-900 print:text-black uppercase">
-                              Total Pendapatan Bersih
+                          
+                          <tr className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
+                            <td className="py-2 px-2 text-slate-800 print:text-black font-semibold">
+                              (-) Estimasi HPP / Cost of Goods Sold (Resep)
                             </td>
-                            <td className="py-1.5 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black">
-                              {formatRp(summary.total_sales)}
+                            <td className="py-2 px-2 text-right font-mono text-slate-800 print:text-black w-36">
+                              -{formatRp(summary.total_cogs || 0)}
                             </td>
                           </tr>
 
-                          {/* 2. HARGA POKOK PENJUALAN */}
-                          <tr className="font-bold text-sm bg-slate-50/80 print:bg-transparent">
-                            <td colSpan="2" className="py-1.5 px-2 text-slate-900 print:text-black uppercase border-t border-slate-200 print:border-black">
-                              2. Beban Pokok Penjualan (HPP)
-                            </td>
-                          </tr>
-                          {hpp.map((item, idx) => (
-                            <tr key={`print-hpp-${idx}`} className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
-                              <td className="py-1 px-2 text-slate-800 print:text-black pl-6">
-                                {item.category}
-                              </td>
-                              <td className="py-1 px-2 text-right font-mono text-slate-800 print:text-black w-36">
-                                {formatRp(item.amount)}
-                              </td>
-                            </tr>
-                          ))}
                           <tr className="font-bold text-sm bg-slate-100/70 print:bg-transparent">
-                            <td className="py-1.5 px-2 text-slate-900 print:text-black uppercase">
-                              Total Beban Pokok Penjualan
+                            <td className="py-2 px-2 text-slate-900 print:text-black uppercase">
+                              (=) Laba Kotor (Gross Profit)
                             </td>
-                            <td className="py-1.5 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black">
-                              {formatRp(totalHPP)}
+                            <td className="py-2 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black font-extrabold">
+                              {formatRp(summary.gross_profit || 0)}
                             </td>
                           </tr>
 
-                          {/* LABA KOTOR */}
-                          <tr className="font-bold text-sm bg-slate-100/70 print:bg-transparent">
-                            <td className="py-1.5 px-2 text-slate-900 print:text-black uppercase">
-                              Laba Kotor
+                          <tr className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
+                            <td className="py-2 px-2 text-slate-800 print:text-black font-semibold">
+                              (-) Total Pengeluaran Operasional (Beban)
                             </td>
-                            <td className="py-1.5 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black font-extrabold">
-                              {formatRp(labaKotor)}
-                            </td>
-                          </tr>
-
-                          {/* 3. BEBAN OPERASIONAL */}
-                          <tr className="font-bold text-sm bg-slate-50/80 print:bg-transparent">
-                            <td colSpan="2" className="py-1.5 px-2 text-slate-900 print:text-black uppercase border-t border-slate-200 print:border-black">
-                              3. Beban Operasional / Usaha
-                            </td>
-                          </tr>
-                          {bebanOperasional.map((item, idx) => (
-                            <tr key={`print-exp-${idx}`} className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
-                              <td className="py-1 px-2 text-slate-800 print:text-black pl-6">
-                                {item.category}
-                              </td>
-                              <td className="py-1 px-2 text-right font-mono text-slate-800 print:text-black w-36">
-                                {formatRp(item.amount)}
-                              </td>
-                            </tr>
-                          ))}
-                          <tr className="font-bold text-sm bg-slate-100/70 print:bg-transparent">
-                            <td className="py-1.5 px-2 text-slate-900 print:text-black uppercase">
-                              Total Beban Operasional
-                            </td>
-                            <td className="py-1.5 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black">
-                              {formatRp(totalBebanOp)}
+                            <td className="py-2 px-2 text-right font-mono text-slate-800 print:text-black w-36">
+                              -{formatRp(summary.total_expenses || 0)}
                             </td>
                           </tr>
 
-                          {/* LABA BERSIH */}
                           <tr className="font-bold text-sm">
-                            <td className="py-1.5 px-2 text-slate-900 print:text-black uppercase">
-                              LABA BERSIH PERIODE BERJALAN
+                            <td className="py-2 px-2 text-slate-900 print:text-black uppercase pt-4">
+                              (=) LABA BERSIH (NET PROFIT)
                             </td>
-                            <td className="py-1.5 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black font-extrabold" style={{ borderBottom: '3px double #000' }}>
-                              {formatRp(labaBersih)}
+                            <td className="py-2 px-2 text-right font-mono text-slate-900 print:text-black border-t-2 border-slate-900 print:border-black font-extrabold pt-4" style={{ borderBottom: '3px double #000' }}>
+                              {formatRp(summary.profit || 0)}
                             </td>
                           </tr>
                         </tbody>

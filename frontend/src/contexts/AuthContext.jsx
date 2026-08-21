@@ -83,6 +83,7 @@ export const AuthProvider = ({ children }) => {
         
         sessionStorage.setItem('umkm_token', token);
         sessionStorage.setItem('umkm_user', JSON.stringify(userData));
+        sessionStorage.setItem('is_demo_sandbox', 'true');
         
         setUser(userData);
         return userData;
@@ -100,11 +101,31 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        const isDemo = sessionStorage.getItem('is_demo_sandbox') === 'true' ||
+                       user?.tenant_id?.startsWith('TN-DS-') ||
+                       user?.tenant_id?.startsWith('TN-DK-') ||
+                       user?.email?.startsWith('demo-sandbox-') ||
+                       (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'));
+
+        if (isDemo) {
+            sessionStorage.setItem('is_demo_sandbox', 'true');
+        } else {
+            sessionStorage.removeItem('is_demo_sandbox');
+        }
+
         sessionStorage.removeItem('umkm_token');
         sessionStorage.removeItem('umkm_user');
+        sessionStorage.removeItem('umkm_impersonator');
         localStorage.removeItem('umkm_token');
         localStorage.removeItem('umkm_user');
-        setUser(null);
+        
+        // Skip setUser(null) to prevent React from rendering a <Navigate> 
+        // component just milliseconds before the browser hard-reloads, 
+        // which causes the "double loading" flicker.
+
+        const targetUrl = isDemo ? '/' : '/login';
+        window.location.replace(targetUrl);
+        return targetUrl;
     };
 
     const impersonate = async (tenantId) => {
@@ -173,6 +194,7 @@ export const AuthProvider = ({ children }) => {
             'budidaya-tanaman': '/budidaya/dashboard',
             'kuliner': '/kuliner/admin',
             'seller': '/seller/dashboard',
+            'jasa': '/jasa/dashboard',
         };
         
         return SLUG_ROUTES[categorySlug] || '/coming-soon';

@@ -145,7 +145,7 @@ class FinanceController extends Controller
                 'type' => 'income',
                 'date' => $h->harvest_date,
                 'category' => 'Panen',
-                'description' => 'Panen Kolam: ' . ($h->cycle->pond->name ?? 'N/A') . ($h->notes ? ' - ' . $h->notes : ''),
+                'description' => 'Panen: ' . ($h->cycle->pond->name ?? 'N/A') . ($h->notes ? ' - ' . $h->notes : ''),
                 'amount' => $h->total_revenue,
                 'status' => 'completed',
                 'raw_data' => $h

@@ -44,29 +44,28 @@ export default function ActivityLogs() {
   return (
     <div className="animate-fade-in">
       <div className="page-header">
-        <div>
-          <h2 className="page-title">Activity Log</h2>
-          <p className="page-sub">Riwayat aktivitas di platform BIZORA SaaS</p>
-        </div>
-        <button id="btn-export-logs" className="btn btn-secondary">⬇ Export Log</button>
+        <h2 className="page-title">Log Aktivitas &amp; Audit</h2>
       </div>
 
-      <div className="filter-bar">
-        <div className="search-wrap">
-          <span className="search-icon">🔍</span>
-          <input id="input-search-logs" className="form-input search-input" placeholder="Cari aktivitas..."
-            value={search} onChange={e => setSearch(e.target.value)} />
+      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
+          <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
+            <span className="search-icon">🔍</span>
+            <input id="input-search-logs" className="form-input search-input" placeholder="Cari aktivitas..."
+              value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <div className="filter-tabs">
+            {['all','info','success','warning','danger'].map(f => (
+              <button key={f} id={`log-filter-${f}`}
+                className={`filter-tab ${level===f?'filter-tab--active':''}`}
+                onClick={() => setLevel(f)}
+              >
+                {LEVEL_ICON[f] || '⊞'} {f.charAt(0).toUpperCase()+f.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="filter-tabs">
-          {['all','info','success','warning','danger'].map(f => (
-            <button key={f} id={`log-filter-${f}`}
-              className={`filter-tab ${level===f?'filter-tab--active':''}`}
-              onClick={() => setLevel(f)}
-            >
-              {LEVEL_ICON[f] || '⊞'} {f.charAt(0).toUpperCase()+f.slice(1)}
-            </button>
-          ))}
-        </div>
+        <button id="btn-export-logs" className="btn btn-secondary btn-sm" style={{ height: 38 }}>⬇ Export Log</button>
       </div>
 
       <div className="card" style={{overflow:'hidden'}}>

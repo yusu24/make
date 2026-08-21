@@ -646,6 +646,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
+      {/* Panduan Aplikasi */}
+      <div className="px-3 pb-2 pt-1">
+        <button
+          onClick={() => setActiveTab('panduan')}
+          title={collapsed ? 'Panduan Aplikasi' : ''}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+            activeTab === 'panduan'
+              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
+          }`}
+        >
+          <ClipboardCheck className={`w-5 h-5 shrink-0 ${activeTab === 'panduan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+          {!collapsed && <span className="flex-1 text-left truncate">Panduan Aplikasi</span>}
+        </button>
+      </div>
+
       {/* AI Intelligence Assistant Banner */}
       {!collapsed && (
         <div className="p-3 m-3 rounded-2xl bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-950 text-white shadow-xl shadow-indigo-900/10 border border-indigo-700/30 relative overflow-hidden group">

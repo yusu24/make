@@ -17,11 +17,13 @@ export default function StockEntry() {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [supplierId, setSupplierId] = useState('');
-  const [items, setItems] = useState([{ product_id: '', qty: 1, cost_per_item: 0 }]);
+  const [items, setItems] = useState([{ product_id: '', qty: 1, cost_per_item: 0, expired_date: '' }]);
   const [notes, setNotes] = useState('');
   const [detailPurchase, setDetailPurchase] = useState(null);
 
@@ -46,7 +48,7 @@ export default function StockEntry() {
   useEffect(() => { fetchData(); }, []);
 
   const handleAddItem = () => {
-    setItems([...items, { product_id: '', qty: 1, cost_per_item: 0 }]);
+    setItems([...items, { product_id: '', qty: 1, cost_per_item: 0, expired_date: '' }]);
   };
 
   const handleRemoveItem = (index) => {
@@ -59,6 +61,8 @@ export default function StockEntry() {
     setItems(newItems);
   };
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -69,7 +73,7 @@ export default function StockEntry() {
       });
       fetchData();
       setShowModal(false);
-      setItems([{ product_id: '', qty: 1, cost_per_item: 0 }]);
+      setItems([{ product_id: '', qty: 1, cost_per_item: 0, expired_date: '' }]);
       setSupplierId('');
       setNotes('');
     } catch (e) {
@@ -87,10 +91,29 @@ export default function StockEntry() {
     }
   };
 
-  const filteredPurchases = purchases.filter(p =>
-    p.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.notes?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPurchases = purchases.filter(p => {
+    const matchesSearch = p.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          p.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const pDate = new Date(p.created_at);
+    pDate.setHours(0, 0, 0, 0);
+
+    let matchesStart = true;
+    if (startDate) {
+      const sDate = new Date(startDate);
+      sDate.setHours(0, 0, 0, 0);
+      matchesStart = pDate >= sDate;
+    }
+
+    let matchesEnd = true;
+    if (endDate) {
+      const eDate = new Date(endDate);
+      eDate.setHours(0, 0, 0, 0);
+      matchesEnd = pDate <= eDate;
+    }
+
+    return matchesSearch && matchesStart && matchesEnd;
+  });
 
   const {
     currentPage,
@@ -145,8 +168,8 @@ export default function StockEntry() {
       </div>
 
       <div className="card animate-fade-in overflow-hidden">
-        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button 
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)', flexWrap: 'wrap' }}>
+          <button title="Input barang masuk" 
             className="btn btn-primary"
             style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
             onClick={() => {
@@ -162,6 +185,23 @@ export default function StockEntry() {
               placeholder="Cari Supplier..." 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={startDate} 
+              onChange={e => setStartDate(e.target.value)} 
+              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>-</span>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={endDate} 
+              onChange={e => setEndDate(e.target.value)} 
+              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
             />
           </div>
           <button 
@@ -258,17 +298,19 @@ export default function StockEntry() {
                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">{items.length} Item</span>
               </div>
               
-              <div className="grid grid-cols-12 gap-3 mb-2 px-1 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:grid">
-                 <span className="col-span-5">Nama Barang</span>
-                 <span className="col-span-3">Kuantitas</span>
-                 <span className="col-span-3">Harga Beli (HPP)</span>
+              <div className="border border-slate-200/80 rounded-xl bg-white p-4">
+              <div className="hidden md:grid grid-cols-12 gap-3 mb-3 pb-2 border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                 <span className="col-span-4">Nama Barang</span>
+                 <span className="col-span-2">Kuantitas</span>
+                 <span className="col-span-2">Harga Beli (HPP)</span>
+                 <span className="col-span-3">Expired Date</span>
                  <span className="col-span-1 text-center">Aksi</span>
               </div>
 
               <div className="flex flex-col gap-3 md:gap-2">
                 {items.map((item, index) => (
                   <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end md:items-center bg-slate-50/50 md:bg-transparent p-3 md:p-0 rounded-xl border border-slate-200/60 md:border-0">
-                    <div className="col-span-1 md:col-span-5 flex flex-col gap-1">
+                    <div className="col-span-1 md:col-span-4 flex flex-col gap-1">
                        <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Nama Barang</label>
                        <select 
                           className="form-input bg-white"
@@ -280,7 +322,7 @@ export default function StockEntry() {
                           {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
                        </select>
                     </div>
-                    <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
+                    <div className="col-span-1 md:col-span-2 flex flex-col gap-1">
                        <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Kuantitas</label>
                        <input 
                           type="number" 
@@ -291,7 +333,7 @@ export default function StockEntry() {
                           required
                        />
                     </div>
-                    <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
+                    <div className="col-span-1 md:col-span-2 flex flex-col gap-1">
                        <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Harga Beli (HPP)</label>
                        <CurrencyInput 
                           className="form-input bg-white" 
@@ -299,6 +341,15 @@ export default function StockEntry() {
                           value={item.cost_per_item}
                           onChange={e => handleItemChange(index, 'cost_per_item', e.target.value)}
                           required
+                       />
+                    </div>
+                    <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
+                       <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Expired Date</label>
+                       <input 
+                         type="date"
+                         className="form-input bg-white"
+                         value={item.expired_date || ''}
+                         onChange={e => handleItemChange(index, 'expired_date', e.target.value)}
                        />
                     </div>
                     <div className="col-span-1 md:col-span-1 flex justify-end md:justify-center">
@@ -322,6 +373,7 @@ export default function StockEntry() {
               >
                  <Plus size={16} /> Tambah Baris Baru
               </button>
+           </div>
            </div>
 
            <div className="form-group">
@@ -396,6 +448,8 @@ export default function StockEntry() {
           </div>
         )}
       </Modal>
+
+
     </div>
   );
 }

@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'retail_permission' => \App\Http\Middleware\CheckRetailPermission::class,
             'kuliner_permission' => \App\Http\Middleware\CheckKulinerPermission::class,
             'expire_on_date_change' => \App\Http\Middleware\ExpireSessionOnDateChange::class,
+            'subscription'   => \App\Http\Middleware\CheckSubscription::class,
+            'plan_feature'   => \App\Http\Middleware\CheckPlanFeature::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

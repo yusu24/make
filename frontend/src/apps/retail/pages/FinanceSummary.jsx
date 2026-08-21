@@ -135,69 +135,69 @@ export default function FinanceSummary() {
           <p>Periode: {formatDate(startDate)} &ndash; {formatDate(endDate)}</p>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Income Card */}
-          <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
-                <TrendingUp size={18} />
-              </div>
-              <span className="text-sm font-medium text-slate-500">Pendapatan Penjualan</span>
-            </div>
+        {/* Net Profit Banner */}
+        <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 rounded-3xl shadow-xl border border-emerald-700/40 relative overflow-hidden mb-6 mt-4">
+          <div className="flex flex-row items-center justify-between gap-4">
             <div>
-              <p className="text-2xl text-slate-900 leading-tight font-semibold">
-                {loading ? '...' : formatRp(summary.total_sales)}
+              <span className="text-xs font-semibold text-emerald-300 uppercase tracking-widest bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-400/30">
+                ESTIMASI PROFIT BERSIH (NET PROFIT)
+              </span>
+              <div className="text-2xl sm:text-4xl font-black mt-3 tracking-tight">{loading ? '...' : formatRp(summary.profit)}</div>
+              <p className="text-xs text-emerald-100/80 mt-1">
+                Sudah dipotong seluruh HPP barang, diskon, & pengeluaran operasional terdaftar.
               </p>
-              <p className="text-xs text-slate-400 mt-1">Dari transaksi mesin kasir (POS).</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center shrink-0">
+              <span className="text-xs text-emerald-200 font-semibold uppercase block">NET MARGIN RATE</span>
+              <div className="text-3xl font-black text-emerald-300 mt-1">{loading ? '...' : `${((summary.total_sales || 0) + (summary.total_discounts || 0)) > 0 ? ((summary.profit / ((summary.total_sales || 0) + (summary.total_discounts || 0))) * 100).toFixed(1) : '0'}%`}</div>
+              <span className="text-[10px] text-white/80">Kategori Bisnis Sehat</span>
             </div>
           </div>
+        </div>
 
-          {/* Other Income Card */}
-          <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 shrink-0">
-                <TrendingUp size={18} />
-              </div>
-              <span className="text-sm font-medium text-slate-500">Pemasukan Lain</span>
-            </div>
-            <div>
-              <p className="text-2xl text-slate-900 leading-tight font-semibold">
-                {loading ? '...' : formatRp(summary.total_incomes)}
-              </p>
-              <p className="text-xs text-slate-400 mt-1">Catatan manual pemasukan tambahan.</p>
-            </div>
+        {/* Profit & Loss Waterfall Breakdown Table */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden mb-8">
+          <div className="p-4 bg-slate-50 border-b border-slate-200/80">
+            <h3 className="text-sm font-semibold text-slate-800">
+              Rincian Komponen Laba Rugi (P&L Summary)
+            </h3>
           </div>
 
-          {/* Expense Card */}
-          <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0">
-                <TrendingDown size={18} />
-              </div>
-              <span className="text-sm font-medium text-slate-500">Total Pengeluaran</span>
+          <div className="p-5 space-y-3">
+            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl font-semibold text-sm text-slate-800">
+              <span>(+) Total Omset Kotor (Gross Revenue)</span>
+              <span className="text-emerald-600">{loading ? '...' : formatRp((summary.total_sales || 0) + (summary.total_discounts || 0))}</span>
             </div>
-            <div>
-              <p className="text-2xl text-rose-600 leading-tight font-semibold">
-                {loading ? '...' : formatRp(summary.total_expenses)}
-              </p>
-              <p className="text-xs text-slate-400 mt-1">Total seluruh catatan pengeluaran manual.</p>
-            </div>
-          </div>
 
-          {/* Profit Card */}
-          <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
-                <Wallet size={18} />
-              </div>
-              <span className="text-sm font-medium text-slate-500">Laba Bersih (Profit)</span>
+            <div className="flex items-center justify-between p-3.5 bg-rose-50/40 rounded-xl text-xs font-semibold text-slate-700">
+              <span>(-) Total Diskon Penjualan</span>
+              <span className="text-rose-600">-{loading ? '...' : formatRp(summary.total_discounts || 0)}</span>
             </div>
-            <div>
-              <p className={`text-2xl leading-tight font-semibold ${isProfit ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {loading ? '...' : formatRp(summary.profit)}
-              </p>
-              <p className="text-xs text-slate-400 mt-1">(Penjualan + Pemasukan) - Pengeluaran.</p>
+
+            <div className="flex items-center justify-between p-3.5 bg-rose-50/40 rounded-xl text-xs font-semibold text-slate-700">
+              <span>(-) Total HPP / Modal Awal Produk</span>
+              <span className="text-rose-600">-{loading ? '...' : formatRp(summary.total_cogs || 0)}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3.5 bg-emerald-50 rounded-xl font-bold text-sm text-emerald-800 border border-emerald-100">
+              <span>(=) Laba Kotor (Gross Profit)</span>
+              <span>{loading ? '...' : formatRp(summary.gross_profit || 0)}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl text-xs font-semibold text-slate-700">
+              <span>(+) Pemasukan Tambahan (Manual)</span>
+              <span className="text-emerald-600">+{loading ? '...' : formatRp(summary.total_incomes || 0)}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3.5 bg-rose-50/40 rounded-xl text-xs font-semibold text-slate-700">
+              <span>(-) Pengeluaran Operasional (Beban)</span>
+              <span className="text-rose-600">-{loading ? '...' : formatRp(summary.total_expenses || 0)}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-slate-800 rounded-xl font-black text-base text-white mt-2 shadow-inner">
+              <span>(=) Laba Bersih (Net Profit)</span>
+              <span className="text-emerald-400">{loading ? '...' : formatRp(summary.profit || 0)}</span>
             </div>
           </div>
         </div>

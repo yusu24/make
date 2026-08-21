@@ -269,29 +269,29 @@ export default function Subscription() {
 
       </div>
 
-      {/* MODAL ORDER & PEMBAYARAN */}
-      <Modal isOpen={showOrderModal} onClose={() => !isSubmitting && setShowOrderModal(false)} title="Konfirmasi Upgrade Paket" maxWidth="500px">
-         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* MODAL ORDER & PEMBAYARAN MULTI-CHANNEL (QRIS / VA / TRANSFER) */}
+      <Modal isOpen={showOrderModal} onClose={() => !isSubmitting && setShowOrderModal(false)} title="Konfirmasi &amp; Pembayaran Langganan" maxWidth="540px">
+         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {(() => {
                const priceInfo = getPlanPriceInfo(selectedPlan?.id);
                return (
-                 <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                    <div style={{ fontSize: 48, marginBottom: 12 }}>💳</div>
-                    <p style={{ fontSize: 16, margin: 0 }}>Anda memilih paket <strong>{selectedPlan?.name}</strong></p>
+                 <div style={{ textAlign: 'center', padding: '6px 0' }}>
+                    <div style={{ fontSize: 36, marginBottom: 6 }}>💳</div>
+                    <p style={{ fontSize: 15, margin: 0 }}>Pilihan Paket: <strong>{selectedPlan?.name}</strong></p>
                     {priceInfo.discounted ? (
-                      <div style={{ marginTop: 8 }}>
-                        <span style={{ textDecoration: 'line-through', color: 'var(--text-muted)', fontSize: 14, marginRight: 8 }}>
+                      <div style={{ marginTop: 6 }}>
+                        <span style={{ textDecoration: 'line-through', color: 'var(--text-muted)', fontSize: 13, marginRight: 8 }}>
                           {priceInfo.original}
                         </span>
                         <span style={{ fontSize: 10, background: '#ef4444', color: '#fff', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>
                           POTONGAN {priceInfo.discountPct}% KATEGORI
                         </span>
-                        <h2 style={{ fontSize: 32, fontWeight: 900, color: '#10b981', margin: '6px 0' }}>
+                        <h2 style={{ fontSize: 28, fontWeight: 900, color: '#10b981', margin: '4px 0' }}>
                           {priceInfo.display}
                         </h2>
                       </div>
                     ) : (
-                      <h2 style={{ fontSize: 32, fontWeight: 900, color: 'var(--primary-500)', margin: '8px 0' }}>
+                      <h2 style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary-500)', margin: '6px 0' }}>
                         {priceInfo.display}
                       </h2>
                     )}
@@ -299,30 +299,43 @@ export default function Subscription() {
                );
             })()}
 
-            <div style={{ background: 'var(--bg-elevated)', padding: 20, borderRadius: 12, border: '1px solid var(--border-color)' }}>
-               <h4 style={{ margin: '0 0 12px 0', fontSize: 14 }}>Instruksi Pembayaran:</h4>
-               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Silakan lakukan transfer sesuai nominal di atas ke rekening berikut:</p>
+            {/* Payment Options (QRIS / VA / Bank) */}
+            <div style={{ background: '#f8fafc', padding: '16px 18px', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+               <h4 style={{ margin: '0 0 10px 0', fontSize: 13.5, fontWeight: 700, color: '#1e293b' }}>
+                 ⚡ Saluran Pembayaran Otomatis (Instant Activation):
+               </h4>
                
-               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--bg-base)', borderRadius: 8 }}>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8 }}>
                      <div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{globalSettings?.bank_name || 'BANK BCA'}</div>
-                        <div style={{ fontWeight: 800, fontSize: 16 }}>{globalSettings?.bank_account_no || '8837 001 992'}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1' }}>📱 QRIS (GoPay / OVO / Dana / ShopeePay / Mobile Banking)</div>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Scan QR langsung aktif instan 24/7</div>
                      </div>
-                     <button className="btn btn-sm btn-ghost" onClick={() => { navigator.clipboard.writeText(globalSettings?.bank_account_no || '8837 001 992'); alert('Nomor Rekening Disalin!'); }}>Salin</button>
+                     <span className="badge badge-success" style={{ fontSize: 10 }}>Auto Aktif</span>
                   </div>
-                  <div style={{ fontSize: 12, textAlign: 'center', color: 'var(--text-muted)' }}>a.n. <strong>{globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'}</strong></div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8 }}>
+                     <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#0284c7' }}>🏦 Virtual Account (BCA, Mandiri, BRI, BNI)</div>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Nomor VA otomatis terverifikasi sistem</div>
+                     </div>
+                     <span className="badge badge-primary" style={{ fontSize: 10 }}>Verifikasi Cepat</span>
+                  </div>
                </div>
             </div>
 
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
-               Setelah transfer, Admin akan memverifikasi pembayaran Anda dalam maksimal 1x24 jam.
-            </p>
+            <div style={{ background: 'var(--bg-elevated)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border-color)', fontSize: 12 }}>
+               <div style={{ fontWeight: 600, marginBottom: 4 }}>🏦 Rekening Manual Alternatif:</div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>{globalSettings?.bank_name || 'BCA'}: <strong>{globalSettings?.bank_account_no || '8837 001 992'}</strong></span>
+                  <span style={{ color: 'var(--text-muted)' }}>a.n. {globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'}</span>
+               </div>
+            </div>
 
             <div className="modal__actions" style={{ display: 'flex', gap: 12 }}>
                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setShowOrderModal(false)} disabled={isSubmitting}>Batal</button>
                <button className="btn btn-primary" style={{ flex: 2 }} onClick={handleOrder} disabled={isSubmitting}>
-                  {isSubmitting ? 'Mengirim...' : 'Saya Sudah Bayar'}
+                  {isSubmitting ? 'Memproses...' : '⚡ Bayar & Aktifkan Paket'}
                </button>
             </div>
          </div>

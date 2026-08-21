@@ -143,6 +143,14 @@ class DashboardController extends Controller
             $request->query('end_date')
         );
 
+        // Calculate MRR (Monthly Recurring Revenue)
+        // Assume Basic = 50000, Pro = 150000 if not using SubscriptionPlan dynamic values for now
+        $mrr = ($basicSubs * 50000) + ($proSubs * 150000);
+
+        // Calculate basic churn rate (inactive / total tenants)
+        $inactiveTenants = \App\Models\Tenant::where('status', 'inactive')->count();
+        $churnRate = $totalTenants > 0 ? round(($inactiveTenants / $totalTenants) * 100, 1) : 0;
+
         return response()->json(['data' => [
             'total_users' => $totalUsers,
             'total_tenants' => $totalTenants,
@@ -150,6 +158,8 @@ class DashboardController extends Controller
             'active_subscriptions' => $activeSubs,
             'revenue_this_month' => $revenue,
             'new_users_this_week' => $newUsersThisWeek,
+            'mrr' => $mrr,
+            'churn_rate' => $churnRate,
             'recent_users' => $recentUsers,
             'monthly_data' => $monthlyData,
         ]]);

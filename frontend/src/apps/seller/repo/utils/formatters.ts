@@ -9,6 +9,18 @@ export function formatIDR(amount: number): string {
   }).format(amount);
 }
 
+export function parseFormattedNumber(val: string | number): number {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  return parseInt(val.replace(/\D/g, ''), 10) || 0;
+}
+
+export function formatNumberInput(val: string | number): string {
+  const num = parseFormattedNumber(val);
+  if (num === 0 && val !== '0' && typeof val === 'string' && !val.replace(/\D/g, '')) return '';
+  return new Intl.NumberFormat('id-ID').format(num);
+}
+
 export function getPlatformBadgeColor(platform: MarketplacePlatform): {
   bg: string;
   text: string;

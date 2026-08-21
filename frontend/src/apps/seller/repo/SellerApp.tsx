@@ -44,6 +44,7 @@ import { ShippingDashboardView } from './components/omnichannel/ShippingDashboar
 import { ShippingManagementView } from './components/omnichannel/ShippingManagementView';
 import { PackingImprovementView } from './components/omnichannel/PackingImprovementView';
 import { NotificationCenterView } from './components/omnichannel/NotificationCenterView';
+import { GuideView } from './components/views/GuideView';
 
 import { AddExpenseModal } from './components/modals/AddExpenseModal';
 import { AddIncomeModal } from './components/modals/AddIncomeModal';
@@ -89,6 +90,7 @@ const pathToTab = (p: string): ActiveTab => {
   if (p.includes('/settings/account')) return 'settings-account';
   if (p.includes('/settings/roles')) return 'settings-roles';
   if (p.includes('/settings/users')) return 'settings-users';
+  if (p.includes('/guide') || p.includes('/panduan')) return 'panduan';
   return 'menu-utama';
 };
 
@@ -119,6 +121,7 @@ const tabToPath = (tab: ActiveTab): string => {
     case 'shipping-management': return '/seller/shipping/management';
     case 'shipping-packing': return '/seller/shipping/packing';
     case 'notification-center': return '/seller/notifications';
+    case 'panduan': return '/seller/guide';
     default: return '/seller/dashboard';
   }
 };
@@ -154,12 +157,12 @@ export default function App() {
 
   // App Master Data States - initialized with full rich dummy data for all processes
   const [stores, setStores] = useState<StoreChannel[]>(INITIAL_STORES);
-  const [incomes, setIncomes] = useState<Income[]>(INITIAL_INCOMES);
-  const [expenses, setExpenses] = useState<Expense[]>(INITIAL_EXPENSES);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [cashSummaries, setCashSummaries] = useState<CashSummaryItem[]>(INITIAL_CASH_SUMMARIES);
-  const [warehouses, setWarehouses] = useState<Warehouse[]>(INITIAL_WAREHOUSES);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [warehouseToEdit, setWarehouseToEdit] = useState<Warehouse | null>(null);
 
   // Backend rows are snake_case and don't track per-warehouse stock counts yet
@@ -198,10 +201,11 @@ export default function App() {
       image: p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30',
       rawImageUrl: p.image_url || null,
       hpp: parseFloat(p.price_buy) || 0,
-      priceShopee: priceSell,
-      priceTokopedia: priceSell,
-      priceTiktok: priceSell,
-      priceLazada: priceSell,
+      priceOffline: priceSell,
+      priceShopee: parseFloat(p.price_shopee) || priceSell,
+      priceTokopedia: parseFloat(p.price_tokopedia) || priceSell,
+      priceTiktok: parseFloat(p.price_tiktok) || priceSell,
+      priceLazada: parseFloat(p.price_lazada) || priceSell,
       totalStock: stock,
       stockMin,
       warehouseStock: {},
@@ -294,7 +298,7 @@ export default function App() {
             productsById[String(p.id)] = mapped;
             return mapped;
           });
-          setProducts([...mappedProducts, ...INITIAL_PRODUCTS.filter(p => !mappedProducts.some(m => m.sku === p.sku))]);
+          setProducts(mappedProducts);
         }
 
         if (Array.isArray(expRes.data) && expRes.data.length > 0) {
@@ -308,7 +312,7 @@ export default function App() {
             paymentMethod: '-',
             createdByName: e.user?.name || '-',
           }));
-          setExpenses([...mappedExpenses, ...INITIAL_EXPENSES]);
+          setExpenses(mappedExpenses);
         }
 
         if (Array.isArray(incRes.data) && incRes.data.length > 0) {
@@ -320,7 +324,7 @@ export default function App() {
             description: inc.keterangan || '',
             storeName: 'Toko Offline',
           }));
-          setIncomes([...mappedIncomes, ...INITIAL_INCOMES]);
+          setIncomes(mappedIncomes);
         }
 
         if (transRes.data?.data && transRes.data.data.length > 0) {
@@ -351,7 +355,7 @@ export default function App() {
             paymentMethod: t.payment_method || '-',
             isPrintedAWB: false,
           }));
-          setOrders([...mappedOrders, ...INITIAL_ORDERS]);
+          setOrders(mappedOrders);
 
           const todayStr = new Date().toISOString().substring(0, 10);
           const todaysOrders = mappedOrders.filter((o) => o.orderDate.startsWith(todayStr));
@@ -569,7 +573,7 @@ export default function App() {
   // category_id:1/unit_id (none of which the backend reads), so every
   // product ever added here saved with a null price and null stock.
   const handleSaveProduct = async (
-    data: { sku: string; name: string; unit: string; categoryId: string; hpp: number; priceSell: number; stockMin: number; totalStock?: number },
+    data: { sku: string; name: string; unit: string; categoryId: string; hpp: number; priceOffline: number; priceShopee: number; priceTokopedia: number; priceTiktok: number; stockMin: number; totalStock?: number },
     idToEdit?: string
   ) => {
     try {
@@ -579,7 +583,10 @@ export default function App() {
         unit: data.unit,
         category_id: data.categoryId || null,
         price_buy: data.hpp,
-        price_sell: data.priceSell,
+        price_sell: data.priceOffline, // Currently acts as the master offline price
+        price_shopee: data.priceShopee,
+        price_tokopedia: data.priceTokopedia,
+        price_tiktok: data.priceTiktok,
         stock_min: data.stockMin,
       };
       if (idToEdit) {
@@ -846,6 +853,7 @@ export default function App() {
           {activeTab === 'shipping-management' && <ShippingManagementView />}
           {activeTab === 'shipping-packing' && <PackingImprovementView />}
           {activeTab === 'notification-center' && <NotificationCenterView />}
+          {activeTab === 'panduan' && <GuideView />}
         </main>
       </div>
 

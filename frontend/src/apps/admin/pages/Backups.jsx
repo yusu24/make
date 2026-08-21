@@ -83,13 +83,7 @@ export default function Backups() {
   return (
     <div className="animate-fade-in">
       <div className="page-header">
-        <div>
-          <h2 className="page-title">Backup Data</h2>
-          <p className="page-sub">Backup database + file upload untuk semua tenant, terjadwal otomatis tiap hari jam 03:00.</p>
-        </div>
-        <button className="btn btn-primary" onClick={handleRunBackup} disabled={running}>
-          {running ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Menjalankan...</> : '💾 Backup Sekarang'}
-        </button>
+        <h2 className="page-title">Cadangan Data</h2>
       </div>
 
       {msg && (
@@ -107,7 +101,7 @@ export default function Backups() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 20 }}>
         <div className="card card-pad">
           <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Jumlah Backup</span>
           <div style={{ fontSize: 26, fontWeight: 700, marginTop: 6 }}>{backups.length}</div>
@@ -122,6 +116,16 @@ export default function Backups() {
             {newest ? formatDate(newest.date) : '—'}
           </div>
         </div>
+      </div>
+
+      {/* Toolbar Aksi */}
+      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+          Terjadwal otomatis setiap hari pukul <strong>03:00 WIB</strong>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={handleRunBackup} disabled={running}>
+          {running ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Menjalankan...</> : '💾 Jalankan Backup Sekarang'}
+        </button>
       </div>
 
       <div className="card table-wrap">

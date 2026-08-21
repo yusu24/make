@@ -6,6 +6,7 @@ import Categories from '../apps/admin/pages/Categories';
 import AdminRetailView from '../apps/admin/pages/AdminRetailView';
 import Tenants from '../apps/admin/pages/Tenants';
 import Subscriptions from '../apps/admin/pages/Subscriptions';
+import TenantVerifications from '../apps/admin/pages/TenantVerifications';
 import PackagesFeatures from '../apps/admin/pages/PackagesFeatures';
 import Finance from '../apps/admin/pages/Finance';
 import SupportCenter from '../apps/admin/pages/SupportCenter';
@@ -19,6 +20,7 @@ import ActivityLogs from '../apps/admin/pages/ActivityLogs';
 import Profile from '../apps/admin/pages/Profile';
 import LandingSettings from '../apps/admin/pages/LandingSettings';
 import Backups from '../apps/admin/pages/Backups';
+import ModuleDocumentation from '../apps/admin/pages/ModuleDocumentation';
 import { ProtectedRoute } from './guards';
 
 const adminRoutes = (
@@ -28,6 +30,7 @@ const adminRoutes = (
     <Route path="categories" element={<ProtectedRoute adminOnly><Categories /></ProtectedRoute>} />
     <Route path="categories/:categoryName" element={<ProtectedRoute adminOnly><AdminRetailView /></ProtectedRoute>} />
     <Route path="tenants" element={<ProtectedRoute adminOnly><Tenants /></ProtectedRoute>} />
+    <Route path="kyc" element={<ProtectedRoute adminOnly><TenantVerifications /></ProtectedRoute>} />
     <Route path="subscriptions" element={<ProtectedRoute adminOnly><Subscriptions /></ProtectedRoute>} />
     <Route path="packages-features" element={<ProtectedRoute adminOnly><PackagesFeatures /></ProtectedRoute>} />
     <Route path="finance" element={<ProtectedRoute adminOnly><Finance /></ProtectedRoute>} />
@@ -41,6 +44,7 @@ const adminRoutes = (
     <Route path="settings" element={<ProtectedRoute adminOnly><LandingSettings /></ProtectedRoute>} />
     <Route path="landing-settings" element={<ProtectedRoute adminOnly><LandingSettings /></ProtectedRoute>} />
     <Route path="developer-integrations" element={<ProtectedRoute adminOnly><DeveloperIntegrations /></ProtectedRoute>} />
+    <Route path="module-docs" element={<ProtectedRoute adminOnly><ModuleDocumentation /></ProtectedRoute>} />
     <Route path="backups" element={<ProtectedRoute adminOnly><Backups /></ProtectedRoute>} />
     <Route path="profile" element={<Profile />} />
   </>

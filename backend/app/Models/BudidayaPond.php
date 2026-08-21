@@ -11,8 +11,8 @@ class BudidayaPond extends Model
     use HasFactory, HasTenant;
 
     protected $fillable = [
-        'tenant_id', 'name', 'code', 'type', 'area',
-        'area_m2', 'depth_cm', 'max_fish_count', 'location',
+        'tenant_id', 'name', 'unit_category', 'code', 'type', 'area',
+        'area_m2', 'depth_cm', 'max_fish_count', 'capacity_head', 'location',
         'capacity_m3', 'status'
     ];
 
@@ -25,5 +25,14 @@ class BudidayaPond extends Model
     {
         return $this->hasOne(BudidayaCycle::class, 'pond_id')->whereIn('status', ['aktif', 'pembibitan', 'pembesaran', 'panen_sebagian']);
     }
-}
 
+    public function animals()
+    {
+        return $this->hasMany(BudidayaAnimal::class, 'pond_id');
+    }
+
+    public function breedingPairs()
+    {
+        return $this->hasMany(BudidayaBreedingPair::class, 'pond_id');
+    }
+}

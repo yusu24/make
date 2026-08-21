@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Lock, Rocket, ArrowRight } from 'lucide-react';
@@ -7,12 +7,20 @@ const SubscriptionLock = ({ status, daysLeft }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [forceLock, setForceLock] = useState(false);
 
-  // Temporarily disabled: Grant all users full access
-  return null;
+  useEffect(() => {
+    const handleExpired = () => setForceLock(true);
+    window.addEventListener('subscription_expired', handleExpired);
+    return () => window.removeEventListener('subscription_expired', handleExpired);
+  }, []);
 
   // Admin & super_admin are never locked — they are impersonating for dev/maintenance
-  if (!status || status === 'active') return null;
+  if (user?.role === 'super_admin' || user?.role === 'admin') return null;
+
+  const effectiveStatus = forceLock ? 'locked' : status;
+
+  if (!effectiveStatus || effectiveStatus === 'active') return null;
   if (user?.role === 'super_admin' || user?.role === 'admin') return null;
 
   if (status === 'warning') {
@@ -34,7 +42,7 @@ const SubscriptionLock = ({ status, daysLeft }) => {
 
   // If locked, we MUST hide the overlay IF the user is currently looking at the subscription page, 
   // otherwise they can never actually upgrade.
-  if (status === 'locked' && location.pathname !== '/retail/subscription') {
+  if (effectiveStatus === 'locked' && location.pathname !== '/retail/subscription') {
     return (
       <div className="subscription-lock-overlay">
         <div className="subscription-lock-card animate-fade-in">

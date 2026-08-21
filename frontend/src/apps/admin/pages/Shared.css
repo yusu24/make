@@ -1,55 +1,220 @@
-/* === Shared Page Styles === */
+/* ==========================================================================
+   BIZORA ADMIN SAAS - SNEAT / GEOMETRIC BALANCE DESIGN SYSTEM
+   Inspired by yusu24/dashboard-new
+   ========================================================================== */
 
-/* ── Admin SaaS: override tombol ke semi-bold ── */
-.btn {
-  font-weight: 600 !important;
+:root {
+  /* ── Core Sneat Color Palette ── */
+  --saas-primary: #696cff;
+  --saas-primary-hover: #5f61e6;
+  --saas-primary-light: #eaeaff;
+  --saas-primary-rgb: 105, 108, 255;
+  
+  --saas-secondary: #8592a3;
+  --saas-secondary-light: #ebeef0;
+  
+  --saas-success: #71dd37;
+  --saas-success-light: #e8fadf;
+  
+  --saas-warning: #ffab00;
+  --saas-warning-light: #fff2d6;
+  
+  --saas-danger: #ff3e1d;
+  --saas-danger-light: #ffe0db;
+  
+  --saas-info: #03c3ec;
+  --saas-info-light: #d7f5fc;
+  
+  --saas-dark: #233446;
+  --saas-heading: #32475c;
+  --saas-body: #566a7f;
+  --saas-muted: #a1acb8;
+  --saas-border: #d9dee3;
+  --saas-bg: #f5f5f9;
+  --saas-card: #ffffff;
+  
+  /* ── Shadows & Radii ── */
+  --saas-radius: 12px;
+  --saas-radius-lg: 16px;
+  --saas-radius-pill: 9999px;
+  --saas-shadow-xs: 0 2px 6px 0 rgba(67, 89, 113, 0.08);
+  --saas-shadow-md: 0 4px 14px 0 rgba(67, 89, 113, 0.12);
+  --saas-shadow-lg: 0 8px 24px 0 rgba(67, 89, 113, 0.16);
+  --saas-glow-primary: 0 4px 12px 0 rgba(105, 108, 255, 0.4);
 }
 
-/* ── Admin SaaS: hilangkan shadow dan efek hover berat untuk performa lebih ringan ── */
+/* ── Container Styles ── */
+.shared-page-container {
+  padding: 0 0 36px 0;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* ── Sneat / Geometric Cards ── */
 .card,
-.premium-card,
-.kpi-card,
-.table-wrap,
-.saas-pagination-btn.active,
-.modal,
-.lp-sandbox,
-.filter-tab--active {
-  box-shadow: none !important;
+.sneat-card,
+.geometric-card,
+.shared-card {
+  background: var(--saas-card) !important;
+  border-radius: var(--saas-radius-lg) !important;
+  border: 1px solid var(--saas-border) !important;
+  box-shadow: var(--saas-shadow-xs) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden;
 }
 
 .card:hover,
-.kpi-card:hover,
-.premium-card:hover {
-  box-shadow: none !important;
-  transform: none !important;
+.sneat-card:hover,
+.geometric-card:hover,
+.shared-card:hover {
+  box-shadow: var(--saas-shadow-md) !important;
+  border-color: #c7cdd4 !important;
 }
 
-/* Page Header */
-.page-header {
+/* ── Page Header ── */
+.page-header,
+.shared-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.page-title {
-  font-family: var(--font-heading);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+.page-title,
+.shared-title {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: var(--saas-heading);
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
-.page-sub {
-  font-size: 13px;
-  color: var(--text-muted);
+.page-sub,
+.shared-subtitle,
+.page-subtitle {
+  display: none !important;
 }
 
-/* Filter Bar */
+/* ── Sneat Buttons ── */
+.btn {
+  font-family: inherit;
+  font-weight: 600 !important;
+  font-size: 13.5px;
+  padding: 8px 18px;
+  border-radius: var(--saas-radius);
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--saas-primary) !important;
+  border-color: var(--saas-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(105, 108, 255, 0.35) !important;
+}
+
+.btn-primary:hover {
+  background: var(--saas-primary-hover) !important;
+  border-color: var(--saas-primary-hover) !important;
+  box-shadow: var(--saas-glow-primary) !important;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--saas-secondary-light) !important;
+  color: var(--saas-secondary) !important;
+  border-color: transparent !important;
+}
+
+.btn-secondary:hover {
+  background: #e1e4e8 !important;
+  color: var(--saas-heading) !important;
+}
+
+.btn-ghost {
+  background: transparent !important;
+  color: var(--saas-body) !important;
+  border-color: transparent !important;
+}
+
+.btn-ghost:hover {
+  background: var(--saas-primary-light) !important;
+  color: var(--saas-primary) !important;
+}
+
+.btn-outline-primary {
+  background: transparent !important;
+  border-color: var(--saas-primary) !important;
+  color: var(--saas-primary) !important;
+}
+
+.btn-outline-primary:hover {
+  background: var(--saas-primary) !important;
+  color: #ffffff !important;
+  box-shadow: var(--saas-glow-primary) !important;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12.5px;
+  border-radius: 8px;
+}
+
+/* ── Sneat Soft Badges ── */
+.badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: capitalize;
+}
+
+.badge-primary {
+  background: var(--saas-primary-light) !important;
+  color: var(--saas-primary) !important;
+}
+
+.badge-success {
+  background: var(--saas-success-light) !important;
+  color: #56ca00 !important;
+}
+
+.badge-warning {
+  background: var(--saas-warning-light) !important;
+  color: #e69500 !important;
+}
+
+.badge-danger {
+  background: var(--saas-danger-light) !important;
+  color: var(--saas-danger) !important;
+}
+
+.badge-info {
+  background: var(--saas-info-light) !important;
+  color: #00b4d8 !important;
+}
+
+.badge-secondary {
+  background: var(--saas-secondary-light) !important;
+  color: var(--saas-secondary) !important;
+}
+
+/* ── Filter & Search Toolbar ── */
 .filter-bar {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
@@ -57,278 +222,308 @@
 .search-wrap {
   position: relative;
   flex: 1;
-  min-width: 200px;
-  max-width: 360px;
+  min-width: 240px;
+  max-width: 380px;
 }
 
 .search-icon {
   position: absolute;
   left: 14px;
-  top: 50%; transform: translateY(-50%);
-  font-size: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: var(--saas-muted);
   pointer-events: none;
-  opacity: 0.6;
+}
+
+.form-input,
+.form-control {
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  border-radius: var(--saas-radius);
+  border: 1px solid var(--saas-border);
+  background: #ffffff;
+  color: var(--saas-heading);
+  transition: all 0.2s;
+  outline: none;
+}
+
+.form-input:focus,
+.form-control:focus {
+  border-color: var(--saas-primary);
+  box-shadow: 0 0 0 3px rgba(105, 108, 255, 0.15);
 }
 
 .search-input {
-  padding-left: 56px !important;
+  padding-left: 42px !important;
 }
 
-/* Admin SaaS: .form-input inherits body's line-height:1.6, which makes text
-   inputs (search box included) render ~8px taller than .btn/.select next to
-   them (.btn sets line-height:1 explicitly). Match that here so search boxes,
-   dropdowns, and text inputs line up with the buttons beside them.
-   !important: this rule and the global .form-input one (index.css) have
-   equal specificity, and Vite's dev-server module order happens to load
-   this file's CSS before index.css, so without it the global rule wins. */
-.form-input {
-  line-height: 1 !important;
-  padding-top: 9px !important;
-  padding-bottom: 9px !important;
-}
-
+/* ── Sneat Filter Tabs (Pill Buttons) ── */
 .filter-tabs {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f5f5f9;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid #d9dee3;
 }
 
 .filter-tab {
-  padding: 7px 14px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
   font-weight: 600;
-  border: 1px solid var(--border-default);
+  color: #566a7f;
   background: transparent;
-  color: var(--text-muted);
+  border: none;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.18s ease-in-out;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .filter-tab:hover {
-  border-color: var(--primary-500);
-  color: var(--primary-400);
+  color: #696cff;
+  background: rgba(105, 108, 255, 0.08);
 }
 
-.filter-tab--active {
-  background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.1));
-  border-color: var(--primary-500);
-  color: var(--primary-400);
+.filter-tab--active,
+.filter-tab.active {
+  background: #696cff !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(105, 108, 255, 0.4);
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-overlay);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999; /* Ensure modal appears above sidebar */
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease;
-}
-
-.modal {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
-  padding: 28px;
-  width: 90%;
-  max-width: 460px;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: fadeIn 0.25s ease;
-  box-shadow: var(--shadow-lg);
-  z-index: 10000; /* Above overlay if needed */
-}
-
-.modal--lg {
-  max-width: 580px;
-}
-
-.modal__title {
-  font-family: var(--font-heading);
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-
-.modal__body {
-  font-size: 14px;
-  color: var(--text-secondary);
+/* ── Sneat Tables ── */
+.table-wrap {
+  background: #ffffff;
+  border-radius: var(--saas-radius-lg);
+  border: 1px solid var(--saas-border);
+  box-shadow: var(--saas-shadow-xs);
+  overflow-x: auto;
   margin-bottom: 20px;
-  line-height: 1.6;
 }
 
-.modal__actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 4px;
-}
-
-/* Responsive Shared */
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .filter-bar {
-    gap: 10px;
-  }
-  .search-wrap {
-    max-width: 100%;
-  }
-  .modal {
-    width: 90%;
-    max-height: 90vh;
-    padding: 24px;
-    border-radius: 20px;
-    margin: 0;
-  }
-}
-
-/* Admin SaaS: the global .table td rule (index.css) defaults to
-   var(--text-secondary), a muted gray — make table body text read as
-   primary/black here since it's the main data, not a secondary label.
-   No !important: cells that set their own inline color (row numbers,
-   dates, top-3 rank highlights, code/id pills) are deliberately muted
-   and should keep winning over this default. */
-.table-wrap table td {
-  color: var(--text-primary);
-}
-
-/* Horizontal Table scroll */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-.table-responsive table {
-  min-width: 600px;
+/* Hilangkan double border jika table-responsive atau table-wrap berada di dalam .card */
+.card .table-responsive,
+.card .table-wrap,
+.card-pad .table-responsive,
+.card-pad .table-wrap {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  margin-bottom: 0 !important;
+  background: transparent !important;
 }
 
-/* Category cards */
-.cat-card {
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13.5px;
+  color: #111827 !important;
+}
+
+.table th {
+  background: #f8fafc;
+  color: #111827 !important;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--saas-border);
+  text-align: left;
+}
+
+.table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #111827 !important;
+  vertical-align: middle;
+}
+
+/* Seluruh elemen teks di dalam tabel menjadi warna hitam */
+.table td span:not(.btn):not(.btn *),
+.table td div:not(.btn):not(.btn *),
+.table td p,
+.table td code,
+.table td strong,
+.table td a:not(.btn) {
+  color: #111827 !important;
+}
+
+/* Badge di dalam tabel dengan font hitam pekat & kontras tinggi */
+.table .badge,
+.table [class*="badge-"] {
+  color: #111827 !important;
+  font-weight: 700 !important;
+}
+
+.table tbody tr {
+  transition: background 0.15s ease-in-out;
+}
+
+.table tbody tr:hover {
+  background: #fbfbfe !important;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── KPI Stat Cards ── */
+.kpi-card,
+.stat-card {
+  background: #ffffff;
+  border-radius: var(--saas-radius-lg);
+  border: 1px solid var(--saas-border);
+  padding: 22px;
+  box-shadow: var(--saas-shadow-xs);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.cat-card__top {
-  display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.cat-card__icon {
-  width: 52px; height: 52px;
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
+.kpi-card:hover,
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--saas-shadow-md);
+  border-color: #c7cdd4;
 }
 
-.cat-card__name {
-  font-family: var(--font-heading);
-  font-size: 16px; font-weight: 600;
-  color: var(--text-primary);
-}
-
-.cat-card__desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.5;
-  flex: 1;
-}
-
-.cat-card__footer {
+.kpi-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  margin-bottom: 14px;
+  font-size: 20px;
 }
 
-.cat-card__stat {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
+.kpi-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--saas-heading);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-.cat-card__stat-num {
-  font-family: var(--font-heading);
-  font-size: 22px;
+.kpi-label {
+  font-size: 12.5px;
   font-weight: 600;
+  color: var(--saas-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
 }
 
-.cat-card__stat-lbl {
-  font-size: 11px;
-  color: var(--text-muted);
+/* ── Module Documentation Hero Banner & Plan Card Headers ── */
+.module-hero-banner,
+.module-hero-banner h1,
+.module-hero-banner h2,
+.module-hero-banner h3,
+.module-hero-banner p,
+.module-hero-banner span,
+.module-hero-banner div,
+.module-hero-banner svg,
+.plan-card-header,
+.plan-card-header h1,
+.plan-card-header h2,
+.plan-card-header h3,
+.plan-card-header p,
+.plan-card-header span,
+.plan-card-header div {
+  color: #ffffff !important;
 }
 
-.cat-card__btns {
-  display: flex;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-subtle);
-}
-
-/* Toggle button */
-.toggle-btn {
-  width: 38px; height: 22px;
-  border-radius: 11px;
+/* ── Hero Congratulations Card ── */
+.sneat-hero-card {
+  background: #ffffff;
+  border-radius: var(--saas-radius-lg);
+  border: 1px solid var(--saas-border);
+  padding: 26px 30px;
+  box-shadow: var(--saas-shadow-xs);
   position: relative;
-  border: none;
-  cursor: pointer;
-  transition: background var(--transition-base);
-  padding: 0;
-  flex-shrink: 0;
+  overflow: hidden;
 }
 
-.toggle-btn--on {
-  background: var(--success-500);
-}
-
-.toggle-btn--off {
-  background: var(--gray-700);
-}
-
-.toggle-knob {
+.sneat-hero-bg-accent {
   position: absolute;
-  top: 2px;
-  width: 18px; height: 18px;
+  right: -30px;
+  bottom: -30px;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(105, 108, 255, 0.15) 0%, rgba(105, 108, 255, 0) 70%);
   border-radius: 50%;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  transition: left var(--transition-base);
+  pointer-events: none;
 }
 
-.toggle-btn--on .toggle-knob { left: 18px; }
-.toggle-btn--off .toggle-knob { left: 2px; }
+/* ── Custom Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
-/* === Pagination Styles === */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d9dee3;
+  border-radius: var(--saas-radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b4bdc6;
+}
+
+/* ==========================================================================
+   SAAS PAGINATION STYLES (Sama Persis dengan Modul Retail)
+   ========================================================================== */
 .saas-pagination-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  border-top: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  padding: 14px 20px;
+  border-top: 1px solid #d9dee3;
+  background: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .saas-pagination-container {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+    padding: 12px 14px !important;
+  }
 }
 
 .saas-pagination-info {
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 12.5px;
+  color: #566a7f;
   font-weight: 500;
 }
 
 .saas-pagination-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .saas-pagination-select-wrapper {
@@ -339,65 +534,185 @@
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-color: var(--bg-surface);
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-color: #f3f4f6;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
+  background-position: right 10px center;
   background-size: 12px;
-  border: 1px solid var(--border-default);
-  border-radius: 14px;
-  color: var(--text-primary);
-  padding: 0 28px 0 16px;
+  border: none;
+  border-radius: 10px;
+  color: #475569;
+  padding: 0 26px 0 14px;
   font-size: 13px;
   font-weight: 600;
   outline: none;
   cursor: pointer;
-  height: 38px;
-  min-width: 68px;
+  height: 36px;
+  min-width: 64px;
   transition: all 0.2s ease;
 }
 
 .saas-pagination-select:focus {
-  border-color: var(--primary-500);
+  box-shadow: 0 0 0 2px rgba(105, 108, 255, 0.2);
 }
 
 .saas-pagination-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 38px;
-  height: 38px;
+  min-width: 36px;
+  height: 36px;
   padding: 0 12px;
-  border-radius: 14px;
+  border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid var(--border-default);
-  background: var(--bg-surface);
-  color: var(--text-secondary);
+  border: none;
+  background: #f3f4f6;
+  color: #475569;
   transition: all 0.2s ease;
 }
 
 .saas-pagination-btn:hover:not(.active):not(:disabled) {
-  background: var(--border-subtle);
-  color: var(--text-primary);
+  background: #e5e7eb;
+  color: #32475c;
 }
 
 .saas-pagination-btn.active {
-  background: var(--primary-500) !important;
+  background: #696cff !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
-  font-weight: 600;
-  border-color: var(--primary-500);
+  box-shadow: 0 2px 8px rgba(105, 108, 255, 0.4);
+  font-weight: 700;
 }
 
 .saas-pagination-btn.prev-next {
-  background: var(--bg-surface);
-  color: var(--text-secondary);
+  background: #f3f4f6;
+  color: #475569;
 }
 
 .saas-pagination-btn.prev-next:disabled {
-  opacity: 0.4;
+  color: #cbd5e1;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* ==========================================================================
+   CATEGORY CARDS STYLING (Tampilan Asli/Sebelumnya)
+   ========================================================================== */
+.cat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  border: 1px solid #d9dee3 !important;
+  padding: 22px !important;
+  box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.08) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.cat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px 0 rgba(67, 89, 113, 0.12) !important;
+  border-color: #c7cdd4 !important;
+}
+
+.cat-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cat-card__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.cat-card__name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #32475c;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.cat-card__desc {
+  font-size: 12.5px;
+  color: #566a7f;
+  line-height: 1.5;
+  flex: 1;
+  margin: 0;
+}
+
+.cat-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 4px;
+}
+
+.cat-card__stat {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.cat-card__stat-num {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.cat-card__stat-lbl {
+  font-size: 11.5px;
+  color: #8592a3;
+  font-weight: 600;
+}
+
+.cat-card__btns {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Toggle button */
+.toggle-btn {
+  width: 38px;
+  height: 22px;
+  border-radius: 11px;
+  position: relative;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.toggle-btn--on {
+  background: #71dd37;
+}
+
+.toggle-btn--off {
+  background: #d9dee3;
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: left 0.2s ease;
+}
+
+.toggle-btn--on .toggle-knob { left: 18px; }
+.toggle-btn--off .toggle-knob { left: 2px; }

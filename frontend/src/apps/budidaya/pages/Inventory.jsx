@@ -156,29 +156,44 @@ export default function Inventory() {
 
       {/* Filter & Content */}
       <div style={cardStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ position: 'relative', minWidth: '220px' }}>
+              <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748B', fontSize: '18px', pointerEvents: 'none' }}>category</span>
+              <select
+                value={category}
+                onChange={e => setCategory(e.target.value)}
                 style={{
-                  padding: '8px 16px', borderRadius: '10px', border: 'none',
-                  background: category === cat ? '#1B4332' : '#F1F5F9',
-                  color: category === cat ? '#fff' : '#475569',
-                  fontWeight: '700', fontSize: '13px', cursor: 'pointer',
-                  transition: 'all 0.2s', whiteSpace: 'nowrap'
+                  width: '100%',
+                  padding: '10px 36px 10px 38px',
+                  background: '#F1F5F9',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  fontSize: '13.5px',
+                  fontWeight: '600',
+                  color: '#1E293B',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  appearance: 'none',
                 }}
-              >{cat}</button>
-            ))}
+              >
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>
+                    {cat === 'Semua' ? 'Semua Kategori' : cat}
+                  </option>
+                ))}
+              </select>
+              <span className="material-symbols-outlined" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748B', fontSize: '18px', pointerEvents: 'none' }}>expand_more</span>
+            </div>
           </div>
+
           <div style={{ position: 'relative', width: '300px' }}>
             <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748B', fontSize: '18px' }}>search</span>
             <input 
               placeholder="Cari barang..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px 10px 38px', background: '#F1F5F9', border: 'none', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
+              style={{ width: '100%', padding: '10px 12px 10px 38px', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '10px', fontSize: '13.5px', outline: 'none' }}
             />
           </div>
         </div>

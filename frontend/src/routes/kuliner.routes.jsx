@@ -28,6 +28,8 @@ const KulinerRecipes = lazy(() => import('../apps/kuliner/pages/Recipes'));
 const KulinerModifiers = lazy(() => import('../apps/kuliner/pages/Modifiers'));
 const KulinerAddons = lazy(() => import('../apps/kuliner/pages/Addons'));
 const KulinerBundles = lazy(() => import('../apps/kuliner/pages/Bundles'));
+const KulinerSuppliers = lazy(() => import('../apps/kuliner/pages/KulinerSuppliers'));
+const KulinerPurchases = lazy(() => import('../apps/kuliner/pages/KulinerPurchases'));
 
 // Phase 2: Order lifecycle & kitchen operations
 const KulinerKitchenQueue = lazy(() => import('../apps/kuliner/pages/KitchenQueue'));
@@ -69,6 +71,8 @@ const kulinerRoutes = (
       <Route path="admin/reviews" element={<KulinerReviews />} />
 
       {/* Phase 1: Menu engineering */}
+      <Route path="admin/suppliers" element={<KulinerSuppliers />} />
+      <Route path="admin/purchases" element={<KulinerPurchases />} />
       <Route path="admin/ingredients" element={<KulinerBahanBaku />} />
       <Route path="admin/recipes" element={<KulinerRecipes />} />
       <Route path="admin/modifiers" element={<KulinerModifiers />} />

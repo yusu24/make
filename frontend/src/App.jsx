@@ -33,6 +33,7 @@ import retailRoutes from './routes/retail.routes'
 import budidayaRoutes from './routes/budidaya.routes'
 import kulinerRoutes from './routes/kuliner.routes'
 import sellerRoutes from './routes/seller.routes'
+import jasaRoutes from './routes/jasa.routes'
 
 function App() {
   // Catches errors React's own ErrorBoundary can't: thrown inside event
@@ -101,6 +102,9 @@ function App() {
 
                 {/* Kuliner Module */}
                 {kulinerRoutes}
+
+                {/* Jasa / Services OS Module */}
+                {jasaRoutes}
 
                 {/* Fallback to root (which redirects to dashboard if logged in) */}
                 <Route path="*" element={<Navigate to="/" replace />} />

@@ -7,7 +7,8 @@ export default function CartPanel({
   items, discount, note, taxRate,
   subtotal, discountAmount, taxAmount, total,
   customers, customerId, onCustomerChange,
-  onUpdateQty, onApplyDiscount, onRemoveDiscount, onSetNote, onClearCart, onCheckout,
+  onUpdateQty, onUpdateItem, onApplyDiscount, onRemoveDiscount, onSetNote, onClearCart, onCheckout,
+  onHoldBill, onShowHoldList,
   onClose, className = '',
 }) {
   const [discountCode, setDiscountCode] = useState('');
@@ -56,11 +57,14 @@ export default function CartPanel({
             Pesanan
           </span>
         </div>
-        {items.length > 0 && (
-          <button onClick={onClearCart} className="pos-cart-clear" aria-label="Hapus semua item">
-            Hapus Semua
+        <div className="flex items-center gap-2">
+          <button onClick={onClearCart} className="text-[10px] text-slate-500 hover:text-slate-700 font-medium" aria-label="Hapus semua item">
+            Bersihkan
           </button>
-        )}
+          <button onClick={onShowHoldList} className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded font-bold transition-colors">
+            Pesanan Disimpan
+          </button>
+        </div>
       </div>
 
       <div className="px-5 pt-3 pb-1">
@@ -84,6 +88,22 @@ export default function CartPanel({
                 <span className="font-semibold">{fmtRp(item.price)}</span>
                 <span className="ml-1 text-[9px] text-slate-400">(Sisa: {Math.round(item.max_stock)})</span>
               </p>
+              <div className="flex gap-2 mt-2">
+                <input
+                  type="text"
+                  className="w-full text-[10px] border border-slate-200 rounded px-1.5 py-0.5 focus:border-indigo-400 outline-none"
+                  placeholder="Batch No"
+                  value={item.batch_no || ''}
+                  onChange={(e) => onUpdateItem(item.product_id, { batch_no: e.target.value })}
+                />
+                <input
+                  type="text"
+                  className="w-full text-[10px] border border-slate-200 rounded px-1.5 py-0.5 focus:border-indigo-400 outline-none"
+                  placeholder="Serial No"
+                  value={item.serial_number || ''}
+                  onChange={(e) => onUpdateItem(item.product_id, { serial_number: e.target.value })}
+                />
+              </div>
             </div>
             <div className="pos-qty-ctrl">
               <button onClick={() => onUpdateQty(item.product_id, item.qty - 1)} className="pos-qty-btn" aria-label="Kurang satu">−</button>
@@ -186,9 +206,22 @@ export default function CartPanel({
           </div>
         </div>
 
-        <button disabled={items.length === 0} onClick={onCheckout} className="pos-checkout-btn">
-          Bayar Sekarang
-        </button>
+        <div className="flex gap-2">
+          <button 
+            disabled={items.length === 0} 
+            onClick={onHoldBill} 
+            className="flex-1 py-3 bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold rounded-xl text-xs transition-colors disabled:opacity-50"
+          >
+            Simpan Bill
+          </button>
+          <button 
+            disabled={items.length === 0} 
+            onClick={onCheckout} 
+            className="flex-[2] py-3 bg-[#42B9A0] hover:bg-[#349D87] text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-50"
+          >
+            Bayar Sekarang
+          </button>
+        </div>
       </div>
     </aside>
   );

@@ -268,6 +268,7 @@ class DatabaseSeeder extends Seeder
                     'stock_min' => $p['stock_min'] ?? 10,
                     'price_buy' => $p['price'] * 0.85,
                     'price_sell' => $p['price'],
+                    'is_consignment' => $p['is_consignment'] ?? (rand(0, 10) > 7 ? 1 : 0),
                 ]
             );
         }
@@ -821,12 +822,105 @@ class DatabaseSeeder extends Seeder
         $conf = $data[$subtype] ?? $data['ikan'];
         $uName = $conf['unitName'];
 
+        // Setup settings based on subtype
+        $presetMap = [
+            'sapi' => [
+                'farm_type' => 'ruminansia',
+                'farm_name' => 'Peternakan Sapi Ruminansia',
+                'farming_category' => 'livestock',
+                'farming_profile' => 'livestock_beef_cattle',
+                'tracking_mode' => 'individual',
+                'unit_category' => 'pen',
+                'flags' => [
+                    'water_quality' => false,
+                    'feed_management' => true,
+                    'fcr_calculation' => false,
+                    'group_tracking' => false,
+                    'individual_tracking' => true,
+                    'egg_production' => false,
+                    'breeding_management' => true,
+                    'health_vaccination' => true,
+                    'environmental_sensors' => false,
+                ],
+                'terminology' => [
+                    'unit_name' => 'Kandang',
+                    'seed_name' => 'Pedet / Bakalan',
+                    'sampling_name' => 'Penimbangan Bobot Ternak',
+                    'output_name' => 'Penjualan Ternak / Daging',
+                ]
+            ],
+            'ayam' => [
+                'farm_type' => 'unggas',
+                'farm_name' => 'Peternakan Unggas Broiler',
+                'farming_category' => 'poultry',
+                'farming_profile' => 'poultry_broiler',
+                'tracking_mode' => 'group',
+                'unit_category' => 'coop',
+                'flags' => [
+                    'water_quality' => false,
+                    'feed_management' => true,
+                    'fcr_calculation' => true,
+                    'group_tracking' => true,
+                    'individual_tracking' => false,
+                    'egg_production' => false,
+                    'breeding_management' => false,
+                    'health_vaccination' => true,
+                    'environmental_sensors' => false,
+                ],
+                'terminology' => [
+                    'unit_name' => 'Kandang',
+                    'seed_name' => 'DOC Ayam',
+                    'sampling_name' => 'Sampling Bobot Ayam',
+                    'output_name' => 'Panen Ayam',
+                ]
+            ],
+            'ikan' => [
+                'farm_type' => 'ikan',
+                'farm_name' => 'Budidaya Perikanan Air Tawar',
+                'farming_category' => 'aquaculture',
+                'farming_profile' => 'aquaculture_biofloc_fish',
+                'tracking_mode' => 'group',
+                'unit_category' => 'pond',
+                'flags' => [
+                    'water_quality' => true,
+                    'feed_management' => true,
+                    'fcr_calculation' => true,
+                    'group_tracking' => true,
+                    'individual_tracking' => false,
+                    'egg_production' => false,
+                    'breeding_management' => false,
+                    'health_vaccination' => true,
+                    'environmental_sensors' => false,
+                ],
+                'terminology' => [
+                    'unit_name' => 'Kolam',
+                    'seed_name' => 'Benih Ikan',
+                    'sampling_name' => 'Sampling Ikan',
+                    'output_name' => 'Panen Ikan',
+                ]
+            ]
+        ];
+
+        $settingData = $presetMap[$subtype] ?? $presetMap['ikan'];
+        \App\Models\BudidayaSetting::updateOrCreate(
+            ['tenant_id' => $tenantId],
+            [
+                'farm_type' => $settingData['farm_type'],
+                'farm_name' => $settingData['farm_name'],
+                'farming_category' => $settingData['farming_category'],
+                'farming_profile' => $settingData['farming_profile'],
+                'tracking_mode' => $settingData['tracking_mode'],
+                'feature_flags' => $settingData['flags'],
+                'terminology' => $settingData['terminology'],
+            ]
+        );
+
         // 1. Units (Ponds/Kandang)
         $units = [
-            ['name' => "$uName A1 - {$conf['animals'][0]}", 'type' => $conf['types'][0], 'capacity_m3' => 15, 'status' => 'aktif'],
-            ['name' => "$uName A2 - {$conf['animals'][1]}", 'type' => $conf['types'][1], 'capacity_m3' => 15, 'status' => 'aktif'],
-            ['name' => "$uName B1 - Beton/Permanen", 'type' => $conf['types'][2], 'capacity_m3' => 30, 'status' => 'kosong'],
-            ['name' => "$uName C1 - Tanah/Area Luar", 'type' => $conf['types'][0], 'capacity_m3' => 50, 'status' => 'kosong'],
+            ['name' => "$uName A1 - {$conf['animals'][0]}", 'unit_category' => $settingData['unit_category'], 'type' => $conf['types'][0], 'capacity_m3' => 15, 'capacity_head' => 20, 'status' => 'aktif'],
+            ['name' => "$uName A2 - {$conf['animals'][1]}", 'unit_category' => $settingData['unit_category'], 'type' => $conf['types'][1], 'capacity_m3' => 15, 'capacity_head' => 20, 'status' => 'aktif'],
+            ['name' => "$uName B1 - Beton/Permanen", 'unit_category' => $settingData['unit_category'], 'type' => $conf['types'][2], 'capacity_m3' => 30, 'capacity_head' => 40, 'status' => 'kosong'],
+            ['name' => "$uName C1 - Tanah/Area Luar", 'unit_category' => $settingData['unit_category'], 'type' => $conf['types'][0], 'capacity_m3' => 50, 'capacity_head' => 50, 'status' => 'kosong'],
         ];
 
         $unitModels = [];
@@ -834,8 +928,10 @@ class DatabaseSeeder extends Seeder
             $unitModels[] = BudidayaPond::updateOrCreate(
                 ['tenant_id' => $tenantId, 'name' => $u['name']],
                 [
+                    'unit_category' => $u['unit_category'],
                     'type' => $u['type'],
                     'capacity_m3' => $u['capacity_m3'],
+                    'capacity_head' => $u['capacity_head'],
                     'status' => $u['status'],
                 ]
             );
@@ -858,6 +954,41 @@ class DatabaseSeeder extends Seeder
             ['tenant_id' => $tenantId, 'name' => $conf['vitamin'][0]],
             ['category' => $conf['vitamin'][1], 'unit' => $conf['vitamin'][2], 'stock' => 20, 'price_per_unit' => $conf['vitamin'][3], 'min_stock' => 5]
         );
+
+        // Individual Animals for Ruminansia
+        if ($subtype === 'sapi' && isset($unitModels[0])) {
+            $sapiSp = \App\Models\BudidayaSpecies::where('code', 'SPEC-LS-SAPI-POTONG')->first();
+            \App\Models\BudidayaAnimal::updateOrCreate(
+                ['tenant_id' => $tenantId, 'tag_code' => 'TAG-SP-001'],
+                [
+                    'pond_id' => $unitModels[0]->id,
+                    'species_id' => $sapiSp ? $sapiSp->id : null,
+                    'category' => 'livestock',
+                    'name' => 'Sapi Limosin Super 01',
+                    'gender' => 'male',
+                    'breed' => 'Limosin Cross',
+                    'birth_date' => now()->subMonths(18),
+                    'entry_date' => now()->subMonths(3),
+                    'current_weight_kg' => 450,
+                    'status' => 'active',
+                ]
+            );
+            \App\Models\BudidayaAnimal::updateOrCreate(
+                ['tenant_id' => $tenantId, 'tag_code' => 'TAG-SP-002'],
+                [
+                    'pond_id' => $unitModels[0]->id,
+                    'species_id' => $sapiSp ? $sapiSp->id : null,
+                    'category' => 'livestock',
+                    'name' => 'Sapi Brahman Betina 02',
+                    'gender' => 'female',
+                    'breed' => 'Brahman',
+                    'birth_date' => now()->subMonths(14),
+                    'entry_date' => now()->subMonths(2),
+                    'current_weight_kg' => 380,
+                    'status' => 'active',
+                ]
+            );
+        }
 
         // 2.5 Staff / Users
         BudidayaStaff::updateOrCreate(

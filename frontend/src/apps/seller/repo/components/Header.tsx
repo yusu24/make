@@ -100,12 +100,12 @@ export const Header: React.FC<HeaderProps> = ({
     setProfileMenuOpen(false);
     if (isImpersonating && isImpersonating()) {
       const redirectPath = exitImpersonate();
-      navigate(redirectPath || '/tenants');
+      window.location.href = redirectPath || '/tenants';
       return;
     }
-    const isDemo = user?.email?.startsWith('demo-sandbox-') || DEMO_EMAILS.includes(user?.email);
+    const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-sandbox-') || DEMO_EMAILS.includes(user?.email) || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'));
     logout();
-    navigate(isDemo ? '/' : '/login');
+    window.location.href = isDemo ? '/' : '/login';
   };
 
   return (
@@ -173,7 +173,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-3 px-4 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute -right-12 sm:right-0 mt-2 w-[300px] sm:w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-3 px-4 z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700 mb-2">
                 <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">
                   Notifikasi Stok
@@ -281,7 +281,9 @@ export const Header: React.FC<HeaderProps> = ({
                   className="w-full py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  Keluar (Logout)
+                  {isImpersonating && isImpersonating() 
+                    ? 'Keluar dari Impersonate' 
+                    : ((user?.email?.startsWith('demo-sandbox-') || DEMO_EMAILS.includes(user?.email) || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'))) ? 'Keluar dari Akun Demo' : 'Keluar')}
                 </button>
               </div>
             </div>

@@ -1,18 +1,22 @@
 import React, { useState } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import '../budidaya.css'
-import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
+import { useBudidayaContext } from '../contexts/BudidayaContext'
 
 export default function Settings() {
   const { user } = useAuth()
-  const terms = useBudidayaTerms()
+  const { terms, farmType, farmName, updateFarmSettings } = useBudidayaContext()
   const [theme, setTheme] = useState('light')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  
+  const [formFarmType, setFormFarmType] = useState(farmType)
+  const [formFarmName, setFormFarmName] = useState(farmName || '')
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 600)
-    return () => clearTimeout(timer)
-  }, [])
+    setFormFarmType(farmType)
+    setFormFarmName(farmName || '')
+  }, [farmType, farmName])
 
   const cardStyle = {
     background: '#fff',
@@ -136,11 +140,45 @@ export default function Settings() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={labelStyle}>Nama Lengkap</label>
-                <input style={inputStyle} defaultValue={user?.name || 'Aris Setiawan'} />
+                <input style={inputStyle} defaultValue={user?.name || 'Aris Setiawan'} disabled />
               </div>
               <div>
                 <label style={labelStyle}>Alamat Email</label>
-                <input style={inputStyle} defaultValue={user?.email || 'aris.setiawan@aquagrow.io'} />
+                <input style={inputStyle} defaultValue={user?.email || 'aris.setiawan@aquagrow.io'} disabled />
+              </div>
+            </div>
+          </div>
+          
+          {/* Pengaturan Bisnis Budidaya */}
+          <div style={cardStyle}>
+            {sectionHeader('storefront', 'Bisnis Budidaya')}
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={labelStyle}>Nama Peternakan/Budidaya</label>
+                <input 
+                  style={inputStyle} 
+                  value={formFarmName} 
+                  onChange={e => setFormFarmName(e.target.value)}
+                  placeholder="Misal: AquaGrow Farm" 
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Tipe Budidaya</label>
+                <div style={{ position: 'relative' }}>
+                  <select 
+                    style={{ ...inputStyle, appearance: 'none' }} 
+                    value={formFarmType}
+                    onChange={e => setFormFarmType(e.target.value)}
+                  >
+                    <option value="ikan">Ikan / Hewan Air</option>
+                    <option value="unggas">Unggas (Ayam, Bebek)</option>
+                    <option value="ruminansia">Ruminansia (Sapi, Kambing)</option>
+                  </select>
+                  <span className="material-symbols-outlined" style={{ 
+                    position: 'absolute', right: '12px', top: '18px', color: '#475569', pointerEvents: 'none' 
+                  }}>expand_more</span>
+                </div>
               </div>
             </div>
           </div>
@@ -183,9 +221,9 @@ export default function Settings() {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {toggleRow(terms.isTanaman ? 'eco' : 'restaurant', terms.isTanaman ? 'Pengingat Pupuk' : 'Pengingat Pakan', terms.isTanaman ? "Dapatkan notifikasi saat waktunya memberi pupuk/nutrisi." : "Dapatkan notifikasi saat waktunya memberi makan ikan.", true)}
-              {toggleRow('opacity', terms.isTanaman ? 'Peringatan Kondisi Lahan' : 'Peringatan Kualitas Air', terms.isTanaman ? "Peringatan kritis untuk kelembaban tanah, pH tanah, atau suhu." : "Peringatan kritis untuk kadar pH, amonia, atau oksigen.", true)}
-              {toggleRow('analytics', 'Laporan Analisa Mingguan', terms.isTanaman ? "Ringkasan email tentang kesehatan lahan dan performa pertumbuhan." : "Ringkasan email tentang kesehatan kolam dan performa pertumbuhan.", false)}
+              {toggleRow(terms.isTanaman ? 'eco' : 'restaurant', terms.isTanaman ? 'Pengingat Pupuk' : 'Pengingat Pakan', terms.isTanaman ? "Dapatkan notifikasi saat waktunya memberi pupuk/nutrisi." : `Dapatkan notifikasi saat waktunya pemberian pakan harian.`, true)}
+              {toggleRow('opacity', terms.isTanaman ? 'Peringatan Kondisi Lahan' : `Peringatan Kondisi ${terms.unit}`, terms.isTanaman ? "Peringatan kritis untuk kelembaban tanah, pH tanah, atau suhu." : `Peringatan kritis untuk suhu, kadar amonia, atau sanitasi ${terms.unitLower}.`, true)}
+              {toggleRow('analytics', 'Laporan Analisa Mingguan', `Ringkasan email tentang kesehatan ${terms.unitLower} dan performa pertumbuhan.`, false)}
             </div>
           </div>
 
@@ -283,12 +321,20 @@ export default function Settings() {
         }}>
           Batalkan
         </button>
-        <button style={{ 
-          padding: '12px 24px', borderRadius: '12px', border: 'none', 
-          background: '#1B4332', color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px',
-          display: 'flex', alignItems: 'center', gap: '8px'
-        }}>
-          Simpan Perubahan
+        <button 
+          onClick={async () => {
+            setSaving(true)
+            await updateFarmSettings(formFarmType, formFarmName)
+            setSaving(false)
+            alert('Pengaturan berhasil disimpan')
+          }}
+          style={{ 
+            padding: '12px 24px', borderRadius: '12px', border: 'none', 
+            background: '#1B4332', color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px',
+            display: 'flex', alignItems: 'center', gap: '8px'
+          }}
+        >
+          {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
         </button>
       </div>
 

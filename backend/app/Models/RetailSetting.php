@@ -17,5 +17,6 @@ class RetailSetting extends Model
         'low_stock_default_threshold'=> 'decimal:2',
         'enable_tax'                 => 'boolean',
         'enable_loyalty'             => 'boolean',
+        'point_value_rupiah'         => 'decimal:2',
     ];
 }

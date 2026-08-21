@@ -108,7 +108,7 @@ export default function Staff() {
 
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button
+          <button title="Tambah Pegawai"
             className="btn btn-primary"
             style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
             onClick={() => { setEditingUser(null); setErrorMsg(''); setShowModal(true); }}

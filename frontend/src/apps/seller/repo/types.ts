@@ -24,7 +24,8 @@ export type ActiveTab =
   | 'shipping-dashboard'
   | 'shipping-management'
   | 'shipping-packing'
-  | 'notification-center';
+  | 'notification-center'
+  | 'panduan';
 
 export type MarketplacePlatform = 'Shopee' | 'Tokopedia' | 'TikTok Shop' | 'Lazada' | 'Blibli' | 'Manual/Offline';
 
@@ -128,6 +129,7 @@ export interface Product {
   image: string;
   rawImageUrl: string | null;
   hpp: number; // Harga Pokok Penjualan
+  priceOffline: number;
   priceShopee: number;
   priceTokopedia: number;
   priceTiktok: number;

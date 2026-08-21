@@ -6,15 +6,22 @@ import {
   RefreshCw, 
   AlertCircle, 
   CheckCircle2, 
-  Package
+  Package,
+  Eye
 } from 'lucide-react';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import Modal from '../../../components/Modal';
 import '../retail.css';
 
 export default function Inventory() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterCritical, setFilterCritical] = useState(false);
+  
+  // Detail Modal State
+  const [detailProduct, setDetailProduct] = useState(null);
+  const [activeTab, setActiveTab] = useState('batch');
 
   const fetchData = async () => {
     setLoading(true);
@@ -37,10 +44,12 @@ export default function Inventory() {
   const criticalItems = outOfStock + lowStock;
   const safeItems = totalItems - criticalItems;
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    p.sku.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.sku.toLowerCase().includes(searchQuery.toLowerCase());
+    const isCritical = Number(p.stock) <= Number(p.stock_min);
+    if (filterCritical) return matchesSearch && isCritical;
+    return matchesSearch;
+  });
 
   const {
     currentPage,
@@ -110,9 +119,17 @@ export default function Inventory() {
             <input 
               placeholder="Cari SKU atau Nama Barang..." 
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             />
           </div>
+          <button title="Hanya Barang Kritis" 
+            className={`btn ${filterCritical ? 'btn-primary' : 'btn-secondary'}`} 
+            onClick={() => { setFilterCritical(!filterCritical); setCurrentPage(1); }}
+            style={{ height: 42, whiteSpace: 'nowrap' }}
+          >
+            <AlertCircle size={15} className="mr-2" />
+            <span className="btn-text-mobile-hide">Hanya Barang Kritis</span>
+          </button>
           <button 
             onClick={fetchData} 
             className="btn-reset-sync"
@@ -130,7 +147,8 @@ export default function Inventory() {
               <th className="retail-table-header">Informasi Barang</th>
               <th className="text-center retail-table-header">Kuantitas</th>
               <th className="text-center retail-table-header">Limit Aman</th>
-              <th className="text-right pr-6 retail-table-header">Status</th>
+              <th className="text-right retail-table-header">Status</th>
+              <th className="text-center pr-6 retail-table-header">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -165,7 +183,7 @@ export default function Inventory() {
                     <td className="text-center">
                       <span className="text-xs retail-text-secondary">{p.stock_min} {p.unit}</span>
                     </td>
-                    <td className="text-right pr-6">
+                    <td className="text-right">
                       {isOut ? (
                          <span className="retail-badge retail-badge-danger">Habis Total</span>
                       ) : isLow ? (
@@ -173,6 +191,16 @@ export default function Inventory() {
                       ) : (
                          <span className="retail-badge retail-badge-success">Tersedia</span>
                       )}
+                    </td>
+                    <td className="text-center pr-6">
+                      <button 
+                        className="btn btn-secondary" 
+                        style={{ padding: '6px 12px', height: 'auto', fontSize: '11px', display: 'inline-flex' }}
+                        onClick={() => setDetailProduct(p)}
+                        title="Lihat Detail Batch"
+                      >
+                        <Eye size={14} className="mr-1" /> Detail
+                      </button>
                     </td>
                   </tr>
                 )
@@ -191,6 +219,56 @@ export default function Inventory() {
           endIndex={endIndex}
         />
       </div>
+
+      <Modal 
+        isOpen={!!detailProduct} 
+        onClose={() => setDetailProduct(null)}
+        title={`Detail Stok: ${detailProduct?.name || ''}`}
+        maxWidth="600px"
+      >
+        {detailProduct && (
+          <div>
+            <div className="flex border-b mb-4">
+              <button 
+                className={`py-2 px-4 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600`}
+              >
+                Data Batch & Expired
+              </button>
+            </div>
+
+            {activeTab === 'batch' && (
+              <div className="table-wrap overflow-y-auto max-h-[300px]">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th className="retail-table-header">Nomor Batch</th>
+                      <th className="retail-table-header">Kadaluarsa</th>
+                      <th className="retail-table-header text-right">Stok Aktif</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(!detailProduct.batches || detailProduct.batches.length === 0) ? (
+                      <tr><td colSpan="3" className="text-center py-4 text-slate-400">Tidak ada data batch</td></tr>
+                    ) : (
+                      detailProduct.batches.map(b => (
+                        <tr key={b.id}>
+                          <td className="font-medium text-slate-700">{b.batch_no}</td>
+                          <td>{b.expired_date ? new Date(b.expired_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}</td>
+                          <td className="text-right">{b.stock}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="modal__actions mt-6">
+              <button type="button" className="btn btn-secondary w-full" onClick={() => setDetailProduct(null)}>Tutup Detail</button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

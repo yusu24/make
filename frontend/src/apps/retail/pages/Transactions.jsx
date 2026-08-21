@@ -14,6 +14,8 @@ export default function Transactions() {
   const [voidModal, setVoidModal] = useState(null);
   const [voidReason, setVoidReason] = useState('');
   const [search, setSearch] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
@@ -38,11 +40,30 @@ export default function Transactions() {
     } catch (e) { alert(e.response?.data?.message || 'Gagal membatalkan transaksi'); }
   };
 
-  const filteredTransactions = transactions.filter(t =>
-    t.invoice_no.toLowerCase().includes(search.toLowerCase()) ||
-    (t.customer?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (t.payment_method || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredTransactions = transactions.filter(t => {
+    const matchesSearch = t.invoice_no.toLowerCase().includes(search.toLowerCase()) ||
+      (t.customer?.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (t.payment_method || '').toLowerCase().includes(search.toLowerCase());
+
+    const tDate = new Date(t.created_at);
+    tDate.setHours(0, 0, 0, 0);
+
+    let matchesStart = true;
+    if (startDate) {
+      const sDate = new Date(startDate);
+      sDate.setHours(0, 0, 0, 0);
+      matchesStart = tDate >= sDate;
+    }
+
+    let matchesEnd = true;
+    if (endDate) {
+      const eDate = new Date(endDate);
+      eDate.setHours(0, 0, 0, 0);
+      matchesEnd = tDate <= eDate;
+    }
+
+    return matchesSearch && matchesStart && matchesEnd;
+  });
 
   const {
     currentPage,
@@ -59,12 +80,29 @@ export default function Transactions() {
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       <div className="card table-wrap animate-fade-in">
-        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)', flexWrap: 'wrap' }}>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari invoice/pelanggan..."
               value={search}
               onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={startDate} 
+              onChange={e => setStartDate(e.target.value)} 
+              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>-</span>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={endDate} 
+              onChange={e => setEndDate(e.target.value)} 
+              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
             />
           </div>
         </div>
@@ -136,7 +174,7 @@ export default function Transactions() {
               <tbody>
                 {detail.items?.map(item => (
                   <tr key={item.id}>
-                    <td>{item.product?.name || '-'}</td>
+                    <td>{item.product?.name || '-'}{item.unit ? ` (${item.unit})` : ''}</td>
                     <td className="text-center">{Number(item.qty || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
                     <td className="text-right">Rp {Number(item.price || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
                     <td className="text-right">Rp {Number(item.subtotal || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>

@@ -23,7 +23,8 @@ class PondController extends Controller
     {
         $status = $request->query('status');
         $area = $request->query('area');
-        $perPage = $request->query('per_page', 15);
+        $unitCategory = $request->query('unit_category');
+        $perPage = (int) $request->query('per_page', 15);
 
         // Tenant filtering is automatically handled by HasTenant trait
         $query = BudidayaPond::query();
@@ -36,6 +37,10 @@ class PondController extends Controller
             $query->where('area', $area);
         }
 
+        if ($unitCategory) {
+            $query->where('unit_category', $unitCategory);
+        }
+
         $ponds = $query->with('activeCycle')->orderBy('area')->orderBy('name')->paginate($perPage);
         return response()->json($ponds);
     }
@@ -43,23 +48,30 @@ class PondController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
-            'code' => [
+            'name'          => 'required|string',
+            'unit_category' => 'nullable|string|in:pond,cage,coop,pen,aviary,aquarium,colony_cage,battery_cage,other',
+            'code'          => [
                 'nullable',
                 'string',
                 Rule::unique('budidaya_ponds')->where('tenant_id', auth()->user()->tenant_id ?? null)
             ],
-            'type' => 'required|string',
-            'area' => 'nullable|string',
-            'area_m2' => 'nullable|numeric',
-            'depth_cm' => 'nullable|numeric',
-            'max_fish_count' => 'nullable|numeric',
-            'location' => 'nullable|string'
+            'type'          => 'required|string',
+            'area'          => 'nullable|string',
+            'area_m2'       => 'nullable|numeric',
+            'depth_cm'      => 'nullable|numeric',
+            'max_fish_count'=> 'nullable|numeric',
+            'capacity_head' => 'nullable|numeric',
+            'location'      => 'nullable|string'
         ]);
 
-        $pond = $this->pondService->createPond($request->all());
+        $data = $request->all();
+        if (!isset($data['capacity_head']) && isset($data['max_fish_count'])) {
+            $data['capacity_head'] = $data['max_fish_count'];
+        }
 
-        return response()->json(['message' => 'Kolam berhasil ditambahkan', 'data' => $pond]);
+        $pond = $this->pondService->createPond($data);
+
+        return response()->json(['message' => 'Unit / Kolam / Kandang berhasil ditambahkan', 'data' => $pond]);
     }
 
     public function show(Request $request, $id)
@@ -82,24 +94,30 @@ class PondController extends Controller
         $pond = BudidayaPond::findOrFail($id);
         
         $request->validate([
-            'name' => 'required|string',
-            'code' => [
+            'name'          => 'required|string',
+            'unit_category' => 'nullable|string|in:pond,cage,coop,pen,aviary,aquarium,colony_cage,battery_cage,other',
+            'code'          => [
                 'required',
                 'string',
                 Rule::unique('budidaya_ponds')->where('tenant_id', auth()->user()->tenant_id ?? null)->ignore($id)
             ],
-            'type' => 'required|string',
-            'area' => 'nullable|string',
-            'area_m2' => 'nullable|numeric',
-            'depth_cm' => 'nullable|numeric',
-            'max_fish_count' => 'nullable|numeric',
-            'location' => 'nullable|string',
-            'status' => 'required|in:kosong,aktif,panen,maintenance'
+            'type'          => 'required|string',
+            'area'          => 'nullable|string',
+            'area_m2'       => 'nullable|numeric',
+            'depth_cm'      => 'nullable|numeric',
+            'max_fish_count'=> 'nullable|numeric',
+            'capacity_head' => 'nullable|numeric',
+            'location'      => 'nullable|string',
+            'status'        => 'required|in:kosong,aktif,panen,maintenance'
         ]);
 
         try {
-            $pond = $this->pondService->updatePond($pond, $request->all());
-            return response()->json(['message' => 'Data kolam diperbarui', 'data' => $pond]);
+            $data = $request->all();
+            if (!isset($data['capacity_head']) && isset($data['max_fish_count'])) {
+                $data['capacity_head'] = $data['max_fish_count'];
+            }
+            $pond = $this->pondService->updatePond($pond, $data);
+            return response()->json(['message' => 'Data unit / kolam / kandang diperbarui', 'data' => $pond]);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
@@ -111,7 +129,7 @@ class PondController extends Controller
         
         try {
             $this->pondService->deletePond($pond);
-            return response()->json(['message' => 'Kolam berhasil dihapus']);
+            return response()->json(['message' => 'Unit / Kolam berhasil dihapus']);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }

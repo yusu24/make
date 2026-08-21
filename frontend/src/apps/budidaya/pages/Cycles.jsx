@@ -255,13 +255,13 @@ import {
            background: var(--accent-50); padding: 10px 16px; border-radius: 16px; text-align: center; border: 1px solid var(--accent-100);
         }
         .doc-num { display: block; font-size: 26px; font-weight: 950; color: var(--accent-600); line-height: 1; font-family: var(--font-heading); }
-        .doc-txt { font-size: 11px; font-weight: 900; color: var(--accent-500); text-transform: uppercase; letter-spacing: 0.1em; }
+        .doc-txt { font-size: 11px; font-weight: 700; color: var(--accent-500); }
 
         .stats-row { display: flex; gap: 24px; margin-bottom: 32px; }
         .s-item { flex: 1; }
-        .s-label { display: block; font-size: 11px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em; }
-        .s-val { font-size: 16px; font-weight: 900; color: var(--text-primary); }
-        .s-val small { font-size: 12px; color: var(--text-muted); font-weight: 700; }
+        .s-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+        .s-val { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+        .s-val small { font-size: 12px; color: var(--text-muted); font-weight: 600; }
 
         .progress-section { margin-bottom: 32px; }
         .p-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; color: var(--text-secondary); margin-bottom: 12px; }
@@ -286,7 +286,7 @@ import {
         }
 
         .premium-form-modern .form-group { margin-bottom: 24px; }
-        .premium-form-modern label { display: block; font-size: 13px; font-weight: 900; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.05em; }
+        .premium-form-modern label { display: block; font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
         .input-field { position: relative; background: var(--bg-elevated); border: 2px solid var(--border-subtle); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
         .input-field:focus-within { border-color: var(--accent-500); background: var(--bg-card); box-shadow: var(--shadow-sm); }
         .input-field input, .input-field select { width: 100%; border: none; background: transparent; outline: none; font-size: 15px; font-weight: 700; color: var(--text-primary); }

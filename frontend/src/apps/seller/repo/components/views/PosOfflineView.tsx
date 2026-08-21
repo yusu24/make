@@ -21,7 +21,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { Product, Order, OrderItem, OrderStatus } from '../../types';
-import { formatIDR } from '../../utils/formatters';
+import { formatIDR, formatNumberInput, parseFormattedNumber } from '../../utils/formatters';
 import { ThermalReceiptModal } from '../modals/ThermalReceiptModal';
 import api from '../../../../../services/api';
 import { usePagination } from '../../hooks/usePagination';
@@ -84,7 +84,7 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
   const [customerName, setCustomerName] = useState('Pelanggan Walk-In');
   const [customerPhone, setCustomerPhone] = useState('081299887766');
   const [paymentMethod, setPaymentMethod] = useState<'Tunai' | 'QRIS' | 'Transfer'>('Tunai');
-  const [cashAmountInput, setCashAmountInput] = useState<number>(0);
+  const [cashAmountInput, setCashAmountInput] = useState<string>('');
   const [cartDiscount, setCartDiscount] = useState<number>(0);
   const [includePpn, setIncludePpn] = useState(false);
 
@@ -176,8 +176,9 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
   const taxableSubtotal = Math.max(0, rawSubtotal - finalDiscount);
   const ppnAmount = includePpn ? Math.round(taxableSubtotal * 0.11) : 0;
   const grandTotal = taxableSubtotal + ppnAmount;
+  const parsedCash = parseFormattedNumber(cashAmountInput);
 
-  const cashChange = paymentMethod === 'Tunai' ? Math.max(0, cashAmountInput - grandTotal) : 0;
+  const cashChange = paymentMethod === 'Tunai' ? Math.max(0, parsedCash - grandTotal) : 0;
 
   // Process Transaction Checkout
   const handleCheckout = () => {
@@ -186,7 +187,7 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
       return;
     }
 
-    if (paymentMethod === 'Tunai' && cashAmountInput < grandTotal) {
+    if (paymentMethod === 'Tunai' && parsedCash < grandTotal) {
       alert(`Uang tunai kurang! Diperlukan minimal ${formatIDR(grandTotal)}.`);
       return;
     }
@@ -196,7 +197,7 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
       sku: item.product.sku,
       productName: item.product.name,
       quantity: item.quantity,
-      price: Math.round(item.product.hpp * 1.5),
+      price: item.product.priceOffline || Math.round(item.product.hpp * 1.5),
       image: item.product.image,
     }));
 
@@ -241,7 +242,7 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
 
     // Reset cart
     setCart([]);
-    setCashAmountInput(0);
+    setCashAmountInput('');
     setCartDiscount(0);
   };
 
@@ -373,7 +374,7 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
               {/* Product Cards Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[500px] lg:max-h-[68vh] overflow-y-auto pr-1 custom-scrollbar pt-1">
                 {filteredProducts.map((prod) => {
-                  const retailPrice = Math.round(prod.hpp * 1.5);
+                  const retailPrice = prod.priceOffline || Math.round(prod.hpp * 1.5);
                   const isOutOfStock = prod.totalStock <= 0;
 
                   return (
@@ -576,26 +577,26 @@ export const PosOfflineView: React.FC<PosOfflineViewProps> = ({
                     </div>
                     <div className="flex gap-2">
                       <input
-                        type="number"
-                        value={cashAmountInput || ''}
-                        onChange={(e) => setCashAmountInput(Number(e.target.value))}
-                        placeholder="Contoh: 100000"
+                        type="text"
+                        value={cashAmountInput}
+                        onChange={(e) => setCashAmountInput(formatNumberInput(e.target.value))}
+                        placeholder="Contoh: 100.000"
                         className="flex-1 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-lg border border-indigo-300 dark:border-indigo-700 font-mono font-semibold text-xs"
                       />
                       <button
-                        onClick={() => setCashAmountInput(grandTotal)}
+                        onClick={() => setCashAmountInput(formatNumberInput(grandTotal))}
                         className="px-2.5 py-1.5 bg-indigo-600 text-white text-[10px] font-semibold rounded-lg hover:bg-indigo-500"
                       >
                         Uang Pas
                       </button>
                       <button
-                        onClick={() => setCashAmountInput(100000)}
+                        onClick={() => setCashAmountInput(formatNumberInput(100000))}
                         className="px-2.5 py-1.5 bg-indigo-100 text-indigo-700 text-[10px] font-semibold rounded-lg hover:bg-indigo-200"
                       >
                         100rb
                       </button>
                     </div>
-                    {cashAmountInput > 0 && (
+                    {parsedCash > 0 && (
                       <div className="flex items-center justify-between text-xs font-semibold pt-1 border-t border-indigo-200 dark:border-indigo-800">
                         <span className="text-slate-600 dark:text-slate-300">Kembalian:</span>
                         <span className={cashChange >= 0 ? 'text-emerald-600 font-extrabold text-sm' : 'text-rose-600'}>

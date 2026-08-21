@@ -43,6 +43,9 @@ apiClient.interceptors.response.use(
                     isRedirecting = false;
                 }, 100);
             }
+        } else if (error.response?.status === 402) {
+            // Fire global event so SubscriptionLock can overlay the screen
+            window.dispatchEvent(new CustomEvent('subscription_expired'));
         }
         return Promise.reject(error);
     }

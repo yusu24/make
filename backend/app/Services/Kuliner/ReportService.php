@@ -46,6 +46,13 @@ class ReportService
         $revenue = (float) $orders->sum('total');
         $cogs = $this->cogsForOrderIds($orders->pluck('id')->all());
         $expenses = (float) KulinerExpense::where('tenant_id', $tenantId)
+            ->where('type', 'expense')
+            ->whereDate('date', '>=', $dateFrom)
+            ->whereDate('date', '<=', $dateTo)
+            ->sum('amount');
+            
+        $otherIncome = (float) KulinerExpense::where('tenant_id', $tenantId)
+            ->where('type', 'income')
             ->whereDate('date', '>=', $dateFrom)
             ->whereDate('date', '<=', $dateTo)
             ->sum('amount');
@@ -57,7 +64,8 @@ class ReportService
             'cogs' => $cogs,
             'gross_profit' => $grossProfit,
             'expenses' => $expenses,
-            'net_profit' => $grossProfit - $expenses,
+            'other_income' => $otherIncome,
+            'net_profit' => $grossProfit + $otherIncome - $expenses,
             'order_count' => $orders->count(),
         ];
     }

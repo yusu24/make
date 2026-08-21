@@ -20,4 +20,9 @@ class RetailPurchase extends Model
     {
         return $this->hasMany(RetailPurchaseItem::class, 'purchase_id');
     }
+
+    public function outlet()
+    {
+        return $this->belongsTo(RetailOutlet::class, 'outlet_id');
+    }
 }

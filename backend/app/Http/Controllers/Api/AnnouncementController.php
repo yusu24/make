@@ -76,19 +76,19 @@ class AnnouncementController extends Controller
     }
 
     /**
-     * Toggle published <-> draft status
+     * Get active published announcements targeted for current tenant
      */
-    public function togglePublish(Announcement $announcement)
+    public function activeForTenant(Request $request)
     {
-        $newStatus = $announcement->status === 'published' ? 'draft' : 'published';
-        $announcement->update(['status' => $newStatus]);
+        $user = $request->user();
+        $plan = strtolower($user?->tenant?->plan ?? 'free');
 
-        ActivityLog::record(
-            'toggle_announcement',
-            'Pengumuman: ' . $announcement->title . ' -> ' . strtoupper($newStatus),
-            'warning'
-        );
+        $announcements = Announcement::where('status', 'published')
+            ->whereIn('target', ['all', $plan])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
-        return response()->json(['success' => true, 'message' => 'Status diperbarui', 'data' => $announcement]);
+        return response()->json(['success' => true, 'data' => $announcements]);
     }
 }

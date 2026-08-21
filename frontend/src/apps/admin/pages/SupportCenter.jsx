@@ -3,6 +3,8 @@ import { api } from '../../../lib/api'
 import Modal from '../../../components/Modal'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import './Shared.css'
 
 const PRIORITY_BADGE = { high: 'badge-red', medium: 'badge-yellow', low: 'badge-gray' }
@@ -18,6 +20,23 @@ export default function SupportCenter() {
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
+  
+  const { impersonate } = useAuth()
+  const navigate = useNavigate()
+  const [impersonating, setImpersonating] = useState(null)
+
+  const handleImpersonate = async (tenantId) => {
+    if (!tenantId) return
+    setImpersonating(tenantId)
+    try {
+      const redirect = await impersonate(tenantId)
+      navigate(redirect)
+    } catch (err) {
+      alert('Gagal impersonate: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setImpersonating(null)
+    }
+  }
   
   // Create ticket states
   const [createOpen, setCreateOpen] = useState(false)
@@ -130,18 +149,7 @@ export default function SupportCenter() {
     <div className="animate-fade-in">
       {/* ── Header ── */}
       <div className="page-header">
-        <div>
-          <h2 className="page-title">Support Center</h2>
-          <p className="page-sub">Kelola tiket dukungan pelanggan dan permintaan bantuan.</p>
-        </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-secondary" onClick={fetchData} disabled={loading}>
-            🔄 Refresh
-          </button>
-          <button className="btn btn-primary" onClick={() => setCreateOpen(true)}>
-            + Buat Tiket
-          </button>
-        </div>
+        <h2 className="page-title">Support Center</h2>
       </div>
 
       {loading ? (
@@ -153,28 +161,45 @@ export default function SupportCenter() {
         </div>
       ) : (
         <>
-          {/* ── Stats ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 24 }}>
+          {/* ── Stats (5 Compact Cards in 1 Row) ── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+            gap: 12,
+            marginBottom: 20
+          }}>
             {[
-              { label: 'Tiket Baru', value: openCount, icon: '📬', color: '#3b82f6', desc: 'Menunggu respons admin' },
-              { label: 'Diproses', value: inProgressCount, icon: '⚙️', color: '#f59e0b', desc: 'Sedang ditangani staf' },
-              { label: 'Selesai', value: resolvedCount, icon: '✅', color: '#10b981', desc: 'Tiket berhasil ditutup' },
-              { label: 'Prioritas Tinggi', value: highPriorityCount, icon: '🔴', color: '#ef4444', desc: 'Butuh tindakan segera' },
+              { label: 'Total Tiket', value: tickets.length, icon: '🎫', color: '#3b82f6', desc: 'Semua tiket' },
+              { label: 'Tiket Baru', value: openCount, icon: '📬', color: '#6366f1', desc: 'Belum diproses' },
+              { label: 'Diproses', value: inProgressCount, icon: '⚙️', color: '#f59e0b', desc: 'Ditangani staf' },
+              { label: 'Selesai', value: resolvedCount, icon: '✅', color: '#10b981', desc: 'Tiket ditutup' },
+              { label: 'Prioritas Tinggi', value: highPriorityCount, icon: '🔴', color: '#ef4444', desc: 'Tindakan segera' },
             ].map(card => (
-              <div key={card.label} className="card card-pad" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+              <div
+                key={card.label}
+                className="card"
+                style={{
+                  padding: '14px 16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  minWidth: 0
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{
-                    width: 44, height: 44, borderRadius: 12,
-                    background: card.color + '20',
+                    width: 36, height: 36, borderRadius: 10,
+                    background: card.color + '18',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 22, color: card.color, flexShrink: 0
+                    fontSize: 18, color: card.color, flexShrink: 0
                   }}>{card.icon}</div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{card.label}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.2 }}>{card.desc}</div>
+                  <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{card.label}</div>
+                    <div style={{ fontSize: 10.5, color: 'var(--text-muted)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{card.desc}</div>
                   </div>
                 </div>
-                <div style={{ fontSize: 24, fontWeight: 600, color: card.color, lineHeight: 1 }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: card.color, lineHeight: 1 }}>
                   {card.value}
                 </div>
               </div>
@@ -183,9 +208,8 @@ export default function SupportCenter() {
 
           {/* ── Filters + Table ── */}
           <div className="card card-pad" style={{ padding: 0 }}>
-            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>🎫 Daftar Tiket</h3>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
                 <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
                   <span className="search-icon">🔍</span>
                   <input className="form-input search-input" placeholder="Cari tiket..." value={search} onChange={e => setSearch(e.target.value)} />
@@ -197,6 +221,15 @@ export default function SupportCenter() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <button className="btn btn-secondary" onClick={fetchData} disabled={loading}>
+                  🔄 Refresh
+                </button>
+                <button className="btn btn-primary" onClick={() => setCreateOpen(true)}>
+                  + Buat Tiket
+                </button>
               </div>
             </div>
             <div className="table-responsive">
@@ -226,6 +259,17 @@ export default function SupportCenter() {
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => setSelected(t)} title="Lihat Detail">👁</button>
+                          {t.tenant_id && (
+                            <button
+                              className="btn btn-primary btn-sm"
+                              onClick={() => handleImpersonate(t.tenant_id)}
+                              disabled={impersonating === t.tenant_id}
+                              title="Login Sebagai Tenant Ini"
+                              style={{ padding: '0 8px' }}
+                            >
+                              {impersonating === t.tenant_id ? '⏳' : '🔑'}
+                            </button>
+                          )}
                           {t.status === 'open' && (
                             <button className="btn btn-primary btn-sm" style={{ fontSize: 11 }} onClick={() => handleUpdateStatus(t.id, 'in_progress')} title="Proses Tiket">⚙️</button>
                           )}

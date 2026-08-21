@@ -69,8 +69,7 @@ export default function Categories() {
 
   return (
     <div className="retail-page-classic">
-
-      {/* ── Table card ── */}
+      {/* Page Title Handled by Navtop */}
       <div className="card table-wrap animate-fade-in">
 
         {/* Toolbar — responsive */}
@@ -82,7 +81,7 @@ export default function Categories() {
           borderBottom: '1px solid var(--retail-border, #e2e8f0)',
         }}>
           {/* Add button */}
-          <button
+          <button title="Tambah Kategori"
             className="btn btn-primary"
             style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
             onClick={() => setShowAddModal(true)}

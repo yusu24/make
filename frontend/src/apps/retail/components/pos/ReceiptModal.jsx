@@ -53,7 +53,7 @@ export default function ReceiptModal({ isOpen, order, outletName, cashierName, r
               {(order.items || []).map((item, idx) => (
                 <div key={idx} className="space-y-0.5">
                   <div className="flex justify-between font-normal">
-                    <span className="truncate max-w-[180px]">{item.product?.name || 'Produk'}</span>
+                    <span className="truncate max-w-[180px]">{item.product?.name || 'Produk'}{item.unit ? ` (${item.unit})` : ''}</span>
                     <span className="font-semibold">{fmtRp(item.subtotal)}</span>
                   </div>
                   <div className="text-[8px] text-slate-500">{Math.round(item.qty)} x {fmtRp(item.price)}</div>

@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
 import SubscriptionLock from '../components/SubscriptionLock'
+import AnnouncementModal from '../components/AnnouncementModal'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -80,6 +81,7 @@ export default function DashboardLayout() {
         )}
         <main className={`page-content ${pathname.startsWith('/retail') || isPosPage ? 'page-content--retail' : ''} ${isPosPage ? 'page-content--full' : ''}`}>
           <SubscriptionLock status={user?.subscription_status} daysLeft={user?.subscription_days_left} />
+          <AnnouncementModal />
           <Outlet context={{ onMenuToggle: () => {
             if (window.innerWidth < 768) setMobileOpen(v => !v)
             else setCollapsed(v => !v)

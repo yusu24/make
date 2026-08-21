@@ -10,6 +10,7 @@ class KulinerExpense extends Model
         'tenant_id',
         'date',
         'category',
+        'type',
         'description',
         'amount'
     ];

@@ -53,6 +53,37 @@ export default function ProductGrid({ products, categories, cart, cashierName, o
             placeholder="Cari produk (nama/SKU)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const q = search.trim().toLowerCase();
+                if (!q) return;
+
+                let matchedProduct = null;
+                let matchedUnit = null;
+
+                for (let p of products) {
+                  if (p.sku && p.sku.toLowerCase() === q) {
+                    matchedProduct = p;
+                    break;
+                  }
+                  if (p.multi_units && p.multi_units.length > 0) {
+                    for (let mu of p.multi_units) {
+                      if (mu.barcode && mu.barcode.toLowerCase() === q) {
+                        matchedProduct = p;
+                        matchedUnit = mu;
+                        break;
+                      }
+                    }
+                  }
+                  if (matchedProduct) break;
+                }
+
+                if (matchedProduct) {
+                  onAddItem(matchedProduct, matchedUnit);
+                  setSearch('');
+                }
+              }
+            }}
             aria-label="Cari produk"
           />
         </div>

@@ -45,7 +45,7 @@ export default function Dashboard() {
     <div className="aq-container">
 
       {/* ── KPI Cards ── */}
-      <div className="aq-grid-4">
+      <div className="aq-grid-3">
 
         {/* Total Kolam / Lahan */}
         <div style={cardStyle}>
@@ -89,20 +89,6 @@ export default function Dashboard() {
           <p className="aq-kpi-value">16:30</p>
           <p style={{ fontSize: 12, color: '#475569', marginTop: 6 }}>
             {terms.nextFeedDetail}
-          </p>
-        </div>
-
-        {/* Suhu Rata-rata */}
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-            <div style={iconBox('#E0F2FE', '#0EA5E9')}>
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>thermostat</span>
-            </div>
-          </div>
-          <p className="aq-kpi-label">{terms.tempAvgLabel}</p>
-          <p className="aq-kpi-value">{terms.isTanaman ? '26.4°C' : '28.5°C'}</p>
-          <p style={{ fontSize: 12, color: '#059669', marginTop: 6 }}>
-            {terms.idealConditionLabel}
           </p>
         </div>
       </div>
@@ -179,28 +165,12 @@ export default function Dashboard() {
               </div>
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1C1A', margin: 0 }}>
-                  {terms.isTanaman ? 'Penyiraman Selesai' : 'Penggantian Air Selesai'}
+                  {terms.alert1Title}
                 </p>
                 <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>
-                  {terms.isTanaman ? `${terms.unit} A1 telah mencapai target kelembaban.` : `Kolam A1 telah mencapai level target.`}
+                  {terms.alert1Desc}
                 </p>
-                <p style={{ fontSize: 10, color: '#64748B', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>10 Menit lalu</p>
-              </div>
-            </div>
-
-            {/* Notif 2 – alert */}
-            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: '#FFF8F8', borderRadius: 10, padding: '10px 12px', borderLeft: '3px solid #EF4444', margin: '0 -4px' }}>
-              <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 17, color: '#EF4444' }}>{terms.isTanaman ? 'sensors_off' : 'bolt'}</span>
-              </div>
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#DC2626', margin: 0 }}>
-                  {terms.isTanaman ? 'Sensor Offline' : 'Gagal Pompa Udara'}
-                </p>
-                <p style={{ fontSize: 12, color: '#EF4444', marginTop: 2 }}>
-                  {terms.isTanaman ? `Periksa baterai sensor di ${terms.unit} B3!` : `Periksa sambungan listrik Kolam B3!`}
-                </p>
-                <p style={{ fontSize: 10, color: '#FCA5A5', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>2 Jam lalu</p>
+                <p style={{ fontSize: 11, color: '#64748B', marginTop: 4, fontWeight: 500 }}>10 menit lalu</p>
               </div>
             </div>
 
@@ -216,7 +186,7 @@ export default function Dashboard() {
                 <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>
                   {terms.isTanaman ? 'Tersisa 5kg untuk Pupuk Benih/Bibit.' : 'Tersisa 5kg untuk Pakan Benih.'}
                 </p>
-                <p style={{ fontSize: 10, color: '#64748B', marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>5 Jam lalu</p>
+                <p style={{ fontSize: 11, color: '#64748B', marginTop: 4, fontWeight: 500 }}>5 jam lalu</p>
               </div>
             </div>
           </div>
@@ -277,14 +247,6 @@ export default function Dashboard() {
                 </div>
                 <span style={badge('#D1FAE5', '#059669')}>SEHAT</span>
               </div>
-              <div style={{ display: 'flex', gap: 20, marginTop: 14, paddingTop: 12, borderTop: '1px solid #F1F5F9' }}>
-                {terms.mockKPIs.map(({ label, val }) => (
-                  <div key={label}>
-                    <p style={{ fontSize: 9, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
-                    <p style={{ fontSize: 13, fontWeight: 800, color: '#1A1C1A', margin: '2px 0 0' }}>{val}</p>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -300,14 +262,6 @@ export default function Dashboard() {
                   <p style={{ fontSize: 11, color: '#64748B', marginTop: 3 }}>{terms.mockB3Details}</p>
                 </div>
                 <span style={badge('#FEE2E2', '#EF4444')}>PERHATIAN</span>
-              </div>
-              <div style={{ display: 'flex', gap: 20, marginTop: 14, paddingTop: 12, borderTop: '1px solid #FEF2F2' }}>
-                {terms.mockB3KPIs.map(({ label, val, alert }) => (
-                  <div key={label}>
-                    <p style={{ fontSize: 9, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
-                    <p style={{ fontSize: 13, fontWeight: 800, color: alert ? '#EF4444' : '#1A1C1A', margin: '2px 0 0' }}>{val}</p>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
@@ -328,11 +282,9 @@ const cardStyle = {
 }
 
 const kpiLabel = {
-  fontSize: 10,
-  fontWeight: 700,
+  fontSize: 12,
+  fontWeight: 600,
   color: '#64748B',
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
   margin: 0,
 }
 
@@ -362,11 +314,9 @@ function badge(bg, color) {
   return {
     background: bg,
     color: color,
-    fontSize: 9,
-    fontWeight: 800,
+    fontSize: 11,
+    fontWeight: 700,
     padding: '3px 8px',
     borderRadius: 999,
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
   }
 }

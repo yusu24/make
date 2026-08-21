@@ -148,13 +148,7 @@ export default function Finance() {
     <div className="animate-fade-in">
       {/* ── Header ── */}
       <div className="page-header">
-        <div>
-          <h2 className="page-title">Finance</h2>
-          <p className="page-sub">Ringkasan pendapatan, invoice, dan rekonsiliasi pembayaran SaaS.</p>
-        </div>
-        <button className="btn btn-secondary" onClick={fetchData} disabled={loading}>
-          🔄 Refresh
-        </button>
+        <h2 className="page-title">Finansial &amp; Faktur</h2>
       </div>
 
       {loading ? (
@@ -213,6 +207,9 @@ export default function Finance() {
                       </button>
                     ))}
                   </div>
+                  <button className="btn btn-secondary btn-sm" onClick={fetchData} disabled={loading} style={{ height: 38 }}>
+                    🔄 Refresh
+                  </button>
                 </div>
               </div>
             </div>

@@ -130,41 +130,41 @@ export default function Users() {
     <>
       <div className="animate-fade-in">
         {/* Page header */}
-      <div className="page-header">
-        <div>
+        <div className="page-header">
           <h2 className="page-title">Manajemen Pengguna</h2>
-          <p className="page-sub">{users.length} total pengguna terdaftar</p>
         </div>
-        <button id="btn-add-user" className="btn btn-primary" onClick={() => setShowModal(true)}>
-          + Tambah Pengguna
-        </button>
-      </div>
 
-      {/* Filters */}
-      <div className="filter-bar">
-        <div className="search-wrap">
-          <span className="search-icon">🔍</span>
-          <input
-            id="input-search-users"
-            className="form-input search-input"
-            placeholder="Cari nama atau email..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+        {/* Filters + Action Toolbar */}
+        <div className="filter-bar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
+            <div className="search-wrap">
+              <span className="search-icon">🔍</span>
+              <input
+                id="input-search-users"
+                className="form-input search-input"
+                placeholder="Cari nama atau email..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="filter-tabs">
+              {['all','active','pending','inactive'].map(f => (
+                <button
+                  key={f}
+                  id={`filter-${f}`}
+                  className={`filter-tab ${filter === f ? 'filter-tab--active' : ''}`}
+                  onClick={() => setFilter(f)}
+                >
+                  {f === 'all' ? 'Semua' : f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button id="btn-add-user" className="btn btn-primary" onClick={() => setShowModal(true)}>
+            + Tambah Pengguna
+          </button>
         </div>
-        <div className="filter-tabs">
-          {['all','active','pending','inactive'].map(f => (
-            <button
-              key={f}
-              id={`filter-${f}`}
-              className={`filter-tab ${filter === f ? 'filter-tab--active' : ''}`}
-              onClick={() => setFilter(f)}
-            >
-              {f === 'all' ? 'Semua' : f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Table */}
       <div className="table-wrap table-responsive">

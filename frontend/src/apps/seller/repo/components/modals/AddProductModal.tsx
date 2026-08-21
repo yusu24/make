@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Package, Upload, Trash2 } from 'lucide-react';
 import { Product } from '../../types';
 import api from '../../../../../services/api';
+import { formatNumberInput, parseFormattedNumber } from '../../utils/formatters';
 
 interface CategoryOption {
   id: number;
@@ -17,7 +18,10 @@ interface AddProductModalProps {
     unit: string;
     categoryId: string;
     hpp: number;
-    priceSell: number;
+    priceOffline: number;
+    priceShopee: number;
+    priceTokopedia: number;
+    priceTiktok: number;
     stockMin: number;
     totalStock?: number;
   }, idToEdit?: string) => void;
@@ -39,7 +43,10 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const [unit, setUnit] = useState('Pcs');
   const [categoryId, setCategoryId] = useState('');
   const [hpp, setHpp] = useState('');
-  const [priceSell, setPriceSell] = useState('');
+  const [priceOffline, setPriceOffline] = useState('');
+  const [priceShopee, setPriceShopee] = useState('');
+  const [priceTokopedia, setPriceTokopedia] = useState('');
+  const [priceTiktok, setPriceTiktok] = useState('');
   const [stockMin, setStockMin] = useState('5');
   const [totalStock, setTotalStock] = useState('0');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -58,9 +65,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       setName(productToEdit.name);
       setUnit(productToEdit.unit || 'Pcs');
       setCategoryId(productToEdit.categoryId || '');
-      setHpp(productToEdit.hpp.toString());
-      setPriceSell(productToEdit.priceShopee.toString());
-      setStockMin(productToEdit.stockMin.toString());
+      setHpp(formatNumberInput((productToEdit.hpp || 0).toString()));
+      setPriceOffline(formatNumberInput((productToEdit.priceOffline || productToEdit.priceShopee || 0).toString()));
+      setPriceShopee(formatNumberInput((productToEdit.priceShopee || 0).toString()));
+      setPriceTokopedia(formatNumberInput((productToEdit.priceTokopedia || 0).toString()));
+      setPriceTiktok(formatNumberInput((productToEdit.priceTiktok || 0).toString()));
+      setStockMin(formatNumberInput((productToEdit.stockMin || 0).toString()));
       setImageUrl(productToEdit.rawImageUrl);
     } else {
       setSku('');
@@ -68,7 +78,10 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       setUnit('Pcs');
       setCategoryId('');
       setHpp('');
-      setPriceSell('');
+      setPriceOffline('');
+      setPriceShopee('');
+      setPriceTokopedia('');
+      setPriceTiktok('');
       setStockMin('5');
       setTotalStock('0');
       setImageUrl(null);
@@ -122,10 +135,13 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         name,
         unit,
         categoryId,
-        hpp: Number(hpp) || 0,
-        priceSell: Number(priceSell) || 0,
-        stockMin: Number(stockMin) || 0,
-        ...(isEdit ? {} : { totalStock: Number(totalStock) || 0 }),
+        hpp: parseFormattedNumber(hpp),
+        priceOffline: parseFormattedNumber(priceOffline),
+        priceShopee: parseFormattedNumber(priceShopee),
+        priceTokopedia: parseFormattedNumber(priceTokopedia),
+        priceTiktok: parseFormattedNumber(priceTiktok),
+        stockMin: parseFormattedNumber(stockMin),
+        ...(isEdit ? {} : { totalStock: parseFormattedNumber(totalStock) }),
       },
       productToEdit ? productToEdit.id : undefined
     );
@@ -235,23 +251,59 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">HPP / Modal (Rp)</label>
               <input
-                type="number"
-                placeholder="35000"
+                type="text"
+                placeholder="35.000"
                 value={hpp}
-                onChange={(e) => setHpp(e.target.value)}
+                onChange={(e) => setHpp(formatNumberInput(e.target.value))}
                 required
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold text-indigo-600"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Jual (Rp)</label>
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Toko Offline (Rp)</label>
               <input
-                type="number"
-                placeholder="50000"
-                value={priceSell}
-                onChange={(e) => setPriceSell(e.target.value)}
+                type="text"
+                placeholder="50.000"
+                value={priceOffline}
+                onChange={(e) => setPriceOffline(formatNumberInput(e.target.value))}
                 required
-                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold text-emerald-600"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold text-indigo-600"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block font-semibold text-orange-600 dark:text-orange-400 mb-1">Shopee (Rp)</label>
+              <input
+                type="text"
+                placeholder="0"
+                value={priceShopee}
+                onChange={(e) => setPriceShopee(formatNumberInput(e.target.value))}
+                required
+                className="w-full px-3 py-2 rounded-xl bg-orange-50 dark:bg-slate-900 border border-orange-200 dark:border-orange-900/50 font-semibold text-orange-600"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-emerald-600 dark:text-emerald-400 mb-1">Tokopedia (Rp)</label>
+              <input
+                type="text"
+                placeholder="0"
+                value={priceTokopedia}
+                onChange={(e) => setPriceTokopedia(formatNumberInput(e.target.value))}
+                required
+                className="w-full px-3 py-2 rounded-xl bg-emerald-50 dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/50 font-semibold text-emerald-600"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-900 dark:text-slate-100 mb-1">TikTok (Rp)</label>
+              <input
+                type="text"
+                placeholder="0"
+                value={priceTiktok}
+                onChange={(e) => setPriceTiktok(formatNumberInput(e.target.value))}
+                required
+                className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 font-semibold text-slate-800 dark:text-slate-200"
               />
             </div>
           </div>
@@ -261,10 +313,10 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
               <div>
                 <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Stok Awal</label>
                 <input
-                  type="number"
+                  type="text"
                   placeholder="0"
                   value={totalStock}
-                  onChange={(e) => setTotalStock(e.target.value)}
+                  onChange={(e) => setTotalStock(formatNumberInput(e.target.value))}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold"
                 />
               </div>
@@ -272,10 +324,10 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             <div className={isEdit ? 'col-span-2' : ''}>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Stok Minimum (Peringatan)</label>
               <input
-                type="number"
+                type="text"
                 placeholder="5"
                 value={stockMin}
-                onChange={(e) => setStockMin(e.target.value)}
+                onChange={(e) => setStockMin(formatNumberInput(e.target.value))}
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold"
               />
             </div>

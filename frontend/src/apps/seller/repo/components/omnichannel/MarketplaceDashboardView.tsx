@@ -13,6 +13,8 @@ import {
   X,
   Check
 } from 'lucide-react';
+import { ConnectMarketplaceModal } from '../modals/ConnectMarketplaceModal';
+
 
 interface StoreItem {
   id: number;
@@ -280,88 +282,10 @@ export const MarketplaceDashboardView: React.FC<{ onNavigateToConnected?: () => 
       </div>
 
       {/* Interactive Modal: Tambah Toko Baru */}
-      {isAddStoreModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
-              <div className="flex items-center gap-2">
-                <LinkIcon className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Hubungkan Toko Marketplace Baru
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsAddStoreModalOpen(false)}
-                className="p-1 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddStore} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Pilih Platform Marketplace
-                </label>
-                <select
-                  value={newStoreData.platform}
-                  onChange={(e) => setNewStoreData({ ...newStoreData, platform: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-white font-semibold focus:outline-none"
-                >
-                  <option value="Shopee">Shopee</option>
-                  <option value="Tokopedia">Tokopedia</option>
-                  <option value="TikTok Shop">TikTok Shop</option>
-                  <option value="Lazada">Lazada</option>
-                  <option value="Blibli">Blibli</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Nama Toko (Official Name)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Toko Elektronik Budi Official"
-                  value={newStoreData.shopName}
-                  onChange={(e) => setNewStoreData({ ...newStoreData, shopName: e.target.value })}
-                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Shop ID / App Key (Opsional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Contoh: SHP-99201"
-                  value={newStoreData.shopId}
-                  onChange={(e) => setNewStoreData({ ...newStoreData, shopId: e.target.value })}
-                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddStoreModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition-all cursor-pointer flex items-center gap-1.5"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Hubungkan Toko</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <ConnectMarketplaceModal
+        isOpen={isAddStoreModalOpen}
+        onClose={() => setIsAddStoreModalOpen(false)}
+      />
     </div>
   );
 };

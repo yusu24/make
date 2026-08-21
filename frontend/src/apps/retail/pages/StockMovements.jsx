@@ -44,6 +44,8 @@ export default function StockMovements() {
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
@@ -59,10 +61,29 @@ export default function StockMovements() {
 
   useEffect(() => { fetchData(); }, [typeFilter]);
 
-  const filteredMovements = movements.filter(m =>
-    (m.product?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (m.note || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredMovements = movements.filter(m => {
+    const matchesSearch = (m.product?.name || '').toLowerCase().includes(search.toLowerCase()) ||
+                          (m.note || '').toLowerCase().includes(search.toLowerCase());
+    
+    const mDate = new Date(m.created_at);
+    mDate.setHours(0, 0, 0, 0);
+
+    let matchesStart = true;
+    if (startDate) {
+      const sDate = new Date(startDate);
+      sDate.setHours(0, 0, 0, 0);
+      matchesStart = mDate >= sDate;
+    }
+
+    let matchesEnd = true;
+    if (endDate) {
+      const eDate = new Date(endDate);
+      eDate.setHours(0, 0, 0, 0);
+      matchesEnd = mDate <= eDate;
+    }
+
+    return matchesSearch && matchesStart && matchesEnd;
+  });
 
   const {
     currentPage,
@@ -79,7 +100,7 @@ export default function StockMovements() {
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
       <div className="card table-wrap animate-fade-in">
-        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)', flexWrap: 'wrap' }}>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
               placeholder="Cari produk/catatan..."
@@ -91,6 +112,23 @@ export default function StockMovements() {
             <option value="">Semua Tipe</option>
             {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={startDate} 
+              onChange={e => setStartDate(e.target.value)} 
+              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>-</span>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={endDate} 
+              onChange={e => setEndDate(e.target.value)} 
+              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+            />
+          </div>
           <button onClick={fetchData} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }}>
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
           </button>

@@ -73,14 +73,14 @@ function EditPlanModal({ plan, categorySlug, onClose, onSave, saving }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal--lg" onClick={e => e.stopPropagation()} style={{ maxWidth: 580 }}>
         {/* Header */}
-        <div style={{
+        <div className="plan-card-header" style={{
           background: pres.gradient, padding: '20px 24px', borderRadius: '12px 12px 0 0',
-          color: '#fff', display: 'flex', alignItems: 'center', gap: 12, margin: '-24px -24px 24px'
+          color: '#ffffff', display: 'flex', alignItems: 'center', gap: 12, margin: '-24px -24px 24px'
         }}>
           <span style={{ fontSize: 28 }}>{pres.icon}</span>
           <div>
-            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Edit Paket — {plan.name}</h3>
-            <p style={{ margin: 0, fontSize: 12, opacity: 0.85 }}>{pres.tagline}</p>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#ffffff' }}>Edit Paket — {plan.name}</h3>
+            <p style={{ margin: 0, fontSize: 12, opacity: 0.9, color: '#ffffff' }}>{pres.tagline}</p>
           </div>
         </div>
 
@@ -203,15 +203,15 @@ function PlanCard({ plan, categorySlug, onEdit }) {
       )}
 
       {/* Header */}
-      <div style={{ background: pres.gradient, padding: '24px 24px 20px', color: '#fff' }}>
+      <div className="plan-card-header" style={{ background: pres.gradient, padding: '24px 24px 20px', color: '#ffffff' }}>
         <div style={{ fontSize: 30, marginBottom: 8 }}>{pres.icon}</div>
-        <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4, margin: '0 0 4px' }}>{plan.name}</h3>
-        <p style={{ fontSize: 12, opacity: 0.85, margin: '0 0 14px' }}>{pres.tagline}</p>
+        <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4, margin: '0 0 4px', color: '#ffffff' }}>{plan.name}</h3>
+        <p style={{ fontSize: 12, opacity: 0.9, margin: '0 0 14px', color: '#ffffff' }}>{pres.tagline}</p>
         <div>
-          <span style={{ fontSize: 30, fontWeight: 600 }}>
+          <span style={{ fontSize: 30, fontWeight: 700, color: '#ffffff' }}>
             {plan.price === null ? 'Global' : fmtPrice(plan.price)}
           </span>
-          {plan.price > 0 && <span style={{ fontSize: 13, opacity: 0.8 }}> / bulan</span>}
+          {plan.price > 0 && <span style={{ fontSize: 13, opacity: 0.85, color: '#ffffff' }}> / bulan</span>}
         </div>
       </div>
 
@@ -473,57 +473,59 @@ export default function PackagesFeatures() {
       )}
 
       {/* ── Header ── */}
-      <div className="page-header" style={{ marginBottom: 20 }}>
-        <div>
-          <h2 className="page-title">Packages &amp; Features</h2>
-          <p className="page-sub">Kelola paket langganan, harga, dan fitur per kategori bisnis.</p>
+      <div className="page-header">
+        <h2 className="page-title">Paket &amp; Fitur</h2>
+      </div>
+
+      {/* ── Category & View Mode Toolbar ── */}
+      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+        {/* Category Tabs */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {CATEGORIES.map(cat => {
+            const isActive = activeCategory === cat.slug
+            return (
+              <button
+                key={cat.slug}
+                onClick={() => handleCategorySwitch(cat.slug)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 14px', borderRadius: 8, border: 'none',
+                  cursor: 'pointer', fontWeight: 600, fontSize: 13, fontFamily: 'inherit',
+                  transition: 'all 0.18s',
+                  background: isActive ? cat.gradient : 'var(--bg-elevated)',
+                  color: isActive ? '#fff' : 'var(--text-secondary)',
+                  boxShadow: isActive ? `0 4px 14px ${cat.color}40` : 'none',
+                  transform: isActive ? 'translateY(-1px)' : 'none',
+                }}
+              >
+                <span style={{ fontSize: 15 }}>{cat.icon}</span>
+                <span>{cat.name}</span>
+                {plansByCategory[cat.slug] && (
+                  <span style={{
+                    background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--bg-surface)',
+                    color: isActive ? '#fff' : 'var(--text-muted)',
+                    borderRadius: 99, fontSize: 11, fontWeight: 600,
+                    padding: '1px 6px', minWidth: 18, textAlign: 'center'
+                  }}>
+                    {plansByCategory[cat.slug].length}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+
+        {/* View Mode Toggle */}
+        <div className="filter-tabs">
           <button
-            className={`btn btn-sm ${activeView === 'cards' ? 'btn-primary' : 'btn-secondary'}`}
+            className={`filter-tab ${activeView === 'cards' ? 'filter-tab--active' : ''}`}
             onClick={() => setActiveView('cards')}
           >📦 Kartu Paket</button>
           <button
-            className={`btn btn-sm ${activeView === 'matrix' ? 'btn-primary' : 'btn-secondary'}`}
+            className={`filter-tab ${activeView === 'matrix' ? 'filter-tab--active' : ''}`}
             onClick={() => setActiveView('matrix')}
           >📋 Matriks Fitur</button>
         </div>
-      </div>
-
-      {/* ── Category Tabs ── */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
-        {CATEGORIES.map(cat => {
-          const isActive = activeCategory === cat.slug
-          return (
-            <button
-              key={cat.slug}
-              onClick={() => handleCategorySwitch(cat.slug)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '10px 18px', borderRadius: 10, border: 'none',
-                cursor: 'pointer', fontWeight: 600, fontSize: 13, fontFamily: 'inherit',
-                transition: 'all 0.18s',
-                background: isActive ? cat.gradient : 'var(--bg-elevated)',
-                color: isActive ? '#fff' : 'var(--text-secondary)',
-                boxShadow: isActive ? `0 4px 14px ${cat.color}40` : 'none',
-                transform: isActive ? 'translateY(-1px)' : 'none',
-              }}
-            >
-              <span style={{ fontSize: 16 }}>{cat.icon}</span>
-              <span>{cat.name}</span>
-              {plansByCategory[cat.slug] && (
-                <span style={{
-                  background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--bg-surface)',
-                  color: isActive ? '#fff' : 'var(--text-muted)',
-                  borderRadius: 99, fontSize: 11, fontWeight: 600,
-                  padding: '1px 7px', minWidth: 20, textAlign: 'center'
-                }}>
-                  {plansByCategory[cat.slug].length}
-                </span>
-              )}
-            </button>
-          )
-        })}
       </div>
 
       {/* ── Category Banner ── */}

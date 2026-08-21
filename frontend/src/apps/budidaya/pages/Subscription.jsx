@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
 export default function Subscription() {
   const { user } = useAuth();
@@ -208,8 +209,8 @@ export default function Subscription() {
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
               <div>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#2D6A4F', letterSpacing: '0.05em', textTransform: 'uppercase', background: '#E8F5ED', padding: '6px 14px', borderRadius: 20 }}>Paket Langganan</span>
-                <h1 style={{ fontSize: 36, fontWeight: 900, color: '#1B4332', margin: '8px 0 0 0', letterSpacing: '-0.03em' }}>{currentPlan.toUpperCase()}</h1>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#2D6A4F', background: '#E8F5ED', padding: '6px 14px', borderRadius: 20 }}>Paket Langganan</span>
+                <h1 style={{ fontSize: 32, fontWeight: 900, color: '#1B4332', margin: '8px 0 0 0', letterSpacing: '-0.02em', textTransform: 'capitalize' }}>{currentPlan}</h1>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>Status Layanan</div>
@@ -348,7 +349,7 @@ export default function Subscription() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ background: '#F8FAFC', padding: '16px 20px', borderRadius: 16, border: '1px solid #E2E8F0', position: 'relative' }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 4 }}>Bank Transfer</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>Bank Transfer</div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: '#1B4332' }}>{globalSettings?.bank_name || 'BANK BCA'}</div>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
@@ -397,14 +398,14 @@ export default function Subscription() {
 
             <div style={{ textAlign: 'center', padding: '16px 0 24px 0' }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>💳</div>
-              <div style={{ fontSize: 13, color: '#64748b', marginBottom: 4 }}>Anda memilih paket <strong style={{ color: '#1B4332' }}>{selectedPlan?.toUpperCase()}</strong></div>
+              <div style={{ fontSize: 13, color: '#64748b', marginBottom: 4 }}>Anda memilih paket <strong style={{ color: '#1B4332', textTransform: 'capitalize' }}>{selectedPlan}</strong></div>
               <div style={{ fontSize: 32, fontWeight: 900, color: '#1B4332' }}>
                 {getPlanPriceInfo(selectedPlan).display}
               </div>
             </div>
 
             <div style={{ background: '#F8FAFC', padding: 20, borderRadius: 16, border: '1px solid #E2E8F0', marginBottom: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#2D6A4F', textTransform: 'uppercase', marginBottom: 8 }}>Instruksi Pembayaran:</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#2D6A4F', marginBottom: 8 }}>Instruksi Pembayaran:</div>
               <div style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.5, marginBottom: 12 }}>Lakukan transfer ke rekening berikut:</div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: 10 }}>

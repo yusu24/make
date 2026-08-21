@@ -42,6 +42,10 @@ Route::get('landing-settings', [LandingSettingController::class, 'get']);
 Route::get('testimonials/public', [TestimonialController::class, 'publicIndex']);
 Route::post('testimonials/public-submit', [TestimonialController::class, 'publicSubmit']);
 
+// Public Payment Gateway Webhook & Sandbox Simulator
+Route::post('payment/webhook', [\App\Http\Controllers\Api\PaymentWebhookController::class, 'handleWebhook']);
+Route::post('payment/simulate-pay', [\App\Http\Controllers\Api\PaymentWebhookController::class, 'simulatePayment']);
+
 // ─── AUTHENTICATED ROUTES ────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () {
 
@@ -55,8 +59,10 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::post('impersonate/{id}', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonateUser']);
     });
 
-    // Profile
+    // Profile & Settings
     Route::put('profile', [ProfileController::class, 'update']);
+    Route::get('settings/kyc', [\App\Http\Controllers\Api\TenantKycController::class, 'index']);
+    Route::post('settings/kyc', [\App\Http\Controllers\Api\TenantKycController::class, 'upload']);
     Route::get('logs', [ActivityLogController::class, 'index']);
 
     // Notifications
@@ -104,8 +110,8 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     Route::get('subscription/current', [SubscriptionRequestController::class, 'current']);
     Route::post('subscription/request', [SubscriptionRequestController::class, 'store']);
 
-    // Core System Routes (Protected by Tenant Isolation)
-    Route::middleware(['tenant'])->group(function () {
+    // Core System Routes (Protected by Tenant Isolation & Subscription)
+    Route::middleware(['tenant', 'subscription'])->group(function () {
         
         // Tenant Support Center (All Tenants)
         Route::prefix('support')->group(function () {
@@ -113,28 +119,66 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::post('tickets', [\App\Http\Controllers\Api\TenantSupportController::class, 'store']);
         });
 
+        // ─── CORE FINANCE ENDPOINTS (Agnostic / Core Module) ──────────────────
+        Route::prefix('finance')->group(function () {
+            Route::get('accounts', [\App\Http\Controllers\Api\CoreFinanceController::class, 'getAccounts']);
+            Route::post('accounts', [\App\Http\Controllers\Api\CoreFinanceController::class, 'storeAccount']);
+            
+            Route::get('categories', [\App\Http\Controllers\Api\CoreFinanceController::class, 'getCategories']);
+            
+            Route::get('incomes', [\App\Http\Controllers\Api\CoreFinanceController::class, 'getIncomes']);
+            Route::post('incomes', [\App\Http\Controllers\Api\CoreFinanceController::class, 'storeIncome']);
+            Route::post('incomes/{id}/post', [\App\Http\Controllers\Api\CoreFinanceController::class, 'postIncome']);
+            
+            Route::get('expenses', [\App\Http\Controllers\Api\CoreFinanceController::class, 'getExpenses']);
+            Route::post('expenses', [\App\Http\Controllers\Api\CoreFinanceController::class, 'storeExpense']);
+            Route::post('expenses/{id}/post', [\App\Http\Controllers\Api\CoreFinanceController::class, 'postExpense']);
+            
+            Route::get('transfers', [\App\Http\Controllers\Api\CoreFinanceController::class, 'getTransfers']);
+            Route::post('transfers', [\App\Http\Controllers\Api\CoreFinanceController::class, 'storeTransfer']);
+            Route::post('transfers/{id}/post', [\App\Http\Controllers\Api\CoreFinanceController::class, 'postTransfer']);
+            
+            // Phase 2: Receivables & Payables
+            Route::get('receivables', [\App\Http\Controllers\Api\Finance\PayableReceivableController::class, 'getReceivables']);
+            Route::post('receivables', [\App\Http\Controllers\Api\Finance\PayableReceivableController::class, 'storeReceivable']);
+            Route::post('receivables/{id}/payments', [\App\Http\Controllers\Api\Finance\PayableReceivableController::class, 'storeReceivablePayment']);
+            
+            Route::get('payables', [\App\Http\Controllers\Api\Finance\PayableReceivableController::class, 'getPayables']);
+            Route::post('payables', [\App\Http\Controllers\Api\Finance\PayableReceivableController::class, 'storePayable']);
+            Route::post('payables/{id}/payments', [\App\Http\Controllers\Api\Finance\PayableReceivableController::class, 'storePayablePayment']);
+            
+            // Phase 3: Accounting Foundation
+            Route::get('periods', [\App\Http\Controllers\Api\Finance\FinancialPeriodController::class, 'index']);
+            Route::post('periods', [\App\Http\Controllers\Api\Finance\FinancialPeriodController::class, 'store']);
+            Route::post('periods/{id}/close', [\App\Http\Controllers\Api\Finance\FinancialPeriodController::class, 'closePeriod']);
+
+            // Phase 5: Reporting
+            Route::get('reports/profit-loss', [\App\Http\Controllers\Api\Finance\FinancialReportController::class, 'profitLoss']);
+            Route::get('reports/cash-flow', [\App\Http\Controllers\Api\Finance\FinancialReportController::class, 'cashFlow']);
+        });
 
         // ─── RETAIL TENANT ENDPOINTS ─────────────────────────────────────────
         Route::prefix('retail')->middleware('check_category:toko-retail')->group(function () {
 
+            // Shared Retail Data (readable by any retail staff for dropdowns)
+            Route::get('products', [RetailProductController::class, 'index']);
+            Route::get('categories', [RetailMasterController::class, 'getCategories']);
+            Route::get('suppliers', [RetailMasterController::class, 'getSuppliers']);
+            Route::get('customers', [RetailMasterController::class, 'getCustomers']);
+            Route::get('units', [RetailMasterController::class, 'getUnits']);
+            Route::get('outlets', [\App\Http\Controllers\Api\Retail\RetailOutletController::class, 'index']);
+
             // Master data (categories, suppliers, customers, units, expense categories, settings)
             Route::middleware('retail_permission:master')->group(function () {
-                Route::get('categories', [RetailMasterController::class, 'getCategories']);
                 Route::post('categories', [RetailMasterController::class, 'storeCategory']);
                 Route::put('categories/{id}', [RetailMasterController::class, 'updateCategory']);
                 Route::delete('categories/{id}', [RetailMasterController::class, 'destroyCategory']);
-
-                Route::get('suppliers', [RetailMasterController::class, 'getSuppliers']);
                 Route::post('suppliers', [RetailMasterController::class, 'storeSupplier']);
                 Route::put('suppliers/{id}', [RetailMasterController::class, 'updateSupplier']);
                 Route::delete('suppliers/{id}', [RetailMasterController::class, 'destroySupplier']);
-
-                Route::get('customers', [RetailMasterController::class, 'getCustomers']);
                 Route::post('customers', [RetailMasterController::class, 'storeCustomer']);
                 Route::put('customers/{id}', [RetailMasterController::class, 'updateCustomer']);
                 Route::delete('customers/{id}', [RetailMasterController::class, 'destroyCustomer']);
-
-                Route::get('units', [RetailMasterController::class, 'getUnits']);
                 Route::post('units', [RetailMasterController::class, 'storeUnit']);
                 Route::put('units/{id}', [RetailMasterController::class, 'updateUnit']);
                 Route::delete('units/{id}', [RetailMasterController::class, 'destroyUnit']);
@@ -143,6 +187,9 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::post('finance-categories', [RetailMasterController::class, 'storeFinanceCategory']);
                 Route::put('finance-categories/{id}', [RetailMasterController::class, 'updateFinanceCategory']);
                 Route::delete('finance-categories/{id}', [RetailMasterController::class, 'destroyFinanceCategory']);
+                Route::post('outlets', [\App\Http\Controllers\Api\Retail\RetailOutletController::class, 'store']);
+                Route::put('outlets/{id}', [\App\Http\Controllers\Api\Retail\RetailOutletController::class, 'update']);
+                Route::delete('outlets/{id}', [\App\Http\Controllers\Api\Retail\RetailOutletController::class, 'destroy']);
 
                 Route::get('settings', [RetailMasterController::class, 'getSettings']);
                 Route::put('settings', [RetailMasterController::class, 'updateSettings']);
@@ -170,12 +217,15 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
 
             // Products (catalog)
             Route::middleware('retail_permission:catalog')->group(function () {
-                Route::get('products', [RetailProductController::class, 'index']);
+                Route::get('products/export', [RetailProductController::class, 'export']);
+                Route::post('products/import', [RetailProductController::class, 'import']);
+                
                 Route::post('products', [RetailProductController::class, 'store']);
                 Route::put('products/{id}', [RetailProductController::class, 'update']);
                 Route::delete('products/{id}', [RetailProductController::class, 'destroy']);
                 Route::post('products/{id}/image', [RetailProductController::class, 'uploadImage']);
                 Route::delete('products/{id}/image', [RetailProductController::class, 'deleteImage']);
+                Route::get('products/{id}/purchase-history', [RetailProductController::class, 'purchaseHistory']);
             });
 
             // Stock & audit trail (inventory)
@@ -183,12 +233,28 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::get('stock', [\App\Http\Controllers\Api\Retail\RetailStockController::class, 'index']);
                 Route::get('stock/movements', [\App\Http\Controllers\Api\Retail\RetailStockController::class, 'movements']);
 
+                Route::get('batches', [\App\Http\Controllers\Api\Retail\RetailProductBatchController::class, 'index']);
+                Route::post('batches', [\App\Http\Controllers\Api\Retail\RetailProductBatchController::class, 'store']);
+                Route::put('batches/{id}', [\App\Http\Controllers\Api\Retail\RetailProductBatchController::class, 'update']);
+                Route::delete('batches/{id}', [\App\Http\Controllers\Api\Retail\RetailProductBatchController::class, 'destroy']);
+
+                Route::get('serials', [\App\Http\Controllers\Api\Retail\RetailProductSerialController::class, 'index']);
+                Route::post('serials', [\App\Http\Controllers\Api\Retail\RetailProductSerialController::class, 'store']);
+                Route::put('serials/{id}', [\App\Http\Controllers\Api\Retail\RetailProductSerialController::class, 'update']);
+                Route::delete('serials/{id}', [\App\Http\Controllers\Api\Retail\RetailProductSerialController::class, 'destroy']);
+
                 Route::get('stock-opnames', [\App\Http\Controllers\Api\Retail\RetailStockOpnameController::class, 'index']);
                 Route::get('stock-opnames/{id}', [\App\Http\Controllers\Api\Retail\RetailStockOpnameController::class, 'show']);
                 Route::post('stock-opnames', [\App\Http\Controllers\Api\Retail\RetailStockOpnameController::class, 'store']);
                 Route::put('stock-opnames/{id}', [\App\Http\Controllers\Api\Retail\RetailStockOpnameController::class, 'update']);
                 Route::post('stock-opnames/{id}/finalize', [\App\Http\Controllers\Api\Retail\RetailStockOpnameController::class, 'finalize']);
                 Route::delete('stock-opnames/{id}', [\App\Http\Controllers\Api\Retail\RetailStockOpnameController::class, 'destroy']);
+
+                Route::get('stock-transfers', [\App\Http\Controllers\Api\Retail\RetailStockTransferController::class, 'index']);
+                Route::post('stock-transfers', [\App\Http\Controllers\Api\Retail\RetailStockTransferController::class, 'store']);
+                Route::get('stock-transfers/{id}', [\App\Http\Controllers\Api\Retail\RetailStockTransferController::class, 'show']);
+                Route::post('stock-transfers/{id}/confirm', [\App\Http\Controllers\Api\Retail\RetailStockTransferController::class, 'confirm']);
+                Route::post('stock-transfers/{id}/cancel', [\App\Http\Controllers\Api\Retail\RetailStockTransferController::class, 'cancel']);
             });
 
             // Transactions / POS (checkout, void, discount validation)
@@ -198,6 +264,10 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::post('transactions', [RetailTransactionController::class, 'store']);
                 Route::post('transactions/{id}/void', [RetailTransactionController::class, 'void']);
 
+                Route::get('hold-transactions', [\App\Http\Controllers\Api\Retail\RetailHoldTransactionController::class, 'index']);
+                Route::post('hold-transactions', [\App\Http\Controllers\Api\Retail\RetailHoldTransactionController::class, 'store']);
+                Route::delete('hold-transactions/{id}', [\App\Http\Controllers\Api\Retail\RetailHoldTransactionController::class, 'destroy']);
+
                 Route::post('discount/validate', [\App\Http\Controllers\Api\Retail\RetailDiscountController::class, 'validateCode']);
 
                 Route::get('customer-returns', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'index']);
@@ -206,6 +276,12 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::put('customer-returns/{id}', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'update']);
                 Route::post('customer-returns/{id}/confirm', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'confirm']);
                 Route::delete('customer-returns/{id}', [\App\Http\Controllers\Api\Retail\RetailCustomerReturnController::class, 'destroy']);
+
+                // Shifts
+                Route::get('shifts/current', [\App\Http\Controllers\Api\Retail\ShiftController::class, 'current']);
+                Route::get('shifts/history', [\App\Http\Controllers\Api\Retail\ShiftController::class, 'history']);
+                Route::post('shifts/open', [\App\Http\Controllers\Api\Retail\ShiftController::class, 'open']);
+                Route::post('shifts/{id}/close', [\App\Http\Controllers\Api\Retail\ShiftController::class, 'close']);
             });
 
             // Discounts & pricelists
@@ -226,6 +302,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::get('purchases', [RetailPurchaseController::class, 'index']);
                 Route::post('purchases', [RetailPurchaseController::class, 'store']);
                 Route::get('purchases/{id}', [RetailPurchaseController::class, 'show']);
+                Route::patch('purchases/{id}/status', [RetailPurchaseController::class, 'updateStatus']);
                 Route::delete('purchases/{id}', [RetailPurchaseController::class, 'destroy']);
 
                 Route::get('supplier-returns', [\App\Http\Controllers\Api\Retail\RetailSupplierReturnController::class, 'index']);
@@ -250,6 +327,13 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::put('finance/incomes/{id}', [\App\Http\Controllers\Api\RetailFinanceController::class, 'updateIncome']);
                 Route::delete('finance/incomes/{id}', [\App\Http\Controllers\Api\RetailFinanceController::class, 'destroyIncome']);
 
+                Route::get('finance/transfers', [\App\Http\Controllers\Api\RetailFinanceController::class, 'getTransfers']);
+                Route::post('finance/transfers', [\App\Http\Controllers\Api\RetailFinanceController::class, 'storeTransfer']);
+                Route::delete('finance/transfers/{id}', [\App\Http\Controllers\Api\RetailFinanceController::class, 'destroyTransfer']);
+
+                Route::get('finance/cash-flow', [\App\Http\Controllers\Api\RetailFinanceController::class, 'getCashFlow']);
+                Route::get('finance/tax-report', [\App\Http\Controllers\Api\RetailFinanceController::class, 'getTaxReport']);
+
                 Route::get('payables', [\App\Http\Controllers\Api\Retail\RetailPayableController::class, 'index']);
                 Route::post('payables', [\App\Http\Controllers\Api\Retail\RetailPayableController::class, 'store']);
                 Route::post('payables/{id}/payments', [\App\Http\Controllers\Api\Retail\RetailPayableController::class, 'recordPayment']);
@@ -265,14 +349,68 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::middleware('retail_permission:reports')->group(function () {
                 Route::get('reports', [RetailReportController::class, 'getReports']);
                 Route::get('reports/profit-loss', [RetailReportController::class, 'profitLoss']);
-                Route::get('reports/purchases', [RetailReportController::class, 'purchases']);
+            Route::get('reports/purchases', [RetailReportController::class, 'purchases']);
                 Route::get('reports/returns', [RetailReportController::class, 'returns']);
+                Route::get('reports/consignment', [RetailReportController::class, 'consignment']);
+                Route::get('reports/customers', [RetailReportController::class, 'customersReport']);
+                Route::get('reports/shifts', [RetailReportController::class, 'shiftsReport']);
+                Route::get('reports/payments', [RetailReportController::class, 'paymentsReport']);
             });
         });
 
         Route::middleware('check_category:toko-retail')->group(function () {
             // Dashboard
             Route::get('dashboard', [DashboardController::class, 'index']);
+        });
+
+        // ✨ JASA ENDPOINTS ✨
+        Route::prefix('jasa')->middleware('check_category:jasa')->group(function () {
+            // Settings
+            Route::get('settings', [\App\Http\Controllers\Api\JasaController::class, 'getSettings']);
+            Route::put('settings', [\App\Http\Controllers\Api\JasaController::class, 'updateSettings']);
+
+            // Dashboard & Stats
+            Route::get('stats', [\App\Http\Controllers\Api\JasaController::class, 'getStats']);
+
+            // Work Orders
+            Route::get('work-orders', [\App\Http\Controllers\Api\JasaController::class, 'getWorkOrders']);
+            Route::post('work-orders', [\App\Http\Controllers\Api\JasaController::class, 'storeWorkOrder']);
+            Route::put('work-orders/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateWorkOrder']);
+            Route::patch('work-orders/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateStatus']);
+            Route::put('work-orders/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateWorkOrderStatus']); // Keep old for backward compat
+
+            // Contracts
+            Route::get('contracts', [\App\Http\Controllers\Api\JasaController::class, 'getContracts']);
+            Route::post('contracts', [\App\Http\Controllers\Api\JasaController::class, 'storeContract']);
+            Route::post('contracts/{id}/generate-spk', [\App\Http\Controllers\Api\JasaController::class, 'generateSpkFromContract']);
+
+            // Technicians
+            Route::get('technicians', [\App\Http\Controllers\Api\JasaController::class, 'getTechnicians']);
+            Route::post('technicians', [\App\Http\Controllers\Api\JasaController::class, 'storeTechnician']);
+            Route::put('technicians/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateTechnician']);
+            Route::delete('technicians/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyTechnician']);
+            Route::patch('technicians/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateTechnicianStatus']);
+            Route::put('technicians/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateTechnicianStatus']); // Keep old for backward compat
+
+            // Services
+            Route::get('services', [\App\Http\Controllers\Api\JasaController::class, 'getServices']);
+            Route::post('services', [\App\Http\Controllers\Api\JasaController::class, 'storeService']);
+            Route::put('services/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateService']);
+            Route::delete('services/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyService']);
+
+            // Invoices & Expenses
+            Route::get('invoices', [\App\Http\Controllers\Api\JasaController::class, 'getInvoices']);
+            Route::get('expenses', [\App\Http\Controllers\Api\JasaController::class, 'getExpenses']);
+            Route::post('expenses', [\App\Http\Controllers\Api\JasaController::class, 'storeExpense']);
+
+            // Inventory
+            Route::get('inventory', [\App\Http\Controllers\Api\JasaController::class, 'getInventory']);
+            Route::post('inventory', [\App\Http\Controllers\Api\JasaController::class, 'storeInventory']);
+            Route::put('inventory/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateInventory']);
+            Route::delete('inventory/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyInventory']);
+            
+            // Calendar
+            Route::get('calendar-events', [\App\Http\Controllers\Api\JasaController::class, 'getCalendarEvents']);
         });
 
         // ─── BUDIDAYA (AQUACULTURE) ENDPOINTS ───────────────────────────────────
@@ -339,6 +477,29 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::get('finance/summary', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'getSummary']);
             Route::get('finance/ledger', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'getLedger']);
             Route::apiResource('expenses', \App\Http\Controllers\Api\Budidaya\FinanceController::class)->except(['show']);
+            
+            // Settings & Farming Context / Presets
+            Route::get('context', [\App\Http\Controllers\Api\Budidaya\BudidayaSettingController::class, 'getContext']);
+            Route::get('presets', [\App\Http\Controllers\Api\Budidaya\BudidayaSettingController::class, 'getPresets']);
+            Route::get('settings', [\App\Http\Controllers\Api\Budidaya\BudidayaSettingController::class, 'getSettings']);
+            Route::post('settings', [\App\Http\Controllers\Api\Budidaya\BudidayaSettingController::class, 'updateSettings']);
+
+            // Species Catalog
+            Route::apiResource('species', \App\Http\Controllers\Api\Budidaya\SpeciesController::class);
+
+            // Individual Animal Tracking (Tag Code / Ring ID / Pedigree)
+            Route::apiResource('animals', \App\Http\Controllers\Api\Budidaya\AnimalController::class);
+            Route::get('animals/{id}/pedigree', [\App\Http\Controllers\Api\Budidaya\AnimalController::class, 'getPedigree']);
+
+            // Breeding Management (Pairs & Logs)
+            Route::get('breeding/pairs', [\App\Http\Controllers\Api\Budidaya\BreedingController::class, 'indexPairs']);
+            Route::post('breeding/pairs', [\App\Http\Controllers\Api\Budidaya\BreedingController::class, 'storePair']);
+            Route::get('breeding/pairs/{id}', [\App\Http\Controllers\Api\Budidaya\BreedingController::class, 'showPair']);
+            Route::put('breeding/pairs/{id}', [\App\Http\Controllers\Api\Budidaya\BreedingController::class, 'updatePair']);
+            Route::delete('breeding/pairs/{id}', [\App\Http\Controllers\Api\Budidaya\BreedingController::class, 'destroyPair']);
+            Route::post('breeding/logs', [\App\Http\Controllers\Api\Budidaya\BreedingController::class, 'storeLog']);
+            Route::put('breeding/logs/{id}', [\App\Http\Controllers\Api\Budidaya\BreedingController::class, 'updateLog']);
+            Route::delete('breeding/logs/{id}', [\App\Http\Controllers\Api\Budidaya\BreedingController::class, 'destroyLog']);
             
             // Legacy / Helper endpoints
             Route::post('cycles/start', [\App\Http\Controllers\Api\Budidaya\BudidayaCycleController::class, 'start']);
@@ -454,6 +615,11 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::get('wastes', [\App\Http\Controllers\Api\Kuliner\WasteController::class, 'index']);
                 Route::post('wastes', [\App\Http\Controllers\Api\Kuliner\WasteController::class, 'store']);
                 Route::delete('wastes/{id}', [\App\Http\Controllers\Api\Kuliner\WasteController::class, 'destroy']);
+
+                Route::get('purchases', [\App\Http\Controllers\Api\Kuliner\IngredientPurchaseController::class, 'index']);
+                Route::post('purchases', [\App\Http\Controllers\Api\Kuliner\IngredientPurchaseController::class, 'store']);
+                Route::get('purchases/{id}', [\App\Http\Controllers\Api\Kuliner\IngredientPurchaseController::class, 'show']);
+                Route::patch('purchases/{id}/status', [\App\Http\Controllers\Api\Kuliner\IngredientPurchaseController::class, 'updateStatus']);
             });
 
             // 💰 Phase 4: Reporting 💰
@@ -498,6 +664,11 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::get('stats', [DashboardController::class, 'stats']);
         Route::post('tenants/{tenant_id}/impersonate', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonateUser']);
 
+        // KYC Verifications
+        Route::get('kyc', [\App\Http\Controllers\Api\AdminKycController::class, 'index']);
+        Route::post('kyc/{tenant_id}/approve', [\App\Http\Controllers\Api\AdminKycController::class, 'approve']);
+        Route::post('kyc/{tenant_id}/reject', [\App\Http\Controllers\Api\AdminKycController::class, 'reject']);
+
         // Backups
         Route::get('backups', [\App\Http\Controllers\Api\BackupController::class, 'index']);
         Route::post('backups/run', [\App\Http\Controllers\Api\BackupController::class, 'run']);
@@ -541,7 +712,14 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::put('announcements/{announcement}', [\App\Http\Controllers\Api\AnnouncementController::class, 'update']);
         Route::delete('announcements/{announcement}', [\App\Http\Controllers\Api\AnnouncementController::class, 'destroy']);
         Route::patch('announcements/{announcement}/toggle-publish', [\App\Http\Controllers\Api\AnnouncementController::class, 'togglePublish']);
+
+        // Payment Gateway Configurations
+        Route::get('payment-gateway-config', [\App\Http\Controllers\Api\PaymentWebhookController::class, 'getConfig']);
+        Route::post('payment-gateway-config', [\App\Http\Controllers\Api\PaymentWebhookController::class, 'updateConfig']);
     });
+
+    // Active announcements for logged-in users / tenants
+    Route::get('announcements/active', [\App\Http\Controllers\Api\AnnouncementController::class, 'activeForTenant']);
 
     // =========================================================================
     // SELLER MODULE ROUTES

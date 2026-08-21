@@ -35,7 +35,7 @@ class KulinerFullDummySeeder extends Seeder
 {
     public function run()
     {
-        $tenantId = 'TN-KULINER';
+        $tenantId = env('SEED_TENANT_ID', 'TN-KULINER');
 
         $this->command->info('Menjalankan KulinerFullDummySeeder untuk tenant: ' . $tenantId);
 

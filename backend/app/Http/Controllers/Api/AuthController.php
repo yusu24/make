@@ -295,7 +295,7 @@ class AuthController extends Controller
             $categorySlug = 'budidaya-tanaman';
         }
 
-        $allowedSlugs = ['toko-retail', 'budidaya-hewan', 'budidaya-tanaman', 'kuliner', 'seller'];
+        $allowedSlugs = ['toko-retail', 'budidaya-hewan', 'budidaya-tanaman', 'kuliner', 'seller', 'jasa'];
         if (!in_array($categorySlug, $allowedSlugs)) {
             return response()->json(['success' => false, 'message' => 'Kategori bisnis tidak didukung untuk demo sandbox.'], 400);
         }
@@ -315,6 +315,7 @@ class AuthController extends Controller
             'budidaya-tanaman' => 'Demo Tani ',
             'kuliner'          => 'Demo Resto ',
             'seller'           => 'Demo Seller ',
+            'jasa'             => 'Demo Servis ',
         ];
         $name = ($namePrefixes[$categorySlug] ?? 'Demo Usaha ') . strtoupper(substr($rand, 0, 4));
 
@@ -357,6 +358,8 @@ class AuthController extends Controller
         if ($categorySlug === 'toko-retail') {
             $seeder->seedRetailData($tenantId);
             $seeder->seedRetailDataExtras($tenantId);
+            $fullSeeder = new \Database\Seeders\RetailFullDummySeeder();
+            $fullSeeder->runForTenant($tenantId, 'Retail Sandbox');
         } elseif ($categorySlug === 'budidaya-hewan') {
             $seeder->seedBudidayaData($tenantId, $subtype);
         } elseif ($categorySlug === 'budidaya-tanaman') {
@@ -369,7 +372,11 @@ class AuthController extends Controller
             // needs the same base dataset Retail demos get.
             $seeder->seedRetailData($tenantId);
             $seeder->seedRetailDataExtras($tenantId);
+            $fullSeeder = new \Database\Seeders\RetailFullDummySeeder();
+            $fullSeeder->runForTenant($tenantId, 'Seller Sandbox');
             $this->seedSellerWarehouses($tenantId);
+        } elseif ($categorySlug === 'jasa') {
+            $this->seedDemoSandboxJasaData($tenantId);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -546,6 +553,47 @@ class AuthController extends Controller
 
     private function seedDemoSandboxKulinerData(string $tenantId)
     {
+        $financeCategories = [
+            ['name' => 'Gaji Karyawan', 'type' => 'expense'],
+            ['name' => 'Operasional (Listrik, Air, Gas)', 'type' => 'expense'],
+            ['name' => 'Sewa Tempat', 'type' => 'expense'],
+            ['name' => 'Bahan Baku', 'type' => 'expense'],
+            ['name' => 'Lainnya', 'type' => 'expense'],
+            ['name' => 'Penjualan Tambahan', 'type' => 'income'],
+            ['name' => 'Suntikan Modal', 'type' => 'income'],
+            ['name' => 'Pendapatan Lain', 'type' => 'income'],
+        ];
+
+        foreach ($financeCategories as $fc) {
+            \App\Models\KulinerFinanceCategory::create([
+                'tenant_id' => $tenantId,
+                'name' => $fc['name'],
+                'type' => $fc['type'],
+                'is_active' => true,
+            ]);
+        }
+
+        // Dummy Expenses & Incomes
+        $dummyKas = [
+            ['date' => now()->subDays(2)->format('Y-m-d'), 'type' => 'income', 'category' => 'Suntikan Modal', 'description' => 'Modal awal operasional', 'amount' => 5000000],
+            ['date' => now()->subDays(2)->format('Y-m-d'), 'type' => 'expense', 'category' => 'Sewa Tempat', 'description' => 'Sewa ruko bulan ini', 'amount' => 1500000],
+            ['date' => now()->subDays(1)->format('Y-m-d'), 'type' => 'expense', 'category' => 'Bahan Baku', 'description' => 'Beli sayur, daging sapi, dan ayam', 'amount' => 350000],
+            ['date' => now()->subDays(1)->format('Y-m-d'), 'type' => 'income', 'category' => 'Penjualan Tambahan', 'description' => 'Pesanan katering dadakan', 'amount' => 850000],
+            ['date' => now()->format('Y-m-d'), 'type' => 'expense', 'category' => 'Operasional (Listrik, Air, Gas)', 'description' => 'Isi ulang gas 3kg (5 tabung)', 'amount' => 110000],
+            ['date' => now()->format('Y-m-d'), 'type' => 'expense', 'category' => 'Lainnya', 'description' => 'Beli perlengkapan kebersihan', 'amount' => 45000],
+        ];
+
+        foreach ($dummyKas as $dk) {
+            \App\Models\KulinerExpense::create([
+                'tenant_id' => $tenantId,
+                'date' => $dk['date'],
+                'type' => $dk['type'],
+                'category' => $dk['category'],
+                'description' => $dk['description'],
+                'amount' => $dk['amount'],
+            ]);
+        }
+
         $categories = [
             ['name' => 'Makanan Utama', 'desc' => 'Aneka nasi goreng, mie goreng, dan lauk spesial.'],
             ['name' => 'Sup & Soto', 'desc' => 'Sup hangat berkuah segar dengan kaldu pilihan.'],
@@ -840,6 +888,293 @@ class AuthController extends Controller
                 'updated_at' => $date,
             ]);
         }
+    }
+
+    private function seedDemoSandboxJasaData(string $tenantId)
+    {
+        // Clean up any existing data for this tenant
+        \App\Models\JasaWorkOrderLog::where('tenant_id', $tenantId)->delete();
+        \App\Models\JasaOrderPart::where('tenant_id', $tenantId)->delete();
+        \App\Models\JasaWorkOrder::where('tenant_id', $tenantId)->delete();
+        \App\Models\JasaTechnician::where('tenant_id', $tenantId)->delete();
+        \App\Models\JasaService::where('tenant_id', $tenantId)->delete();
+
+        // 1. Services Catalog
+        $services = [
+            [
+                'code' => 'SVC-PRV-01',
+                'name' => 'Pemeliharaan Berkala Mesin Industri',
+                'category' => 'Pemeliharaan Berkala (Preventive)',
+                'description' => 'Inspeksi 50 titik, pelumasan bearing, pembersihan filter, dan kalibrasi sensor temperatur.',
+                'base_price' => 450000,
+                'estimated_duration_hours' => 2.5,
+                'warranty_days' => 30,
+                'required_skill_level' => 'Senior',
+                'recommended_parts' => ['Grease Pelumas Sintetis', 'O-Ring Seal Set', 'Filter Udara'],
+            ],
+            [
+                'code' => 'SVC-COR-02',
+                'name' => 'Troubleshooting & Penggantian Komponen Elektronik',
+                'category' => 'Perbaikan & Troubleshooting (Corrective)',
+                'description' => 'Diagnosa modul PCB, penggantian kapasitor/relay aus, dan pengujian stabilitas tegangan.',
+                'base_price' => 350000,
+                'estimated_duration_hours' => 1.5,
+                'warranty_days' => 14,
+                'required_skill_level' => 'Madya',
+                'recommended_parts' => ['Relay 24V Omron', 'Fuse 10A'],
+            ],
+            [
+                'code' => 'SVC-INS-03',
+                'name' => 'Instalasi Sistem & Commissioning Unit',
+                'category' => 'Instalasi & Commissioning',
+                'description' => 'Pemasangan unit baru, pengkabelan panel daya, konfigurasi parameter awal, dan uji beban.',
+                'base_price' => 850000,
+                'estimated_duration_hours' => 4.0,
+                'warranty_days' => 60,
+                'required_skill_level' => 'Spesialis Ahli',
+                'recommended_parts' => ['Kabel NYY 3x2.5mm', 'MCB Schneider 16A'],
+            ],
+            [
+                'code' => 'SVC-CAL-04',
+                'name' => 'Kalibrasi Presisi & Audit Kepatuhan QC',
+                'category' => 'Kalibrasi & Pengujian',
+                'description' => 'Penyetelan sensor tekanan dan flowmeter menggunakan instrumen standar berkalibrasi KAN.',
+                'base_price' => 500000,
+                'estimated_duration_hours' => 2.0,
+                'warranty_days' => 30,
+                'required_skill_level' => 'Senior',
+                'recommended_parts' => [],
+            ],
+        ];
+
+        foreach ($services as $svc) {
+            \App\Models\JasaService::create(array_merge($svc, ['tenant_id' => $tenantId]));
+        }
+
+        // 2. Technicians
+        $technicians = [
+            [
+                'name' => 'Bambang Pamungkas',
+                'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+                'specialty' => 'Mekanikal & Hidrolik Berat',
+                'phone' => '0812-9901-2234',
+                'email' => 'bambang.tech@jasa-demo.com',
+                'rating' => 4.9,
+                'completed_jobs' => 84,
+                'current_status' => 'Tersedia',
+                'skills' => ['Hydraulic Pump Overhaul', 'Laser Alignment', 'Vibration Analysis'],
+                'certifications' => ['BNSP Teknisi Mekanikal Madya', 'Safety Officer K3 Umum'],
+            ],
+            [
+                'name' => 'Doni Setiawan',
+                'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+                'specialty' => 'Elektrikal, Otomasi & PLC',
+                'phone' => '0813-8876-1120',
+                'email' => 'doni.setiawan@jasa-demo.com',
+                'rating' => 4.8,
+                'completed_jobs' => 67,
+                'current_status' => 'Bertugas',
+                'skills' => ['Siemens PLC Programming', 'Panel Wiring', 'Inverter Tuning'],
+                'certifications' => ['Certified PLC Specialist', 'ISO 9001 Internal Auditor'],
+            ],
+            [
+                'name' => 'Rian Hidayat',
+                'avatar' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+                'specialty' => 'Sistem Pendingin & Chiller HVAC',
+                'phone' => '0856-4432-8890',
+                'email' => 'rian.hidayat@jasa-demo.com',
+                'rating' => 5.0,
+                'completed_jobs' => 52,
+                'current_status' => 'Siaga',
+                'skills' => ['Refrigerant Recovery', 'Leak Detection', 'Compressor Rebuild'],
+                'certifications' => ['Teknisi Tata Udara Kemenperin', 'EPA 608 Universal'],
+            ],
+        ];
+
+        $techModels = [];
+        foreach ($technicians as $t) {
+            $techModels[] = \App\Models\JasaTechnician::create(array_merge($t, ['tenant_id' => $tenantId]));
+        }
+
+        // 3. Work Orders (SPK)
+        $spk1 = \App\Models\JasaWorkOrder::create([
+            'tenant_id' => $tenantId,
+            'spk_number' => 'SPK-2026-0842',
+            'title' => 'Overhaul Pompa Sentrifugal & Penggantian Mechanical Seal',
+            'customer_name' => 'Hendra Gunawan',
+            'customer_company' => 'PT Sumber Makmur Sejahtera',
+            'customer_phone' => '0811-2345-6789',
+            'customer_email' => 'hendra@sumbermakmur.co.id',
+            'customer_address' => 'Kawasan Industri Cikarang Blok B-12, Bekasi',
+            'category' => 'Perbaikan & Troubleshooting (Corrective)',
+            'equipment_name' => 'Ebara End-Suction Pump 45kW',
+            'serial_number' => 'EBR-2023-88910',
+            'priority' => 'Darurat',
+            'status' => 'Sedang Dikerjakan',
+            'scheduled_date' => now()->toDateString(),
+            'scheduled_time' => '09:00 WIB',
+            'assigned_technician_id' => $techModels[0]->id,
+            'estimated_hours' => 3.5,
+            'actual_hours' => 2.0,
+            'labor_rate' => 250000,
+            'service_description' => 'Terjadi kebocoran fluida kimia pada rumah seal utama dan getaran berlebih melebihi ambang batas toleransi.',
+            'total_parts_cost' => 850000,
+            'total_labor_cost' => 875000,
+            'grand_total' => 1725000,
+            'payment_status' => 'Sebagian (DP)',
+            'warranty_period' => '30 Hari',
+            'sla_deadline' => now()->addHours(6),
+        ]);
+
+        \App\Models\JasaOrderPart::create([
+            'tenant_id' => $tenantId,
+            'work_order_id' => $spk1->id,
+            'name' => 'Mechanical Seal Burgmann SiC/SiC 50mm',
+            'quantity' => 1,
+            'unit_cost' => 650000,
+            'subtotal' => 650000,
+        ]);
+        \App\Models\JasaOrderPart::create([
+            'tenant_id' => $tenantId,
+            'work_order_id' => $spk1->id,
+            'name' => 'High-Temp Gasket Kit Viton',
+            'quantity' => 2,
+            'unit_cost' => 100000,
+            'subtotal' => 200000,
+        ]);
+
+        \App\Models\JasaWorkOrderLog::create([
+            'tenant_id' => $tenantId,
+            'work_order_id' => $spk1->id,
+            'author' => 'System Auto-Dispatcher',
+            'action' => 'Penerbitan SPK Darurat',
+            'notes' => 'Tiket diprioritaskan otomatis sesuai SLA Kontrak Platinum.',
+            'created_at' => now()->subHours(3),
+        ]);
+        \App\Models\JasaWorkOrderLog::create([
+            'tenant_id' => $tenantId,
+            'work_order_id' => $spk1->id,
+            'author' => 'Bambang Pamungkas',
+            'action' => 'Teknisi Tiba di Lokasi & Mulai Pembongkaran',
+            'notes' => 'Shaft telah dilepas, ditemukan keausan pada carbon ring.',
+            'created_at' => now()->subHours(1),
+        ]);
+
+        // SPK 2: Completed
+        $spk2 = \App\Models\JasaWorkOrder::create([
+            'tenant_id' => $tenantId,
+            'spk_number' => 'SPK-2026-0839',
+            'title' => 'Kalibrasi Sensor Suhu & Penggantian Modul PLC',
+            'customer_name' => 'Dewi Lestari',
+            'customer_company' => 'CV Mandiri Prima Perkasa',
+            'customer_phone' => '0813-5567-8901',
+            'customer_email' => 'dewi@mandiriprima.com',
+            'customer_address' => 'Jl. Industri Rungkut No. 45, Surabaya',
+            'category' => 'Kalibrasi & Pengujian',
+            'equipment_name' => 'Tunnel Pasteurizer Controller Unit 3',
+            'serial_number' => 'PLC-SMN-S71200',
+            'priority' => 'Tinggi',
+            'status' => 'Selesai',
+            'scheduled_date' => now()->subDays(1)->toDateString(),
+            'scheduled_time' => '13:30 WIB',
+            'completion_date' => now()->subDays(1)->toDateString(),
+            'assigned_technician_id' => $techModels[1]->id,
+            'estimated_hours' => 2.0,
+            'actual_hours' => 1.8,
+            'labor_rate' => 300000,
+            'service_description' => 'Deviasi pembacaan suhu thermocouple melenceng +4.2 Celcius dari standar pasteurisasi.',
+            'total_parts_cost' => 450000,
+            'total_labor_cost' => 600000,
+            'grand_total' => 1050000,
+            'payment_status' => 'Lunas',
+            'warranty_period' => '45 Hari',
+            'sla_deadline' => now()->subDays(1)->addHours(12),
+            'customer_satisfaction' => 5,
+        ]);
+
+        \App\Models\JasaWorkOrderLog::create([
+            'tenant_id' => $tenantId,
+            'work_order_id' => $spk2->id,
+            'author' => 'Doni Setiawan',
+            'action' => 'Pengujian Selesai & QC Pass',
+            'notes' => 'Offset kalibrasi dinolkan, deviasi < 0.1C. Struk garansi diterbitkan.',
+            'created_at' => now()->subDays(1),
+        ]);
+
+        // 4. B2B Maintenance Contracts
+        \App\Models\JasaContract::where('tenant_id', $tenantId)->delete();
+
+        // Contract 1: Active Platinum (Bulanan)
+        \App\Models\JasaContract::create([
+            'tenant_id' => $tenantId,
+            'contract_number' => 'CTR-2026-001',
+            'title' => 'Kontrak Pemeliharaan Rutin Chiller & HVAC Central Platinum',
+            'client_company' => 'PT Sumber Makmur Sejahtera',
+            'client_name' => 'Hendra Gunawan',
+            'client_phone' => '0811-2345-6789',
+            'client_email' => 'hendra@sumbermakmur.co.id',
+            'client_address' => 'Kawasan Industri Cikarang Blok B-12, Bekasi',
+            'service_category' => 'Pemeliharaan Berkala (Preventive)',
+            'equipment_list' => ['Daikin Water-Cooled Chiller 120TR', 'Ebara Primary Pump 45kW', 'Air Handling Unit #1-#4'],
+            'start_date' => now()->subMonths(3)->toDateString(),
+            'end_date' => now()->addMonths(9)->toDateString(),
+            'frequency' => 'Bulanan',
+            'total_visits_quota' => 12,
+            'completed_visits_count' => 3,
+            'next_schedule_date' => now()->addDays(5)->toDateString(),
+            'contract_value' => 54000000,
+            'assigned_technician_id' => $techModels[0]->id,
+            'status' => 'Aktif',
+            'sla_notes' => 'SLA Respon Darurat Maksimal 2 Jam. Free emergency call 4x per tahun.',
+        ]);
+
+        // Contract 2: Expiring Soon (< 30 Hari) (Kuartalan)
+        \App\Models\JasaContract::create([
+            'tenant_id' => $tenantId,
+            'contract_number' => 'CTR-2025-089',
+            'title' => 'SLA Kalibrasi Instrumen & Kontrol Pasteurisasi Gold',
+            'client_company' => 'CV Mandiri Prima Perkasa',
+            'client_name' => 'Dewi Lestari',
+            'client_phone' => '0813-5567-8901',
+            'client_email' => 'dewi@mandiriprima.com',
+            'client_address' => 'Jl. Industri Rungkut No. 45, Surabaya',
+            'service_category' => 'Kalibrasi & Pengujian',
+            'equipment_list' => ['Tunnel Pasteurizer Controller Unit 3', 'Yokogawa Flowmeter AXF', 'Endress+Hauser Pressure Transmitter'],
+            'start_date' => now()->subYear()->toDateString(),
+            'end_date' => now()->addDays(14)->toDateString(), // Segera Berakhir (14 hari lagi)
+            'frequency' => 'Kuartalan',
+            'total_visits_quota' => 4,
+            'completed_visits_count' => 4,
+            'next_schedule_date' => now()->addDays(10)->toDateString(),
+            'contract_value' => 28000000,
+            'assigned_technician_id' => $techModels[1]->id,
+            'status' => 'Segera Berakhir',
+            'sla_notes' => 'Sertifikat Kalibrasi Standar KAN terbit H+2 pasca uji. Hubungi PIC untuk perpanjangan kontrak tahun 2027.',
+        ]);
+
+        // Contract 3: Active Semi-Annual (6 Bulan Sekali)
+        \App\Models\JasaContract::create([
+            'tenant_id' => $tenantId,
+            'contract_number' => 'CTR-2026-003',
+            'title' => 'Maintenance Agreement Kompresor Udara & Pneumatik',
+            'client_company' => 'PT Indopack Printing Packaging',
+            'client_name' => 'Budi Santoso',
+            'client_phone' => '0812-3456-7890',
+            'client_email' => 'budi.santoso@indopack.co.id',
+            'client_address' => 'Kawasan Industri Jababeka 1, Cikarang',
+            'service_category' => 'Pemeliharaan Berkala (Preventive)',
+            'equipment_list' => ['Atlas Copco GA37+ Rotary Screw', 'Donaldson Air Dryer 500CFM'],
+            'start_date' => now()->subMonths(1)->toDateString(),
+            'end_date' => now()->addMonths(11)->toDateString(),
+            'frequency' => '6 Bulan Sekali',
+            'total_visits_quota' => 2,
+            'completed_visits_count' => 0,
+            'next_schedule_date' => now()->addMonths(5)->toDateString(),
+            'contract_value' => 18500000,
+            'assigned_technician_id' => $techModels[2]->id,
+            'status' => 'Aktif',
+            'sla_notes' => 'Penggantian oli sintetis Atlas Copco Roto-Inject included pada kunjungan ke-2.',
+        ]);
     }
 }
 

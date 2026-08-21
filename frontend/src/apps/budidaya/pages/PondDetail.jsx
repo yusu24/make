@@ -126,6 +126,7 @@ export default function PondDetail() {
   const [formMove, setFormMove] = useState({ new_pond_id: '' })
   const [formSampling, setFormSampling] = useState({ average_weight_gram: '', sample_count: '', date: new Date().toISOString().split('T')[0], notes: '' })
   const [emptyPonds, setEmptyPonds] = useState([])
+  const [hoveredPoint, setHoveredPoint] = useState(null)
   useEffect(() => {
     fetchPondData()
     fetchInventories()
@@ -603,11 +604,11 @@ export default function PondDetail() {
 
       {/* TOP KPI CARDS */}
       <div className="aq-grid-3">
-        {/* Fish Info Card */}
+        {/* Population & Batch Info Card */}
         <div style={{ ...cardStyle, display: 'flex', gap: 20 }}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <span className="aq-kpi-label" style={{ marginBottom: 4 }}>{terms.isTanaman ? 'Tanaman aktif' : 'Ikan aktif'}</span>
-            <h3 className="aq-section-title" style={{ fontSize: 24, marginBottom: 12 }}>{cycle?.seed_type || (terms.isTanaman ? 'Belum ada tanaman' : 'Belum ada ikan')}</h3>
+            <span className="aq-kpi-label" style={{ marginBottom: 4 }}>{terms.activeSeedLabel || 'Populasi aktif'}</span>
+            <h3 className="aq-section-title" style={{ fontSize: 24, marginBottom: 12 }}>{cycle?.seed_type || terms.noSeedLabel || 'Belum ada data'}</h3>
             <div style={{ display: 'flex', gap: 24 }}>
               <div>
                 <span className="aq-small-text">Umur</span>
@@ -619,54 +620,54 @@ export default function PondDetail() {
               </div>
               {latestWeightGram && (
                 <div>
-                  <span className="aq-small-text">{terms.isTanaman ? 'Tinggi rata-rata' : 'Berat rata-rata'}</span>
-                  <p className="aq-body-text" style={{ margin: 0, fontWeight: 600, color: '#1B4332' }}>{Number(latestWeightGram).toLocaleString('id-ID')} {terms.isTanaman ? 'cm' : 'g'}</p>
+                  <span className="aq-small-text">{terms.growthMetricLabel || 'Bobot rata-rata'}</span>
+                  <p className="aq-body-text" style={{ margin: 0, fontWeight: 600, color: '#1B4332' }}>{Number(latestWeightGram).toLocaleString('id-ID')} {terms.growthUnit || 'g'}</p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Water Quality Card */}
+        {/* Environmental / Sanitasi / Kondisi Card */}
         <div style={{ ...cardStyle }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <span className="aq-kpi-label">{terms.isTanaman ? 'Kondisi Lahan' : 'Kualitas air'}</span>
+            <span className="aq-kpi-label">{terms.envCardTitle || 'Kondisi lingkungan'}</span>
             <div style={{ width: 40, height: 40, borderRadius: '12px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B4332' }}>
-              {terms.isTanaman ? <Sprout size={20} /> : <Waves size={20} />}
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{terms.envCardIcon || 'verified'}</span>
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <div>
-              <span className="aq-small-text">{terms.phLabel}</span>
-              <h3 className="aq-kpi-value">{terms.isTanaman ? '6.2' : '7.2'}</h3>
+              <span className="aq-small-text">{terms.envMainParamLabel || 'Parameter Utama'}</span>
+              <h3 className="aq-kpi-value">{terms.envMainParamVal || 'Normal'}</h3>
             </div>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#10B981' }}>Optimal</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#10B981' }}>{terms.envMainStatus || 'Optimal'}</span>
           </div>
           <div style={{ height: 6, background: '#F1F5F9', borderRadius: 3, marginTop: 16, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: '70%', background: '#10B981', borderRadius: 3 }} />
           </div>
         </div>
 
-        {/* Temp & DO Card */}
+        {/* Climate & Ambient Monitoring Card */}
         <div style={{ ...cardStyle }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <span className="aq-kpi-label">{terms.isTanaman ? 'Suhu & Kelembaban' : 'Suhu & DO'}</span>
+            <span className="aq-kpi-label">{terms.climateCardTitle || 'Suhu & Lingkungan'}</span>
             <div style={{ width: 40, height: 40, borderRadius: '12px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B4332' }}>
               <Thermometer size={20} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: 40, marginBottom: 12 }}>
             <div>
-              <span className="aq-small-text">{terms.isTanaman ? 'Suhu Udara' : 'Suhu'}</span>
-              <p className="aq-kpi-value" style={{ fontSize: 20 }}>{terms.isTanaman ? '26.4°C' : '28.5°C'}</p>
+              <span className="aq-small-text">{terms.climateParam1Label || 'Suhu'}</span>
+              <p className="aq-kpi-value" style={{ fontSize: 20 }}>{terms.climateParam1Val || '28.0°C'}</p>
             </div>
             <div>
-              <span className="aq-small-text">{terms.isTanaman ? 'Kelembaban' : 'DO (O2)'}</span>
-              <p className="aq-kpi-value" style={{ fontSize: 20 }}>{terms.isTanaman ? '65%' : '6.4 mg/L'}</p>
+              <span className="aq-small-text">{terms.climateParam2Label || 'Kelembaban'}</span>
+              <p className="aq-kpi-value" style={{ fontSize: 20 }}>{terms.climateParam2Val || '60%'}</p>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#10B981', fontWeight: 600 }}>
-             <TrendingUp size={14} /> Stabil 24 jam terakhir
+             <TrendingUp size={14} /> {terms.climateTrend || 'Stabil 24 jam terakhir'}
           </div>
         </div>
       </div>
@@ -707,10 +708,13 @@ export default function PondDetail() {
             <div style={{ ...cardStyle, minHeight: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                 <div>
-                  <h3 className="aq-section-title">{terms.isTanaman ? 'Tren pertumbuhan tanaman' : 'Tren pertumbuhan ikan'}</h3>
-                  {!hasChartData && (
-                    <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94A3B8' }}>{terms.isTanaman ? 'Belum ada data sampling. Catat tinggi tanaman untuk melihat grafik nyata.' : 'Belum ada data sampling. Catat sampling untuk melihat grafik nyata.'}</p>
-                  )}
+                  <h3 className="aq-section-title">{terms.seedGrowthTrend || (terms.isTanaman ? 'Tren pertumbuhan tanaman' : 'Tren pertumbuhan ternak')}</h3>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94A3B8' }}>
+                    {hasChartData 
+                      ? 'Arahkan kursor ke titik grafik untuk melihat rincian bobot sampling.' 
+                      : `Belum ada data sampling. Catat sampling ${terms.growthMetricLabel?.toLowerCase() || 'bobot'} untuk melihat grafik pertumbuhan.`
+                    }
+                  </p>
                 </div>
                 {cycle && !isCycleDone && (
                   <button
@@ -725,99 +729,167 @@ export default function PondDetail() {
                   </button>
                 )}
               </div>
-              {/* Chart — overflow:visible on both wrapper and SVG so labels never clip */}
-              <div style={{ position: 'relative', width: '100%', overflow: 'visible', paddingBottom: 4 }}>
-                <svg
-                  viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-                  style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}
-                >
-                  <defs>
-                    <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={hasChartData ? '#1B4332' : '#94A3B8'} stopOpacity="0.18" />
-                      <stop offset="100%" stopColor={hasChartData ? '#1B4332' : '#94A3B8'} stopOpacity="0.0" />
-                    </linearGradient>
-                  </defs>
 
-                  {/* Y-axis grid lines + labels — now inside SVG with padLeft=42 */}
-                  {[0.25, 0.5, 0.75, 1.0].map((pct, gi) => {
-                    const y = padTop + plotH * (1 - pct)
-                    const label = Math.round(displayMax * pct)
-                    return (
-                      <g key={gi}>
-                        <line x1={padLeft} y1={y} x2={svgWidth - padRight} y2={y}
-                          stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
-                        <text x={padLeft - 6} y={y + 4} textAnchor="end" fontSize="9"
-                          fontWeight="600" fill="#94A3B8">{label}{terms.isTanaman ? 'cm' : 'g'}</text>
-                      </g>
-                    )
-                  })}
+              {!hasChartData ? (
+                <div style={{ height: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', gap: 12, border: '1.5px dashed #E2E8F0', borderRadius: 16, background: '#F8FAFC' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
+                    <Scale size={22} />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: '#475569' }}>Belum ada data sampling pertumbuhan</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94A3B8' }}>{`Klik tombol "+ Catat Sampling" di atas untuk mulai mencatat pertumbuhan ${terms.growthMetricLabel?.toLowerCase() || 'bobot'}.`}</p>
+                  </div>
+                </div>
+              ) : (
+                /* Chart — SVG with hover tooltips and clean nodes */
+                <div style={{ position: 'relative', width: '100%', overflow: 'visible', paddingBottom: 4 }}>
+                  <svg
+                    viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+                    style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}
+                  >
+                    <defs>
+                      <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#1B4332" stopOpacity="0.18" />
+                        <stop offset="100%" stopColor="#1B4332" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
 
-                  {/* Gradient Area */}
-                  {displayPoints.length > 0 && (
-                    <path
-                      d={
-                        displayPoints.map((p, i) => {
-                          const x = getXd(i)
-                          const y = getYd(p.weight)
+                    {/* Y-axis grid lines + labels */}
+                    {[0.25, 0.5, 0.75, 1.0].map((pct, gi) => {
+                      const y = padTop + plotH * (1 - pct)
+                      const label = Math.round(chartMax * pct)
+                      return (
+                        <g key={gi}>
+                          <line x1={padLeft} y1={y} x2={svgWidth - padRight} y2={y}
+                            stroke="#F1F5F9" strokeDasharray="4 4" strokeWidth="1" />
+                          <text x={padLeft - 8} y={y + 4} textAnchor="end" fontSize="9.5"
+                            fontWeight="600" fill="#94A3B8">{label} {terms.growthUnit || (terms.isTanaman ? 'cm' : 'g')}</text>
+                        </g>
+                      )
+                    })}
+
+                    {/* Gradient Area */}
+                    {chartPoints.length > 0 && (
+                      <path
+                        d={
+                          chartPoints.map((p, i) => {
+                            const x = getX(i)
+                            const y = getY(p.weight)
+                            return i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`
+                          }).join('') +
+                          ` L ${getX(chartPoints.length - 1)} ${padTop + plotH}` +
+                          ` L ${getX(0)} ${padTop + plotH} Z`
+                        }
+                        fill="url(#chart-grad)"
+                      />
+                    )}
+
+                    {/* Line */}
+                    {chartPoints.length > 1 && (
+                      <path
+                        d={chartPoints.map((p, i) => {
+                          const x = getX(i)
+                          const y = getY(p.weight)
                           return i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`
-                        }).join('') +
-                        ` L ${getXd(displayPoints.length - 1)} ${padTop + plotH}` +
-                        ` L ${getXd(0)} ${padTop + plotH} Z`
-                      }
-                      fill="url(#chart-grad)"
-                    />
-                  )}
+                        }).join('')}
+                        fill="none"
+                        stroke="#1B4332"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
 
-                  {/* Line */}
-                  {displayPoints.length > 1 && (
-                    <path
-                      d={displayPoints.map((p, i) => {
-                        const x = getXd(i)
-                        const y = getYd(p.weight)
-                        return i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`
-                      }).join('')}
-                      fill="none"
-                      stroke={hasChartData ? '#1B4332' : '#CBD5E1'}
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  )}
+                    {/* Data Points (clean dots + hover area) */}
+                    {chartPoints.map((p, i) => {
+                      const x = getX(i)
+                      const y = getY(p.weight)
+                      const isHovered = hoveredPoint === i
+                      return (
+                        <g key={i} style={{ cursor: 'pointer' }}>
+                          {/* Dot */}
+                          <circle
+                            cx={x} cy={y}
+                            r={isHovered ? 7 : 4.5}
+                            fill={isHovered ? '#1B4332' : '#FFFFFF'}
+                            stroke="#1B4332"
+                            strokeWidth={isHovered ? 3 : 2.5}
+                            style={{ transition: 'all 0.15s ease' }}
+                          />
+                          {/* Date Label on bottom */}
+                          {p.date && (
+                            <text
+                              x={x} y={padTop + plotH + 20}
+                              textAnchor="middle"
+                              fontSize="10"
+                              fontWeight={isHovered ? '700' : '500'}
+                              fill={isHovered ? '#1B4332' : '#64748B'}
+                            >
+                              {p.date}
+                            </text>
+                          )}
+                          {/* Large transparent hitbox for easy mouse hover */}
+                          <circle
+                            cx={x} cy={y}
+                            r="20"
+                            fill="transparent"
+                            onMouseEnter={() => setHoveredPoint(i)}
+                            onMouseLeave={() => setHoveredPoint(null)}
+                          />
+                        </g>
+                      )
+                    })}
 
-                  {/* Data Points + weight label (above) + date label (below) */}
-                  {displayPoints.map((p, i) => {
-                    const x = getXd(i)
-                    const y = getYd(p.weight)
-                    return (
-                      <g key={i}>
-                        {/* weight label — safely inside padTop space */}
-                        <text x={x} y={y - 14} textAnchor="middle" fontSize="10"
-                          fontWeight="700" fill={hasChartData ? '#1B4332' : '#94A3B8'}>
-                          {p.weight}{terms.isTanaman ? 'cm' : 'g'}
-                        </text>
-                        {/* dot */}
-                        <circle cx={x} cy={y} r="5" fill="#fff"
-                          stroke={hasChartData ? '#1B4332' : '#CBD5E1'} strokeWidth="2.5" />
-                        {/* date label */}
-                        {p.date && (
-                          <text x={x} y={padTop + plotH + 20} textAnchor="middle"
-                            fontSize="9" fontWeight="600" fill="#64748B">
-                            {p.date}
+                    {/* Interactive Tooltip Card rendered when hovering */}
+                    {hoveredPoint !== null && chartPoints[hoveredPoint] && (() => {
+                      const p = chartPoints[hoveredPoint]
+                      const x = getX(hoveredPoint)
+                      const y = getY(p.weight)
+                      const tooltipW = 120
+                      const tooltipH = 40
+                      const tooltipX = Math.max(padLeft, Math.min(svgWidth - padRight - tooltipW, x - tooltipW / 2))
+                      const tooltipY = Math.max(8, y - tooltipH - 12)
+                      return (
+                        <g style={{ pointerEvents: 'none' }}>
+                          {/* Drop indicator line */}
+                          <line x1={x} y1={y} x2={x} y2={padTop + plotH} stroke="#1B4332" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+                          {/* Tooltip Background */}
+                          <rect
+                            x={tooltipX}
+                            y={tooltipY}
+                            width={tooltipW}
+                            height={tooltipH}
+                            rx="8"
+                            fill="#1E293B"
+                            filter="drop-shadow(0 4px 10px rgba(0,0,0,0.15))"
+                          />
+                          {/* Tooltip Content */}
+                          <text
+                            x={tooltipX + tooltipW / 2}
+                            y={tooltipY + 16}
+                            textAnchor="middle"
+                            fill="#94A3B8"
+                            fontSize="9.5"
+                            fontWeight="600"
+                          >
+                            {p.date || `Sampling #${hoveredPoint + 1}`}
                           </text>
-                        )}
-                      </g>
-                    )
-                  })}
-
-                  {/* Placeholder when no data */}
-                  {!hasChartData && (
-                    <text x={svgWidth / 2} y={svgHeight / 2 + 5} textAnchor="middle"
-                      fontSize="13" fill="#CBD5E1" fontWeight="600">
-                      Contoh grafik — belum ada data nyata
-                    </text>
-                  )}
-                </svg>
-              </div>
+                          <text
+                            x={tooltipX + tooltipW / 2}
+                            y={tooltipY + 31}
+                            textAnchor="middle"
+                            fill="#FFFFFF"
+                            fontSize="12"
+                            fontWeight="800"
+                          >
+                            {p.weight} {terms.growthUnit || (terms.isTanaman ? 'cm' : 'g')}
+                          </text>
+                        </g>
+                      )
+                    })()}
+                  </svg>
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
@@ -865,9 +937,9 @@ export default function PondDetail() {
               <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1A1C1A', margin: '0 0 24px 0' }}>Aktivitas Terbaru</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {[
-                  { title: terms.isTanaman ? 'Pemberian Nutrisi Siang' : 'Pemberian Pakan Siang', desc: '8.5 Kg • 2 jam yang lalu', color: '#10B981' },
-                  { title: terms.isTanaman ? 'Cek Kondisi Lahan Rutin' : 'Cek Kualitas Air Rutin', desc: 'Semua parameter normal • 5 jam yang lalu', color: '#10B981' },
-                  { title: terms.isTanaman ? 'Penyiraman Tambahan' : 'Penambahan Aerasi', desc: terms.isTanaman ? 'Meningkatkan kelembaban • Kemarin' : 'Meningkatkan level DO • Kemarin', color: '#F59E0B' },
+                  { title: `Pemberian ${terms.feedLabelShort || 'Pakan'} Siang`, desc: 'Distribusi pakan normal • 2 jam yang lalu', color: '#10B981' },
+                  { title: `Pemeriksaan ${terms.unit || 'Kandang'} Rutin`, desc: 'Semua parameter normal • 5 jam yang lalu', color: '#10B981' },
+                  { title: 'Pencatatan Sanitasi & Lingkungan', desc: 'Kondisi optimal tercatat • Kemarin', color: '#F59E0B' },
                 ].map((act, i) => (
                   <div key={i} style={{ display: 'flex', gap: 16 }}>
                     <div style={{ width: 8, height: 8, borderRadius: 4, background: act.color, marginTop: 6 }} />
@@ -883,7 +955,7 @@ export default function PondDetail() {
               </button>
             </div>
             <div style={{ padding: '32px', background: '#1A3326', borderRadius: '24px', color: '#fff' }}>
-              <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{terms.isTanaman ? 'CUACA SEKTOR UTARA LAHAN' : 'CUACA SEKTOR UTARA'}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.7, letterSpacing: '0.02em' }}>Cuaca Sektor Pemeliharaan</span>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, marginBottom: 24 }}>
                 <CloudRain size={48} />
                 <div style={{ textAlign: 'right' }}>
@@ -892,7 +964,7 @@ export default function PondDetail() {
                 </div>
               </div>
               <p style={{ margin: 0, fontSize: 12, lineHeight: 1.6, opacity: 0.8 }}>
-                {terms.isTanaman ? 'Peringatan: Sesuaikan jadwal penyiraman otomatis jika curah hujan tinggi untuk mencegah kelembaban berlebih.' : 'Peringatan: Matikan pompa pakan otomatis jika hujan lebat untuk mencegah overfeeding.'}
+                {terms.weatherAdvice || 'Peringatan: Pastikan sirkulasi udara dan suhu kandang terjaga stabil saat musim hujan.'}
               </p>
             </div>
           </div>
@@ -1202,11 +1274,11 @@ export default function PondDetail() {
                 </div>
                 <div>
                   <label style={labelStyle}>Catatan penyakit / gejala</label>
-                  <textarea value={formHealth.disease_note} onChange={e => setFormHealth({...formHealth, disease_note: e.target.value})} style={{...inputStyle, height: 80, resize: 'none'}} placeholder={terms.isTanaman ? "Contoh: Tanaman layu, daun menguning..." : "Contoh: Ikan terlihat lemas, bintik putih..."} />
+                  <textarea value={formHealth.disease_note} onChange={e => setFormHealth({...formHealth, disease_note: e.target.value})} style={{...inputStyle, height: 80, resize: 'none'}} placeholder={terms.healthDiseasePlaceholder || 'Contoh: Lesu, nafsu makan turun...'} />
                 </div>
                 <div>
                   <label style={labelStyle}>Tindakan yang dilakukan</label>
-                  <textarea value={formHealth.treatment_note} onChange={e => setFormHealth({...formHealth, treatment_note: e.target.value})} style={{...inputStyle, height: 80, resize: 'none'}} placeholder={terms.isTanaman ? "Contoh: Penyemprotan pestisida, pemangkasan daun..." : "Contoh: Pemberian obat A, ganti air 30%..."} />
+                  <textarea value={formHealth.treatment_note} onChange={e => setFormHealth({...formHealth, treatment_note: e.target.value})} style={{...inputStyle, height: 80, resize: 'none'}} placeholder="Contoh: Pemberian vitamin / antibiotik / penanganan khusus..." />
                 </div>
                 <div>
                   <label style={labelStyle}>Tanggal pencatatan</label>
@@ -1264,7 +1336,7 @@ export default function PondDetail() {
                                          onChange={e => setFormHarvest({...formHarvest, harvest_type: e.target.value})} 
                       style={inputStyle}
                     >
-                      <option value="total">{terms.isTanaman ? 'Panen Total (Tutup siklus & kosongkan lahan)' : 'Panen Total (Tutup siklus & kosongkan kolam)'}</option>
+                      <option value="total">{`Panen Total (Tutup siklus & kosongkan ${terms.unitLower})`}</option>
                       <option value="sebagian">Panen Sebagian (Siklus budidaya terus berlanjut)</option>
                     </select>
                   </div>
@@ -1337,16 +1409,16 @@ export default function PondDetail() {
                 <div style={{ padding: '12px 16px', background: '#F5F3FF', borderRadius: '12px', marginBottom: 4, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <Scale size={16} style={{ color: '#7C3AED', marginTop: 1, flexShrink: 0 }} />
                   <p style={{ margin: 0, fontSize: 12, color: '#5B21B6', fontWeight: 500, lineHeight: 1.5 }}>
-                    {terms.isTanaman ? 'Sampling dilakukan dengan mengukur tinggi/berat sampel tanaman secara acak lalu menghitung rata-rata.' : 'Sampling dilakukan dengan menimbang sampel ikan secara acak lalu menghitung berat rata-rata. Sistem akan otomatis menghitung estimasi total biomassa.'}
+                    {terms.samplingDesc || 'Sampling dilakukan untuk memantau pertumbuhan rata-rata populasi.'}
                   </p>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   <NumericInput
-                    label={terms.isTanaman ? 'Tinggi rata-rata sampel' : 'Berat rata-rata sampel'}
+                    label={terms.growthMetricLabel ? `${terms.growthMetricLabel} sampel` : 'Berat rata-rata sampel'}
                     value={formSampling.average_weight_gram}
                     onChange={v => setFormSampling({...formSampling, average_weight_gram: v})}
                     placeholder="Contoh: 125"
-                    suffix={terms.isTanaman ? 'cm' : 'gram'}
+                    suffix={terms.growthUnit || 'gram'}
                     required
                   />
                   <div>
@@ -1371,13 +1443,19 @@ export default function PondDetail() {
                     value={formSampling.notes}
                     onChange={e => setFormSampling({...formSampling, notes: e.target.value})}
                     style={{...inputStyle, height: 70, resize: 'none'}}
-                    placeholder={terms.isTanaman ? 'Contoh: Kondisi tanaman sehat, tinggi merata...' : 'Contoh: Kondisi ikan sehat, pertumbuhan merata...'}
+                    placeholder={terms.samplingPlaceholder || 'Contoh: Kondisi sehat, pertumbuhan merata...'}
                   />
                 </div>
                 {formSampling.average_weight_gram && cycle?.seed_count && (
                   <div style={{ padding: '10px 14px', background: '#F0FDF4', borderRadius: '10px', border: '1px solid #BBF7D0' }}>
                     <span style={{ fontSize: 12, color: '#166534', fontWeight: 600 }}>
-                      {terms.isTanaman ? `Estimasi rata-rata tinggi: ${formSampling.average_weight_gram} cm` : `Estimasi biomassa: ~${((Number(formSampling.average_weight_gram) / 1000) * cycle.seed_count).toLocaleString('id-ID', { maximumFractionDigits: 1 })} kg`}
+                      {terms.isTanaman 
+                        ? `Estimasi rata-rata tinggi: ${formSampling.average_weight_gram} cm` 
+                        : (terms.category === 'livestock'
+                            ? `Estimasi rata-rata bobot: ${formSampling.average_weight_gram} kg`
+                            : `Estimasi biomassa: ~${((Number(formSampling.average_weight_gram) / 1000) * cycle.seed_count).toLocaleString('id-ID', { maximumFractionDigits: 1 })} kg`
+                          )
+                      }
                     </span>
                   </div>
                 )}

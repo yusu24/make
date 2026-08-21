@@ -21,7 +21,10 @@ export const PageLoader = () => (
 export const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) {
+    const wasDemo = sessionStorage.getItem('is_demo_sandbox') === 'true';
+    return <Navigate to={wasDemo ? "/" : "/login"} replace />;
+  }
   if (adminOnly && (user.role === 'customer' || user.role === 'retail_cashier')) return <Navigate to="/" replace />;
   return children;
 };
@@ -35,6 +38,7 @@ export const GuestRoute = ({ children }) => {
     if (user.business_category === 'Budidaya Hewan' || user.business_category === 'Budidaya Tanaman') return <Navigate to="/budidaya/dashboard" replace />;
     if (user.business_category === 'Kuliner') return <Navigate to="/kuliner/admin" replace />;
     if (user.business_category === 'Seller') return <Navigate to="/seller/dashboard" replace />;
+    if (user.business_category === 'Jasa') return <Navigate to="/jasa/dashboard" replace />;
     return <Navigate to="/coming-soon" replace />;
   }
   return children;
@@ -55,6 +59,9 @@ export const RootRedirect = () => {
   }
   if (user?.business_category === 'Seller') {
     return <Navigate to="/seller/dashboard" replace />;
+  }
+  if (user?.business_category === 'Jasa') {
+    return <Navigate to="/jasa/dashboard" replace />;
   }
   
   return <Navigate to="/coming-soon" replace />;

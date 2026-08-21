@@ -126,25 +126,26 @@ export default function ReportsAnalytics() {
     <div className="animate-fade-in">
       {/* ── Header ── */}
       <div className="page-header">
-        <div>
-          <h2 className="page-title">Reports & Analytics</h2>
-          <p className="page-sub">Analitik pertumbuhan tenant, pendapatan, dan distribusi paket.</p>
-        </div>
-        <button className="btn btn-primary" onClick={() => alert('Export segera hadir!')}>📥 Export</button>
+        <h2 className="page-title">Laporan &amp; Analitik</h2>
       </div>
 
-      {/* ── Tabs ── */}
-      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border-color)', marginBottom: 24 }}>
-        {tabs.map(t => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{
-            padding: '10px 18px', background: 'none', border: 'none',
-            borderBottom: activeTab === t ? '2px solid var(--primary-500)' : '2px solid transparent',
-            color: activeTab === t ? 'var(--primary-500)' : 'var(--text-muted)',
-            fontWeight: 600, cursor: 'pointer', fontSize: 13, transition: 'all 0.2s'
-          }}>
-            {tabLabel[t]}
-          </button>
-        ))}
+      {/* ── Tabs & Actions Toolbar ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {tabs.map(t => (
+            <button key={t} onClick={() => setActiveTab(t)} style={{
+              padding: '10px 18px', background: 'none', border: 'none',
+              borderBottom: activeTab === t ? '2px solid var(--primary-500)' : '2px solid transparent',
+              color: activeTab === t ? 'var(--primary-500)' : 'var(--text-muted)',
+              fontWeight: 600, cursor: 'pointer', fontSize: 13, transition: 'all 0.2s'
+            }}>
+              {tabLabel[t]}
+            </button>
+          ))}
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={() => alert('Export segera hadir!')} style={{ marginBottom: 6 }}>
+          📥 Export Data
+        </button>
       </div>
 
       {/* ── OVERVIEW TAB ── */}

@@ -43,19 +43,23 @@ const KulinerAdminLayout = ({ children }) => {
 
   const [openGroups, setOpenGroups] = useState({
     operational: false,
-    catalog: false,
     inventory: false,
+    masterData: false,
     finance: false,
+    reports: false,
+    marketing: false,
     settings: false
   });
 
   useEffect(() => {
     const path = location.pathname;
     setOpenGroups({
-      operational: path === '/kuliner/admin/orders' || path === '/kuliner/admin/kitchen-queue' || path === '/kuliner/admin/shift' || path === '/kuliner/admin/tables',
-      catalog: path === '/kuliner/admin/categories' || path === '/kuliner/admin/modifiers' || path === '/kuliner/admin/addons' || path === '/kuliner/admin/bundles',
-      inventory: path === '/kuliner/admin/ingredients' || path === '/kuliner/admin/recipes' || path === '/kuliner/admin/stock-opname' || path === '/kuliner/admin/waste',
-      finance: path === '/kuliner/admin/reports' || path === '/kuliner/admin/analytics' || path === '/kuliner/admin/transactions' || path === '/kuliner/admin/reports-advanced' || path === '/kuliner/admin/promos' || path === '/kuliner/admin/reviews' || path === '/kuliner/admin/expenses' || path === '/kuliner/admin/finance-summary' || path === '/kuliner/admin/finance-categories',
+      operational: path === '/kuliner/admin/orders' || path === '/kuliner/admin/kitchen-queue' || path === '/kuliner/admin/shift',
+      inventory: path === '/kuliner/admin/stock-opname' || path === '/kuliner/admin/waste' || path === '/kuliner/admin/purchases',
+      masterData: path === '/kuliner/admin/categories' || path === '/kuliner/admin/modifiers' || path === '/kuliner/admin/addons' || path === '/kuliner/admin/bundles' || path === '/kuliner/admin/ingredients' || path === '/kuliner/admin/recipes' || path === '/kuliner/admin/suppliers' || path === '/kuliner/admin/finance-categories' || path === '/kuliner/admin/tables',
+      finance: path === '/kuliner/admin/finance-summary' || path === '/kuliner/admin/expenses',
+      reports: path === '/kuliner/admin/reports' || path === '/kuliner/admin/analytics' || path === '/kuliner/admin/transactions' || path === '/kuliner/admin/reports-advanced',
+      marketing: path === '/kuliner/admin/promos' || path === '/kuliner/admin/reviews',
       settings: path === '/kuliner/admin/staff' || path === '/kuliner/admin/roles' || path === '/kuliner/admin/settings' || path === '/kuliner/admin/support'
     });
   }, [location.pathname]);
@@ -112,15 +116,15 @@ const KulinerAdminLayout = ({ children }) => {
   };
 
   const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','seller@demo.com']
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-sandbox-') || user?.email?.startsWith('demo-kuliner-') || DEMO_EMAILS.includes(user?.email) || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'));
 
   const handleLogout = () => {
     if (isImpersonating && isImpersonating()) {
       const redirectPath = exitImpersonate();
-      navigate(redirectPath || '/tenants');
+      window.location.href = redirectPath || '/tenants';
     } else {
-      const isDemo = user?.email?.startsWith('demo-sandbox-') || user?.email?.startsWith('demo-kuliner-') || DEMO_EMAILS.includes(user?.email);
-      logout();
-      navigate(isDemo ? '/' : '/login');
+      try { logout(); } catch {}
+      window.location.href = isDemo ? '/' : '/login';
     }
   };
 
@@ -207,25 +211,20 @@ const KulinerAdminLayout = ({ children }) => {
                       <span className="kd-nav-icon">🗄️</span><span>{t('sidebar.cashierShift')}</span>
                     </Link>
                   )}
-                  {hasPermission('orders') && (
-                    <Link to="/kuliner/admin/tables" className={`kd-nav-item ${location.pathname === '/kuliner/admin/tables' ? 'active' : ''}`}>
-                      <span className="kd-nav-icon">🍽️</span><span>{t('sidebar.tableQrOrder')}</span>
-                    </Link>
-                  )}
                 </div>
               )}
             </div>
 
-            {/* Katalog & Menu */}
+            {/* Master Data */}
             <div className="kd-nav-section" style={{ marginBottom: 8 }}>
-              <div className="kd-nav-group-header" onClick={() => toggleGroup('catalog')}>
+              <div className="kd-nav-group-header" onClick={() => toggleGroup('masterData')}>
                 <div className="kd-nav-group-title-container">
-                  <span className="kd-nav-icon">📖</span>
-                  <span className="kd-nav-group-title">{t('sidebar.catalogMenu')}</span>
+                  <span className="kd-nav-icon">🗃️</span>
+                  <span className="kd-nav-group-title">Master Data</span>
                 </div>
-                <span className={`kd-nav-group-arrow ${openGroups.catalog ? 'open' : ''}`}>▶</span>
+                <span className={`kd-nav-group-arrow ${openGroups.masterData ? 'open' : ''}`}>▶</span>
               </div>
-              {openGroups.catalog && (
+              {openGroups.masterData && (
                 <div className="kd-nav-group-items">
                   {hasPermission('menu') && (
                     <Link to="/kuliner/admin/categories" className={`kd-nav-item ${location.pathname === '/kuliner/admin/categories' ? 'active' : ''}`}>
@@ -247,6 +246,35 @@ const KulinerAdminLayout = ({ children }) => {
                       <span className="kd-nav-icon">➕</span><span>{t('sidebar.addonTopping')}</span>
                     </Link>
                   )}
+                  {hasPermission('ingredients') && (
+                    <Link to="/kuliner/admin/ingredients" className={`kd-nav-item ${location.pathname === '/kuliner/admin/ingredients' ? 'active' : ''}`}>
+                      <span className="kd-nav-icon">🧅</span><span>{t('sidebar.rawIngredients')}</span>
+                    </Link>
+                  )}
+                  {hasPermission('recipes') && (
+                    <Link to="/kuliner/admin/recipes" className={`kd-nav-item ${location.pathname === '/kuliner/admin/recipes' ? 'active' : ''}`}>
+                      <span className="kd-nav-icon">📝</span><span>{t('sidebar.recipesBom')}</span>
+                    </Link>
+                  )}
+                  {hasPermission('ingredients') && (
+                    <Link to="/kuliner/admin/suppliers" className={`kd-nav-item ${location.pathname === '/kuliner/admin/suppliers' ? 'active' : ''}`}>
+                      <span className="kd-nav-icon">🏢</span><span>Supplier Bahan</span>
+                    </Link>
+                  )}
+                  {hasPermission('orders') && (
+                    <Link to="/kuliner/admin/tables" className={`kd-nav-item ${location.pathname === '/kuliner/admin/tables' ? 'active' : ''}`}>
+                      <span className="kd-nav-icon">🪑</span><span>{t('sidebar.tableQrOrder')}</span>
+                    </Link>
+                  )}
+                  {hasPermission('reports') && (
+                    <Link 
+                      to="/kuliner/admin/finance-categories" 
+                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/finance-categories' ? 'active' : ''}`}
+                    >
+                      <span className="kd-nav-icon">🏷️</span>
+                      <span>Kategori Keuangan</span>
+                    </Link>
+                  )}
                 </div>
               )}
             </div>
@@ -263,13 +291,8 @@ const KulinerAdminLayout = ({ children }) => {
               {openGroups.inventory && (
                 <div className="kd-nav-group-items">
                   {hasPermission('ingredients') && (
-                    <Link to="/kuliner/admin/ingredients" className={`kd-nav-item ${location.pathname === '/kuliner/admin/ingredients' ? 'active' : ''}`}>
-                      <span className="kd-nav-icon">🧂</span><span>{t('sidebar.rawIngredients')}</span>
-                    </Link>
-                  )}
-                  {hasPermission('recipes') && (
-                    <Link to="/kuliner/admin/recipes" className={`kd-nav-item ${location.pathname === '/kuliner/admin/recipes' ? 'active' : ''}`}>
-                      <span className="kd-nav-icon">📝</span><span>{t('sidebar.recipesBom')}</span>
+                    <Link to="/kuliner/admin/purchases" className={`kd-nav-item ${location.pathname === '/kuliner/admin/purchases' ? 'active' : ''}`}>
+                      <span className="kd-nav-icon">🛒</span><span>Pembelian Bahan</span>
                     </Link>
                   )}
                   {hasPermission('ingredients') && (
@@ -286,7 +309,7 @@ const KulinerAdminLayout = ({ children }) => {
               )}
             </div>
 
-            {/* Keuangan & Transaksi */}
+            {/* Keuangan Bisnis */}
             <div className="kd-nav-section" style={{ marginBottom: 8 }}>
               <div 
                 className="kd-nav-group-header" 
@@ -294,11 +317,47 @@ const KulinerAdminLayout = ({ children }) => {
               >
                 <div className="kd-nav-group-title-container">
                   <span className="kd-nav-icon">💰</span>
-                  <span className="kd-nav-group-title">{t('sidebar.financeReports')}</span>
+                  <span className="kd-nav-group-title">Keuangan Bisnis</span>
                 </div>
                 <span className={`kd-nav-group-arrow ${openGroups.finance ? 'open' : ''}`}>▶</span>
               </div>
               {openGroups.finance && (
+                <div className="kd-nav-group-items">
+                  {hasPermission('reports') && (
+                    <Link 
+                      to="/kuliner/admin/finance-summary" 
+                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/finance-summary' ? 'active' : ''}`}
+                    >
+                      <span className="kd-nav-icon">📈</span>
+                      <span>Laba Rugi</span>
+                    </Link>
+                  )}
+                  {hasPermission('reports') && (
+                    <Link 
+                      to="/kuliner/admin/expenses" 
+                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/expenses' ? 'active' : ''}`}
+                    >
+                      <span className="kd-nav-icon">📉</span>
+                      <span>Pencatatan Kas</span>
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Laporan & Analitik */}
+            <div className="kd-nav-section" style={{ marginBottom: 8 }}>
+              <div 
+                className="kd-nav-group-header" 
+                onClick={() => toggleGroup('reports')}
+              >
+                <div className="kd-nav-group-title-container">
+                  <span className="kd-nav-icon">📊</span>
+                  <span className="kd-nav-group-title">Laporan & Analitik</span>
+                </div>
+                <span className={`kd-nav-group-arrow ${openGroups.reports ? 'open' : ''}`}>▶</span>
+              </div>
+              {openGroups.reports && (
                 <div className="kd-nav-group-items">
                   {hasPermission('reports') && (
                     <Link 
@@ -316,33 +375,6 @@ const KulinerAdminLayout = ({ children }) => {
                     >
                       <span className="kd-nav-icon">📑</span>
                       <span>{t('sidebar.advancedReports')}</span>
-                    </Link>
-                  )}
-                  {hasPermission('reports') && (
-                    <Link 
-                      to="/kuliner/admin/finance-summary" 
-                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/finance-summary' ? 'active' : ''}`}
-                    >
-                      <span className="kd-nav-icon">📈</span>
-                      <span>Laba Rugi</span>
-                    </Link>
-                  )}
-                  {hasPermission('reports') && (
-                    <Link 
-                      to="/kuliner/admin/expenses" 
-                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/expenses' ? 'active' : ''}`}
-                    >
-                      <span className="kd-nav-icon">📉</span>
-                      <span>Pengeluaran Resto</span>
-                    </Link>
-                  )}
-                  {hasPermission('reports') && (
-                    <Link 
-                      to="/kuliner/admin/finance-categories" 
-                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/finance-categories' ? 'active' : ''}`}
-                    >
-                      <span className="kd-nav-icon">🏷️</span>
-                      <span>Kategori Keuangan</span>
                     </Link>
                   )}
                   {hasPermission('analytics') && (
@@ -363,12 +395,30 @@ const KulinerAdminLayout = ({ children }) => {
                       <span>{t('sidebar.transactionList')}</span>
                     </Link>
                   )}
+                </div>
+              )}
+            </div>
+
+            {/* Pemasaran & Pelanggan */}
+            <div className="kd-nav-section" style={{ marginBottom: 8 }}>
+              <div 
+                className="kd-nav-group-header" 
+                onClick={() => toggleGroup('marketing')}
+              >
+                <div className="kd-nav-group-title-container">
+                  <span className="kd-nav-icon">🎁</span>
+                  <span className="kd-nav-group-title">Pemasaran & Loyalitas</span>
+                </div>
+                <span className={`kd-nav-group-arrow ${openGroups.marketing ? 'open' : ''}`}>▶</span>
+              </div>
+              {openGroups.marketing && (
+                <div className="kd-nav-group-items">
                   {hasPermission('reports') && (
                     <Link
                       to="/kuliner/admin/promos"
                       className={`kd-nav-item ${location.pathname === '/kuliner/admin/promos' ? 'active' : ''}`}
                     >
-                      <span className="kd-nav-icon">🎁</span>
+                      <span className="kd-nav-icon">🏷️</span>
                       <span>Kelola Promo</span>
                     </Link>
                   )}
@@ -648,7 +698,7 @@ const KulinerAdminLayout = ({ children }) => {
                     onMouseLeave={e => e.currentTarget.style.background='transparent'}
                   >
                     <span>🚪</span>
-                    <span>Keluar Akun</span>
+                    <span>{isDemo ? 'Keluar dari Akun Demo' : 'Keluar Akun'}</span>
                   </button>
                 </div>
               )}

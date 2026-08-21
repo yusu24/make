@@ -106,11 +106,7 @@ export default function ContentAnnouncement() {
 
       {/* ── Header ── */}
       <div className="page-header">
-        <div>
-          <h2 className="page-title">Content &amp; Announcement</h2>
-          <p className="page-sub">Kelola pengumuman, notifikasi, dan konten yang dikirim ke tenant.</p>
-        </div>
-        <button className="btn btn-primary" onClick={openAdd}>+ Buat Pengumuman</button>
+        <h2 className="page-title">Content &amp; Announcement</h2>
       </div>
 
       {/* ── Stats ── */}
@@ -141,8 +137,8 @@ export default function ContentAnnouncement() {
         ))}
       </div>
 
-      {/* ── Filter Tabs ── */}
-      <div className="filter-bar" style={{ marginBottom: 20 }}>
+      {/* ── Filter Toolbar ── */}
+      <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
         <div className="filter-tabs">
           {['all', 'maintenance', 'feature', 'promo', 'security'].map(f => (
             <button key={f} className={`filter-tab ${filter === f ? 'filter-tab--active' : ''}`} onClick={() => setFilter(f)}>
@@ -150,6 +146,8 @@ export default function ContentAnnouncement() {
             </button>
           ))}
         </div>
+
+        <button className="btn btn-primary" onClick={openAdd}>+ Buat Pengumuman</button>
       </div>
 
       {/* ── Cards Grid ── */}

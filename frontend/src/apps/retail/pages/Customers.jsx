@@ -89,10 +89,8 @@ export default function Customers() {
 
 
   return (
-    <div className="animate-fade-in retail-dashboard-spacing">
-      {/* Page Header (Synced with Finance) */}
-
-
+    <div className="retail-page-classic">
+      {/* Page Title Handled by Navtop */}
       {/* CRM Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 24 }}>
          {/* Total Member Card */}
@@ -131,7 +129,7 @@ export default function Customers() {
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button
+          <button title="Tambah pelanggan"
             className="btn btn-primary"
             style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
             onClick={() => { setEditingCustomer(null); setShowModal(true); }}

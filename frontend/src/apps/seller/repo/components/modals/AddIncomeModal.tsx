@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Income } from '../../types';
 import api from '../../../../../services/api';
+import { useAuth } from '../../../../../contexts/AuthContext';
+import { formatNumberInput, parseFormattedNumber } from '../../utils/formatters';
 
 interface FinanceCategoryOption {
   id: number;
@@ -21,6 +23,7 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
   onSaveIncome,
   incomeToEdit,
 }) => {
+  const { user } = useAuth();
   const [date, setDate] = useState<string>(new Date().toISOString().substring(0, 10));
   const [description, setDescription] = useState<string>('');
   const [amount, setAmount] = useState<string>('');
@@ -38,7 +41,10 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
     if (incomeToEdit) {
       setDate(incomeToEdit.date);
       setDescription(incomeToEdit.description);
-      setAmount(incomeToEdit.amount.toString());
+      setAmount(incomeToEdit.amount.toLocaleString('id-ID'));
+      if (incomeToEdit.financeCategoryId) {
+        setFinanceCategoryId(incomeToEdit.financeCategoryId.toString());
+      }
     } else {
       setDate(new Date().toISOString().substring(0, 10));
       setDescription('');
@@ -59,9 +65,10 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
       {
         date,
         description,
-        amount: Number(amount),
+        amount: parseFormattedNumber(amount),
         category: (selectedCategory?.name as Income['category']) || 'Lain-lain',
         storeName: 'Toko Offline',
+        createdByName: user?.name || '-',
       },
       financeCategoryId || null,
       incomeToEdit ? incomeToEdit.id : undefined
@@ -145,10 +152,10 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
                 Rp
               </span>
               <input
-                type="number"
-                placeholder="250000"
+                type="text"
+                placeholder="250.000"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => setAmount(formatNumberInput(e.target.value))}
                 required
                 className="w-full pl-10 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold text-emerald-600 dark:text-emerald-400 focus:ring-2 focus:ring-emerald-500/40 text-sm"
               />

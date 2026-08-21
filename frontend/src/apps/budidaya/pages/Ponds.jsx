@@ -1,42 +1,30 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
-import { LoadingButton, EmptyState, Breadcrumbs } from '../components/UXComponents'
+import { LoadingButton, EmptyState } from '../components/UXComponents'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
 // ── Colour helpers ──────────────────────────────────────────────────────────
 const STATUS = {
-  healthy: { label: 'SEHAT', bg: '#1B4332',  text: '#fff' },
-  warning: { label: 'PERINGATAN', bg: '#EF4444',  text: '#fff' },
-  kosong:  { label: 'KOSONG',   bg: '#64748B',  text: '#fff' },
+  healthy: { label: 'AKTIF', bg: '#D1FAE5', text: '#059669' },
+  warning: { label: 'PERINGATAN', bg: '#FEE2E2', text: '#EF4444' },
+  kosong:  { label: 'KOSONG',   bg: '#F1F5F9', text: '#64748B' },
 }
-
-
-// ── Card style ─────────────────────────────────────────────────────────────
-const card = {
-  background: '#fff',
-  border: '1px solid #E9F0EC',
-  borderRadius: 16,
-  overflow: 'hidden',
-  position: 'relative'
-}
-
-import { useNavigate } from 'react-router-dom'
 
 export default function Ponds() {
   const navigate = useNavigate()
   const terms = useBudidayaTerms()
   const [ponds, setPonds]       = useState([])
   const [loading, setLoading]   = useState(true)
-  const [view, setView]         = useState('grid')
   const [search, setSearch]     = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   
   // We determine default type based on categories
-  const defaultType = terms.isTanaman ? 'tanah' : 'tanah'
+  const defaultType = terms.isTanaman ? 'tanah' : (terms.types?.[0]?.[0] || 'tanah')
   const [formData, setFormData] = useState({
-    name: '', code: '', type: 'tanah', area: '',
+    name: '', code: '', type: defaultType, area: '',
     area_m2: '', depth_cm: '', max_fish_count: '', status: 'kosong',
   })
   const [saving, setSaving] = useState(false)
@@ -49,7 +37,7 @@ export default function Ponds() {
         area_m2: '', depth_cm: '', max_fish_count: '', status: 'kosong',
       })
     }
-  }, [modalOpen])
+  }, [modalOpen, defaultType])
 
   useEffect(() => { fetchPonds() }, [])
 
@@ -80,29 +68,16 @@ export default function Ponds() {
     return diffDays;
   }
 
-  const statsData = [
-    { label: terms.statsPH, value: terms.statsPHVal, sub: 'Optimal', subColor: '#10B981', bar: 0.72, barColor: '#10B981' },
-    { label: terms.statsTemp, value: terms.statsTempVal, sub: terms.isTanaman ? 'Optimal' : '+0.2%', subColor: '#10B981', bar: 0.60, barColor: '#10B981' },
-    { label: terms.statsO2, value: terms.statsO2Val, sub: terms.isTanaman ? 'Optimal' : '-2.1%', subColor: terms.isTanaman ? '#10B981' : '#EF4444', bar: terms.isTanaman ? 0.65 : 0.45, barColor: terms.isTanaman ? '#10B981' : '#EF4444' },
-    { label: terms.statsTodayFeed, value: terms.statsTodayFeedVal, sub: '', subColor: '#475569', bar: 0.80, barColor: '#1B4332' },
-  ]
-
   const displayPonds = ponds.map((p, i) => {
     const isAktif = p.active_cycle != null;
+    const defaultPrefix = terms.category === 'livestock' ? 'KDG' : (terms.isTanaman ? 'LHN' : 'KLM');
     return {
       id: p.id,
-      code: p.code || `${terms.isTanaman ? 'LAHAN' : 'KOLAM'}-${p.id}`,
+      code: p.code || `${defaultPrefix}-${String(p.id).padStart(2, '0')}`,
       name: p.name,
       status_key: isAktif ? 'healthy' : (p.status === 'maintenance' ? 'warning' : 'kosong'),
       age_days: isAktif ? calculateAge(p.active_cycle.seed_date) : 0,
       population: isAktif ? p.active_cycle.seed_count : 0,
-      temp: terms.isTanaman ? 26.5 : 28.5, ph: terms.isTanaman ? 6.2 : 7.2, ph_ok: true, // Mock sensor data for visual
-      thumb_gradient: i % 3 === 0 ? 'linear-gradient(145deg,#134e2a 0%,#1B4332 60%,#2D6A4F 100%)' : 
-                      i % 3 === 1 ? 'linear-gradient(145deg,#1e3a5f 0%,#1d4ed8 60%,#3b82f6 100%)' :
-                      'linear-gradient(145deg,#451a03 0%,#92400e 60%,#d97706 100%)',
-      thumb_icon: terms.isTanaman
-        ? (i % 3 === 0 ? 'grass' : i % 3 === 1 ? 'yard' : 'spa')
-        : (i % 3 === 0 ? 'water' : i % 3 === 1 ? 'waves' : 'set_meal'),
       active_cycle: p.active_cycle,
       type: p.type
     }
@@ -113,199 +88,99 @@ export default function Ponds() {
     p.code?.toLowerCase().includes(search.toLowerCase())
   )
 
-  const renderGridView = () => (
-    <div className="aq-grid-3">
-      {filtered.map((pond) => {
-        const st = STATUS[pond.status_key] || STATUS.kosong
-        return (
-          <div key={pond.id} style={{ ...card, cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.2s' }}
-            onClick={() => navigate(`/budidaya/ponds/${pond.id}`)}
-            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none' }}
-          >
-            {/* Thumbnail */}
-            <div style={{
-              height: 140,
-              background: pond.thumb_gradient || 'linear-gradient(145deg,#1B4332,#2D6A4F)',
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 52, color: 'rgba(255,255,255,0.15)', fontVariationSettings: "'FILL' 1" }}>
-                {pond.thumb_icon}
-              </span>
-              {/* Badges */}
-              <div style={{ position: 'absolute', bottom: 10, left: 10, display: 'flex', gap: 6 }}>
-                <span style={{ background: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, backdropFilter: 'blur(4px)' }}>
-                  {pond.code}
-                </span>
-                <span style={{ background: st.bg, color: st.text, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6 }}>
-                  {st.label}
-                </span>
-              </div>
-            </div>
-
-            {/* Body */}
-            <div style={{ padding: '16px 18px' }}>
-              {/* Title row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                <div>
-                  <p className="aq-section-title" style={{ fontSize: 15 }}>{pond.name}</p>
-                  <p className="aq-small-text" style={{ marginTop: 2 }}>
-                    Usia: {pond.age_days} hari • Populasi: {(pond.population || 0).toLocaleString()} {terms.populationCount}
-                  </p>
-                </div>
-                <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: 4 }} onClick={(e) => e.stopPropagation()}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>more_vert</span>
-                </button>
-              </div>
-
-              {/* Sensor boxes */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-                <div style={{ background: '#F4F7F5', borderRadius: 10, padding: '10px 12px' }}>
-                  <p className="aq-kpi-label" style={{ fontSize: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: '#2D6A4F' }}>thermostat</span> {terms.isTanaman ? 'Suhu Udara' : 'Suhu'}
-                  </p>
-                  <p className="aq-kpi-value" style={{ fontSize: 18 }}>{pond.temp}°C</p>
-                </div>
-                <div style={{ background: pond.ph_ok === false ? '#FFF5F5' : '#F4F7F5', border: pond.ph_ok === false ? '1px solid #FECACA' : 'none', borderRadius: 10, padding: '10px 12px' }}>
-                  <p className="aq-kpi-label" style={{ fontSize: 10, color: pond.ph_ok === false ? '#EF4444' : 'var(--aq-text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 13, color: pond.ph_ok === false ? '#EF4444' : '#10B981' }}>science</span> {terms.phLabel}
-                  </p>
-                  <p className="aq-kpi-value" style={{ fontSize: 18, color: pond.ph_ok === false ? '#EF4444' : 'var(--aq-text-primary)' }}>{pond.ph}</p>
-                </div>
-              </div>
-
-              {/* Action buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <button style={{
-                  background: '#1B4332', color: '#fff',
-                  border: 'none', borderRadius: 10,
-                  padding: '10px 0', fontSize: 13, fontWeight: 600,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{terms.iconFeed}</span> {terms.feedLabelShort}
-                </button>
-                <button style={{
-                  background: '#F4F7F5', color: '#1B4332',
-                  border: '1.5px solid #E9F0EC', borderRadius: 10,
-                  padding: '10px 0', fontSize: 13, fontWeight: 600,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>health_and_safety</span> {terms.healthLabel}
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      })}
-      {/* ── New Pond Card ── */}
-      <div
-        onClick={() => setModalOpen(true)}
-        style={{
-          ...card,
-          minHeight: 320,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-          cursor: 'pointer',
-          border: '2px dashed #D8F3DC',
-          background: '#F9FDF9',
-          transition: 'border-color 0.15s, background 0.15s',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = '#1B4332'; e.currentTarget.style.background = '#F0FAF4' }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = '#D8F3DC'; e.currentTarget.style.background = '#F9FDF9' }}
-      >
-        <div style={{ width: 48, height: 48, borderRadius: 14, background: '#E8F5ED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 28, color: '#1B4332' }}>add</span>
-        </div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: '#1B4332', margin: 0 }}>{terms.newUnit}</p>
-        <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>{`Tambah ${terms.unitLower} baru`}</p>
-      </div>
-    </div>
-  )
-
   const renderTableView = () => (
-    <div className="aq-table-container">
-      <Table>
-        <TableHeader>
-          <TableRow isHoverable={false}>
-            <TableHeaderCell>{terms.unitCode}</TableHeaderCell>
-            <TableHeaderCell>{terms.unitName}</TableHeaderCell>
-            <TableHeaderCell>{terms.typeUnit}</TableHeaderCell>
-            <TableHeaderCell>Usia (hari)</TableHeaderCell>
-            <TableHeaderCell>{terms.populationCountTitle}</TableHeaderCell>
-            <TableHeaderCell>Status</TableHeaderCell>
-            <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filtered.map((pond) => {
-            const st = STATUS[pond.status_key] || STATUS.kosong
-            return (
-              <TableRow key={pond.id} onClick={() => navigate(`/budidaya/ponds/${pond.id}`)} style={{ cursor: 'pointer' }}>
-                <TableCell>{pond.code}</TableCell>
-                <TableCell>{pond.name}</TableCell>
-                <TableCell isSecondary>{pond.type}</TableCell>
-                <TableCell>{pond.age_days}</TableCell>
-                <TableCell>{(pond.population || 0).toLocaleString()} {terms.populationCount}</TableCell>
-                <TableCell>
-                  <span style={{ 
-                    padding: '4px 10px', borderRadius: '40px', fontSize: '11px', fontWeight: '700',
-                    background: st.bg, color: st.text, display: 'inline-block'
-                  }}>
-                    {st.label}
-                  </span>
-                </TableCell>
-                <TableCell style={{ textAlign: 'right' }}>
-                  <button style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer' }} onClick={(e) => e.stopPropagation()}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>more_vert</span>
-                  </button>
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
+    <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+      <div className="aq-table-container">
+        <Table>
+          <TableHeader>
+            <TableRow isHoverable={false}>
+              <TableHeaderCell>{terms.unitCode}</TableHeaderCell>
+              <TableHeaderCell>{terms.unitName}</TableHeaderCell>
+              <TableHeaderCell>{terms.typeUnit}</TableHeaderCell>
+              <TableHeaderCell>Usia (hari)</TableHeaderCell>
+              <TableHeaderCell>{terms.populationCountTitle}</TableHeaderCell>
+              <TableHeaderCell>Status</TableHeaderCell>
+              <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.map((pond) => {
+              const st = STATUS[pond.status_key] || STATUS.kosong
+              return (
+                <TableRow key={pond.id} onClick={() => navigate(`/budidaya/ponds/${pond.id}`)} style={{ cursor: 'pointer' }}>
+                  <TableCell>
+                    <span style={{ fontWeight: 700, color: '#1B4332', background: '#E8F5ED', padding: '4px 10px', borderRadius: 6, fontSize: 12 }}>
+                      {pond.code}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span style={{ fontWeight: 600, color: '#1E293B' }}>{pond.name}</span>
+                  </TableCell>
+                  <TableCell isSecondary>
+                    <span style={{ textTransform: 'capitalize' }}>{pond.type || '-'}</span>
+                  </TableCell>
+                  <TableCell>{pond.age_days} hari</TableCell>
+                  <TableCell>
+                    <span style={{ fontWeight: 600 }}>
+                      {(pond.population || 0).toLocaleString()} {terms.populationCount}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span style={{ 
+                      padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700',
+                      background: st.bg, color: st.text, display: 'inline-block'
+                    }}>
+                      {st.label}
+                    </span>
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
+                      <button 
+                        style={{ padding: '6px 12px', background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/budidaya/ponds/${pond.id}`) }}
+                      >
+                        Detail
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 
   return (
     <div className="aq-container">
 
-
       {/* ── Page Actions ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', justifyContent: 'space-between' }}>
-          {/* Grid / Table Toggle */}
-          <div style={{ display: 'flex', background: '#fff', border: '1px solid #E9F0EC', borderRadius: 10, padding: 3, gap: 2 }}>
-            {[['grid', 'grid_view', 'Grid'], ['table', 'table_rows', 'Tabel']].map(([v, icon, lbl]) => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '7px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  fontSize: 13, fontWeight: 600,
-                  background: view === v ? '#1B4332' : 'transparent',
-                  color: view === v ? '#fff' : '#64748B',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{icon}</span>
-                <span className="hide-mobile">{lbl}</span>
-              </button>
-            ))}
-          </div>
-        <button className="btn btn-primary" onClick={() => setModalOpen(true)}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
+        {/* Search bar */}
+        <div style={{ position: 'relative', width: '320px' }}>
+          <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748B', fontSize: '18px' }}>search</span>
+          <input 
+            placeholder={`Cari kode atau nama ${terms.unitLower}...`}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ width: '100%', padding: '10px 12px 10px 38px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px', fontSize: '13.5px', outline: 'none' }}
+          />
+        </div>
+
+        <button 
+          className="btn btn-primary" 
+          onClick={() => setModalOpen(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px',
+            borderRadius: '10px', background: '#1B4332', color: '#fff', border: 'none',
+            fontWeight: 700, cursor: 'pointer'
+          }}
+        >
           <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
           {terms.addUnit}
         </button>
       </div>
-    </div>
 
       {/* ── Content ── */}
       {loading ? (
@@ -322,205 +197,126 @@ export default function Ponds() {
           actionLabel={terms.registerUnit}
         />
       ) : (
-        <>
-          <div className="aq-grid-4">
-            {statsData.map(s => (
-              <div key={s.label} style={{ ...card, padding: '16px 20px' }}>
-                <p className="aq-kpi-label">{s.label.toLowerCase()}</p>
-                <p className="aq-kpi-value" style={{ fontSize: 24 }}>
-                  {s.value}
-                  {s.sub && <span className="aq-small-text" style={{ fontWeight: 600, color: s.subColor, marginLeft: 6 }}>{s.sub}</span>}
-                </p>
-                <div style={{ height: 4, background: '#F1F5F9', borderRadius: 2, marginTop: 8 }}>
-                  <div style={{ height: 4, width: `${s.bar * 100}%`, background: s.barColor, borderRadius: 2 }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ marginTop: 24 }}>
-            {view === 'grid' ? renderGridView() : renderTableView()}
-          </div>
-        </>
+        renderTableView()
       )}
 
-      {/* ── FAB ── */}
-      <button
-        onClick={() => setModalOpen(true)}
-        style={{
-          position: 'fixed', bottom: 28, right: 28,
-          width: 52, height: 52, borderRadius: '50%',
-          background: '#1B4332', color: '#fff',
-          border: 'none', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 16px rgba(27,67,50,0.35)',
-          zIndex: 100,
-          transition: 'transform 0.15s',
-        }}
-        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: 26 }}>add</span>
-      </button>
-
-      {/* ── Add Pond Modal (custom inline — always light) ── */}
+      {/* ── Modal Tambah Kolam / Kandang / Lahan ── */}
       {modalOpen && (
-        <div
-          onClick={() => setModalOpen(false)}
-          style={{
-            position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,0.45)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 9999,
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              width: '100%', maxWidth: 580,
-              background: '#ffffff',
-              borderRadius: 24,
-              boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
-              overflow: 'hidden',
-              fontFamily: "'Inter', sans-serif",
-            }}
-          >
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.55)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: 16, backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 20,
+            padding: 32, width: '100%', maxWidth: 520,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+            position: 'relative',
+          }}>
             {/* Modal Header */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '24px 28px 20px',
-              borderBottom: '1px solid #E9F0EC',
-            }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: 12,
-                  background: '#D8F3DC',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#1B4332' }}>{terms.iconSeed}</span>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: '#E8F5ED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#1B4332' }}>{terms.iconMain}</span>
                 </div>
                 <div>
                   <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1A1C1A', margin: 0 }}>{`Tambah ${terms.unit} Baru`}</h3>
-                  <p style={{ fontSize: 12, color: '#64748B', margin: 0, marginTop: 2 }}>{`Isi data ${terms.unitLower} untuk mulai memantau`}</p>
+                  <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>{`Masukkan data ${terms.unitLower} baru Anda`}</p>
                 </div>
               </div>
               <button
                 onClick={() => setModalOpen(false)}
-                style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: '#F4F7F5', border: 'none',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: '#475569',
-                }}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span>
               </button>
             </div>
 
-            {/* Modal Body */}
-            <form onSubmit={handleSubmit}
-              style={{ padding: '24px 28px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}
-            >
-              {/* Adaptive grid for fields */}
-              <div className="aq-grid-2">
-                {[
-                  [`Nama ${terms.unit}`, 'name', 'text', terms.isTanaman ? 'Lahan Barat A1' : 'Budidaya Lele A1', true],
-                  [`Kode ${terms.unit}`, 'code', 'text', terms.isTanaman ? 'LAHAN-A01' : 'KOLAM-A01', false],
-                  ['Luas Area (m²)', 'area_m2', 'number', '0', false],
-                  ['Kedalaman (cm)', 'depth_cm', 'number', '100', false],
-                  [`Kapasitas (${terms.populationCount})`, 'max_fish_count', 'number', '1000', false],
-                ].map(([label, key, type, ph, required]) => (
-                  <div key={key} style={key === 'name' ? { gridColumn: '1 / -1' } : {}}>
-                    <label style={{
-                      fontSize: 12, fontWeight: 700,
-                      color: '#475569',
-                      textTransform: 'capitalize',
-                      display: 'block', marginBottom: 6,
-                    }}>
-                      {label}{required && <span style={{ color: '#EF4444', marginLeft: 2 }}>*</span>}
-                    </label>
-                    <input
-                      type={type}
-                      required={required}
-                      placeholder={ph}
-                      value={formData[key]}
-                      onChange={e => setFormData({ ...formData, [key]: e.target.value })}
-                      style={{
-                        width: '100%', padding: '11px 14px',
-                        background: '#F8FAFC',
-                        border: '1.5px solid #E9F0EC',
-                        borderRadius: 12,
-                        fontSize: 14, color: '#1A1C1A',
-                        outline: 'none', boxSizing: 'border-box',
-                        fontFamily: 'Inter, sans-serif',
-                        transition: 'border-color 0.15s, box-shadow 0.15s',
-                      }}
-                      onFocus={e => {
-                        e.target.style.borderColor = '#1B4332'
-                        e.target.style.boxShadow = '0 0 0 3px rgba(27,67,50,0.1)'
-                        e.target.style.background = '#fff'
-                      }}
-                      onBlur={e => {
-                        e.target.style.borderColor = '#E9F0EC'
-                        e.target.style.boxShadow = 'none'
-                        e.target.style.background = '#F8FAFC'
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Tipe Kolam */}
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'capitalize', display: 'block', marginBottom: 6 }}>{terms.typeUnit}</label>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  {terms.types.map(([val, lbl]) => (
-                    <button
-                      key={val} type="button"
-                      onClick={() => setFormData({ ...formData, type: val })}
-                      style={{
-                        flex: 1, padding: '10px 0', borderRadius: 12,
-                        border: formData.type === val ? '2px solid #1B4332' : '1.5px solid #E9F0EC',
-                        background: formData.type === val ? '#D8F3DC' : '#F8FAFC',
-                        color: formData.type === val ? '#1B4332' : '#475569',
-                        fontWeight: 700, fontSize: 13, cursor: 'pointer',
-                        transition: 'all 0.15s',
-                      }}
-                    >{lbl}</button>
-                  ))}
+            {/* Form */}
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Nama & Kode */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 6 }}>{terms.unitName} *</label>
+                  <input
+                    required
+                    placeholder={`cth: ${terms.mockA1Title || 'Blok A1'}`}
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #E2E8F0', borderRadius: 10, fontSize: 13.5, outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 6 }}>{terms.unitCode} *</label>
+                  <input
+                    required
+                    placeholder="cth: KDG-01"
+                    value={formData.code}
+                    onChange={e => setFormData({ ...formData, code: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #E2E8F0', borderRadius: 10, fontSize: 13.5, outline: 'none', boxSizing: 'border-box' }}
+                  />
                 </div>
               </div>
 
-              {/* Divider */}
-              <div style={{ height: 1, background: '#E9F0EC', margin: '4px 0' }} />
+              {/* Tipe / Jenis */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 6 }}>{terms.typeUnit}</label>
+                <select
+                  value={formData.type}
+                  onChange={e => setFormData({ ...formData, type: e.target.value })}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #E2E8F0', borderRadius: 10, fontSize: 13.5, outline: 'none', background: '#fff', boxSizing: 'border-box' }}
+                >
+                  {terms.types?.map(([v, lbl]) => (
+                    <option key={v} value={v}>{lbl}</option>
+                  ))}
+                </select>
+              </div>
 
-              {/* Footer Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
+              {/* Kapasitas & Dimensi */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 6 }}>{terms.populationLabel}</label>
+                  <input
+                    type="number"
+                    placeholder="cth: 50"
+                    value={formData.max_fish_count}
+                    onChange={e => setFormData({ ...formData, max_fish_count: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #E2E8F0', borderRadius: 10, fontSize: 13.5, outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 6 }}>Luas (m²)</label>
+                  <input
+                    type="number"
+                    placeholder="cth: 100"
+                    value={formData.area_m2}
+                    onChange={e => setFormData({ ...formData, area_m2: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #E2E8F0', borderRadius: 10, fontSize: 13.5, outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  style={{
-                    padding: '13px 0', border: '1.5px solid #E9F0EC',
-                    borderRadius: 12, background: '#fff',
-                    fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#475569',
-                  }}
+                  style={{ padding: '10px 18px', border: '1px solid #E2E8F0', borderRadius: 10, background: '#fff', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
                 >
                   Batal
                 </button>
                 <LoadingButton
-                  type="submit"
                   loading={saving}
+                  style={{ padding: '10px 20px', borderRadius: 10, background: '#1B4332', color: '#fff', border: 'none', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{terms.iconSeed}</span>
-                  {terms.registerUnit}
+                  Simpan Data
                 </LoadingButton>
               </div>
             </form>
           </div>
         </div>
       )}
-
     </div>
   )
 }

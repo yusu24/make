@@ -2,15 +2,18 @@ import { Link } from 'react-router-dom'
 import {
   ArrowRight, Sparkles, Monitor, ShoppingBag, Fish, Sprout,
   UtensilsCrossed, ShieldCheck, Zap, Clock, Gift, ChevronRight, Eye, Building2,
+  Globe, Wrench
 } from 'lucide-react'
 
 // Visual config per slug — icon + accent color for the sandbox demo buttons.
 // Falls back to a generic icon/color for any category admin adds later.
 const SLUG_VISUALS = {
   'toko-retail':      { Icon: ShoppingBag,      color: 'bg-blue-600',    sub: 'Sistem POS Kasir & Stok Barang' },
-  'budidaya-hewan':    { Icon: Fish,              color: 'bg-teal-500',    sub: 'Monitoring Siklus, Kolam & Pakan' },
+  'budidaya-hewan':    { Icon: Fish,              color: 'bg-teal-500',    sub: 'Monitoring Ternak, Kolam & Pakan' },
   'budidaya-tanaman': { Icon: Sprout,            color: 'bg-emerald-600', sub: 'Monitoring Siklus, Lahan & Pupuk' },
   'kuliner':          { Icon: UtensilsCrossed,  color: 'bg-rose-500',    sub: 'Menu Digital & Manajemen Restoran' },
+  'seller':           { Icon: Globe,            color: 'bg-sky-600',     sub: 'Omnichannel & Marketplace Hub' },
+  'jasa':             { Icon: Wrench,           color: 'bg-purple-600',  sub: 'Surat Perintah Kerja (SPK) & Teknisi' },
 }
 const DEFAULT_VISUAL = { Icon: Building2, color: 'bg-slate-600', sub: '' }
 
@@ -35,7 +38,10 @@ export default function Hero({ settings, settingsLoading, categories, categories
                 <div className="h-10 sm:h-12 w-2/3 max-w-sm rounded-lg bg-white/10 animate-pulse" />
               </div>
             ) : (
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-5xl font-black text-white leading-[1.18] tracking-tight">
+              <h1
+                className="landing-hero-title text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-5xl font-black text-white leading-[1.18] tracking-tight"
+                style={{ color: '#ffffff' }}
+              >
                 {settings.hero_title}
                 {settings.hero_subtitle && <> <span className="text-gradient-emerald">{settings.hero_subtitle}</span></>}
               </h1>
@@ -44,7 +50,10 @@ export default function Hero({ settings, settingsLoading, categories, categories
             {settingsLoading ? (
               <div className="h-6 w-full max-w-2xl rounded bg-white/10 animate-pulse" aria-hidden="true" />
             ) : (
-              <p className="text-base sm:text-lg text-slate-300 max-w-2xl font-normal leading-relaxed">
+              <p
+                className="landing-hero-desc text-base sm:text-lg text-slate-300 max-w-2xl font-normal leading-relaxed"
+                style={{ color: '#cbd5e1' }}
+              >
                 {settings.hero_desc}
               </p>
             )}

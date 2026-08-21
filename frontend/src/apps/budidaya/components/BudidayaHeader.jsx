@@ -4,20 +4,24 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../lib/api'
 import '../budidaya.css'
 
-const NAV_ITEMS = [
+import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
+
+const getNavItems = (terms) => [
   { label: 'Dashboard',           path: '/budidaya/dashboard' },
-  { label: 'Manajemen Kolam',     path: '/budidaya/ponds'     },
+  { label: `Manajemen ${terms.unit}`, path: '/budidaya/ponds' },
   { label: 'Siklus Budidaya',     path: '/budidaya/cycles'    },
-  { label: 'Pakan & Logistik',    path: '/budidaya/feeds'     },
-  { label: 'Data Satuan',         path: '/budidaya/feed-units' },
-  { label: 'Kategori Pakan',      path: '/budidaya/feed-categories' },
   { label: 'Gudang & Inventaris', path: '/budidaya/inventory' },
+  { label: 'Laba Rugi',           path: '/budidaya/finance-summary' },
+  { label: 'Pengeluaran',         path: '/budidaya/expenses' },
   { label: 'Laporan & Analisa',   path: '/budidaya/reports'   },
   { label: 'Manajemen Pengguna',  path: '/budidaya/users'     },
   { label: 'Peran & Izin',        path: '/budidaya/roles'     },
   { label: 'Paket Langganan',     path: '/budidaya/subscription' },
   { label: 'Pusat Bantuan',       path: '/budidaya/support'   },
   { label: 'Pengaturan Profil',   path: '/budidaya/settings'  },
+  { label: 'Pakan & Logistik',    path: '/budidaya/feeds'     },
+  { label: 'Data Satuan',         path: '/budidaya/feed-units' },
+  { label: 'Kategori Pakan',      path: '/budidaya/feed-categories' },
 ]
 
 export default function BudidayaHeader({ onMenuToggle }) {
@@ -31,12 +35,15 @@ export default function BudidayaHeader({ onMenuToggle }) {
   const dropdownRef = useRef(null)
   const profileRef = useRef(null)
 
-  let pageTitle = 'Budidaya'
+  const terms = useBudidayaTerms()
+  const NAV_ITEMS = getNavItems(terms)
+  
+  let pageTitle = terms.brandName || 'Dashboard'
   const exactMatch = NAV_ITEMS.find(item => item.path === location.pathname)
   if (exactMatch) {
     pageTitle = exactMatch.label
   } else if (location.pathname.startsWith('/budidaya/ponds/')) {
-    pageTitle = 'Detail Kolam'
+    pageTitle = `Detail ${terms.unit}`
   } else if (location.pathname.startsWith('/budidaya/cycles/')) {
     pageTitle = 'Detail Siklus'
   }
@@ -95,15 +102,15 @@ export default function BudidayaHeader({ onMenuToggle }) {
     }
   }
 
-  const isDemo = user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com')
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-sandbox-') || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'));
 
   const handleLogout = async () => {
     if (isImpersonating && isImpersonating()) {
       const redirectPath = exitImpersonate()
-      navigate(redirectPath || '/tenants')
+      window.location.href = redirectPath || '/tenants'
     } else {
-      try { await logout() } catch {}
-      navigate(isDemo ? '/' : '/login')
+      try { logout() } catch {}
+      window.location.href = isDemo ? '/' : '/login'
     }
   }
 
@@ -176,7 +183,7 @@ export default function BudidayaHeader({ onMenuToggle }) {
           </span>
           <input
             type="text"
-            placeholder="Cari kolam atau data..."
+            placeholder={`Cari ${terms.unitLower} atau data...`}
             style={{
               paddingLeft: 38,
               paddingRight: 16,
@@ -286,7 +293,7 @@ export default function BudidayaHeader({ onMenuToggle }) {
                         }} />
                         <div>
                           <p style={{ margin: 0, fontSize: 13, fontWeight: alert.is_read ? 500 : 700, color: '#1A1C1A', lineHeight: '1.4' }}>
-                            {alert.pond?.name || 'Kolam'}: {alert.parameter} {alert.status === 'critical' ? 'Kritis' : 'Peringatan'}
+                            {alert.pond?.name || terms.unit}: {alert.parameter} {alert.status === 'critical' ? 'Kritis' : 'Peringatan'}
                           </p>
                           <p style={{ margin: '4px 0 0', fontSize: 11, color: '#64748B' }}>
                             Nilai: {alert.value} • {new Date(alert.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

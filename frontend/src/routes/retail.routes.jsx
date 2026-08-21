@@ -22,12 +22,17 @@ const RetailSubscription = lazy(() => import('../apps/retail/pages/Subscription'
 const RetailSalesReport = lazy(() => import('../apps/retail/pages/SalesReport'));
 const RetailProductReport = lazy(() => import('../apps/retail/pages/ProductReport'));
 const RetailCustomerReport = lazy(() => import('../apps/retail/pages/CustomerReport'));
+const RetailShiftReport = lazy(() => import('../apps/retail/pages/ShiftReport'));
+const RetailPaymentReport = lazy(() => import('../apps/retail/pages/PaymentReport'));
 const RetailStockEntry = lazy(() => import('../apps/retail/pages/StockEntry'));
+const RetailPurchaseOrders = lazy(() => import('../apps/retail/pages/PurchaseOrders'));
 const RetailUnits = lazy(() => import('../apps/retail/pages/Units'));
 const RetailInventory = lazy(() => import('../apps/retail/pages/Inventory'));
 const RetailFinanceSummary = lazy(() => import('../apps/retail/pages/FinanceSummary'));
-const RetailIncomes = lazy(() => import('../apps/retail/pages/Incomes'));
-const RetailExpenses = lazy(() => import('../apps/retail/pages/Expenses'));
+const RetailCashTransactions = lazy(() => import('../apps/retail/pages/CashTransactions'));
+const RetailCashTransfers = lazy(() => import('../apps/retail/pages/CashTransfers'));
+const RetailCashFlow = lazy(() => import('../apps/retail/pages/CashFlow'));
+const RetailTaxReport = lazy(() => import('../apps/retail/pages/TaxReport'));
 const TenantSupportCenter = lazy(() => import('../pages/TenantSupportCenter'));
 const RetailProfile = lazy(() => import('../apps/retail/pages/Profile'));
 const RetailStockMovements = lazy(() => import('../apps/retail/pages/StockMovements'));
@@ -40,6 +45,13 @@ const RetailReceivables = lazy(() => import('../apps/retail/pages/Receivables'))
 const RetailStockOpname = lazy(() => import('../apps/retail/pages/StockOpname'));
 const RetailTransactions = lazy(() => import('../apps/retail/pages/Transactions'));
 const RetailSettings = lazy(() => import('../apps/retail/pages/Settings'));
+const RetailShifts = lazy(() => import('../apps/retail/pages/Shifts'));
+const RetailPrintLabels = lazy(() => import('../apps/retail/pages/PrintLabels'));
+const RetailConsignment = lazy(() => import('../apps/retail/pages/Consignment'));
+const RetailOutlets = lazy(() => import('../apps/retail/pages/Outlets'));
+const RetailStockTransfers = lazy(() => import('../apps/retail/pages/StockTransfers'));
+const RetailBatches = lazy(() => import('../apps/retail/pages/Batches'));
+const RetailSerials = lazy(() => import('../apps/retail/pages/Serials'));
 
 const retailRoutes = (
   <Route path="retail" element={<CategoryRoute allowedCategory="Toko Retail"><RetailOutlet /></CategoryRoute>}>
@@ -49,14 +61,23 @@ const retailRoutes = (
 
     {/* DATA MASTER */}
     <Route path="products" element={<RetailProducts />} />
+    <Route path="categories" element={<RetailCategories />} />
+    <Route path="units" element={<RetailUnits />} />
+    <Route path="customers" element={<RetailCustomers />} />
+    <Route path="suppliers" element={<RetailSuppliers />} />
+    <Route path="outlets" element={<RetailOutlets />} />
+    <Route path="batches" element={<RetailBatches />} />
+    <Route path="serials" element={<RetailSerials />} />
+    
+    {/* LOGISTIK & STOK */}
+    <Route path="stock-transfers" element={<RetailStockTransfers />} />
+    <Route path="print-labels" element={<RetailPrintLabels />} />
+    <Route path="purchase-orders" element={<RetailPurchaseOrders />} />
     <Route path="inventory" element={<RetailInventory />} />
     <Route path="stock" element={<RetailStockEntry />} />
     <Route path="stock-movements" element={<RetailStockMovements />} />
     <Route path="stock-opname" element={<RetailStockOpname />} />
-    <Route path="categories" element={<RetailCategories />} />
-    <Route path="units" element={<RetailUnits />} />
-    <Route path="suppliers" element={<RetailSuppliers />} />
-    <Route path="customers" element={<RetailCustomers />} />
+    <Route path="finance-categories" element={<RetailFinanceCategories />} />
     <Route path="finance-categories" element={<RetailFinanceCategories />} />
     <Route path="staff" element={<RetailStaff />} />
     <Route path="roles" element={<RetailRoles />} />
@@ -67,6 +88,7 @@ const retailRoutes = (
 
     {/* TRANSAKSI & RETUR */}
     <Route path="transactions" element={<RetailTransactions />} />
+    <Route path="shifts" element={<RetailShifts />} />
     <Route path="supplier-returns" element={<RetailSupplierReturns />} />
     <Route path="customer-returns" element={<RetailCustomerReturns />} />
     <Route path="discounts" element={<RetailDiscounts />} />
@@ -78,16 +100,21 @@ const retailRoutes = (
       <Route path="sales" element={<RetailSalesReport />} />
       <Route path="products" element={<RetailProductReport />} />
       <Route path="customers" element={<RetailCustomerReport />} />
+      <Route path="consignment" element={<RetailConsignment />} />
+      <Route path="shifts" element={<RetailShiftReport />} />
+      <Route path="payments" element={<RetailPaymentReport />} />
     </Route>
 
     {/* KEUANGAN */}
     <Route path="finance">
       <Route index element={<Navigate to="summary" replace />} />
       <Route path="summary" element={<RetailFinanceSummary />} />
-      <Route path="incomes" element={<RetailIncomes />} />
-      <Route path="expenses" element={<RetailExpenses />} />
+      <Route path="cash" element={<RetailCashTransactions />} />
       <Route path="payables" element={<RetailPayables />} />
       <Route path="receivables" element={<RetailReceivables />} />
+      <Route path="transfers" element={<RetailCashTransfers />} />
+      <Route path="cash-flow" element={<RetailCashFlow />} />
+      <Route path="tax-report" element={<RetailTaxReport />} />
     </Route>
   </Route>
 );

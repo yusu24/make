@@ -29,6 +29,7 @@ export default function CycleDetail() {
   const [formSampling, setFormSampling] = useState({ average_weight_gram: '', sample_count: '', date: new Date().toISOString().split('T')[0], notes: '' })
   const [formHealth, setFormHealth] = useState({ mortality_count: 0, disease_note: '', treatment_note: '', date: new Date().toISOString().split('T')[0] })
   const [formHarvest, setFormHarvest] = useState({ total_weight_kg: '', sale_price_per_kg: '', harvest_date: new Date().toISOString().split('T')[0], notes: '' })
+  const [hoveredBar, setHoveredBar] = useState(null)
 
   useEffect(() => {
     fetchDetail()
@@ -325,29 +326,71 @@ export default function CycleDetail() {
                   </div>
 
                   {(data?.samplings || []).length === 0 ? (
-                    <div style={{ height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', gap: 12 }}>
-                      <Scale size={36} style={{ opacity: 0.3 }} />
-                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Belum ada data sampling</p>
-                      <p style={{ margin: 0, fontSize: 12 }}>Catat sampling baru untuk melihat grafik pertumbuhan</p>
+                    <div style={{ height: '240px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', gap: 12, border: '1.5px dashed #E2E8F0', borderRadius: 16, background: '#F8FAFC' }}>
+                      <Scale size={32} style={{ opacity: 0.5, color: '#64748B' }} />
+                      <div style={{ textAlign: 'center' }}>
+                        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: '#475569' }}>Belum ada data sampling pertumbuhan</p>
+                        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94A3B8' }}>{`Klik tombol "Catat Sampling" di sebelah kanan untuk mencatat pertumbuhan ${terms.growthMetricLabel?.toLowerCase() || 'bobot'}.`}</p>
+                      </div>
                     </div>
                   ) : (() => {
                     const samplings = [...(data?.samplings || [])].sort((a, b) => new Date(a.date) - new Date(b.date))
-                    const maxW = Math.max(...samplings.map(s => Number(s.average_weight_gram))) * 1.2
+                    const maxW = Math.max(...samplings.map(s => Number(s.average_weight_gram))) * 1.25
                     return (
-                      <div style={{ height: '300px', display: 'flex', alignItems: 'flex-end', gap: samplings.length > 8 ? '8px' : '24px', paddingBottom: '20px' }}>
+                      <div style={{ position: 'relative', height: '260px', display: 'flex', alignItems: 'flex-end', gap: samplings.length > 8 ? '8px' : '20px', paddingBottom: '24px', paddingTop: '40px' }}>
                         {samplings.map((s, i) => {
-                          const h = Math.max(8, (Number(s.average_weight_gram) / maxW) * 100)
+                          const h = Math.max(10, (Number(s.average_weight_gram) / maxW) * 100)
                           const isLast = i === samplings.length - 1
+                          const isHovered = hoveredBar === i
                           const label = new Date(s.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                          const valStr = `${Number(s.average_weight_gram).toLocaleString('id-ID')} ${terms.growthUnit || (terms.isTanaman ? 'cm' : 'g')}`
                           return (
-                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }} title={`${label}: ${Number(s.average_weight_gram).toLocaleString('id-ID')} ${terms.isTanaman ? 'cm' : 'g'}`}>
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: isLast ? '#1B4332' : '#94A3B8' }}>
-                                {Number(s.average_weight_gram).toLocaleString('id-ID')}{terms.isTanaman ? 'cm' : 'g'}
-                              </span>
-                              <div className="chart-bar-v2" style={{ height: `${h}%`, background: isLast ? '#D8F3DC' : '#F1F5F9', position: 'relative', width: '100%', borderRadius: '8px 8px 4px 4px' }}>
-                                <div className="chart-dot-v2" style={{ background: isLast ? '#1B4332' : '#94A3B8' }}></div>
+                            <div
+                              key={i}
+                              onMouseEnter={() => setHoveredBar(i)}
+                              onMouseLeave={() => setHoveredBar(null)}
+                              style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', cursor: 'pointer', position: 'relative' }}
+                            >
+                              {/* Hover Floating Tooltip */}
+                              {isHovered && (
+                                <div style={{
+                                  position: 'absolute', bottom: `calc(${h}% + 16px)`, zIndex: 10,
+                                  background: '#1E293B', color: '#fff', padding: '6px 12px', borderRadius: '8px',
+                                  fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap',
+                                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)', pointerEvents: 'none',
+                                  display: 'flex', flexDirection: 'column', alignItems: 'center'
+                                }}>
+                                  <span style={{ fontSize: '9.5px', color: '#94A3B8', fontWeight: 600 }}>{label}</span>
+                                  <span>{valStr}</span>
+                                  <div style={{ position: 'absolute', bottom: '-4px', width: '8px', height: '8px', background: '#1E293B', transform: 'rotate(45deg)' }}></div>
+                                </div>
+                              )}
+
+                              {/* Bar Pillar */}
+                              <div
+                                className="chart-bar-v2"
+                                style={{
+                                  height: `${h}%`,
+                                  background: isHovered ? '#1B4332' : (isLast ? '#D8F3DC' : '#F1F5F9'),
+                                  position: 'relative',
+                                  width: '100%',
+                                  maxWidth: '48px',
+                                  borderRadius: '8px 8px 4px 4px',
+                                  transition: 'all 0.15s ease'
+                                }}
+                              >
+                                <div
+                                  className="chart-dot-v2"
+                                  style={{
+                                    background: isHovered ? '#FFFFFF' : (isLast ? '#1B4332' : '#94A3B8'),
+                                    transform: isHovered ? 'scale(1.3)' : 'scale(1)',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                />
                               </div>
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: '#94A3B8', whiteSpace: 'nowrap' }}>{label}</span>
+                              <span style={{ fontSize: '11px', fontWeight: isHovered || isLast ? 700 : 500, color: isHovered || isLast ? '#1B4332' : '#94A3B8', whiteSpace: 'nowrap' }}>
+                                {label}
+                              </span>
                             </div>
                           )
                         })}
@@ -486,16 +529,16 @@ export default function CycleDetail() {
           </div>
 
           <div className="premium-card" style={{ padding: '24px', background: '#fff', border: '1px solid #E2E8F0' }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#64748B', fontWeight: 800, fontSize: '11px', marginBottom: '16px', textTransform: 'uppercase' }}>
-                <CloudRain size={16} /> CUACA LOKAL
+             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#64748B', fontWeight: 700, fontSize: '12px', marginBottom: '16px' }}>
+                <CloudRain size={16} /> Cuaca Lokal
              </div>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
                    <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: '#1E293B' }}>28°C</h2>
                    <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#64748B', fontWeight: 600 }}>Hujan Ringan</p>
                 </div>
-                <div style={{ padding: '6px 12px', borderRadius: '8px', background: '#FEE2E2', color: '#E11D48', fontSize: '10px', fontWeight: 900 }}>
-                   RISIKO PH
+                <div style={{ padding: '4px 10px', borderRadius: '8px', background: '#FEE2E2', color: '#E11D48', fontSize: '11px', fontWeight: 700 }}>
+                   Risiko pH
                 </div>
              </div>
           </div>
@@ -661,7 +704,7 @@ export default function CycleDetail() {
 
       <style>{`
         .kpi-card-v2 { padding: 20px; background: #F8FAFC; border-radius: 20px; border: 1px solid #F1F5F9; }
-        .kpi-label-v2 { margin: 0 0 8px; font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .kpi-label-v2 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #64748B; }
         .kpi-value-v2 { margin: 0 0 4px; font-size: 24px; font-weight: 900; color: #1B4332; }
         .kpi-unit-v2 { font-size: 13px; color: #94A3B8; font-weight: 700; margin-left: 4px; }
         .progress-bar-v2 { width: 100%; height: 6px; background: #F1F5F9; border-radius: 3px; margin-top: 12px; overflow: hidden; }

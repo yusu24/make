@@ -45,6 +45,21 @@ class RetailTransaction extends Model
         return $this->belongsTo(User::class, 'voided_by');
     }
 
+    public function payments()
+    {
+        return $this->hasMany(RetailTransactionPayment::class, 'transaction_id');
+    }
+
+    public function salesPerson()
+    {
+        return $this->belongsTo(User::class, 'sales_id');
+    }
+
+    public function outlet()
+    {
+        return $this->belongsTo(RetailOutlet::class, 'outlet_id');
+    }
+
     public function isPaid(): bool
     {
         return ($this->status ?? 'paid') === 'paid';

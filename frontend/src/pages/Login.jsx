@@ -43,6 +43,8 @@ export default function Login() {
           navigate('/budidaya/dashboard')
         } else if (userData.business_category === 'Seller') {
           navigate('/seller/dashboard')
+        } else if (userData.business_category === 'Jasa') {
+          navigate('/jasa/dashboard')
         } else {
           navigate('/coming-soon')
         }

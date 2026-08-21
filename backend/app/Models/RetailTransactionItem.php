@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class RetailTransactionItem extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'transaction_id', 'product_id', 'unit', 'conversion', 'qty', 'price', 'cost_price', 'subtotal', 'batch_no', 'serial_number'
+    ];
 
     public $timestamps = false;
 

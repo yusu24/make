@@ -8,10 +8,24 @@ export default function DeveloperIntegrations() {
   const [webhooks, setWebhooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Payment Gateway Config State
+  const [pgConfig, setPgConfig] = useState({
+    provider: 'midtrans',
+    is_production: false,
+    merchant_id: 'M109283-BIZORA',
+    client_key: 'SB-Mid-client-88a9BcD1293',
+    server_key: '••••••••••••••••',
+    webhook_url: `${window.location.origin}/api/payment/webhook`,
+    auto_settlement: true
+  });
+  const [savingPg, setSavingPg] = useState(false);
+  const [pgSuccess, setPgSuccess] = useState('');
+  const [simulating, setSimulating] = useState(false);
+
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [keyName, setKeyName] = useState('');
   const [savingKey, setSavingKey] = useState(false);
-  const [newRawKey, setNewRawKey] = useState(null); // shown once right after creation
+  const [newRawKey, setNewRawKey] = useState(null);
   const [copyLabel, setCopyLabel] = useState('Salin');
 
   const [showWebhookModal, setShowWebhookModal] = useState(false);
@@ -21,12 +35,16 @@ export default function DeveloperIntegrations() {
 
   const fetchAll = async () => {
     try {
-      const [keysRes, hooksRes] = await Promise.all([
+      const [keysRes, hooksRes, pgRes] = await Promise.allSettled([
         api.get('/admin/developer/api-keys'),
         api.get('/admin/developer/webhooks'),
+        api.get('/admin/payment-gateway-config'),
       ]);
-      setApiKeys(keysRes.data?.data || []);
-      setWebhooks(hooksRes.data?.data || []);
+      if (keysRes.status === 'fulfilled') setApiKeys(keysRes.value.data?.data || []);
+      if (hooksRes.status === 'fulfilled') setWebhooks(hooksRes.value.data?.data || []);
+      if (pgRes.status === 'fulfilled' && pgRes.value.data?.data) {
+        setPgConfig(prev => ({ ...prev, ...pgRes.value.data.data }));
+      }
     } catch {
       // leave lists empty on failure
     } finally {
@@ -35,6 +53,37 @@ export default function DeveloperIntegrations() {
   };
 
   useEffect(() => { fetchAll(); }, []);
+
+  const handleSavePgConfig = async (e) => {
+    e.preventDefault();
+    setSavingPg(true);
+    setPgSuccess('');
+    try {
+      await api.post('/admin/payment-gateway-config', pgConfig);
+      setPgSuccess('Konfigurasi Payment Gateway berhasil disimpan!');
+      setTimeout(() => setPgSuccess(''), 3000);
+    } catch (err) {
+      alert('Gagal menyimpan konfigurasi: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSavingPg(false);
+    }
+  };
+
+  const handleSimulateWebhook = async () => {
+    setSimulating(true);
+    try {
+      const testInvoice = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+      const res = await api.post('/payment/simulate-pay', {
+        invoice_number: testInvoice,
+        payment_method: 'QRIS (Simulasi Midtrans)'
+      });
+      alert(`✅ Simulasi Webhook Berhasil!\nStatus: ${res.data?.message || 'Invoice diproses'}`);
+    } catch (err) {
+      alert('Simulasi Webhook gagal: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSimulating(false);
+    }
+  };
 
   const handleGenerateKey = async (e) => {
     e.preventDefault();
@@ -113,10 +162,132 @@ export default function DeveloperIntegrations() {
   return (
     <div className="animate-fade-in">
       <div className="page-header">
-        <div>
-          <h2 className="page-title">Developer & Integrations</h2>
-          <p className="page-sub">Kelola API key dan webhook untuk integrasi eksternal ke platform BIZORA.</p>
+        <h2 className="page-title">Integrasi &amp; Developer</h2>
+      </div>
+
+      {/* ── Payment Gateway Integration Card ── */}
+      <div className="card card-pad" style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 18 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 20 }}>💳</span>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 16, margin: 0 }}>
+                Payment Gateway &amp; Webhook Langganan SaaS
+              </h3>
+            </div>
+            <p className="page-sub" style={{ marginTop: 4 }}>
+              Otomatisasi invoice tagihan langganan tenant melalui QRIS, Virtual Account (BCA/Mandiri/BRI/BNI), dan E-Wallet.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={handleSimulateWebhook}
+              disabled={simulating}
+              title="Kirim payload webhook simulasi transaksi lunas"
+            >
+              {simulating ? '⏳ Menguji...' : '⚡ Test Simulasi Webhook'}
+            </button>
+          </div>
         </div>
+
+        {pgSuccess && (
+          <div className="auth-alert auth-alert--success" style={{ marginBottom: 16 }}>
+            <span>✓</span> {pgSuccess}
+          </div>
+        )}
+
+        <form onSubmit={handleSavePgConfig}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label className="form-label" style={{ fontWeight: 600 }}>Payment Gateway Provider</label>
+              <select
+                className="form-control"
+                value={pgConfig.provider}
+                onChange={e => setPgConfig({ ...pgConfig, provider: e.target.value })}
+              >
+                <option value="midtrans">Midtrans (Snap &amp; Core API)</option>
+                <option value="tripay">Tripay Payment Gateway</option>
+                <option value="xendit">Xendit</option>
+                <option value="duitku">Duitku</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="form-label" style={{ fontWeight: 600 }}>Environment Mode</label>
+              <select
+                className="form-control"
+                value={pgConfig.is_production ? 'production' : 'sandbox'}
+                onChange={e => setPgConfig({ ...pgConfig, is_production: e.target.value === 'production' })}
+              >
+                <option value="sandbox">🛠️ Sandbox (Uji Coba &amp; Simulasi)</option>
+                <option value="production">🚀 Production (Transaksi Nyata)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="form-label" style={{ fontWeight: 600 }}>Merchant ID / Code</label>
+              <input
+                className="form-input"
+                placeholder="Contoh: M109283-BIZORA"
+                value={pgConfig.merchant_id}
+                onChange={e => setPgConfig({ ...pgConfig, merchant_id: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label className="form-label" style={{ fontWeight: 600 }}>Client Key / Public Key</label>
+              <input
+                className="form-input"
+                placeholder="SB-Mid-client-..."
+                value={pgConfig.client_key}
+                onChange={e => setPgConfig({ ...pgConfig, client_key: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="form-label" style={{ fontWeight: 600 }}>Server Key / Secret API Key</label>
+              <input
+                className="form-input"
+                type="password"
+                placeholder="SB-Mid-server-..."
+                value={pgConfig.server_key}
+                onChange={e => setPgConfig({ ...pgConfig, server_key: e.target.value })}
+              />
+            </div>
+          </div>
+
+          {/* Webhook Endpoint Info */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+              🔗 URL WEBHOOK NOTIFIKASI PEMBAYARAN (Paste ke Dashboard Midtrans/Tripay):
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <code style={{ flex: 1, padding: '6px 10px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 12.5, color: '#0f172a' }}>
+                {window.location.origin}/api/payment/webhook
+              </code>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/api/payment/webhook`);
+                  alert('URL Webhook berhasil disalin ke clipboard!');
+                }}
+              >
+                📋 Salin URL
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button type="submit" className="btn btn-primary" disabled={savingPg}>
+              {savingPg ? 'Menyimpan...' : '💾 Simpan Konfigurasi Gateway'}
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* API Keys */}

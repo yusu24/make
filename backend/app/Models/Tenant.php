@@ -12,11 +12,14 @@ class Tenant extends Model
 
     protected $fillable = [
         'name', 'type', 'tenant_id', 'user_id', 'subscription_plan', 'status', 
-        'business_category_id', 'business_name', 'address', 'phone', 'settings'
+        'business_category_id', 'business_name', 'address', 'phone', 'settings',
+        'kyc_status', 'kyc_document_path', 'kyc_notes', 'kyc_submitted_at', 'kyc_verified_at'
     ];
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
+        'kyc_submitted_at' => 'datetime',
+        'kyc_verified_at' => 'datetime',
     ];
 
     public function user()

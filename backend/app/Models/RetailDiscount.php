@@ -15,6 +15,7 @@ class RetailDiscount extends Model
         'is_active' => 'boolean',
         'starts_at' => 'datetime',
         'expires_at' => 'datetime',
+        'conditions' => 'array',
     ];
 
     public function isValidFor(float $subtotal): bool
@@ -40,12 +41,32 @@ class RetailDiscount extends Model
         return true;
     }
 
-    public function calculateDiscount(float $subtotal): float
+    public function calculateDiscount(float $subtotal, array $items = []): float
     {
+        if ($this->promo_type === 'conditional' && is_array($this->conditions)) {
+            // Very basic BOGO logic (buy X get Y free)
+            $buyQty = $this->conditions['buy_qty'] ?? 0;
+            $freeQty = $this->conditions['free_qty'] ?? 0;
+            $targetProductId = $this->conditions['product_id'] ?? null;
+
+            if ($buyQty > 0 && $freeQty > 0 && $targetProductId) {
+                $discountAmount = 0;
+                foreach ($items as $item) {
+                    if ($item['product']->id == $targetProductId) {
+                        $eligibleSets = floor($item['qty'] / ($buyQty + $freeQty));
+                        if ($eligibleSets > 0) {
+                            $discountAmount += ($eligibleSets * $freeQty * $item['price']);
+                        }
+                    }
+                }
+                return $discountAmount;
+            }
+        }
+
         return match ($this->type) {
             'percentage' => round($subtotal * $this->value / 100, 2),
             'flat' => min($this->value, $subtotal),
-            default => 0, // bogo: not implemented, kept for parity with source
+            default => 0,
         };
     }
 }

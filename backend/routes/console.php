@@ -34,6 +34,9 @@ Schedule::call(function () {
 // Cek tagihan penunggakan (overdue) dan kirim notifikasi setiap hari
 Schedule::command('invoices:check-overdue')->daily()->at('01:00');
 
+// Cek langganan tenant yang kedaluwarsa
+Schedule::command('app:check-expired-subscriptions')->daily()->at('00:00')->name('check-expired-subscriptions')->withoutOverlapping();
+
 // Backup database + file upload (semua tenant, karena satu DB bersama) setiap
 // hari jam 03:00, lalu bersihkan backup lama sesuai retensi di config/backup.php.
 // Catatan: ->onOneServer() sengaja tidak dipakai karena butuh cache driver yang

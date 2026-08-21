@@ -69,9 +69,7 @@ export default function Units() {
 
   return (
     <div className="retail-page-classic">
-      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
-      </div>
-
+      {/* Page Title Handled by Navtop */}
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="p-6 flex justify-between items-center gap-3 flex-wrap">
@@ -83,7 +81,7 @@ export default function Units() {
             />
           </div>
           <form onSubmit={addUnit} className="flex items-center gap-3">
-             <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
+             <div className="airy-input-wrapper" style={{ width: 280, margin: 0 }}>
                 <input
                   name="name"
                   placeholder="Satuan baru (Pcs, Kg, dll)..."

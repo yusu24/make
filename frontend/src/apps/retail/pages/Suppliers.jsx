@@ -73,17 +73,12 @@ export default function Suppliers() {
     endIndex
   } = usePagination(filteredSuppliers);
 
-  if (loading) return <RetailLoading text="Memuat data mitra supplier..." />;
-
-  
-
   return (
-    <div className="animate-fade-in retail-dashboard-spacing">
-
-
+    <div className="retail-page-classic">
+      {/* Page Title Handled by Navtop */}
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }} onClick={() => { setEditingSupplier(null); setShowModal(true); }}>
+          <button title="Registrasi Supplier" className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }} onClick={() => { setEditingSupplier(null); setShowModal(true); }}>
             <Plus size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Registrasi Supplier</span>
           </button>
@@ -133,7 +128,7 @@ export default function Suppliers() {
                      </div>
                   </td>
                   <td>
-                     <div className="text-sm retail-text-secondary max-w-xs truncate">
+                     <div className="text-sm retail-text-primary max-w-xs truncate">
                         {s.address || '-'}
                      </div>
                   </td>

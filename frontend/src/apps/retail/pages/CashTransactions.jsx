@@ -11,35 +11,47 @@ import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import { useAuth } from '../../../contexts/AuthContext';
 
-export default function Incomes() {
+export default function CashTransactions() {
   const { user } = useAuth();
-  const [incomes, setIncomes] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editingIncome, setEditingIncome] = useState(null);
+  const [editingData, setEditingData] = useState(null);
   const [search, setSearch] = useState('');
   const printRef = useRef(null);
 
   const [dateFilter, setDateFilter] = useState('all'); // all, today, month, custom
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  
+  // Modal state
+  const [modalType, setModalType] = useState('expense'); // 'income' or 'expense'
 
   const fetchCategories = async () => {
     try {
-      const resCat = await api.get('/retail/finance-categories?type=income');
-      setCategories(resCat.data);
+      const resIn = await api.get('/retail/finance-categories?type=income');
+      const resEx = await api.get('/retail/finance-categories?type=expense');
+      setCategories([...resIn.data, ...resEx.data]);
     } catch (e) {
-      console.error('Error fetching income categories:', e);
+      console.error('Error fetching categories:', e);
     }
   };
 
-  const fetchIncomes = async (start, end) => {
+  const fetchTransactions = async (start, end) => {
     setLoading(true);
     try {
       const params = (start && end) ? `?startDate=${start}&endDate=${end}` : '';
-      const res = await api.get(`/retail/finance/incomes${params}`);
-      setIncomes(res.data);
+      const [resIncomes, resExpenses] = await Promise.all([
+        api.get(`/retail/finance/incomes${params}`),
+        api.get(`/retail/finance/expenses${params}`)
+      ]);
+      
+      const incomes = (resIncomes.data || []).map(i => ({ ...i, tx_type: 'income' }));
+      const expenses = (resExpenses.data || []).map(e => ({ ...e, tx_type: 'expense' }));
+      
+      const combined = [...incomes, ...expenses].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      setTransactions(combined);
     } catch (e) {
       console.error(e);
     } finally {
@@ -48,7 +60,7 @@ export default function Incomes() {
   };
 
   useEffect(() => { fetchCategories(); }, []);
-  useEffect(() => { fetchIncomes(startDate, endDate); }, [startDate, endDate]);
+  useEffect(() => { fetchTransactions(startDate, endDate); }, [startDate, endDate]);
 
   const handleDateFilterChange = (e) => {
     const val = e.target.value;
@@ -68,7 +80,6 @@ export default function Incomes() {
       setStartDate(fd);
       setEndDate(ld);
     }
-    // if custom, user picks with the date inputs below
   };
 
   const handleSubmit = async (e) => {
@@ -82,62 +93,80 @@ export default function Incomes() {
     };
     
     try {
-      if (editingIncome) {
-        await api.put(`/retail/finance/incomes/${editingIncome.id}`, data);
+      if (editingData) {
+        const endpoint = editingData.tx_type === 'income' ? '/retail/finance/incomes' : '/retail/finance/expenses';
+        await api.put(`${endpoint}/${editingData.id}`, data);
       } else {
-        await api.post('/retail/finance/incomes', data);
+        const endpoint = modalType === 'income' ? '/retail/finance/incomes' : '/retail/finance/expenses';
+        await api.post(endpoint, data);
       }
-      fetchIncomes(startDate, endDate);
+      fetchTransactions(startDate, endDate);
       setShowModal(false);
-      setEditingIncome(null);
+      setEditingData(null);
     } catch (e) {
       alert('Terjadi kesalahan saat menyimpan data');
     }
   };
 
-  const openEdit = (ex) => {
-    setEditingIncome(ex);
+  const openEdit = (tx) => {
+    setEditingData(tx);
+    setModalType(tx.tx_type);
+    setShowModal(true);
+  };
+
+  const openCreate = () => {
+    setEditingData(null);
+    setModalType('expense'); // default
     setShowModal(true);
   };
 
   const handleClose = () => {
     setShowModal(false);
-    setEditingIncome(null);
+    setEditingData(null);
   }
 
-  const filteredincomes = incomes.filter(ex =>
-    (ex.keterangan || '').toLowerCase().includes(search.toLowerCase()) ||
-    (ex.kategori || '').toLowerCase().includes(search.toLowerCase())
+  const filteredTransactions = transactions.filter(tx =>
+    (tx.keterangan || '').toLowerCase().includes(search.toLowerCase()) ||
+    (tx.kategori || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const formatRp = (num) => 'Rp ' + Number(num || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
-
   const formatDate = (d) => new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const totalNominal = filteredincomes.reduce((sum, ex) => sum + Number(ex.nominal || 0), 0);
+  const totalIncomes = filteredTransactions.filter(tx => tx.tx_type === 'income').reduce((sum, tx) => sum + Number(tx.nominal || 0), 0);
+  const totalExpenses = filteredTransactions.filter(tx => tx.tx_type === 'expense').reduce((sum, tx) => sum + Number(tx.nominal || 0), 0);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: `Laporan-pemasukan-${startDate && endDate ? `${startDate}_${endDate}` : new Date().toISOString().split('T')[0]}`,
+    documentTitle: `Catatan-Kas-${startDate && endDate ? `${startDate}_${endDate}` : new Date().toISOString().split('T')[0]}`,
   });
 
-  const renderincomeRows = (items, { withActions }) => items.map(ex => (
-    <tr key={ex.id}>
+  const renderTransactionRows = (items, { withActions }) => items.map(tx => (
+    <tr key={`${tx.tx_type}_${tx.id}`}>
       <td className="pl-6">
-        <span className="retail-text-secondary">{new Date(ex.tanggal).toLocaleDateString('id-ID')}</span>
+        <span className="retail-text-primary font-medium">{new Date(tx.tanggal).toLocaleDateString('id-ID')}</span>
       </td>
       <td>
-        <span className="retail-badge retail-badge-primary">{ex.kategori}</span>
+        <span className="retail-badge retail-badge-primary">{tx.kategori}</span>
       </td>
-      <td className="retail-text-primary">{ex.keterangan}</td>
-      <td className={withActions ? 'retail-text-danger' : 'pr-6 retail-text-danger'}>
-        - {formatRp(ex.nominal)}
+      <td className="retail-text-primary">{tx.keterangan}</td>
+      <td className="text-right retail-text-success font-semibold">
+        {tx.tx_type === 'income' ? formatRp(tx.nominal) : '-'}
+      </td>
+      <td className="text-right retail-text-danger font-semibold">
+        {tx.tx_type === 'expense' ? formatRp(tx.nominal) : '-'}
       </td>
       {withActions && (
         <td style={{ textAlign: 'right' }} className="pr-6">
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <button className="btn btn-sm btn-ghost" onClick={() => openEdit(ex)} title="Edit"><Edit3 size={15} /></button>
-            <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if (confirm('Hapus pencatatan pemasukan ini?')) { await api.delete(`/retail/finance/incomes/${ex.id}`); fetchIncomes(startDate, endDate); } }} title="Hapus"><Trash2 size={15} /></button>
+            <button title="Edit catatan" className="btn btn-sm btn-ghost" onClick={() => openEdit(tx)}><Edit3 size={15} /></button>
+            <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { 
+                if (confirm('Hapus pencatatan kas ini?')) { 
+                    const endpoint = tx.tx_type === 'income' ? '/retail/finance/incomes' : '/retail/finance/expenses';
+                    await api.delete(`${endpoint}/${tx.id}`); 
+                    fetchTransactions(startDate, endDate); 
+                } 
+            }} title="Hapus"><Trash2 size={15} /></button>
           </div>
         </td>
       )}
@@ -145,19 +174,11 @@ export default function Incomes() {
   ));
 
   const {
-    currentPage,
-    setCurrentPage,
-    pageSize,
-    setPageSize,
-    totalPages,
-    totalItems,
-    paginatedData,
-    startIndex,
-    endIndex
-  } = usePagination(filteredincomes);
+    currentPage, setCurrentPage, pageSize, setPageSize, totalPages, totalItems, paginatedData, startIndex, endIndex
+  } = usePagination(filteredTransactions);
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in retail-dashboard-spacing">
 
       <div className="page-header" style={{ marginBottom: 16, justifyContent: 'flex-end' }}>
         <button className="btn btn-primary flex items-center gap-2" onClick={handlePrint} disabled={loading}>
@@ -168,7 +189,7 @@ export default function Incomes() {
       <div ref={printRef}>
         {/* Print-only header */}
         <div className="print-only retail-print-header">
-          <h2>Laporan pemasukan</h2>
+          <h2>Catatan Kas</h2>
           <p>{user?.tenant_name || 'Toko'}</p>
           <p>
             Periode: {startDate && endDate
@@ -178,20 +199,20 @@ export default function Incomes() {
           <p>Dicetak: {formatDate(new Date().toISOString().split('T')[0])}</p>
         </div>
 
-        {/* Table Section (Unified Style) */}
-        <div className="card table-wrap animate-fade-in mt-8">
+        {/* Table Section */}
+        <div className="card table-wrap animate-fade-in mt-4">
           <div className="toolbar-no-stack no-print" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
             <button
               className="btn btn-primary"
               style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
-              onClick={() => { setEditingIncome(null); setShowModal(true); }}
+              onClick={openCreate}
             >
               <Plus size={15} className="mr-2 mobile-no-margin" />
-              <span className="btn-text-mobile-hide">Tambah pemasukan</span>
+              <span className="btn-text-mobile-hide">Tambah Catatan</span>
             </button>
-            <div className="airy-search-wrapper" style={{ width: 200, margin: 0 }}>
+            <div className="airy-search-wrapper" style={{ width: 220, margin: 0 }}>
               <input
-                placeholder="Cari pemasukan..."
+                placeholder="Cari transaksi kas..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -215,23 +236,23 @@ export default function Incomes() {
             )}
           </div>
 
-          {/* Screen view: paginated, with actions */}
           <div className="retail-table-responsive no-print"><table className="table">
             <thead>
               <tr>
                 <th className="pl-6 retail-table-header">Tanggal</th>
                 <th className="retail-table-header">Kategori</th>
                 <th className="retail-table-header">Keterangan</th>
-                <th className="retail-table-header">Nominal</th>
+                <th className="retail-table-header text-right">Pemasukan</th>
+                <th className="retail-table-header text-right">Pengeluaran</th>
                 <th className="text-right pr-6 retail-table-header">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                 <RetailTableLoadingRow colSpan={5} text="Menyinkronkan pemasukan..." />
-              ) : filteredincomes.length === 0 ? (
-                 <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada catatan pemasukan.</td></tr>
-              ) : renderincomeRows(paginatedData, { withActions: true })}
+                 <RetailTableLoadingRow colSpan={6} text="Menyinkronkan data kas..." />
+              ) : filteredTransactions.length === 0 ? (
+                 <tr><td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada catatan kas (Pemasukan / Pengeluaran manual).</td></tr>
+              ) : renderTransactionRows(paginatedData, { withActions: true })}
             </tbody>
           </table></div>
           <div className="no-print">
@@ -254,18 +275,20 @@ export default function Incomes() {
                 <th className="pl-6 retail-table-header">Tanggal</th>
                 <th className="retail-table-header">Kategori</th>
                 <th className="retail-table-header">Keterangan</th>
-                <th className="pr-6 retail-table-header">Nominal</th>
+                <th className="retail-table-header text-right">Pemasukan</th>
+                <th className="pr-6 retail-table-header text-right">Pengeluaran</th>
               </tr>
             </thead>
             <tbody>
-              {filteredincomes.length === 0 ? (
-                 <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada catatan pemasukan.</td></tr>
-              ) : renderincomeRows(filteredincomes, { withActions: false })}
+              {filteredTransactions.length === 0 ? (
+                 <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada catatan kas.</td></tr>
+              ) : renderTransactionRows(filteredTransactions, { withActions: false })}
             </tbody>
             <tfoot className="retail-print-totals">
               <tr>
-                <td className="pl-6 text-sm font-semibold" colSpan={3}>Total pemasukan</td>
-                <td className="pr-6 retail-text-danger font-semibold">- {formatRp(totalNominal)}</td>
+                <td className="pl-6 text-sm font-semibold text-right" colSpan={3}>Total</td>
+                <td className="text-right retail-text-success font-semibold">{formatRp(totalIncomes)}</td>
+                <td className="pr-6 text-right retail-text-danger font-semibold">{formatRp(totalExpenses)}</td>
               </tr>
             </tfoot>
           </table></div>
@@ -275,25 +298,42 @@ export default function Incomes() {
       <Modal 
         isOpen={showModal} 
         onClose={handleClose}
-        title={editingIncome ? 'Edit Catatan pemasukan' : 'Catat pemasukan Baru'}
+        title={editingData ? 'Edit Catatan Kas' : 'Catat Transaksi Kas Baru'}
       >
         <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap: 20 }}>
+          
+          {!editingData && (
+              <div className="form-group">
+                 <label className="form-label">Tipe Transaksi</label>
+                 <div style={{ display: 'flex', gap: 12 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                       <input type="radio" name="tx_type" value="income" checked={modalType === 'income'} onChange={() => setModalType('income')} />
+                       <span style={{ fontWeight: 500 }}>Pemasukan</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                       <input type="radio" name="tx_type" value="expense" checked={modalType === 'expense'} onChange={() => setModalType('expense')} />
+                       <span style={{ fontWeight: 500 }}>Pengeluaran</span>
+                    </label>
+                 </div>
+              </div>
+          )}
+
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
             <div className="form-group">
               <label className="form-label">Tanggal</label>
-              <input name="tanggal" type="date" className="form-input" defaultValue={editingIncome ? editingIncome.tanggal : new Date().toISOString().split('T')[0]} required />
+              <input name="tanggal" type="date" className="form-input" defaultValue={editingData ? editingData.tanggal : new Date().toISOString().split('T')[0]} required />
             </div>
             <div className="form-group">
               <label className="form-label">Kategori</label>
-              <select name="finance_category_id" className="form-input" defaultValue={editingIncome?.finance_category_id || ''} required>
+              <select name="finance_category_id" className="form-input" defaultValue={editingData?.finance_category_id || ''} required>
                 <option value="" disabled>Pilih Kategori...</option>
-                {categories.map(c => (
+                {categories.filter(c => c.type === modalType).map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
-              {categories.length === 0 && (
+              {categories.filter(c => c.type === modalType).length === 0 && (
                 <small style={{ color: 'var(--danger-500)', marginTop: 4 }}>
-                  Master kategori masih kosong. Tambahkan dulu di menu Data Master.
+                  Kategori {modalType === 'income' ? 'pemasukan' : 'pengeluaran'} kosong. Tambahkan di menu Data Master.
                 </small>
               )}
             </div>
@@ -301,23 +341,20 @@ export default function Incomes() {
           
           <div className="form-group">
             <label className="form-label">Keterangan</label>
-            <input name="keterangan" className="form-input" placeholder="Tulis rincian pemasukan..." defaultValue={editingIncome?.keterangan} required />
+            <input name="keterangan" className="form-input" placeholder="Tulis rincian catatan..." defaultValue={editingData?.keterangan} required />
           </div>
 
           <div className="form-group">
-            <label className="form-label">Nominal pemasukan (Rp)</label>
-            <CurrencyInput name="nominal" className="form-input" placeholder="Contoh: 50000" defaultValue={editingIncome?.nominal} required />
+            <label className="form-label">Nominal (Rp)</label>
+            <CurrencyInput name="nominal" className="form-input" placeholder="Contoh: 50000" defaultValue={editingData?.nominal} required />
           </div>
 
           <div className="modal__actions">
             <button type="button" className="btn btn-secondary" onClick={handleClose}>Batal</button>
-            <button type="submit" className="btn btn-primary">{editingIncome ? 'Simpan Perubahan' : 'Catat pemasukan'}</button>
+            <button type="submit" className="btn btn-primary">{editingData ? 'Simpan Perubahan' : 'Catat Transaksi'}</button>
           </div>
         </form>
       </Modal>
     </div>
   );
 }
-
-
-

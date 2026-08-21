@@ -1,0 +1,551 @@
+import React, { useState, useEffect } from 'react';
+import usePagination from '../../../hooks/usePagination';
+import RetailPagination from '../components/RetailPagination';
+import { api } from '../../../lib/api';
+import { 
+  Plus, RefreshCw, Truck, 
+  TrendingDown, Package, Edit3, Trash2
+} from 'lucide-react';
+import Modal from '../../../components/Modal';
+import CurrencyInput from '../../../components/CurrencyInput';
+import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import '../retail.css';
+
+export default function PurchaseOrders() {
+  const [purchases, setPurchases] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [supplierId, setSupplierId] = useState('');
+  const [expectedDate, setExpectedDate] = useState('');
+  const [items, setItems] = useState([{ product_id: '', qty: 1, cost_per_item: 0 }]);
+  const [notes, setNotes] = useState('');
+  const [detailPurchase, setDetailPurchase] = useState(null);
+
+  // Receive Modal State
+  const [receiveModalOpen, setReceiveModalOpen] = useState(false);
+  const [receivePurchase, setReceivePurchase] = useState(null);
+  const [receiveItems, setReceiveItems] = useState([]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [pRes, prodRes, supRes] = await Promise.all([
+        api.get('/retail/purchases'),
+        api.get('/retail/products'),
+        api.get('/retail/suppliers')
+      ]);
+      setPurchases(pRes.data);
+      setProducts(prodRes.data);
+      setSuppliers(supRes.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handleAddItem = () => {
+    setItems([...items, { product_id: '', qty: 1, cost_per_item: 0 }]);
+  };
+
+  const handleRemoveItem = (index) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...items];
+    newItems[index][field] = value;
+    setItems(newItems);
+  };
+
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/retail/purchases', {
+        supplier_id: supplierId,
+        expected_date: expectedDate,
+        items: items,
+        notes: notes,
+        status: 'pending'
+      });
+      fetchData();
+      setShowModal(false);
+      setItems([{ product_id: '', qty: 1, cost_per_item: 0 }]);
+      setSupplierId('');
+      setExpectedDate('');
+      setNotes('');
+    } catch (e) {
+      alert('Gagal menyimpan transaksi');
+    }
+  };
+
+  const handleReceivePO = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/retail/purchases/${receivePurchase.id}/status`, {
+        status: 'received',
+        items: receiveItems
+      });
+      fetchData();
+      setReceiveModalOpen(false);
+      setReceivePurchase(null);
+    } catch (e) {
+      alert('Gagal menerima barang');
+    }
+  };
+
+  const openReceiveModal = (purchase) => {
+    setReceivePurchase(purchase);
+    // Initialize receive items
+    setReceiveItems(purchase.items.map(i => ({
+      product_id: i.product_id,
+      qty: i.qty,
+      cost_per_item: i.cost_per_item,
+      expired_date: ''
+    })));
+    setReceiveModalOpen(true);
+  };
+
+  const handleReceiveItemChange = (index, field, value) => {
+    const newItems = [...receiveItems];
+    newItems[index][field] = value;
+    setReceiveItems(newItems);
+  };
+
+  const handleDelete = async (purchase) => {
+    if (!confirm(`Batalkan penerimaan barang dari "${purchase.supplier?.name || 'supplier ini'}"? Stok yang sudah masuk akan dikurangi kembali.`)) return;
+    try {
+      await api.delete(`/retail/purchases/${purchase.id}`);
+      fetchData();
+    } catch (e) {
+      alert(e.response?.data?.message || 'Gagal membatalkan transaksi');
+    }
+  };
+
+  const filteredPurchases = purchases.filter(p => {
+    const matchesSearch = p.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          p.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const pDate = new Date(p.created_at);
+    pDate.setHours(0, 0, 0, 0);
+
+    let matchesStart = true;
+    if (startDate) {
+      const sDate = new Date(startDate);
+      sDate.setHours(0, 0, 0, 0);
+      matchesStart = pDate >= sDate;
+    }
+
+    let matchesEnd = true;
+    if (endDate) {
+      const eDate = new Date(endDate);
+      eDate.setHours(0, 0, 0, 0);
+      matchesEnd = pDate <= eDate;
+    }
+
+    return matchesSearch && matchesStart && matchesEnd;
+  });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(filteredPurchases);
+
+  return (
+    <div className="animate-fade-in retail-dashboard-spacing">
+      {/* Page Header */}
+
+
+      {/* KPI Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 24 }}>
+         {/* Total Investment Card */}
+         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0">
+                  <TrendingDown size={18} />
+               </div>
+               <span className="text-sm font-medium text-slate-500">Total Investasi Stok</span>
+            </div>
+            <div>
+               <p className="text-2xl text-slate-900 leading-tight font-semibold">
+                  Rp {Math.round(purchases.reduce((acc, p) => acc + Number(p.total_cost || 0), 0)).toLocaleString('id-ID')}
+               </p>
+               <p className="text-xs text-slate-400 mt-1">Total akumulasi dana untuk pengadaan barang bulan ini.</p>
+            </div>
+         </div>
+
+         {/* Volume Card */}
+         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
+                  <Truck size={18} />
+               </div>
+               <span className="text-sm font-medium text-slate-500">Volume Transaksi</span>
+            </div>
+            <div>
+               <p className="text-2xl text-slate-900 leading-tight font-normal">
+                  {purchases.length} <span className="text-sm text-slate-400 font-medium ml-1">PO</span>
+               </p>
+               <p className="text-xs text-slate-400 mt-1">Jumlah transaksi Purchase Order terekam.</p>
+            </div>
+         </div>
+      </div>
+
+      <div className="card animate-fade-in overflow-hidden">
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)', flexWrap: 'wrap' }}>
+          <button title="Buat PO Baru" 
+            className="btn btn-primary"
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            onClick={() => {
+              setItems([{ product_id: '', qty: 1, cost_per_item: 0 }]);
+              setShowModal(true);
+            }}
+          >
+            <Plus size={15} className="mr-2 mobile-no-margin" />
+            <span className="btn-text-mobile-hide">Buat PO Baru</span>
+          </button>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
+            <input 
+              placeholder="Cari Supplier..." 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={startDate} 
+              onChange={e => setStartDate(e.target.value)} 
+              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>-</span>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={endDate} 
+              onChange={e => setEndDate(e.target.value)} 
+              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+            />
+          </div>
+          <button 
+            onClick={fetchData} 
+            className="btn-reset-sync"
+            style={{ width: 42, height: 42, flexShrink: 0 }}
+            title="Segarkan Data"
+          >
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+          </button>
+        </div>
+
+        <div className="retail-table-responsive"><table className="table">
+          <thead>
+            <tr>
+              <th className="pl-6 retail-table-header">Waktu PO</th>
+              <th className="retail-table-header">Supplier</th>
+              <th className="text-center retail-table-header">Status</th>
+              <th className="retail-table-header">Total Tagihan</th>
+              <th style={{ textAlign: 'right' }} className="pr-6 retail-table-header">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+               <RetailTableLoadingRow colSpan={5} text="Menyinkronkan Logistik..." />
+            ) : filteredPurchases.length === 0 ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
+                   Belum ada riwayat penerimaan barang.
+                </td>
+              </tr>
+            ) : (
+              paginatedData.map(p => (
+                <tr key={p.id}>
+                  <td className="pl-6">
+                    <span className="retail-text-primary">{new Date(p.created_at).toLocaleString('id-ID')}</span>
+                  </td>
+                  <td>
+                    <span className="retail-text-primary uppercase tracking-tight">{p.supplier?.name || '-'}</span>
+                  </td>
+                  <td className="text-center">
+                    {p.status === 'pending' && <span className="retail-badge retail-badge-warning">Menunggu</span>}
+                    {p.status === 'received' && <span className="retail-badge retail-badge-success">Diterima</span>}
+                    {p.status === 'cancelled' && <span className="retail-badge retail-badge-danger">Dibatalkan</span>}
+                  </td>
+                  <td>
+                     <span className="retail-text-primary">Rp {Math.round(Number(p.total_cost || 0)).toLocaleString('id-ID')}</span>
+                  </td>
+                  <td style={{ textAlign: 'right' }} className="pr-6">
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <button className="btn btn-sm btn-secondary" title="Detail" onClick={() => setDetailPurchase(p)}><Edit3 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost retail-text-danger" title="Hapus" onClick={() => handleDelete(p)}><Trash2 size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table></div>
+        <RetailPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
+      </div>
+
+      {/* Modal Input Barang Masuk */}
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Buat Purchase Order Baru" maxWidth="850px">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="form-group">
+                 <label className="form-label">Pilih Supplier <span className="text-rose-500">*</span></label>
+                 <select 
+                    className="form-input bg-slate-50" 
+                    value={supplierId} 
+                    onChange={e => setSupplierId(e.target.value)}
+                    required
+                 >
+                    <option value="" disabled>-- Pilih Supplier --</option>
+                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                 </select>
+              </div>
+              <div className="form-group">
+                 <label className="form-label">Tanggal Estimasi Barang Datang</label>
+                 <input 
+                    type="date"
+                    className="form-input bg-slate-50"
+                    value={expectedDate}
+                    onChange={e => setExpectedDate(e.target.value)}
+                 />
+              </div>
+           </div>
+
+           <div className="flex flex-col">
+              <div className="flex justify-between items-center mb-3">
+                 <label className="form-label" style={{ marginBottom: 0 }}>Daftar Barang</label>
+                 <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">{items.length} Item</span>
+              </div>
+              
+              <div className="border border-slate-200/80 rounded-xl bg-white p-4">
+              <div className="hidden md:grid grid-cols-12 gap-3 mb-3 pb-2 border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                 <span className="col-span-8">Nama Barang</span>
+                 <span className="col-span-3">Kuantitas</span>
+                 <span className="col-span-1 text-center">Aksi</span>
+              </div>
+
+              <div className="flex flex-col gap-3 md:gap-2">
+                {items.map((item, index) => (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end md:items-center bg-slate-50/50 md:bg-transparent p-3 md:p-0 rounded-xl border border-slate-200/60 md:border-0">
+                    <div className="col-span-1 md:col-span-8 flex flex-col gap-1">
+                       <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Nama Barang</label>
+                       <select 
+                          className="form-input bg-white"
+                          value={item.product_id}
+                          onChange={e => handleItemChange(index, 'product_id', e.target.value)}
+                          required
+                       >
+                          <option value="" disabled>Pilih Produk...</option>
+                          {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
+                       </select>
+                    </div>
+                    <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
+                       <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Kuantitas</label>
+                       <input 
+                          type="number" 
+                          className="form-input bg-white" 
+                          placeholder="0"
+                          value={item.qty}
+                          onChange={e => handleItemChange(index, 'qty', e.target.value)}
+                          required
+                       />
+                    </div>
+                    <div className="col-span-1 md:col-span-1 flex justify-end md:justify-center">
+                       <button 
+                         type="button" 
+                         className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors duration-150 border border-slate-200 md:border-0 bg-white md:bg-transparent" 
+                         onClick={() => handleRemoveItem(index)}
+                         title="Hapus Baris"
+                       >
+                          <Trash2 size={16} />
+                       </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                type="button" 
+                className="w-full mt-3 py-2.5 border-2 border-dashed border-slate-200 rounded-xl text-slate-500 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50/10 flex items-center justify-center gap-2 text-xs font-semibold transition-all duration-200" 
+                onClick={handleAddItem}
+              >
+                 <Plus size={16} /> Tambah Baris Baru
+              </button>
+           </div>
+           </div>
+
+           <div className="form-group">
+              <label className="form-label">Catatan Tambahan</label>
+              <textarea 
+                className="form-input min-h-[80px]" 
+                placeholder="Misal: Nomor invoice supplier, kondisi barang, dll"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+              />
+           </div>
+
+           <div className="modal__actions">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
+              <button type="submit" className="btn btn-primary">Simpan Purchase Order</button>
+           </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={!!detailPurchase} onClose={() => setDetailPurchase(null)} title="Detail Purchase Order">
+        {detailPurchase && (
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Supplier</p>
+                <p className="retail-text-primary font-medium">{detailPurchase.supplier?.name || '-'}</p>
+              </div>
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Tanggal</p>
+                <p className="retail-text-primary font-medium">{new Date(detailPurchase.created_at).toLocaleString('id-ID')}</p>
+              </div>
+            </div>
+
+            <div className="table-wrap" style={{ maxHeight: 260, overflow: 'auto' }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th className="retail-table-header">Produk</th>
+                    <th className="retail-table-header text-center">Qty</th>
+                    <th className="retail-table-header text-right">Harga Beli</th>
+                    <th className="retail-table-header text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(detailPurchase.items || []).map(item => (
+                    <tr key={item.id}>
+                      <td>{item.product?.name || `#${item.product_id}`}</td>
+                      <td className="text-center">{item.qty}</td>
+                      <td className="text-right">Rp {Math.round(Number(item.cost_per_item || 0)).toLocaleString('id-ID')}</td>
+                      <td className="text-right">Rp {Math.round(Number(item.subtotal || 0)).toLocaleString('id-ID')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {detailPurchase.notes && (
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Catatan</p>
+                <p className="retail-text-primary text-sm">{detailPurchase.notes}</p>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center pt-3" style={{ borderTop: '1px solid var(--retail-border, #e2e8f0)' }}>
+              <span className="text-sm font-semibold retail-text-primary">Total Tagihan</span>
+              <span className="text-lg font-bold retail-text-primary">Rp {Math.round(Number(detailPurchase.total_cost || 0)).toLocaleString('id-ID')}</span>
+            </div>
+
+            <div className="modal__actions">
+              <button type="button" className="btn btn-secondary" onClick={() => setDetailPurchase(null)}>Tutup</button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+
+      <Modal isOpen={receiveModalOpen} onClose={() => setReceiveModalOpen(false)} title="Penerimaan Barang PO" maxWidth="850px">
+        {receivePurchase && (
+          <form onSubmit={handleReceivePO} className="flex flex-col gap-6">
+             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <p className="text-sm font-semibold mb-2">Penerimaan dari PO #{receivePurchase.id} ({receivePurchase.supplier?.name})</p>
+                <p className="text-xs text-slate-500">Konfirmasi kuantitas yang benar-benar diterima, update HPP jika ada perubahan harga, dan masukkan Expired Date (jika berlaku).</p>
+             </div>
+
+             <div className="border border-slate-200/80 rounded-xl bg-white p-4">
+               <div className="hidden md:grid grid-cols-12 gap-3 mb-3 pb-2 border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                  <span className="col-span-4">Nama Barang</span>
+                  <span className="col-span-2">Kuantitas</span>
+                  <span className="col-span-3">Harga Beli (HPP)</span>
+                  <span className="col-span-3">Expired Date</span>
+               </div>
+
+               <div className="flex flex-col gap-3 md:gap-2">
+                 {receiveItems.map((item, index) => {
+                   const product = products.find(p => p.id == item.product_id);
+                   return (
+                     <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end md:items-center bg-slate-50/50 md:bg-transparent p-3 md:p-0 rounded-xl border border-slate-200/60 md:border-0">
+                       <div className="col-span-1 md:col-span-4 flex flex-col gap-1">
+                          <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Nama Barang</label>
+                          <input className="form-input bg-slate-100" value={product ? `${product.name} (${product.sku})` : 'Produk tidak ditemukan'} disabled />
+                       </div>
+                       <div className="col-span-1 md:col-span-2 flex flex-col gap-1">
+                          <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Kuantitas Diterima</label>
+                          <input 
+                             type="number" 
+                             className="form-input bg-white" 
+                             value={item.qty}
+                             onChange={e => handleReceiveItemChange(index, 'qty', e.target.value)}
+                             required
+                          />
+                       </div>
+                       <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
+                          <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Harga Beli (HPP)</label>
+                          <CurrencyInput 
+                             className="form-input bg-white" 
+                             value={item.cost_per_item}
+                             onChange={e => handleReceiveItemChange(index, 'cost_per_item', e.target.value)}
+                             required
+                          />
+                       </div>
+                       <div className="col-span-1 md:col-span-3 flex flex-col gap-1">
+                          <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider md:hidden">Expired Date</label>
+                          <input 
+                            type="date"
+                            className="form-input bg-white"
+                            value={item.expired_date || ''}
+                            onChange={e => handleReceiveItemChange(index, 'expired_date', e.target.value)}
+                          />
+                       </div>
+                     </div>
+                   );
+                 })}
+               </div>
+             </div>
+
+             <div className="modal__actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setReceiveModalOpen(false)}>Batal</button>
+                <button type="submit" className="btn btn-primary">Simpan & Masukkan Stok</button>
+             </div>
+          </form>
+        )}
+      </Modal>
+
+    </div>
+  );
+}
