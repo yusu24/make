@@ -62,7 +62,12 @@ class RetailFullDummySeeder extends Seeder
 
         DB::beginTransaction();
         try {
-            $faker = \Faker\Factory::create('id_ID');
+            $faker = class_exists('\Faker\Factory') ? \Faker\Factory::create('id_ID') : null;
+            $fakerName = fn() => $faker ? $faker->name : ('Pelanggan Demo ' . rand(100, 999));
+            $fakerPhone = fn() => $faker ? $faker->phoneNumber : ('0812' . rand(10000000, 99999999));
+            $fakerCompany = fn() => $faker ? $faker->company : ('PT Supplier Demo ' . rand(10, 99));
+            $fakerAddress = fn() => $faker ? $faker->address : 'Jl. Raya Industri No. ' . rand(1, 100);
+            $fakerElem = fn($arr) => $faker ? $faker->randomElement($arr) : $arr[array_rand($arr)];
 
             // echo "Seeding Full Dummy Data (1 Bulan) for Tenant: {$tenantName} ({$tenantId})\n";
 
@@ -82,9 +87,9 @@ class RetailFullDummySeeder extends Seeder
             for ($i=0; $i<15; $i++) {
                 RetailCustomer::firstOrCreate([
                     'tenant_id' => $tenantId,
-                    'name' => $faker->name,
-                    'contact' => $faker->phoneNumber,
-                    'tier' => $faker->randomElement(['regular', 'member'])
+                    'name' => $fakerName(),
+                    'contact' => $fakerPhone(),
+                    'tier' => $fakerElem(['regular', 'member'])
                 ]);
             }
             
@@ -92,9 +97,9 @@ class RetailFullDummySeeder extends Seeder
             for ($i=0; $i<8; $i++) {
                 RetailSupplier::firstOrCreate([
                     'tenant_id' => $tenantId,
-                    'name' => $faker->company,
-                    'contact' => $faker->phoneNumber,
-                    'address' => $faker->address
+                    'name' => $fakerCompany(),
+                    'contact' => $fakerPhone(),
+                    'address' => $fakerAddress()
                 ]);
             }
 
@@ -186,10 +191,10 @@ class RetailFullDummySeeder extends Seeder
                     $time = (clone $currentDate)->startOfDay()->addHours(rand(8, 19))->addMinutes(rand(0, 59));
                     
                     // Simulate Piutang
-                    $paymentMethod = $faker->randomElement(['CASH', 'QRIS', 'TRANSFER', 'PIUTANG']);
+                    $paymentMethod = $fakerElem(['CASH', 'QRIS', 'TRANSFER', 'PIUTANG']);
                     $status = ($paymentMethod == 'PIUTANG') ? 'unpaid' : 'paid';
 
-                    $customerId = (rand(1, 100) > 40 || $paymentMethod == 'PIUTANG') ? $faker->randomElement($customers) : null;
+                    $customerId = (rand(1, 100) > 40 || $paymentMethod == 'PIUTANG') ? $fakerElem($customers) : null;
 
                     $trx = RetailTransaction::create([
                         'tenant_id' => $tenantId,
