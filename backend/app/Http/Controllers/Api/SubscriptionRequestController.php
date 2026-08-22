@@ -87,6 +87,9 @@ class SubscriptionRequestController extends Controller
         try {
             $customerEmail = $user->email;
             if (!empty($customerEmail)) {
+                if (!empty($settings?->billing_email)) {
+                    config(['mail.from.address' => $settings->billing_email]);
+                }
                 \Illuminate\Support\Facades\Mail::to($customerEmail)->send(new \App\Mail\SubscriptionInvoiceMail([
                     'customer_name'     => $user->name,
                     'invoice_number'    => $paymentData['invoice_number'] ?? '',
