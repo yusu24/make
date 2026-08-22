@@ -268,11 +268,11 @@ class RetailFullDummySeeder extends Seeder
                 if (rand(1, 100) > 80) { // 20% chance per day
                     $poTime = clone $currentDate;
                     $poTime->addHours(9);
-                    $paymentStatus = $faker->randomElement(['paid', 'unpaid', 'partial']);
+                    $paymentStatus = $fakerElem(['paid', 'unpaid', 'partial']);
 
                     $po = RetailPurchase::create([
                         'tenant_id' => $tenantId,
-                        'supplier_id' => $faker->randomElement($suppliers),
+                        'supplier_id' => !empty($suppliers) ? $fakerElem($suppliers) : null,
                         'total_cost' => 0,
                         'purchase_date' => $poTime->format('Y-m-d'),
                         'created_at' => $poTime,
@@ -327,10 +327,10 @@ class RetailFullDummySeeder extends Seeder
                 }
 
                 // 4. Incomes / Expenses
-                if (rand(1, 100) > 85) {
+                if (rand(1, 100) > 85 && !empty($incomeCats)) {
                     RetailIncome::create([
                         'tenant_id' => $tenantId,
-                        'finance_category_id' => $faker->randomElement($incomeCats),
+                        'finance_category_id' => $fakerElem($incomeCats),
                         'nominal' => rand(50000, 300000),
                         'tanggal' => $currentDate->format('Y-m-d'),
                         'keterangan' => 'Pemasukan tambahan',
@@ -339,10 +339,10 @@ class RetailFullDummySeeder extends Seeder
                     ]);
                 }
 
-                if (rand(1, 100) > 75) {
+                if (rand(1, 100) > 75 && !empty($expenseCats)) {
                     RetailExpense::create([
                         'tenant_id' => $tenantId,
-                        'finance_category_id' => $faker->randomElement($expenseCats),
+                        'finance_category_id' => $fakerElem($expenseCats),
                         'nominal' => rand(20000, 150000),
                         'tanggal' => $currentDate->format('Y-m-d'),
                         'keterangan' => 'Pengeluaran operasional',
@@ -388,10 +388,10 @@ class RetailFullDummySeeder extends Seeder
                     ]);
                 }
 
-                if (rand(1, 100) > 95) { // Supplier Return
+                if (rand(1, 100) > 95 && !empty($suppliers)) { // Supplier Return
                     $sr = RetailSupplierReturn::create([
                         'tenant_id' => $tenantId,
-                        'supplier_id' => $faker->randomElement($suppliers),
+                        'supplier_id' => $fakerElem($suppliers),
                         'user_id' => $userId,
                         'return_number' => 'RET-' . $currentDate->format('Ymd') . '-' . rand(1000, 9999),
                         'reason' => 'Barang cacat pabrik',
@@ -420,8 +420,8 @@ class RetailFullDummySeeder extends Seeder
                     \App\Models\RetailIncome::create([
                         'tenant_id' => $tenantId,
                         'tanggal' => $incTime->format('Y-m-d'),
-                        'kategori' => $faker->randomElement(['Sponsor', 'Sewa Lapak', 'Fee Supplier', 'Lain-lain']),
-                        'keterangan' => 'Pemasukan tambahan ' . $faker->word,
+                        'kategori' => $fakerElem(['Sponsor', 'Sewa Lapak', 'Fee Supplier', 'Lain-lain']),
+                        'keterangan' => 'Pemasukan tambahan ' . rand(10, 99),
                         'nominal' => rand(1, 10) * 50000, // 50k to 500k
                         'created_at' => $incTime,
                         'updated_at' => $incTime
