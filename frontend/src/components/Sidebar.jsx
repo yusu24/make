@@ -44,12 +44,11 @@ const NAV_ITEMS = [
     ]
   },
   {
-    section: 'Modul & Kategori',
+    section: 'Kategori Bisnis',
     icon: <Layers size={18} />,
     adminOnly: true,
     items: [
-      { path: '/categories',  icon: <Layers size={18} />,   label: 'Kategori Bisnis' },
-      { path: '/module-docs', icon: <BookOpen size={18} />, label: 'Arsitektur Modul' },
+      { path: '/categories', icon: <Layers size={18} />, label: 'Kategori Bisnis' },
     ]
   },
   {
@@ -58,7 +57,8 @@ const NAV_ITEMS = [
     adminOnly: true,
     items: [
       { path: '/doc-dashboard', icon: <Layers size={18} />, label: 'Kelola Dokumentasi' },
-      { path: '/doc-center', icon: <BookOpen size={18} />, label: 'Baca Dokumentasi' },
+      { path: '/doc-center',    icon: <BookOpen size={18} />, label: 'Baca Dokumentasi' },
+      { path: '/module-docs',   icon: <BookOpen size={18} />, label: 'Arsitektur Modul' },
     ]
   },
   {
