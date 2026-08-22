@@ -147,17 +147,29 @@ export default function Users() {
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
-            <div className="filter-tabs">
-              {['all','active','pending','inactive'].map(f => (
-                <button
-                  key={f}
-                  id={`filter-${f}`}
-                  className={`filter-tab ${filter === f ? 'filter-tab--active' : ''}`}
-                  onClick={() => setFilter(f)}
-                >
-                  {f === 'all' ? 'Semua' : f.charAt(0).toUpperCase() + f.slice(1)}
-                </button>
-              ))}
+            <div style={{ minWidth: 160 }}>
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  backgroundColor: '#fff',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: '#334155',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                }}
+              >
+                <option value="all">Semua Status</option>
+                <option value="active">Active</option>
+                <option value="pending">Pending</option>
+                <option value="inactive">Inactive</option>
+              </select>
             </div>
           </div>
 

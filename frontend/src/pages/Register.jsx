@@ -6,12 +6,15 @@ import './Auth.css'
 import bizoraLogo from '../assets/bizora-logo.png'
 
 const CATEGORY_ICONS = {
+  'Budidaya Tanaman':  'ti-leaf',
+  'Toko Retail':       'ti-shopping-cart',
   'Budidaya Hewan':    'ti-fish',
-  'Budidaya Tanaman': 'ti-leaf',
-  'Toko Retail':      'ti-shopping-cart',
-  'Jasa':             'ti-briefcase',
-  'Manufaktur':       'ti-building-factory-2',
-  'Kuliner':          'ti-tools-kitchen-2',
+  'Jasa':              'ti-briefcase',
+  'Jasa & Repair':     'ti-briefcase',
+  'Kuliner':           'ti-tools-kitchen-2',
+  'Seller':            'ti-building-store',
+  'Seller Marketplace':'ti-building-store',
+  'Manufaktur':        'ti-building-factory-2',
 }
 
 export default function Register() {
@@ -33,11 +36,12 @@ export default function Register() {
       setCategories(res.data?.data || [])
     }).catch(() => {
       setCategories([
-        { id: 1, name: 'Budidaya Hewan' },
-        { id: 2, name: 'Toko Retail' },
-        { id: 3, name: 'Jasa' },
-        { id: 4, name: 'Manufaktur' },
-        { id: 5, name: 'Kuliner' },
+        { id: 1, name: 'Toko Retail', icon: '🛒' },
+        { id: 2, name: 'Kuliner', icon: '🍽️' },
+        { id: 3, name: 'Budidaya Hewan', icon: '🐟' },
+        { id: 4, name: 'Budidaya Tanaman', icon: '🌱' },
+        { id: 5, name: 'Jasa & Repair', icon: '🛠️' },
+        { id: 6, name: 'Seller Marketplace', icon: '📦' },
       ])
     })
 
@@ -217,7 +221,11 @@ export default function Register() {
                                 onClick={() => selectCategory(cat.id)}
                             >
                                 <div className="category-card__icon">
-                                    <i className={`ti ${CATEGORY_ICONS[cat.name] || 'ti-building'}`}></i>
+                                    {cat.icon && (cat.icon.length <= 4 || !cat.icon.startsWith('ti-')) ? (
+                                      <span style={{ fontSize: 24 }}>{cat.icon}</span>
+                                    ) : (
+                                      <i className={`ti ${CATEGORY_ICONS[cat.name] || cat.icon || 'ti-building'}`}></i>
+                                    )}
                                 </div>
                                 <div className="category-card__name">{cat.name}</div>
                             </div>

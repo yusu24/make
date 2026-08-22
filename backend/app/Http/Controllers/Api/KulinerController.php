@@ -155,23 +155,56 @@ class KulinerController extends Controller
         ]);
     }
 
-    public function getSettings(Request $request)
+    private function isStorefrontAllowedForTenant(?Tenant $tenant): bool
+    {
+        if (!$tenant) return true;
+        if (str_starts_with($tenant->tenant_id, 'TN-DS-') || str_starts_with($tenant->tenant_id, 'TN-DK-')) {
+            return true;
+        }
+
+        $plan = \App\Models\SubscriptionPlan::forTenant($tenant);
+        if (!$plan || !is_array($plan->features)) {
+            return true;
+        }
+
+        if (array_key_exists('storefront', $plan->features)) {
+            return (bool) $plan->features['storefront'];
+        }
+
+        return true;
+    }
+
+    private function resolveTenantFromRequest(Request $request): ?Tenant
     {
         $tenantId = $request->query('tenant_id') ?: $request->header('X-Tenant-ID');
-        
-        // Handle "undefined" string from frontend and prioritize authenticated user's tenant if available
         if ($tenantId === 'undefined' || !$tenantId) {
             $tenantId = auth('sanctum')->user()?->tenant_id;
         }
 
-        $tenant = $tenantId ? Tenant::where('tenant_id', $tenantId)->first() : null;
-        
-        if (!$tenant) {
-            $tenant = Tenant::where('type', 'kuliner')->first();
+        if ($tenantId) {
+            $normalizedId = str_replace('_', '-', $tenantId);
+            $tenant = Tenant::where('tenant_id', $normalizedId)
+                ->orWhere('tenant_id', $tenantId)
+                ->first();
+            if ($tenant) return $tenant;
         }
+
+        return Tenant::where('type', 'kuliner')->first();
+    }
+
+    public function getSettings(Request $request)
+    {
+        $tenant = $this->resolveTenantFromRequest($request);
 
         if (!$tenant) {
             return response()->json(['message' => 'Toko tidak ditemukan'], 404);
+        }
+
+        if (!$this->isStorefrontAllowedForTenant($tenant)) {
+            return response()->json([
+                'disabled' => true,
+                'message' => 'Halaman Storefront & QR Order belum diaktifkan pada paket ' . strtoupper($tenant->subscription_plan) . ' toko ini.'
+            ], 403);
         }
         
         $settings = KulinerSetting::where('tenant_id', $tenant->tenant_id)->first();
@@ -204,18 +237,16 @@ class KulinerController extends Controller
      */
     public function getPublicCategories(Request $request)
     {
-        $tenantId = $request->query('tenant_id') ?: $request->header('X-Tenant-ID');
-        
-        if ($tenantId === 'undefined' || !$tenantId) {
-            $tenantId = auth('sanctum')->user()?->tenant_id;
-        }
-
-        $tenant = $tenantId ? Tenant::where('tenant_id', $tenantId)->first() : null;
-        if (!$tenant) {
-            $tenant = Tenant::where('type', 'kuliner')->first();
-        }
+        $tenant = $this->resolveTenantFromRequest($request);
         
         if (!$tenant) return response()->json([], 200);
+
+        if (!$this->isStorefrontAllowedForTenant($tenant)) {
+            return response()->json([
+                'disabled' => true,
+                'message' => 'Halaman Storefront & QR Order belum diaktifkan pada paket ' . strtoupper($tenant->subscription_plan) . ' toko ini.'
+            ], 403);
+        }
 
         $categories = KulinerCategory::where('tenant_id', $tenant->tenant_id)->get();
         return response()->json($categories);
@@ -226,18 +257,16 @@ class KulinerController extends Controller
      */
     public function getPublicProducts(Request $request)
     {
-        $tenantId = $request->query('tenant_id') ?: $request->header('X-Tenant-ID');
-        
-        if ($tenantId === 'undefined' || !$tenantId) {
-            $tenantId = auth('sanctum')->user()?->tenant_id;
-        }
-
-        $tenant = $tenantId ? Tenant::where('tenant_id', $tenantId)->first() : null;
-        if (!$tenant) {
-            $tenant = Tenant::where('type', 'kuliner')->first();
-        }
+        $tenant = $this->resolveTenantFromRequest($request);
         
         if (!$tenant) return response()->json([], 200);
+
+        if (!$this->isStorefrontAllowedForTenant($tenant)) {
+            return response()->json([
+                'disabled' => true,
+                'message' => 'Halaman Storefront & QR Order belum diaktifkan pada paket ' . strtoupper($tenant->subscription_plan) . ' toko ini.'
+            ], 403);
+        }
 
         $products = KulinerProduct::where('tenant_id', $tenant->tenant_id)
             ->where('is_available', true)

@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\DB;
+use App\Models\SubscriptionPlan;
 
 class CheckPlanFeature
 {
@@ -14,44 +14,47 @@ class CheckPlanFeature
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $featureKey): Response
+    public function handle(Request $request, Closure $next, string $featureKey): Response
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            $tenantId = $request->query('tenant_id') ?: $request->header('X-Tenant-ID');
+            if ($tenantId && $tenantId !== 'undefined') {
+                $normalizedId = str_replace('_', '-', $tenantId);
+                $tenant = \App\Models\Tenant::where('tenant_id', $normalizedId)->orWhere('tenant_id', $tenantId)->first();
+            } else {
+                $tenant = null;
+            }
+        } else {
+            // Demo sandboxes & Super Admin bypass feature checks
+            if ($user->role === 'super_admin') {
+                return $next($request);
+            }
+
+            $tenantId = $user->tenant_id;
+            if ($tenantId && (str_starts_with($tenantId, 'TN-DS-') || str_starts_with($tenantId, 'TN-DK-'))) {
+                return $next($request);
+            }
+
+            $tenant = $user->tenant;
         }
 
-        // Demo sandboxes bypass feature checks.
-        $tenantId = $user->tenant_id;
-        if ($tenantId && (str_starts_with($tenantId, 'TN-DS-') || str_starts_with($tenantId, 'TN-DK-'))) {
+        if (!$tenant) {
             return $next($request);
         }
 
-        $tenant = $user->tenant;
-        if (!$tenant) {
-            if ($user->role === 'super_admin' || $user->role === 'admin') {
-                return $next($request);
-            }
-            return response()->json(['message' => 'Tenant not found.'], 403);
+        // Ambil plan aktif tenant berdasarkan business_category_id & subscription_plan
+        $plan = \App\Models\SubscriptionPlan::forTenant($tenant);
+        if (!$plan || !is_array($plan->features)) {
+            return $next($request);
         }
 
-        // Ambil plan saat ini
-        $planSlug = $tenant->subscription_plan; // misal: 'free', 'basic', 'pro'
-        
-        $plan = DB::table('subscription_plans')->where('slug', $planSlug)->first();
-        if (!$plan) {
-            return response()->json(['message' => 'Paket langganan Anda tidak ditemukan atau tidak valid.'], 403);
-        }
-
-        $hasFeature = DB::table('package_features')
-            ->where('plan_id', $plan->id)
-            ->where('feature_key', $featureKey)
-            ->exists();
-
-        if (!$hasFeature) {
+        $features = $plan->features;
+        if (array_key_exists($featureKey, $features) && !$features[$featureKey]) {
             return response()->json([
                 'success' => false,
-                'message' => 'Fitur ini tidak tersedia di paket Anda. Silakan upgrade paket berlangganan.',
+                'disabled' => true,
+                'message' => "Fitur '{$featureKey}' tidak diizinkan pada paket " . strtoupper($tenant->subscription_plan) . " toko ini. Silakan hubungi admin untuk upgrade paket.",
                 'error_code' => 'FEATURE_NOT_AVAILABLE',
                 'required_feature' => $featureKey
             ], 403);

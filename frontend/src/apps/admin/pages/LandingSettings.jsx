@@ -31,6 +31,8 @@ export default function LandingSettings() {
     footer_address: '',
     footer_phone: '',
     footer_email: '',
+    billing_email: '',
+    support_email: '',
     footer_security_text: '',
   })
   const [loading, setLoading] = useState(true)
@@ -478,10 +480,22 @@ export default function LandingSettings() {
                       onChange={e => setForm({...form, footer_phone: e.target.value})} />
                   </div>
                 </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>EMAIL BANTUAN</label>
-                  <input className="form-input" type="email" value={form.footer_email || ''}
-                    onChange={e => setForm({...form, footer_email: e.target.value})} />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🌐 EMAIL INFORMASI PORTAL</label>
+                    <input className="form-input" type="email" placeholder="info@bizora.id" value={form.footer_email || ''}
+                      onChange={e => setForm({...form, footer_email: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>💳 EMAIL PENAGIHAN &amp; INVOICE</label>
+                    <input className="form-input" type="email" placeholder="billing@bizora.id" value={form.billing_email || ''}
+                      onChange={e => setForm({...form, billing_email: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🎧 EMAIL CS &amp; BANTUAN</label>
+                    <input className="form-input" type="email" placeholder="bantuan@bizora.id" value={form.support_email || ''}
+                      onChange={e => setForm({...form, support_email: e.target.value})} />
+                  </div>
                 </div>
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>TEKS KEAMANAN & LAYANAN</label>

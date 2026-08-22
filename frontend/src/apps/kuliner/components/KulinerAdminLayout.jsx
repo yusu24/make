@@ -101,6 +101,18 @@ const KulinerAdminLayout = ({ children }) => {
     }
   }, [user?.tenant_name]);
 
+  const [planFeatures, setPlanFeatures] = useState(null);
+
+  useEffect(() => {
+    api.get('/subscription/current')
+      .then(res => {
+        if (res.data?.features) {
+          setPlanFeatures(res.data.features);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const handleExitImpersonate = () => {
     const redirectPath = exitImpersonate();
     navigate(redirectPath);
@@ -113,6 +125,14 @@ const KulinerAdminLayout = ({ children }) => {
     }
     const perms = user?.kulinerRole?.permissions || [];
     return perms.some(p => p === permId || p === `${permId}.*` || p.startsWith(`${permId}.`));
+  };
+
+  const isFeatureAllowed = (featureKey) => {
+    if (!planFeatures) return true;
+    if (planFeatures[featureKey] !== undefined) {
+      return Boolean(planFeatures[featureKey]);
+    }
+    return true;
   };
 
   const DEMO_EMAILS = ['ahmad@retail.com','retail@demo.com','siti@ikan.com','budidaya@demo.com','dewi@kuliner.com','kuliner@demo.com','jasa@demo.com','seller@demo.com']
@@ -176,10 +196,12 @@ const KulinerAdminLayout = ({ children }) => {
                 <span className="kd-nav-icon">📊</span>
                 <span>{t('sidebar.dashboard')}</span>
               </Link>
-              <Link to={`/kuliner?tenant_id=${user?.tenant_id}`} target="_blank" className="kd-nav-item">
-                <span className="kd-nav-icon">🌐</span>
-                <span>{t('sidebar.viewStorefront')}</span>
-              </Link>
+              {hasPermission('storefront') && isFeatureAllowed('storefront') && (
+                <Link to={`/kuliner?tenant_id=${user?.tenant_id}`} target="_blank" className="kd-nav-item">
+                  <span className="kd-nav-icon">🌐</span>
+                  <span>{t('sidebar.viewStorefront')}</span>
+                </Link>
+              )}
             </div>
 
             {/* Operasional & Kasir */}
@@ -479,6 +501,13 @@ const KulinerAdminLayout = ({ children }) => {
                     </Link>
                   )}
                   <Link 
+                    to="/kuliner/subscription" 
+                    className={`kd-nav-item ${location.pathname === '/kuliner/subscription' ? 'active' : ''}`}
+                  >
+                    <span className="kd-nav-icon">💳</span>
+                    <span>Paket Langganan</span>
+                  </Link>
+                  <Link 
                     to="/kuliner/admin/support" 
                     className={`kd-nav-item ${location.pathname === '/kuliner/admin/support' ? 'active' : ''}`}
                   >
@@ -640,7 +669,21 @@ const KulinerAdminLayout = ({ children }) => {
                   {(user?.name || 'T').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                 </div>
                 <div className="kd-profile-text" style={{ textAlign: 'left', lineHeight: 1.3 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{user?.name || 'Pemilik Toko'}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{user?.name || 'Pemilik Toko'}</div>
+                    {user?.subscription_plan && (
+                      <span style={{
+                        fontSize: 9,
+                        fontWeight: 800,
+                        padding: '1px 6px',
+                        borderRadius: 8,
+                        background: user.subscription_plan === 'pro' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : user.subscription_plan === 'basic' ? 'linear-gradient(135deg, #10b981, #059669)' : '#64748b',
+                        color: '#fff'
+                      }}>
+                        {user.subscription_plan === 'pro' ? '💎 PRO' : user.subscription_plan === 'basic' ? '⚡ BASIC' : 'FREE'}
+                      </span>
+                    )}
+                  </div>
                   <div style={{ fontSize: 11, color: '#94a3b8' }}>Admin Toko</div>
                 </div>
                 <span className="kd-profile-text" style={{ fontSize: 10, color: '#94a3b8', marginLeft: 2 }}>▾</span>

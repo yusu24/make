@@ -199,7 +199,7 @@ export default function SupportCenter() {
                     <div style={{ fontSize: 10.5, color: 'var(--text-muted)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{card.desc}</div>
                   </div>
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: card.color, lineHeight: 1 }}>
+                <div style={{ fontSize: 22, fontWeight: 600, color: card.color, lineHeight: 1 }}>
                   {card.value}
                 </div>
               </div>

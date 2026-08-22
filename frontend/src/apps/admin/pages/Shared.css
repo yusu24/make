@@ -416,7 +416,7 @@
 
 .kpi-value {
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--saas-heading);
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -467,7 +467,7 @@
   bottom: -30px;
   width: 240px;
   height: 240px;
-  background: radial-gradient(circle, rgba(105, 108, 255, 0.15) 0%, rgba(105, 108, 255, 0) 70%);
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.05) 0%, rgba(79, 70, 229, 0) 70%);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -666,7 +666,7 @@
 
 .cat-card__stat-num {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .cat-card__stat-lbl {

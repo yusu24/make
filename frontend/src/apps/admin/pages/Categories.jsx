@@ -234,7 +234,7 @@ export default function Categories() {
                 {cat.active ? 'Aktif' : 'Nonaktif'}
               </span>
             </div>
-            <div className="cat-card__btns">
+            <div className="cat-card__btns" style={{ display: 'flex', gap: 6 }}>
               <button
                 id={`btn-view-cat-${cat.id}`}
                 className="btn btn-primary btn-sm"
@@ -244,8 +244,15 @@ export default function Categories() {
               >
                 👁 Masuk Sistem
               </button>
-              <button id={`btn-edit-cat-${cat.id}`} className="btn btn-secondary btn-sm" onClick={() => openEdit(cat)}>✏</button>
-              <button id={`btn-del-cat-${cat.id}`} className="btn btn-ghost btn-sm" style={{color:'var(--danger-400)'}} onClick={() => handleDelete(cat.id)}>🗑</button>
+              <button 
+                className="btn btn-secondary btn-sm" 
+                title="Kelola Paket & Fitur Kategori Ini" 
+                onClick={() => navigate('/packages-features')}
+              >
+                💳 Paket
+              </button>
+              <button id={`btn-edit-cat-${cat.id}`} className="btn btn-secondary btn-sm" onClick={() => openEdit(cat)} title="Edit Kategori">✏</button>
+              <button id={`btn-del-cat-${cat.id}`} className="btn btn-ghost btn-sm" style={{color:'var(--danger-400)'}} onClick={() => handleDelete(cat.id)} title="Hapus">🗑</button>
             </div>
           </div>
         ))}

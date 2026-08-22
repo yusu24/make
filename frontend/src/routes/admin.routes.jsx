@@ -21,6 +21,9 @@ import Profile from '../apps/admin/pages/Profile';
 import LandingSettings from '../apps/admin/pages/LandingSettings';
 import Backups from '../apps/admin/pages/Backups';
 import ModuleDocumentation from '../apps/admin/pages/ModuleDocumentation';
+import CustomerOnboardingGuide from '../apps/admin/pages/CustomerOnboardingGuide';
+import AdminDocumentationDashboard from '../apps/admin/pages/AdminDocumentationDashboard';
+import DocumentationCenter from '../apps/admin/pages/DocumentationCenter';
 import { ProtectedRoute } from './guards';
 
 const adminRoutes = (
@@ -46,6 +49,8 @@ const adminRoutes = (
     <Route path="developer-integrations" element={<ProtectedRoute adminOnly><DeveloperIntegrations /></ProtectedRoute>} />
     <Route path="module-docs" element={<ProtectedRoute adminOnly><ModuleDocumentation /></ProtectedRoute>} />
     <Route path="backups" element={<ProtectedRoute adminOnly><Backups /></ProtectedRoute>} />
+    <Route path="doc-dashboard" element={<ProtectedRoute adminOnly><AdminDocumentationDashboard /></ProtectedRoute>} />
+    <Route path="doc-center" element={<ProtectedRoute adminOnly><DocumentationCenter /></ProtectedRoute>} />
     <Route path="profile" element={<Profile />} />
   </>
 );

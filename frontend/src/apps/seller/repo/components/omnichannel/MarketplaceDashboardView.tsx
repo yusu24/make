@@ -14,6 +14,7 @@ import {
   Check
 } from 'lucide-react';
 import { ConnectMarketplaceModal } from '../modals/ConnectMarketplaceModal';
+import { useAuth } from '../../../../../contexts/AuthContext';
 
 
 interface StoreItem {
@@ -25,15 +26,21 @@ interface StoreItem {
   color: string;
 }
 
+const INITIAL_STORES: StoreItem[] = [
+  { id: 1, platform: 'Shopee', shop: 'Toko Elektronik Budi', status: 'Connected', lastSync: 'Baru saja', color: 'bg-orange-500' },
+  { id: 2, platform: 'Tokopedia', shop: 'Budi Gadget Official', status: 'Connected', lastSync: '12 menit yang lalu', color: 'bg-emerald-500' },
+  { id: 3, platform: 'TikTok Shop', shop: 'Budi Gadget Live', status: 'Token Expired', lastSync: '5 jam yang lalu', color: 'bg-black dark:bg-slate-600' },
+  { id: 4, platform: 'Lazada', shop: 'Budi Elektronik Mall', status: 'Connected', lastSync: '15 menit yang lalu', color: 'bg-blue-600' },
+];
+
 export const MarketplaceDashboardView: React.FC<{ onNavigateToConnected?: () => void }> = ({
   onNavigateToConnected,
 }) => {
-  const [stores, setStores] = useState<StoreItem[]>([
-    { id: 1, platform: 'Shopee', shop: 'Toko Elektronik Budi', status: 'Connected', lastSync: 'Baru saja', color: 'bg-orange-500' },
-    { id: 2, platform: 'Tokopedia', shop: 'Budi Gadget Official', status: 'Connected', lastSync: '12 menit yang lalu', color: 'bg-emerald-500' },
-    { id: 3, platform: 'TikTok Shop', shop: 'Budi Gadget Live', status: 'Token Expired', lastSync: '5 jam yang lalu', color: 'bg-black dark:bg-slate-600' },
-    { id: 4, platform: 'Lazada', shop: 'Budi Elektronik Mall', status: 'Connected', lastSync: '15 menit yang lalu', color: 'bg-blue-600' },
-  ]);
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
+  const [stores, setStores] = useState<StoreItem[]>(isDemo ? INITIAL_STORES : []);
 
   const [isGlobalSyncing, setIsGlobalSyncing] = useState(false);
   const [isAddStoreModalOpen, setIsAddStoreModalOpen] = useState(false);
@@ -166,7 +173,7 @@ export const MarketplaceDashboardView: React.FC<{ onNavigateToConnected?: () => 
               <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
           </div>
-          <h3 className="text-3xl font-bold text-slate-800 dark:text-white mb-1">1,245</h3>
+          <h3 className="text-3xl font-bold text-slate-800 dark:text-white mb-1">{isDemo ? '1,245' : '0'}</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Produk Ter-mapping</p>
         </div>
 
@@ -177,7 +184,7 @@ export const MarketplaceDashboardView: React.FC<{ onNavigateToConnected?: () => 
             </div>
             <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-lg">Hari Ini</span>
           </div>
-          <h3 className="text-3xl font-bold text-slate-800 dark:text-white mb-1">128</h3>
+          <h3 className="text-3xl font-bold text-slate-800 dark:text-white mb-1">{isDemo ? '128' : '0'}</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Sync Berhasil</p>
         </div>
 
@@ -261,12 +268,12 @@ export const MarketplaceDashboardView: React.FC<{ onNavigateToConnected?: () => 
           </div>
           <div className="p-5 flex-1 overflow-y-auto">
             <div className="space-y-4 text-xs">
-              {[
+              {(isDemo ? [
                 { time: '10:45 AM', event: 'Sync Stok Otomatis (Shopee)', status: 'Success', detail: '34 SKU diperbarui' },
                 { time: '10:42 AM', event: 'Tarik Pesanan Baru (Tokopedia)', status: 'Success', detail: '5 Pesanan masuk' },
                 { time: '09:15 AM', event: 'Sync Harga (TikTok Shop)', status: 'Failed', detail: 'Token Kadaluarsa' },
                 { time: '08:30 AM', event: 'Sync Katalog (Lazada)', status: 'Success', detail: '128 Produk terhubung' },
-              ].map((act, idx) => (
+              ] : []).map((act, idx) => (
                 <div key={idx} className="flex gap-3 items-start pb-3 border-b border-slate-100 dark:border-slate-700/50 last:border-0 last:pb-0">
                   <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${act.status === 'Success' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                   <div className="flex-1">
@@ -276,6 +283,11 @@ export const MarketplaceDashboardView: React.FC<{ onNavigateToConnected?: () => 
                   <span className="text-[10px] text-slate-400 whitespace-nowrap">{act.time}</span>
                 </div>
               ))}
+              {!isDemo && (
+                <div className="text-center py-6 text-slate-400 text-xs">
+                  Belum ada aktivitas sinkronisasi.
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Eye, Check, X, CheckCircle, Clock } from 'lucide-react';
+import { Plus, Eye, Check, X, CheckCircle, Clock, Trash2 } from 'lucide-react';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';

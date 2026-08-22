@@ -238,6 +238,7 @@ class AuthController extends Controller
             'subscription_plan' => $plan,
             'subscription_status' => $status,
             'subscription_days_left' => $daysLeft,
+            'plan_features'     => $tenant ? (\App\Models\SubscriptionPlan::forTenant($tenant)?->features ?? []) : [],
             'active_modules'    => $tenant ? $tenant->modules()->where('is_active', true)->pluck('name')->toArray() : [],
             'permissions'       => ($user->role === 'customer' || $user->role === 'super_admin') 
                                     ? 'all' 

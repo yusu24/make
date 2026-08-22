@@ -19,10 +19,12 @@ const FEATURES_BY_CATEGORY = {
     prioritySupport: { label: 'Priority Support',     icon: '🎧' },
   },
   'budidaya-hewan': {
-    ponds:           { label: 'Manajemen Kolam',      icon: '🏊' },
+    ponds:           { label: 'Manajemen Kolam/Kandang', icon: '🏊' },
     cycles:          { label: 'Siklus Budidaya',      icon: '🔄' },
     feeding:         { label: 'Jadwal Pakan',         icon: '🐟' },
     harvest:         { label: 'Pencatatan Panen',     icon: '🎣' },
+    health:          { label: 'Catatan Kesehatan',    icon: '🩺' },
+    breeding:        { label: 'Silsilah Breeding',    icon: '🐾' },
     reports:         { label: 'Laporan Budidaya',     icon: '📊' },
     multiUser:       { label: 'Multi-User',           icon: '👨‍💼' },
     exportExcel:     { label: 'Export Excel/PDF',     icon: '📁' },
@@ -33,6 +35,7 @@ const FEATURES_BY_CATEGORY = {
     cycles:          { label: 'Siklus Tanam',         icon: '🔄' },
     fertilizer:      { label: 'Jadwal Pupuk',         icon: '🌿' },
     harvest:         { label: 'Pencatatan Panen',     icon: '🌽' },
+    health:          { label: 'Hama & Penyakit',      icon: '🐛' },
     reports:         { label: 'Laporan Pertanian',    icon: '📊' },
     multiUser:       { label: 'Multi-User',           icon: '👨‍💼' },
     exportExcel:     { label: 'Export Excel/PDF',     icon: '📁' },
@@ -40,11 +43,42 @@ const FEATURES_BY_CATEGORY = {
   },
   'kuliner': {
     menu:            { label: 'Manajemen Menu',       icon: '🍽️' },
-    orders:          { label: 'Manajemen Pesanan',    icon: '📋' },
-    tables:          { label: 'Manajemen Meja',       icon: '🪑' },
+    orders:          { label: 'Kasir & KDS Pesanan',  icon: '📋' },
+    tables:          { label: 'Manajemen Meja & QR',  icon: '🪑' },
+    recipes:         { label: 'Resep & HPP (BOM)',    icon: '📝' },
+    ingredients:     { label: 'Stok Bahan Baku Dapur',icon: '🧅' },
+    modifiers:       { label: 'Varian & Topping',     icon: '🎛️' },
+    addons:          { label: 'Add-on & Extra',       icon: '➕' },
+    bundles:         { label: 'Paket Menu (Bundle)',  icon: '🎁' },
+    waste:           { label: 'Limbah & Waste',       icon: '🗑️' },
+    purchases:       { label: 'Pembelian Bahan Baku', icon: '🛒' },
+    shifts:          { label: 'Shift Kasir',          icon: '🗄️' },
+    analytics:       { label: 'Menu Engineering',     icon: '📈' },
     delivery:        { label: 'Layanan Delivery',     icon: '🛵' },
     reports:         { label: 'Laporan Penjualan',    icon: '📊' },
     multiUser:       { label: 'Multi-User / Kasir',   icon: '👨‍💼' },
+    exportExcel:     { label: 'Export Excel/PDF',     icon: '📁' },
+    storefront:      { label: 'Lihat Storefront',     icon: '🌐' },
+    prioritySupport: { label: 'Priority Support',     icon: '🎧' },
+  },
+  'jasa': {
+    workOrders:      { label: 'Surat Perintah Kerja (SPK)', icon: '📋' },
+    contracts:       { label: 'Kontrak Layanan',      icon: '📜' },
+    spareparts:      { label: 'Stok Suku Cadang',     icon: '⚙️' },
+    services:        { label: 'Katalog Layanan Jasa', icon: '🛠️' },
+    finance:         { label: 'Keuangan SPK',         icon: '💰' },
+    reports:         { label: 'Laporan Layanan',      icon: '📊' },
+    multiUser:       { label: 'Multi-User Staf',      icon: '👨‍💼' },
+    exportExcel:     { label: 'Export Excel/PDF',     icon: '📁' },
+    prioritySupport: { label: 'Priority Support',     icon: '🎧' },
+  },
+  'seller': {
+    inventory:       { label: 'Stok & Gudang Seller', icon: '📦' },
+    marketplace:     { label: 'Integrasi Marketplace',icon: '🛒' },
+    sync:            { label: 'Sync Stok Otomatis',   icon: '🔄' },
+    shipments:       { label: 'Pengiriman & Resi',    icon: '🚚' },
+    reports:         { label: 'Laporan Penjualan',    icon: '📊' },
+    multiUser:       { label: 'Multi-User Staf',      icon: '👨‍💼' },
     exportExcel:     { label: 'Export Excel/PDF',     icon: '📁' },
     prioritySupport: { label: 'Priority Support',     icon: '🎧' },
   },
@@ -369,15 +403,17 @@ function MatrixView({ plans, categorySlug, onEdit }) {
   )
 }
 
-// ─── Main Component ────────────────────────────────────────────────────────────
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { slug: 'toko-retail',      name: 'Toko Retail',       icon: '🛒', color: '#3b82f6', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
   { slug: 'budidaya-hewan',    name: 'Budidaya Hewan',     icon: '🐟', color: '#10b981', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
   { slug: 'budidaya-tanaman', name: 'Budidaya Tanaman',  icon: '🌱', color: '#84cc16', gradient: 'linear-gradient(135deg,#84cc16,#4d7c0f)' },
   { slug: 'kuliner',          name: 'Kuliner',           icon: '🍽️', color: '#f59e0b', gradient: 'linear-gradient(135deg,#f59e0b,#b45309)' },
+  { slug: 'jasa',             name: 'Jasa & Repair',     icon: '🛠️', color: '#8b5cf6', gradient: 'linear-gradient(135deg,#8b5cf6,#6d28d9)' },
+  { slug: 'seller',           name: 'Seller Marketplace',icon: '📦', color: '#ec4899', gradient: 'linear-gradient(135deg,#ec4899,#be185d)' },
 ]
 
 export default function PackagesFeatures() {
+  const [categories, setCategories] = useState([])
   const [activeCategory, setActiveCategory] = useState('toko-retail')
   const [plansByCategory, setPlansByCategory] = useState({}) // cache per slug
   const [loading, setLoading] = useState(false)
@@ -392,7 +428,32 @@ export default function PackagesFeatures() {
     setTimeout(() => setToast(null), 3000)
   }
 
+  // Fetch master business categories from DB for 100% real-time sync with /categories
+  useEffect(() => {
+    api.get('/categories')
+      .then(res => {
+        const catList = res.data?.data || []
+        if (catList.length > 0) {
+          const formatted = catList.map(c => ({
+            id: c.id,
+            slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            name: c.name,
+            icon: c.icon || '🏢',
+            color: c.color || '#3b82f6',
+            gradient: `linear-gradient(135deg, ${c.color || '#3b82f6'}, ${c.color ? c.color + 'cc' : '#1d4ed8'})`,
+          }))
+          setCategories(formatted)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load dynamic categories:', err)
+      })
+  }, [])
+
+  const categoriesList = categories.length > 0 ? categories : DEFAULT_CATEGORIES
+
   const fetchPlans = async (slug) => {
+    if (!slug) return
     if (plansByCategory[slug]) return // already cached
     setLoading(true)
     try {
@@ -453,7 +514,7 @@ export default function PackagesFeatures() {
   }
 
   const plans = plansByCategory[activeCategory] || []
-  const activeCat = CATEGORIES.find(c => c.slug === activeCategory) || CATEGORIES[0]
+  const activeCat = categoriesList.find(c => c.slug === activeCategory) || categoriesList[0] || DEFAULT_CATEGORIES[0]
 
   return (
     <div className="animate-fade-in">
@@ -481,7 +542,7 @@ export default function PackagesFeatures() {
       <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
         {/* Category Tabs */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {CATEGORIES.map(cat => {
+          {categoriesList.map(cat => {
             const isActive = activeCategory === cat.slug
             return (
               <button

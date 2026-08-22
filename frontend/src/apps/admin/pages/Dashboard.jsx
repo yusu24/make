@@ -148,7 +148,7 @@ export default function Dashboard() {
         <div className="sneat-hero-card" style={{ gridColumn: 'span 2' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span className="badge badge-primary" style={{ fontSize: 11.5 }}>
+              <span className="bg-indigo-50 text-indigo-600 rounded-md px-2 py-1 font-semibold flex items-center gap-1.5" style={{ fontSize: 11 }}>
                 <Sparkles size={13} />
                 BIZORA SAAS PLATFORM
               </span>
@@ -193,11 +193,11 @@ export default function Dashboard() {
               <span style={{ fontSize: 11.5, color: '#8592a3', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Total Revenue
               </span>
-              <div style={{ fontSize: 26, fontWeight: 800, color: '#32475c', letterSpacing: '-0.02em', marginTop: 2 }}>
+              <div style={{ fontSize: 26, fontWeight: 600, color: '#32475c', letterSpacing: '-0.02em', marginTop: 2 }}>
                 {stats.revenue_this_month > 0 ? fmtRp(stats.revenue_this_month) : 'Rp 42.8M'}
               </div>
             </div>
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#71dd37' }}>
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#10b981' }}>
               ▲ +12.5% vs bulan lalu
             </span>
           </div>
@@ -206,102 +206,119 @@ export default function Dashboard() {
         {/* 2 Mini KPI Cards beside Hero */}
         <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 20 }}>
           {/* Mini Profit */}
-          <div className="mini-kpi-card">
-            <div>
-              <div className="mini-kpi-icon" style={{ background: '#eaeaff' }}>
-                <TrendingUp size={20} color="#696cff" />
+          <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-indigo-100 h-full">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                  <TrendingUp size={20} />
+                </div>
+                <div className="text-[11px] font-bold text-indigo-900 uppercase tracking-widest leading-tight">Profit Bersih</div>
               </div>
-              <div className="mini-kpi-label">Profit Bersih</div>
-              <h3 className="mini-kpi-value">Rp 12.6M</h3>
+              <span className="bg-emerald-100/50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-md shrink-0">▲ +72.8%</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
-              <span style={{ fontSize: 11.5, color: '#71dd37', fontWeight: 700 }}>▲ +72.8%</span>
-              <span style={{ fontSize: 11, color: '#a1acb8' }}>Periode Berjalan</span>
+            <div>
+              <h3 className="text-2xl font-semibold text-slate-800 mb-1 tracking-tight">Rp 12.6M</h3>
+              <span className="text-[11px] text-indigo-700/80 font-medium block">
+                Periode Berjalan
+              </span>
             </div>
           </div>
 
           {/* Mini Sales / Invoices */}
-          <div className="mini-kpi-card">
-            <div>
-              <div className="mini-kpi-icon" style={{ background: '#e8fadf' }}>
-                <CreditCard size={20} color="#71dd37" />
+          <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-emerald-100 h-full">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                  <CreditCard size={20} />
+                </div>
+                <div className="text-[11px] font-bold text-emerald-900 uppercase tracking-widest leading-tight whitespace-nowrap">Faktur & Transaksi</div>
               </div>
-              <div className="mini-kpi-label">Faktur & Transaksi</div>
-              <h3 className="mini-kpi-value">{fmt(stats.active_subscriptions || 18)} Langganan</h3>
+              <span className="bg-emerald-200/50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-md shrink-0">▲ +28.4%</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
-              <span style={{ fontSize: 11.5, color: '#71dd37', fontWeight: 700 }}>▲ +28.4%</span>
-              <span style={{ fontSize: 11, color: '#a1acb8' }}>98.2% Pembayaran Sukses</span>
+            <div>
+              <h3 className="text-2xl font-semibold text-slate-800 mb-1 tracking-tight">{fmt(stats.active_subscriptions || 18)} Langganan</h3>
+              <span className="text-[11px] text-emerald-700/80 font-medium block">
+                98.2% Pembayaran Sukses
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── 2. Core 4-Column Metric Grid ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
         {/* Total Users */}
-        <div className="metric-grid-card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div className="mini-kpi-icon" style={{ background: '#d7f5fc' }}>
-              <Users size={20} color="#03c3ec" />
+        <div className="bg-sky-50/70 border border-sky-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-sky-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+                <Users size={20} />
+              </div>
+              <div className="text-[11px] font-bold text-sky-900 uppercase tracking-widest leading-tight">Total Pengguna</div>
             </div>
-            <span className="badge badge-info">+12%</span>
+            <span className="bg-sky-200/50 text-sky-700 text-[10px] font-bold px-2 py-1 rounded-md shrink-0">+12%</span>
           </div>
           <div>
-            <div className="mini-kpi-label">Total Pengguna</div>
-            <h3 className="kpi-value">{fmt(stats.total_users || 0)}</h3>
-            <span style={{ fontSize: 11.5, color: '#8592a3', marginTop: 4, display: 'block' }}>
+            <h3 className="text-2xl font-semibold text-slate-800 mb-1 tracking-tight">{fmt(stats.total_users || 0)}</h3>
+            <span className="text-[11px] text-sky-700/80 font-medium block">
               +{stats.new_users_this_week || 0} pendaftar baru minggu ini
             </span>
           </div>
         </div>
 
         {/* Total Tenants */}
-        <div className="metric-grid-card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div className="mini-kpi-icon" style={{ background: '#eaeaff' }}>
-              <Building2 size={20} color="#696cff" />
+        <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-indigo-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                <Building2 size={20} />
+              </div>
+              <div className="text-[11px] font-bold text-indigo-900 uppercase tracking-widest leading-tight whitespace-nowrap">Total Tenant Aktif</div>
             </div>
-            <span className="badge badge-primary">+8%</span>
+            <span className="bg-indigo-200/50 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-md shrink-0">+8%</span>
           </div>
           <div>
-            <div className="mini-kpi-label">Total Tenant Aktif</div>
-            <h3 className="kpi-value">{fmt(stats.total_tenants || 0)}</h3>
-            <span style={{ fontSize: 11.5, color: '#8592a3', marginTop: 4, display: 'block' }}>
+            <h3 className="text-2xl font-semibold text-slate-800 mb-1 tracking-tight">{fmt(stats.total_tenants || 0)}</h3>
+            <span className="text-[11px] text-indigo-700/80 font-medium block">
               Tersebar di 4 kategori bisnis
             </span>
           </div>
         </div>
 
         {/* Monthly Recurring Revenue */}
-        <div className="metric-grid-card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div className="mini-kpi-icon" style={{ background: '#fff2d6' }}>
-              <DollarSign size={20} color="#ffab00" />
+        <div className="bg-amber-50/70 border border-amber-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-amber-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100/80 flex items-center justify-center text-amber-600 shrink-0">
+                <DollarSign size={20} />
+              </div>
+              <div className="text-[11px] font-bold text-amber-900 uppercase tracking-widest leading-tight whitespace-nowrap">Recurring Revenue</div>
             </div>
-            <span className="badge badge-warning">+15%</span>
+            <span className="bg-amber-200/50 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-md shrink-0">+15%</span>
           </div>
           <div>
-            <div className="mini-kpi-label">Monthly Recurring Revenue (MRR)</div>
-            <h3 className="kpi-value">{stats.mrr > 0 ? fmtRp(stats.mrr) : 'Rp 18.5M'}</h3>
-            <span style={{ fontSize: 11.5, color: '#8592a3', marginTop: 4, display: 'block' }}>
+            <h3 className="text-2xl font-semibold text-slate-800 mb-1 tracking-tight">{stats.mrr > 0 ? fmtRp(stats.mrr) : 'Rp 18.5M'}</h3>
+            <span className="text-[11px] text-amber-700/80 font-medium block">
               Pendapatan berulang bulanan
             </span>
           </div>
         </div>
 
         {/* Churn Rate */}
-        <div className="metric-grid-card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div className="mini-kpi-icon" style={{ background: '#ffe0db' }}>
-              <Activity size={20} color="#ff3e1d" />
+        <div className="bg-red-50/70 border border-red-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-red-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                <Activity size={20} />
+              </div>
+              <div className="text-[11px] font-bold text-red-900 uppercase tracking-widest leading-tight">Tingkat Churn</div>
             </div>
-            <span className="badge badge-danger">Sangat Rendah</span>
+            <span className="bg-red-200/50 text-red-700 text-[10px] font-bold px-2 py-1 rounded-md shrink-0">Rendah</span>
           </div>
           <div>
-            <div className="mini-kpi-label">Churn Rate</div>
-            <h3 className="kpi-value">{stats.churn_rate || 1.2}%</h3>
-            <span style={{ fontSize: 11.5, color: '#8592a3', marginTop: 4, display: 'block' }}>
+            <h3 className="text-2xl font-semibold text-slate-800 mb-1 tracking-tight">1.2%</h3>
+            <span className="text-[11px] text-red-700/80 font-medium block">
               Tingkat retensi tenant 98.8%
             </span>
           </div>
@@ -411,7 +428,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── 4. Recent Users / Tenants Table ── */}
-      <div className="card" style={{ padding: '22px 24px' }}>
+      <div className="bg-white border border-slate-200 rounded-xl p-6">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: '#32475c', margin: 0 }}>

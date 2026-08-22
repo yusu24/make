@@ -9,6 +9,7 @@ export default function Subscription() {
   const [pendingReq, setPendingReq] = useState(null);
   const [categoryPromo, setCategoryPromo] = useState(null);
   const [globalSettings, setGlobalSettings] = useState(null);
+  const [apiPlans, setApiPlans] = useState([]);
   
   const [pondCount, setPondCount] = useState(0);
   const [activeCycleCount, setActiveCycleCount] = useState(0);
@@ -34,6 +35,7 @@ export default function Subscription() {
       setPendingReq(subRes.data.data);
       setCategoryPromo(subRes.data.category_promo || null);
       setGlobalSettings(subRes.data.global_settings || null);
+      setApiPlans(subRes.data.plans || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -53,14 +55,14 @@ export default function Subscription() {
     }).format(number);
   };
 
-  const getPlanPriceInfo = (planId) => {
+  const getPlanPriceInfo = (planId, customPrice = null) => {
     if (!planId || planId === 'free') return { display: 'Rp 0', numeric: 0, discounted: false };
     
     const basePrices = { 
       basic: globalSettings?.price_basic || 149000, 
       pro: globalSettings?.price_pro || 299000 
     };
-    const base = basePrices[planId] || 0;
+    const base = (customPrice !== null && customPrice !== undefined && customPrice > 0) ? customPrice : (basePrices[planId] || 0);
     
     if (categoryPromo && categoryPromo.discount_pct > 0) {
       const discount = Math.round(base * (categoryPromo.discount_pct / 100));
@@ -88,7 +90,8 @@ export default function Subscription() {
 
   const submitUpgradeRequest = async () => {
     setIsSubmitting(true);
-    const priceInfo = getPlanPriceInfo(selectedPlan);
+    const planObj = apiPlans.find(p => p.plan_key === selectedPlan);
+    const priceInfo = getPlanPriceInfo(selectedPlan, planObj?.price);
     try {
       await api.post('/subscription/request', {
         plan: selectedPlan,
@@ -115,29 +118,64 @@ export default function Subscription() {
   const terms = useBudidayaTerms();
   const currentPlan = user?.subscription_plan || 'free';
 
-  const PLANS = [
+  const FEATURE_LABELS = {
+    ponds: `Manajemen ${terms.Pond}`,
+    cycles: `Siklus ${terms.Cycle}`,
+    feeding: `Jadwal ${terms.Feed}`,
+    harvest: 'Pencatatan Panen',
+    health: 'Catatan Kesehatan',
+    breeding: 'Silsilah Breeding',
+    reports: 'Laporan Budidaya',
+    multiUser: 'Multi-User Akses Staf',
+    exportExcel: 'Export Excel / PDF',
+    prioritySupport: 'Priority Support 24/7',
+  };
+
+  const describePlan = (plan) => {
+    const bullets = [];
+    bullets.push(plan.plan_key === 'free' ? 'Masa Aktif 3-5 Hari' : 'Tanpa Batas Waktu');
+    bullets.push(plan.max_staff === null ? 'Staf Tak Terbatas' : `Maks ${plan.max_staff} Staf`);
+    if (plan.features && typeof plan.features === 'object') {
+      Object.entries(plan.features).forEach(([key, enabled]) => {
+        if (enabled && FEATURE_LABELS[key]) bullets.push(FEATURE_LABELS[key]);
+      });
+    }
+    return bullets;
+  };
+
+  const DEFAULT_PLANS = [
     { 
       id: 'free', 
       name: 'Free (Tester)', 
       price: 'Rp 0', 
-      features: ['Masa Aktif 3-5 Hari', `Maks 2 ${terms.unit} Budidaya`, 'Maks 1 Siklus Aktif', `Laporan Dasar ${terms.unit}`],
+      features: ['Masa Aktif 3-5 Hari', `Manajemen ${terms.Pond}`, `Siklus ${terms.Cycle}`],
       color: '#64748b'
     },
     { 
       id: 'basic', 
       name: 'Basic', 
       price: getPlanPriceInfo('basic').display, 
-      features: ['Tanpa Batas Waktu', `Maks 5 ${terms.unit} Budidaya`, 'Maks 3 Siklus Aktif', `${terms.isTanaman ? 'Laporan Pupuk & Sampling' : 'Laporan Pakan & Sampling'}`],
+      features: ['Tanpa Batas Waktu', `Jadwal ${terms.Feed}`, 'Pencatatan Panen', 'Laporan Budidaya'],
       color: '#2D6A4F'
     },
     { 
       id: 'pro', 
       name: 'Pro (Terbaik)', 
       price: getPlanPriceInfo('pro').display, 
-      features: ['Tanpa Batas Waktu', `${terms.unit} Tak Terbatas`, 'Siklus Tak Terbatas', `Analitik Panen & Multi ${terms.unit}`],
+      features: ['Tanpa Batas Waktu', 'Catatan Kesehatan & Breeding', 'Multi-User Staf & Export Excel'],
       color: '#1B4332' 
     }
   ];
+
+  const PLANS = (apiPlans && apiPlans.length > 0)
+    ? apiPlans.map(plan => ({
+        id: plan.plan_key,
+        name: plan.name,
+        price: plan.plan_key === 'free' ? 'Rp 0' : getPlanPriceInfo(plan.plan_key, plan.price).display,
+        features: describePlan(plan),
+        color: plan.plan_key === 'free' ? '#64748b' : (plan.plan_key === 'basic' ? '#2D6A4F' : '#1B4332')
+      }))
+    : DEFAULT_PLANS;
 
   const pondLimit = currentPlan === 'free' ? 2 : (currentPlan === 'basic' ? 5 : '∞');
   const pondPercentage = pondLimit === '∞' ? 0 : (pondCount / pondLimit) * 100;
@@ -325,11 +363,11 @@ export default function Subscription() {
 
                     <button
                       className="btn-upgrade"
-                      disabled={isCurrent || plan.id === 'free' || pendingReq}
+                      disabled={isCurrent || plan.id === 'free' || pendingReq?.plan === plan.id}
                       onClick={() => handleOrderUpgrade(plan.id)}
                       style={plan.id === 'pro' ? { background: '#1B4332' } : {}}
                     >
-                      {isCurrent ? 'Paket Aktif Saat Ini' : (pendingReq ? 'Menunggu Aktivasi' : 'Pilih Paket')}
+                      {isCurrent ? 'Paket Aktif Saat Ini' : (pendingReq?.plan === plan.id ? 'Menunggu Aktivasi' : 'Pilih Paket')}
                     </button>
                   </div>
                 );

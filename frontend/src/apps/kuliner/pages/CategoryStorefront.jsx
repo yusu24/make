@@ -32,6 +32,7 @@ const CategoryStorefront = () => {
   });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [bestSellers, setBestSellers] = useState({ monthly: null, daily: [] });
+  const [disabledMessage, setDisabledMessage] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -89,7 +90,13 @@ const CategoryStorefront = () => {
           setBestSellers(bestRes.data);
         }
       } catch (error) {
-        console.error('Failed to fetch storefront data:', error);
+        if (error.response?.status === 403 && error.response?.data?.disabled) {
+          setDisabledMessage(error.response.data.message);
+        } else if (error.response?.status === 403) {
+          setDisabledMessage('Halaman Storefront & QR Order belum diaktifkan pada paket langganan toko ini.');
+        } else {
+          console.error('Failed to fetch storefront data:', error);
+        }
       } finally {
         setLoading(false);
       }
@@ -132,6 +139,18 @@ const CategoryStorefront = () => {
   const [loading, setLoading] = useState(true);
 
   if (loading) return <PageLoader />;
+
+  if (disabledMessage) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '85vh', textAlign: 'center', padding: 24, fontFamily: "'Inter', sans-serif", background: '#fafafa' }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>🔒</div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1e293b', marginBottom: 8 }}>Fitur Storefront Belum Aktif</h2>
+        <p style={{ fontSize: 14, color: '#64748b', maxWidth: 480, lineHeight: 1.6, margin: 0 }}>
+          {disabledMessage}
+        </p>
+      </div>
+    );
+  }
 
   const filteredItems = activeCat === t('storefront.all') 
     ? products.slice(0, 6) 

@@ -139,12 +139,19 @@ export default function ContentAnnouncement() {
 
       {/* ── Filter Toolbar ── */}
       <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
-        <div className="filter-tabs">
-          {['all', 'maintenance', 'feature', 'promo', 'security'].map(f => (
-            <button key={f} className={`filter-tab ${filter === f ? 'filter-tab--active' : ''}`} onClick={() => setFilter(f)}>
-              {f === 'all' ? 'Semua' : `${TYPE_ICON[f]} ${TYPE_LABEL[f]}`}
-            </button>
-          ))}
+        <div className="saas-pagination-select-wrapper" style={{ width: 180 }}>
+          <select 
+            className="saas-pagination-select w-full" 
+            value={filter} 
+            onChange={e => setFilter(e.target.value)}
+            style={{ height: 38 }}
+          >
+            <option value="all">⊞ Semua Kategori</option>
+            <option value="maintenance">🔧 Maintenance</option>
+            <option value="feature">🚀 Fitur Baru</option>
+            <option value="promo">🎉 Promo</option>
+            <option value="security">🔒 Keamanan</option>
+          </select>
         </div>
 
         <button className="btn btn-primary" onClick={openAdd}>+ Buat Pengumuman</button>

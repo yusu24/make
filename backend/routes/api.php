@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\LandingSettingController;
 use App\Http\Controllers\Api\TestimonialController;
 use App\Http\Controllers\Api\AdminFinanceController;
 use App\Http\Controllers\Api\AdminAnalyticsController;
+use App\Http\Controllers\Api\AdminDocumentationController;
+use App\Http\Controllers\Api\DocumentationReaderController;
 
 // ─── PUBLIC ROUTES ───────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
@@ -83,6 +85,39 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     Route::post('admins', [UserController::class, 'store']);
     Route::delete('admins/{user}', [UserController::class, 'destroy']);
     Route::apiResource('saas-roles', SaasRoleController::class);
+
+    // -----------------------------------------------------
+    // BIZORA DOCUMENTATION CENTER (PUBLIC / AUTHENTICATED)
+    // -----------------------------------------------------
+    Route::prefix('documentation')->group(function () {
+        Route::get('/', [DocumentationReaderController::class, 'index']);
+        Route::get('/categories', [DocumentationReaderController::class, 'getCategories']);
+        Route::get('/search', [DocumentationReaderController::class, 'search']);
+        Route::get('/journeys', [DocumentationReaderController::class, 'getJourneys']);
+        Route::get('/article/{slug}', [DocumentationReaderController::class, 'show']);
+        Route::get('/export/article/{slug}', [DocumentationReaderController::class, 'exportArticlePdf']);
+    });
+
+    // -----------------------------------------------------
+    // ADMIN DOCUMENTATION MANAGEMENT
+    // -----------------------------------------------------
+    Route::prefix('admin/documentation')->group(function () {
+        Route::get('categories', [AdminDocumentationController::class, 'getCategories']);
+        Route::post('categories', [AdminDocumentationController::class, 'storeCategory']);
+        Route::put('categories/{id}', [AdminDocumentationController::class, 'updateCategory']);
+        Route::delete('categories/{id}', [AdminDocumentationController::class, 'destroyCategory']);
+
+        Route::get('articles', [AdminDocumentationController::class, 'getArticles']);
+        Route::get('articles/{id}', [AdminDocumentationController::class, 'showArticle']);
+        Route::post('articles', [AdminDocumentationController::class, 'storeArticle']);
+        Route::put('articles/{id}', [AdminDocumentationController::class, 'updateArticle']);
+        Route::delete('articles/{id}', [AdminDocumentationController::class, 'destroyArticle']);
+
+        Route::post('media', [AdminDocumentationController::class, 'uploadMedia']);
+
+        Route::get('journeys', [AdminDocumentationController::class, 'getJourneys']);
+        Route::post('journeys', [AdminDocumentationController::class, 'storeJourney']);
+    });
 
     // Business Categories management (Admin/System level)
     Route::get('categories', [BusinessCategoryController::class, 'index']);
@@ -564,7 +599,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::delete('roles/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'destroyRole']);
 
             // ── Phase 1: Menu engineering (Bahan Baku, Recipe/BOM, Modifier, Add-on, Bundle) ──
-            Route::middleware('kuliner_permission:ingredients')->group(function () {
+            Route::middleware(['kuliner_permission:ingredients', 'plan_feature:ingredients'])->group(function () {
                 Route::get('ingredients-export', [\App\Http\Controllers\Api\Kuliner\IngredientController::class, 'exportExcel']);
                 Route::post('ingredients-import', [\App\Http\Controllers\Api\Kuliner\IngredientController::class, 'importExcel']);
                 Route::get('ingredients/{id}/movements', [\App\Http\Controllers\Api\Kuliner\IngredientController::class, 'movements']);
@@ -572,21 +607,21 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::apiResource('ingredients', \App\Http\Controllers\Api\Kuliner\IngredientController::class);
                 Route::apiResource('suppliers', \App\Http\Controllers\Api\Kuliner\SupplierController::class)->except(['show']);
             });
-            Route::middleware('kuliner_permission:recipes')->group(function () {
+            Route::middleware(['kuliner_permission:recipes', 'plan_feature:recipes'])->group(function () {
                 Route::get('products/{product}/recipe', [\App\Http\Controllers\Api\Kuliner\RecipeController::class, 'index']);
                 Route::put('products/{product}/recipe', [\App\Http\Controllers\Api\Kuliner\RecipeController::class, 'sync']);
             });
-            Route::middleware('kuliner_permission:modifiers')->group(function () {
+            Route::middleware(['kuliner_permission:modifiers', 'plan_feature:modifiers'])->group(function () {
                 Route::post('products/{product}/modifier-groups/{group}', [\App\Http\Controllers\Api\Kuliner\ModifierGroupController::class, 'attachToProduct']);
                 Route::delete('products/{product}/modifier-groups/{group}', [\App\Http\Controllers\Api\Kuliner\ModifierGroupController::class, 'detachFromProduct']);
                 Route::apiResource('modifier-groups', \App\Http\Controllers\Api\Kuliner\ModifierGroupController::class)->except(['show']);
             });
-            Route::middleware('kuliner_permission:addons')->group(function () {
+            Route::middleware(['kuliner_permission:addons', 'plan_feature:addons'])->group(function () {
                 Route::post('products/{product}/addons/{addon}', [\App\Http\Controllers\Api\Kuliner\AddonController::class, 'attachToProduct']);
                 Route::delete('products/{product}/addons/{addon}', [\App\Http\Controllers\Api\Kuliner\AddonController::class, 'detachFromProduct']);
                 Route::apiResource('addons', \App\Http\Controllers\Api\Kuliner\AddonController::class)->except(['show']);
             });
-            Route::middleware('kuliner_permission:bundles')->group(function () {
+            Route::middleware(['kuliner_permission:bundles', 'plan_feature:bundles'])->group(function () {
                 Route::apiResource('bundles', \App\Http\Controllers\Api\Kuliner\BundleController::class);
             });
 
@@ -594,14 +629,14 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::middleware('kuliner_permission:orders')->group(function () {
                 Route::get('kitchen-queue', [\App\Http\Controllers\Api\Kuliner\KitchenQueueController::class, 'index']);
             });
-            Route::middleware('kuliner_permission:shift')->group(function () {
+            Route::middleware(['kuliner_permission:shift', 'plan_feature:shifts'])->group(function () {
                 Route::get('shifts/current', [\App\Http\Controllers\Api\Kuliner\ShiftController::class, 'current']);
                 Route::get('shifts/history', [\App\Http\Controllers\Api\Kuliner\ShiftController::class, 'history']);
                 Route::post('shifts/open', [\App\Http\Controllers\Api\Kuliner\ShiftController::class, 'open']);
                 Route::post('shifts/{id}/close', [\App\Http\Controllers\Api\Kuliner\ShiftController::class, 'close']);
             });
 
-            // ── Phase 3: Stock opname & waste management ──
+            // ── Phase 3: Stock opname & waste management & purchases ──
             Route::middleware('kuliner_permission:ingredients')->group(function () {
                 Route::get('ingredient-opnames', [\App\Http\Controllers\Api\Kuliner\IngredientOpnameController::class, 'index']);
                 Route::post('ingredient-opnames', [\App\Http\Controllers\Api\Kuliner\IngredientOpnameController::class, 'store']);
@@ -611,11 +646,15 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::post('ingredient-opnames/{id}/approve', [\App\Http\Controllers\Api\Kuliner\IngredientOpnameController::class, 'approve']);
                 Route::post('ingredient-opnames/{id}/reject', [\App\Http\Controllers\Api\Kuliner\IngredientOpnameController::class, 'reject']);
                 Route::delete('ingredient-opnames/{id}', [\App\Http\Controllers\Api\Kuliner\IngredientOpnameController::class, 'destroy']);
+            });
 
+            Route::middleware('plan_feature:waste')->group(function () {
                 Route::get('wastes', [\App\Http\Controllers\Api\Kuliner\WasteController::class, 'index']);
                 Route::post('wastes', [\App\Http\Controllers\Api\Kuliner\WasteController::class, 'store']);
                 Route::delete('wastes/{id}', [\App\Http\Controllers\Api\Kuliner\WasteController::class, 'destroy']);
+            });
 
+            Route::middleware('plan_feature:purchases')->group(function () {
                 Route::get('purchases', [\App\Http\Controllers\Api\Kuliner\IngredientPurchaseController::class, 'index']);
                 Route::post('purchases', [\App\Http\Controllers\Api\Kuliner\IngredientPurchaseController::class, 'store']);
                 Route::get('purchases/{id}', [\App\Http\Controllers\Api\Kuliner\IngredientPurchaseController::class, 'show']);

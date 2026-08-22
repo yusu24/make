@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { History, Search, Filter, CheckCircle2, AlertCircle, RefreshCw, FileText, X } from 'lucide-react';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
+import { useAuth } from '../../../../../contexts/AuthContext';
 
 interface SyncLogItem {
   id: string;
@@ -27,7 +28,11 @@ const INITIAL_SYNC_LOGS: SyncLogItem[] = [
 ];
 
 export const SyncHistoryView: React.FC = () => {
-  const [logs] = useState<SyncLogItem[]>(INITIAL_SYNC_LOGS);
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
+  const [logs] = useState<SyncLogItem[]>(isDemo ? INITIAL_SYNC_LOGS : []);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedModule, setSelectedModule] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');

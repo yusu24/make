@@ -49,7 +49,16 @@ const NAV_ITEMS = [
     adminOnly: true,
     items: [
       { path: '/categories',  icon: <Layers size={18} />,   label: 'Kategori Bisnis' },
-      { path: '/module-docs', icon: <BookOpen size={18} />, label: 'Dokumentasi Modul' },
+      { path: '/module-docs', icon: <BookOpen size={18} />, label: 'Arsitektur Modul' },
+    ]
+  },
+  {
+    section: 'Pusat Dokumentasi',
+    icon: <BookOpen size={18} />,
+    adminOnly: true,
+    items: [
+      { path: '/doc-dashboard', icon: <Layers size={18} />, label: 'Kelola Dokumentasi' },
+      { path: '/doc-center', icon: <BookOpen size={18} />, label: 'Baca Dokumentasi' },
     ]
   },
   {

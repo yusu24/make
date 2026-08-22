@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { ActiveTab, Expense, Income, Order, Product, Warehouse, StockMovement, CashSummaryItem, StoreChannel } from './types';
+import { useAuth } from '../../../contexts/AuthContext';
 import {
   INITIAL_WAREHOUSES,
   INITIAL_STOCK_MOVEMENTS,
@@ -45,6 +46,7 @@ import { ShippingManagementView } from './components/omnichannel/ShippingManagem
 import { PackingImprovementView } from './components/omnichannel/PackingImprovementView';
 import { NotificationCenterView } from './components/omnichannel/NotificationCenterView';
 import { GuideView } from './components/views/GuideView';
+import { SellerSubscriptionView } from './components/views/SellerSubscriptionView';
 
 import { AddExpenseModal } from './components/modals/AddExpenseModal';
 import { AddIncomeModal } from './components/modals/AddIncomeModal';
@@ -90,6 +92,7 @@ const pathToTab = (p: string): ActiveTab => {
   if (p.includes('/settings/account')) return 'settings-account';
   if (p.includes('/settings/roles')) return 'settings-roles';
   if (p.includes('/settings/users')) return 'settings-users';
+  if (p.includes('/subscription') || p.includes('/langganan')) return 'langganan';
   if (p.includes('/guide') || p.includes('/panduan')) return 'panduan';
   return 'menu-utama';
 };
@@ -122,6 +125,7 @@ const tabToPath = (tab: ActiveTab): string => {
     case 'shipping-packing': return '/seller/shipping/packing';
     case 'notification-center': return '/seller/notifications';
     case 'panduan': return '/seller/guide';
+    case 'langganan': return '/seller/subscription';
     default: return '/seller/dashboard';
   }
 };
@@ -155,13 +159,17 @@ export default function App() {
     }
   }, [activeTab]);
 
-  // App Master Data States - initialized with full rich dummy data for all processes
-  const [stores, setStores] = useState<StoreChannel[]>(INITIAL_STORES);
+  // App Master Data States - initialized with rich dummy data ONLY for demo sandbox accounts
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
+  const [stores, setStores] = useState<StoreChannel[]>(isDemo ? INITIAL_STORES : []);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [cashSummaries, setCashSummaries] = useState<CashSummaryItem[]>(INITIAL_CASH_SUMMARIES);
+  const [cashSummaries, setCashSummaries] = useState<CashSummaryItem[]>(isDemo ? INITIAL_CASH_SUMMARIES : []);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [warehouseToEdit, setWarehouseToEdit] = useState<Warehouse | null>(null);
 
@@ -854,6 +862,7 @@ export default function App() {
           {activeTab === 'shipping-packing' && <PackingImprovementView />}
           {activeTab === 'notification-center' && <NotificationCenterView />}
           {activeTab === 'panduan' && <GuideView />}
+          {activeTab === 'langganan' && <SellerSubscriptionView />}
         </main>
       </div>
 

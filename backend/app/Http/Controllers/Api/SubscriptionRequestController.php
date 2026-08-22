@@ -83,6 +83,27 @@ class SubscriptionRequestController extends Controller
         // Generate Payment Invoice Session (QRIS & VA)
         $paymentData = PaymentGatewayService::createInvoice($tenant, $planKey, $amount);
 
+        // Send Email Invoice to Customer Email ($user->email)
+        try {
+            $customerEmail = $user->email;
+            if (!empty($customerEmail)) {
+                \Illuminate\Support\Facades\Mail::to($customerEmail)->send(new \App\Mail\SubscriptionInvoiceMail([
+                    'customer_name'     => $user->name,
+                    'invoice_number'    => $paymentData['invoice_number'] ?? '',
+                    'plan'              => ucfirst($planKey),
+                    'amount'            => $amount,
+                    'due_date'          => $paymentData['due_date'] ?? '',
+                    'bank_name'         => $settings->bank_name ?? 'BANK BCA',
+                    'bank_account_no'   => $settings->bank_account_no ?? '8837 001 992',
+                    'bank_account_name' => $settings->bank_account_name ?? 'PT Antigravity Global SaaS',
+                    'billing_email'     => $settings->billing_email ?? 'billing@bizora.id',
+                    'support_email'     => $settings->support_email ?? 'bantuan@bizora.id',
+                ]));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Gagal mengirim email invoice langganan: ' . $e->getMessage());
+        }
+
         // Notify Super Admins
         $admins = \App\Models\User::where('role', 'super_admin')->get();
         foreach ($admins as $adm) {
@@ -165,13 +186,29 @@ class SubscriptionRequestController extends Controller
                 $tenant->update(['subscription_plan' => strtolower($subReq->plan)]);
                 
                 // Notify Tenant Owner
-                \App\Models\Notification::create([
-                    'user_id' => $tenant->user_id,
-                    'type' => 'success',
-                    'title' => 'Langganan Diaktifkan! 🎉',
-                    'message' => "Permintaan upgrade Anda ke paket " . strtoupper($subReq->plan) . " telah disetujui.",
-                    'data' => ['link' => '/retail/subscription']
-                ]);
+                $owner = $tenant->owner;
+                if ($owner) {
+                    \App\Models\Notification::create([
+                        'user_id' => $owner->id,
+                        'type' => 'success',
+                        'title' => 'Langganan Diaktifkan! 🎉',
+                        'message' => "Permintaan upgrade Anda ke paket " . strtoupper($subReq->plan) . " telah disetujui.",
+                        'data' => ['link' => '/retail/subscription']
+                    ]);
+
+                    if (!empty($owner->email)) {
+                        try {
+                            \Illuminate\Support\Facades\Mail::to($owner->email)->send(new \App\Mail\SubscriptionActivatedMail([
+                                'customer_name'  => $owner->name,
+                                'invoice_number' => 'REQ-' . $subReq->id,
+                                'plan'           => ucfirst($subReq->plan),
+                                'expires_at'     => now()->addDays(30)->format('d M Y'),
+                            ]));
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::warning('Gagal mengirim email persetujuan langganan: ' . $e->getMessage());
+                        }
+                    }
+                }
             }
 
             // Mark request as approved

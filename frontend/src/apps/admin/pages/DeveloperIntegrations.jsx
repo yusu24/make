@@ -70,14 +70,20 @@ export default function DeveloperIntegrations() {
   };
 
   const handleSimulateWebhook = async () => {
+    const inputInvoice = window.prompt("Masukkan Nomor Invoice yang ingin disimulasikan lunas:", "INV-20260822-TJLYEN");
+    if (!inputInvoice || !inputInvoice.trim()) return;
+
     setSimulating(true);
     try {
-      const testInvoice = 'INV-' + Math.floor(100000 + Math.random() * 900000);
       const res = await api.post('/payment/simulate-pay', {
-        invoice_number: testInvoice,
+        invoice_number: inputInvoice.trim(),
         payment_method: 'QRIS (Simulasi Midtrans)'
       });
-      alert(`✅ Simulasi Webhook Berhasil!\nStatus: ${res.data?.message || 'Invoice diproses'}`);
+      if (res.data?.success) {
+        alert(`✅ Simulasi Webhook Berhasil!\n\nDetail: ${res.data?.message || 'Invoice berhasil dilunasi!'}`);
+      } else {
+        alert(`⚠️ Simulasi Webhook Ditolak:\n\nDetail: ${res.data?.message || 'Invoice tidak ditemukan.'}`);
+      }
     } catch (err) {
       alert('Simulasi Webhook gagal: ' + (err.response?.data?.message || err.message));
     } finally {

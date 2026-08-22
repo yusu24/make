@@ -2816,6 +2816,94 @@ export default function ModuleDocumentation() {
     // ─────────────────────────────────────────────────────────────────────────
     // [5] MODUL JASA, SERVIS & WORK ORDER (SERVICES OS)
     // ─────────────────────────────────────────────────────────────────────────
+
+    landing: {
+      key: 'landing',
+      icon: <Sparkles size={18} />,
+      title: 'Modul Landing Page & Portal',
+      description: 'Halaman profil utama (front-facing) website untuk promosi produk, fitur unggulan ERP, tabel harga (pricing), FAQ, dan sistem registrasi (onboarding) tenant baru.',
+      version: 'v1.1.0',
+      lastUpdated: '2026-08-21',
+      leadDeveloper: 'Bizora Frontend Team',
+
+      domains: [
+        { id: 'all', label: 'Semua Domain', color: '#ec4899' }
+      ],
+
+      techStack: {
+        backend: [
+          { name: 'Laravel 11.x', role: 'API untuk Registrasi & Data Referensi', tag: 'Framework' },
+          { name: 'Sanctum', role: 'Otentikasi Login & Registrasi', tag: 'Auth' }
+        ],
+        frontend: [
+          { name: 'React 18.x', role: 'UI Components', tag: 'UI Library' },
+          { name: 'Vite 5.x', role: 'Build Tool', tag: 'Bundler' },
+          { name: 'Lucide React', role: 'Iconography', tag: 'Icons' }
+        ],
+        database: [
+          { name: 'MySQL', role: 'Tenant Data & Leads', tag: 'Storage' }
+        ]
+      },
+
+      features: [
+        {
+          category: 'Company Profile',
+          icon: <Globe size={20} className="text-primary" />,
+          items: [
+            'Hero Section animasi dinamis dengan call-to-action (CTA)',
+            'Showcase Modul (Retail, Kuliner, Jasa, Budidaya, Seller)',
+            'Tabel Harga Berlangganan (Pricing Plan)',
+            'Testimonial Pelanggan & FAQ'
+          ]
+        },
+        {
+          category: 'Onboarding & Akses',
+          icon: <Users size={20} className="text-primary" />,
+          items: [
+            'Pendaftaran Tenant Baru (Self-Service Registration)',
+            'Portal Login terintegrasi untuk pengguna',
+            'Sistem Kontak & Leads Generation'
+          ]
+        }
+      ],
+      erdNodes: [
+        {
+          id: 'tenants',
+          domain: 'all',
+          title: 'tenants',
+          badge: 'Pelanggan / Organisasi',
+          color: '#ec4899',
+          x: 100,
+          y: 100,
+          width: 250,
+          height: 160,
+          fields: [
+            { name: 'id', type: 'VARCHAR(32)', key: 'PK' },
+            { name: 'name', type: 'VARCHAR(255)' },
+            { name: 'domain', type: 'VARCHAR(255)' },
+            { name: 'status', type: 'VARCHAR(20)' },
+            { name: 'created_at', type: 'TIMESTAMP' }
+          ]
+        }
+      ],
+      erdEntities: [
+        {
+          table: 'tenants',
+          description: 'Pelanggan atau Organisasi yang mendaftar ke sistem',
+          keys: ['PK: id (VARCHAR)'],
+          columns: ['name', 'domain', 'status', 'created_at'],
+          relationships: []
+        }
+      ],
+      erdEdges: [],
+      directoryStructure: [
+        { section: 'frontend/src/pages/', items: ['Landing.jsx', 'Login.jsx', 'Register.jsx'] }
+      ],
+      apiEndpoints: [
+        { method: 'POST', path: '/api/auth/register', name: 'Registrasi Tenant', perm: 'public', desc: 'Mendaftarkan tenant baru dan inisialisasi modul dasar' },
+        { method: 'POST', path: '/api/auth/login', name: 'Login Akses', perm: 'public', desc: 'Autentikasi masuk ke dashboard masing-masing modul' }
+      ]
+    },
     jasa: {
       key: 'jasa',
       icon: <Wrench size={18} />,
@@ -3192,48 +3280,32 @@ export default function ModuleDocumentation() {
           </span>
         </div>
 
-        {/* Module Selector Tabs */}
-        <div className="filter-tabs">
-          <button
-            type="button"
-            className={`filter-tab ${selectedModule === 'retail' ? 'filter-tab--active' : ''}`}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
-            onClick={() => handleModuleChange('retail')}
+        {/* Module Selector Dropdown */}
+        <div style={{ minWidth: 260 }}>
+          <select
+            value={selectedModule}
+            onChange={(e) => handleModuleChange(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 16px',
+              borderRadius: '10px',
+              border: '1px solid #cbd5e1',
+              backgroundColor: '#fff',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#334155',
+              cursor: 'pointer',
+              outline: 'none',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+            }}
           >
-            <Store size={15} /> Modul Retail
-          </button>
-          <button
-            type="button"
-            className={`filter-tab ${selectedModule === 'kuliner' ? 'filter-tab--active' : ''}`}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
-            onClick={() => handleModuleChange('kuliner')}
-          >
-            <Utensils size={15} /> Modul Kuliner (F&B)
-          </button>
-          <button
-            type="button"
-            className={`filter-tab ${selectedModule === 'budidaya' ? 'filter-tab--active' : ''}`}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
-            onClick={() => handleModuleChange('budidaya')}
-          >
-            <span style={{ fontSize: 13 }}>🐔</span> Modul Budidaya &amp; Peternakan
-          </button>
-          <button
-            type="button"
-            className={`filter-tab ${selectedModule === 'seller' ? 'filter-tab--active' : ''}`}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
-            onClick={() => handleModuleChange('seller')}
-          >
-            <Globe size={15} /> Modul Seller Hub
-          </button>
-          <button
-            type="button"
-            className={`filter-tab ${selectedModule === 'jasa' ? 'filter-tab--active' : ''}`}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
-            onClick={() => handleModuleChange('jasa')}
-          >
-            <Wrench size={15} /> Modul Jasa (Services OS)
-          </button>
+            <option value="retail">🏪 Modul Retail</option>
+            <option value="kuliner">🍽️ Modul Kuliner (F&amp;B)</option>
+            <option value="budidaya">🐔 Modul Budidaya &amp; Peternakan</option>
+            <option value="seller">🌐 Modul Seller Hub</option>
+            <option value="jasa">🔧 Modul Jasa (Services OS)</option>
+            <option value="landing">✨ Landing Page</option>
+          </select>
         </div>
       </div>
 
@@ -3247,7 +3319,7 @@ export default function ModuleDocumentation() {
               ? 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)'
               : (selectedModule === 'jasa'
                 ? 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)'
-                : 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'))),
+                : (selectedModule === 'landing' ? 'linear-gradient(135deg, #be185d 0%, #f472b6 100%)' : 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)')))),
         color: '#ffffff',
         padding: '20px 24px',
         borderRadius: 16,
@@ -3280,17 +3352,17 @@ export default function ModuleDocumentation() {
         <div style={{ display: 'flex', gap: 14, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '10px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.25)', color: '#ffffff' }}>
           <div>
             <div style={{ fontSize: 11, textTransform: 'uppercase', opacity: 0.85, fontWeight: 600, color: '#ffffff' }}>Tabel Database</div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#ffffff' }}>{currentDoc.erdEntities.length} Tabel</div>
+            <div style={{ fontSize: 17, fontWeight: 600, color: '#ffffff' }}>{currentDoc.erdEntities.length} Tabel</div>
           </div>
           <div style={{ width: 1, background: 'rgba(255,255,255,0.25)' }} />
           <div>
             <div style={{ fontSize: 11, textTransform: 'uppercase', opacity: 0.85, fontWeight: 600, color: '#ffffff' }}>Relasi Entitas</div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#ffffff' }}>{currentDoc.erdEdges.length} Relasi</div>
+            <div style={{ fontSize: 17, fontWeight: 600, color: '#ffffff' }}>{currentDoc.erdEdges.length} Relasi</div>
           </div>
           <div style={{ width: 1, background: 'rgba(255,255,255,0.25)' }} />
           <div>
             <div style={{ fontSize: 11, textTransform: 'uppercase', opacity: 0.85, fontWeight: 600, color: '#ffffff' }}>Diagram Visual</div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#ffffff' }}>Canvas HD</div>
+            <div style={{ fontSize: 17, fontWeight: 600, color: '#ffffff' }}>Canvas HD</div>
           </div>
         </div>
       </div>
@@ -3325,10 +3397,10 @@ export default function ModuleDocumentation() {
               fontSize: 14,
               fontWeight: activeTab === tab.id ? 700 : 500,
               color: activeTab === tab.id
-                ? (selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#1B4332' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : '#4f46e5'))))
+                ? (selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#1B4332' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : (selectedModule === 'landing' ? '#ec4899' : '#4f46e5')))))
                 : 'var(--text-secondary)',
               borderBottom: activeTab === tab.id
-                ? `3px solid ${selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#1B4332' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : '#4f46e5')))}`
+                ? `3px solid ${selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#1B4332' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : (selectedModule === 'landing' ? '#ec4899' : '#4f46e5'))))}`
                 : '3px solid transparent',
               cursor: 'pointer',
               transition: 'all 0.2s',
@@ -3529,7 +3601,7 @@ export default function ModuleDocumentation() {
                       <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
                     </marker>
                     <marker id="arrow-active" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                      <path d="M 0 0 L 10 5 L 0 10 z" fill={selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#15803d' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : '#4f46e5')))} />
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill={selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#15803d' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : (selectedModule === 'landing' ? '#ec4899' : '#4f46e5'))))} />
                     </marker>
                     <filter id="shadow" x="-5%" y="-5%" width="115%" height="115%">
                       <feDropShadow dx="0" dy="4" stdDeviation="5" floodOpacity="0.08" />
@@ -3557,7 +3629,7 @@ export default function ModuleDocumentation() {
 
                     const dx = Math.abs(endX - startX) * 0.5;
                     const pathData = `M ${startX} ${startY} C ${startX + dx} ${startY}, ${endX - dx} ${endY}, ${endX} ${endY}`;
-                    const activeColor = selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#15803d' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : '#4f46e5')));
+                    const activeColor = selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#15803d' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : (selectedModule === 'landing' ? '#ec4899' : '#4f46e5'))));
 
                     return (
                       <g key={idx} opacity={isHighlighted ? 1 : 0.65} style={{ cursor: 'pointer' }}>

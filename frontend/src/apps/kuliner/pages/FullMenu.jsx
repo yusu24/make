@@ -43,6 +43,7 @@ const FullMenu = () => {
   const [isCheckingPromo, setIsCheckingPromo] = useState(false);
   const [promoMessage, setPromoMessage] = useState(null);
   const [lastOrder, setLastOrder] = useState(null);
+  const [disabledMessage, setDisabledMessage] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,7 +97,11 @@ const FullMenu = () => {
         setCategories(updatedCats);
 
       } catch (error) {
-        console.error('Failed to fetch store data:', error);
+        if (error.response?.status === 403 && error.response?.data?.disabled) {
+          setDisabledMessage(error.response.data.message);
+        } else {
+          console.error('Failed to fetch store data:', error);
+        }
       } finally {
         setLoading(false);
       }
@@ -245,6 +250,20 @@ const FullMenu = () => {
       setSubmitting(false);
     }
   };
+
+  if (loading) return <PageLoader />;
+
+  if (disabledMessage) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '85vh', textAlign: 'center', padding: 24, fontFamily: "'Inter', sans-serif", background: '#fafafa' }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>🔒</div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1e293b', marginBottom: 8 }}>Fitur Storefront Belum Aktif</h2>
+        <p style={{ fontSize: 14, color: '#64748b', maxWidth: 480, lineHeight: 1.6, margin: 0 }}>
+          {disabledMessage}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="kl-storefront">

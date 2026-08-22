@@ -11,6 +11,7 @@ import {
   Check,
   Power
 } from 'lucide-react';
+import { useAuth } from '../../../../../contexts/AuthContext';
 
 interface ConnectedAccount {
   id: number;
@@ -32,7 +33,11 @@ const INITIAL_ACCOUNTS: ConnectedAccount[] = [
 ];
 
 export const ConnectedAccountsView: React.FC = () => {
-  const [accounts, setAccounts] = useState<ConnectedAccount[]>(INITIAL_ACCOUNTS);
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
+  const [accounts, setAccounts] = useState<ConnectedAccount[]>(isDemo ? INITIAL_ACCOUNTS : []);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState('all');
   const [syncingId, setSyncingId] = useState<number | null>(null);

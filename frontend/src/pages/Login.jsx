@@ -5,6 +5,15 @@ import { api } from '../lib/api'
 import './Auth.css'
 import bizoraLogo from '../assets/bizora-logo.png'
 
+const CATEGORY_META = {
+  'Toko Retail': { icon: '🛒', desc: 'Kasir pintar POS, pencatatan otomatis, dan monitor stok.' },
+  'Budidaya Hewan': { icon: '🐟', desc: 'Siklus hidup kolam, jadwal pemberian pakan, & panen.' },
+  'Budidaya Tanaman': { icon: '🌱', desc: 'Manajemen tanam, pemupukan, & penjadwalan panen.' },
+  'Kuliner': { icon: '🍱', desc: 'Menu interaktif, pesanan online, resep, dan HPP otomatis.' },
+  'Jasa': { icon: '💼', desc: 'Katalog layanan, penjadwalan, dan manajemen tim.' },
+  'Manufaktur': { icon: '🏭', desc: 'Manajemen produksi, bill of materials, & inventory.' }
+}
+
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -13,16 +22,29 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [showPass, setShowPass] = useState(false)
   const [logoUrl, setLogoUrl] = useState(null)
+  const [categories, setCategories] = useState([])
+  const [featuredSlugs, setFeaturedSlugs] = useState([])
 
   useEffect(() => {
+    // Fetch categories
+    api.get('/categories/public')
+      .then(r => { if (r.data?.data) setCategories(r.data.data) })
+      .catch(e => console.error('Failed to fetch categories:', e))
+
+    // Fetch landing settings
     api.get('/landing-settings')
       .then(r => {
-        if (r.data?.data?.landing_logo_url) {
-          setLogoUrl(r.data.data.landing_logo_url)
+        if (r.data?.data) {
+          if (r.data.data.landing_logo_url) setLogoUrl(r.data.data.landing_logo_url)
+          if (r.data.data.featured_categories) setFeaturedSlugs(r.data.data.featured_categories)
         }
       })
-      .catch(e => console.error('Failed to fetch login page logo:', e))
+      .catch(e => console.error('Failed to fetch landing settings:', e))
   }, [])
+
+  const displayCategories = featuredSlugs.length > 0 
+    ? categories.filter(c => featuredSlugs.includes(c.slug)) 
+    : categories
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
@@ -115,22 +137,21 @@ export default function Login() {
             Hubungkan kasir digital, kontrol persediaan stok, pengelolaan kolam budidaya, serta restoran kuliner dalam satu sistem terintegrasi yang andal.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 40 }}>
-            {[
-              { icon: '🛒', title: 'Toko Retail', desc: 'Kasir pintar POS, pencatatan otomatis, dan monitor stok.' },
-              { icon: '🐟', title: 'Budidaya Hewan', desc: 'Siklus hidup kolam, jadwal pemberian pakan, & panen.' },
-              { icon: '🍱', title: 'Kuliner', desc: 'Menu interaktif, pesanan online, resep, dan HPP otomatis.' }
-            ].map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                <div style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.08)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-                  {item.icon}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 30 }}>
+            {displayCategories.map((c, idx) => {
+              const meta = CATEGORY_META[c.name] || { icon: '🏢', desc: 'Kelola manajemen bisnis Anda.' }
+              return (
+                <div key={idx} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                  <div style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.08)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
+                    {meta.icon}
+                  </div>
+                  <div>
+                    <h4 style={{ color: '#fff', margin: '0 0 2px 0', fontSize: 14, fontWeight: 700 }}>{c.name}</h4>
+                    <p style={{ color: 'rgba(255,255,255,0.55)', margin: 0, fontSize: 12 }}>{meta.desc}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 style={{ color: '#fff', margin: '0 0 2px 0', fontSize: 14, fontWeight: 700 }}>{item.title}</h4>
-                  <p style={{ color: 'rgba(255,255,255,0.55)', margin: 0, fontSize: 12 }}>{item.desc}</p>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 

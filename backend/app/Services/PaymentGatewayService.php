@@ -90,7 +90,7 @@ class PaymentGatewayService
             $newExpires = $currentExpires->copy()->addDays(30);
 
             $tenant->update([
-                'plan'                    => strtolower($invoice->plan),
+                'subscription_plan'       => strtolower($invoice->plan),
                 'subscription_status'     => 'active',
                 'subscription_expires_at' => $newExpires,
             ]);
@@ -99,11 +99,10 @@ class PaymentGatewayService
             SubscriptionRequest::where('tenant_id', $tenant->tenant_id)
                 ->where('status', 'pending')
                 ->update([
-                    'status'      => 'approved',
-                    'approved_at' => now(),
+                    'status' => 'approved',
                 ]);
 
-            // Notify Tenant
+            // Notify Tenant via In-App Notification & Email
             $owner = $tenant->owner;
             if ($owner) {
                 \App\Models\Notification::create([
@@ -113,6 +112,19 @@ class PaymentGatewayService
                     'message' => "Paket {$invoice->plan} Anda telah aktif hingga " . $newExpires->format('d M Y') . ". Terima kasih atas kepercayaan Anda!",
                     'data'    => ['invoice_id' => $invoice->id, 'link' => '/subscription']
                 ]);
+
+                if (!empty($owner->email)) {
+                    try {
+                        \Illuminate\Support\Facades\Mail::to($owner->email)->send(new \App\Mail\SubscriptionActivatedMail([
+                            'customer_name'  => $owner->name,
+                            'invoice_number' => $invoice->id,
+                            'plan'           => ucfirst($invoice->plan),
+                            'expires_at'     => $newExpires->format('d M Y'),
+                        ]));
+                    } catch (\Throwable $e) {
+                        Log::warning('Gagal mengirim email aktivasi langganan: ' . $e->getMessage());
+                    }
+                }
             }
         }
 

@@ -47,28 +47,33 @@ export default function ActivityLogs() {
         <h2 className="page-title">Log Aktivitas &amp; Audit</h2>
       </div>
 
-      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
-          <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
-            <span className="search-icon">🔍</span>
-            <input id="input-search-logs" className="form-input search-input" placeholder="Cari aktivitas..."
-              value={search} onChange={e => setSearch(e.target.value)} />
-          </div>
-          <div className="filter-tabs">
-            {['all','info','success','warning','danger'].map(f => (
-              <button key={f} id={`log-filter-${f}`}
-                className={`filter-tab ${level===f?'filter-tab--active':''}`}
-                onClick={() => setLevel(f)}
-              >
-                {LEVEL_ICON[f] || '⊞'} {f.charAt(0).toUpperCase()+f.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
-        <button id="btn-export-logs" className="btn btn-secondary btn-sm" style={{ height: 38 }}>⬇ Export Log</button>
-      </div>
-
       <div className="card" style={{overflow:'hidden'}}>
+        <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-elevated, #f8fafc)', margin: 0 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
+            <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
+              <span className="search-icon">🔍</span>
+              <input id="input-search-logs" className="form-input search-input" placeholder="Cari aktivitas..."
+                value={search} onChange={e => setSearch(e.target.value)} />
+            </div>
+            <div className="saas-pagination-select-wrapper" style={{ width: 150 }}>
+              <select 
+                id="log-filter-select"
+                className="saas-pagination-select w-full" 
+                value={level} 
+                onChange={e => setLevel(e.target.value)}
+                style={{ height: 38 }}
+              >
+                <option value="all">⊞ Semua Level</option>
+                <option value="info">ℹ Info</option>
+                <option value="success">✓ Success</option>
+                <option value="warning">⚠ Warning</option>
+                <option value="danger">✗ Danger</option>
+              </select>
+            </div>
+          </div>
+          <button id="btn-export-logs" className="btn btn-secondary btn-sm" style={{ height: 38 }}>⬇ Export Log</button>
+        </div>
+
         {/* Timeline style logs */}
         <div style={{display:'flex', flexDirection:'column'}}>
           {paginatedData.map((log, i) => (

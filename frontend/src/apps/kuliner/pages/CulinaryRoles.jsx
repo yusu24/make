@@ -35,6 +35,7 @@ const CulinaryRoles = () => {
     { id: 'analytics',   name: 'Analitik Bisnis',        icon: '📈' },
     { id: 'staff',       name: 'Manajemen Staff',        icon: '👥' },
     { id: 'settings',    name: 'Pengaturan Toko',        icon: '⚙️' },
+    { id: 'storefront',  name: 'Lihat Storefront',       icon: '🌐' },
   ];
 
   useEffect(() => {

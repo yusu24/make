@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
+import KulinerAdminLayout from '../components/KulinerAdminLayout'
+import Modal from '../../../components/Modal'
 
 export default function Subscription() {
   const { user } = useAuth();
@@ -8,6 +10,7 @@ export default function Subscription() {
   const [pendingReq, setPendingReq] = useState(null);
   const [categoryPromo, setCategoryPromo] = useState(null);
   const [globalSettings, setGlobalSettings] = useState(null);
+  const [apiPlans, setApiPlans] = useState([]);
   
   const [menuCount, setMenuCount] = useState(0);
   const [tableCount, setTableCount] = useState(0);
@@ -33,6 +36,7 @@ export default function Subscription() {
       setPendingReq(subRes.data.data);
       setCategoryPromo(subRes.data.category_promo || null);
       setGlobalSettings(subRes.data.global_settings || null);
+      setApiPlans(subRes.data.plans || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -52,14 +56,14 @@ export default function Subscription() {
     }).format(number);
   };
 
-  const getPlanPriceInfo = (planId) => {
+  const getPlanPriceInfo = (planId, customPrice = null) => {
     if (!planId || planId === 'free') return { display: 'Rp 0', numeric: 0, discounted: false };
     
     const basePrices = { 
       basic: globalSettings?.price_basic || 149000, 
       pro: globalSettings?.price_pro || 299000 
     };
-    const base = basePrices[planId] || 0;
+    const base = (customPrice !== null && customPrice !== undefined && customPrice > 0) ? customPrice : (basePrices[planId] || 0);
     
     if (categoryPromo && categoryPromo.discount_pct > 0) {
       const discount = Math.round(base * (categoryPromo.discount_pct / 100));
@@ -87,7 +91,8 @@ export default function Subscription() {
 
   const submitUpgradeRequest = async () => {
     setIsSubmitting(true);
-    const priceInfo = getPlanPriceInfo(selectedPlan);
+    const planObj = apiPlans.find(p => p.plan_key === selectedPlan);
+    const priceInfo = getPlanPriceInfo(selectedPlan, planObj?.price);
     try {
       await api.post('/subscription/request', {
         plan: selectedPlan,
@@ -113,38 +118,89 @@ export default function Subscription() {
 
   const currentPlan = user?.subscription_plan || 'free';
 
-  const PLANS = [
+  const FEATURE_LABELS = {
+    menu: 'Manajemen Menu',
+    orders: 'Kasir & KDS Pesanan',
+    tables: 'Manajemen Meja & QR Order',
+    recipes: 'Resep & HPP (BOM)',
+    ingredients: 'Stok Bahan Baku Dapur',
+    modifiers: 'Varian & Topping',
+    addons: 'Add-on & Extra',
+    bundles: 'Paket Menu Bundle',
+    waste: 'Catatan Limbah & Waste',
+    purchases: 'Pembelian Bahan Baku',
+    shifts: 'Shift Kasir & History',
+    analytics: 'Menu Engineering Analytics',
+    delivery: 'Layanan Delivery',
+    reports: 'Laporan Penjualan & Laba Rugi',
+    multiUser: 'Multi-User Akses Staf',
+    exportExcel: 'Export Excel / PDF',
+    prioritySupport: 'Priority Support 24/7',
+  };
+
+  const describePlan = (plan) => {
+    const bullets = [];
+    bullets.push(plan.plan_key === 'free' ? 'Masa Aktif 3-5 Hari' : 'Tanpa Batas Waktu');
+    bullets.push(plan.max_products === null ? 'Menu Tak Terbatas' : `Maks ${plan.max_products} Menu Kuliner`);
+    bullets.push(plan.max_staff === null ? 'Pegawai Tak Terbatas' : `Maks ${plan.max_staff} Staf/Pegawai`);
+    if (plan.features && typeof plan.features === 'object') {
+      Object.entries(plan.features).forEach(([key, enabled]) => {
+        if (enabled && FEATURE_LABELS[key]) bullets.push(FEATURE_LABELS[key]);
+      });
+    }
+    return bullets;
+  };
+
+  const DEFAULT_PLANS = [
     { 
       id: 'free', 
       name: 'Free (Tester)', 
       price: 'Rp 0', 
-      features: ['Masa Aktif 3-5 Hari', 'Maks 10 Menu Kuliner', 'Maks 5 Meja Pelanggan', 'Laporan Pesanan Dasar'],
+      features: ['Masa Aktif 3-5 Hari', 'Maks 10 Menu Kuliner', 'Maks 1 Staf/Pegawai', 'Laporan Pesanan Dasar'],
       color: '#64748b'
     },
     { 
       id: 'basic', 
       name: 'Basic', 
       price: getPlanPriceInfo('basic').display, 
-      features: ['Tanpa Batas Waktu', 'Maks 100 Menu Kuliner', 'Maks 20 Meja Pelanggan', 'Laporan Laba Rugi & Pengeluaran'],
+      features: ['Tanpa Batas Waktu', 'Maks 50 Menu Kuliner', 'Maks 3 Staf/Pegawai', 'Resep & Bahan Baku', 'Shift Kasir'],
       color: '#EA580C'
     },
     { 
       id: 'pro', 
       name: 'Pro (Terbaik)', 
       price: getPlanPriceInfo('pro').display, 
-      features: ['Tanpa Batas Waktu', 'Menu Tak Terbatas', 'Meja Tak Terbatas', 'Analitik Penjualan Penuh & Kasir Cepat'],
+      features: ['Tanpa Batas Waktu', 'Menu Tak Terbatas', 'Pegawai Tak Terbatas', 'Menu Engineering Analytics', 'Multi-User & Export'],
       color: '#D97706' 
     }
   ];
 
-  const menuLimit = currentPlan === 'free' ? 10 : (currentPlan === 'basic' ? 100 : '∞');
+  const PLANS = (apiPlans && apiPlans.length > 0)
+    ? apiPlans.map(plan => ({
+        id: plan.plan_key,
+        name: plan.name,
+        price: plan.plan_key === 'free' ? 'Rp 0' : getPlanPriceInfo(plan.plan_key, plan.price).display,
+        features: describePlan(plan),
+        color: plan.plan_key === 'free' ? '#64748b' : (plan.plan_key === 'basic' ? '#EA580C' : '#D97706')
+      }))
+    : DEFAULT_PLANS;
+
+  const currentPlanLimits = apiPlans?.find(p => p.plan_key === currentPlan);
+  const menuLimit = currentPlanLimits ? (currentPlanLimits.max_products ?? '∞') : (currentPlan === 'free' ? 10 : (currentPlan === 'basic' ? 50 : '∞'));
   const menuPercentage = menuLimit === '∞' ? 0 : (menuCount / menuLimit) * 100;
 
   const tableLimit = currentPlan === 'free' ? 5 : (currentPlan === 'basic' ? 20 : '∞');
   const tablePercentage = tableLimit === '∞' ? 0 : (tableCount / tableLimit) * 100;
 
   return (
-    <div className="animate-fade-in" style={{ padding: 28, fontFamily: "'Inter', sans-serif" }}>
+    <KulinerAdminLayout>
+      <div className="kd-topbar">
+        <h1 className="kd-page-title">Paket Langganan & Upgrade</h1>
+        <div className="kd-topbar-actions" />
+      </div>
+
+      <div className="kd-content">
+        <div className="animate-fade-in" style={{ fontFamily: "'Inter', sans-serif" }}>
       <style>{`
         .sub-grid {
           display: grid;
@@ -323,11 +379,11 @@ export default function Subscription() {
 
                     <button
                       className="btn-upgrade"
-                      disabled={isCurrent || plan.id === 'free' || pendingReq}
+                      disabled={isCurrent || plan.id === 'free' || pendingReq?.plan === plan.id}
                       onClick={() => handleOrderUpgrade(plan.id)}
                       style={plan.id === 'pro' ? { background: '#EA580C' } : {}}
                     >
-                      {isCurrent ? 'Paket Aktif Saat Ini' : (pendingReq ? 'Menunggu Aktivasi' : 'Pilih Paket')}
+                      {isCurrent ? 'Paket Aktif Saat Ini' : (pendingReq?.plan === plan.id ? 'Menunggu Aktivasi' : 'Pilih Paket')}
                     </button>
                   </div>
                 );
@@ -384,68 +440,91 @@ export default function Subscription() {
 
       </div>
 
-      {/* Upgrade Order Modal */}
-      {showOrderModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 999 }}>
-          <div className="animate-scale-in" style={{ background: '#fff', borderRadius: 24, padding: 32, width: '100%', maxWidth: 440, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#EA580C', margin: 0 }}>Konfirmasi Upgrade Paket</h3>
-              <button onClick={() => setShowOrderModal(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#64748b' }}>×</button>
+      {/* MODAL ORDER & PEMBAYARAN MULTI-CHANNEL (QRIS / VA / TRANSFER) */}
+      <Modal isOpen={showOrderModal} onClose={() => !isSubmitting && setShowOrderModal(false)} title="Konfirmasi & Pembayaran Langganan" maxWidth="540px">
+         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {(() => {
+               const planObj = apiPlans?.find(p => p.plan_key === selectedPlan);
+               const priceInfo = getPlanPriceInfo(selectedPlan, planObj?.price);
+               return (
+                 <div style={{ textAlign: 'center', padding: '6px 0' }}>
+                    <div style={{ fontSize: 36, marginBottom: 6 }}>💳</div>
+                    <p style={{ fontSize: 15, margin: 0 }}>Pilihan Paket: <strong>{planObj?.name || selectedPlan?.toUpperCase()}</strong></p>
+                    {priceInfo.discounted ? (
+                      <div style={{ marginTop: 6 }}>
+                        <span style={{ textDecoration: 'line-through', color: '#64748b', fontSize: 13, marginRight: 8 }}>
+                          {priceInfo.original}
+                        </span>
+                        <span style={{ fontSize: 10, background: '#ef4444', color: '#fff', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>
+                          POTONGAN {priceInfo.discountPct}% KATEGORI
+                        </span>
+                        <h2 style={{ fontSize: 28, fontWeight: 900, color: '#10b981', margin: '4px 0' }}>
+                          {priceInfo.display}
+                        </h2>
+                      </div>
+                    ) : (
+                      <h2 style={{ fontSize: 28, fontWeight: 900, color: '#EA580C', margin: '6px 0' }}>
+                        {priceInfo.display}
+                      </h2>
+                    )}
+                 </div>
+               );
+            })()}
+
+            {/* Payment Options (QRIS / VA / Bank) */}
+            <div style={{ background: '#f8fafc', padding: '16px 18px', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+               <h4 style={{ margin: '0 0 10px 0', fontSize: 13.5, fontWeight: 700, color: '#1e293b' }}>
+                 ⚡ Saluran Pembayaran Otomatis (Instant Activation):
+               </h4>
+               
+               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8 }}>
+                     <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1' }}>📱 QRIS (GoPay / OVO / Dana / ShopeePay / Mobile Banking)</div>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Scan QR langsung aktif instan 24/7</div>
+                     </div>
+                     <span style={{ fontSize: 10, background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 12, fontWeight: 700 }}>Auto Aktif</span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8 }}>
+                     <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#0284c7' }}>🏦 Virtual Account (BCA, Mandiri, BRI, BNI)</div>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Nomor VA otomatis terverifikasi sistem</div>
+                     </div>
+                     <span style={{ fontSize: 10, background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: 12, fontWeight: 700 }}>Verifikasi Cepat</span>
+                  </div>
+               </div>
             </div>
 
-            <div style={{ textAlign: 'center', padding: '16px 0 24px 0' }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>💳</div>
-              <div style={{ fontSize: 13, color: '#64748b', marginBottom: 4 }}>Anda memilih paket <strong style={{ color: '#EA580C' }}>{selectedPlan?.toUpperCase()}</strong></div>
-              <div style={{ fontSize: 32, fontWeight: 900, color: '#EA580C' }}>
-                {getPlanPriceInfo(selectedPlan).display}
-              </div>
+            <div style={{ background: '#fff8f0', padding: '12px 16px', borderRadius: 10, border: '1px solid #ffedd5', fontSize: 12 }}>
+               <div style={{ fontWeight: 700, color: '#ea580c', marginBottom: 4 }}>🏦 Rekening Transfer Bank Manual Alternatif:</div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#334155' }}>
+                  <span>{globalSettings?.bank_name || 'BANK BCA'}: <strong style={{ color: '#ea580c' }}>{globalSettings?.bank_account_no || '8837 001 992'}</strong></span>
+                  <span style={{ color: '#64748b' }}>a.n. {globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'}</span>
+               </div>
             </div>
 
-            <div style={{ background: '#F8FAFC', padding: 20, borderRadius: 16, border: '1px solid #E2E8F0', marginBottom: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#EA580C', textTransform: 'uppercase', marginBottom: 8 }}>Instruksi Pembayaran:</div>
-              <div style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.5, marginBottom: 12 }}>Lakukan transfer ke rekening berikut:</div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: 10 }}>
-                <div>
-                  <div style={{ fontSize: 10, color: '#64748b', fontWeight: 800 }}>{globalSettings?.bank_name || 'BANK BCA'}</div>
-                  <div style={{ fontWeight: 800, fontSize: 16, color: '#EA580C' }}>{globalSettings?.bank_account_no || '8837 001 992'}</div>
-                </div>
-                <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(globalSettings?.bank_account_no || '8837 001 992');
-                    alert('Nomor Rekening Disalin!');
-                  }}
-                  style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700, color: '#EA580C', cursor: 'pointer' }}
-                >
-                  Salin
-                </button>
-              </div>
-              <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 10, textAlign: 'center' }}>
-                a.n. <strong>{globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'}</strong>
-              </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+               <button 
+                  onClick={() => setShowOrderModal(false)} 
+                  disabled={isSubmitting}
+                  style={{ flex: 1, padding: '10px 16px', border: '1px solid #cbd5e1', borderRadius: 8, background: '#fff', color: '#475569', fontWeight: 700, cursor: 'pointer' }}
+               >
+                 Batal
+               </button>
+               <button 
+                  onClick={submitUpgradeRequest} 
+                  disabled={isSubmitting}
+                  style={{ flex: 2, padding: '10px 16px', border: 'none', borderRadius: 8, background: '#EA580C', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+               >
+                  {isSubmitting ? 'Memproses...' : '⚡ Bayar & Aktifkan Paket'}
+               </button>
             </div>
-
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button 
-                onClick={() => setShowOrderModal(false)}
-                style={{ flex: 1, padding: 12, border: '1px solid #E2E8F0', borderRadius: 10, background: '#fff', fontWeight: 700, color: '#475569', cursor: 'pointer' }}
-              >
-                Batal
-              </button>
-              <button 
-                onClick={submitUpgradeRequest}
-                disabled={isSubmitting}
-                style={{ flex: 1, padding: 12, border: 'none', borderRadius: 10, background: '#EA580C', fontWeight: 700, color: '#fff', cursor: 'pointer' }}
-              >
-                {isSubmitting ? 'Mengirim...' : 'Saya Sudah Bayar'}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+         </div>
+      </Modal>
 
     </div>
+    </div>
+    </KulinerAdminLayout>
   );
 }

@@ -106,6 +106,8 @@ class LandingSettingController extends Controller
             'footer_address'       => $request->has('footer_address') ? $request->footer_address : $settings->footer_address,
             'footer_phone'         => $request->has('footer_phone') ? $request->footer_phone : $settings->footer_phone,
             'footer_email'         => $request->has('footer_email') ? $request->footer_email : $settings->footer_email,
+            'billing_email'        => $request->has('billing_email') ? $request->billing_email : $settings->billing_email,
+            'support_email'        => $request->has('support_email') ? $request->support_email : $settings->support_email,
             'footer_security_text' => $request->has('footer_security_text') ? $request->footer_security_text : $settings->footer_security_text,
         ]);
 

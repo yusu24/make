@@ -32,7 +32,14 @@ class LandingSetting extends Model
         'footer_address',
         'footer_phone',
         'footer_email',
+        'billing_email',
+        'support_email',
         'footer_security_text',
+        'payment_provider',
+        'payment_is_production',
+        'payment_merchant_id',
+        'payment_client_key',
+        'payment_server_key',
     ];
 
     protected $appends = [
@@ -45,6 +52,7 @@ class LandingSetting extends Model
         'show_sandbox' => 'boolean',
         'show_features' => 'boolean',
         'show_testimonials' => 'boolean',
+        'payment_is_production' => 'boolean',
         'featured_categories' => 'array',
         'price_basic' => 'integer',
         'price_pro' => 'integer',

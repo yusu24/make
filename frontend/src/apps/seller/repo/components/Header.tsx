@@ -16,6 +16,7 @@ import {
   Sparkles,
   LogOut,
   Globe,
+  CreditCard,
 } from 'lucide-react';
 import { StoreChannel, ActiveTab, Product } from '../types';
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -267,6 +268,16 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               <div className="pt-2 border-t border-slate-100 dark:border-slate-700 space-y-1.5">
+                <button
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    navigate('/seller/subscription');
+                  }}
+                  className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  Upgrade & Paket Langganan
+                </button>
                 <button
                   onClick={() => {
                     setProfileMenuOpen(false);

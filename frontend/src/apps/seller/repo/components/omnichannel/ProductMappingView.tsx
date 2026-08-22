@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
+import { useAuth } from '../../../../../contexts/AuthContext';
 
 interface MappingItem {
   id: string;
@@ -43,7 +44,12 @@ const INITIAL_MAPPING_DATA: MappingItem[] = [
 ];
 
 export const ProductMappingView: React.FC = () => {
-  const [items, setItems] = useState<MappingItem[]>(INITIAL_MAPPING_DATA);
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
+  const [mappingData, setMappingData] = useState<MappingItem[]>(isDemo ? INITIAL_MAPPING_DATA : []);
+  const [items, setItems] = useState<MappingItem[]>(isDemo ? INITIAL_MAPPING_DATA : []);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');

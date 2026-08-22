@@ -28,7 +28,8 @@ import {
   History,
   Box,
   Bell,
-  QrCode
+  QrCode,
+  CreditCard
 } from 'lucide-react';
 import { ActiveTab, StoreChannel } from '../types';
 import { useTranslation } from '../../../../contexts/I18nContext';
@@ -563,6 +564,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <Bell className={`w-5 h-5 shrink-0 ${activeTab === 'notification-center' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
           {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pusatNotifikasi')}</span>}
+        </button>
+
+        {/* Paket & Langganan */}
+        <button
+          onClick={() => setActiveTab('langganan')}
+          title={collapsed ? 'Paket & Langganan' : ''}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+            activeTab === 'langganan'
+              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
+          }`}
+        >
+          <CreditCard className={`w-5 h-5 shrink-0 ${activeTab === 'langganan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+          {!collapsed && <span className="flex-1 text-left truncate">Paket & Langganan</span>}
         </button>
 
         {/* Pengaturan Sistem */}

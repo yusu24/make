@@ -127,7 +127,7 @@ export default function PrintLabels() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Col: Selection */}
         <div className="lg:col-span-1 flex flex-col gap-6">
-          <div className="card p-5">
+          <div className="card p-5 !overflow-visible">
             <h3 className="font-bold mb-4">Cari Produk</h3>
             <div className="relative">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />

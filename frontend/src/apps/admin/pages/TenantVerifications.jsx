@@ -213,7 +213,7 @@ export default function TenantVerifications() {
               fontSize: 20, color: s.color, flexShrink: 0
             }}>{s.icon}</div>
             <div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+              <div style={{ fontSize: 24, fontWeight: 600, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{s.label}</div>
             </div>
           </div>
@@ -233,22 +233,29 @@ export default function TenantVerifications() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <div className="filter-tabs">
-            {[
-              { key: 'all', label: 'Semua' },
-              { key: 'pending', label: 'Menunggu' },
-              { key: 'verified', label: 'Terverifikasi' },
-              { key: 'rejected', label: 'Ditolak' },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                id={`filter-kyc-${tab.key}`}
-                className={`filter-tab ${filter === tab.key ? 'filter-tab--active' : ''}`}
-                onClick={() => setFilter(tab.key)}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div style={{ minWidth: 160 }}>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                border: '1px solid #cbd5e1',
+                backgroundColor: '#fff',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#334155',
+                cursor: 'pointer',
+                outline: 'none',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+              }}
+            >
+              <option value="all">Semua Status</option>
+              <option value="pending">⏳ Menunggu</option>
+              <option value="verified">✅ Terverifikasi</option>
+              <option value="rejected">❌ Ditolak</option>
+            </select>
           </div>
         </div>
 
@@ -387,7 +394,7 @@ export default function TenantVerifications() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <div style={{ fontSize: 11, letterSpacing: '0.1em', opacity: 0.7, textTransform: 'uppercase' }}>REPUBLIK INDONESIA</div>
-                    <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.05em' }}>KARTU TANDA PENDUDUK / NIB</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: '0.05em' }}>KARTU TANDA PENDUDUK / NIB</div>
                   </div>
                   <div style={{ fontSize: 24 }}>🇮🇩</div>
                 </div>

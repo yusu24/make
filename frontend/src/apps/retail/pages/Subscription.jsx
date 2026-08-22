@@ -242,7 +242,6 @@ export default function Subscription() {
                       className="btn btn-primary" 
                       style={{ width: '100%', background: plan.id === 'pro' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : '', border: 'none' }}
                       onClick={() => { setSelectedPlan(plan); setShowOrderModal(true); }}
-                      disabled={pendingReq !== null}
                     >
                       Pilih Paket
                     </button>

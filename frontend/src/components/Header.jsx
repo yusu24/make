@@ -274,11 +274,34 @@ export default function Header({ onMenuToggle, collapsed }) {
               <span className="header__online-dot" />
             </div>
             <div className="header__user-info" style={{ display: window.innerWidth < 640 ? 'none' : 'flex' }}>
-              <span className="header__user-name">{user?.name || 'Super Admin'}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span className="header__user-name">{user?.name || 'User'}</span>
+                {user?.subscription_plan && user?.role !== 'super_admin' && user?.role !== 'admin' && (
+                  <span 
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      padding: '2px 7px',
+                      borderRadius: 10,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.03em',
+                      background: user.subscription_plan === 'pro' 
+                        ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' 
+                        : user.subscription_plan === 'basic' 
+                        ? 'linear-gradient(135deg, #10b981, #059669)' 
+                        : '#64748b',
+                      color: '#ffffff',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
+                    }}
+                  >
+                    {user.subscription_plan === 'pro' ? '💎 PRO' : user.subscription_plan === 'basic' ? '⚡ BASIC' : 'FREE'}
+                  </span>
+                )}
+              </div>
               <span className="header__user-role">
                 {user?.role === 'super_admin' ? '⭐ Super Admin'
                   : user?.role === 'admin' ? '🔧 Admin'
-                  : (user?.business_category || 'Customer')}
+                  : (user?.business_name || user?.business_category || 'Customer')}
               </span>
             </div>
           </div>
