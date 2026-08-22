@@ -14,7 +14,6 @@ class SeedAllCategoryPlansSeeder extends Seeder
         $categoriesMeta = [
             'toko-retail'      => ['name' => 'Toko Retail',       'icon' => '🛒', 'color' => '#3b82f6'],
             'budidaya-hewan'    => ['name' => 'Budidaya Hewan',     'icon' => '🐟', 'color' => '#10b981'],
-            'budidaya-tanaman' => ['name' => 'Budidaya Tanaman',  'icon' => '🌱', 'color' => '#84cc16'],
             'kuliner'          => ['name' => 'Kuliner',           'icon' => '🍽️', 'color' => '#f59e0b'],
             'jasa'             => ['name' => 'Jasa & Repair',     'icon' => '🛠️', 'color' => '#8b5cf6'],
             'seller'           => ['name' => 'Seller Marketplace','icon' => '📦', 'color' => '#ec4899'],
@@ -30,11 +29,6 @@ class SeedAllCategoryPlansSeeder extends Seeder
                 ['plan_key' => 'free', 'name' => 'Free', 'price' => null, 'max_products' => null, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true, 'features' => ['ponds'=>true,'cycles'=>true,'feeding'=>false,'harvest'=>false,'health'=>false,'breeding'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'prioritySupport'=>false]],
                 ['plan_key' => 'basic', 'name' => 'Basic', 'price' => 49000, 'max_products' => null, 'max_staff' => 3, 'sort_order' => 1, 'is_active' => true, 'features' => ['ponds'=>true,'cycles'=>true,'feeding'=>true,'harvest'=>true,'health'=>true,'breeding'=>false,'reports'=>true,'multiUser'=>false,'exportExcel'=>true,'prioritySupport'=>false]],
                 ['plan_key' => 'pro', 'name' => 'Pro', 'price' => 99000, 'max_products' => null, 'max_staff' => null, 'sort_order' => 2, 'is_active' => true, 'features' => ['ponds'=>true,'cycles'=>true,'feeding'=>true,'harvest'=>true,'health'=>true,'breeding'=>true,'reports'=>true,'multiUser'=>true,'exportExcel'=>true,'prioritySupport'=>true]],
-            ],
-            'budidaya-tanaman' => [
-                ['plan_key' => 'free', 'name' => 'Free', 'price' => null, 'max_products' => null, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true, 'features' => ['land'=>true,'cycles'=>true,'fertilizer'=>false,'harvest'=>false,'health'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'prioritySupport'=>false]],
-                ['plan_key' => 'basic', 'name' => 'Basic', 'price' => 49000, 'max_products' => null, 'max_staff' => 3, 'sort_order' => 1, 'is_active' => true, 'features' => ['land'=>true,'cycles'=>true,'fertilizer'=>true,'harvest'=>true,'health'=>true,'reports'=>true,'multiUser'=>false,'exportExcel'=>true,'prioritySupport'=>false]],
-                ['plan_key' => 'pro', 'name' => 'Pro', 'price' => 99000, 'max_products' => null, 'max_staff' => null, 'sort_order' => 2, 'is_active' => true, 'features' => ['land'=>true,'cycles'=>true,'fertilizer'=>true,'harvest'=>true,'health'=>true,'reports'=>true,'multiUser'=>true,'exportExcel'=>true,'prioritySupport'=>true]],
             ],
             'kuliner' => [
                 ['plan_key' => 'free', 'name' => 'Free', 'price' => null, 'max_products' => 10, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true, 'features' => ['menu'=>true,'orders'=>true,'tables'=>false,'recipes'=>false,'ingredients'=>false,'modifiers'=>false,'addons'=>false,'bundles'=>false,'waste'=>false,'purchases'=>false,'shifts'=>false,'analytics'=>false,'delivery'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'storefront'=>false,'prioritySupport'=>false]],
@@ -54,7 +48,7 @@ class SeedAllCategoryPlansSeeder extends Seeder
         ];
 
         foreach ($data as $slug => $plans) {
-            $category = BusinessCategory::firstOrCreate(
+            $category = BusinessCategory::updateOrCreate(
                 ['slug' => $slug],
                 [
                     'name' => $categoriesMeta[$slug]['name'] ?? ucfirst($slug),
