@@ -286,110 +286,118 @@ class AuthController extends Controller
      */
     public function createDemoSandbox(Request $request)
     {
-        $categorySlug = $request->input('category', 'kuliner');
-        $subtype = $request->input('subtype');
-        
-        // Normalize slug
-        if ($categorySlug === 'budidaya') {
-            $categorySlug = 'budidaya-hewan';
-        } elseif ($categorySlug === 'tanaman') {
-            $categorySlug = 'budidaya-tanaman';
+        try {
+            $categorySlug = $request->input('category', 'kuliner');
+            $subtype = $request->input('subtype');
+            
+            // Normalize slug
+            if ($categorySlug === 'budidaya') {
+                $categorySlug = 'budidaya-hewan';
+            } elseif ($categorySlug === 'tanaman') {
+                $categorySlug = 'budidaya-tanaman';
+            }
+
+            $allowedSlugs = ['toko-retail', 'budidaya-hewan', 'budidaya-tanaman', 'kuliner', 'seller', 'jasa'];
+            if (!in_array($categorySlug, $allowedSlugs)) {
+                return response()->json(['success' => false, 'message' => 'Kategori bisnis tidak didukung untuk demo sandbox.'], 400);
+            }
+
+            $category = BusinessCategory::where('slug', $categorySlug)->first();
+            if (!$category) {
+                return response()->json(['success' => false, 'message' => 'Kategori bisnis "' . $categorySlug . '" belum ada di database. Silakan jalankan db:seed.'], 404);
+            }
+
+            $rand = \Illuminate\Support\Str::random(8);
+            $email = 'demo-sandbox-' . $rand . '@umkm-demo.com';
+            $tenantId = 'TN-DS-' . strtoupper($rand);
+            
+            $namePrefixes = [
+                'toko-retail'      => 'Demo Mart ',
+                'budidaya-hewan'    => 'Demo Ternak ' . ($subtype ? ucfirst($subtype) . ' ' : ''),
+                'budidaya-tanaman' => 'Demo Tani ',
+                'kuliner'          => 'Demo Resto ',
+                'seller'           => 'Demo Seller ',
+                'jasa'             => 'Demo Servis ',
+            ];
+            $name = ($namePrefixes[$categorySlug] ?? 'Demo Usaha ') . strtoupper(substr($rand, 0, 4));
+
+            if ($categorySlug === 'budidaya-hewan' && $subtype) {
+                $email = 'demo-' . $subtype . '-' . $rand . '@umkm-demo.com';
+            }
+
+            $user = User::create([
+                'name'                 => $name,
+                'email'                => $email,
+                'password'             => Hash::make('password'),
+                'role'                 => 'customer',
+                'status'               => 'active',
+                'business_category_id' => $category->id,
+                'phone'                => '081234567890',
+                'tenant_id'            => $tenantId,
+            ]);
+
+            $tenant = Tenant::create([
+                'tenant_id'            => $tenantId,
+                'user_id'              => $user->id,
+                'name'                 => $name,
+                'business_category_id' => $category->id,
+                'business_name'        => $name,
+                'subscription_plan'    => 'free',
+                'status'               => 'active',
+            ]);
+
+            // Attach all system modules as active for maximum demo exposure
+            if (\Illuminate\Support\Facades\Schema::hasTable('modules') && \Illuminate\Support\Facades\Schema::hasTable('business_modules')) {
+                $modules = \Illuminate\Support\Facades\DB::table('modules')->get();
+                foreach ($modules as $mod) {
+                    \Illuminate\Support\Facades\DB::table('business_modules')->updateOrInsert(
+                        ['tenant_id' => $tenantId, 'module_id' => $mod->id],
+                        ['is_active' => true, 'created_at' => now(), 'updated_at' => now()]
+                    );
+                }
+            }
+
+            // Call the corresponding seeder logic
+            $seeder = new \Database\Seeders\DatabaseSeeder();
+            if ($categorySlug === 'toko-retail') {
+                $seeder->seedRetailData($tenantId);
+                $seeder->seedRetailDataExtras($tenantId);
+                if (class_exists('\Database\Seeders\RetailFullDummySeeder')) {
+                    $fullSeeder = new \Database\Seeders\RetailFullDummySeeder();
+                    $fullSeeder->runForTenant($tenantId, 'Retail Sandbox');
+                }
+            } elseif ($categorySlug === 'budidaya-hewan') {
+                $seeder->seedBudidayaData($tenantId, $subtype);
+            } elseif ($categorySlug === 'budidaya-tanaman') {
+                $seeder->seedTanamanData($tenantId);
+            } elseif ($categorySlug === 'kuliner') {
+                $this->seedDemoSandboxKulinerData($tenantId);
+            } elseif ($categorySlug === 'seller') {
+                $seeder->seedRetailData($tenantId);
+                $seeder->seedRetailDataExtras($tenantId);
+                if (class_exists('\Database\Seeders\RetailFullDummySeeder')) {
+                    $fullSeeder = new \Database\Seeders\RetailFullDummySeeder();
+                    $fullSeeder->runForTenant($tenantId, 'Seller Sandbox');
+                }
+                $this->seedSellerWarehouses($tenantId);
+            } elseif ($categorySlug === 'jasa') {
+                $this->seedDemoSandboxJasaData($tenantId);
+            }
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Demo Sandbox berhasil dibuat',
+                'data'    => [
+                    'token' => $token,
+                    'user'  => $this->formatUser($user),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('createDemoSandbox error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json(['success' => false, 'message' => 'Gagal memproses demo sandbox: ' . $e->getMessage()], 500);
         }
-
-        $allowedSlugs = ['toko-retail', 'budidaya-hewan', 'budidaya-tanaman', 'kuliner', 'seller', 'jasa'];
-        if (!in_array($categorySlug, $allowedSlugs)) {
-            return response()->json(['success' => false, 'message' => 'Kategori bisnis tidak didukung untuk demo sandbox.'], 400);
-        }
-
-        $category = BusinessCategory::where('slug', $categorySlug)->first();
-        if (!$category) {
-            return response()->json(['success' => false, 'message' => 'Kategori bisnis tidak ditemukan.'], 404);
-        }
-
-        $rand = \Illuminate\Support\Str::random(8);
-        $email = 'demo-sandbox-' . $rand . '@umkm-demo.com';
-        $tenantId = 'TN-DS-' . strtoupper($rand);
-        
-        $namePrefixes = [
-            'toko-retail'      => 'Demo Mart ',
-            'budidaya-hewan'    => 'Demo Ternak ' . ($subtype ? ucfirst($subtype) . ' ' : ''),
-            'budidaya-tanaman' => 'Demo Tani ',
-            'kuliner'          => 'Demo Resto ',
-            'seller'           => 'Demo Seller ',
-            'jasa'             => 'Demo Servis ',
-        ];
-        $name = ($namePrefixes[$categorySlug] ?? 'Demo Usaha ') . strtoupper(substr($rand, 0, 4));
-
-        if ($categorySlug === 'budidaya-hewan' && $subtype) {
-            $email = 'demo-' . $subtype . '-' . $rand . '@umkm-demo.com';
-        }
-
-        $user = User::create([
-            'name'                 => $name,
-            'email'                => $email,
-            'password'             => Hash::make('password'),
-            'role'                 => 'customer',
-            'status'               => 'active',
-            'business_category_id' => $category->id,
-            'phone'                => '081234567890',
-            'tenant_id'            => $tenantId,
-        ]);
-
-        $tenant = Tenant::create([
-            'tenant_id'            => $tenantId,
-            'user_id'              => $user->id,
-            'name'                 => $name,
-            'business_category_id' => $category->id,
-            'business_name'        => $name,
-            'subscription_plan'    => 'free',
-            'status'               => 'active',
-        ]);
-
-        // Attach all system modules as active for maximum demo exposure
-        $modules = \Illuminate\Support\Facades\DB::table('modules')->get();
-        foreach ($modules as $mod) {
-            \Illuminate\Support\Facades\DB::table('business_modules')->updateOrInsert(
-                ['tenant_id' => $tenantId, 'module_id' => $mod->id],
-                ['is_active' => true, 'created_at' => now(), 'updated_at' => now()]
-            );
-        }
-
-        // Call the corresponding seeder logic
-        $seeder = new \Database\Seeders\DatabaseSeeder();
-        if ($categorySlug === 'toko-retail') {
-            $seeder->seedRetailData($tenantId);
-            $seeder->seedRetailDataExtras($tenantId);
-            $fullSeeder = new \Database\Seeders\RetailFullDummySeeder();
-            $fullSeeder->runForTenant($tenantId, 'Retail Sandbox');
-        } elseif ($categorySlug === 'budidaya-hewan') {
-            $seeder->seedBudidayaData($tenantId, $subtype);
-        } elseif ($categorySlug === 'budidaya-tanaman') {
-            $seeder->seedTanamanData($tenantId);
-        } elseif ($categorySlug === 'kuliner') {
-            $this->seedDemoSandboxKulinerData($tenantId);
-        } elseif ($categorySlug === 'seller') {
-            // The Seller app's product/expense/transaction views all read from
-            // the Retail tables (it has no commerce tables of its own), so it
-            // needs the same base dataset Retail demos get.
-            $seeder->seedRetailData($tenantId);
-            $seeder->seedRetailDataExtras($tenantId);
-            $fullSeeder = new \Database\Seeders\RetailFullDummySeeder();
-            $fullSeeder->runForTenant($tenantId, 'Seller Sandbox');
-            $this->seedSellerWarehouses($tenantId);
-        } elseif ($categorySlug === 'jasa') {
-            $this->seedDemoSandboxJasaData($tenantId);
-        }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Demo Sandbox berhasil dibuat',
-            'data'    => [
-                'token' => $token,
-                'user'  => $this->formatUser($user),
-            ],
-        ]);
     }
 
     /**
