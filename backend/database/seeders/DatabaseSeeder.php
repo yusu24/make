@@ -56,11 +56,12 @@ class DatabaseSeeder extends Seeder
         $categories = [
             ['name' => 'Toko Retail',      'slug' => 'toko-retail',      'description' => 'Manajemen stok & penjualan toko fisik/online', 'icon' => '🛒', 'color' => '#3b82f6', 'sort_order' => 1],
             ['name' => 'Budidaya Hewan',    'slug' => 'budidaya-hewan',    'description' => 'Pemantauan kandang/kolam & siklus panen',          'icon' => '🐟', 'color' => '#10b981', 'sort_order' => 2],
-            ['name' => 'Budidaya Tanaman', 'slug' => 'budidaya-tanaman', 'description' => 'Pemantauan lahan pertanian & siklus tanam',    'icon' => '🌱', 'color' => '#84cc16', 'sort_order' => 3],
-            ['name' => 'Kuliner',          'slug' => 'kuliner',          'description' => 'Manajemen restoran & kasir digital',            'icon' => '🍱', 'color' => '#ef4444', 'sort_order' => 5],
+            ['name' => 'Kuliner',          'slug' => 'kuliner',          'description' => 'Manajemen restoran & kasir digital',            'icon' => '🍱', 'color' => '#ef4444', 'sort_order' => 3],
             ['name' => 'Jasa',             'slug' => 'jasa',             'description' => 'Pemesanan layanan & jadwal service',             'icon' => '🛠️', 'color' => '#8b5cf6', 'sort_order' => 4],
-            ['name' => 'Seller',           'slug' => 'seller',           'description' => 'Manajemen omnichannel commerce',                'icon' => '🌐', 'color' => '#f59e0b', 'sort_order' => 6],
+            ['name' => 'Seller',           'slug' => 'seller',           'description' => 'Manajemen omnichannel commerce',                'icon' => '🌐', 'color' => '#f59e0b', 'sort_order' => 5],
         ];
+
+        BusinessCategory::where('slug', 'budidaya-tanaman')->delete();
 
         foreach ($categories as $cat) {
             BusinessCategory::updateOrCreate(['slug' => $cat['slug']], $cat + ['active' => true]);
