@@ -48,8 +48,15 @@ const adminRoutes = (
     <Route path="admins" element={<ProtectedRoute adminOnly><Admins /></ProtectedRoute>} />
     <Route path="saas-roles" element={<ProtectedRoute adminOnly><SaasRoles /></ProtectedRoute>} />
     <Route path="logs" element={<ProtectedRoute adminOnly><ActivityLogs /></ProtectedRoute>} />
-    <Route path="settings" element={<ProtectedRoute adminOnly><LandingSettings /></ProtectedRoute>} />
-    <Route path="landing-settings" element={<ProtectedRoute adminOnly><LandingSettings /></ProtectedRoute>} />
+    <Route path="settings" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="general" /></ProtectedRoute>} />
+    <Route path="landing-settings" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="general" /></ProtectedRoute>} />
+    <Route path="landing-sectors" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="sectors" /></ProtectedRoute>} />
+    <Route path="landing-features" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="features" /></ProtectedRoute>} />
+    <Route path="landing-howitworks" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="howitworks" /></ProtectedRoute>} />
+    <Route path="landing-faq" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="faq" /></ProtectedRoute>} />
+    <Route path="landing-testimonials" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="testimonials" /></ProtectedRoute>} />
+    <Route path="landing-billing" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="billing" /></ProtectedRoute>} />
+    <Route path="landing-logo" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="logo" /></ProtectedRoute>} />
     <Route path="developer-integrations" element={<ProtectedRoute adminOnly><DeveloperIntegrations /></ProtectedRoute>} />
     <Route path="module-docs" element={<ProtectedRoute adminOnly><ModuleDocumentation /></ProtectedRoute>} />
     <Route path="backups" element={<ProtectedRoute adminOnly><Backups /></ProtectedRoute>} />

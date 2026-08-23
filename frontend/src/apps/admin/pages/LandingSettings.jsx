@@ -3,8 +3,12 @@ import { Link } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import CurrencyInput from '../../../components/CurrencyInput'
 import bizoraLogo from '../../../assets/bizora-logo.png'
-export default function LandingSettings() {
-  const [activeTab, setActiveTab] = useState('general') // 'general' or 'testimonials'
+export default function LandingSettings({ defaultTab = 'general' }) {
+  const [activeTab, setActiveTab] = useState(defaultTab)
+
+  useEffect(() => {
+    setActiveTab(defaultTab)
+  }, [defaultTab])
   
   // Tab 1: General settings state
   const [form, setForm] = useState({
@@ -211,42 +215,19 @@ export default function LandingSettings() {
       
       {/* Page Header */}
       <div className="page-header">
-        <h2 className="page-title">Pengaturan Umum &amp; Portal</h2>
-      </div>
-
-      {/* Tabs Menu */}
-      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border-default)', marginBottom: 24, paddingBottom: 2, flexWrap: 'wrap' }}>
-        {[
-          { key: 'general', label: '🚀 Pengaturan Teks & Elemen' },
-          { key: 'sectors', label: '🏷️ Sektor Bisnis' },
-          { key: 'features', label: '✨ Fitur Platform' },
-          { key: 'howitworks', label: '🧭 Cara Kerja' },
-          { key: 'faq', label: '❓ FAQ' },
-          { key: 'testimonials', label: '💬 Kelola Testimoni Pelanggan' },
-          { key: 'billing', label: '💳 Harga Paket & Rekening BCA' },
-          { key: 'logo', label: '🎨 Logo & Branding' },
-        ].map(tab => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActiveTab(tab.key)}
-            style={{
-              padding: '10px 16px',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === tab.key ? '3px solid var(--primary-500)' : '3px solid transparent',
-              color: activeTab === tab.key ? 'var(--text-primary)' : 'var(--text-muted)',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontSize: 13,
-              whiteSpace: 'nowrap',
-              transition: 'all 0.2s ease',
-              outline: 'none'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+        <div>
+          <h2 className="page-title">{{
+            general: 'Pengaturan Teks & Elemen',
+            sectors: 'Sektor Bisnis',
+            features: 'Fitur Platform',
+            howitworks: 'Cara Kerja',
+            faq: 'FAQ & Pertanyaan Umum',
+            testimonials: 'Kelola Testimoni Pelanggan',
+            billing: 'Harga Paket & Rekening BCA',
+            logo: 'Logo & Branding',
+          }[activeTab] || 'Pengaturan Portal'}</h2>
+          <p className="page-sub">Konfigurasi tampilan dan konten landing page platform SaaS</p>
+        </div>
       </div>
 
       {msg && (
