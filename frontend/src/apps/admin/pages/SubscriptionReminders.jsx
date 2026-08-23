@@ -154,28 +154,7 @@ export default function SubscriptionReminders() {
 
       {/* ── Master Status & Delivery Channels Card ── */}
       <div className="card" style={{ padding: 20, marginBottom: 24, border: '1px solid var(--border-subtle)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 16, marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{
-              width: 44, height: 44, borderRadius: 12,
-              background: settings.is_enabled ? 'rgba(16, 185, 129, 0.15)' : 'rgba(100, 116, 139, 0.15)',
-              color: settings.is_enabled ? '#10b981' : '#64748b',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Zap size={22} />
-            </div>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
-                Status Otomasi Sistem Pengingat
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                {settings.is_enabled
-                  ? 'Sistem aktif memeriksa masa aktif tenant dan mengirimkan pengingat secara otomatis setiap hari.'
-                  : 'Sistem pengingat saat ini dinonaktifkan (tidak ada pesan yang terkirim).'}
-              </div>
-            </div>
-          </div>
-
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 14, marginBottom: 16 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
             <input
               type="checkbox"
