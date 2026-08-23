@@ -104,6 +104,16 @@ export default function Subscriptions() {
     }
   }
 
+  const handleResendRequestInvoice = async (req) => {
+    if (!window.confirm(`Kirim invoice tagihan untuk request berlangganan ini?`)) return
+    try {
+      const res = await api.post(`/admin/tenants/${req.tenant_id}/resend-invoice`)
+      alert(res.data.message || 'Invoice berhasil dikirim')
+    } catch (err) {
+      alert('Gagal mengirim invoice: ' + (err.response?.data?.message || err.message))
+    }
+  }
+
   const filteredTenants = tenants.filter(t => {
     const q = search.toLowerCase()
     return t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.category.toLowerCase().includes(q) || t.tenant_id.toLowerCase().includes(q)
@@ -286,6 +296,7 @@ export default function Subscriptions() {
                     <td><span className="badge badge-yellow">PENDING</span></td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                        <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
                         <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)} title="Aktifkan">✓</button>
                         <button className="btn btn-ghost btn-sm" onClick={() => handleReject(req.id)} title="Tolak">✗</button>
                       </div>
