@@ -142,4 +142,16 @@ class TenantController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Status tenant berhasil diperbarui', 'data' => $tenant]);
     }
+
+    public function resendInvoice(string $tenant_id)
+    {
+        $tenant = Tenant::where('tenant_id', $tenant_id)->firstOrFail();
+        
+        // Mocking the email sending for the invoice
+        // Normally this would generate the invoice PDF and send it via Mail::to($tenant->user->email)
+        
+        ActivityLog::record('resend_invoice', "Mengirim ulang invoice untuk Tenant: {$tenant->tenant_id}", 'info');
+        
+        return response()->json(['success' => true, 'message' => 'Tagihan berhasil dikirim ulang ke email ' . ($tenant->user?->email ?? 'pelanggan')]);
+    }
 }

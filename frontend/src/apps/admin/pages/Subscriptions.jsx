@@ -79,6 +79,16 @@ export default function Subscriptions() {
     }
   }
 
+  const handleResendInvoice = async (tenant) => {
+    if (!window.confirm(`Kirim ulang tagihan ke ${tenant.email}?`)) return
+    try {
+      const res = await api.post(`/admin/tenants/${tenant.tenant_id}/resend-invoice`)
+      alert(res.data.message || 'Tagihan berhasil dikirim ulang')
+    } catch (err) {
+      alert('Gagal mengirim tagihan: ' + (err.response?.data?.message || err.message))
+    }
+  }
+
   const filteredTenants = tenants.filter(t => {
     const q = search.toLowerCase()
     return t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.category.toLowerCase().includes(q) || t.tenant_id.toLowerCase().includes(q)
@@ -207,6 +217,7 @@ export default function Subscriptions() {
                       <td>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => setBillingTenant(t)} title="Riwayat Tagihan">👁</button>
+                          <button className="btn btn-primary btn-sm" onClick={() => handleResendInvoice(t)} title="Kirim Ulang Tagihan">✉</button>
                         </div>
                       </td>
                     </tr>

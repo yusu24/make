@@ -4,7 +4,7 @@ import {
   Save, Upload, Trash2, Check, AlertCircle,
   ChevronRight, ChevronDown, ToggleLeft, ToggleRight, Eye, EyeOff,
   Phone, MapPin, Building2, Percent, Star, Package,
-  Receipt, Shield
+  Receipt, Shield, Database, Download, Mail
 } from 'lucide-react';
 import { api } from '../../../lib/api';
 import RetailLoading from '../components/RetailLoading';
@@ -90,6 +90,7 @@ const TABS = [
   { id: 'receipt',  label: 'Struk & Print',     icon: Receipt },
   { id: 'payment',  label: 'Pembayaran',         icon: QrCode },
   { id: 'kyc',      label: 'Verifikasi Usaha',   icon: Shield },
+  { id: 'backup',   label: 'Backup Data',        icon: Database },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
@@ -104,6 +105,9 @@ export default function Settings() {
   const [kycUploading, setKycUploading] = useState(false);
   const [previewStruk, setPreviewStruk] = useState(false);
   const [kyc, setKyc] = useState(null);
+  const [backupDownloading, setBackupDownloading] = useState(false);
+  const [backupEmailing, setBackupEmailing] = useState(false);
+  const [backupEmail, setBackupEmail] = useState('');
   const qrisInputRef = useRef(null);
   const iconInputRef = useRef(null);
   const kycInputRef = useRef(null);
@@ -909,6 +913,104 @@ export default function Settings() {
                   )}
                 </div>
               )}
+            </SectionCard>
+          )}
+
+          {/* ══ Tab 6: Backup Data ═════════════════════════════════════════ */}
+          {activeTab === 'backup' && (
+            <SectionCard>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Database size={20} color="#0284c7" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--retail-text-primary)' }}>Backup Data Toko</h3>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--retail-text-secondary)' }}>Unduh atau kirimkan salinan data produk, transaksi, dan inventaris</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                {/* Download Backup */}
+                <div style={{ padding: 20, border: '1px solid var(--retail-border)', borderRadius: 12, background: '#f8fafc' }}>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: 14, color: 'var(--retail-text-primary)' }}>Unduh ke Perangkat</h4>
+                  <p style={{ margin: '0 0 16px 0', fontSize: 13, color: 'var(--retail-text-secondary)' }}>
+                    Data toko akan diunduh ke komputer/HP Anda dalam format JSON. Anda bisa menyimpannya sebagai arsip.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={backupDownloading}
+                    onClick={async () => {
+                      setBackupDownloading(true);
+                      try {
+                        const res = await api.get('/retail/settings/backup', { responseType: 'blob' });
+                        const url = window.URL.createObjectURL(new Blob([res.data]));
+                        const link = document.createElement('a');
+                        link.href = url;
+                        // Attempt to extract filename from header or use default
+                        let filename = 'backup.json';
+                        const disposition = res.headers['content-disposition'];
+                        if (disposition && disposition.includes('filename=')) {
+                           filename = disposition.split('filename=')[1].replace(/"/g, '');
+                        }
+                        link.setAttribute('download', filename);
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        showToast('Backup berhasil diunduh');
+                      } catch (e) {
+                        showToast('Gagal mengunduh backup', 'error');
+                      } finally {
+                        setBackupDownloading(false);
+                      }
+                    }}
+                  >
+                    <Download size={16} style={{ marginRight: 8 }} />
+                    {backupDownloading ? 'Mengunduh...' : 'Unduh File JSON'}
+                  </button>
+                </div>
+
+                {/* Email Backup */}
+                <div style={{ padding: 20, border: '1px solid var(--retail-border)', borderRadius: 12, background: '#f8fafc' }}>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: 14, color: 'var(--retail-text-primary)' }}>Kirim via Email</h4>
+                  <p style={{ margin: '0 0 16px 0', fontSize: 13, color: 'var(--retail-text-secondary)' }}>
+                    File backup (JSON) akan dikirimkan sebagai lampiran ke alamat email yang Anda tentukan.
+                  </p>
+                  <div style={{ display: 'flex', gap: 12, maxWidth: 400 }}>
+                    <div style={{ flex: 1, position: 'relative' }}>
+                      <Mail size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--retail-text-secondary)' }} />
+                      <input
+                        type="email"
+                        className="form-input"
+                        placeholder="Masukkan alamat email"
+                        value={backupEmail}
+                        onChange={e => setBackupEmail(e.target.value)}
+                        style={{ paddingLeft: 38 }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      disabled={backupEmailing || !backupEmail}
+                      onClick={async () => {
+                        if (!backupEmail) return;
+                        setBackupEmailing(true);
+                        try {
+                          const res = await api.post('/retail/settings/backup/email', { email: backupEmail });
+                          showToast(res.data.message || 'Backup berhasil dikirim ke email');
+                          setBackupEmail('');
+                        } catch (e) {
+                          showToast(e.response?.data?.message || 'Gagal mengirim email backup', 'error');
+                        } finally {
+                          setBackupEmailing(false);
+                        }
+                      }}
+                    >
+                      {backupEmailing ? 'Mengirim...' : 'Kirim Email'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </SectionCard>
           )}
 
