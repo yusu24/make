@@ -511,22 +511,22 @@ export default function InvoiceSettings() {
                 paddingBottom: 12,
                 marginBottom: 14
               }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                   {logoPreview ? (
                     <img
                       src={logoPreview}
                       alt="Logo"
-                      style={{ maxHeight: 42, maxWidth: 54, objectFit: 'contain', display: 'block' }}
+                      style={{ maxHeight: 66, maxWidth: 66, objectFit: 'contain', display: 'block' }}
                     />
                   ) : null}
                   <div>
-                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: povStatus === 'paid' ? '#059669' : '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: povStatus === 'paid' ? '#059669' : '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.3px', lineHeight: 1.1 }}>
                       {invoiceSettings.company_name || 'BIZORA SaaS'}
                     </h4>
-                    <p style={{ margin: '2px 0 0 0', fontSize: 9.5, color: '#64748b' }}>
+                    <p style={{ margin: '2px 0 0 0', fontSize: 9.5, fontWeight: 600, color: '#475569' }}>
                       {invoiceSettings.company_tagline || 'Sistem Manajemen Usaha & Kasir'}
                     </p>
-                    <p style={{ margin: '4px 0 0 0', fontSize: 9, color: '#64748b', lineHeight: 1.3 }}>
+                    <p style={{ margin: '3px 0 0 0', fontSize: 9, color: '#64748b', lineHeight: 1.35 }}>
                       {invoiceSettings.company_address || 'Jl. Jendral Sudirman No. 123, Jakarta'}<br />
                       Email: {invoiceSettings.company_email || 'billing@bizora.id'} | Telp: {invoiceSettings.company_phone || '0812-3456-7890'}
                     </p>
