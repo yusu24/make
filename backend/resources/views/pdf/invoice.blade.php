@@ -68,6 +68,57 @@
             color: #be123c;
             border: 1px solid #fecdd3;
         }
+        .stamp-paid {
+            display: inline-block;
+            padding: 3px 12px;
+            border: 3px double #16a34a;
+            border-radius: 6px;
+            color: #15803d;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-align: center;
+            background-color: transparent;
+            transform: rotate(-6deg);
+            -webkit-transform: rotate(-6deg);
+        }
+        .stamp-paid .stamp-sub {
+            font-size: 7px;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            color: #166534;
+        }
+        .stamp-unpaid {
+            display: inline-block;
+            padding: 3px 10px;
+            border: 2px dashed #d97706;
+            border-radius: 6px;
+            color: #b45309;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            text-align: center;
+            background-color: transparent;
+            transform: rotate(-4deg);
+            -webkit-transform: rotate(-4deg);
+        }
+        .stamp-overdue {
+            display: inline-block;
+            padding: 3px 10px;
+            border: 2px dashed #e11d48;
+            border-radius: 6px;
+            color: #be123c;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            text-align: center;
+            background-color: transparent;
+            transform: rotate(-4deg);
+            -webkit-transform: rotate(-4deg);
+        }
         .info-table {
             margin-bottom: 25px;
         }
@@ -237,7 +288,7 @@
     <!-- Stamp (Left) + Total Summary (Right) Container -->
     <table style="width: 100%; margin-bottom: 14px;">
         <tr>
-            <td style="vertical-align: middle; text-align: left; padding-left: 10px;">
+            <td style="vertical-align: middle; text-align: right; padding-right: 14px;">
                 @if(($invoice['status'] ?? 'unpaid') === 'paid')
                     <div class="stamp-paid">
                         <div class="stamp-sub">★ RESMI &amp; TERVERIFIKASI ★</div>

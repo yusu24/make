@@ -591,35 +591,35 @@ export default function InvoiceSettings() {
                 </tbody>
               </table>
 
-              {/* Stamp (Left) + Total Calculation (Right) */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                {/* Left: Official Stamp */}
-                <div style={{ paddingLeft: 4 }}>
+              {/* Stamp (Left/Next to Total) + Total Calculation (Right) */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+                {/* Official Stamp (Transparent & Close to Total) */}
+                <div>
                   {povStatus === 'paid' ? (
                     <div style={{
                       display: 'inline-block',
-                      padding: '4px 12px',
-                      border: '3px double #16a34a',
+                      padding: '3px 10px',
+                      border: '2.5px double #16a34a',
                       borderRadius: 6,
                       color: '#15803d',
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: 900,
                       textTransform: 'uppercase',
-                      letterSpacing: '1.8px',
+                      letterSpacing: '1.5px',
                       textAlign: 'center',
-                      backgroundColor: 'rgba(240, 253, 244, 0.95)',
-                      transform: 'rotate(-7deg)',
-                      boxShadow: '0 0 0 1px #16a34a inset',
+                      background: 'transparent',
+                      transform: 'rotate(-6deg)',
+                      opacity: 0.92,
                       userSelect: 'none'
                     }}>
                       <div style={{ fontSize: 6.5, letterSpacing: '0.8px', fontWeight: 700, color: '#166534' }}>★ RESMI &amp; TERVERIFIKASI ★</div>
-                      <div style={{ padding: '1px 0' }}>L U N A S</div>
+                      <div style={{ padding: '1px 0', letterSpacing: '2px' }}>L U N A S</div>
                       <div style={{ fontSize: 6.5, letterSpacing: '0.8px', fontWeight: 700, color: '#166534' }}>OFFICIAL RECEIPT</div>
                     </div>
                   ) : (
                     <div style={{
                       display: 'inline-block',
-                      padding: '3px 10px',
+                      padding: '3px 8px',
                       border: '2px dashed #d97706',
                       borderRadius: 6,
                       color: '#b45309',
@@ -628,8 +628,9 @@ export default function InvoiceSettings() {
                       textTransform: 'uppercase',
                       letterSpacing: '0.8px',
                       textAlign: 'center',
-                      backgroundColor: '#fffbeb',
+                      background: 'transparent',
                       transform: 'rotate(-4deg)',
+                      opacity: 0.92,
                       userSelect: 'none'
                     }}>
                       <div style={{ fontSize: 6, letterSpacing: '0.5px' }}>MENUNGGU PEMBAYARAN</div>
