@@ -362,7 +362,7 @@ export default function Subscriptions() {
                         <td>
                           <div style={{ display: 'flex', gap: 6 }}>
                             <button className="btn btn-ghost btn-sm" onClick={() => alert(`Mengunduh invoice ${inv.id}...`)} title="Unduh Invoice">📥</button>
-                            <button className="btn btn-primary btn-sm" onClick={() => alert(`Mengirim invoice ${inv.id} ke email...`)} title="Kirim Invoice">✉</button>
+                            <button className="btn btn-primary btn-sm" onClick={() => handleResendInvoice(billingTenant)} title="Kirim Invoice">✉</button>
                           </div>
                         </td>
                       </tr>
