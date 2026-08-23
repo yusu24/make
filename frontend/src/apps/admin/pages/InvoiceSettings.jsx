@@ -656,6 +656,9 @@ export default function InvoiceSettings() {
                     fontWeight: 800,
                     color: povStatus === 'paid' ? '#15803d' : '#4f46e5',
                     background: povStatus === 'paid' ? '#dcfce7' : '#e0e7ff'
+                  }}>
+                    <span>{povStatus === 'paid' ? 'Total Dibayar' : 'Total Tagihan'}</span>
+                    <span>Rp 299.000</span>
                   </div>
                 </div>
               </div>
