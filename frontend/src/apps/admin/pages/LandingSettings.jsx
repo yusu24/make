@@ -700,13 +700,14 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             </div>
           ))}
 
-          <button type="button" className="btn btn-secondary" onClick={() => addListItem('features_platform', { icon: '✨', title: '', tag: '', description: '' })}>
-            + Tambah Fitur
-          </button>
-
-          <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: '14px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}>
-            {saving ? 'Menyimpan...' : '💾 Simpan Fitur Platform'}
-          </button>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+            <button type="button" className="btn btn-secondary" onClick={() => addListItem('features_platform', { icon: '✨', title: '', tag: '', description: '' })}>
+              + Tambah Fitur
+            </button>
+            <button type="submit" disabled={saving} className="btn btn-primary">
+              {saving ? 'Menyimpan...' : '💾 Simpan Fitur Platform'}
+            </button>
+          </div>
         </form>
       )}
 
@@ -737,13 +738,14 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             </div>
           ))}
 
-          <button type="button" className="btn btn-secondary" onClick={() => addListItem('how_it_works_steps', { icon: '✅', title: '', description: '' })}>
-            + Tambah Langkah
-          </button>
-
-          <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: '14px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}>
-            {saving ? 'Menyimpan...' : '💾 Simpan Cara Kerja'}
-          </button>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+            <button type="button" className="btn btn-secondary" onClick={() => addListItem('how_it_works_steps', { icon: '✅', title: '', description: '' })}>
+              + Tambah Langkah
+            </button>
+            <button type="submit" disabled={saving} className="btn btn-primary">
+              {saving ? 'Menyimpan...' : '💾 Simpan Cara Kerja'}
+            </button>
+          </div>
         </form>
       )}
 
@@ -771,13 +773,14 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             </div>
           ))}
 
-          <button type="button" className="btn btn-secondary" onClick={() => addListItem('faq_items', { q: '', a: '' })}>
-            + Tambah FAQ
-          </button>
-
-          <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: '14px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}>
-            {saving ? 'Menyimpan...' : '💾 Simpan FAQ'}
-          </button>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+            <button type="button" className="btn btn-secondary" onClick={() => addListItem('faq_items', { q: '', a: '' })}>
+              + Tambah FAQ
+            </button>
+            <button type="submit" disabled={saving} className="btn btn-primary">
+              {saving ? 'Menyimpan...' : '💾 Simpan FAQ'}
+            </button>
+          </div>
         </form>
       )}
 
