@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class TenantController extends Controller
 {
@@ -145,27 +146,44 @@ class TenantController extends Controller
 
     public function resendInvoice(string $tenant_id)
     {
-        $tenant = Tenant::where('tenant_id', $tenant_id)->firstOrFail();
+        $tenant = Tenant::with('user')->where('tenant_id', $tenant_id)->firstOrFail();
         $email = $tenant->user?->email;
 
         if (!$email) {
-            return response()->json(['success' => false, 'message' => 'Email tenant tidak ditemukan'], 400);
+            return response()->json(['success' => false, 'message' => 'Email pelanggan tidak ditemukan untuk tenant ini.'], 404);
         }
 
         try {
-            \Illuminate\Support\Facades\Mail::raw(
-                "Halo {$tenant->user->name},\n\nBerikut adalah tagihan (invoice) untuk layanan langganan aplikasi Anda (Tenant ID: {$tenant->tenant_id}).\n\nHarap segera melunasi tagihan ini. Abaikan pesan ini jika Anda sudah membayar.\n\nTerima kasih,\nTim Admin BIZORA.", 
-                function ($message) use ($email) {
-                    $message->to($email)
-                            ->subject('Tagihan / Invoice Langganan BIZORA');
-                }
-            );
+            $planName = strtoupper($tenant->subscription_plan ?? 'Basic');
+            $tenantName = $tenant->user?->name ?? 'Pelanggan';
 
-            ActivityLog::record('resend_invoice', "Mengirim ulang invoice untuk Tenant: {$tenant->tenant_id}", 'info');
-            
-            return response()->json(['success' => true, 'message' => "Tagihan berhasil dikirim ulang ke email {$email}"]);
+            $body = "Halo {$tenantName},\n\n"
+                  . "Berikut adalah rincian tagihan/invoice langganan paket BIZORA SaaS Anda:\n"
+                  . "--------------------------------------------------\n"
+                  . "ID Tenant : {$tenant->tenant_id}\n"
+                  . "Paket     : {$planName}\n"
+                  . "Status    : {$tenant->status}\n"
+                  . "--------------------------------------------------\n\n"
+                  . "Mohon lakukan pembayaran untuk menyelesaikan atau memperbarui status paket langganan Anda.\n\n"
+                  . "Terima kasih,\n"
+                  . "Tim BIZORA SaaS";
+
+            Mail::raw($body, function ($message) use ($email, $tenant) {
+                $message->to($email)
+                        ->subject("Tagihan / Invoice Langganan BIZORA ({$tenant->tenant_id})");
+            });
+
+            ActivityLog::record('resend_invoice', "Mengirim ulang invoice untuk Tenant: {$tenant->tenant_id} ke {$email}", 'info');
+
+            return response()->json([
+                'success' => true,
+                'message' => "Invoice berhasil dikirimkan ke email {$email}"
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Gagal mengirim email: ' . $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim email invoice: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
