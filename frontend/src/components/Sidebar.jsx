@@ -16,6 +16,7 @@ import './Sidebar.css'
 
 // ─── Admin nav items ──────────────────────────────────────────────────────────
 const NAV_ITEMS = [
+  // ── 1. Overview ──────────────────────────────────────────────────────────────
   {
     section: 'Overview',
     icon: <LayoutDashboard size={18} />,
@@ -23,16 +24,21 @@ const NAV_ITEMS = [
       { path: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     ]
   },
+
+  // ── 2. Manajemen Tenant ───────────────────────────────────────────────────────
   {
     section: 'Manajemen Tenant',
     icon: <Store size={18} />,
     adminOnly: true,
     items: [
-      { path: '/tenants', icon: <Store size={18} />,  label: 'Daftar Tenant' },
-      { path: '/kyc',     icon: <Shield size={18} />, label: 'Verifikasi KYC' },
-      { path: '/users',   icon: <Users size={18} />,  label: 'Pengguna Platform' },
+      { path: '/tenants', icon: <Store size={18} />,   label: 'Daftar Tenant' },
+      { path: '/kyc',     icon: <Shield size={18} />,  label: 'Verifikasi KYC' },
+      { path: '/users',   icon: <Users size={18} />,   label: 'Pengguna Platform' },
+      { path: '/categories', icon: <Layers size={18} />, label: 'Kategori Bisnis' },
     ]
   },
+
+  // ── 3. Langganan & Finansial ──────────────────────────────────────────────────
   {
     section: 'Langganan & Finansial',
     icon: <CreditCard size={18} />,
@@ -45,34 +51,8 @@ const NAV_ITEMS = [
       { path: '/invoice-settings',       icon: <FileText size={18} />,   label: 'Pengaturan Invoice' },
     ]
   },
-  {
-    section: 'Kategori Bisnis',
-    icon: <Layers size={18} />,
-    adminOnly: true,
-    items: [
-      { path: '/categories', icon: <Layers size={18} />, label: 'Kategori Bisnis' },
-    ]
-  },
-  {
-    section: 'Pusat Dokumentasi',
-    icon: <BookOpen size={18} />,
-    adminOnly: true,
-    items: [
-      { path: '/doc-dashboard', icon: <Layers size={18} />, label: 'Kelola Dokumentasi' },
-      { path: '/doc-center',    icon: <BookOpen size={18} />, label: 'Baca Dokumentasi' },
-      { path: '/module-docs',   icon: <BookOpen size={18} />, label: 'Arsitektur Modul' },
-    ]
-  },
-  {
-    section: 'Operasional & Layanan',
-    icon: <ServerCog size={18} />,
-    adminOnly: true,
-    items: [
-      { path: '/support-center',       icon: <HelpCircle size={18} />, label: 'Pusat Bantuan' },
-      { path: '/content-announcement', icon: <FileText size={18} />,   label: 'Pengumuman & Konten' },
-      { path: '/system-monitoring',    icon: <ServerCog size={18} />,  label: 'Monitoring Sistem' },
-    ]
-  },
+
+  // ── 4. Laporan & Analitik ─────────────────────────────────────────────────────
   {
     section: 'Laporan & Analitik',
     icon: <BarChart2 size={18} />,
@@ -84,6 +64,49 @@ const NAV_ITEMS = [
       { path: '/logs',              icon: <ClipboardList size={18} />, label: 'Log Audit & Aktivitas' },
     ]
   },
+
+  // ── 5. Operasional & Layanan ──────────────────────────────────────────────────
+  {
+    section: 'Operasional & Layanan',
+    icon: <ServerCog size={18} />,
+    adminOnly: true,
+    items: [
+      { path: '/content-announcement', icon: <FileText size={18} />,   label: 'Pengumuman & Konten' },
+      { path: '/support-center',       icon: <HelpCircle size={18} />, label: 'Pusat Bantuan' },
+      { path: '/system-monitoring',    icon: <ServerCog size={18} />,  label: 'Monitoring Sistem' },
+    ]
+  },
+
+  // ── 6. Konten Landing Page ────────────────────────────────────────────────────
+  {
+    section: 'Konten Landing Page',
+    icon: <Globe size={18} />,
+    adminOnly: true,
+    items: [
+      { path: '/settings',             icon: <FileText size={18} />,   label: 'Teks & Elemen Hero' },
+      { path: '/landing-sectors',      icon: <Layers size={18} />,     label: 'Sektor Bisnis' },
+      { path: '/landing-features',     icon: <Zap size={18} />,        label: 'Fitur Platform' },
+      { path: '/landing-howitworks',   icon: <Settings size={18} />,   label: 'Cara Kerja' },
+      { path: '/landing-faq',          icon: <HelpCircle size={18} />, label: 'FAQ' },
+      { path: '/landing-testimonials', icon: <Users size={18} />,      label: 'Testimoni Pelanggan' },
+      { path: '/landing-billing',      icon: <CreditCard size={18} />, label: 'Harga & Rekening' },
+      { path: '/landing-logo',         icon: <Receipt size={18} />,    label: 'Logo & Branding' },
+    ]
+  },
+
+  // ── 7. Pusat Dokumentasi ──────────────────────────────────────────────────────
+  {
+    section: 'Pusat Dokumentasi',
+    icon: <BookOpen size={18} />,
+    adminOnly: true,
+    items: [
+      { path: '/doc-dashboard', icon: <BookOpen size={18} />,  label: 'Kelola Dokumentasi' },
+      { path: '/doc-center',    icon: <BookOpen size={18} />,  label: 'Baca Dokumentasi' },
+      { path: '/module-docs',   icon: <Layers size={18} />,    label: 'Arsitektur Modul' },
+    ]
+  },
+
+  // ── 8. Pengaturan Platform ────────────────────────────────────────────────────
   {
     section: 'Pengaturan Platform',
     icon: <Settings size={18} />,
@@ -95,21 +118,8 @@ const NAV_ITEMS = [
       { path: '/backups',                icon: <Archive size={18} />,   label: 'Cadangan Data' },
     ]
   },
-  {
-    section: 'Konten Landing Page',
-    icon: <Globe size={18} />,
-    adminOnly: true,
-    items: [
-      { path: '/settings',              icon: <FileText size={18} />,  label: 'Teks & Elemen Hero' },
-      { path: '/landing-sectors',       icon: <Layers size={18} />,    label: 'Sektor Bisnis' },
-      { path: '/landing-features',      icon: <Store size={18} />,     label: 'Fitur Platform' },
-      { path: '/landing-howitworks',    icon: <Settings size={18} />,  label: 'Cara Kerja' },
-      { path: '/landing-faq',           icon: <HelpCircle size={18} />,label: 'FAQ' },
-      { path: '/landing-testimonials',  icon: <Users size={18} />,     label: 'Testimoni Pelanggan' },
-      { path: '/landing-billing',       icon: <CreditCard size={18} />,label: 'Harga & Rekening' },
-      { path: '/landing-logo',          icon: <Receipt size={18} />,   label: 'Logo & Branding' },
-    ]
-  },
+
+  // ── 9. Akun ───────────────────────────────────────────────────────────────────
   {
     section: 'Akun',
     icon: <User size={18} />,
