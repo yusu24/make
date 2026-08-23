@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import { getAvatarStyle, getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
@@ -209,8 +210,8 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                       <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.tenant_id}</code></td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div className="avatar" style={{ background: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', width: 32, height: 32, fontSize: 11 }}>
-                            {t.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()}
+                          <div style={getAvatarStyle(t.name || t.tenant_id, 32)}>
+                            {getInitials(t.name)}
                           </div>
                           <div>
                             <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{t.name}</p>

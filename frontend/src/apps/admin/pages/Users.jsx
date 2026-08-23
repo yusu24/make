@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { getAvatarStyle, getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
@@ -206,13 +207,8 @@ export default function Users() {
                 <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div className="avatar" style={{
-                      background: u.role === 'admin' || u.role === 'super_admin'
-                        ? 'linear-gradient(135deg,#8b5cf6,#6d28d9)'
-                        : 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
-                      width: 32, height: 32, fontSize: 11
-                    }}>
-                      {u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
+                    <div style={getAvatarStyle(u.name || u.email, 32)}>
+                      {getInitials(u.name)}
                     </div>
                     <div>
                       <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{u.name}</p>
