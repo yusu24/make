@@ -327,7 +327,7 @@ export default function Finance() {
             </div>
           </div>
         </>
-      )
+      )}
 
       {/* Invoice Details Modal */}
       {selectedInvoice && (
