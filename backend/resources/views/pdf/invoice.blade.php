@@ -291,13 +291,13 @@
             <td style="vertical-align: middle; text-align: right; padding-right: 14px;">
                 @if(($invoice['status'] ?? 'unpaid') === 'paid')
                     <div class="stamp-paid">
-                        <div class="stamp-sub">★ RESMI &amp; TERVERIFIKASI ★</div>
+                        <div class="stamp-sub">&bull; RESMI &amp; TERVERIFIKASI &bull;</div>
                         <div style="font-size: 15px; padding: 2px 0; letter-spacing: 3px;">L U N A S</div>
                         <div class="stamp-sub">OFFICIAL RECEIPT</div>
                     </div>
                 @elseif(($invoice['status'] ?? 'unpaid') === 'overdue')
                     <div class="stamp-overdue">
-                        <div style="font-size: 8px; letter-spacing: 0.5px;">⚠️ PERINGATAN</div>
+                        <div style="font-size: 8px; letter-spacing: 0.5px;">PERINGATAN</div>
                         <div style="font-size: 13px; padding: 1px 0;">JATUH TEMPO</div>
                     </div>
                 @else

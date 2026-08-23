@@ -612,7 +612,7 @@ export default function InvoiceSettings() {
                       opacity: 0.92,
                       userSelect: 'none'
                     }}>
-                      <div style={{ fontSize: 6.5, letterSpacing: '0.8px', fontWeight: 700, color: '#166534' }}>★ RESMI &amp; TERVERIFIKASI ★</div>
+                      <div style={{ fontSize: 6.5, letterSpacing: '0.8px', fontWeight: 700, color: '#166534' }}>• RESMI &amp; TERVERIFIKASI •</div>
                       <div style={{ padding: '1px 0', letterSpacing: '2px' }}>L U N A S</div>
                       <div style={{ fontSize: 6.5, letterSpacing: '0.8px', fontWeight: 700, color: '#166534' }}>OFFICIAL RECEIPT</div>
                     </div>
