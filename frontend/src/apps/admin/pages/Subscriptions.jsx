@@ -21,6 +21,8 @@ export default function Subscriptions() {
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState('list')
   const [billingTenant, setBillingTenant] = useState(null)
+  const [tenantInvoices, setTenantInvoices] = useState([])
+  const [loadingInvoices, setLoadingInvoices] = useState(false)
 
   const [loading, setLoading] = useState(true)
 
@@ -80,12 +82,25 @@ export default function Subscriptions() {
   }
 
   const handleResendInvoice = async (tenant) => {
-    if (!window.confirm(`Kirim ulang tagihan ke ${tenant.email}?`)) return
+    if (!window.confirm(`Kirim invoice ke ${tenant.email}?`)) return
     try {
       const res = await api.post(`/admin/tenants/${tenant.tenant_id}/resend-invoice`)
-      alert(res.data.message || 'Tagihan berhasil dikirim ulang')
+      alert(res.data.message || 'Invoice berhasil dikirim')
     } catch (err) {
-      alert('Gagal mengirim tagihan: ' + (err.response?.data?.message || err.message))
+      alert('Gagal mengirim invoice: ' + (err.response?.data?.message || err.message))
+    }
+  }
+
+  const handleOpenBilling = async (tenant) => {
+    setBillingTenant(tenant)
+    setLoadingInvoices(true)
+    try {
+      const res = await api.get(`/admin/finance/invoices?search=${tenant.tenant_id}`)
+      setTenantInvoices(res.data.data || [])
+    } catch (err) {
+      setTenantInvoices([])
+    } finally {
+      setLoadingInvoices(false)
     }
   }
 
@@ -216,8 +231,8 @@ export default function Subscriptions() {
                       <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.joined}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                          <button className="btn btn-secondary btn-sm" onClick={() => setBillingTenant(t)} title="Riwayat Tagihan">👁</button>
-                          <button className="btn btn-primary btn-sm" onClick={() => handleResendInvoice(t)} title="Kirim Ulang Tagihan">✉</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleOpenBilling(t)} title="Riwayat Invoice">👁</button>
+                          <button className="btn btn-primary btn-sm" onClick={() => handleResendInvoice(t)} title="Kirim Invoice">✉</button>
                         </div>
                       </td>
                     </tr>
@@ -301,9 +316,9 @@ export default function Subscriptions() {
       {billingTenant && (
         <div className="modal-overlay" onClick={() => setBillingTenant(null)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
-            <h3 className="modal__title">Riwayat Tagihan</h3>
+            <h3 className="modal__title">Riwayat Invoice</h3>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-              Menampilkan riwayat pembayaran untuk <strong style={{ fontWeight: 600 }}>{billingTenant.name}</strong> ({billingTenant.tenant_id})
+              Menampilkan riwayat invoice untuk <strong style={{ fontWeight: 600 }}>{billingTenant.name}</strong> ({billingTenant.tenant_id})
             </p>
             
             <div className="table-wrap table-responsive">
@@ -314,27 +329,34 @@ export default function Subscriptions() {
                     <th>Tanggal</th>
                     <th>Nominal</th>
                     <th>Status</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td><code style={{fontSize:11}}>INV-202604-001</code></td>
-                    <td>01 Apr 2026</td>
-                    <td>Rp 150.000</td>
-                    <td><span className="badge badge-green">Lunas</span></td>
-                  </tr>
-                  <tr>
-                    <td><code style={{fontSize:11}}>INV-202603-042</code></td>
-                    <td>01 Mar 2026</td>
-                    <td>Rp 150.000</td>
-                    <td><span className="badge badge-green">Lunas</span></td>
-                  </tr>
-                  <tr>
-                    <td><code style={{fontSize:11}}>INV-202602-088</code></td>
-                    <td>01 Feb 2026</td>
-                    <td>Rp 150.000</td>
-                    <td><span className="badge badge-green">Lunas</span></td>
-                  </tr>
+                  {loadingInvoices ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)' }}>Memuat data invoice...</td>
+                    </tr>
+                  ) : tenantInvoices.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)' }}>Belum ada invoice</td>
+                    </tr>
+                  ) : (
+                    tenantInvoices.map(inv => (
+                      <tr key={inv.id}>
+                        <td><code style={{fontSize:11}}>{inv.id}</code></td>
+                        <td>{inv.date}</td>
+                        <td>Rp {Number(inv.amount).toLocaleString('id-ID')}</td>
+                        <td><span className={`badge ${inv.status === 'paid' ? 'badge-green' : 'badge-yellow'}`}>{inv.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span></td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button className="btn btn-ghost btn-sm" onClick={() => alert(`Mengunduh invoice ${inv.id}...`)} title="Unduh Invoice">📥</button>
+                            <button className="btn btn-primary btn-sm" onClick={() => alert(`Mengirim invoice ${inv.id} ke email...`)} title="Kirim Invoice">✉</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
