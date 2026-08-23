@@ -511,22 +511,24 @@ export default function LandingSettings({ defaultTab = 'general' }) {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="btn btn-primary"
-              style={{ 
-                padding: '14px', borderRadius: 10, fontSize: 14, fontWeight: 600, 
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                marginTop: 10, boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
-              }}
-            >
-              {saving ? (
-                <span className="spinner" style={{ width: 18, height: 18 }}></span>
-              ) : (
-                '💾 Simpan Konfigurasi Portal'
-              )}
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+              <button
+                type="submit"
+                disabled={saving}
+                className="btn btn-primary"
+                style={{ 
+                  padding: '12px 24px', borderRadius: 10, fontSize: 13, fontWeight: 600, 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
+                }}
+              >
+                {saving ? (
+                  <span className="spinner" style={{ width: 18, height: 18 }}></span>
+                ) : (
+                  '💾 Simpan Konfigurasi Portal'
+                )}
+              </button>
+            </div>
           </form>
 
           {/* LIVE MOCKUP PREVIEW */}
@@ -700,7 +702,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             </div>
           ))}
 
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
             <button type="button" className="btn btn-secondary" onClick={() => addListItem('features_platform', { icon: '✨', title: '', tag: '', description: '' })}>
               + Tambah Fitur
             </button>
@@ -738,7 +740,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             </div>
           ))}
 
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
             <button type="button" className="btn btn-secondary" onClick={() => addListItem('how_it_works_steps', { icon: '✅', title: '', description: '' })}>
               + Tambah Langkah
             </button>
@@ -773,7 +775,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             </div>
           ))}
 
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
             <button type="button" className="btn btn-secondary" onClick={() => addListItem('faq_items', { q: '', a: '' })}>
               + Tambah FAQ
             </button>
