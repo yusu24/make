@@ -138,7 +138,7 @@ export default function ReportsAnalytics({ defaultTab = 'overview' }) {
       <div className="page-header" style={{ display: 'block', marginBottom: 24 }}>
         <h2 className="page-title">{titleMap[activeTab] || 'Laporan & Analitik'}</h2>
         <p className="page-sub">Pantau statistik, grafik pertumbuhan, dan analisis data SaaS</p>
-        <div style={{ marginTop: 14 }}>
+        <div style={{ marginTop: 14, textAlign: 'right' }}>
           <button className="btn btn-primary" onClick={() => alert('Export segera hadir!')}>
             📥 Export Data
           </button>
