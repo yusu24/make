@@ -151,7 +151,7 @@
     <!-- Header Section -->
     <table class="header-table">
         <tr>
-            <td style="width: 60%; vertical-align: top;">
+            <td style="width: 58%; vertical-align: top;">
                 <table style="border: none; margin: 0; padding: 0; width: auto;">
                     <tr>
                         @if(!empty($settings['invoice_logo_base64']))
@@ -174,22 +174,32 @@
                     Email: {{ $settings['company_email'] ?? 'support@bizora.id' }} | Telp: {{ $settings['company_phone'] ?? '0812-3456-7890' }}
                 </p>
             </td>
-            <td style="width: 40%; vertical-align: top; text-align: right;">
+            <td style="width: 42%; vertical-align: top; text-align: right;">
                 @if(($invoice['status'] ?? 'unpaid') === 'paid')
                     <h2 class="invoice-title" style="color: #15803d;">KUITANSI LUNAS</h2>
                 @else
                     <h2 class="invoice-title">INVOICE / TAGIHAN</h2>
                 @endif
-                <p style="margin: 4px 0 8px 0; font-size: 12px; color: #475569;">
+                <p style="margin: 4px 0 6px 0; font-size: 12px; color: #475569;">
                     No: <strong>{{ $invoice['id'] ?? 'INV-001' }}</strong>
                 </p>
-                <div>
+                <div class="stamp-container">
                     @if(($invoice['status'] ?? 'unpaid') === 'paid')
-                        <span class="badge badge-paid">LUNAS / PAID</span>
+                        <div class="stamp-paid">
+                            <div class="stamp-sub">★ RESMI &amp; TERVERIFIKASI ★</div>
+                            <div style="padding: 1px 0;">L U N A S</div>
+                            <div class="stamp-sub">OFFICIAL RECEIPT</div>
+                        </div>
                     @elseif(($invoice['status'] ?? 'unpaid') === 'overdue')
-                        <span class="badge badge-overdue">JATUH TEMPO</span>
+                        <div class="stamp-overdue">
+                            <div style="font-size: 7px; letter-spacing: 0.5px;">⚠️ PERINGATAN</div>
+                            <div>JATUH TEMPO</div>
+                        </div>
                     @else
-                        <span class="badge badge-unpaid">BELUM DIBAYAR</span>
+                        <div class="stamp-unpaid">
+                            <div style="font-size: 7px; letter-spacing: 0.5px;">MENUNGGU PEMBAYARAN</div>
+                            <div>BELUM BAYAR</div>
+                        </div>
                     @endif
                 </div>
             </td>

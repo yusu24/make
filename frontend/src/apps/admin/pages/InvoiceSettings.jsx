@@ -542,33 +542,49 @@ export default function InvoiceSettings() {
                   }}>
                     {povStatus === 'paid' ? 'KUITANSI LUNAS' : 'INVOICE / TAGIHAN'}
                   </div>
-                  <div style={{ fontSize: 10, color: '#475569', margin: '2px 0 4px' }}>No: <strong>INV-2026-001</strong></div>
+                  <div style={{ fontSize: 10, color: '#475569', margin: '2px 0 6px' }}>No: <strong>INV-2026-001</strong></div>
+                  
+                  {/* Stamp Component */}
                   {povStatus === 'paid' ? (
-                    <span style={{
+                    <div style={{
                       display: 'inline-block',
-                      background: '#dcfce7',
+                      padding: '4px 12px',
+                      border: '3px double #16a34a',
+                      borderRadius: 6,
                       color: '#15803d',
-                      border: '1px solid #86efac',
-                      borderRadius: 4,
-                      padding: '2px 8px',
-                      fontSize: 9,
-                      fontWeight: 700
+                      fontSize: 12,
+                      fontWeight: 900,
+                      textTransform: 'uppercase',
+                      letterSpacing: '1.5px',
+                      textAlign: 'center',
+                      backgroundColor: 'rgba(240, 253, 244, 0.85)',
+                      transform: 'rotate(-7deg)',
+                      boxShadow: '0 0 0 1px #16a34a inset',
+                      userSelect: 'none'
                     }}>
-                      LUNAS / PAID
-                    </span>
+                      <div style={{ fontSize: 7, letterSpacing: '1px', fontWeight: 700, color: '#166534' }}>★ RESMI &amp; TERVERIFIKASI ★</div>
+                      <div style={{ padding: '1px 0' }}>L U N A S</div>
+                      <div style={{ fontSize: 7, letterSpacing: '1px', fontWeight: 700, color: '#166534' }}>OFFICIAL RECEIPT</div>
+                    </div>
                   ) : (
-                    <span style={{
+                    <div style={{
                       display: 'inline-block',
-                      background: '#fef3c7',
+                      padding: '4px 10px',
+                      border: '2px dashed #d97706',
+                      borderRadius: 6,
                       color: '#b45309',
-                      border: '1px solid #fde68a',
-                      borderRadius: 4,
-                      padding: '2px 8px',
-                      fontSize: 9,
-                      fontWeight: 700
+                      fontSize: 10,
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.8px',
+                      textAlign: 'center',
+                      backgroundColor: '#fffbeb',
+                      transform: 'rotate(-3deg)',
+                      userSelect: 'none'
                     }}>
-                      BELUM DIBAYAR
-                    </span>
+                      <div style={{ fontSize: 6.5, letterSpacing: '0.5px' }}>MENUNGGU PEMBAYARAN</div>
+                      <div style={{ padding: '1px 0' }}>BELUM BAYAR</div>
+                    </div>
                   )}
                 </div>
               </div>
