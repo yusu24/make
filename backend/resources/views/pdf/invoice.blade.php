@@ -187,10 +187,10 @@
         </tr>
     </table>
 
-    <!-- Billing Info Section with Center Stamp -->
+    <!-- Billing Info Section -->
     <table class="info-table">
         <tr>
-            <td class="info-box" style="width: 38%; vertical-align: middle;">
+            <td class="info-box">
                 <div class="info-label">DITAGIHKAN KEPADA:</div>
                 <div class="info-value">
                     <strong>{{ $invoice['tenant_name'] ?? 'Tenant UMKM' }}</strong><br>
@@ -198,29 +198,7 @@
                     Email: {{ $invoice['tenant_email'] ?? '-' }}
                 </div>
             </td>
-
-            {{-- Center Stamp Column --}}
-            <td style="width: 24%; vertical-align: middle; text-align: center; padding: 8px 4px;">
-                @if(($invoice['status'] ?? 'unpaid') === 'paid')
-                    <div class="stamp-paid">
-                        <div class="stamp-sub">★ RESMI &amp; TERVERIFIKASI ★</div>
-                        <div style="font-size: 15px; padding: 2px 0; letter-spacing: 3px;">L U N A S</div>
-                        <div class="stamp-sub">OFFICIAL RECEIPT</div>
-                    </div>
-                @elseif(($invoice['status'] ?? 'unpaid') === 'overdue')
-                    <div class="stamp-overdue">
-                        <div style="font-size: 8px; letter-spacing: 0.5px;">⚠ PERINGATAN</div>
-                        <div style="font-size: 13px; padding: 1px 0;">JATUH TEMPO</div>
-                    </div>
-                @else
-                    <div class="stamp-unpaid">
-                        <div style="font-size: 8px; letter-spacing: 0.5px;">MENUNGGU PEMBAYARAN</div>
-                        <div style="font-size: 13px; padding: 1px 0;">BELUM DIBAYAR</div>
-                    </div>
-                @endif
-            </td>
-
-            <td class="info-box" style="width: 38%; text-align: right; vertical-align: middle;">
+            <td class="info-box" style="text-align: right;">
                 <div class="info-label">RINCIAN TANGGAL:</div>
                 <div class="info-value">
                     Tanggal Terbit: <strong>{{ $invoice['date'] ?? date('Y-m-d') }}</strong><br>
@@ -234,7 +212,6 @@
             </td>
         </tr>
     </table>
-
 
     <!-- Items Table -->
     <table class="items-table">
@@ -257,19 +234,44 @@
         </tbody>
     </table>
 
-    <!-- Total Summary -->
-    <table class="total-box">
-        <tr class="total-row">
-            <td style="color: #64748b;">Subtotal:</td>
-            <td style="text-align: right;">Rp {{ number_format($invoice['amount'] ?? 0, 0, ',', '.') }}</td>
-        </tr>
-        <tr class="total-row">
-            <td style="color: #64748b;">Pajak (0%):</td>
-            <td style="text-align: right;">Rp 0</td>
-        </tr>
-        <tr class="total-row grand-total" style="{{ ($invoice['status'] ?? 'unpaid') === 'paid' ? 'background-color: #dcfce7; color: #15803d; border-top: 2px solid #22c55e;' : '' }}">
-            <td>TOTAL {{ ($invoice['status'] ?? 'unpaid') === 'paid' ? 'DIBAYAR' : 'TAGIHAN' }}:</td>
-            <td style="text-align: right;">Rp {{ number_format($invoice['amount'] ?? 0, 0, ',', '.') }}</td>
+    <!-- Stamp (Left) + Total Summary (Right) Container -->
+    <table style="width: 100%; margin-bottom: 14px;">
+        <tr>
+            <td style="vertical-align: middle; text-align: left; padding-left: 10px;">
+                @if(($invoice['status'] ?? 'unpaid') === 'paid')
+                    <div class="stamp-paid">
+                        <div class="stamp-sub">★ RESMI &amp; TERVERIFIKASI ★</div>
+                        <div style="font-size: 15px; padding: 2px 0; letter-spacing: 3px;">L U N A S</div>
+                        <div class="stamp-sub">OFFICIAL RECEIPT</div>
+                    </div>
+                @elseif(($invoice['status'] ?? 'unpaid') === 'overdue')
+                    <div class="stamp-overdue">
+                        <div style="font-size: 8px; letter-spacing: 0.5px;">⚠️ PERINGATAN</div>
+                        <div style="font-size: 13px; padding: 1px 0;">JATUH TEMPO</div>
+                    </div>
+                @else
+                    <div class="stamp-unpaid">
+                        <div style="font-size: 8px; letter-spacing: 0.5px;">MENUNGGU PEMBAYARAN</div>
+                        <div style="font-size: 13px; padding: 1px 0;">BELUM DIBAYAR</div>
+                    </div>
+                @endif
+            </td>
+            <td style="width: 220px; vertical-align: top;">
+                <table class="total-box" style="width: 100%; float: none; margin: 0;">
+                    <tr class="total-row">
+                        <td style="color: #64748b;">Subtotal:</td>
+                        <td style="text-align: right;">Rp {{ number_format($invoice['amount'] ?? 0, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td style="color: #64748b;">Pajak (0%):</td>
+                        <td style="text-align: right;">Rp 0</td>
+                    </tr>
+                    <tr class="total-row grand-total" style="{{ ($invoice['status'] ?? 'unpaid') === 'paid' ? 'background-color: #dcfce7; color: #15803d; border-top: 2px solid #22c55e;' : '' }}">
+                        <td>TOTAL {{ ($invoice['status'] ?? 'unpaid') === 'paid' ? 'DIBAYAR' : 'TAGIHAN' }}:</td>
+                        <td style="text-align: right;">Rp {{ number_format($invoice['amount'] ?? 0, 0, ',', '.') }}</td>
+                    </tr>
+                </table>
+            </td>
         </tr>
     </table>
     <div style="clear: both;"></div>
