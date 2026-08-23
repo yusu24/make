@@ -32,7 +32,6 @@ const NAV_ITEMS = [
     adminOnly: true,
     items: [
       { path: '/tenants', icon: <Store size={18} />,   label: 'Daftar Tenant' },
-      { path: '/kyc',     icon: <Shield size={18} />,  label: 'Verifikasi KYC' },
       { path: '/users',   icon: <Users size={18} />,   label: 'Pengguna Platform' },
       { path: '/categories', icon: <Layers size={18} />, label: 'Kategori Bisnis' },
     ]
