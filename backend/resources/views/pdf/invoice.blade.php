@@ -174,37 +174,39 @@
                     Email: {{ $settings['company_email'] ?? 'support@bizora.id' }} | Telp: {{ $settings['company_phone'] ?? '0812-3456-7890' }}
                 </p>
             </td>
-            <td style="width: 42%; vertical-align: top; text-align: right;">
+            <td style="width: 40%; vertical-align: top; text-align: right;">
                 @if(($invoice['status'] ?? 'unpaid') === 'paid')
                     <h2 class="invoice-title" style="color: #15803d;">KUITANSI LUNAS</h2>
                 @else
                     <h2 class="invoice-title">INVOICE / TAGIHAN</h2>
                 @endif
-                <p style="margin: 4px 0 6px 0; font-size: 12px; color: #475569;">
+                <p style="margin: 4px 0 0 0; font-size: 12px; color: #475569;">
                     No: <strong>{{ $invoice['id'] ?? 'INV-001' }}</strong>
                 </p>
-                <div class="stamp-container">
-                    @if(($invoice['status'] ?? 'unpaid') === 'paid')
-                        <div class="stamp-paid">
-                            <div class="stamp-sub">★ RESMI &amp; TERVERIFIKASI ★</div>
-                            <div style="padding: 1px 0;">L U N A S</div>
-                            <div class="stamp-sub">OFFICIAL RECEIPT</div>
-                        </div>
-                    @elseif(($invoice['status'] ?? 'unpaid') === 'overdue')
-                        <div class="stamp-overdue">
-                            <div style="font-size: 7px; letter-spacing: 0.5px;">⚠️ PERINGATAN</div>
-                            <div>JATUH TEMPO</div>
-                        </div>
-                    @else
-                        <div class="stamp-unpaid">
-                            <div style="font-size: 7px; letter-spacing: 0.5px;">MENUNGGU PEMBAYARAN</div>
-                            <div>BELUM BAYAR</div>
-                        </div>
-                    @endif
-                </div>
             </td>
         </tr>
     </table>
+
+    <!-- Central Official Stamp -->
+    <div style="text-align: center; margin: -15px 0 16px 0;">
+        @if(($invoice['status'] ?? 'unpaid') === 'paid')
+            <div class="stamp-paid">
+                <div class="stamp-sub">★ RESMI &amp; TERVERIFIKASI ★</div>
+                <div style="font-size: 14px; padding: 1px 0; letter-spacing: 3px;">L U N A S</div>
+                <div class="stamp-sub">OFFICIAL RECEIPT</div>
+            </div>
+        @elseif(($invoice['status'] ?? 'unpaid') === 'overdue')
+            <div class="stamp-overdue">
+                <div style="font-size: 8px; letter-spacing: 0.5px;">⚠️ PERINGATAN</div>
+                <div style="font-size: 12px; padding: 1px 0;">JATUH TEMPO</div>
+            </div>
+        @else
+            <div class="stamp-unpaid">
+                <div style="font-size: 8px; letter-spacing: 0.5px;">MENUNGGU PEMBAYARAN</div>
+                <div style="font-size: 12px; padding: 1px 0;">BELUM DIBAYAR</div>
+            </div>
+        @endif
+    </div>
 
     <!-- Billing Info Section -->
     <table class="info-table">
