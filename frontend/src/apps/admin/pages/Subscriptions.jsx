@@ -164,8 +164,8 @@ export default function Subscriptions({ defaultTab = 'list' }) {
 
         {activeTab === 'list' ? (
           <>
-            <div className="filter-bar">
-              <div className="search-wrap">
+            <div className="filter-bar" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+              <div className="search-wrap" style={{ minWidth: 260, maxWidth: 320 }}>
                 <span className="search-icon">🔍</span>
                 <input
                   className="form-input search-input"
