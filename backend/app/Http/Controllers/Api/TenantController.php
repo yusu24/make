@@ -146,12 +146,26 @@ class TenantController extends Controller
     public function resendInvoice(string $tenant_id)
     {
         $tenant = Tenant::where('tenant_id', $tenant_id)->firstOrFail();
-        
-        // Mocking the email sending for the invoice
-        // Normally this would generate the invoice PDF and send it via Mail::to($tenant->user->email)
-        
-        ActivityLog::record('resend_invoice', "Mengirim ulang invoice untuk Tenant: {$tenant->tenant_id}", 'info');
-        
-        return response()->json(['success' => true, 'message' => 'Tagihan berhasil dikirim ulang ke email ' . ($tenant->user?->email ?? 'pelanggan')]);
+        $email = $tenant->user?->email;
+
+        if (!$email) {
+            return response()->json(['success' => false, 'message' => 'Email tenant tidak ditemukan'], 400);
+        }
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw(
+                "Halo {$tenant->user->name},\n\nBerikut adalah tagihan (invoice) untuk layanan langganan aplikasi Anda (Tenant ID: {$tenant->tenant_id}).\n\nHarap segera melunasi tagihan ini. Abaikan pesan ini jika Anda sudah membayar.\n\nTerima kasih,\nTim Admin BIZORA.", 
+                function ($message) use ($email) {
+                    $message->to($email)
+                            ->subject('Tagihan / Invoice Langganan BIZORA');
+                }
+            );
+
+            ActivityLog::record('resend_invoice', "Mengirim ulang invoice untuk Tenant: {$tenant->tenant_id}", 'info');
+            
+            return response()->json(['success' => true, 'message' => "Tagihan berhasil dikirim ulang ke email {$email}"]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal mengirim email: ' . $e->getMessage()], 500);
+        }
     }
 }
