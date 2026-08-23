@@ -72,6 +72,9 @@ export default function Finance() {
   const [selectedInvoice, setSelectedInvoice] = useState(null)
   const [isModalOpen, setIsModalOpen]   = useState(false)
   const [markingPaid, setMarkingPaid]   = useState(null)
+  const [activeTab, setActiveTab]       = useState('faktur')
+  const [invoiceSettings, setInvoiceSettings] = useState(null)
+  const [savingSettings, setSavingSettings]   = useState(false)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -96,6 +99,43 @@ export default function Finance() {
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
+
+  const fetchInvoiceSettings = async () => {
+    try {
+      const res = await api.get('/admin/finance/settings')
+      setInvoiceSettings(res.data?.data || {})
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleSaveSettings = async (e) => {
+    e.preventDefault()
+    setSavingSettings(true)
+    try {
+      const res = await api.post('/admin/finance/settings', invoiceSettings)
+      alert(res.data.message || 'Pengaturan invoice berhasil disimpan!')
+    } catch (err) {
+      alert('Gagal menyimpan pengaturan: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setSavingSettings(false)
+    }
+  }
+
+  const handleDownloadPdf = async (invId) => {
+    try {
+      const response = await api.get(`/admin/finance/invoices/${invId}/download-pdf`, { responseType: 'blob' })
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `Invoice_${invId}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    } catch {
+      alert('Gagal mengunduh PDF Invoice')
+    }
+  }
 
   const handleViewInvoice = (inv) => {
     setSelectedInvoice(inv)
@@ -148,17 +188,49 @@ export default function Finance() {
     <div className="animate-fade-in">
       {/* ── Header ── */}
       <div className="page-header">
-        <h2 className="page-title">Finansial &amp; Faktur</h2>
+        <div>
+          <h2 className="page-title">Finansial &amp; Faktur</h2>
+          <p className="page-sub">Kelola faktur langganan, laporan pendapatan, dan templat invoice</p>
+        </div>
+      </div>
+
+      {/* ── Sub Navigation Tabs ── */}
+      <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid var(--border-color)', marginBottom: 24 }}>
+        <button
+          onClick={() => setActiveTab('faktur')}
+          style={{
+            padding: '12px 0', background: 'none', border: 'none',
+            borderBottom: activeTab === 'faktur' ? '2px solid var(--primary-500)' : 'none',
+            color: activeTab === 'faktur' ? 'var(--primary-500)' : 'var(--text-muted)',
+            fontWeight: 600, cursor: 'pointer'
+          }}
+        >
+          📄 Faktur &amp; Transaksi
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('settings')
+            if (!invoiceSettings) fetchInvoiceSettings()
+          }}
+          style={{
+            padding: '12px 0', background: 'none', border: 'none',
+            borderBottom: activeTab === 'settings' ? '2px solid var(--primary-500)' : 'none',
+            color: activeTab === 'settings' ? 'var(--primary-500)' : 'var(--text-muted)',
+            fontWeight: 600, cursor: 'pointer'
+          }}
+        >
+          ⚙️ Pengaturan Invoice &amp; Template Email
+        </button>
       </div>
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <span className="spinner" style={{ width: 36, height: 36, borderWidth: 3 }} />
-            <span>Memuat data keuangan...</span>
+            <span>Memuat data...</span>
           </div>
         </div>
-      ) : (
+      ) : activeTab === 'faktur' ? (
         <>
           {/* ── Summary Cards ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
@@ -239,7 +311,8 @@ export default function Finance() {
                       <td><span className={`badge ${STATUS_BADGE[inv.status]}`}>{STATUS_LABEL[inv.status]}</span></td>
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleViewInvoice(inv)}>👁</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleViewInvoice(inv)} title="Lihat Detail">👁</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleDownloadPdf(inv.id)} title="Unduh PDF Invoice">📥</button>
                           {inv.status !== 'paid' && (
                             <button
                               className="btn btn-primary btn-sm"
@@ -283,7 +356,101 @@ export default function Finance() {
             </div>
           </div>
         </>
-      )}
+      ) : (
+        /* ── Settings Form ── */
+        <div className="card card-pad" style={{ maxWidth: 800 }}>
+          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, marginBottom: 6, fontSize: 16 }}>
+            ⚙️ Pengaturan Invoice &amp; Template Email Tagihan
+          </h3>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+            Sesuaikan identitas perusahaan, instruksi pembayaran bank, dan templat email yang dikirim ke pelanggan.
+          </p>
+
+          {!invoiceSettings ? (
+            <div style={{ textAlign: 'center', padding: 40 }}>Memuat pengaturan...</div>
+          ) : (
+            <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {/* Section 1: Informasi Perusahaan */}
+              <div style={{ padding: 16, border: '1px solid var(--border-color)', borderRadius: 12, background: 'var(--bg-elevated)' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>🏢 Identitas Perusahaan / Penerbit Faktur</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Nama Perusahaan</label>
+                    <input type="text" className="form-input" value={invoiceSettings.company_name || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, company_name: e.target.value })} required />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Tagline</label>
+                    <input type="text" className="form-input" value={invoiceSettings.company_tagline || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, company_tagline: e.target.value })} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Email Resmi</label>
+                    <input type="email" className="form-input" value={invoiceSettings.company_email || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, company_email: e.target.value })} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>No. Telepon / CS</label>
+                    <input type="text" className="form-input" value={invoiceSettings.company_phone || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, company_phone: e.target.value })} />
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Alamat Kantor</label>
+                    <input type="text" className="form-input" value={invoiceSettings.company_address || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, company_address: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Rekening Bank Pembayaran */}
+              <div style={{ padding: 16, border: '1px solid var(--border-color)', borderRadius: 12, background: 'var(--bg-elevated)' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>💳 Rekening Bank Pembayaran</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Nama Bank</label>
+                    <input type="text" className="form-input" value={invoiceSettings.bank_name || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, bank_name: e.target.value })} required />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Nomor Rekening</label>
+                    <input type="text" className="form-input" value={invoiceSettings.bank_account_number || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, bank_account_number: e.target.value })} required />
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Atas Nama Rekening</label>
+                    <input type="text" className="form-input" value={invoiceSettings.bank_account_name || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, bank_account_name: e.target.value })} required />
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Catatan Instruksi Pembayaran</label>
+                    <input type="text" className="form-input" value={invoiceSettings.payment_notes || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, payment_notes: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Template Email */}
+              <div style={{ padding: 16, border: '1px solid var(--border-color)', borderRadius: 12, background: 'var(--bg-elevated)' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>✉️ Templat Email &amp; Subjek</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Subjek Email</label>
+                    <input type="text" className="form-input" value={invoiceSettings.email_subject || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, email_subject: e.target.value })} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Template Pesan Email</label>
+                    <textarea className="form-input" rows={5} value={invoiceSettings.email_body_template || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, email_body_template: e.target.value })} style={{ fontFamily: 'monospace', fontSize: 12 }} />
+                    <small style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+                      Variabel yang tersedia: <code>{'{tenant_id}'}</code>, <code>{'{tenant_name}'}</code>, <code>{'{plan}'}</code>, <code>{'{amount}'}</code>, <code>{'{status}'}</code>
+                    </small>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Catatan Footer / Syarat Ketentuan Faktur</label>
+                    <input type="text" className="form-input" value={invoiceSettings.invoice_terms || ''} onChange={e => setInvoiceSettings({ ...invoiceSettings, invoice_terms: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+                <button type="submit" className="btn btn-primary" disabled={savingSettings}>
+                  {savingSettings ? 'Menyimpan...' : '💾 Simpan Pengaturan Invoice'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}}
 
       {/* Invoice Details Modal */}
       {selectedInvoice && (
@@ -351,6 +518,7 @@ export default function Finance() {
 
             {/* Modal Actions */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button className="btn btn-secondary" onClick={() => handleDownloadPdf(selectedInvoice.id)}>📥 Unduh PDF</button>
               <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Tutup</button>
               {selectedInvoice.status !== 'paid' && (
                 <button className="btn btn-primary" onClick={() => handleMarkAsPaid(selectedInvoice.id)}>

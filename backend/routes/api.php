@@ -132,6 +132,9 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::post('invoices', [AdminFinanceController::class, 'store']);
         Route::get('stats', [AdminFinanceController::class, 'stats']);
         Route::patch('invoices/{id}/pay', [AdminFinanceController::class, 'markPaid']);
+        Route::get('invoices/{id}/download-pdf', [AdminFinanceController::class, 'downloadPdf']);
+        Route::get('settings', [\App\Http\Controllers\Api\AdminInvoiceSettingController::class, 'get']);
+        Route::post('settings', [\App\Http\Controllers\Api\AdminInvoiceSettingController::class, 'update']);
     });
 
     // Support Ticket Management (SaaS Admin)

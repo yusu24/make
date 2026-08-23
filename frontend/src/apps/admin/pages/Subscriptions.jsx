@@ -114,6 +114,21 @@ export default function Subscriptions() {
     }
   }
 
+  const handleDownloadPdf = async (invId) => {
+    try {
+      const response = await api.get(`/admin/finance/invoices/${invId}/download-pdf`, { responseType: 'blob' })
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `Invoice_${invId}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    } catch {
+      alert('Gagal mengunduh PDF Invoice')
+    }
+  }
+
   const filteredTenants = tenants.filter(t => {
     const q = search.toLowerCase()
     return t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.category.toLowerCase().includes(q) || t.tenant_id.toLowerCase().includes(q)
@@ -361,7 +376,7 @@ export default function Subscriptions() {
                         <td><span className={`badge ${inv.status === 'paid' ? 'badge-green' : 'badge-yellow'}`}>{inv.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span></td>
                         <td>
                           <div style={{ display: 'flex', gap: 6 }}>
-                            <button className="btn btn-ghost btn-sm" onClick={() => alert(`Mengunduh invoice ${inv.id}...`)} title="Unduh Invoice">📥</button>
+                            <button className="btn btn-ghost btn-sm" onClick={() => handleDownloadPdf(inv.id)} title="Unduh PDF Invoice">📥</button>
                             <button className="btn btn-primary btn-sm" onClick={() => handleResendInvoice(billingTenant)} title="Kirim Invoice">✉</button>
                           </div>
                         </td>

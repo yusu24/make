@@ -154,30 +154,60 @@ class TenantController extends Controller
         }
 
         try {
-            $planName = strtoupper($tenant->subscription_plan ?? 'Basic');
+            $settings = \App\Http\Controllers\Api\AdminInvoiceSettingController::getInvoiceSettings();
+            $planName = strtoupper($tenant->subscription_plan ?? 'BASIC');
             $tenantName = $tenant->user?->name ?? 'Pelanggan';
 
-            $body = "Halo {$tenantName},\n\n"
-                  . "Berikut adalah rincian tagihan/invoice langganan paket BIZORA SaaS Anda:\n"
-                  . "--------------------------------------------------\n"
-                  . "ID Tenant : {$tenant->tenant_id}\n"
-                  . "Paket     : {$planName}\n"
-                  . "Status    : {$tenant->status}\n"
-                  . "--------------------------------------------------\n\n"
-                  . "Mohon lakukan pembayaran untuk menyelesaikan atau memperbarui status paket langganan Anda.\n\n"
-                  . "Terima kasih,\n"
-                  . "Tim BIZORA SaaS";
+            // Find or build invoice data
+            $invRecord = \App\Models\TenantInvoice::where('tenant_id', $tenant_id)->latest()->first();
+            $invoiceId = $invRecord ? $invRecord->id : 'INV-' . strtoupper(substr(md5($tenant_id), 0, 6));
+            $amount = $invRecord ? (float)$invRecord->amount : ($tenant->subscription_plan === 'pro' ? 299000 : 149000);
 
-            Mail::raw($body, function ($message) use ($email, $tenant) {
+            $invoiceData = [
+                'id'           => $invoiceId,
+                'tenant_id'    => $tenant->tenant_id,
+                'tenant_name'  => $tenant->user?->name ?? $tenant->business_name ?? 'Pelanggan',
+                'tenant_email' => $email,
+                'plan'         => $planName,
+                'amount'       => $amount,
+                'status'       => $tenant->status === 'active' ? 'paid' : 'unpaid',
+                'date'         => date('Y-m-d'),
+                'due_date'     => date('Y-m-d', strtotime('+7 days')),
+            ];
+
+            // Render PDF Invoice
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', [
+                'invoice'  => $invoiceData,
+                'settings' => $settings,
+            ]);
+            $pdfContent = $pdf->output();
+
+            // Format Email Template
+            $subject = str_replace(
+                ['{tenant_id}', '{tenant_name}', '{plan}', '{amount}', '{status}'],
+                [$tenant->tenant_id, $tenantName, $planName, number_format($amount, 0, ',', '.'), $tenant->status],
+                $settings['email_subject'] ?? "Tagihan / Invoice Langganan BIZORA ({$tenant->tenant_id})"
+            );
+
+            $body = str_replace(
+                ['{tenant_id}', '{tenant_name}', '{plan}', '{amount}', '{status}'],
+                [$tenant->tenant_id, $tenantName, $planName, number_format($amount, 0, ',', '.'), $tenant->status],
+                $settings['email_body_template'] ?? "Halo {$tenantName},\n\nBerikut terlampir file PDF Invoice langganan Anda."
+            );
+
+            Mail::raw($body, function ($message) use ($email, $subject, $pdfContent, $tenant_id) {
                 $message->to($email)
-                        ->subject("Tagihan / Invoice Langganan BIZORA ({$tenant->tenant_id})");
+                        ->subject($subject)
+                        ->attachData($pdfContent, "Invoice_{$tenant_id}.pdf", [
+                            'mime' => 'application/pdf',
+                        ]);
             });
 
-            ActivityLog::record('resend_invoice', "Mengirim ulang invoice untuk Tenant: {$tenant->tenant_id} ke {$email}", 'info');
+            ActivityLog::record('resend_invoice', "Mengirim ulang invoice + PDF untuk Tenant: {$tenant->tenant_id} ke {$email}", 'info');
 
             return response()->json([
                 'success' => true,
-                'message' => "Invoice berhasil dikirimkan ke email {$email}"
+                'message' => "Invoice PDF berhasil dikirimkan ke email {$email}"
             ]);
         } catch (\Exception $e) {
             return response()->json([

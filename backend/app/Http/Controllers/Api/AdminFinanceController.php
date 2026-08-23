@@ -123,4 +123,49 @@ class AdminFinanceController extends Controller
 
         return response()->json(['success' => true, 'data' => $invoice], 201);
     }
+
+    /**
+     * GET /admin/finance/invoices/{id}/download-pdf
+     * Generate & stream PDF invoice matching bizora-Invoice theme.
+     */
+    public function downloadPdf(string $id)
+    {
+        $inv = TenantInvoice::with('tenant.user')->find($id);
+
+        if ($inv) {
+            $invoiceData = [
+                'id'           => $inv->id,
+                'tenant_id'    => $inv->tenant_id,
+                'tenant_name'  => $inv->tenant?->business_name ?? $inv->tenant?->name ?? 'Tenant UMKM',
+                'tenant_email' => $inv->tenant?->user?->email ?? '-',
+                'plan'         => $inv->plan,
+                'amount'       => (float) $inv->amount,
+                'status'       => $inv->status,
+                'date'         => $inv->date?->toDateString() ?? date('Y-m-d'),
+                'due_date'     => $inv->due_date?->toDateString() ?? date('Y-m-d', strtotime('+7 days')),
+            ];
+        } else {
+            // Fallback for generated ID or dummy requests
+            $invoiceData = [
+                'id'           => $id,
+                'tenant_id'    => 'TN-DEMO',
+                'tenant_name'  => 'Tenant UMKM',
+                'tenant_email' => 'tenant@example.com',
+                'plan'         => 'Pro',
+                'amount'       => 299000,
+                'status'       => 'unpaid',
+                'date'         => date('Y-m-d'),
+                'due_date'     => date('Y-m-d', strtotime('+7 days')),
+            ];
+        }
+
+        $settings = \App\Http\Controllers\Api\AdminInvoiceSettingController::getInvoiceSettings();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', [
+            'invoice'  => $invoiceData,
+            'settings' => $settings,
+        ]);
+
+        return $pdf->stream("Invoice_{$id}.pdf");
+    }
 }
