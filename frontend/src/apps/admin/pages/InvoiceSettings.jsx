@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { api } from '../../../lib/api'
 import './Shared.css'
 
@@ -6,12 +6,18 @@ export default function InvoiceSettings() {
   const [invoiceSettings, setInvoiceSettings] = useState(null)
   const [loading, setLoading]                 = useState(true)
   const [savingSettings, setSavingSettings]   = useState(false)
+  const [uploadingLogo, setUploadingLogo]     = useState(false)
+  const [resettingLogo, setResettingLogo]     = useState(false)
+  const [logoPreview, setLogoPreview]         = useState(null)
+  const fileInputRef                          = useRef(null)
 
   const fetchInvoiceSettings = async () => {
     setLoading(true)
     try {
       const res = await api.get('/admin/finance/settings')
-      setInvoiceSettings(res.data?.data || {})
+      const data = res.data?.data || {}
+      setInvoiceSettings(data)
+      setLogoPreview(data.invoice_logo_url || null)
     } catch (e) {
       console.error(e)
     } finally {
@@ -36,12 +42,62 @@ export default function InvoiceSettings() {
     }
   }
 
+  const handleLogoFileChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      alert('File harus berupa gambar (PNG, JPG, JPEG, SVG, atau WebP)')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ukuran file maksimal 5MB')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('logo', file)
+
+    setUploadingLogo(true)
+    try {
+      const res = await api.post('/admin/finance/settings/logo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      const updatedData = res.data?.data || {}
+      setInvoiceSettings(updatedData)
+      setLogoPreview(updatedData.invoice_logo_url || null)
+      alert('Logo invoice berhasil diunggah! 🎉')
+    } catch (err) {
+      alert('Gagal mengunggah logo: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setUploadingLogo(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleResetLogo = async () => {
+    if (!window.confirm('Hapus logo invoice ini dan gunakan format default?')) return
+    setResettingLogo(true)
+    try {
+      const res = await api.delete('/admin/finance/settings/logo')
+      const updatedData = res.data?.data || {}
+      setInvoiceSettings(updatedData)
+      setLogoPreview(null)
+      alert('Logo invoice berhasil dihapus.')
+    } catch (err) {
+      alert('Gagal mereset logo: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setResettingLogo(false)
+    }
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="page-header">
         <div>
           <h2 className="page-title">Pengaturan Invoice &amp; Template Email</h2>
-          <p className="page-sub">Sesuaikan identitas perusahaan, instruksi pembayaran bank, dan templat email tagihan</p>
+          <p className="page-sub">Sesuaikan logo faktur, identitas perusahaan, instruksi rekening bank, dan templat email tagihan</p>
         </div>
       </div>
 
@@ -55,6 +111,78 @@ export default function InvoiceSettings() {
           </div>
         ) : (
           <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Section 0: Upload Logo Invoice */}
+            <div style={{ padding: 20, border: '1px solid var(--border-color)', borderRadius: 12, background: 'var(--bg-elevated)' }}>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                🖼️ Logo Faktur / Invoice PDF
+              </h4>
+              <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+                {/* Preview Box */}
+                <div style={{
+                  width: 140, height: 80,
+                  borderRadius: 10,
+                  border: '2px dashed var(--border-color)',
+                  background: 'var(--bg-base)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 8,
+                  overflow: 'hidden'
+                }}>
+                  {logoPreview ? (
+                    <img
+                      src={logoPreview}
+                      alt="Logo Invoice"
+                      style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 11 }}>
+                      <span style={{ fontSize: 20, display: 'block', marginBottom: 2 }}>🏢</span>
+                      <span>Tanpa Logo</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Upload Controls */}
+                <div style={{ flex: 1, minWidth: 240, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                    Unggah logo resmi perusahaan Anda (format: PNG, JPG, SVG, max 5MB).
+                    Logo ini akan otomatis dicetak pada sudut kiri atas dokumen <strong>PDF Invoice</strong>.
+                  </p>
+                  
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleLogoFileChange}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                  />
+
+                  <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingLogo}
+                    >
+                      {uploadingLogo ? 'Mengunggah...' : '📁 Pilih & Unggah Logo'}
+                    </button>
+                    {logoPreview && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: 'var(--danger-400)' }}
+                        onClick={handleResetLogo}
+                        disabled={resettingLogo}
+                      >
+                        {resettingLogo ? 'Mereset...' : '🗑️ Hapus Logo'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Section 1: Informasi Perusahaan */}
             <div style={{ padding: 20, border: '1px solid var(--border-color)', borderRadius: 12, background: 'var(--bg-elevated)' }}>
               <h4 style={{ margin: '0 0 16px 0', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>

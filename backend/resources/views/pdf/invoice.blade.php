@@ -152,9 +152,24 @@
     <table class="header-table">
         <tr>
             <td style="width: 60%; vertical-align: top;">
-                <h1 class="company-name">{{ $settings['company_name'] ?? 'BIZORA SaaS' }}</h1>
-                <p class="company-sub">{{ $settings['company_tagline'] ?? 'Sistem Manajemen Usaha & Kasir Terintegrasi' }}</p>
-                <p class="company-sub">
+                <table style="border: none; margin: 0; padding: 0; width: auto;">
+                    <tr>
+                        @if(!empty($settings['invoice_logo_base64']))
+                            <td style="vertical-align: middle; padding-right: 14px; width: 60px;">
+                                <img src="{{ $settings['invoice_logo_base64'] }}" style="max-height: 50px; max-width: 70px; display: block;">
+                            </td>
+                        @elseif(!empty($settings['invoice_logo_url']))
+                            <td style="vertical-align: middle; padding-right: 14px; width: 60px;">
+                                <img src="{{ $settings['invoice_logo_url'] }}" style="max-height: 50px; max-width: 70px; display: block;">
+                            </td>
+                        @endif
+                        <td style="vertical-align: middle;">
+                            <h1 class="company-name" style="margin: 0;">{{ $settings['company_name'] ?? 'BIZORA SaaS' }}</h1>
+                            <p class="company-sub" style="margin: 2px 0 0 0;">{{ $settings['company_tagline'] ?? 'Sistem Manajemen Usaha & Kasir Terintegrasi' }}</p>
+                        </td>
+                    </tr>
+                </table>
+                <p class="company-sub" style="margin-top: 6px;">
                     {{ $settings['company_address'] ?? 'Jl. Jendral Sudirman No. 123, Jakarta' }}<br>
                     Email: {{ $settings['company_email'] ?? 'support@bizora.id' }} | Telp: {{ $settings['company_phone'] ?? '0812-3456-7890' }}
                 </p>

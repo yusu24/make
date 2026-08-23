@@ -135,6 +135,8 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::get('invoices/{id}/download-pdf', [AdminFinanceController::class, 'downloadPdf']);
         Route::get('settings', [\App\Http\Controllers\Api\AdminInvoiceSettingController::class, 'get']);
         Route::post('settings', [\App\Http\Controllers\Api\AdminInvoiceSettingController::class, 'update']);
+        Route::post('settings/logo', [\App\Http\Controllers\Api\AdminInvoiceSettingController::class, 'uploadLogo']);
+        Route::delete('settings/logo', [\App\Http\Controllers\Api\AdminInvoiceSettingController::class, 'resetLogo']);
     });
 
     // Support Ticket Management (SaaS Admin)

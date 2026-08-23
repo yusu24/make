@@ -26,13 +26,25 @@ class AdminInvoiceSettingController extends Controller
             'invoice_terms'        => 'Terima kasih atas kepercayaan Anda menggunakan BIZORA SaaS. Faktur ini sah secara elektronik.',
             'email_subject'        => 'Tagihan / Invoice Langganan BIZORA ({tenant_id})',
             'email_body_template'  => "Halo {tenant_name},\n\nBerikut adalah rincian tagihan/invoice langganan paket BIZORA SaaS Anda:\n--------------------------------------------------\nID Tenant : {tenant_id}\nPaket     : {plan}\nJumlah    : Rp {amount}\nStatus    : {status}\n--------------------------------------------------\n\nMohon lakukan pembayaran untuk menyelesaikan atau memperbarui status paket langganan Anda.\n\nTerima kasih,\nTim BIZORA SaaS",
+            'invoice_logo_url'     => null,
+            'invoice_logo_path'    => null,
         ];
 
         if (Storage::exists('invoice_settings.json')) {
             $json = Storage::get('invoice_settings.json');
             $data = json_decode($json, true);
             if (is_array($data)) {
-                return array_merge($default, $data);
+                $merged = array_merge($default, $data);
+                
+                // If logo path exists in public storage, build base64 for DomPDF & full public URL
+                if (!empty($merged['invoice_logo_path']) && Storage::disk('public')->exists($merged['invoice_logo_path'])) {
+                    $merged['invoice_logo_url'] = url('storage/' . $merged['invoice_logo_path']);
+                    $mime = Storage::disk('public')->mimeType($merged['invoice_logo_path']) ?: 'image/png';
+                    $content = Storage::disk('public')->get($merged['invoice_logo_path']);
+                    $merged['invoice_logo_base64'] = 'data:' . $mime . ';base64,' . base64_encode($content);
+                }
+
+                return $merged;
             }
         }
 
@@ -75,5 +87,57 @@ class AdminInvoiceSettingController extends Controller
         ActivityLog::record('update_invoice_settings', 'Memperbarui Pengaturan Invoice & Tagihan', 'info');
 
         return response()->json(['success' => true, 'message' => 'Pengaturan Invoice & Tagihan berhasil disimpan', 'data' => $settings]);
+    }
+
+    public function uploadLogo(Request $request)
+    {
+        $request->validate([
+            'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
+        ]);
+
+        $file = $request->file('logo');
+        $path = $file->store('invoice_logos', 'public');
+
+        $settings = self::getInvoiceSettings();
+        if (!empty($settings['invoice_logo_path']) && Storage::disk('public')->exists($settings['invoice_logo_path'])) {
+            Storage::disk('public')->delete($settings['invoice_logo_path']);
+        }
+
+        $settings['invoice_logo_path'] = $path;
+        $settings['invoice_logo_url'] = url('storage/' . $path);
+
+        Storage::put($this->storagePath, json_encode($settings, JSON_PRETTY_PRINT));
+        ActivityLog::record('upload_invoice_logo', 'Logo Invoice SaaS diperbarui', 'info');
+
+        // Reload with base64 for immediate response
+        $updatedSettings = self::getInvoiceSettings();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logo invoice berhasil diunggah',
+            'data'    => $updatedSettings,
+        ]);
+    }
+
+    public function resetLogo()
+    {
+        $settings = self::getInvoiceSettings();
+        if (!empty($settings['invoice_logo_path']) && Storage::disk('public')->exists($settings['invoice_logo_path'])) {
+            Storage::disk('public')->delete($settings['invoice_logo_path']);
+        }
+
+        $settings['invoice_logo_path'] = null;
+        $settings['invoice_logo_url'] = null;
+
+        Storage::put($this->storagePath, json_encode($settings, JSON_PRETTY_PRINT));
+        ActivityLog::record('reset_invoice_logo', 'Logo invoice SaaS direset ke default', 'info');
+
+        $updatedSettings = self::getInvoiceSettings();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logo invoice berhasil direset',
+            'data'    => $updatedSettings,
+        ]);
     }
 }
