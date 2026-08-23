@@ -38,10 +38,11 @@ const NAV_ITEMS = [
     icon: <CreditCard size={18} />,
     adminOnly: true,
     items: [
-      { path: '/packages-features', icon: <Package size={18} />,    label: 'Paket & Fitur' },
-      { path: '/subscriptions',     icon: <CreditCard size={18} />, label: 'Langganan Aktif' },
-      { path: '/finance',           icon: <Wallet size={18} />,     label: 'Finansial & Faktur' },
-      { path: '/invoice-settings',  icon: <FileText size={18} />,   label: 'Pengaturan Invoice' },
+      { path: '/packages-features',      icon: <Package size={18} />,    label: 'Paket & Fitur' },
+      { path: '/subscriptions',          icon: <CreditCard size={18} />, label: 'Pelanggan Langganan' },
+      { path: '/subscription-requests',  icon: <Inbox size={18} />,      label: 'Permintaan Langganan' },
+      { path: '/finance',                icon: <Wallet size={18} />,     label: 'Finansial & Faktur' },
+      { path: '/invoice-settings',       icon: <FileText size={18} />,   label: 'Pengaturan Invoice' },
     ]
   },
   {

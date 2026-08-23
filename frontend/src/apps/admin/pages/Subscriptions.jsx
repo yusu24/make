@@ -15,11 +15,15 @@ const DUMMY_TENANTS = [
 const PLAN_BADGE = { Pro:'badge-violet', Basic:'badge-blue', Free:'badge-gray', '-':'badge-gray' }
 const STATUS_BADGE = { active:'badge-green', pending:'badge-yellow', inactive:'badge-gray' }
 
-export default function Subscriptions() {
+export default function Subscriptions({ defaultTab = 'list' }) {
   const [tenants, setTenants] = useState([])
   const [requests, setRequests] = useState([])
   const [search, setSearch] = useState('')
-  const [activeTab, setActiveTab] = useState('list')
+  const [activeTab, setActiveTab] = useState(defaultTab)
+
+  useEffect(() => {
+    setActiveTab(defaultTab)
+  }, [defaultTab])
   const [billingTenant, setBillingTenant] = useState(null)
   const [tenantInvoices, setTenantInvoices] = useState([])
   const [loadingInvoices, setLoadingInvoices] = useState(false)
@@ -153,35 +157,9 @@ export default function Subscriptions() {
       <div className="animate-fade-in">
         <div className="page-header">
           <div>
-            <h2 className="page-title">Manajemen Langganan</h2>
-            <p className="page-sub">Kelola paket aktif dan permintaan langganan customer</p>
+            <h2 className="page-title">{activeTab === 'requests' ? 'Permintaan Langganan' : 'Pelanggan Langganan'}</h2>
+            <p className="page-sub">{activeTab === 'requests' ? 'Verifikasi pembayaran dan aktivasi paket langganan customer' : 'Kelola data pelanggan yang sedang berlangganan aktif'}</p>
           </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid var(--border-color)', marginBottom: 24 }}>
-          <button
-            onClick={() => setActiveTab('list')}
-            style={{
-              padding: '12px 0', background: 'none', border: 'none',
-              borderBottom: activeTab === 'list' ? '2px solid var(--primary-500)' : 'none',
-              color: activeTab === 'list' ? 'var(--primary-500)' : 'var(--text-muted)',
-              fontWeight: 600, cursor: 'pointer'
-            }}
-          >
-            Pelanggan Langganan
-          </button>
-          <button
-            onClick={() => setActiveTab('requests')}
-            style={{
-              padding: '12px 0', background: 'none', border: 'none',
-              borderBottom: activeTab === 'requests' ? '2px solid var(--primary-500)' : 'none',
-              color: activeTab === 'requests' ? 'var(--primary-500)' : 'var(--text-muted)',
-              fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
-            }}
-          >
-            Permintaan Langganan
-            {requests.length > 0 && <span style={{ background: 'var(--danger-500)', color: '#fff', fontSize: 10, padding: '2px 6px', borderRadius: 99 }}>{requests.length}</span>}
-          </button>
         </div>
 
         {activeTab === 'list' ? (

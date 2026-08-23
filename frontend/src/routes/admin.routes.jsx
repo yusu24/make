@@ -35,7 +35,8 @@ const adminRoutes = (
     <Route path="categories/:categoryName" element={<ProtectedRoute adminOnly><AdminRetailView /></ProtectedRoute>} />
     <Route path="tenants" element={<ProtectedRoute adminOnly><Tenants /></ProtectedRoute>} />
     <Route path="kyc" element={<ProtectedRoute adminOnly><TenantVerifications /></ProtectedRoute>} />
-    <Route path="subscriptions" element={<ProtectedRoute adminOnly><Subscriptions /></ProtectedRoute>} />
+    <Route path="subscriptions" element={<ProtectedRoute adminOnly><Subscriptions defaultTab="list" /></ProtectedRoute>} />
+    <Route path="subscription-requests" element={<ProtectedRoute adminOnly><Subscriptions defaultTab="requests" /></ProtectedRoute>} />
     <Route path="packages-features" element={<ProtectedRoute adminOnly><PackagesFeatures /></ProtectedRoute>} />
     <Route path="finance" element={<ProtectedRoute adminOnly><Finance /></ProtectedRoute>} />
     <Route path="invoice-settings" element={<ProtectedRoute adminOnly><InvoiceSettings /></ProtectedRoute>} />
