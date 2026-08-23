@@ -450,7 +450,7 @@ export default function Finance() {
             </form>
           )}
         </div>
-      )}}
+      )}
 
       {/* Invoice Details Modal */}
       {selectedInvoice && (
