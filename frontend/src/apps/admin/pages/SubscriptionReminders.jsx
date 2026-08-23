@@ -145,46 +145,11 @@ export default function SubscriptionReminders() {
       )}
 
       {/* ── Page Header ── */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 16,
-        marginBottom: 24
-      }}>
-        <div>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Zap style={{ color: '#f59e0b' }} size={26} />
-            Pengingat &amp; Otomasi Tagihan
-          </h2>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0' }}>
-            Otomatisasi pengiriman notifikasi jatuh tempo &amp; perpanjangan paket langganan kepada pemilik tenant.
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => {
-              setTestSchedule(activeTab)
-              setTestModalOpen(true)
-            }}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
-          >
-            <Send size={15} /> Uji Coba Pesan
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleSave}
-            disabled={saving}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
-          >
-            <Save size={16} /> {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
-          </button>
-        </div>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Zap style={{ color: '#f59e0b' }} size={26} />
+          Pengingat &amp; Otomasi Tagihan
+        </h2>
       </div>
 
       {/* ── Master Status & Delivery Channels Card ── */}
@@ -620,6 +585,30 @@ export default function SubscriptionReminders() {
           </div>
         </div>
 
+      </div>
+
+      {/* ── Bottom Action Bar ── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24 }}>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => {
+            setTestSchedule(activeTab)
+            setTestModalOpen(true)
+          }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
+        >
+          <Send size={15} /> Uji Coba Pesan
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleSave}
+          disabled={saving}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
+        >
+          <Save size={16} /> {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+        </button>
       </div>
 
       {/* ── Test Send Modal ── */}
