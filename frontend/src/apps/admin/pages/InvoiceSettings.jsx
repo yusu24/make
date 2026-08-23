@@ -591,16 +591,65 @@ export default function InvoiceSettings() {
                 )}
               </div>
 
-              {/* Billed To / Info Section */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 10, marginBottom: 14 }}>
+              {/* Billed To / Info Section with Center Stamp */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 8, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 10px', marginBottom: 14, alignItems: 'center' }}>
+                {/* Left: Ditagihkan Kepada */}
                 <div>
                   <div style={{ fontSize: 8.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Ditagihkan Kepada:</div>
                   <div style={{ fontWeight: 700, fontSize: 11, color: '#0f172a', marginTop: 2 }}>Toko Berkah Sejahtera</div>
                   <div style={{ fontSize: 9, color: '#475569' }}>ID Tenant: TN-001 · Toko Retail</div>
                   <div style={{ fontSize: 9, color: '#475569' }}>ahmad@retail.com</div>
                 </div>
+
+                {/* Center: Official Stamp */}
+                <div style={{ textAlign: 'center', padding: '0 8px' }}>
+                  {povStatus === 'paid' ? (
+                    <div style={{
+                      display: 'inline-block',
+                      padding: '4px 10px',
+                      border: '3px double #16a34a',
+                      borderRadius: 6,
+                      color: '#15803d',
+                      fontSize: 12,
+                      fontWeight: 900,
+                      textTransform: 'uppercase',
+                      letterSpacing: '1.8px',
+                      textAlign: 'center',
+                      backgroundColor: 'rgba(240, 253, 244, 0.95)',
+                      transform: 'rotate(-8deg)',
+                      boxShadow: '0 0 0 1px #16a34a inset',
+                      userSelect: 'none'
+                    }}>
+                      <div style={{ fontSize: 6.5, letterSpacing: '0.8px', fontWeight: 700, color: '#166534' }}>★ RESMI & TERVERIFIKASI ★</div>
+                      <div style={{ padding: '1px 0' }}>L U N A S</div>
+                      <div style={{ fontSize: 6.5, letterSpacing: '0.8px', fontWeight: 700, color: '#166534' }}>OFFICIAL RECEIPT</div>
+                    </div>
+                  ) : (
+                    <div style={{
+                      display: 'inline-block',
+                      padding: '3px 8px',
+                      border: '2px dashed #d97706',
+                      borderRadius: 6,
+                      color: '#b45309',
+                      fontSize: 9,
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.8px',
+                      textAlign: 'center',
+                      backgroundColor: '#fffbeb',
+                      transform: 'rotate(-5deg)',
+                      userSelect: 'none'
+                    }}>
+                      <div style={{ fontSize: 6, letterSpacing: '0.5px' }}>MENUNGGU PEMBAYARAN</div>
+                      <div style={{ padding: '1px 0' }}>BELUM BAYAR</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right: Tanggal Terbit */}
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 9, color: '#64748b' }}>Tanggal Terbit: <strong>23 Agu 2026</strong></div>
+                  <div style={{ fontSize: 8.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Rincian Tanggal:</div>
+                  <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>Tanggal Terbit: <strong>23 Agu 2026</strong></div>
                   {povStatus === 'paid' ? (
                     <div style={{ fontSize: 9, color: '#15803d', marginTop: 2 }}>Status: <strong>Lunas Terverifikasi</strong></div>
                   ) : (
@@ -609,6 +658,7 @@ export default function InvoiceSettings() {
                   <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>Metode: <strong>Transfer Bank</strong></div>
                 </div>
               </div>
+
 
               {/* Itemized Table */}
               <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 12 }}>
