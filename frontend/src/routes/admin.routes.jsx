@@ -42,7 +42,9 @@ const adminRoutes = (
     <Route path="support-center" element={<ProtectedRoute adminOnly><SupportCenter /></ProtectedRoute>} />
     <Route path="system-monitoring" element={<ProtectedRoute adminOnly><SystemMonitoring /></ProtectedRoute>} />
     <Route path="content-announcement" element={<ProtectedRoute adminOnly><ContentAnnouncement /></ProtectedRoute>} />
-    <Route path="reports-analytics" element={<ProtectedRoute adminOnly><ReportsAnalytics /></ProtectedRoute>} />
+    <Route path="reports-analytics" element={<ProtectedRoute adminOnly><ReportsAnalytics defaultTab="overview" /></ProtectedRoute>} />
+    <Route path="reports-revenue" element={<ProtectedRoute adminOnly><ReportsAnalytics defaultTab="revenue" /></ProtectedRoute>} />
+    <Route path="reports-tenants" element={<ProtectedRoute adminOnly><ReportsAnalytics defaultTab="tenants" /></ProtectedRoute>} />
     <Route path="admins" element={<ProtectedRoute adminOnly><Admins /></ProtectedRoute>} />
     <Route path="saas-roles" element={<ProtectedRoute adminOnly><SaasRoles /></ProtectedRoute>} />
     <Route path="logs" element={<ProtectedRoute adminOnly><ActivityLogs /></ProtectedRoute>} />

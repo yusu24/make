@@ -91,14 +91,18 @@ function DonutChart({ slices, size = 120 }) {
   )
 }
 
-export default function ReportsAnalytics() {
+export default function ReportsAnalytics({ defaultTab = 'overview' }) {
   const [stats, setStats] = useState(null)
   const [monthlyRevenue, setMonthlyRevenue] = useState([])
   const [planDist, setPlanDist] = useState([])
   const [categoryDist, setCategoryDist] = useState([])
   const [topTenants, setTopTenants] = useState([])
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState(defaultTab)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setActiveTab(defaultTab)
+  }, [defaultTab])
 
   useEffect(() => {
     setLoading(true)
@@ -122,28 +126,21 @@ export default function ReportsAnalytics() {
   const tabs = ['overview', 'revenue', 'tenants']
   const tabLabel = { overview: '📊 Overview', revenue: '💰 Revenue', tenants: '🏢 Tenant' }
 
+  const titleMap = {
+    overview: 'Laporan Overview Platform',
+    revenue: 'Laporan Pendapatan & Omzet',
+    tenants: 'Analitik & Performa Tenant',
+  }
+
   return (
     <div className="animate-fade-in">
       {/* ── Header ── */}
-      <div className="page-header">
-        <h2 className="page-title">Laporan &amp; Analitik</h2>
-      </div>
-
-      {/* ── Tabs & Actions Toolbar ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {tabs.map(t => (
-            <button key={t} onClick={() => setActiveTab(t)} style={{
-              padding: '10px 18px', background: 'none', border: 'none',
-              borderBottom: activeTab === t ? '2px solid var(--primary-500)' : '2px solid transparent',
-              color: activeTab === t ? 'var(--primary-500)' : 'var(--text-muted)',
-              fontWeight: 600, cursor: 'pointer', fontSize: 13, transition: 'all 0.2s'
-            }}>
-              {tabLabel[t]}
-            </button>
-          ))}
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2 className="page-title">{titleMap[activeTab] || 'Laporan & Analitik'}</h2>
+          <p className="page-sub">Pantau statistik, grafik pertumbuhan, dan analisis data SaaS</p>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={() => alert('Export segera hadir!')} style={{ marginBottom: 6 }}>
+        <button className="btn btn-primary btn-sm" onClick={() => alert('Export segera hadir!')}>
           📥 Export Data
         </button>
       </div>

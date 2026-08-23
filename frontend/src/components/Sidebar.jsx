@@ -73,11 +73,13 @@ const NAV_ITEMS = [
     ]
   },
   {
-    section: 'Laporan & Keamanan',
+    section: 'Laporan & Analitik',
     icon: <BarChart2 size={18} />,
     adminOnly: true,
     items: [
-      { path: '/reports-analytics', icon: <BarChart2 size={18} />,     label: 'Laporan & Analitik' },
+      { path: '/reports-analytics', icon: <BarChart2 size={18} />,     label: 'Laporan Overview' },
+      { path: '/reports-revenue',   icon: <TrendingUp size={18} />,    label: 'Laporan Pendapatan' },
+      { path: '/reports-tenants',   icon: <Store size={18} />,         label: 'Analitik Tenant' },
       { path: '/logs',              icon: <ClipboardList size={18} />, label: 'Log Audit & Aktivitas' },
     ]
   },
