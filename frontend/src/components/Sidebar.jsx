@@ -6,7 +6,7 @@ import {
   LogOut, Inbox, ClipboardList, Database, Wallet, Settings, User,
   HelpCircle, ServerCog, FileText, Zap, Shield, ChevronDown, ChevronRight,
   Receipt, Tag, Archive, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight,
-  Store, Globe, Box, Printer, ArrowRightLeft, BookOpen
+  Store, Globe, Box, Printer, ArrowRightLeft, BookOpen, BellRing
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
@@ -48,6 +48,7 @@ const NAV_ITEMS = [
       { path: '/subscription-requests',  icon: <Inbox size={18} />,      label: 'Permintaan Langganan' },
       { path: '/finance',                icon: <Wallet size={18} />,     label: 'Finansial & Faktur' },
       { path: '/invoice-settings',       icon: <FileText size={18} />,   label: 'Pengaturan Invoice' },
+      { path: '/subscription-reminders', icon: <BellRing size={18} />,   label: 'Pengingat & Otomasi' },
     ]
   },
 

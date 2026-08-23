@@ -139,6 +139,13 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::delete('settings/logo', [\App\Http\Controllers\Api\AdminInvoiceSettingController::class, 'resetLogo']);
     });
 
+    // Subscription Reminders & Automation (SaaS Admin)
+    Route::prefix('admin/subscription-reminders')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\AdminSubscriptionReminderController::class, 'index']);
+        Route::put('/', [\App\Http\Controllers\Api\AdminSubscriptionReminderController::class, 'update']);
+        Route::post('test', [\App\Http\Controllers\Api\AdminSubscriptionReminderController::class, 'testSend']);
+    });
+
     // Support Ticket Management (SaaS Admin)
     Route::prefix('admin/support')->group(function () {
         Route::get('tickets', [\App\Http\Controllers\Api\AdminSupportController::class, 'index']);
