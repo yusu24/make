@@ -24,6 +24,7 @@ import ModuleDocumentation from '../apps/admin/pages/ModuleDocumentation';
 import CustomerOnboardingGuide from '../apps/admin/pages/CustomerOnboardingGuide';
 import AdminDocumentationDashboard from '../apps/admin/pages/AdminDocumentationDashboard';
 import DocumentationCenter from '../apps/admin/pages/DocumentationCenter';
+import InvoiceSettings from '../apps/admin/pages/InvoiceSettings';
 import { ProtectedRoute } from './guards';
 
 const adminRoutes = (
@@ -37,6 +38,7 @@ const adminRoutes = (
     <Route path="subscriptions" element={<ProtectedRoute adminOnly><Subscriptions /></ProtectedRoute>} />
     <Route path="packages-features" element={<ProtectedRoute adminOnly><PackagesFeatures /></ProtectedRoute>} />
     <Route path="finance" element={<ProtectedRoute adminOnly><Finance /></ProtectedRoute>} />
+    <Route path="invoice-settings" element={<ProtectedRoute adminOnly><InvoiceSettings /></ProtectedRoute>} />
     <Route path="support-center" element={<ProtectedRoute adminOnly><SupportCenter /></ProtectedRoute>} />
     <Route path="system-monitoring" element={<ProtectedRoute adminOnly><SystemMonitoring /></ProtectedRoute>} />
     <Route path="content-announcement" element={<ProtectedRoute adminOnly><ContentAnnouncement /></ProtectedRoute>} />

@@ -13,6 +13,7 @@ const PAGE_TITLES = {
   '/subscriptions': { title: 'Subscription & Billing', sub: 'Kelola paket langganan dan faktur' },
   '/packages-features': { title: 'Packages & Features', sub: 'Atur paket dan fitur yang tersedia' },
   '/finance':     { title: 'Finance', sub: 'Kelola transaksi dan laporan keuangan' },
+  '/invoice-settings': { title: 'Pengaturan Invoice', sub: 'Pengaturan identitas faktur, rekening bank, dan templat email' },
   '/support-center': { title: 'Support Center', sub: 'Layanan pelanggan dan tiket dukungan' },
   '/system-monitoring': { title: 'System Monitoring', sub: 'Pantau performa dan kesehatan sistem' },
   '/content-announcement': { title: 'Content & Announcement', sub: 'Kelola konten dan pengumuman platform' },

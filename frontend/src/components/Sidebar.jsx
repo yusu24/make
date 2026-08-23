@@ -41,6 +41,7 @@ const NAV_ITEMS = [
       { path: '/packages-features', icon: <Package size={18} />,    label: 'Paket & Fitur' },
       { path: '/subscriptions',     icon: <CreditCard size={18} />, label: 'Langganan Aktif' },
       { path: '/finance',           icon: <Wallet size={18} />,     label: 'Finansial & Faktur' },
+      { path: '/invoice-settings',  icon: <FileText size={18} />,   label: 'Pengaturan Invoice' },
     ]
   },
   {
