@@ -12,7 +12,6 @@ const ICONS  = ['🛒','🐟','🔧','🏭','🍱','🏥','🏗️','📦']
 const SYSTEM_ROUTES = {
   'Toko Retail':      '/retail/dashboard',
   'Budidaya Hewan':    '/budidaya/dashboard',
-  'Budidaya Tanaman': '/budidaya/dashboard',
   'Jasa':             '/coming-soon',
   'Manufaktur':       '/coming-soon',
   'Kuliner':          '/kuliner/admin',
@@ -35,7 +34,6 @@ export default function Categories() {
     const slugMap = {
       'Toko Retail': 'toko-retail',
       'Budidaya Hewan': 'budidaya-hewan',
-      'Budidaya Tanaman': 'budidaya-tanaman',
       'Kuliner': 'kuliner',
     }
     const slug = slugMap[catName]

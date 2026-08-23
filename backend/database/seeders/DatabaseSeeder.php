@@ -132,18 +132,7 @@ class DatabaseSeeder extends Seeder
             $this->createDemoTenant($bt['email'], $bt['name'], 'budidaya-hewan', $bt['tenant_id']);
             $this->seedBudidayaData($bt['tenant_id']);
         }
-        $this->command->info('Ã¢Å“â€¦ Budidaya Hewan demo accounts seeded.');
-
-        // --- BUDIDAYA TANAMAN ---
-        $tanamanTenants = [
-            ['email' => 'tani@tanaman.com', 'name' => 'Tani Jaya', 'tenant_id' => 'TN-0003'],
-            ['email' => 'tanaman@demo.com',  'name' => 'Tani Demo',  'tenant_id' => 'TN-TANAMAN'],
-        ];
-        foreach ($tanamanTenants as $tt) {
-            $this->createDemoTenant($tt['email'], $tt['name'], 'budidaya-tanaman', $tt['tenant_id']);
-            $this->seedTanamanData($tt['tenant_id']);
-        }
-        $this->command->info('Ã¢Å“â€¦ Budidaya Tanaman demo accounts seeded.');
+        $this->command->info('✅ Budidaya Hewan demo accounts seeded.');
 
         // --- KULINER ---
         $kulinerTenants = [

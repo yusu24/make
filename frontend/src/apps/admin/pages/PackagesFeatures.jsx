@@ -406,7 +406,6 @@ function MatrixView({ plans, categorySlug, onEdit }) {
 const DEFAULT_CATEGORIES = [
   { slug: 'toko-retail',      name: 'Toko Retail',       icon: '🛒', color: '#3b82f6', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
   { slug: 'budidaya-hewan',    name: 'Budidaya Hewan',     icon: '🐟', color: '#10b981', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
-  { slug: 'budidaya-tanaman', name: 'Budidaya Tanaman',  icon: '🌱', color: '#84cc16', gradient: 'linear-gradient(135deg,#84cc16,#4d7c0f)' },
   { slug: 'kuliner',          name: 'Kuliner',           icon: '🍽️', color: '#f59e0b', gradient: 'linear-gradient(135deg,#f59e0b,#b45309)' },
   { slug: 'jasa',             name: 'Jasa & Repair',     icon: '🛠️', color: '#8b5cf6', gradient: 'linear-gradient(135deg,#8b5cf6,#6d28d9)' },
   { slug: 'seller',           name: 'Seller Marketplace',icon: '📦', color: '#ec4899', gradient: 'linear-gradient(135deg,#ec4899,#be185d)' },
