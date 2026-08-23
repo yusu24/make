@@ -135,11 +135,11 @@ export default function ReportsAnalytics({ defaultTab = 'overview' }) {
   return (
     <div className="animate-fade-in">
       {/* ── Header ── */}
-      <div className="page-header" style={{ marginBottom: 16 }}>
+      <div className="page-header" style={{ display: 'block', marginBottom: 24 }}>
         <h2 className="page-title">{titleMap[activeTab] || 'Laporan & Analitik'}</h2>
         <p className="page-sub">Pantau statistik, grafik pertumbuhan, dan analisis data SaaS</p>
-        <div style={{ marginTop: 12 }}>
-          <button className="btn btn-primary btn-sm" onClick={() => alert('Export segera hadir!')}>
+        <div style={{ marginTop: 14 }}>
+          <button className="btn btn-primary" onClick={() => alert('Export segera hadir!')}>
             📥 Export Data
           </button>
         </div>
