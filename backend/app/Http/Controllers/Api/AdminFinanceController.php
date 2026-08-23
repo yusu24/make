@@ -128,7 +128,7 @@ class AdminFinanceController extends Controller
      * GET /admin/finance/invoices/{id}/download-pdf
      * Generate & stream PDF invoice matching bizora-Invoice theme.
      */
-    public function downloadPdf(string $id)
+    public function downloadPdf(Request $request, string $id)
     {
         $inv = TenantInvoice::with('tenant.user')->find($id);
 
@@ -146,6 +146,7 @@ class AdminFinanceController extends Controller
             ];
         } else {
             // Fallback for generated ID or dummy requests
+            $reqStatus = $request->query('status', 'unpaid');
             $invoiceData = [
                 'id'           => $id,
                 'tenant_id'    => 'TN-DEMO',
@@ -153,7 +154,7 @@ class AdminFinanceController extends Controller
                 'tenant_email' => 'tenant@example.com',
                 'plan'         => 'Pro',
                 'amount'       => 299000,
-                'status'       => 'unpaid',
+                'status'       => ($reqStatus === 'paid' ? 'paid' : 'unpaid'),
                 'date'         => date('Y-m-d'),
                 'due_date'     => date('Y-m-d', strtotime('+7 days')),
             ];

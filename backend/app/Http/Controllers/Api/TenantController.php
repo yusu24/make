@@ -182,17 +182,27 @@ class TenantController extends Controller
             ]);
             $pdfContent = $pdf->output();
 
+            // Determine template based on payment status
+            $isPaid = ($invoiceData['status'] === 'paid');
+            $rawSubject = $isPaid
+                ? ($settings['email_subject_paid'] ?? "Kuitansi & Bukti Pembayaran Lunas BIZORA ({$tenant->tenant_id})")
+                : ($settings['email_subject_unpaid'] ?? $settings['email_subject'] ?? "Tagihan / Invoice Langganan BIZORA ({$tenant->tenant_id})");
+
+            $rawBody = $isPaid
+                ? ($settings['email_body_paid_template'] ?? "Halo {$tenantName},\n\nPembayaran langganan paket BIZORA Anda telah LUNAS.\nTerlampir file PDF Bukti Pembayaran.")
+                : ($settings['email_body_unpaid_template'] ?? $settings['email_body_template'] ?? "Halo {$tenantName},\n\nBerikut terlampir file PDF Tagihan / Invoice langganan Anda.");
+
             // Format Email Template
             $subject = str_replace(
                 ['{tenant_id}', '{tenant_name}', '{plan}', '{amount}', '{status}'],
-                [$tenant->tenant_id, $tenantName, $planName, number_format($amount, 0, ',', '.'), $tenant->status],
-                $settings['email_subject'] ?? "Tagihan / Invoice Langganan BIZORA ({$tenant->tenant_id})"
+                [$tenant->tenant_id, $tenantName, $planName, number_format($amount, 0, ',', '.'), $invoiceData['status']],
+                $rawSubject
             );
 
             $body = str_replace(
                 ['{tenant_id}', '{tenant_name}', '{plan}', '{amount}', '{status}'],
-                [$tenant->tenant_id, $tenantName, $planName, number_format($amount, 0, ',', '.'), $tenant->status],
-                $settings['email_body_template'] ?? "Halo {$tenantName},\n\nBerikut terlampir file PDF Invoice langganan Anda."
+                [$tenant->tenant_id, $tenantName, $planName, number_format($amount, 0, ',', '.'), $invoiceData['status']],
+                $rawBody
             );
 
             Mail::raw($body, function ($message) use ($email, $subject, $pdfContent, $tenant_id) {

@@ -14,20 +14,27 @@ class AdminInvoiceSettingController extends Controller
     public static function getInvoiceSettings(): array
     {
         $default = [
-            'company_name'         => 'BIZORA SaaS',
-            'company_tagline'      => 'Sistem Manajemen Usaha & Kasir Terintegrasi',
-            'company_address'      => 'Jl. Jendral Sudirman No. 123, Jakarta Selatan',
-            'company_phone'        => '0812-3456-7890',
-            'company_email'        => 'billing@bizora.id',
-            'bank_name'            => 'Bank Mandiri',
-            'bank_account_number'  => '123-00-9988776-5',
-            'bank_account_name'    => 'PT BIZORA TEKNOLOGI INDONESIA',
-            'payment_notes'        => 'Mohon cantumkan ID Tenant saat melakukan konfirmasi pembayaran.',
-            'invoice_terms'        => 'Terima kasih atas kepercayaan Anda menggunakan BIZORA SaaS. Faktur ini sah secara elektronik.',
-            'email_subject'        => 'Tagihan / Invoice Langganan BIZORA ({tenant_id})',
-            'email_body_template'  => "Halo {tenant_name},\n\nBerikut adalah rincian tagihan/invoice langganan paket BIZORA SaaS Anda:\n--------------------------------------------------\nID Tenant : {tenant_id}\nPaket     : {plan}\nJumlah    : Rp {amount}\nStatus    : {status}\n--------------------------------------------------\n\nMohon lakukan pembayaran untuk menyelesaikan atau memperbarui status paket langganan Anda.\n\nTerima kasih,\nTim BIZORA SaaS",
-            'invoice_logo_url'     => null,
-            'invoice_logo_path'    => null,
+            'company_name'               => 'BIZORA SaaS',
+            'company_tagline'            => 'Sistem Manajemen Usaha & Kasir Terintegrasi',
+            'company_address'            => 'Jl. Jendral Sudirman No. 123, Jakarta Selatan',
+            'company_phone'              => '0812-3456-7890',
+            'company_email'              => 'billing@bizora.id',
+            'bank_name'                  => 'Bank Mandiri',
+            'bank_account_number'        => '123-00-9988776-5',
+            'bank_account_name'          => 'PT BIZORA TEKNOLOGI INDONESIA',
+            'payment_notes'              => 'Mohon cantumkan ID Tenant saat melakukan konfirmasi pembayaran.',
+            'invoice_terms'              => 'Terima kasih atas kepercayaan Anda menggunakan BIZORA SaaS. Faktur ini sah secara elektronik.',
+            
+            // ── 1. Template Email Tagihan (Sebelum Bayar / Unpaid) ──
+            'email_subject_unpaid'        => 'Tagihan / Invoice Langganan BIZORA ({tenant_id})',
+            'email_body_unpaid_template'  => "Halo {tenant_name},\n\nBerikut adalah rincian tagihan/invoice langganan paket BIZORA SaaS Anda yang belum dibayar:\n--------------------------------------------------\nID Tenant : {tenant_id}\nPaket     : {plan}\nJumlah    : Rp {amount}\nStatus    : Menunggu Pembayaran\n--------------------------------------------------\n\nMohon lakukan transfer ke rekening bank yang tertera pada lampiran file PDF Invoice untuk mengaktifkan paket Anda.\n\nTerima kasih,\nTim BIZORA SaaS",
+
+            // ── 2. Template Email Kuitansi Lunas (Sesudah Bayar / Paid) ──
+            'email_subject_paid'          => 'Kuitansi & Bukti Pembayaran Lunas BIZORA ({tenant_id})',
+            'email_body_paid_template'    => "Halo {tenant_name},\n\nPembayaran langganan paket BIZORA SaaS Anda telah BERHASIL DITERIMA & DIVERIFIKASI (LUNAS):\n--------------------------------------------------\nID Tenant : {tenant_id}\nPaket     : {plan}\nJumlah    : Rp {amount}\nStatus    : LUNAS / AKTIF\n--------------------------------------------------\n\nTerima kasih atas pembayaran Anda! Paket langganan Anda kini telah aktif sepenuhnya. Terlampir file PDF Bukti Pembayaran / Kuitansi Lunas resmi.\n\nSalam sukses,\nTim BIZORA SaaS",
+
+            'invoice_logo_url'           => null,
+            'invoice_logo_path'          => null,
         ];
 
         if (Storage::exists('invoice_settings.json')) {
@@ -36,6 +43,14 @@ class AdminInvoiceSettingController extends Controller
             if (is_array($data)) {
                 $merged = array_merge($default, $data);
                 
+                // Fallback from legacy single keys if new keys are missing
+                if (!isset($data['email_subject_unpaid']) && isset($data['email_subject'])) {
+                    $merged['email_subject_unpaid'] = $data['email_subject'];
+                }
+                if (!isset($data['email_body_unpaid_template']) && isset($data['email_body_template'])) {
+                    $merged['email_body_unpaid_template'] = $data['email_body_template'];
+                }
+
                 // If logo path exists in public storage, build base64 for DomPDF & full public URL
                 if (!empty($merged['invoice_logo_path']) && Storage::disk('public')->exists($merged['invoice_logo_path'])) {
                     $merged['invoice_logo_url'] = url('storage/' . $merged['invoice_logo_path']);
@@ -78,13 +93,15 @@ class AdminInvoiceSettingController extends Controller
             'bank_account_name',
             'payment_notes',
             'invoice_terms',
-            'email_subject',
-            'email_body_template',
+            'email_subject_unpaid',
+            'email_body_unpaid_template',
+            'email_subject_paid',
+            'email_body_paid_template',
         ]));
 
         Storage::put($this->storagePath, json_encode($settings, JSON_PRETTY_PRINT));
 
-        ActivityLog::record('update_invoice_settings', 'Memperbarui Pengaturan Invoice & Tagihan', 'info');
+        ActivityLog::record('update_invoice_settings', 'Memperbarui Pengaturan Invoice & Tagihan (Sebelum & Sesudah Bayar)', 'info');
 
         return response()->json(['success' => true, 'message' => 'Pengaturan Invoice & Tagihan berhasil disimpan', 'data' => $settings]);
     }
@@ -109,7 +126,6 @@ class AdminInvoiceSettingController extends Controller
         Storage::put($this->storagePath, json_encode($settings, JSON_PRETTY_PRINT));
         ActivityLog::record('upload_invoice_logo', 'Logo Invoice SaaS diperbarui', 'info');
 
-        // Reload with base64 for immediate response
         $updatedSettings = self::getInvoiceSettings();
 
         return response()->json([

@@ -10,7 +10,12 @@ export default function InvoiceSettings() {
   const [resettingLogo, setResettingLogo]     = useState(false)
   const [downloadingDemo, setDownloadingDemo] = useState(false)
   const [logoPreview, setLogoPreview]         = useState(null)
-  const fileInputRef                          = useRef(null)
+  
+  // UI states
+  const [emailTemplateTab, setEmailTemplateTab] = useState('unpaid') // 'unpaid' | 'paid'
+  const [povStatus, setPovStatus]               = useState('unpaid') // 'unpaid' | 'paid'
+  
+  const fileInputRef = useRef(null)
 
   const fetchInvoiceSettings = async () => {
     setLoading(true)
@@ -93,19 +98,19 @@ export default function InvoiceSettings() {
     }
   }
 
-  const handleDownloadDemoPdf = async () => {
+  const handleDownloadDemoPdf = async (status = 'unpaid') => {
     setDownloadingDemo(true)
     try {
-      const response = await api.get('/admin/finance/invoices/INV-DEMO/download-pdf', { responseType: 'blob' })
+      const response = await api.get(`/admin/finance/invoices/INV-DEMO/download-pdf?status=${status}`, { responseType: 'blob' })
       const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', `Contoh_Invoice_${invoiceSettings?.company_name || 'BIZORA'}.pdf`)
+      link.setAttribute('download', `${status === 'paid' ? 'Kuitansi_Lunas' : 'Tagihan_Invoice'}_${invoiceSettings?.company_name || 'BIZORA'}.pdf`)
       document.body.appendChild(link)
       link.click()
       link.remove()
     } catch {
-      alert('Gagal mengunduh contoh PDF Invoice')
+      alert('Gagal mengunduh contoh PDF')
     } finally {
       setDownloadingDemo(false)
     }
@@ -116,7 +121,7 @@ export default function InvoiceSettings() {
       <div className="page-header">
         <div>
           <h2 className="page-title">Pengaturan Invoice &amp; Template Email</h2>
-          <p className="page-sub">Sesuaikan identitas perusahaan, instruksi rekening bank, logo, dan templat email tagihan</p>
+          <p className="page-sub">Kelola identitas faktur, instruksi rekening bank, logo, dan templat email tagihan (Sebelum &amp; Sesudah Bayar)</p>
         </div>
       </div>
 
@@ -168,7 +173,7 @@ export default function InvoiceSettings() {
 
                 <div style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                    Format: PNG, JPG, SVG (maks. 5MB). Logo ini otomatis muncul pada sudut kiri atas lembar PDF Invoice.
+                    Format: PNG, JPG, SVG (maks. 5MB). Logo ini otomatis muncul pada sudut kiri atas dokumen <strong>PDF Invoice &amp; Kuitansi</strong>.
                   </p>
                   
                   <input
@@ -307,43 +312,115 @@ export default function InvoiceSettings() {
               </div>
             </div>
 
-            {/* Section 3: Template Email & Terms */}
+            {/* Section 3: Template Email (Sebelum & Sesudah Bayar) */}
             <div className="card card-pad" style={{ padding: 20 }}>
-              <h4 style={{ margin: '0 0 14px 0', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                ✉️ Templat Email &amp; Syarat Faktur
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Subjek Email Tagihan</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={invoiceSettings.email_subject || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, email_subject: e.target.value })}
-                  />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  ✉️ Templat Email Otomatis
+                </h4>
+                {/* Tab Switcher for Email Templates */}
+                <div style={{ display: 'flex', background: 'var(--bg-base)', border: '1px solid var(--border-color)', borderRadius: 8, padding: 2 }}>
+                  <button
+                    type="button"
+                    onClick={() => { setEmailTemplateTab('unpaid'); setPovStatus('unpaid') }}
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      borderRadius: 6,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: emailTemplateTab === 'unpaid' ? 'var(--primary-500)' : 'transparent',
+                      color: emailTemplateTab === 'unpaid' ? '#fff' : 'var(--text-muted)'
+                    }}
+                  >
+                    1. Sebelum Bayar (Tagihan)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setEmailTemplateTab('paid'); setPovStatus('paid') }}
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      borderRadius: 6,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: emailTemplateTab === 'paid' ? '#10b981' : 'transparent',
+                      color: emailTemplateTab === 'paid' ? '#fff' : 'var(--text-muted)'
+                    }}
+                  >
+                    2. Sesudah Bayar (Kuitansi Lunas)
+                  </button>
                 </div>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Template Pesan Email</label>
-                  <textarea
-                    className="form-input"
-                    rows={4}
-                    value={invoiceSettings.email_body_template || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, email_body_template: e.target.value })}
-                    style={{ fontFamily: 'monospace', fontSize: 11 }}
-                  />
-                  <small style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
-                    Variabel: <code>{'{tenant_id}'}</code>, <code>{'{tenant_name}'}</code>, <code>{'{plan}'}</code>, <code>{'{amount}'}</code>, <code>{'{status}'}</code>
-                  </small>
+              </div>
+
+              {/* Sub-template: Sebelum Bayar */}
+              {emailTemplateTab === 'unpaid' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#d97706' }}>
+                    📢 <strong>Email Tagihan:</strong> Dikirim saat invoice baru diterbitkan atau saat tenant perlu melakukan perpanjangan paket langganan.
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Subjek Email Tagihan</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={invoiceSettings.email_subject_unpaid || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, email_subject_unpaid: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Isi Pesan Email Tagihan</label>
+                    <textarea
+                      className="form-input"
+                      rows={5}
+                      value={invoiceSettings.email_body_unpaid_template || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, email_body_unpaid_template: e.target.value })}
+                      style={{ fontFamily: 'monospace', fontSize: 11 }}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Catatan Footer / Syarat Faktur</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={invoiceSettings.invoice_terms || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, invoice_terms: e.target.value })}
-                  />
+              ) : (
+                /* Sub-template: Sesudah Bayar */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#059669' }}>
+                    ✅ <strong>Email Kuitansi Lunas:</strong> Dikirim setelah pembayaran diverifikasi oleh admin sebagai bukti pembayaran resmi &amp; aktivasi paket.
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Subjek Email Kuitansi Lunas</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={invoiceSettings.email_subject_paid || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, email_subject_paid: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Isi Pesan Email Kuitansi Lunas</label>
+                    <textarea
+                      className="form-input"
+                      rows={5}
+                      value={invoiceSettings.email_body_paid_template || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, email_body_paid_template: e.target.value })}
+                      style={{ fontFamily: 'monospace', fontSize: 11 }}
+                    />
+                  </div>
                 </div>
+              )}
+
+              <small style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+                Variabel dinamis: <code>{'{tenant_id}'}</code>, <code>{'{tenant_name}'}</code>, <code>{'{plan}'}</code>, <code>{'{amount}'}</code>, <code>{'{status}'}</code>
+              </small>
+
+              <div style={{ marginTop: 10 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Catatan Footer / Syarat Faktur</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={invoiceSettings.invoice_terms || ''}
+                  onChange={e => setInvoiceSettings({ ...invoiceSettings, invoice_terms: e.target.value })}
+                />
               </div>
             </div>
 
@@ -355,23 +432,62 @@ export default function InvoiceSettings() {
           </form>
 
           {/* ═══════════════════════════════════════════════════════════════
-              RIGHT COLUMN: Realtime Live PDF Invoice POV / Preview
+              RIGHT COLUMN: Realtime Live PDF POV Preview (Unpaid vs Paid)
              ═══════════════════════════════════════════════════════════════ */}
           <div style={{ position: 'sticky', top: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>👁️</span> POV Realtime PDF Invoice
-              </h3>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={handleDownloadDemoPdf}
-                disabled={downloadingDemo}
-                style={{ fontSize: 11 }}
-                title="Download file PDF hasil render dari server"
-              >
-                {downloadingDemo ? 'Mengunduh...' : '📥 Unduh Contoh PDF'}
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+              <div>
+                <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>👁️</span> POV Realtime Dokumen
+                </h3>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {/* Status Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setPovStatus('unpaid')}
+                  style={{
+                    padding: '3px 8px',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    borderRadius: 6,
+                    border: '1px solid',
+                    cursor: 'pointer',
+                    borderColor: povStatus === 'unpaid' ? '#f59e0b' : 'var(--border-color)',
+                    background: povStatus === 'unpaid' ? '#fef3c7' : 'transparent',
+                    color: povStatus === 'unpaid' ? '#b45309' : 'var(--text-muted)'
+                  }}
+                >
+                  Belum Bayar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPovStatus('paid')}
+                  style={{
+                    padding: '3px 8px',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    borderRadius: 6,
+                    border: '1px solid',
+                    cursor: 'pointer',
+                    borderColor: povStatus === 'paid' ? '#10b981' : 'var(--border-color)',
+                    background: povStatus === 'paid' ? '#d1fae5' : 'transparent',
+                    color: povStatus === 'paid' ? '#065f46' : 'var(--text-muted)'
+                  }}
+                >
+                  Lunas (Paid)
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => handleDownloadDemoPdf(povStatus)}
+                  disabled={downloadingDemo}
+                  style={{ fontSize: 10, padding: '3px 8px' }}
+                  title="Download file PDF hasil render dari server"
+                >
+                  {downloadingDemo ? '...' : '📥 PDF'}
+                </button>
+              </div>
             </div>
 
             {/* A4 Paper Mockup Container */}
@@ -388,7 +504,13 @@ export default function InvoiceSettings() {
             }}>
               
               {/* Header: Logo + Company Info & Title */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #6366f1', paddingBottom: 12, marginBottom: 14 }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                borderBottom: povStatus === 'paid' ? '2px solid #10b981' : '2px solid #6366f1',
+                paddingBottom: 12,
+                marginBottom: 14
+              }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   {logoPreview ? (
                     <img
@@ -398,7 +520,7 @@ export default function InvoiceSettings() {
                     />
                   ) : null}
                   <div>
-                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: povStatus === 'paid' ? '#059669' : '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                       {invoiceSettings.company_name || 'BIZORA SaaS'}
                     </h4>
                     <p style={{ margin: '2px 0 0 0', fontSize: 9.5, color: '#64748b' }}>
@@ -412,20 +534,42 @@ export default function InvoiceSettings() {
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', letterSpacing: '0.5px' }}>INVOICE</div>
-                  <div style={{ fontSize: 10, color: '#475569', margin: '2px 0 4px' }}>No: <strong>INV-2026-001</strong></div>
-                  <span style={{
-                    display: 'inline-block',
-                    background: '#dcfce7',
-                    color: '#15803d',
-                    border: '1px solid #86efac',
-                    borderRadius: 4,
-                    padding: '2px 8px',
-                    fontSize: 9,
-                    fontWeight: 700
+                  <div style={{
+                    fontSize: 15,
+                    fontWeight: 900,
+                    color: povStatus === 'paid' ? '#15803d' : '#0f172a',
+                    letterSpacing: '0.5px'
                   }}>
-                    LUNAS / PAID
-                  </span>
+                    {povStatus === 'paid' ? 'KUITANSI LUNAS' : 'INVOICE / TAGIHAN'}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#475569', margin: '2px 0 4px' }}>No: <strong>INV-2026-001</strong></div>
+                  {povStatus === 'paid' ? (
+                    <span style={{
+                      display: 'inline-block',
+                      background: '#dcfce7',
+                      color: '#15803d',
+                      border: '1px solid #86efac',
+                      borderRadius: 4,
+                      padding: '2px 8px',
+                      fontSize: 9,
+                      fontWeight: 700
+                    }}>
+                      LUNAS / PAID
+                    </span>
+                  ) : (
+                    <span style={{
+                      display: 'inline-block',
+                      background: '#fef3c7',
+                      color: '#b45309',
+                      border: '1px solid #fde68a',
+                      borderRadius: 4,
+                      padding: '2px 8px',
+                      fontSize: 9,
+                      fontWeight: 700
+                    }}>
+                      BELUM DIBAYAR
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -439,7 +583,11 @@ export default function InvoiceSettings() {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 9, color: '#64748b' }}>Tanggal Terbit: <strong>23 Agu 2026</strong></div>
-                  <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>Jatuh Tempo: <strong>30 Agu 2026</strong></div>
+                  {povStatus === 'paid' ? (
+                    <div style={{ fontSize: 9, color: '#15803d', marginTop: 2 }}>Status: <strong>Lunas Terverifikasi</strong></div>
+                  ) : (
+                    <div style={{ fontSize: 9, color: '#dc2626', marginTop: 2 }}>Jatuh Tempo: <strong>30 Agu 2026</strong></div>
+                  )}
                   <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>Metode: <strong>Transfer Bank</strong></div>
                 </div>
               </div>
@@ -447,9 +595,9 @@ export default function InvoiceSettings() {
               {/* Itemized Table */}
               <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 12 }}>
                 <thead>
-                  <tr style={{ background: '#4f46e5', color: '#ffffff' }}>
+                  <tr style={{ background: povStatus === 'paid' ? '#059669' : '#4f46e5', color: '#ffffff' }}>
                     <th style={{ padding: '6px 8px', textAlign: 'left', fontSize: 9.5, borderRadius: '4px 0 0 0' }}>Deskripsi Layanan</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: 9.5 }}>Durasi</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: 9.5 }}>Paket</th>
                     <th style={{ padding: '6px 8px', textAlign: 'right', fontSize: 9.5 }}>Tarif</th>
                     <th style={{ padding: '6px 8px', textAlign: 'right', fontSize: 9.5, borderRadius: '0 4px 0 0' }}>Total</th>
                   </tr>
@@ -457,10 +605,10 @@ export default function InvoiceSettings() {
                 <tbody>
                   <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                     <td style={{ padding: '8px 8px' }}>
-                      <strong style={{ color: '#0f172a' }}>Langganan Paket SaaS - PRO</strong>
-                      <div style={{ fontSize: 8.5, color: '#64748b' }}>Akses penuh POS Kasir, Multi-Cabang, Laporan Otomatis</div>
+                      <strong style={{ color: '#0f172a' }}>Langganan BIZORA SaaS (Pro)</strong>
+                      <div style={{ fontSize: 8.5, color: '#64748b' }}>Akses penuh POS Kasir, Multi-Outlet, Laporan Keuangan</div>
                     </td>
-                    <td style={{ padding: '8px 8px', textAlign: 'center' }}>1 Bulan</td>
+                    <td style={{ padding: '8px 8px', textAlign: 'center' }}>Pro</td>
                     <td style={{ padding: '8px 8px', textAlign: 'right' }}>Rp 299.000</td>
                     <td style={{ padding: '8px 8px', textAlign: 'right', fontWeight: 700 }}>Rp 299.000</td>
                   </tr>
@@ -478,34 +626,56 @@ export default function InvoiceSettings() {
                     <span>PPN (0%)</span>
                     <span>Rp 0</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', fontSize: 11, fontWeight: 800, color: '#4f46e5', background: '#e0e7ff' }}>
-                    <span>Total Tagihan</span>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '6px 8px',
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: povStatus === 'paid' ? '#15803d' : '#4f46e5',
+                    background: povStatus === 'paid' ? '#dcfce7' : '#e0e7ff'
+                  }}>
+                    <span>{povStatus === 'paid' ? 'Total Dibayar' : 'Total Tagihan'}</span>
                     <span>Rp 299.000</span>
                   </div>
                 </div>
               </div>
 
-              {/* Bank Payment Instructions Box */}
-              <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: '#334155', textTransform: 'uppercase', marginBottom: 4 }}>
-                  💳 Instruksi Pembayaran Bank:
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: '#0f172a' }}>
-                      {invoiceSettings.bank_name || 'Bank Mandiri'} · {invoiceSettings.bank_account_number || '123-00-9988776-5'}
-                    </div>
-                    <div style={{ fontSize: 9, color: '#64748b' }}>
-                      a.n. <strong>{invoiceSettings.bank_account_name || 'PT BIZORA TEKNOLOGI INDONESIA'}</strong>
-                    </div>
+              {/* Bank Payment Instructions / Receipt Box */}
+              {povStatus === 'paid' ? (
+                <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: '#15803d', textTransform: 'uppercase', marginBottom: 4 }}>
+                    ✅ STATUS: TELAH DIBAYAR LUNAS (OFFICIAL RECEIPT)
+                  </div>
+                  <div style={{ fontSize: 10, color: '#166534' }}>
+                    Diterima pada Rekening: <strong>{invoiceSettings.bank_name || 'Bank Mandiri'} ({invoiceSettings.bank_account_number || '123-00-9988776-5'})</strong>
+                  </div>
+                  <div style={{ fontSize: 9, color: '#15803d', fontWeight: 600, marginTop: 2 }}>
+                    Pembayaran telah diverifikasi. Paket aktif dan dapat digunakan.
                   </div>
                 </div>
-                {invoiceSettings.payment_notes && (
-                  <p style={{ margin: '6px 0 0 0', fontSize: 8.5, color: '#64748b', fontStyle: 'italic' }}>
-                    * {invoiceSettings.payment_notes}
-                  </p>
-                )}
-              </div>
+              ) : (
+                <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: '#334155', textTransform: 'uppercase', marginBottom: 4 }}>
+                    💳 Instruksi Transfer Rekening Bank:
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#0f172a' }}>
+                        {invoiceSettings.bank_name || 'Bank Mandiri'} · {invoiceSettings.bank_account_number || '123-00-9988776-5'}
+                      </div>
+                      <div style={{ fontSize: 9, color: '#64748b' }}>
+                        a.n. <strong>{invoiceSettings.bank_account_name || 'PT BIZORA TEKNOLOGI INDONESIA'}</strong>
+                      </div>
+                    </div>
+                  </div>
+                  {invoiceSettings.payment_notes && (
+                    <p style={{ margin: '6px 0 0 0', fontSize: 8.5, color: '#64748b', fontStyle: 'italic' }}>
+                      * {invoiceSettings.payment_notes}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Footer Note / Terms */}
               <div style={{ textAlign: 'center', fontSize: 8.5, color: '#64748b', borderTop: '1px solid #e2e8f0', paddingTop: 8 }}>

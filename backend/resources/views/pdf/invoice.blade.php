@@ -175,7 +175,11 @@
                 </p>
             </td>
             <td style="width: 40%; vertical-align: top; text-align: right;">
-                <h2 class="invoice-title">INVOICE</h2>
+                @if(($invoice['status'] ?? 'unpaid') === 'paid')
+                    <h2 class="invoice-title" style="color: #15803d;">KUITANSI LUNAS</h2>
+                @else
+                    <h2 class="invoice-title">INVOICE / TAGIHAN</h2>
+                @endif
                 <p style="margin: 4px 0 8px 0; font-size: 12px; color: #475569;">
                     No: <strong>{{ $invoice['id'] ?? 'INV-001' }}</strong>
                 </p>
@@ -206,9 +210,13 @@
             <td class="info-box" style="text-align: right;">
                 <div class="info-label">RINCIAN TANGGAL:</div>
                 <div class="info-value">
-                    Tanggal Tagihan: <strong>{{ $invoice['date'] ?? date('Y-m-d') }}</strong><br>
-                    Jatuh Tempo: <strong style="color: #dc2626;">{{ $invoice['due_date'] ?? date('Y-m-d', strtotime('+7 days')) }}</strong><br>
-                    Metode Pembayaran: <strong>Transfer Bank / QRIS</strong>
+                    Tanggal Terbit: <strong>{{ $invoice['date'] ?? date('Y-m-d') }}</strong><br>
+                    @if(($invoice['status'] ?? 'unpaid') === 'paid')
+                        Status Pembayaran: <strong style="color: #15803d;">Lunas Terverifikasi</strong><br>
+                    @else
+                        Batas Jatuh Tempo: <strong style="color: #dc2626;">{{ $invoice['due_date'] ?? date('Y-m-d', strtotime('+7 days')) }}</strong><br>
+                    @endif
+                    Metode Pembayaran: <strong>Transfer Bank / Rekening</strong>
                 </div>
             </td>
         </tr>
@@ -245,37 +253,53 @@
             <td style="color: #64748b;">Pajak (0%):</td>
             <td style="text-align: right;">Rp 0</td>
         </tr>
-        <tr class="total-row grand-total">
-            <td>TOTAL TAGIHAN:</td>
+        <tr class="total-row grand-total" style="{{ ($invoice['status'] ?? 'unpaid') === 'paid' ? 'background-color: #dcfce7; color: #15803d; border-top: 2px solid #22c55e;' : '' }}">
+            <td>TOTAL {{ ($invoice['status'] ?? 'unpaid') === 'paid' ? 'DIBAYAR' : 'TAGIHAN' }}:</td>
             <td style="text-align: right;">Rp {{ number_format($invoice['amount'] ?? 0, 0, ',', '.') }}</td>
         </tr>
     </table>
     <div style="clear: both;"></div>
 
-    <!-- Payment Instruction Box -->
-    <div class="payment-box">
-        <div class="payment-title">INSTRUKSI PEMBAYARAN / REKENING BANK:</div>
-        <table style="font-size: 11px;">
-            <tr>
-                <td style="width: 120px; color: #64748b;">Nama Bank:</td>
-                <td><strong>{{ $settings['bank_name'] ?? 'Bank Mandiri' }}</strong></td>
-            </tr>
-            <tr>
-                <td style="color: #64748b;">Nomor Rekening:</td>
-                <td><strong style="font-size: 13px; color: #4f46e5;">{{ $settings['bank_account_number'] ?? '123-00-9988776-5' }}</strong></td>
-            </tr>
-            <tr>
-                <td style="color: #64748b;">Atas Nama:</td>
-                <td><strong>{{ $settings['bank_account_name'] ?? 'PT BIZORA TEKNOLOGI INDONESIA' }}</strong></td>
-            </tr>
-            @if(!empty($settings['payment_notes']))
-            <tr>
-                <td style="color: #64748b; vertical-align: top;">Catatan:</td>
-                <td>{{ $settings['payment_notes'] }}</td>
-            </tr>
-            @endif
-        </table>
-    </div>
+    <!-- Payment Instruction / Receipt Box -->
+    @if(($invoice['status'] ?? 'unpaid') === 'paid')
+        <div class="payment-box" style="background-color: #f0fdf4; border: 1px solid #86efac;">
+            <div class="payment-title" style="color: #15803d;">STATUS: TELAH DIBAYAR LUNAS (OFFICIAL RECEIPT)</div>
+            <table style="font-size: 11px;">
+                <tr>
+                    <td style="width: 130px; color: #166534;">Diterima Pada Rekening:</td>
+                    <td><strong>{{ $settings['bank_name'] ?? 'Bank Mandiri' }} ({{ $settings['bank_account_number'] ?? '123-00-9988776-5' }})</strong> a.n. <strong>{{ $settings['bank_account_name'] ?? 'PT BIZORA TEKNOLOGI INDONESIA' }}</strong></td>
+                </tr>
+                <tr>
+                    <td style="color: #166534;">Keterangan:</td>
+                    <td style="color: #15803d; font-weight: bold;">Pembayaran telah diverifikasi. Paket aktif dan dapat digunakan.</td>
+                </tr>
+            </table>
+        </div>
+    @else
+        <div class="payment-box">
+            <div class="payment-title">INSTRUKSI PEMBAYARAN / TRANSFER REKENING BANK:</div>
+            <table style="font-size: 11px;">
+                <tr>
+                    <td style="width: 120px; color: #64748b;">Nama Bank:</td>
+                    <td><strong>{{ $settings['bank_name'] ?? 'Bank Mandiri' }}</strong></td>
+                </tr>
+                <tr>
+                    <td style="color: #64748b;">Nomor Rekening:</td>
+                    <td><strong style="font-size: 13px; color: #4f46e5;">{{ $settings['bank_account_number'] ?? '123-00-9988776-5' }}</strong></td>
+                </tr>
+                <tr>
+                    <td style="color: #64748b;">Atas Nama:</td>
+                    <td><strong>{{ $settings['bank_account_name'] ?? 'PT BIZORA TEKNOLOGI INDONESIA' }}</strong></td>
+                </tr>
+                @if(!empty($settings['payment_notes']))
+                <tr>
+                    <td style="color: #64748b; vertical-align: top;">Catatan:</td>
+                    <td>{{ $settings['payment_notes'] }}</td>
+                </tr>
+                @endif
+            </table>
+        </div>
+    @endif
 
     <!-- Footer Note / Terms -->
     <div class="footer-note">
