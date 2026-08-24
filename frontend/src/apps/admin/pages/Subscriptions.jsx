@@ -13,22 +13,85 @@ const DUMMY_TENANTS = [
   { id:5, name:'Teguh Prasetyo',email:'teguh@retail.com', category:'Toko Retail',   status:'inactive', plan:'Basic', tenant_id:'TN-005', joined:'2026-02-20' },
 ]
 
-const PLAN_BADGE = { Pro:'badge-violet', Basic:'badge-blue', Free:'badge-secondary', pro:'badge-violet', basic:'badge-blue', free:'badge-secondary', '-':'badge-secondary' }
-const STATUS_BADGE = { active:'badge-green', pending:'badge-yellow', inactive:'badge-red', approved:'badge-green', rejected:'badge-red' }
-
-const getPlanBadge = (plan) => {
+const getPlanStyle = (plan) => {
   const p = (plan || '').toLowerCase()
-  if (p === 'pro') return 'badge-violet'
-  if (p === 'basic') return 'badge-blue'
-  return 'badge-secondary'
+  if (p === 'pro') {
+    return {
+      background: '#f3e8ff',
+      border: '1px solid #d8b4fe',
+      color: '#111827',
+      borderRadius: '6px',
+      padding: '4px 10px',
+      fontSize: 13,
+      fontWeight: 500,
+    }
+  }
+  if (p === 'basic') {
+    return {
+      background: '#dbeafe',
+      border: '1px solid #93c5fd',
+      color: '#111827',
+      borderRadius: '6px',
+      padding: '4px 10px',
+      fontSize: 13,
+      fontWeight: 500,
+    }
+  }
+  return {
+    background: '#f1f5f9',
+    border: '1px solid #cbd5e1',
+    color: '#111827',
+    borderRadius: '6px',
+    padding: '4px 10px',
+    fontSize: 13,
+    fontWeight: 500,
+  }
 }
 
-const getStatusBadge = (status) => {
+const getStatusStyle = (status) => {
   const s = (status || '').toLowerCase()
-  if (s === 'active' || s === 'approved') return 'badge-green'
-  if (s === 'pending') return 'badge-yellow'
-  if (s === 'rejected' || s === 'inactive') return 'badge-red'
-  return 'badge-gray'
+  if (s === 'active' || s === 'approved') {
+    return {
+      background: '#dcfce7',
+      border: '1px solid #86efac',
+      color: '#111827',
+      borderRadius: '6px',
+      padding: '4px 10px',
+      fontSize: 13,
+      fontWeight: 500,
+    }
+  }
+  if (s === 'pending') {
+    return {
+      background: '#fef3c7',
+      border: '1px solid #fcd34d',
+      color: '#111827',
+      borderRadius: '6px',
+      padding: '4px 10px',
+      fontSize: 13,
+      fontWeight: 500,
+    }
+  }
+  if (s === 'rejected' || s === 'inactive') {
+    return {
+      background: '#ffe4e6',
+      border: '1px solid #fda4af',
+      color: '#111827',
+      borderRadius: '6px',
+      padding: '4px 10px',
+      fontSize: 13,
+      fontWeight: 500,
+    }
+  }
+  return {
+    background: '#f1f5f9',
+    border: '1px solid #cbd5e1',
+    color: '#111827',
+    borderRadius: '6px',
+    padding: '4px 10px',
+    fontSize: 13,
+    fontWeight: 500,
+  }
 }
 
 export default function Subscriptions({ defaultTab = 'list' }) {
@@ -235,17 +298,20 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                       <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{t.email}</td>
                       <td>
                         <select
-                          className={`form-input badge ${getPlanBadge(t.plan)}`}
-                          style={{ padding: '4px 8px', height: 'auto', border: 'none', cursor: 'pointer', appearance: 'none', background: 'var(--bg-elevated)', outline: 'none', fontSize: 13 }}
+                          style={{
+                            ...getPlanStyle(t.plan),
+                            cursor: 'pointer',
+                            outline: 'none',
+                          }}
                           value={t.plan}
                           onChange={e => handlePlanChange(t, e.target.value)}
                         >
-                          <option value="Free" className="badge-secondary">Free</option>
-                          <option value="Basic" className="badge-blue">Basic</option>
-                          <option value="Pro" className="badge-violet">Pro</option>
+                          <option value="Free">Free</option>
+                          <option value="Basic">Basic</option>
+                          <option value="Pro">Pro</option>
                         </select>
                       </td>
-                      <td><span className={`badge ${getStatusBadge(t.status)}`} style={{ fontSize: 13 }}>{t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1).toLowerCase()) : 'Active'}</span></td>
+                      <td><span style={getStatusStyle(t.status)}>{t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1).toLowerCase()) : 'Active'}</span></td>
                       <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{t.joined}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -307,9 +373,9 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                         </span>
                       </div>
                     </td>
-                    <td><span className={`badge ${getPlanBadge(req.plan)}`} style={{ fontSize: 13 }}>{req.plan ? (req.plan.charAt(0).toUpperCase() + req.plan.slice(1).toLowerCase()) : 'Free'}</span></td>
+                    <td><span style={getPlanStyle(req.plan)}>{req.plan ? (req.plan.charAt(0).toUpperCase() + req.plan.slice(1).toLowerCase()) : 'Free'}</span></td>
                     <td style={{ fontSize: 13 }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
-                    <td><span className={`badge ${getStatusBadge(req.status || 'pending')}`} style={{ fontSize: 13 }}>{req.status ? (req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase()) : 'Pending'}</span></td>
+                    <td><span style={getStatusStyle(req.status || 'pending')}>{req.status ? (req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase()) : 'Pending'}</span></td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                         <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
