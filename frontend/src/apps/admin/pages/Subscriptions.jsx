@@ -183,6 +183,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                   <tr>
                     <th>Tenant ID</th>
                     <th>Nama</th>
+                    <th>Email</th>
                     <th>Paket</th>
                     <th>Status</th>
                     <th>Bergabung</th>
@@ -192,7 +193,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                 <tbody>
                   {loading && activeTab === 'list' ? (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                           <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
                           <span>Memuat data langganan...</span>
@@ -201,7 +202,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                     </tr>
                   ) : filteredTenants.length === 0 ? (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         Tidak ada pelanggan ditemukan
                       </td>
                     </tr>
@@ -213,12 +214,10 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                           <div style={getAvatarStyle(t.name || t.tenant_id, 32)}>
                             {getInitials(t.name)}
                           </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13, margin: 0, lineHeight: 1.3 }}>{t.name}</p>
-                            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0, lineHeight: 1.3 }}>{t.email}</p>
-                          </div>
+                          <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{t.name}</span>
                         </div>
                       </td>
+                      <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{t.email}</td>
                       <td>
                         <select
                           className={`form-input badge ${PLAN_BADGE[t.plan] || 'badge-gray'}`}
@@ -262,7 +261,8 @@ export default function Subscriptions({ defaultTab = 'list' }) {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Tenant</th>
+                  <th>Tenant ID</th>
+                  <th>Nama Tenant</th>
                   <th>Paket Dipilih</th>
                   <th>Waktu Request</th>
                   <th>Status</th>
@@ -272,7 +272,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
               <tbody>
                 {loading && activeTab === 'requests' ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                         <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
                         <span>Memuat data permintaan...</span>
@@ -281,19 +281,15 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                   </tr>
                 ) : rPaginatedData.map(req => (
                   <tr key={req.id}>
+                    <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{req.tenant_id}</code></td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={getAvatarStyle(req.tenant?.business_name || req.tenant_id, 32)}>
                           {getInitials(req.tenant?.business_name || req.tenant_id)}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.3 }}>
-                            {req.tenant?.business_name || req.tenant_id}
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.3 }}>
-                            ID: {req.tenant_id}
-                          </div>
-                        </div>
+                        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>
+                          {req.tenant?.business_name || req.tenant_id}
+                        </span>
                       </div>
                     </td>
                     <td><span className={`badge ${PLAN_BADGE[req.plan?.charAt(0).toUpperCase() + req.plan?.slice(1)] || 'badge-blue'}`}>{req.plan}</span></td>
@@ -309,7 +305,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                   </tr>
                 ))}
                 {!loading && requests.length === 0 && (
-                  <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada permintaan langganan baru.</td></tr>
+                  <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada permintaan langganan baru.</td></tr>
                 )}
               </tbody>
             </table>
