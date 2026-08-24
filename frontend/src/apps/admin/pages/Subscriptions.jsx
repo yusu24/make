@@ -254,28 +254,69 @@ export default function Subscriptions({ defaultTab = 'list' }) {
       <div className="animate-fade-in">
         <div className="page-header">
           <div>
-            <h2 className="page-title">{activeTab === 'requests' ? 'Permintaan Langganan' : 'Pelanggan Langganan'}</h2>
-            <p className="page-sub">{activeTab === 'requests' ? 'Verifikasi pembayaran dan aktivasi paket langganan customer' : 'Kelola data pelanggan yang sedang berlangganan aktif'}</p>
+            <h2 className="page-title">Manajemen Langganan</h2>
+            <p className="page-sub">Kelola pelanggan aktif dan verifikasi permintaan langganan baru</p>
           </div>
         </div>
 
-        {activeTab === 'list' ? (
-          <div className="card card-pad" style={{ padding: 0 }}>
-            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>👥 Daftar Pelanggan Langganan</h3>
-                <div className="search-wrap" style={{ minWidth: 220, maxWidth: 300 }}>
-                  <span className="search-icon">🔍</span>
-                  <input
-                    className="form-input search-input"
-                    placeholder="Cari tenant atau email..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
+        {/* Single unified card — same as Finance.jsx */}
+        <div className="card card-pad" style={{ padding: 0 }}>
+          {/* Card header toolbar */}
+          <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>
+                {activeTab === 'list' ? '👥 Daftar Pelanggan Langganan' : '📥 Permintaan Langganan Baru'}
+              </h3>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                {activeTab === 'list' && (
+                  <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
+                    <span className="search-icon">🔍</span>
+                    <input
+                      className="form-input search-input"
+                      placeholder="Cari tenant atau email..."
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                    />
+                  </div>
+                )}
+                <div className="filter-tabs">
+                  <button
+                    className={`filter-tab ${activeTab === 'list' ? 'filter-tab--active' : ''}`}
+                    onClick={() => setActiveTab('list')}
+                  >
+                    Pelanggan Aktif
+                  </button>
+                  <button
+                    className={`filter-tab ${activeTab === 'requests' ? 'filter-tab--active' : ''}`}
+                    onClick={() => setActiveTab('requests')}
+                  >
+                    Permintaan Baru
+                    {requests.length > 0 && (
+                      <span style={{
+                        marginLeft: 6, background: '#ef4444', color: '#fff',
+                        borderRadius: 10, fontSize: 10, fontWeight: 700,
+                        padding: '1px 6px', lineHeight: '16px', display: 'inline-block',
+                      }}>{requests.length}</span>
+                    )}
+                  </button>
                 </div>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  style={{ height: 38 }}
+                  onClick={() => {
+                    setLoading(true)
+                    Promise.all([fetchTenants(), fetchRequests()]).finally(() => setLoading(false))
+                  }}
+                  disabled={loading}
+                >
+                  🔄 Refresh
+                </button>
               </div>
             </div>
+          </div>
 
+          {/* Table content */}
+          {activeTab === 'list' ? (
             <div className="table-responsive">
               <table className="table">
                 <thead>
@@ -290,7 +331,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && activeTab === 'list' ? (
+                  {loading ? (
                     <tr>
                       <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
@@ -302,7 +343,10 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                   ) : filteredTenants.length === 0 ? (
                     <tr>
                       <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                        Tidak ada pelanggan ditemukan
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 36 }}>👥</span>
+                          <span>Tidak ada pelanggan ditemukan</span>
+                        </div>
                       </td>
                     </tr>
                   ) : tPaginatedData.map(t => (
@@ -319,11 +363,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                       <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{t.email}</td>
                       <td>
                         <select
-                          style={{
-                            ...getPlanStyle(t.plan),
-                            cursor: 'pointer',
-                            outline: 'none',
-                          }}
+                          style={{ ...getPlanStyle(t.plan), cursor: 'pointer', outline: 'none' }}
                           value={t.plan}
                           onChange={e => handlePlanChange(t, e.target.value)}
                         >
@@ -335,7 +375,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                       <td><span style={getStatusStyle(t.status)}>{t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1).toLowerCase()) : 'Active'}</span></td>
                       <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{t.joined}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => handleOpenBilling(t)} title="Riwayat Invoice">👁</button>
                           <button className="btn btn-primary btn-sm" onClick={() => handleResendInvoice(t)} title="Kirim Invoice">✉</button>
                         </div>
@@ -346,26 +386,14 @@ export default function Subscriptions({ defaultTab = 'list' }) {
               </table>
               {!loading && filteredTenants.length > 0 && (
                 <SaasPagination
-                  currentPage={tPage}
-                  setCurrentPage={setTPage}
-                  pageSize={tPageSize}
-                  setPageSize={setTPageSize}
-                  totalPages={tTotalPages}
-                  totalItems={tTotalItems}
-                  startIndex={tStart}
-                  endIndex={tEnd}
+                  currentPage={tPage} setCurrentPage={setTPage}
+                  pageSize={tPageSize} setPageSize={setTPageSize}
+                  totalPages={tTotalPages} totalItems={tTotalItems}
+                  startIndex={tStart} endIndex={tEnd}
                 />
               )}
             </div>
-          </div>
-        ) : (
-          <div className="card card-pad" style={{ padding: 0 }}>
-            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>📥 Permintaan Langganan Baru</h3>
-              </div>
-            </div>
-
+          ) : (
             <div className="table-responsive">
               <table className="table">
                 <thead>
@@ -379,12 +407,21 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && activeTab === 'requests' ? (
+                  {loading ? (
                     <tr>
                       <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                           <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
                           <span>Memuat data permintaan...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : requests.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 36 }}>📥</span>
+                          <span>Belum ada permintaan langganan baru.</span>
                         </div>
                       </td>
                     </tr>
@@ -408,31 +445,24 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
                           <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)} title="Aktifkan">✓</button>
-                          <button className="btn btn-ghost btn-sm" onClick={() => handleReject(req.id)} title="Tolak">✗</button>
+                          <button className="btn btn-secondary btn-sm" style={{ color: 'var(--danger-500)' }} onClick={() => handleReject(req.id)} title="Tolak">✗</button>
                         </div>
                       </td>
                     </tr>
                   ))}
-                  {!loading && requests.length === 0 && (
-                    <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada permintaan langganan baru.</td></tr>
-                  )}
                 </tbody>
               </table>
               {!loading && requests.length > 0 && (
                 <SaasPagination
-                  currentPage={rPage}
-                  setCurrentPage={setRPage}
-                  pageSize={rPageSize}
-                  setPageSize={setRPageSize}
-                  totalPages={rTotalPages}
-                  totalItems={rTotalItems}
-                  startIndex={rStart}
-                  endIndex={rEnd}
+                  currentPage={rPage} setCurrentPage={setRPage}
+                  pageSize={rPageSize} setPageSize={setRPageSize}
+                  totalPages={rTotalPages} totalItems={rTotalItems}
+                  startIndex={rStart} endIndex={rEnd}
                 />
               )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {billingTenant && (
