@@ -357,13 +357,14 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                           <div style={getAvatarStyle(t.name || t.tenant_id, 32)}>
                             {getInitials(t.name)}
                           </div>
-                          <span style={{ color: 'var(--text-primary)', fontSize: 13 }}>{t.name}</span>
+                          <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{t.name}</span>
                         </div>
                       </td>
-                      <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{t.email}</td>
+                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.email}</td>
                       <td>
                         <select
-                          style={{ ...getPlanStyle(t.plan), cursor: 'pointer', outline: 'none' }}
+                          className={`badge ${t.plan === 'Pro' || t.plan === 'pro' ? 'badge-violet' : t.plan === 'Basic' || t.plan === 'basic' ? 'badge-blue' : 'badge-secondary'}`}
+                          style={{ cursor: 'pointer', outline: 'none', border: 'none', appearance: 'none', paddingRight: 8 }}
                           value={t.plan}
                           onChange={e => handlePlanChange(t, e.target.value)}
                         >
@@ -372,12 +373,20 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                           <option value="Pro">Pro</option>
                         </select>
                       </td>
-                      <td><span style={getStatusStyle(t.status)}>{t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1).toLowerCase()) : 'Active'}</span></td>
-                      <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{t.joined}</td>
+                      <td>
+                        <span className={`badge ${
+                          (t.status || '').toLowerCase() === 'active' ? 'badge-green' :
+                          (t.status || '').toLowerCase() === 'pending' ? 'badge-yellow' :
+                          (t.status || '').toLowerCase() === 'inactive' ? 'badge-red' : 'badge-secondary'
+                        }`}>
+                          {t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1).toLowerCase()) : 'Active'}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.joined}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => handleOpenBilling(t)} title="Riwayat Invoice">👁</button>
-                          <button className="btn btn-primary btn-sm" onClick={() => handleResendInvoice(t)} title="Kirim Invoice">✉</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleResendInvoice(t)} title="Kirim Invoice">✉</button>
                         </div>
                       </td>
                     </tr>
@@ -433,18 +442,33 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                           <div style={getAvatarStyle(req.tenant?.business_name || req.tenant_id, 32)}>
                             {getInitials(req.tenant?.business_name || req.tenant_id)}
                           </div>
-                          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>
+                          <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>
                             {req.tenant?.business_name || req.tenant_id}
                           </span>
                         </div>
                       </td>
-                      <td><span style={getPlanStyle(req.plan)}>{req.plan ? (req.plan.charAt(0).toUpperCase() + req.plan.slice(1).toLowerCase()) : 'Free'}</span></td>
-                      <td style={{ fontSize: 13 }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
-                      <td><span style={getStatusStyle(req.status || 'pending')}>{req.status ? (req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase()) : 'Pending'}</span></td>
+                      <td>
+                        <span className={`badge ${
+                          (req.plan || '').toLowerCase() === 'pro' ? 'badge-violet' :
+                          (req.plan || '').toLowerCase() === 'basic' ? 'badge-blue' : 'badge-secondary'
+                        }`}>
+                          {req.plan ? (req.plan.charAt(0).toUpperCase() + req.plan.slice(1).toLowerCase()) : 'Free'}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
+                      <td>
+                        <span className={`badge ${
+                          (req.status || '').toLowerCase() === 'approved' || (req.status || '').toLowerCase() === 'active' ? 'badge-green' :
+                          (req.status || '').toLowerCase() === 'pending' ? 'badge-yellow' :
+                          (req.status || '').toLowerCase() === 'rejected' ? 'badge-red' : 'badge-yellow'
+                        }`}>
+                          {req.status ? (req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase()) : 'Pending'}
+                        </span>
+                      </td>
                       <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
-                          <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)} title="Aktifkan">✓</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleApprove(req.id)} title="Aktifkan">✓</button>
                           <button className="btn btn-secondary btn-sm" style={{ color: 'var(--danger-500)' }} onClick={() => handleReject(req.id)} title="Tolak">✗</button>
                         </div>
                       </td>
