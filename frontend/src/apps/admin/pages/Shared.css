@@ -171,44 +171,58 @@
 /* ── Sneat Soft Badges ── */
 .badge {
   font-size: 11.5px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 4px 10px;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   text-transform: capitalize;
+  color: #111827 !important;
 }
 
 .badge-primary {
   background: var(--saas-primary-light) !important;
-  color: var(--saas-primary) !important;
+  color: #111827 !important;
+  border: 1px solid rgba(105, 108, 255, 0.25);
 }
 
 .badge-success {
   background: var(--saas-success-light) !important;
-  color: #56ca00 !important;
+  color: #111827 !important;
+  border: 1px solid rgba(113, 221, 55, 0.25);
 }
 
 .badge-warning {
   background: var(--saas-warning-light) !important;
-  color: #e69500 !important;
+  color: #111827 !important;
+  border: 1px solid rgba(255, 171, 0, 0.25);
 }
 
 .badge-danger {
   background: var(--saas-danger-light) !important;
-  color: var(--saas-danger) !important;
+  color: #111827 !important;
+  border: 1px solid rgba(255, 62, 29, 0.25);
 }
 
 .badge-info {
   background: var(--saas-info-light) !important;
-  color: #00b4d8 !important;
+  color: #111827 !important;
+  border: 1px solid rgba(3, 195, 236, 0.25);
 }
 
 .badge-secondary {
   background: var(--saas-secondary-light) !important;
-  color: var(--saas-secondary) !important;
+  color: #111827 !important;
+  border: 1px solid rgba(133, 146, 163, 0.25);
 }
+
+.badge-blue    { background: rgba(59,130,246,0.18) !important; color: #111827 !important; border: 1px solid rgba(59,130,246,0.25); }
+.badge-green   { background: rgba(16,185,129,0.18) !important; color: #111827 !important; border: 1px solid rgba(16,185,129,0.25); }
+.badge-yellow  { background: rgba(245,158,11,0.18) !important; color: #111827 !important; border: 1px solid rgba(245,158,11,0.25); }
+.badge-red     { background: rgba(239,68,68,0.18) !important;  color: #111827 !important; border: 1px solid rgba(239,68,68,0.25); }
+.badge-violet  { background: rgba(139,92,246,0.18) !important; color: #111827 !important; border: 1px solid rgba(139,92,246,0.25); }
+.badge-gray    { background: rgba(100,116,139,0.18) !important; color: #111827 !important; border: 1px solid rgba(100,116,139,0.25); }
 
 /* ── Filter & Search Toolbar ── */
 .filter-bar {
