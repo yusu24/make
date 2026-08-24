@@ -236,7 +236,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                       <td>
                         <select
                           className={`form-input badge ${getPlanBadge(t.plan)}`}
-                          style={{ padding: '4px 8px', height: 'auto', border: 'none', cursor: 'pointer', appearance: 'none', background: 'var(--bg-elevated)', outline: 'none' }}
+                          style={{ padding: '4px 8px', height: 'auto', border: 'none', cursor: 'pointer', appearance: 'none', background: 'var(--bg-elevated)', outline: 'none', fontSize: 13 }}
                           value={t.plan}
                           onChange={e => handlePlanChange(t, e.target.value)}
                         >
@@ -245,8 +245,8 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                           <option value="Pro" className="badge-violet">Pro</option>
                         </select>
                       </td>
-                      <td><span className={`badge ${getStatusBadge(t.status)}`}>{t.status}</span></td>
-                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.joined}</td>
+                      <td><span className={`badge ${getStatusBadge(t.status)}`} style={{ fontSize: 13 }}>{t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1).toLowerCase()) : 'Active'}</span></td>
+                      <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{t.joined}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => handleOpenBilling(t)} title="Riwayat Invoice">👁</button>
@@ -307,9 +307,9 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                         </span>
                       </div>
                     </td>
-                    <td><span className={`badge ${getPlanBadge(req.plan)}`}>{req.plan?.toUpperCase()}</span></td>
+                    <td><span className={`badge ${getPlanBadge(req.plan)}`} style={{ fontSize: 13 }}>{req.plan ? (req.plan.charAt(0).toUpperCase() + req.plan.slice(1).toLowerCase()) : 'Free'}</span></td>
                     <td style={{ fontSize: 13 }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
-                    <td><span className={`badge ${getStatusBadge(req.status || 'pending')}`}>{(req.status || 'PENDING').toUpperCase()}</span></td>
+                    <td><span className={`badge ${getStatusBadge(req.status || 'pending')}`} style={{ fontSize: 13 }}>{req.status ? (req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase()) : 'Pending'}</span></td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                         <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
