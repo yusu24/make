@@ -185,7 +185,8 @@ export default function Users() {
           <thead>
             <tr>
               <th>#</th>
-              <th>Pengguna</th>
+              <th>Nama</th>
+              <th>Email</th>
               <th>Kategori Bisnis</th>
               <th>Status</th>
               <th>Bergabung</th>
@@ -195,7 +196,7 @@ export default function Users() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                     <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
                     <span>Memuat data pengguna...</span>
@@ -210,12 +211,10 @@ export default function Users() {
                     <div style={getAvatarStyle(u.name || u.email, 32)}>
                       {getInitials(u.name)}
                     </div>
-                    <div>
-                      <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{u.name}</p>
-                      <p style={{ fontSize: 11, color: 'var(--text-primary)' }}>{u.email}</p>
-                    </div>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{u.name}</span>
                   </div>
                 </td>
+                <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{u.email}</td>
                 <td style={{ fontSize: 13 }}>{u.category}</td>
                 <td>
                   <button

@@ -181,7 +181,8 @@ export default function Admins() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>Admin</th>
+                <th>Nama</th>
+                <th>Email</th>
                 <th>Role</th>
                 <th>Permissions</th>
                 <th>Status</th>
@@ -191,7 +192,7 @@ export default function Admins() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                       <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
                       <span>Memuat data admin...</span>
@@ -206,12 +207,10 @@ export default function Admins() {
                       <div style={getAvatarStyle(admin.name || admin.email, 32)}>
                         {getInitials(admin.name)}
                       </div>
-                      <div>
-                        <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{admin.name}</p>
-                        <p style={{ fontSize: 11, color: 'var(--text-primary)' }}>{admin.email}</p>
-                      </div>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{admin.name}</span>
                     </div>
                   </td>
+                  <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{admin.email}</td>
                   <td>
                     <span className={`badge ${admin.role === 'super_admin' ? 'badge-red' : 'badge-violet'}`}>
                       {admin.role === 'super_admin' ? 'Super Admin' : (admin.saas_role || 'Admin')}
