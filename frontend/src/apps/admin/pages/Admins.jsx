@@ -150,138 +150,146 @@ export default function Admins() {
           <h2 className="page-title">Manajemen Admin</h2>
         </div>
 
-        <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
-          <div className="search-wrap" style={{ flex: 1, minWidth: 200, maxWidth: 360 }}>
-            <span className="search-icon">🔍</span>
-            <input
-              id="input-search-admins"
-              className="form-input search-input"
-              placeholder="Cari nama atau email..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+        {/* Table Card */}
+        <div className="card card-pad" style={{ padding: 0 }}>
+          <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>🛡️ Daftar Administrator Sistem</h3>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
+                  <span className="search-icon">🔍</span>
+                  <input
+                    id="input-search-admins"
+                    className="form-input search-input"
+                    placeholder="Cari nama atau email..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
+                <button
+                  id="btn-add-admin"
+                  className="btn btn-primary btn-sm"
+                  style={{ height: 38 }}
+                  onClick={() => {
+                    setShow(true)
+                    setEditingId(null)
+                    setError('')
+                    setForm({ name: '', email: '', password: '', saas_role_id: '' })
+                  }}
+                >
+                  + Tambah Admin
+                </button>
+              </div>
+            </div>
           </div>
 
-          <button
-            id="btn-add-admin"
-            className="btn btn-primary"
-            onClick={() => {
-              setShow(true)
-              setEditingId(null)
-              setError('')
-              setForm({ name: '', email: '', password: '', saas_role_id: '' })
-            }}
-          >
-            + Tambah Admin
-          </button>
-        </div>
-
-        <div className="table-wrap table-responsive">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Nama</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Permissions</th>
-                <th>Status</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
+          <div className="table-responsive">
+            <table className="table">
+              <thead>
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                      <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                      <span>Memuat data admin...</span>
-                    </div>
-                  </td>
+                  <th>#</th>
+                  <th>Nama</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Permissions</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
                 </tr>
-              ) : paginatedData.map((admin, i) => (
-                <tr key={admin.id}>
-                  <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={getAvatarStyle(admin.name || admin.email, 32)}>
-                        {getInitials(admin.name)}
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                        <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
+                        <span>Memuat data admin...</span>
                       </div>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{admin.name}</span>
-                    </div>
-                  </td>
-                  <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{admin.email}</td>
-                  <td>
-                    <span className={`badge ${admin.role === 'super_admin' ? 'badge-red' : 'badge-violet'}`}>
-                      {admin.role === 'super_admin' ? 'Super Admin' : (admin.saas_role || 'Admin')}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 300 }}>
-                      {admin.role === 'super_admin' ? (
-                        <span className="badge badge-red" style={{ fontSize: 10 }}>Semua Akses (Super Admin)</span>
-                      ) : (admin.permissions && admin.permissions.length > 0) ? (
-                        admin.permissions.map(p => {
-                          const pm = ALL_PERMS.find(x => x.key === p)
-                          return <span key={p} className="badge badge-violet" style={{ fontSize: 10 }}>{pm?.label || p}</span>
-                        })
-                      ) : (
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tidak ada permission</span>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`badge ${admin.status === 'active' ? 'badge-green' : 'badge-gray'}`}>
-                      {admin.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button
-                        id={`btn-edit-admin-${admin.id}`}
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => handleEdit(admin)}
-                        disabled={admin.role === 'super_admin'}
-                        style={{ color: admin.role === 'super_admin' ? 'var(--text-muted)' : 'var(--primary-500)', opacity: admin.role === 'super_admin' ? 0.5 : 1 }}
-                        title={admin.role === 'super_admin' ? 'Super Admin tidak bisa diedit' : 'Edit Admin'}
-                      >
-                        ✏
-                      </button>
-                      <button
-                        id={`btn-del-admin-${admin.id}`}
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: admin.role === 'super_admin' ? 'var(--text-muted)' : 'var(--danger-400)', opacity: admin.role === 'super_admin' ? 0.5 : 1 }}
-                        onClick={() => handleDelete(admin.id)}
-                        disabled={admin.role === 'super_admin'}
-                        title={admin.role === 'super_admin' ? 'Super Admin tidak bisa dihapus' : 'Hapus Admin'}
-                      >
-                        🗑
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!loading && filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
-                    Tidak ada admin ditemukan
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          {!loading && filtered.length > 0 && (
-            <SaasPagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              startIndex={startIndex}
-              endIndex={endIndex}
-            />
-          )}
+                    </td>
+                  </tr>
+                ) : paginatedData.map((admin, i) => (
+                  <tr key={admin.id}>
+                    <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={getAvatarStyle(admin.name || admin.email, 32)}>
+                          {getInitials(admin.name)}
+                        </div>
+                        <span style={{ color: 'var(--text-primary)', fontSize: 13 }}>{admin.name}</span>
+                      </div>
+                    </td>
+                    <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{admin.email}</td>
+                    <td>
+                      <span className={`badge ${admin.role === 'super_admin' ? 'badge-red' : 'badge-violet'}`}>
+                        {admin.role === 'super_admin' ? 'Super Admin' : (admin.saas_role || 'Admin')}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 300 }}>
+                        {admin.role === 'super_admin' ? (
+                          <span className="badge badge-red" style={{ fontSize: 10 }}>Semua Akses (Super Admin)</span>
+                        ) : (admin.permissions && admin.permissions.length > 0) ? (
+                          admin.permissions.map(p => {
+                            const pm = ALL_PERMS.find(x => x.key === p)
+                            return <span key={p} className="badge badge-violet" style={{ fontSize: 10 }}>{pm?.label || p}</span>
+                          })
+                        ) : (
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tidak ada permission</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`badge ${admin.status === 'active' ? 'badge-green' : 'badge-gray'}`}>
+                        {admin.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          id={`btn-edit-admin-${admin.id}`}
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handleEdit(admin)}
+                          disabled={admin.role === 'super_admin'}
+                          style={{ color: admin.role === 'super_admin' ? 'var(--text-muted)' : 'var(--primary-500)', opacity: admin.role === 'super_admin' ? 0.5 : 1 }}
+                          title={admin.role === 'super_admin' ? 'Super Admin tidak bisa diedit' : 'Edit Admin'}
+                        >
+                          ✏
+                        </button>
+                        <button
+                          id={`btn-del-admin-${admin.id}`}
+                          className="btn btn-secondary btn-sm"
+                          style={{ color: admin.role === 'super_admin' ? 'var(--text-muted)' : 'var(--danger-400)', opacity: admin.role === 'super_admin' ? 0.5 : 1 }}
+                          onClick={() => handleDelete(admin.id)}
+                          disabled={admin.role === 'super_admin'}
+                          title={admin.role === 'super_admin' ? 'Super Admin tidak bisa dihapus' : 'Hapus Admin'}
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!loading && filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
+                      Tidak ada admin ditemukan
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            {!loading && filtered.length > 0 && (
+              <SaasPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                startIndex={startIndex}
+                endIndex={endIndex}
+              />
+            )}
+          </div>
         </div>
       </div>
 

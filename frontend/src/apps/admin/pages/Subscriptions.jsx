@@ -260,20 +260,23 @@ export default function Subscriptions({ defaultTab = 'list' }) {
         </div>
 
         {activeTab === 'list' ? (
-          <>
-            <div className="filter-bar" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-              <div className="search-wrap" style={{ minWidth: 260, maxWidth: 320 }}>
-                <span className="search-icon">🔍</span>
-                <input
-                  className="form-input search-input"
-                  placeholder="Cari tenant atau email..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
+          <div className="card card-pad" style={{ padding: 0 }}>
+            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>👥 Daftar Pelanggan Langganan</h3>
+                <div className="search-wrap" style={{ minWidth: 220, maxWidth: 300 }}>
+                  <span className="search-icon">🔍</span>
+                  <input
+                    className="form-input search-input"
+                    placeholder="Cari tenant atau email..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="table-wrap table-responsive">
+            <div className="table-responsive">
               <table className="table">
                 <thead>
                   <tr>
@@ -354,72 +357,80 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                 />
               )}
             </div>
-          </>
+          </div>
         ) : (
-          <div className="table-wrap table-responsive">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Tenant ID</th>
-                  <th>Nama Tenant</th>
-                  <th>Paket Dipilih</th>
-                  <th>Waktu Request</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading && activeTab === 'requests' ? (
+          <div className="card card-pad" style={{ padding: 0 }}>
+            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>📥 Permintaan Langganan Baru</h3>
+              </div>
+            </div>
+
+            <div className="table-responsive">
+              <table className="table">
+                <thead>
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                        <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                        <span>Memuat data permintaan...</span>
-                      </div>
-                    </td>
+                    <th>Tenant ID</th>
+                    <th>Nama Tenant</th>
+                    <th>Paket Dipilih</th>
+                    <th>Waktu Request</th>
+                    <th>Status</th>
+                    <th style={{ textAlign: 'right' }}>Aksi</th>
                   </tr>
-                ) : rPaginatedData.map(req => (
-                  <tr key={req.id}>
-                    <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{req.tenant_id}</code></td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={getAvatarStyle(req.tenant?.business_name || req.tenant_id, 32)}>
-                          {getInitials(req.tenant?.business_name || req.tenant_id)}
+                </thead>
+                <tbody>
+                  {loading && activeTab === 'requests' ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                          <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
+                          <span>Memuat data permintaan...</span>
                         </div>
-                        <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>
-                          {req.tenant?.business_name || req.tenant_id}
-                        </span>
-                      </div>
-                    </td>
-                    <td><span style={getPlanStyle(req.plan)}>{req.plan ? (req.plan.charAt(0).toUpperCase() + req.plan.slice(1).toLowerCase()) : 'Free'}</span></td>
-                    <td style={{ fontSize: 13 }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
-                    <td><span style={getStatusStyle(req.status || 'pending')}>{req.status ? (req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase()) : 'Pending'}</span></td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                        <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
-                        <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)} title="Aktifkan">✓</button>
-                        <button className="btn btn-ghost btn-sm" onClick={() => handleReject(req.id)} title="Tolak">✗</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {!loading && requests.length === 0 && (
-                  <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada permintaan langganan baru.</td></tr>
-                )}
-              </tbody>
-            </table>
-            {!loading && requests.length > 0 && (
-              <SaasPagination
-                currentPage={rPage}
-                setCurrentPage={setRPage}
-                pageSize={rPageSize}
-                setPageSize={setRPageSize}
-                totalPages={rTotalPages}
-                totalItems={rTotalItems}
-                startIndex={rStart}
-                endIndex={rEnd}
-              />
-            )}
+                      </td>
+                    </tr>
+                  ) : rPaginatedData.map(req => (
+                    <tr key={req.id}>
+                      <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{req.tenant_id}</code></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={getAvatarStyle(req.tenant?.business_name || req.tenant_id, 32)}>
+                            {getInitials(req.tenant?.business_name || req.tenant_id)}
+                          </div>
+                          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>
+                            {req.tenant?.business_name || req.tenant_id}
+                          </span>
+                        </div>
+                      </td>
+                      <td><span style={getPlanStyle(req.plan)}>{req.plan ? (req.plan.charAt(0).toUpperCase() + req.plan.slice(1).toLowerCase()) : 'Free'}</span></td>
+                      <td style={{ fontSize: 13 }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
+                      <td><span style={getStatusStyle(req.status || 'pending')}>{req.status ? (req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase()) : 'Pending'}</span></td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
+                          <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)} title="Aktifkan">✓</button>
+                          <button className="btn btn-ghost btn-sm" onClick={() => handleReject(req.id)} title="Tolak">✗</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {!loading && requests.length === 0 && (
+                    <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada permintaan langganan baru.</td></tr>
+                  )}
+                </tbody>
+              </table>
+              {!loading && requests.length > 0 && (
+                <SaasPagination
+                  currentPage={rPage}
+                  setCurrentPage={setRPage}
+                  pageSize={rPageSize}
+                  setPageSize={setRPageSize}
+                  totalPages={rTotalPages}
+                  totalItems={rTotalItems}
+                  startIndex={rStart}
+                  endIndex={rEnd}
+                />
+              )}
+            </div>
           </div>
         )}
       </div>

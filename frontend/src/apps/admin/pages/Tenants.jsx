@@ -173,137 +173,140 @@ export default function Tenants() {
           ))}
         </div>
 
-        <div className="filter-bar" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
-            <div className="search-wrap" style={{ flex: 1, minWidth: 200, maxWidth: 360, margin: 0 }}>
-              <span className="search-icon">🔍</span>
-              <input id="input-search-tenants" className="form-input search-input" placeholder="Cari tenant..."
-                value={search} onChange={e => setSearch(e.target.value)} />
-            </div>
-
-            <div className="select-wrap" style={{ minWidth: 200 }}>
-              <select
-                id="select-filter-category"
-                className="form-input"
-                value={categoryFilter}
-                onChange={e => setCategoryFilter(e.target.value)}
-                style={{
-                  height: 40,
-                  borderRadius: 10,
-                  border: '1px solid var(--border-default, #e2e8f0)',
-                  background: 'var(--bg-surface, #ffffff)',
-                  color: 'var(--text-primary, #1e293b)',
-                  padding: '0 12px',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  outline: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="all">Semua Kategori Bisnis</option>
-                {uniqueCategories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+        {/* Table Card */}
+        <div className="card card-pad" style={{ padding: 0 }}>
+          <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>🏢 Daftar Seluruh Tenant</h3>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="search-wrap" style={{ minWidth: 180, maxWidth: 240 }}>
+                  <span className="search-icon">🔍</span>
+                  <input
+                    id="input-search-tenants"
+                    className="form-input search-input"
+                    placeholder="Cari tenant atau email..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
+                <div style={{ minWidth: 160 }}>
+                  <select
+                    id="select-filter-category"
+                    className="form-input"
+                    value={categoryFilter}
+                    onChange={e => setCategoryFilter(e.target.value)}
+                    style={{
+                      padding: '8px 12px',
+                      fontSize: 13,
+                      fontWeight: 500,
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="all">Semua Kategori Bisnis</option>
+                    {uniqueCategories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                <button id="btn-export-tenants" className="btn btn-secondary btn-sm" style={{ height: 38 }}>⬇ Export CSV</button>
+                <button id="btn-add-tenant" className="btn btn-primary btn-sm" onClick={() => setShowModal(true)} style={{ height: 38 }}>+ Tambah Tenant</button>
+              </div>
             </div>
           </div>
 
-          <div style={{display:'flex', gap:10, alignItems: 'center'}}>
-            <button id="btn-export-tenants" className="btn btn-secondary">⬇ Export CSV</button>
-            <button id="btn-add-tenant" className="btn btn-primary" onClick={() => setShowModal(true)}>+ Tambah Tenant</button>
-          </div>
-        </div>
-
-        <div className="table-wrap table-responsive">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Tenant ID</th><th>Nama</th><th>Email</th><th>Kategori Bisnis</th>
-                <th>Paket</th><th>Status</th><th>Bergabung</th><th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
+          <div className="table-responsive">
+            <table className="table">
+              <thead>
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                      <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                      <span>Memuat data tenant...</span>
-                    </div>
-                  </td>
+                  <th>Tenant ID</th><th>Nama</th><th>Email</th><th>Kategori Bisnis</th>
+                  <th>Paket</th><th>Status</th><th>Bergabung</th><th>Aksi</th>
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                    Tidak ada tenant ditemukan
-                  </td>
-                </tr>
-              ) : paginatedData.map(t => (
-                <tr key={t.id}>
-                  <td><code style={{fontSize:11,color:'var(--text-primary)',background:'var(--bg-elevated)',padding:'2px 6px',borderRadius:4}}>{t.tenant_id}</code></td>
-                  <td>
-                    <div style={{display:'flex',alignItems:'center',gap:10}}>
-                      <div style={getAvatarStyle(t.name || t.tenant_id, 32)}>
-                        {getInitials(t.name)}
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                        <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
+                        <span>Memuat data tenant...</span>
                       </div>
-                      <p style={{fontWeight:600,color:'var(--text-primary)',fontSize:13}}>{t.name}</p>
-                    </div>
-                  </td>
-                  <td>{t.email}</td>
-                  <td><span className="badge badge-outline">{t.category}</span></td>
-                  <td>
-                    <span className={`badge ${PLAN_BADGE[t.plan] || 'badge-gray'}`}>{t.plan}</span>
-                  </td>
-                  <td><span className={`badge ${STATUS_BADGE[t.status] || ''}`}>{t.status}</span></td>
-                  <td style={{fontSize:12,color:'var(--text-primary)'}}>{t.joined}</td>
-                  <td>
-                    <div style={{display:'flex', gap:6, alignItems:'center', flexWrap:'wrap'}}>
-                      {(t.category === 'Toko Retail' || t.category === 'Budidaya Hewan' || t.category === 'Budidaya Tanaman' || t.category === 'Kuliner') && (
-                        <button
-                          className="btn btn-primary btn-sm"
-                          onClick={() => handleImpersonate(t)}
-                          disabled={impersonating === t.tenant_id || t.status !== 'active'}
-                          title={`Login sebagai ${t.name}`}
-                        >
-                          {impersonating === t.tenant_id ? '⏳' : '🔑'}
-                        </button>
-                      )}
-                      <button 
-                        className="btn btn-secondary btn-sm" 
-                        onClick={() => openModuleModal(t.tenant_id)}
-                        title="Atur Modul"
-                      >
-                        📦
-                      </button>
-                      <button className="btn btn-secondary btn-sm" title="Edit Tenant">✏</button>
-                      {t.status !== 'pending' && (
+                    </td>
+                  </tr>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      Tidak ada tenant ditemukan
+                    </td>
+                  </tr>
+                ) : paginatedData.map(t => (
+                  <tr key={t.id}>
+                    <td><code style={{fontSize:11,color:'var(--text-primary)',background:'var(--bg-elevated)',padding:'2px 6px',borderRadius:4}}>{t.tenant_id}</code></td>
+                    <td>
+                      <div style={{display:'flex',alignItems:'center',gap:10}}>
+                        <div style={getAvatarStyle(t.name || t.tenant_id, 32)}>
+                          {getInitials(t.name)}
+                        </div>
+                        <span style={{color:'var(--text-primary)',fontSize:13}}>{t.name}</span>
+                      </div>
+                    </td>
+                    <td style={{fontSize:13,color:'var(--text-secondary)'}}>{t.email}</td>
+                    <td><span className="badge badge-secondary">{t.category}</span></td>
+                    <td>
+                      <span className={`badge ${t.plan === 'Pro' ? 'badge-violet' : t.plan === 'Basic' ? 'badge-blue' : 'badge-secondary'}`}>{t.plan}</span>
+                    </td>
+                    <td><span className={`badge ${t.status === 'active' ? 'badge-green' : t.status === 'pending' ? 'badge-yellow' : 'badge-red'}`}>{t.status}</span></td>
+                    <td style={{fontSize:13,color:'var(--text-primary)'}}>{t.joined}</td>
+                    <td>
+                      <div style={{display:'flex', gap:6, alignItems:'center', flexWrap:'wrap'}}>
+                        {(t.category === 'Toko Retail' || t.category === 'Budidaya Hewan' || t.category === 'Budidaya Tanaman' || t.category === 'Kuliner') && (
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleImpersonate(t)}
+                            disabled={impersonating === t.tenant_id || t.status !== 'active'}
+                            title={`Login sebagai ${t.name}`}
+                            style={{ color: 'var(--primary-500)' }}
+                          >
+                            {impersonating === t.tenant_id ? '⏳' : '🔑'}
+                          </button>
+                        )}
                         <button 
-                          className={`btn btn-sm ${t.status === 'active' ? 'btn-ghost' : 'btn-secondary'}`}
-                          style={t.status === 'active' ? { color: 'var(--danger-500)', fontWeight: 600 } : { color: 'var(--success-500)', fontWeight: 600 }}
-                          onClick={() => handleToggleStatus(t)}
-                          title={t.status === 'active' ? 'Nonaktifkan Tenant' : 'Aktifkan Tenant'}
+                          className="btn btn-secondary btn-sm" 
+                          onClick={() => openModuleModal(t.tenant_id)}
+                          title="Atur Modul"
                         >
-                          {t.status === 'active' ? '🛑' : '✅'}
+                          📦
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!loading && filtered.length > 0 && (
-            <SaasPagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              startIndex={startIndex}
-              endIndex={endIndex}
-            />
-          )}
+                        <button className="btn btn-secondary btn-sm" title="Edit Tenant">✏</button>
+                        {t.status !== 'pending' && (
+                          <button 
+                            className="btn btn-secondary btn-sm"
+                            style={t.status === 'active' ? { color: 'var(--danger-500)' } : { color: 'var(--success-500)' }}
+                            onClick={() => handleToggleStatus(t)}
+                            title={t.status === 'active' ? 'Nonaktifkan Tenant' : 'Aktifkan Tenant'}
+                          >
+                            {t.status === 'active' ? '🛑' : '✅'}
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!loading && filtered.length > 0 && (
+              <SaasPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                startIndex={startIndex}
+                endIndex={endIndex}
+              />
+            )}
+          </div>
         </div>
       </div>
 

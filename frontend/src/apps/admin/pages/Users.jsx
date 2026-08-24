@@ -135,144 +135,140 @@ export default function Users() {
           <h2 className="page-title">Manajemen Pengguna</h2>
         </div>
 
-        {/* Filters + Action Toolbar */}
-        <div className="filter-bar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
-            <div className="search-wrap">
-              <span className="search-icon">🔍</span>
-              <input
-                id="input-search-users"
-                className="form-input search-input"
-                placeholder="Cari nama atau email..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
-            <div style={{ minWidth: 160 }}>
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid #cbd5e1',
-                  backgroundColor: '#fff',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: '#334155',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-                }}
-              >
-                <option value="all">Semua Status</option>
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
-                <option value="inactive">Inactive</option>
-              </select>
+      {/* Table Card */}
+      <div className="card card-pad" style={{ padding: 0 }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>👥 Daftar Pengguna Platform</h3>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div className="search-wrap" style={{ minWidth: 200, maxWidth: 260 }}>
+                <span className="search-icon">🔍</span>
+                <input
+                  id="input-search-users"
+                  className="form-input search-input"
+                  placeholder="Cari nama atau email..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
+              <div style={{ minWidth: 150 }}>
+                <select
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  className="form-input"
+                  style={{
+                    padding: '8px 12px',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                >
+                  <option value="all">Semua Status</option>
+                  <option value="active">Active</option>
+                  <option value="pending">Pending</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+              <button id="btn-add-user" className="btn btn-primary" onClick={() => setShowModal(true)} style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6 }}>
+                + Tambah Pengguna
+              </button>
             </div>
           </div>
-
-          <button id="btn-add-user" className="btn btn-primary" onClick={() => setShowModal(true)}>
-            + Tambah Pengguna
-          </button>
         </div>
 
-      {/* Table */}
-      <div className="table-wrap table-responsive">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Nama</th>
-              <th>Email</th>
-              <th>Kategori Bisnis</th>
-              <th>Status</th>
-              <th>Bergabung</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+        <div className="table-responsive">
+          <table className="table">
+            <thead>
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                    <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                    <span>Memuat data pengguna...</span>
-                  </div>
-                </td>
+                <th>#</th>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Kategori Bisnis</th>
+                <th>Status</th>
+                <th>Bergabung</th>
+                <th>Aksi</th>
               </tr>
-            ) : paginatedData.map((u, i) => (
-              <tr key={u.id}>
-                <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={getAvatarStyle(u.name || u.email, 32)}>
-                      {getInitials(u.name)}
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                      <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
+                      <span>Memuat data pengguna...</span>
                     </div>
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{u.name}</span>
-                  </div>
-                </td>
-                <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{u.email}</td>
-                <td style={{ fontSize: 13 }}>{u.category}</td>
-                <td>
-                  <button
-                    className={`badge ${STATUS_BADGE[u.status] || 'badge-gray'}`}
-                    style={{ cursor: 'pointer', border: 'none', background: undefined }}
-                    onClick={() => handleToggleStatus(u.id, u.status)}
-                    title="Klik untuk ubah status"
-                  >
-                    {u.status}
-                  </button>
-                </td>
-                <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{u.joined}</td>
-                <td>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button 
-                      className="btn btn-ghost btn-sm" 
-                      title="Impersonate (Login sebagai User)"
-                      onClick={() => handleImpersonate(u.id)}
-                      disabled={impersonating === u.id}
-                      style={{ color: 'var(--primary-500)' }}
-                    >
-                      {impersonating === u.id ? '⏳' : '🔑'}
-                    </button>
-                    <button id={`btn-edit-user-${u.id}`} className="btn btn-ghost btn-sm" title="Edit">✏</button>
+                  </td>
+                </tr>
+              ) : paginatedData.map((u, i) => (
+                <tr key={u.id}>
+                  <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={getAvatarStyle(u.name || u.email, 32)}>
+                        {getInitials(u.name)}
+                      </div>
+                      <span style={{ color: 'var(--text-primary)', fontSize: 13 }}>{u.name}</span>
+                    </div>
+                  </td>
+                  <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{u.email}</td>
+                  <td style={{ fontSize: 13 }}>{u.category}</td>
+                  <td>
                     <button
-                      id={`btn-del-user-${u.id}`}
-                      className="btn btn-ghost btn-sm"
-                      style={{ color: 'var(--danger-400)' }}
-                      onClick={() => setDelId(u.id)}
-                      title="Hapus"
-                    >🗑</button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {!loading && filtered.length === 0 && (
-              <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
-                  Tidak ada pengguna ditemukan
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        {!loading && filtered.length > 0 && (
-          <SaasPagination
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            pageSize={pageSize}
-            setPageSize={setPageSize}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            startIndex={startIndex}
-            endIndex={endIndex}
-          />
-        )}
-      </div>
-
+                      className={`badge ${STATUS_BADGE[u.status] || 'badge-gray'}`}
+                      style={{ cursor: 'pointer', border: 'none', background: undefined }}
+                      onClick={() => handleToggleStatus(u.id, u.status)}
+                      title="Klik untuk ubah status"
+                    >
+                      {u.status}
+                    </button>
+                  </td>
+                  <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{u.joined}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button 
+                        className="btn btn-secondary btn-sm" 
+                        title="Impersonate (Login sebagai User)"
+                        onClick={() => handleImpersonate(u.id)}
+                        disabled={impersonating === u.id}
+                        style={{ color: 'var(--primary-500)' }}
+                      >
+                        {impersonating === u.id ? '⏳' : '🔑'}
+                      </button>
+                      <button id={`btn-edit-user-${u.id}`} className="btn btn-secondary btn-sm" title="Edit">✏</button>
+                      <button
+                        id={`btn-del-user-${u.id}`}
+                        className="btn btn-secondary btn-sm"
+                        style={{ color: 'var(--danger-400)' }}
+                        onClick={() => setDelId(u.id)}
+                        title="Hapus"
+                      >🗑</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {!loading && filtered.length === 0 && (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
+                    Tidak ada pengguna ditemukan
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          {!loading && filtered.length > 0 && (
+            <SaasPagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              endIndex={endIndex}
+            />
+          )}
+        </div>
       </div>
 
       {showModal && (
