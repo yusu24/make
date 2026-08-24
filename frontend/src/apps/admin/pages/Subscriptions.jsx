@@ -13,8 +13,20 @@ const DUMMY_TENANTS = [
   { id:5, name:'Teguh Prasetyo',email:'teguh@retail.com', category:'Toko Retail',   status:'inactive', plan:'Basic', tenant_id:'TN-005', joined:'2026-02-20' },
 ]
 
-const PLAN_BADGE = { Pro:'badge-violet', Basic:'badge-blue', Free:'badge-gray', '-':'badge-gray' }
-const STATUS_BADGE = { active:'badge-green', pending:'badge-yellow', inactive:'badge-gray' }
+const getPlanBadge = (plan) => {
+  const p = (plan || '').toLowerCase()
+  if (p === 'pro') return 'badge-violet'
+  if (p === 'basic') return 'badge-blue'
+  return 'badge-secondary'
+}
+
+const getStatusBadge = (status) => {
+  const s = (status || '').toLowerCase()
+  if (s === 'active' || s === 'approved') return 'badge-green'
+  if (s === 'pending') return 'badge-yellow'
+  if (s === 'rejected' || s === 'inactive') return 'badge-red'
+  return 'badge-gray'
+}
 
 export default function Subscriptions({ defaultTab = 'list' }) {
   const [tenants, setTenants] = useState([])
@@ -214,23 +226,23 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                           <div style={getAvatarStyle(t.name || t.tenant_id, 32)}>
                             {getInitials(t.name)}
                           </div>
-                          <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{t.name}</span>
+                          <span style={{ color: 'var(--text-primary)', fontSize: 13 }}>{t.name}</span>
                         </div>
                       </td>
                       <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{t.email}</td>
                       <td>
                         <select
-                          className={`form-input badge ${PLAN_BADGE[t.plan] || 'badge-gray'}`}
+                          className={`form-input badge ${getPlanBadge(t.plan)}`}
                           style={{ padding: '4px 8px', height: 'auto', border: 'none', cursor: 'pointer', appearance: 'none', background: 'var(--bg-elevated)', outline: 'none' }}
                           value={t.plan}
                           onChange={e => handlePlanChange(t, e.target.value)}
                         >
-                          <option value="Free" className="badge-gray">Free</option>
+                          <option value="Free" className="badge-secondary">Free</option>
                           <option value="Basic" className="badge-blue">Basic</option>
                           <option value="Pro" className="badge-violet">Pro</option>
                         </select>
                       </td>
-                      <td><span className={`badge ${STATUS_BADGE[t.status] || 'badge-gray'}`}>{t.status}</span></td>
+                      <td><span className={`badge ${getStatusBadge(t.status)}`}>{t.status}</span></td>
                       <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.joined}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -287,14 +299,14 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                         <div style={getAvatarStyle(req.tenant?.business_name || req.tenant_id, 32)}>
                           {getInitials(req.tenant?.business_name || req.tenant_id)}
                         </div>
-                        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>
                           {req.tenant?.business_name || req.tenant_id}
                         </span>
                       </div>
                     </td>
-                    <td><span className={`badge ${PLAN_BADGE[req.plan?.charAt(0).toUpperCase() + req.plan?.slice(1)] || 'badge-blue'}`}>{req.plan}</span></td>
+                    <td><span className={`badge ${getPlanBadge(req.plan)}`}>{req.plan?.toUpperCase()}</span></td>
                     <td style={{ fontSize: 13 }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
-                    <td><span className="badge badge-yellow">PENDING</span></td>
+                    <td><span className={`badge ${getStatusBadge(req.status || 'pending')}`}>{(req.status || 'PENDING').toUpperCase()}</span></td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                         <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
