@@ -213,9 +213,9 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                           <div style={getAvatarStyle(t.name || t.tenant_id, 32)}>
                             {getInitials(t.name)}
                           </div>
-                          <div>
-                            <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{t.name}</p>
-                            <p style={{ fontSize: 11, color: 'var(--text-primary)' }}>{t.email}</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13, margin: 0, lineHeight: 1.3 }}>{t.name}</p>
+                            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0, lineHeight: 1.3 }}>{t.email}</p>
                           </div>
                         </div>
                       </td>
@@ -282,8 +282,19 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                 ) : rPaginatedData.map(req => (
                   <tr key={req.id}>
                     <td>
-                      <div style={{ fontWeight: 600 }}>{req.tenant?.business_name || req.tenant_id}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>ID: {req.tenant_id}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={getAvatarStyle(req.tenant?.business_name || req.tenant_id, 32)}>
+                          {getInitials(req.tenant?.business_name || req.tenant_id)}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                            {req.tenant?.business_name || req.tenant_id}
+                          </div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.3 }}>
+                            ID: {req.tenant_id}
+                          </div>
+                        </div>
+                      </div>
                     </td>
                     <td><span className={`badge ${PLAN_BADGE[req.plan?.charAt(0).toUpperCase() + req.plan?.slice(1)] || 'badge-blue'}`}>{req.plan}</span></td>
                     <td style={{ fontSize: 13 }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
