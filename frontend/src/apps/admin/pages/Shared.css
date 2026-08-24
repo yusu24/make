@@ -349,23 +349,35 @@
   border-bottom: 1px solid #f1f5f9;
   color: #111827 !important;
   vertical-align: middle;
+  font-weight: 400 !important;
 }
 
-/* Seluruh elemen teks di dalam tabel menjadi warna hitam */
-.table td span:not(.btn):not(.btn *),
-.table td div:not(.btn):not(.btn *),
-.table td p,
-.table td code,
-.table td strong,
-.table td a:not(.btn) {
+/* Seluruh elemen isi tabel (tbody td) menggunakan font normal/regular (bukan bold / semi-bold) */
+.table tbody td,
+.table tbody td *:not(.badge):not([class*="badge-"]):not(.avatar):not([style*="border-radius: 50%"]):not([style*="borderRadius: 50%"]):not([style*="borderRadius: 32px"]),
+.table tbody td p,
+.table tbody td span:not(.badge):not([class*="badge-"]):not(.avatar):not([style*="border-radius: 50%"]):not([style*="borderRadius: 50%"]):not([style*="borderRadius: 32px"]),
+.table tbody td div:not(.avatar):not([style*="border-radius: 50%"]):not([style*="borderRadius: 50%"]):not([style*="borderRadius: 32px"]),
+.table tbody td code,
+.table tbody td strong,
+.table tbody td b,
+.table tbody td a:not(.btn) {
   color: #111827 !important;
+  font-weight: 400 !important;
 }
 
-/* Badge di dalam tabel dengan font hitam pekat & kontras tinggi */
+/* Avatar initial badges retain crisp centered typography */
+.table tbody td [style*="border-radius: 50%"],
+.table tbody td [style*="borderRadius: 50%"],
+.table tbody td [style*="borderRadius: 32px"],
+.table tbody td .avatar {
+  font-weight: 700 !important;
+}
+
+/* Badge status & paket di dalam tabel */
 .table .badge,
 .table [class*="badge-"] {
-  color: #111827 !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .table tbody tr {
