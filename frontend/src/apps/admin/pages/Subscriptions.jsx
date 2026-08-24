@@ -13,6 +13,9 @@ const DUMMY_TENANTS = [
   { id:5, name:'Teguh Prasetyo',email:'teguh@retail.com', category:'Toko Retail',   status:'inactive', plan:'Basic', tenant_id:'TN-005', joined:'2026-02-20' },
 ]
 
+const PLAN_BADGE = { Pro:'badge-violet', Basic:'badge-blue', Free:'badge-secondary', pro:'badge-violet', basic:'badge-blue', free:'badge-secondary', '-':'badge-secondary' }
+const STATUS_BADGE = { active:'badge-green', pending:'badge-yellow', inactive:'badge-red', approved:'badge-green', rejected:'badge-red' }
+
 const getPlanBadge = (plan) => {
   const p = (plan || '').toLowerCase()
   if (p === 'pro') return 'badge-violet'
