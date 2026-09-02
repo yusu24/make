@@ -5,12 +5,15 @@ import '../../../components/ServerPagination.css'; // Reuse the exact same CSS
 export default function ClientPagination({ currentPage, setCurrentPage, totalPages, itemsPerPage, setItemsPerPage, totalItems, compact = false }) {
   if (totalPages <= 1 && totalItems === 0) return null;
 
+  // Maximum 5 visible pages sliding window (geser dinamis saat halaman berganti)
+  const maxVisiblePages = 5;
   const pageNumbers = [];
-  let startPage = Math.max(1, currentPage - 2);
-  let endPage = Math.min(totalPages, startPage + 4);
   
-  if (endPage - startPage < 4) {
-    startPage = Math.max(1, endPage - 4);
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+  
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
   }
 
   for (let i = startPage; i <= endPage; i++) {
@@ -23,7 +26,7 @@ export default function ClientPagination({ currentPage, setCurrentPage, totalPag
   return (
     <div className={`sp-container no-print ${compact ? 'sp-compact' : ''}`}>
       <div className="sp-info">
-        Menampilkan {totalItems > 0 ? startIndex + 1 : 0}–{endIndex} dari {totalItems} data
+        {totalItems > 0 ? startIndex + 1 : 0}–{endIndex} dari {totalItems}
       </div>
       <div className="sp-controls">
         {setItemsPerPage && (

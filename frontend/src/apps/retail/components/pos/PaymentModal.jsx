@@ -101,16 +101,13 @@ export default function PaymentModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm select-none">
       <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
-          <div className="flex flex-col">
-            <h3 className="text-sm font-normal text-slate-900">Metode Pembayaran</h3>
-            <p className="text-[10px] text-slate-500 mt-0.5">Pilih metode dan input nominal bayar</p>
-          </div>
+          <h3 className="modal__title" style={{ margin: 0, fontSize: '20px', fontWeight: 800 }}>Pembayaran</h3>
           <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-700 transition-colors">
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {error && (
             <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-xs">
               <CircleAlert size={16} className="shrink-0" />
@@ -120,8 +117,8 @@ export default function PaymentModal({
 
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex justify-between items-center">
             <div>
-              <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider">Total Tagihan</span>
-              <p className="text-2xl font-semibold text-slate-950 mt-1">{fmtRp(total)}</p>
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Tagihan</span>
+              <p className="text-2xl font-bold text-slate-950 mt-1">{fmtRp(total)}</p>
             </div>
             <div className="text-right">
               {discount && (
@@ -138,7 +135,7 @@ export default function PaymentModal({
                   </span>
                 </div>
               )}
-              <p className="text-[10px] text-slate-400 mt-1">Subtotal: <span className="font-semibold">{fmtRp(subtotal)}</span></p>
+              <p className="text-[11px] text-slate-400 mt-1">Subtotal: <span className="font-semibold">{fmtRp(subtotal)}</span></p>
             </div>
           </div>
 
@@ -165,22 +162,22 @@ export default function PaymentModal({
             </div>
           )}
 
-          <div className="space-y-2.5">
-            <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider">Sales / SPG (Opsional)</span>
-            <select
-              value={salesId}
-              onChange={(e) => setSalesId(e.target.value)}
-              className="w-full text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-400 focus:bg-white"
-            >
-              <option value="">Pilih Sales / SPG</option>
-              {staff.map(s => (
-                <option key={s.id} value={s.id}>{s.name} - {s.role}</option>
-              ))}
-            </select>
-          </div>
+          {staff.length > 0 && (
+            <div className="space-y-1.5">
+              <select
+                value={salesId}
+                onChange={(e) => setSalesId(e.target.value)}
+                className="w-full text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-400 focus:bg-white"
+              >
+                <option value="">Pilih Sales / SPG (Opsional)</option>
+                {staff.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} - {s.role}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
-          <div className="space-y-2.5">
-            <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider">Pilih Metode</span>
+          <div>
             <div className="grid grid-cols-2 gap-3">
               {PAYMENT_METHODS.map((method) => {
                 const Icon = method.icon;
@@ -203,12 +200,9 @@ export default function PaymentModal({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {paymentMethod === 'SPLIT' ? (
               <div className="space-y-3">
-                <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider">
-                  Rincian Split Payment
-                </span>
                 {splits.map((split, index) => (
                   <div key={split.id} className="flex items-center gap-2">
                     <select
@@ -266,14 +260,7 @@ export default function PaymentModal({
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider">
-                    {paymentMethod === 'CASH' ? 'Uang Diterima' : 'Konfirmasi Jumlah'}
-                  </span>
-                  {paymentMethod === 'CASH' && isAmountValid && (
-                    <span className="text-[10px] font-semibold text-emerald-600">Kembalian: {fmtRp(changeAmount)}</span>
-                  )}
-                </div>
+                {/* Input Nominal Pembayaran Langsung */}
 
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-slate-400">Rp</span>
@@ -283,8 +270,9 @@ export default function PaymentModal({
                     inputMode="numeric"
                     value={paymentAmount ? formatNumber(paymentAmount) : ''}
                     onChange={handleAmountChange}
-                    className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 focus:bg-white focus:ring-0 focus:outline-none rounded-2xl pl-12 pr-4 py-4 text-xl font-semibold text-slate-900 placeholder-slate-300 disabled:opacity-60"
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 focus:bg-white focus:ring-0 focus:outline-none rounded-2xl pl-12 pr-4 py-4 text-2xl font-bold text-slate-900 placeholder-slate-300 disabled:opacity-60"
                     placeholder="0"
+                    autoFocus={paymentMethod === 'CASH'}
                   />
                 </div>
 
@@ -294,13 +282,44 @@ export default function PaymentModal({
                       <button
                         key={idx}
                         onClick={() => setPaymentAmount(amount)}
-                        className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer ${
-                          paymentAmount === amount ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-100'
+                        className={`px-3.5 py-2.5 rounded-xl text-xs font-bold border transition-all duration-200 cursor-pointer ${
+                          paymentAmount === amount ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
                         }`}
                       >
                         {amount === total ? 'Uang Pas' : fmtRp(amount)}
                       </button>
                     ))}
+                  </div>
+                )}
+
+                {/* Highlight Box Kembalian */}
+                {paymentMethod === 'CASH' && paymentAmount >= total && (
+                  <div className="p-4 bg-emerald-50 border-2 border-emerald-300/80 rounded-2xl flex items-center justify-between shadow-sm animate-fade-in">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-xl shadow-inner">
+                        💵
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-emerald-800 uppercase tracking-wide block">Uang Kembalian</span>
+                        <span className="text-xs text-emerald-600 font-medium">Uang Diterima: {fmtRp(paymentAmount)}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-2xl sm:text-3xl font-black text-emerald-700 tracking-tight">
+                        {fmtRp(changeAmount)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {paymentMethod === 'CASH' && paymentAmount > 0 && paymentAmount < total && (
+                  <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between animate-fade-in">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">⚠️</span>
+                      <span className="text-xs font-semibold text-amber-800">Uang Belum Cukup</span>
+                    </div>
+                    <span className="text-sm font-bold text-amber-700">
+                      -{fmtRp(total - paymentAmount)}
+                    </span>
                   </div>
                 )}
               </>

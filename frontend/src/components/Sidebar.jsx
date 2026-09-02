@@ -159,6 +159,7 @@ const RETAIL_PATH_PERMISSIONS = {
   '/retail/roles': 'roles',
   '/retail/reports/sales': 'reports',
   '/retail/reports/products': 'reports',
+  '/retail/reports/margins': 'reports',
   '/retail/reports/customers': 'reports',
   '/retail/reports/consignment': 'reports',
   '/retail/reports/shifts': 'reports',
@@ -168,7 +169,7 @@ const RETAIL_PATH_PERMISSIONS = {
   '/retail/finance/expenses': 'finance',
   '/retail/finance/payables': 'finance',
   '/retail/finance/receivables': 'finance',
-  '/retail/finance-categories': 'finance',
+  '/retail/finance-categories': 'master',
   '/retail/finance/transfers': 'finance',
   '/retail/finance/cash-flow': 'finance',
   '/retail/finance/tax-report': 'finance',
@@ -244,11 +245,12 @@ const RETAIL_NAV_ITEMS = [
     section: 'Setup Master Data',
     icon: <Settings size={20} />,
     items: [
-      { path: '/retail/categories',   icon: <Layers size={24} />, label: 'Kategori Produk' },
-      { path: '/retail/units',        icon: <Tag size={24} />, label: 'Satuan Dasar' },
-      { path: '/retail/customers',    icon: <Users size={24} />, label: 'Data Pelanggan' },
-      { path: '/retail/suppliers',    icon: <Truck size={24} />, label: 'Data Supplier' },
-      { path: '/retail/outlets',      icon: <Store size={24} />, label: 'Daftar Cabang' },
+      { path: '/retail/categories',         icon: <Layers size={24} />, label: 'Kategori Produk' },
+      { path: '/retail/finance-categories', icon: <Tag size={24} />,    label: 'Kategori Keuangan' },
+      { path: '/retail/units',              icon: <Tag size={24} />,    label: 'Satuan Dasar' },
+      { path: '/retail/customers',          icon: <Users size={24} />,  label: 'Data Pelanggan' },
+      { path: '/retail/suppliers',          icon: <Truck size={24} />,  label: 'Data Supplier' },
+      { path: '/retail/outlets',            icon: <Store size={24} />,  label: 'Daftar Cabang' },
     ]
   },
   {
@@ -265,6 +267,7 @@ const RETAIL_NAV_ITEMS = [
     items: [
       { path: '/retail/reports/sales',     icon: <BarChart2 size={24} />,    label: 'Laporan Penjualan' },
       { path: '/retail/reports/products',  icon: <ShoppingCart size={24} />, label: 'Laporan Produk' },
+      { path: '/retail/reports/margins',   icon: <TrendingUp size={24} />,   label: 'Laporan Margin Produk' },
       { path: '/retail/reports/customers', icon: <UserCheck size={24} />,    label: 'Laporan Pelanggan' },
       { path: '/retail/reports/consignment', icon: <Package size={24} />,    label: 'Laporan Konsinyasi' },
       { path: '/retail/reports/shifts',    icon: <Users size={24} />,        label: 'Laporan Kasir & Shift' },
@@ -276,7 +279,6 @@ const RETAIL_NAV_ITEMS = [
     icon: <Wallet size={20} />,
     items: [
       { path: '/retail/finance/summary',     icon: <BarChart2 size={24} />, label: 'Laba Rugi' },
-      { path: '/retail/finance-categories',  icon: <Layers size={24} />,    label: 'Kategori Keuangan' },
       { path: '/retail/finance/cash',        icon: <TrendingUp size={24} />,    label: 'Catatan Kas' },
       { path: '/retail/finance/payables',    icon: <ArrowDownLeft size={24} />,    label: 'Hutang Supplier' },
       { path: '/retail/finance/receivables', icon: <ArrowUpRight size={24} />,    label: 'Piutang Pelanggan' },
@@ -292,7 +294,6 @@ const RETAIL_NAV_ITEMS = [
       { path: '/retail/settings',     icon: <Settings size={24} />,   label: 'Pengaturan Toko' },
       { path: '/retail/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
       { path: '/retail/support',      icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
-      { path: '/retail/profile',      icon: <UserCheck size={24} />,  label: 'Profil Saya' },
     ]
   }
 ]
@@ -377,6 +378,7 @@ const SELLER_NAV_ITEMS = [
       { path: '/seller/settings/account', icon: <User size={24} />, label: 'Akun Saya' },
       { path: '/seller/settings/roles', icon: <Shield size={24} />, label: 'Hak Akses & Peran' },
       { path: '/seller/settings/users', icon: <Users size={24} />, label: 'Manajemen User' },
+      { path: '/seller/backup', icon: <Archive size={24} />, label: 'Backup Data Toko' },
     ]
   }
 ]
@@ -531,8 +533,8 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
   const isRetail = pathname.startsWith('/retail') || isPosPage
 
   // ── Retail: icon rail when collapsed, full sidebar when expanded ──
-  // Admin: standard collapse behaviour
-  const isMini = isRetail ? collapsed : (collapsed && !mobileOpen)
+  // Admin: standard collapse behaviour (always full when mobile drawer is open)
+  const isMini = mobileOpen ? false : (isRetail ? collapsed : collapsed)
 
   // ── Build nav items dynamically based on active_modules ──────────────────
   const activeModules = user?.active_modules || []
@@ -653,15 +655,14 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
         <div
           className="sidebar__logo"
           style={{
-            padding: isMini ? '20px 0' : '20px 16px',
+            padding: isMini ? '16px 0' : '16px 16px',
             justifyContent: isMini ? 'center' : 'flex-start',
           }}
         >
-          <div className="sidebar__logo-icon" style={{ overflow: 'hidden' }}><img src={storeIconUrl || logoUrl || bizoraLogo} alt="BIZORA" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 4 }} /></div>
+          <div className="sidebar__logo-icon" style={{ overflow: 'hidden' }}><img src={storeIconUrl || logoUrl || bizoraLogo} alt="BIZORA" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 14 }} /></div>
           {!isMini && (
             <div className="sidebar__logo-text">
-              <span className="sidebar__logo-brand">BIZORA</span>
-              <span className="sidebar__logo-sub"></span>
+              <div className="sidebar__logo-brand">BIZORA</div>
             </div>
           )}
         </div>

@@ -19,21 +19,23 @@ function StatCard({ icon: Icon, label, value, sub, color = 'indigo', trend, isMo
   const c = colors[color] || colors.indigo;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="flex items-center gap-3">
-        <div className={`p-2.5 rounded-xl ${c.bg} border ${c.border} shrink-0`}>
-          <Icon size={18} className={c.text} />
+    <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col justify-between gap-2 shadow-sm hover:shadow-md transition-shadow duration-200 min-w-0 overflow-hidden">
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className={`p-2 rounded-xl ${c.bg} border ${c.border} shrink-0`}>
+            <Icon size={16} className={c.text} />
+          </div>
+          <span className="text-xs sm:text-sm font-medium text-slate-500 truncate">{label}</span>
         </div>
-        <span className="text-sm font-medium text-slate-500">{label}</span>
         {trend !== undefined && (
-          <span className={`ml-auto text-xs font-normal px-2 py-0.5 rounded-full ${trend >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+          <span className={`shrink-0 text-[11px] font-normal px-2 py-0.5 rounded-full ${trend >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
             {trend >= 0 ? '+' : ''}{trend}%
           </span>
         )}
       </div>
-      <div>
-        <p className={`text-2xl text-slate-900 leading-tight ${isMoney ? 'font-semibold' : 'font-normal'}`}>{value}</p>
-        {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
+      <div className="min-w-0">
+        <p className={`text-lg sm:text-xl xl:text-2xl text-slate-900 leading-tight truncate ${isMoney ? 'font-semibold' : 'font-normal'}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
+        {sub && <p className="text-[11px] text-slate-400 mt-0.5 truncate">{sub}</p>}
       </div>
     </div>
   );
@@ -50,16 +52,16 @@ function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
   return (
     <Link
       to={href}
-      className={`flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br ${colors[color] || colors.indigo} text-white shadow-md hover:shadow-lg transition-all duration-200 group`}
+      className={`flex items-center gap-3.5 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br ${colors[color] || colors.indigo} text-white shadow-md hover:shadow-lg transition-all duration-200 group min-w-0 overflow-hidden`}
     >
       <div className="p-2.5 bg-white/15 rounded-xl shrink-0">
-        <Icon size={20} className="text-white" style={{ color: '#ffffff' }} />
+        <Icon size={18} className="text-white" style={{ color: '#ffffff' }} />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-white" style={{ color: '#ffffff' }}>{title}</h3>
+        <h3 className="font-bold text-xs sm:text-sm text-white truncate" style={{ color: '#ffffff' }}>{title}</h3>
         <p className="text-[11px] text-white/90 truncate" style={{ color: '#ffffff' }}>{desc}</p>
       </div>
-      <ArrowRight size={16} className="text-white group-hover:translate-x-1 transition-transform duration-200 shrink-0" style={{ color: '#ffffff' }} />
+      <ArrowRight size={15} className="text-white group-hover:translate-x-1 transition-transform duration-200 shrink-0" style={{ color: '#ffffff' }} />
     </Link>
   );
 }
@@ -131,24 +133,24 @@ export default function RetailDashboard() {
   return (
     <div className="flex flex-col gap-4">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl p-5 text-white shadow-lg">
-        <div className="absolute -top-8 -right-8 w-40 h-40 bg-indigo-600/20 rounded-full blur-2xl" />
-        <div className="absolute -bottom-12 -left-6 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl" />
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl p-4 sm:p-5 text-white shadow-lg">
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-indigo-600/20 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-6 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <p className="text-indigo-300 text-sm font-medium mb-1">{greeting}, 👋</p>
-            <h2 className="text-2xl font-extrabold leading-tight text-white" style={{ color: '#ffffff' }}>{user?.name || 'User'}</h2>
-            <p className="text-slate-400 text-sm mt-1">
+        <div className="relative z-10 flex items-center justify-between flex-wrap gap-4 min-w-0">
+          <div className="min-w-0 flex-1">
+            <p className="text-indigo-300 text-xs sm:text-sm font-medium mb-1">{greeting}, 👋</p>
+            <h2 className="text-xl sm:text-2xl font-extrabold leading-tight text-white truncate" style={{ color: '#ffffff' }}>{user?.name || 'User'}</h2>
+            <p className="text-slate-400 text-xs sm:text-sm mt-1 truncate">
               Role: <span className="text-indigo-300 font-normal">{roleLabel}</span>
               {user?.tenant_name && (
                 <> &middot; Outlet: <span className="text-indigo-300 font-normal">{user.tenant_name}</span></>
               )}
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-2 bg-white/10 border border-white/10 rounded-2xl px-4 py-3">
+          <div className="hidden sm:flex items-center gap-2 bg-white/10 border border-white/10 rounded-2xl px-4 py-3 shrink-0">
             <Clock size={16} className="text-indigo-300" />
-            <span className="text-sm font-medium text-white/80">
+            <span className="text-sm font-medium text-white/80 whitespace-nowrap">
               {now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
           </div>
@@ -168,7 +170,7 @@ export default function RetailDashboard() {
 
       {/* Stats Grid - only for owner */}
       {isOwnerOrManager && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard
             icon={Receipt}
             label="Transaksi Hari Ini"

@@ -22,7 +22,7 @@ export default function ServerPagination({ meta, page, setPage, perPage, setPerP
   return (
     <div className="sp-container">
       <div className="sp-info">
-        Menampilkan {total > 0 ? startIndex + 1 : 0}–{endIndex} dari {total} data
+        {total > 0 ? startIndex + 1 : 0}–{endIndex} dari {total}
       </div>
       <div className="sp-controls">
         <select

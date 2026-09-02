@@ -15,7 +15,8 @@ import {
   Wrench,
   FileText,
   Receipt,
-  Package
+  Package,
+  Database
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -63,6 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'finance', label: 'Tagihan Masuk (Piutang)', icon: Receipt },
     { id: 'expenses', label: 'Catatan Pengeluaran', icon: Receipt },
     { id: 'analytics', label: 'Laporan & SLA', icon: ShieldCheck },
+    { id: 'backup', label: 'Backup Data Jasa', icon: Database },
     { id: 'settings', label: 'Pengaturan Jasa', icon: Wrench }
   ];
 

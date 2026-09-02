@@ -1,7 +1,16 @@
 import React from 'react';
-import { X, Printer, Wrench, Shield, CheckCircle } from 'lucide-react';
+import { X, Printer, Wrench } from 'lucide-react';
 import { WorkOrder } from '../types';
-import { formatRupiah } from '../data/mockData';
+import '../jasa-print.css';
+import {
+  JasaPrintHeader,
+  JasaPrintSectionHeader,
+  JasaPrintAppendixHeader,
+  JasaPrintExplanationBox,
+  JasaPrintFooter,
+  formatRp,
+  formatDateIndo
+} from '../components/JasaPrintLayout';
 
 interface PrintSpkModalProps {
   order: WorkOrder | null;
@@ -48,139 +57,157 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
           </div>
         </div>
 
-        {/* Printable SPK Document (White paper style for clear printing) */}
+        {/* Printable SPK Document (Formal 2-Page Accounting & Service Layout) */}
         <div className="p-6 sm:p-8 overflow-y-auto flex-1 bg-white text-slate-900 font-sans print:p-0 print:m-0">
           
-          {/* Company Header / Kop Surat */}
-          <div className="border-b-2 border-slate-900 pb-4 mb-6 flex items-start justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center text-white">
-                <Wrench className="w-6 h-6" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold tracking-tight text-slate-900">PT PRO-SERVIS TEKNOLOGI INDONESIA</h1>
-                <p className="text-xs text-slate-600 font-medium">Divisi Layanan Rekayasa, Pemeliharaan & Servis Lapangan Terpadu</p>
-                <p className="text-[11px] text-slate-500">Gedung Graha Solusi Lt. 5, Jl. Gatot Subroto No. 88, Jakarta Selatan | Telp: (021) 555-8900</p>
-              </div>
-            </div>
+          {/* ==================== HALAMAN 1: SURAT PERINTAH KERJA & BIAYA ==================== */}
+          <div>
+            {/* 1. Header / Kop Surat Resmi Divisi Servis */}
+            <JasaPrintHeader
+              title="Surat Perintah Kerja (SPK)"
+              subtitle="Divisi Layanan Rekayasa, Pemeliharaan & Servis Lapangan Terpadu"
+              docNumber={order.id}
+              periodText={`Jadwal: ${order.scheduledDate} (${order.scheduledTime})`}
+            />
 
-            <div className="text-right">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">SURAT PERINTAH KERJA</div>
-              <div className="font-mono text-base font-semibold text-blue-700">{order.id}</div>
-              <div className="text-[11px] text-slate-600">Tgl: {order.createdAt}</div>
-            </div>
-          </div>
+            {/* 2. Informasi Objek Servis & Pelanggan */}
+            <div style={{ marginBottom: 18 }}>
+              <JasaPrintSectionHeader title="I. Identitas Klien & Spesifikasi Objek Servis" />
 
-          {/* Title & Priority */}
-          <div className="mb-5 bg-slate-100 p-3 rounded-lg flex items-center justify-between">
-            <div>
-              <span className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider">Perintah Tugas:</span>
-              <h2 className="text-base font-semibold text-slate-900">{order.title}</h2>
-            </div>
-            <div className="text-right">
-              <span className="text-xs font-semibold px-2 py-1 bg-slate-900 text-white rounded">
-                Prioritas: {order.priority}
-              </span>
-            </div>
-          </div>
-
-          {/* Two Columns: Customer & Service Specs */}
-          <div className="grid grid-cols-2 gap-6 mb-6 text-xs">
-            <div className="border border-slate-300 rounded-lg p-3 space-y-1">
-              <div className="font-semibold text-slate-900 uppercase text-[11px] border-b border-slate-200 pb-1 mb-2">
-                1. Data Pelanggan / Lokasi
-              </div>
-              <div><strong>Perusahaan:</strong> {order.customerCompany}</div>
-              <div><strong>PIC:</strong> {order.customerName} ({order.customerPhone})</div>
-              <div><strong>Email:</strong> {order.customerEmail}</div>
-              <div><strong>Alamat:</strong> {order.customerAddress}</div>
-            </div>
-
-            <div className="border border-slate-300 rounded-lg p-3 space-y-1">
-              <div className="font-semibold text-slate-900 uppercase text-[11px] border-b border-slate-200 pb-1 mb-2">
-                2. Spesifikasi Objek & Teknisi
-              </div>
-              <div><strong>Objek / Peralatan:</strong> {order.equipmentName}</div>
-              <div><strong>No. Seri:</strong> {order.serialNumber || 'N/A'}</div>
-              <div><strong>Teknisi Ditugaskan:</strong> {order.technicianName}</div>
-              <div><strong>Jadwal Servis:</strong> {order.scheduledDate} ({order.scheduledTime})</div>
-            </div>
-          </div>
-
-          {/* Scope of Work */}
-          <div className="mb-6">
-            <div className="font-semibold text-slate-900 uppercase text-xs mb-1">
-              3. Ruang Lingkup & Uraian Pekerjaan:
-            </div>
-            <div className="p-3 bg-slate-50 border border-slate-300 rounded-lg text-xs leading-relaxed">
-              {order.serviceDescription}
-            </div>
-          </div>
-
-          {/* Cost & Materials Table */}
-          <div className="mb-6">
-            <div className="font-semibold text-slate-900 uppercase text-xs mb-2">
-              4. Rincian Suku Cadang & Biaya Jasa:
-            </div>
-            <table className="w-full text-xs border border-slate-300">
-              <thead className="bg-slate-100 border-b border-slate-300">
-                <tr>
-                  <th className="p-2 text-left">Deskripsi Komponen / Jasa</th>
-                  <th className="p-2 text-center w-16">Qty</th>
-                  <th className="p-2 text-right">Harga Satuan</th>
-                  <th className="p-2 text-right">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {order.partsUsed.map(part => (
-                  <tr key={part.id}>
-                    <td className="p-2">{part.name}</td>
-                    <td className="p-2 text-center">{part.quantity}</td>
-                    <td className="p-2 text-right">{formatRupiah(part.unitCost)}</td>
-                    <td className="p-2 text-right font-medium">{formatRupiah(part.quantity * part.unitCost)}</td>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000', marginBottom: 12 }}>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '5px 4px', width: 140, fontWeight: 600 }}>Perintah Tugas</td>
+                    <td style={{ padding: '5px 4px', fontWeight: 600 }}>{order.title}</td>
+                    <td style={{ padding: '5px 4px', width: 120, fontWeight: 600 }}>Prioritas Layanan</td>
+                    <td style={{ padding: '5px 4px', width: 130 }}>{order.priority}</td>
                   </tr>
-                ))}
-                <tr>
-                  <td className="p-2 font-medium">Jasa Layanan Teknisi ({order.estimatedHours} Jam Kerja)</td>
-                  <td className="p-2 text-center">1 Paket</td>
-                  <td className="p-2 text-right">{formatRupiah(order.laborRate)}</td>
-                  <td className="p-2 text-right font-medium">{formatRupiah(order.totalLaborCost)}</td>
-                </tr>
-              </tbody>
-              <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-semibold">
-                <tr>
-                  <td colSpan={3} className="p-2 text-right">TOTAL BIAYA:</td>
-                  <td className="p-2 text-right text-slate-900 text-sm font-semibold">{formatRupiah(order.grandTotal)}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+                  <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '5px 4px', fontWeight: 600 }}>Nama Perusahaan / Klien</td>
+                    <td style={{ padding: '5px 4px' }}>{order.customerCompany} — PIC: {order.customerName} ({order.customerPhone})</td>
+                    <td style={{ padding: '5px 4px', fontWeight: 600 }}>Teknisi Pelaksana</td>
+                    <td style={{ padding: '5px 4px' }}>{order.technicianName}</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '5px 4px', fontWeight: 600 }}>Objek / Unit Servis</td>
+                    <td style={{ padding: '5px 4px' }}>{order.equipmentName} (SN: {order.serialNumber || '-'})</td>
+                    <td style={{ padding: '5px 4px', fontWeight: 600 }}>Garansi Layanan</td>
+                    <td style={{ padding: '5px 4px' }}>{order.warrantyPeriod}</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '5px 4px', fontWeight: 600 }}>Lokasi Pengerjaan</td>
+                    <td colSpan={3} style={{ padding: '5px 4px', color: '#374151' }}>{order.customerAddress}</td>
+                  </tr>
+                </tbody>
+              </table>
 
-          {/* Terms & Warranty */}
-          <div className="mb-8 text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded border border-slate-300">
-            <strong>Ketentuan Garansi & Pelaksanaan:</strong>
-            <p className="mt-0.5">
-              1. Pekerjaan dilindungi garansi operasional selama <strong>{order.warrantyPeriod}</strong> sejak tanggal serah terima.
-              2. Pelanggan wajib memastikan keamanan lokasi dan aksesibilitas peralatan saat teknisi bertugas.
-              3. Kerusakan akibat bencana alam atau manipulasi pihak ketiga membatalkan garansi servis.
-            </p>
-          </div>
-
-          {/* Signature Areas */}
-          <div className="grid grid-cols-3 gap-6 pt-4 text-center text-xs">
-            <div>
-              <div className="font-semibold text-slate-800 mb-12">Pemberi Perintah / Dispatcher</div>
-              <div className="border-t border-slate-400 pt-1 font-semibold text-slate-900">( Staff Manajemen Jasa )</div>
+              {order.serviceDescription && (
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 6, padding: '8px 12px', fontSize: 10.5, lineHeight: 1.45, color: '#334155' }}>
+                  <strong>Uraian / Ruang Lingkup Pekerjaan:</strong> {order.serviceDescription}
+                </div>
+              )}
             </div>
 
-            <div>
-              <div className="font-semibold text-slate-800 mb-12">Teknisi Pelaksana</div>
-              <div className="border-t border-slate-400 pt-1 font-semibold text-slate-900">( {order.technicianName} )</div>
+            {/* 3. Tabel Rincian Suku Cadang & Biaya Jasa */}
+            <div style={{ marginBottom: 20 }}>
+              <JasaPrintSectionHeader title="II. Rincian Pemakaian Suku Cadang & Biaya Jasa Teknisi" />
+
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000' }}>
+                <thead>
+                  <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                    <th style={{ padding: '7px 4px', textAlign: 'center', width: 35, fontWeight: 600 }}>No</th>
+                    <th style={{ padding: '7px 6px', textAlign: 'left', fontWeight: 600 }}>Deskripsi Komponen / Jasa Layanan</th>
+                    <th style={{ padding: '7px 6px', textAlign: 'center', width: 80, fontWeight: 600 }}>Volume</th>
+                    <th style={{ padding: '7px 6px', textAlign: 'right', width: 140, fontWeight: 600, whiteSpace: 'nowrap' }}>Harga Satuan (Rp)</th>
+                    <th style={{ padding: '7px 6px', textAlign: 'right', width: 150, fontWeight: 600, whiteSpace: 'nowrap' }}>Subtotal Nilai (Rp)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.partsUsed.map((part, idx) => (
+                    <tr key={part.id || idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                      <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                      <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000' }}>{part.name}</td>
+                      <td style={{ padding: '6px 6px', textAlign: 'center', color: '#000000' }}>{part.quantity} Unit</td>
+                      <td style={{ padding: '6px 6px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>{formatRp(part.unitCost)}</td>
+                      <td style={{ padding: '6px 6px', textAlign: 'right', fontWeight: 600, color: '#000000', whiteSpace: 'nowrap' }}>
+                        {formatRp(part.quantity * part.unitCost)}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{order.partsUsed.length + 1}</td>
+                    <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000' }}>
+                      Jasa Layanan & Pengerjaan Teknisi ({order.estimatedHours} Jam Kerja)
+                    </td>
+                    <td style={{ padding: '6px 6px', textAlign: 'center', color: '#000000' }}>1 Paket</td>
+                    <td style={{ padding: '6px 6px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>{formatRp(order.laborRate)}</td>
+                    <td style={{ padding: '6px 6px', textAlign: 'right', fontWeight: 600, color: '#000000', whiteSpace: 'nowrap' }}>
+                      {formatRp(order.totalLaborCost)}
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                    <td colSpan={4} style={{ padding: '7px 6px', textAlign: 'right', textTransform: 'uppercase', fontSize: 10, color: '#000000', whiteSpace: 'nowrap' }}>
+                      Total Rekapitulasi Biaya SPK:
+                    </td>
+                    <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 11.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      {formatRp(order.grandTotal)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
 
-            <div>
-              <div className="font-semibold text-slate-800 mb-12">Klien / Penerima Layanan</div>
-              <div className="border-t border-slate-400 pt-1 font-semibold text-slate-900">( {order.customerName} )</div>
+            {/* 4. Kolom Tanda Tangan 3 Pihak (Halaman 1) */}
+            <JasaPrintFooter
+              technicianName={order.technicianName}
+              customerName={order.customerName}
+            />
+          </div>
+
+          {/* ==================== HALAMAN 2: LAMPIRAN GARANSI & SLA SERVIS ==================== */}
+          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+            <JasaPrintAppendixHeader
+              title="Lampiran: Standar Garansi & Prosedur Pelayanan Servis"
+              subtitle={`Ketentuan Pemeliharaan, Pengujian & Jaminan Mutu Pekerjaan — SPK #${order.id}`}
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+              <JasaPrintExplanationBox
+                number="1"
+                title="Cakupan Jaminan Garansi Servis (Warranty Coverage)"
+                desc={`Pekerjaan perbaikan dan penggantian suku cadang yang tertera pada SPK ini dilindungi garansi resmi selama ${order.warrantyPeriod} sejak tanggal serah terima pekerjaan selesai.`}
+                variant="default"
+              />
+
+              <JasaPrintExplanationBox
+                number="2"
+                title="Pemeriksaan & Uji Fungsi Objek (Commissioning Test)"
+                desc="Klien bersama teknisi wajib melakukan uji coba operasional alat sebelum menandatangani berita acara serah terima untuk memastikan peralatan berfungsi normal."
+                variant="emerald"
+              />
+
+              <JasaPrintExplanationBox
+                number="3"
+                title="Keaslian Suku Cadang & Komponen (Spare Parts Authenticity)"
+                desc="Seluruh suku cadang yang dipasang telah melalui proses verifikasi standar spesifikasi pabrikan dan bebas dari cacat produksi."
+                variant="indigo"
+              />
+
+              <JasaPrintExplanationBox
+                number="4"
+                title="Batasan dan Pembatalan Garansi (Warranty Void Policy)"
+                desc="Garansi tidak berlaku apabila terjadi kerusakan akibat kesalahan pengoperasian oleh pihak ketiga, lonjakan tegangan listrik di luar batas aman, atau bencana alam."
+                variant="rose"
+              />
+
+              <JasaPrintExplanationBox
+                number="5"
+                title="Layanan Dukungan & Emergency Dispatch"
+                desc="Untuk permintaan servis ulang dalam masa garansi, pelanggan dapat menghubungi pusat bantuan dengan mencantumkan nomor SPK yang tertera pada dokumen ini."
+                variant="dark"
+              />
             </div>
           </div>
 
@@ -190,3 +217,4 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
     </div>
   );
 };
+

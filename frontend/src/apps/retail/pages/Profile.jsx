@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { User, Mail, Phone, Store, MapPin, Lock, Save, Camera } from 'lucide-react'
+import React, { useState } from 'react'
+import { User, Mail, Phone, Lock, Save, Camera } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../lib/api'
 import '../retail.css'
@@ -15,25 +15,11 @@ export default function RetailProfile() {
     phone: user?.phone || '',
   })
 
-  const [store, setStore] = useState({
-    storeName: '',
-    address: '',
-  })
-
   const [passwords, setPasswords] = useState({
     current: '',
     new: '',
     confirm: '',
   })
-
-  useEffect(() => {
-    api.get('/retail/settings')
-      .then(res => setStore({
-        storeName: res.data?.store_name || '',
-        address: res.data?.store_address || '',
-      }))
-      .catch(() => {})
-  }, [])
 
   const initials = profile.name
     ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -48,19 +34,6 @@ export default function RetailProfile() {
       alert('Profil berhasil disimpan!')
     } catch (err) {
       alert(err.response?.data?.errors ? Object.values(err.response.data.errors).flat().join(', ') : 'Gagal menyimpan profil')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleSaveStore = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      await api.put('/retail/settings', { store_name: store.storeName, store_address: store.address })
-      alert('Pengaturan toko berhasil disimpan!')
-    } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menyimpan pengaturan toko')
     } finally {
       setSaving(false)
     }
@@ -90,7 +63,6 @@ export default function RetailProfile() {
 
   const tabs = [
     { id: 'info', label: 'Informasi Akun', icon: <User size={16} /> },
-    { id: 'store', label: 'Pengaturan Toko', icon: <Store size={16} /> },
     { id: 'security', label: 'Keamanan', icon: <Lock size={16} /> },
   ]
 
@@ -201,47 +173,6 @@ export default function RetailProfile() {
                 type="text" className="form-input"
                 value={profile.phone}
                 onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-              />
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
-            <button type="submit" className="btn btn-primary px-8 h-[42px]" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Save size={16} /> {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {activeTab === 'store' && (
-        <form onSubmit={handleSaveStore} className="airy-card" style={{ padding: '32px' }}>
-          <h3 className="retail-card-title text-lg mb-6" style={{ borderBottom: '1px dashed var(--retail-border)', paddingBottom: 12 }}>
-            Pengaturan Toko
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 600 }}>
-                <Store size={14} style={{ marginRight: 6, verticalAlign: 'text-bottom' }} />
-                Nama Toko Retail
-              </label>
-              <input
-                type="text" className="form-input"
-                value={store.storeName}
-                onChange={(e) => setStore({ ...store, storeName: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 600 }}>
-                <MapPin size={14} style={{ marginRight: 6, verticalAlign: 'text-bottom' }} />
-                Alamat Fisik Toko
-              </label>
-              <textarea
-                className="form-input"
-                rows={4}
-                value={store.address}
-                onChange={(e) => setStore({ ...store, address: e.target.value })}
-                style={{ resize: 'vertical', minHeight: 100 }}
-                required
               />
             </div>
           </div>

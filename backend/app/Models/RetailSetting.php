@@ -18,5 +18,7 @@ class RetailSetting extends Model
         'enable_tax'                 => 'boolean',
         'enable_loyalty'             => 'boolean',
         'point_value_rupiah'         => 'decimal:2',
+        'auto_backup_enabled'        => 'boolean',
+        'last_auto_backup_at'        => 'datetime',
     ];
 }

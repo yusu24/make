@@ -45,6 +45,7 @@ const AdminSettings = () => {
     }
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -369,6 +370,25 @@ const AdminSettings = () => {
                           onChange={e => setSettings({...settings, website_url: e.target.value})} 
                         />
                       </div>
+                    </div>
+
+                    {/* BACKUP SHORTCUT CARD */}
+                    <div className="kd-panel" style={{ background: '#fdf8ee', border: '1.5px solid #fef3c7' }}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-2xl">🛡️</span>
+                        <div>
+                          <h4 className="font-bold text-slate-800 text-sm">Backup Data Toko</h4>
+                          <p className="text-[11px] text-slate-500">Cadangkan menu, pesanan, bahan baku, keuangan, dan tabel.</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/kuliner/admin/backup')}
+                        className="w-full py-2.5 bg-[#b48c36] hover:bg-[#9a762c] text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-[#b48c36]/20 flex items-center justify-center gap-2"
+                      >
+                        <span>Kelola & Unduh Backup</span>
+                        <span>→</span>
+                      </button>
                     </div>
 
                     {/* HELP CARD */}

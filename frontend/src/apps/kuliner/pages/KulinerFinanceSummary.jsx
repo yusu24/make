@@ -9,6 +9,16 @@ import KulinerLoading from '../components/KulinerLoading';
 import { useAuth } from '../../../contexts/AuthContext';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import './KulinerDashboard.css';
+import '../kuliner-print.css';
+import {
+  KulinerPrintHeader,
+  KulinerPrintSectionHeader,
+  KulinerPrintAppendixHeader,
+  KulinerPrintExplanationBox,
+  KulinerPrintFooter,
+  formatRp,
+  formatDateIndo
+} from '../components/KulinerPrintLayout';
 
 export default function KulinerFinanceSummary() {
   const { user } = useAuth();
@@ -73,20 +83,30 @@ export default function KulinerFinanceSummary() {
   const isProfit = summary.profit >= 0;
 
   const renderLedgerRows = (items) => items.map(item => (
-    <tr key={item.id}>
-      <td className="text-xs text-slate-500">
-        {new Date(item.date).toLocaleDateString('id-ID')}
+    <tr key={item.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
+      <td style={{ padding: '12px 18px', fontSize: 12.5, color: '#64748B', whiteSpace: 'nowrap' }}>
+        {new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
       </td>
-      <td>
-        <div style={{ color: '#1e293b', fontWeight: 500 }}>{item.category}</div>
+      <td style={{ padding: '12px 18px', whiteSpace: 'nowrap' }}>
+        <span style={{ 
+          background: item.type === 'income' ? '#DCFCE7' : '#F1F5F9', 
+          color: item.type === 'income' ? '#166534' : '#475569', 
+          padding: '3px 10px', 
+          borderRadius: 20, 
+          fontSize: 11.5, 
+          fontWeight: 600, 
+          display: 'inline-block' 
+        }}>
+          {item.category}
+        </span>
       </td>
-      <td>
-        <div className="text-xs text-slate-600">{item.description}</div>
+      <td style={{ padding: '12px 18px', color: '#0F172A', fontWeight: 500 }}>
+        {item.description}
       </td>
-      <td className="text-slate-800" style={{ fontWeight: 600, color: '#000', textAlign: 'right' }}>
+      <td style={{ padding: '12px 18px', color: '#16A34A', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {item.type === 'income' ? formatRp(item.amount) : '-'}
       </td>
-      <td className="text-slate-800" style={{ fontWeight: 600, color: '#000', textAlign: 'right' }}>
+      <td style={{ padding: '12px 18px', color: '#DC2626', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {item.type === 'expense' ? formatRp(item.amount) : '-'}
       </td>
     </tr>
@@ -250,20 +270,37 @@ export default function KulinerFinanceSummary() {
               </div>
 
               {/* CHARTS SECTION */}
-              <div className="kd-ledger-grid no-print" style={{ marginBottom: 24, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-                <div className="kd-panel">
-                  <div className="text-sm font-bold text-slate-800 mb-4 text-center">Komposisi Pemasukan vs Pengeluaran</div>
-                  <div style={{ height: 250, width: '100%' }}>
+              <div className="kd-ledger-grid no-print" style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+                <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 12, textAlign: 'center' }}>
+                    Komposisi Pemasukan vs Pengeluaran
+                  </div>
+                  <div style={{ height: 300, width: '100%' }}>
                     {overviewData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={overviewData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                          <Pie 
+                            data={overviewData} 
+                            dataKey="value" 
+                            nameKey="name" 
+                            cx="50%" 
+                            cy="45%" 
+                            innerRadius={44} 
+                            outerRadius={65} 
+                            paddingAngle={4}
+                          >
                             {overviewData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
                           <Tooltip formatter={(val) => formatRp(val)} />
-                          <Legend />
+                          <Legend 
+                            verticalAlign="bottom" 
+                            align="center" 
+                            iconType="circle" 
+                            iconSize={8} 
+                            wrapperStyle={{ paddingTop: 14, fontSize: 11.5, color: '#475569', lineHeight: '20px' }} 
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
@@ -272,19 +309,36 @@ export default function KulinerFinanceSummary() {
                   </div>
                 </div>
                 
-                <div className="kd-panel">
-                  <div className="text-sm font-bold text-slate-800 mb-4 text-center">Rincian Pengeluaran</div>
-                  <div style={{ height: 250, width: '100%' }}>
+                <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 12, textAlign: 'center' }}>
+                    Rincian Pengeluaran
+                  </div>
+                  <div style={{ height: 300, width: '100%' }}>
                     {expenseData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={expenseData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                          <Pie 
+                            data={expenseData} 
+                            dataKey="value" 
+                            nameKey="name" 
+                            cx="50%" 
+                            cy="45%" 
+                            innerRadius={44} 
+                            outerRadius={65} 
+                            paddingAngle={4}
+                          >
                             {expenseData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
                           <Tooltip formatter={(val) => formatRp(val)} />
-                          <Legend />
+                          <Legend 
+                            verticalAlign="bottom" 
+                            align="center" 
+                            iconType="circle" 
+                            iconSize={8} 
+                            wrapperStyle={{ paddingTop: 14, fontSize: 11, color: '#475569', lineHeight: '18px' }} 
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
@@ -295,30 +349,25 @@ export default function KulinerFinanceSummary() {
               </div>
 
               {/* LEDGER TABLE */}
-              <div className="kd-panel no-print" style={{ marginBottom: 24 }}>
-                <div className="kd-panel-header">
-                  <div className="text-sm font-bold text-slate-800">
-                    Rincian Transaksi
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
-                    Menampilkan {ledger.length} transaksi
-                  </div>
-                </div>
-
-                <div className="kd-table-container">
-                  <table className="kd-table">
+              <div className="no-print" style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', marginBottom: 24 }}>
+                <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                     <thead>
-                      <tr>
-                        <th>Tanggal</th>
-                        <th>Kategori</th>
-                        <th>Keterangan</th>
-                        <th style={{ textAlign: 'right' }}>Pendapatan</th>
-                        <th style={{ textAlign: 'right' }}>Pengeluaran</th>
+                      <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Tanggal</th>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Kategori</th>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Keterangan</th>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>Pendapatan</th>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>Pengeluaran</th>
                       </tr>
                     </thead>
                     <tbody>
                       {ledger.length === 0 ? (
-                        <tr><td colSpan="5" className="text-center py-10 text-slate-400">Tidak ada transaksi pada periode ini.</td></tr>
+                        <tr>
+                          <td colSpan="5" style={{ textAlign: 'center', padding: '36px', color: '#94A3B8' }}>
+                            Tidak ada transaksi pada periode ini.
+                          </td>
+                        </tr>
                       ) : (
                         renderLedgerRows(paginatedData)
                       )}
@@ -327,106 +376,280 @@ export default function KulinerFinanceSummary() {
                 </div>
 
                 {/* PAGINATION */}
-                <div style={{ padding: '0 24px 16px' }}>
-                  <ClientPagination
-                    currentPage={currentPage}
-                    setCurrentPage={setCurrentPage}
-                    itemsPerPage={pageSize}
-                    setItemsPerPage={setPageSize}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                  />
-                </div>
+                <ClientPagination
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  itemsPerPage={pageSize}
+                  setItemsPerPage={setPageSize}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                />
               </div>
 
-              {/* PRINT ONLY TABLE - TEMPLATE LABA RUGI */}
-              <div className="print-only w-full">
-                {/* Print Wrapper */}
-                <div
-                  id="financial-report-sheet"
-                  className="w-full text-slate-900 font-sans"
-                >
-                    {/* HEADER LAPORAN (JENIS LAPORAN -> NAMA PERUSAHAAN -> PERIODE / ALAMAT / MATA UANG) */}
-                    <div className="text-center mb-4 leading-tight">
-                      <h2 className="text-lg sm:text-xl font-bold uppercase tracking-wider text-slate-900 print:text-black">
-                        Laporan Laba Rugi (P&L Summary)
-                      </h2>
-                      <h1 className="text-base sm:text-lg font-bold uppercase tracking-wide text-slate-900 print:text-black">
-                        {user?.tenant_name || 'Toko Kuliner'}
-                      </h1>
-                      <p className="text-xs font-semibold text-slate-800 print:text-black mt-1">
-                        Periode: {formatDate(startDate)} - {formatDate(endDate)}
-                      </p>
-                    </div>
+              {/* ========================================================================= */}
+              {/* PRINT-ONLY FORMAL ACCOUNTING CULINARY P&L TEMPLATE                       */}
+              {/* ========================================================================= */}
+              <div className="print-only" style={{ padding: 0, fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: '#000000' }}>
+                
+                {/* 1. Header / Kop Laporan Resmi Kuliner */}
+                <KulinerPrintHeader
+                  user={user}
+                  title="Laporan Laba Rugi"
+                  subtitle="Laporan Kinerja Keuangan & Profitabilitas Restoran / Kafe (Income Statement)"
+                  startDate={startDate}
+                  endDate={endDate}
+                />
 
-                    {/* TABEL FINANSIAL */}
-                    <div className="overflow-x-auto my-6">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="border-y-2 border-slate-900 print:border-black text-sm uppercase font-bold text-slate-900 print:text-black bg-slate-50 print:bg-transparent">
-                            <th className="py-2 px-2 text-left">Uraian / Pos Laporan</th>
-                            <th className="py-2 px-2 text-right w-36">Periode Ini</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
-                            <td className="py-2 px-2 text-slate-800 print:text-black font-semibold">
-                              (+) Total Omset Kotor Penjualan (Revenue)
-                            </td>
-                            <td className="py-2 px-2 text-right font-mono text-slate-800 print:text-black w-36">
-                              {formatRp(summary.total_sales || 0)}
-                            </td>
-                          </tr>
-                          
-                          <tr className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
-                            <td className="py-2 px-2 text-slate-800 print:text-black font-semibold">
-                              (-) Estimasi HPP / Cost of Goods Sold (Resep)
-                            </td>
-                            <td className="py-2 px-2 text-right font-mono text-slate-800 print:text-black w-36">
-                              -{formatRp(summary.total_cogs || 0)}
-                            </td>
-                          </tr>
+                {/* 2. Formal P&L Statement Table (NO VERTICAL LINES, BLACK & WHITE) */}
+                <div style={{ marginBottom: 22 }}>
+                  <KulinerPrintSectionHeader title="I. Laporan Posisi Laba Rugi (Income Statement Summary)" />
 
-                          <tr className="font-bold text-sm bg-slate-100/70 print:bg-transparent">
-                            <td className="py-2 px-2 text-slate-900 print:text-black uppercase">
-                              (=) Laba Kotor (Gross Profit)
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#000000' }}>
+                    <tbody>
+                      {/* A. PENDAPATAN */}
+                      <tr style={{ borderBottom: '1px solid #000000' }}>
+                        <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                          A. PENDAPATAN OPERASIONAL RESTORAN (REVENUE)
+                        </td>
+                        <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600 }}></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>
+                          Total Omzet Penjualan Menu Makanan & Minuman (POS Kasir)
+                        </td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', width: 140 }}>
+                          {formatRp(summary.total_sales || 0)}
+                        </td>
+                        <td style={{ width: 140 }}></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1.5px solid #000000', fontWeight: 600 }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#000000' }}>
+                          Total Pendapatan Bersih Penjualan
+                        </td>
+                        <td></td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          {formatRp(summary.total_sales || 0)}
+                        </td>
+                      </tr>
+
+                      {/* B. HPP */}
+                      <tr style={{ borderBottom: '1px solid #000000' }}>
+                        <td colSpan={2} style={{ padding: '8px 4px 6px', fontWeight: 600, color: '#000000' }}>
+                          B. HARGA POKOK PENJUALAN (HPP / COGS - BAHAN BAKU & RESEP)
+                        </td>
+                        <td></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>
+                          Estimasi Biaya Bahan Baku Resep & Konsumsi Dapur
+                        </td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>
+                          ({formatRp(summary.total_cogs || 0)})
+                        </td>
+                        <td></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1.5px solid #000000', fontWeight: 600 }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#000000' }}>
+                          Total HPP Kuliner
+                        </td>
+                        <td></td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          ({formatRp(summary.total_cogs || 0)})
+                        </td>
+                      </tr>
+
+                      {/* C. LABA KOTOR */}
+                      <tr style={{ borderBottom: '1.5px solid #000000', fontWeight: 600 }}>
+                        <td style={{ padding: '6px 4px', color: '#000000' }}>
+                          C. LABA KOTOR RESTORAN (GROSS PROFIT)
+                        </td>
+                        <td style={{ padding: '6px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>
+                          Gross Margin: {(summary.total_sales || 0) > 0 ? (((summary.gross_profit || (summary.total_sales - summary.total_cogs)) / summary.total_sales) * 100).toFixed(1) : 0}%
+                        </td>
+                        <td style={{ padding: '6px 4px', textAlign: 'right', color: '#000000', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          {formatRp(summary.gross_profit || (summary.total_sales - summary.total_cogs))}
+                        </td>
+                      </tr>
+
+                      {/* D. BEBAN OPERASIONAL */}
+                      <tr style={{ borderBottom: '1px solid #000000' }}>
+                        <td colSpan={2} style={{ padding: '8px 4px 6px', fontWeight: 600, color: '#000000' }}>
+                          D. BEBAN OPERASIONAL RESTO (OPERATING EXPENSES)
+                        </td>
+                        <td></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>
+                          Biaya Operasional Dapur, Gaji Karyawan, Sewa & Utilitas
+                        </td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>
+                          ({formatRp(summary.total_expenses || 0)})
+                        </td>
+                        <td></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1.5px solid #000000', fontWeight: 600 }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#000000' }}>
+                          Total Beban Operasional
+                        </td>
+                        <td></td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          ({formatRp(summary.total_expenses || 0)})
+                        </td>
+                      </tr>
+
+                      {/* E. PENDAPATAN LAIN */}
+                      {Number(summary.other_income || 0) > 0 && (
+                        <>
+                          <tr style={{ borderBottom: '1px solid #000000' }}>
+                            <td colSpan={2} style={{ padding: '8px 4px 6px', fontWeight: 600, color: '#000000' }}>
+                              E. PENDAPATAN LAIN-LAIN (NON-OPERASIONAL)
                             </td>
-                            <td className="py-2 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black font-extrabold">
-                              {formatRp(summary.gross_profit || 0)}
+                            <td></td>
+                          </tr>
+                          <tr style={{ borderBottom: '1.5px solid #000000' }}>
+                            <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>
+                              Pemasukan Kas Tambahan Tercatat
+                            </td>
+                            <td></td>
+                            <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                              +{formatRp(summary.other_income || 0)}
                             </td>
                           </tr>
+                        </>
+                      )}
 
-                          <tr className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
-                            <td className="py-2 px-2 text-slate-800 print:text-black font-semibold">
-                              (-) Total Pengeluaran Operasional (Beban)
+                      {/* F. LABA BERSIH AKHIR */}
+                      <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                        <td style={{ padding: '8px 4px', fontSize: 11, color: '#000000' }}>
+                          LABA BERSIH PERIODE BERJALAN (NET PROFIT)
+                        </td>
+                        <td style={{ padding: '8px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>
+                          Net Margin: {(summary.total_sales || 0) > 0 ? ((summary.profit / summary.total_sales) * 100).toFixed(1) : 0}%
+                        </td>
+                        <td style={{ padding: '8px 4px', textAlign: 'right', fontSize: 12, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          {formatRp(summary.profit || 0)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 3. Detailed Formal Accounting Ledger Table (NO VERTICAL LINES, BLACK & WHITE) */}
+                <div style={{ marginBottom: 22 }}>
+                  <KulinerPrintSectionHeader 
+                    title="II. Buku Pembantu Rincian Transaksi Kas Restoran (General Ledger)" 
+                    rightText={`Total ${ledger.length} catatan transaksi`} 
+                  />
+
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000' }}>
+                    <thead>
+                      <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                        <th style={{ padding: '7px 4px', textAlign: 'center', width: 35, fontWeight: 600 }}>No</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'left', width: 110, fontWeight: 600 }}>Tanggal</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'left', width: 130, fontWeight: 600 }}>Kategori Akun</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'left', fontWeight: 600 }}>Keterangan / Deskripsi</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'right', width: 135, fontWeight: 600, whiteSpace: 'nowrap' }}>Pemasukan (Rp)</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'right', width: 135, fontWeight: 600, whiteSpace: 'nowrap' }}>Pengeluaran (Rp)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ledger.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ textAlign: 'center', padding: 20, color: '#4B5563', fontStyle: 'italic', borderBottom: '1px solid #E5E7EB' }}>
+                            Tidak ada data transaksi kas pada periode ini.
+                          </td>
+                        </tr>
+                      ) : (
+                        ledger.map((item, idx) => (
+                          <tr key={item.id || idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                            <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                            <td style={{ padding: '6px 6px', color: '#000000', whiteSpace: 'nowrap' }}>{formatDateIndo(item.date)}</td>
+                            <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000' }}>{item.category || '-'}</td>
+                            <td style={{ padding: '6px 6px', color: '#374151', fontSize: 9.5 }}>{item.description || '-'}</td>
+                            <td style={{ padding: '6px 6px', textAlign: 'right', color: '#000000', fontWeight: item.type === 'income' ? 600 : 400, whiteSpace: 'nowrap' }}>
+                              {item.type === 'income' ? formatRp(item.amount) : '-'}
                             </td>
-                            <td className="py-2 px-2 text-right font-mono text-slate-800 print:text-black w-36">
-                              -{formatRp(summary.total_expenses || 0)}
+                            <td style={{ padding: '6px 6px', textAlign: 'right', color: '#000000', fontWeight: item.type === 'expense' ? 600 : 400, whiteSpace: 'nowrap' }}>
+                              {item.type === 'expense' ? formatRp(item.amount) : '-'}
                             </td>
                           </tr>
+                        ))
+                      )}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                        <td colSpan={4} style={{ padding: '7px 6px', textAlign: 'right', textTransform: 'uppercase', fontSize: 10, color: '#000000', whiteSpace: 'nowrap' }}>
+                          Total Rekapitulasi Kas:
+                        </td>
+                        <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 10.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          +{formatRp(ledger.filter(l => l.type === 'income').reduce((s, l) => s + Number(l.amount || 0), 0))}
+                        </td>
+                        <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 10.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          ({formatRp(ledger.filter(l => l.type === 'expense').reduce((s, l) => s + Number(l.amount || 0), 0))})
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
 
-                          <tr className="font-bold text-sm">
-                            <td className="py-2 px-2 text-slate-900 print:text-black uppercase pt-4">
-                              (=) LABA BERSIH (NET PROFIT)
-                            </td>
-                            <td className="py-2 px-2 text-right font-mono text-slate-900 print:text-black border-t-2 border-slate-900 print:border-black font-extrabold pt-4" style={{ borderBottom: '3px double #000' }}>
-                              {formatRp(summary.profit || 0)}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                {/* Kolom Tanda Tangan & Pengesahan Dokumen (Halaman 1) */}
+                <KulinerPrintFooter user={user} showSignatures={true} />
 
-                    {/* FOOTER INFORMASI STANDAR */}
-                    <div className="mt-8 text-center text-[10px] text-slate-400 print:text-black italic border-t border-slate-100 print:border-slate-300 pt-2">
-                      Dokumen ini dicetak secara otomatis melalui Sistem Manajemen UMKM.
-                    </div>
+                {/* 4. HALAMAN 2: LAMPIRAN PENJELASAN & RUMUS PERHITUNGAN LABA RUGI KULINER */}
+                <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+                  <KulinerPrintAppendixHeader 
+                    title="Lampiran: Penjelasan & Rumus Perhitungan Laba Rugi Kuliner"
+                    subtitle={`Keterangan Metodologi Akuntansi & Sumber Data Transaksi F&B — ${user?.tenant_name || 'Restoran & Kafe'}`}
+                    user={user}
+                  />
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+                    <KulinerPrintExplanationBox
+                      number="1"
+                      title="Total Omzet Penjualan Menu (Revenue)"
+                      desc="Seluruh transaksi pemesanan menu makanan & minuman yang telah dibayar lunas melalui mesin kasir POS (makan di tempat / dine-in, takeaway, maupun pesanan online)."
+                      formula="Rumus: Omzet = Σ (Kuantitas Menu Terjual × Harga Jual per Porsi)"
+                      variant="default"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="2"
+                      title="HPP Resep & Bahan Baku (Food Cost / COGS)"
+                      desc="Akumulasi biaya bahan baku yang terpakai untuk memproduksi menu sesuai dengan struktur resep (Bill of Materials) dan takaran bahan dapur."
+                      formula="Rumus: HPP = Σ (Pemakaian Gramasi Bahan Baku × Harga Pokok Bahan)"
+                      variant="emerald"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="3"
+                      title="Laba Kotor Restoran (Gross Profit)"
+                      desc="Selisih pendapatan penjualan menu setelah dikurangi total biaya bahan baku resep sebelum dibebani biaya operasional tempat."
+                      formula="Rumus: Laba Kotor = Total Omzet Penjualan - Total HPP Bahan Baku"
+                      variant="indigo"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="4"
+                      title="Beban Operasional Restoran (Operating Expenses)"
+                      desc="Seluruh pengeluaran di luar bahan baku, seperti gaji koki & pelayan, gas LPG, listrik, sewa ruko, kemasan makanan, kebersihan dapur, dan pemasaran."
+                      variant="rose"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="5"
+                      title="Laba Bersih Akhir (Net Profit)"
+                      desc="Keuntungan bersih final yang dapat ditarik sebagai dividen pemilik atau dialokasikan untuk ekspansi cabang restoran."
+                      formula="Rumus: Laba Bersih = Laba Kotor - Beban Operasional + Pendapatan Lain"
+                      variant="dark"
+                    />
                   </div>
                 </div>
+
+              </div>
             </div>
           </>
         )}
       </div>
     </KulinerAdminLayout>
-  )
+  );
 }

@@ -1,20 +1,34 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import { 
   ArrowLeft, ShoppingCart, Heart, Scale, BarChart3, Clock, 
   Calendar, Thermometer, CloudRain, ShieldCheck, TrendingUp,
-  Plus, CheckCircle2, AlertCircle, MoreVertical, Utensils
+  Plus, CheckCircle2, AlertCircle, MoreVertical, Utensils, Printer
 } from 'lucide-react'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useReactToPrint } from 'react-to-print'
 import Modal from '../../../components/Modal'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
 import CurrencyInput from '../../../components/CurrencyInput'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
+import '../budidaya.css'
+import '../budidaya-print.css'
+import {
+  BudidayaPrintHeader,
+  BudidayaPrintSectionHeader,
+  BudidayaPrintAppendixHeader,
+  BudidayaPrintExplanationBox,
+  BudidayaPrintFooter,
+  formatRp,
+  formatDateIndo
+} from '../components/BudidayaPrintLayout'
 
 export default function CycleDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { setCustomTitle } = useOutletContext() || {}
   const terms = useBudidayaTerms()
   const [data, setData] = useState(null)
@@ -22,6 +36,12 @@ export default function CycleDetail() {
   const [activeTab, setActiveTab] = useState('ikhtisar_performa')
   const [modalType, setModalType] = useState(null)
   const [saving, setSaving] = useState(false)
+  const printRef = useRef(null)
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Laporan-Detail-Siklus-${id}-${new Date().toISOString().split('T')[0]}`,
+  })
   
   // Form States
   const [feedStocks, setFeedStocks] = useState([])
@@ -142,9 +162,9 @@ export default function CycleDetail() {
           <ArrowLeft size={16} /> <span>Kembali ke laporan</span>
         </button>
         <div style={{ display: 'flex', gap: '12px' }}>
-           <button className="btn-secondary-v2" onClick={() => window.print()}>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>print</span>
-              Cetak laporan
+           <button className="btn-secondary-v2" onClick={handlePrint} disabled={loading}>
+              <Printer size={16} />
+              <span>Cetak / Export PDF</span>
            </button>
         </div>
       </div>
@@ -185,31 +205,31 @@ export default function CycleDetail() {
         </div>
 
         {/* KPI Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginTop: '40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginTop: '24px' }}>
           <div className="kpi-card-v3">
-            <p className="aq-kpi-label" style={{ fontSize: '10px', textTransform: 'none' }}>Masa budidaya</p>
-            <h2 className="aq-kpi-value" style={{ fontSize: '28px' }}>{doc} <span style={{ fontSize: '12px', opacity: 0.5, fontWeight: 500 }}>Hari</span></h2>
+            <p className="aq-kpi-label">Masa budidaya</p>
+            <h2 className="aq-kpi-value">{doc} <span style={{ fontSize: '13px', opacity: 0.6, fontWeight: 500 }}>Hari</span></h2>
             <div className="kpi-progress-v3"><div style={{ width: '65%', background: '#1B4332' }}></div></div>
           </div>
           <div className="kpi-card-v3">
-            <p className="aq-kpi-label" style={{ fontSize: '10px', textTransform: 'none' }}>Estimasi populasi</p>
-            <h2 className="aq-kpi-value" style={{ fontSize: '28px' }}>{(stats.current_population || 0).toLocaleString('id-ID')} <span style={{ fontSize: '12px', opacity: 0.5, fontWeight: 500 }}>{terms.populationCount.charAt(0).toUpperCase() + terms.populationCount.slice(1)}</span></h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 12, color: '#059669', fontSize: '11px', fontWeight: 700 }}>
-               <TrendingUp size={12} /> Status stabil
+            <p className="aq-kpi-label">Estimasi populasi</p>
+            <h2 className="aq-kpi-value">{(stats.current_population || 0).toLocaleString('id-ID')} <span style={{ fontSize: '13px', opacity: 0.6, fontWeight: 500 }}>{terms.populationCount.charAt(0).toUpperCase() + terms.populationCount.slice(1)}</span></h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 10, color: '#059669', fontSize: '12px', fontWeight: 700 }}>
+               <TrendingUp size={14} /> Status stabil
             </div>
           </div>
           <div className="kpi-card-v3">
-            <p className="aq-kpi-label" style={{ fontSize: '10px', textTransform: 'none' }}>Survival rate</p>
-            <h2 className="aq-kpi-value" style={{ fontSize: '28px' }}>{stats.survival_rate || 0}%</h2>
-            <div style={{ display: 'flex', gap: '3px', marginTop: 12 }}>
+            <p className="aq-kpi-label">Survival rate</p>
+            <h2 className="aq-kpi-value">{stats.survival_rate || 0}%</h2>
+            <div style={{ display: 'flex', gap: '3px', marginTop: 10 }}>
                {[1,2,3,4,5,6].map(i => <div key={i} style={{ flex: 1, height: '4px', borderRadius: '2px', background: i <= 5 ? '#1B4332' : '#E2E8F0' }}></div>)}
             </div>
           </div>
           <div className="kpi-card-v3">
-            <p className="aq-kpi-label" style={{ fontSize: '10px', textTransform: 'none' }}>{terms.isTanaman ? 'Total nutrisi' : 'Total pakan'}</p>
-            <h2 className="aq-kpi-value" style={{ fontSize: '28px' }}>{(stats.total_feed_kg || 0).toLocaleString('id-ID')} <span style={{ fontSize: '12px', opacity: 0.5, fontWeight: 500 }}>KG</span></h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 12, color: '#64748B', fontSize: '11px', fontWeight: 600 }}>
-               <ShoppingCart size={12} /> {data?.feedings?.length || 0} Log terpantau
+            <p className="aq-kpi-label">{terms.isTanaman ? 'Total nutrisi' : 'Total pakan'}</p>
+            <h2 className="aq-kpi-value">{(stats.total_feed_kg || 0).toLocaleString('id-ID')} <span style={{ fontSize: '13px', opacity: 0.6, fontWeight: 500 }}>KG</span></h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: 10, color: '#64748B', fontSize: '12px', fontWeight: 600 }}>
+               <ShoppingCart size={14} /> {data?.feedings?.length || 0} Log terpantau
             </div>
           </div>
         </div>
@@ -250,28 +270,28 @@ export default function CycleDetail() {
               <div className="animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div className="premium-card" style={{ padding: '16px', background: '#fff' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: '#1B4332' }}>Analisa Profitabilitas Siklus</h4>
-                      <div style={{ padding: '3px 8px', background: (stats.profit || 0) >= 0 ? '#DCFCE7' : '#FEE2E2', color: (stats.profit || 0) >= 0 ? '#166534' : '#991B1B', borderRadius: '5px', fontSize: '9px', fontWeight: 900 }}>
+                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#1B4332' }}>Analisa Profitabilitas Siklus</h4>
+                      <div style={{ padding: '3px 8px', background: (stats.profit || 0) >= 0 ? '#DCFCE7' : '#FEE2E2', color: (stats.profit || 0) >= 0 ? '#166534' : '#991B1B', borderRadius: '5px', fontSize: '9.5px', fontWeight: 600 }}>
                          {(stats.profit || 0) >= 0 ? '+' : ''}{((stats.profit / (stats.total_cost || 1)) * 100).toFixed(1)}% Margin
                       </div>
                    </div>
                    
                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                       <div className="finance-summary-box" style={{ padding: '10px', background: '#FEF2F2' }}>
-                         <p className="aq-kpi-label" style={{ fontSize: '9px', textTransform: 'none', color: '#991B1B', opacity: 0.8, marginBottom: '2px' }}>Modal Produksi</p>
-                         <h2 className="aq-kpi-value" style={{ color: '#E11D48', fontSize: '15px', fontWeight: 900, margin: 0 }}>
+                         <p className="aq-kpi-label" style={{ fontSize: '9.5px', textTransform: 'none', color: '#991B1B', opacity: 0.8, marginBottom: '2px' }}>Modal Produksi</p>
+                         <h2 className="aq-kpi-value" style={{ color: '#E11D48', fontSize: '14px', fontWeight: 700, margin: 0 }}>
                             Rp {(Number(stats.total_cost) || 0).toLocaleString('id-ID')}
                          </h2>
                       </div>
                       <div className="finance-summary-box" style={{ background: '#F0FDF4', padding: '10px' }}>
-                         <p className="aq-kpi-label" style={{ fontSize: '9px', textTransform: 'none', color: '#166534', opacity: 0.7, marginBottom: '2px' }}>Pendapatan Kotor</p>
-                         <h2 className="aq-kpi-value" style={{ color: '#059669', fontSize: '15px', fontWeight: 900, margin: 0 }}>
+                         <p className="aq-kpi-label" style={{ fontSize: '9.5px', textTransform: 'none', color: '#166534', opacity: 0.7, marginBottom: '2px' }}>Pendapatan Kotor</p>
+                         <h2 className="aq-kpi-value" style={{ color: '#059669', fontSize: '14px', fontWeight: 700, margin: 0 }}>
                             Rp {(Number(stats.total_revenue) || 0).toLocaleString('id-ID')}
                          </h2>
                       </div>
                       <div className="finance-summary-box" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px' }}>
-                         <p className="aq-kpi-label" style={{ fontSize: '9px', textTransform: 'none', color: '#475569', opacity: 0.7, marginBottom: '2px' }}>Hasil Bersih</p>
-                         <h2 className="aq-kpi-value" style={{ color: (stats.profit || 0) >= 0 ? '#1B4332' : '#E11D48', fontSize: '15px', fontWeight: 900, margin: 0 }}>
+                         <p className="aq-kpi-label" style={{ fontSize: '9.5px', textTransform: 'none', color: '#475569', opacity: 0.7, marginBottom: '2px' }}>Hasil Bersih</p>
+                         <h2 className="aq-kpi-value" style={{ color: (stats.profit || 0) >= 0 ? '#1B4332' : '#E11D48', fontSize: '14px', fontWeight: 700, margin: 0 }}>
                             Rp {(Number(stats.profit) || 0).toLocaleString('id-ID')}
                          </h2>
                       </div>
@@ -280,7 +300,7 @@ export default function CycleDetail() {
 
                 <div className="premium-card" style={{ padding: 0, overflow: 'hidden', background: '#fff' }}>
                    <div style={{ padding: '24px', borderBottom: '1px solid #F1F5F9' }}>
-                      <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Rincian Struktur Biaya</h4>
+                      <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>Rincian Struktur Biaya</h4>
                    </div>
                    <Table>
                       <TableHeader>
@@ -404,8 +424,8 @@ export default function CycleDetail() {
                       <h4 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 800 }}>Indikator Kesehatan</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {[
-                           { name: 'Cek Hepatopankreas', time: '2 jam yang lalu', status: 'NORMAL' },
-                           { name: 'Visual Udang', time: 'Kemarin', status: 'AKTIF' }
+                           { name: 'Cek Hepatopankreas', time: '2 jam yang lalu', status: 'Normal' },
+                           { name: 'Visual Udang', time: 'Kemarin', status: 'Aktif' }
                         ].map((h, i) => (
                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: '#F8FAFC', borderRadius: '12px' }}>
                               <div style={{ display: 'flex', gap: '12px' }}>
@@ -510,34 +530,34 @@ export default function CycleDetail() {
                   <button 
                     onClick={() => setModalType('harvest')}
                     style={{ 
-                       marginTop: '12px', padding: '16px', borderRadius: '18px', border: 'none', 
-                       background: '#D8F3DC', color: '#1B4332', fontWeight: 900, fontSize: '15px',
+                       marginTop: '12px', padding: '14px', borderRadius: '16px', border: 'none', 
+                       background: '#D8F3DC', color: '#1B4332', fontWeight: 600, fontSize: '14px',
                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
                        cursor: 'pointer'
                     }}
                   >
-                     <ShieldCheck size={20} />
+                     <ShieldCheck size={18} />
                      <span>Finalisasi & Panen</span>
                   </button>
                )}
                {cycle?.status === 'panen' && (
-                  <div style={{ marginTop: '12px', padding: '16px', borderRadius: '18px', background: 'rgba(255,255,255,0.1)', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.2)' }}>
-                     <p style={{ margin: 0, fontSize: '12px', fontWeight: 700, opacity: 0.8 }}>Siklus ini telah selesai dan diarsipkan.</p>
+                  <div style={{ marginTop: '12px', padding: '14px', borderRadius: '16px', background: 'rgba(255,255,255,0.1)', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.2)' }}>
+                     <p style={{ margin: 0, fontSize: '12px', fontWeight: 500, opacity: 0.85 }}>Siklus ini telah selesai dan diarsipkan.</p>
                   </div>
                )}
             </div>
           </div>
 
-          <div className="premium-card" style={{ padding: '24px', background: '#fff', border: '1px solid #E2E8F0' }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#64748B', fontWeight: 700, fontSize: '12px', marginBottom: '16px' }}>
+          <div className="premium-card" style={{ padding: '20px', background: '#fff', border: '1px solid #E2E8F0' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748B', fontWeight: 600, fontSize: '12px', marginBottom: '14px' }}>
                 <CloudRain size={16} /> Cuaca Lokal
              </div>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                   <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: '#1E293B' }}>28°C</h2>
-                   <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#64748B', fontWeight: 600 }}>Hujan Ringan</p>
+                   <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#1E293B' }}>28°C</h2>
+                   <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748B', fontWeight: 500 }}>Hujan Ringan</p>
                 </div>
-                <div style={{ padding: '4px 10px', borderRadius: '8px', background: '#FEE2E2', color: '#E11D48', fontSize: '11px', fontWeight: 700 }}>
+                <div style={{ padding: '4px 10px', borderRadius: '8px', background: '#FEE2E2', color: '#E11D48', fontSize: '11px', fontWeight: 600 }}>
                    Risiko pH
                 </div>
              </div>
@@ -558,7 +578,7 @@ export default function CycleDetail() {
       <style>{`
         .btn-back-v2 { 
           display: flex; align-items: center; gap: 8px; border: none; background: none; 
-          color: #64748B; font-weight: 800; font-size: 13px; cursor: pointer; padding: 8px 0;
+          color: #64748B; font-weight: 600; font-size: 13px; cursor: pointer; padding: 8px 0;
           transition: color 0.2s;
         }
         .btn-back-v2:hover { color: #1B4332; }
@@ -571,20 +591,20 @@ export default function CycleDetail() {
         .btn-secondary-v2:hover { background: #F8FAFC; border-color: #CBD5E1; }
 
         .kpi-card-v3 { padding: 20px; background: #fff; border-radius: 20px; border: 1px solid #F1F5F9; box-shadow: 0 4px 10px -2px rgba(0,0,0,0.02); }
-        .kpi-label-v3 { margin: 0 0 6px; font-size: 10px; font-weight: 900; color: #94A3B8; letter-spacing: 0.05em; }
-        .kpi-value-v3 { margin: 0; font-size: 28px; font-weight: 950; color: #1B4332; letter-spacing: -0.03em; }
-        .kpi-unit-v3 { font-size: 12px; color: #94A3B8; font-weight: 700; margin-left: 4px; }
+        .kpi-label-v3 { margin: 0 0 6px; font-size: 11px; font-weight: 600; color: #64748B; letter-spacing: 0.04em; }
+        .kpi-value-v3 { margin: 0; font-size: 22px; font-weight: 700; color: #1B4332; letter-spacing: -0.01em; }
+        .kpi-unit-v3 { font-size: 12px; color: #94A3B8; font-weight: 600; margin-left: 4px; }
         .kpi-progress-v3 { width: 100%; height: 4px; background: #F1F5F9; border-radius: 2px; margin-top: 14px; overflow: hidden; }
         .kpi-progress-v3 > div { height: 100%; border-radius: 2px; }
 
         .finance-summary-box { padding: 24px; border-radius: 20px; background: #FFF1F2; }
-        .finance-label { margin: 0 0 8px; font-size: 11px; font-weight: 900; color: #94A3B8; letter-spacing: 0.05em; }
-        .finance-value { margin: 0; font-size: 24px; font-weight: 950; letter-spacing: -0.02em; }
+        .finance-label { margin: 0 0 8px; font-size: 11px; font-weight: 600; color: #64748B; letter-spacing: 0.04em; }
+        .finance-value { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
 
         .sidebar-op-btn-v2 { 
           display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 18px; 
           background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 20px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+          border-radius: 20px; color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer;
           transition: all 0.2s;
         }
         .sidebar-op-btn-v2:hover:not(:disabled) { background: rgba(255,255,255,0.15); transform: translateX(4px); }
@@ -702,11 +722,192 @@ export default function CycleDetail() {
          )}
       </Modal>
 
+      {/* ========================================================================= */}
+      {/* PRINT-ONLY FORMAL 2-PAGE CYCLE DETAIL & FINANCIAL STATEMENT               */}
+      {/* ========================================================================= */}
+      <div style={{ display: 'none' }}>
+        <div ref={printRef} className="print-only" style={{ padding: 0, fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: '#000000' }}>
+          
+          {/* 1. Header / Kop Laporan Resmi Siklus Budidaya */}
+          <BudidayaPrintHeader
+            user={user}
+            title={`Laporan Detail Siklus ${terms.isTanaman ? 'Pertanian' : 'Budidaya'}`}
+            subtitle={`Rekapitulasi Produksi, Struktur Biaya & Hasil Panen Siklus #CYC-${cycle?.id || '---'} (${cycle?.pond?.name || 'Lahan'})`}
+            periodText={`Tgl Tebar/Tanam: ${formatDateIndo(cycle?.seed_date)} • Status: ${cycle?.status?.toUpperCase()}`}
+            terms={terms}
+          />
+
+          {/* 2. Informasi Karakteristik Siklus & Populasi */}
+          <div style={{ marginBottom: 18 }}>
+            <BudidayaPrintSectionHeader title="I. Identitas Siklus & Parameter Operasional" />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000', marginBottom: 12 }}>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px', width: 140, fontWeight: 600 }}>Nomor Siklus</td>
+                  <td style={{ padding: '5px 4px', fontWeight: 600 }}>#CYC-{cycle?.id || '-'}</td>
+                  <td style={{ padding: '5px 4px', width: 130, fontWeight: 600 }}>Lokasi / Unit</td>
+                  <td style={{ padding: '5px 4px' }}>{cycle?.pond?.name || '-'} ({cycle?.pond?.area || '-'})</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px', fontWeight: 600 }}>Komoditas / Bibit</td>
+                  <td style={{ padding: '5px 4px' }}>{cycle?.seed_type || 'Benur'} — {(cycle?.seed_count || 0).toLocaleString('id-ID')} Ekor/Batang</td>
+                  <td style={{ padding: '5px 4px', fontWeight: 600 }}>Durasi Siklus</td>
+                  <td style={{ padding: '5px 4px' }}>{doc} Hari Budidaya</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px', fontWeight: 600 }}>Tingkat Kelulushidupan</td>
+                  <td style={{ padding: '5px 4px' }}>{stats.survival_rate || 0}% Survival Rate</td>
+                  <td style={{ padding: '5px 4px', fontWeight: 600 }}>Akumulasi Pakan</td>
+                  <td style={{ padding: '5px 4px' }}>{(stats.total_feed_kg || 0).toLocaleString('id-ID')} Kg</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 3. Formal Summary Table: Keuangan Siklus */}
+          <div style={{ marginBottom: 20 }}>
+            <BudidayaPrintSectionHeader title="II. Posisi Keuangan & Laba Bersih Siklus (Financial Summary)" />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#000000' }}>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #000000' }}>
+                  <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                    A. REKAPITULASI OMZET & MODAL SIKLUS
+                  </td>
+                  <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Total Pendapatan Kotor Penjualan Panen</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', width: 140, whiteSpace: 'nowrap' }}>+{formatRp(stats.total_revenue)}</td>
+                  <td style={{ width: 140 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Total Beban Modal & Biaya Operasional Siklus</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>({formatRp(stats.total_cost)})</td>
+                  <td></td>
+                </tr>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td style={{ padding: '7px 4px', fontSize: 11, color: '#000000' }}>
+                    LABA BERSIH SIKLUS INI (NET PROFIT)
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>
+                    Margin: {stats.total_revenue > 0 ? (((stats.profit || 0) / stats.total_revenue) * 100).toFixed(1) : 0}%
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'right', fontSize: 11.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {formatRp(stats.profit)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 4. Rincian Struktur Biaya Siklus */}
+          <div style={{ marginBottom: 20 }}>
+            <BudidayaPrintSectionHeader 
+              title="III. Rincian Beban Pokok & Komponen Biaya Siklus" 
+              rightText={`Total ${(stats.expense_summary || []).length} pos alokasi`} 
+            />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000' }}>
+              <thead>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                  <th style={{ padding: '7px 4px', textAlign: 'center', width: 35, fontWeight: 600 }}>No</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'left', fontWeight: 600 }}>Kategori Pos Pengeluaran</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'center', width: 120, fontWeight: 600 }}>Proporsi Beban (%)</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'right', width: 160, fontWeight: 600, whiteSpace: 'nowrap' }}>Total Nilai Beban (Rp)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(stats.expense_summary || []).length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ padding: '12px 6px', textAlign: 'center', color: '#6B7280' }}>Belum ada rincian beban modal tercatat untuk siklus ini.</td>
+                  </tr>
+                ) : (stats.expense_summary || []).map((exp, idx) => {
+                  const pct = ((exp.total / (stats.total_cost || 1)) * 100).toFixed(1);
+                  return (
+                    <tr key={idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                      <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                      <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000', textTransform: 'capitalize' }}>{exp.category}</td>
+                      <td style={{ padding: '6px 6px', textAlign: 'center', color: '#000000' }}>{pct}%</td>
+                      <td style={{ padding: '6px 6px', textAlign: 'right', fontWeight: 500, color: '#000000', whiteSpace: 'nowrap' }}>
+                        ({formatRp(exp.total)})
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td colSpan={2} style={{ padding: '7px 6px', textAlign: 'right', textTransform: 'uppercase', fontSize: 10, color: '#000000', whiteSpace: 'nowrap' }}>
+                    Total Akumulasi Biaya Siklus:
+                  </td>
+                  <td style={{ padding: '7px 6px', textAlign: 'center', fontSize: 10, color: '#000000' }}>100.0%</td>
+                  <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 11, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    ({formatRp(stats.total_cost)})
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* Kolom Tanda Tangan & Pengesahan Dokumen (Halaman 1) */}
+          <BudidayaPrintFooter user={user} />
+
+          {/* 5. HALAMAN 2: LAMPIRAN EVALUASI PERFORMA & BIOSECURITY SIKLUS */}
+          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+            <BudidayaPrintAppendixHeader 
+              title="Lampiran: Standar Evaluasi & Biosecurity Siklus Budidaya"
+              subtitle={`Pedoman Teknis Pemeliharaan, Monitoring Sampling & Pascasiklus — #CYC-${cycle?.id || '---'}`}
+              user={user}
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+              <BudidayaPrintExplanationBox
+                number="1"
+                title="Evaluasi FCR & Pertumbuhan Bobot Sampling"
+                desc="Hasil konversi pakan terhadap bobot sampling digunakan untuk mengevaluasi kualitas pakan dan efisiensi manajemen pakan pada unit kolam/lahan ini."
+                variant="default"
+              />
+
+              <BudidayaPrintExplanationBox
+                number="2"
+                title="Pemantauan Kualitas Air & Biosecurity Farm"
+                desc="Pencatatan harian DO (oksigen terlarut), pH, suhu, salinitas, dan nitrit dilakukan untuk mencegah stres lingkungan yang memicu mortalitas biota."
+                variant="emerald"
+              />
+
+              <BudidayaPrintExplanationBox
+                number="3"
+                title="Manajemen Pengendalian Penyakit & Mortalitas"
+                desc="Setiap kasus kematian harian biota dianalisis gejalanya untuk tindakan karantina, penggantian air bertahap, dan pemberian imunostimulan."
+                variant="rose"
+              />
+
+              <BudidayaPrintExplanationBox
+                number="4"
+                title="Prosedur Sanitasi & Persiapan Siklus Berikutnya"
+                desc="Setelah panen tuntas, unit kolam/lahan wajib dikeringkan, dilakukan pengapuran (CaO/CaCO3), dan diistirahatkan minimal 7-14 hari sebelum tebar siklus baru."
+                variant="indigo"
+              />
+
+              <BudidayaPrintExplanationBox
+                number="5"
+                title="Rekonsiliasi Pembukuan & Pengarsipan Dokumen Siklus"
+                desc="Seluruh nota pakan, nota bibit, dan bukti timbang penjualan panen siklus ini diarsipkan sebagai bahan evaluasi komparasi antar-musim."
+                variant="dark"
+              />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <style>{`
         .kpi-card-v2 { padding: 20px; background: #F8FAFC; border-radius: 20px; border: 1px solid #F1F5F9; }
         .kpi-label-v2 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #64748B; }
-        .kpi-value-v2 { margin: 0 0 4px; font-size: 24px; font-weight: 900; color: #1B4332; }
-        .kpi-unit-v2 { font-size: 13px; color: #94A3B8; font-weight: 700; margin-left: 4px; }
+        .kpi-value-v2 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #1B4332; }
+        .kpi-unit-v2 { font-size: 12px; color: #94A3B8; font-weight: 600; margin-left: 4px; }
         .progress-bar-v2 { width: 100%; height: 6px; background: #F1F5F9; border-radius: 3px; margin-top: 12px; overflow: hidden; }
         .progress-fill-v2 { height: 100%; border-radius: 3px; }
         
@@ -731,3 +932,4 @@ export default function CycleDetail() {
     </div>
   )
 }
+

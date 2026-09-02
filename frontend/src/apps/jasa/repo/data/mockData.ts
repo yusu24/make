@@ -600,39 +600,57 @@ export const INITIAL_INVOICES: JasaInvoice[] = [
 export const INITIAL_EXPENSES: JasaExpense[] = [
   {
     id: 'EXP-JASA-2026001',
+    type: 'Pengeluaran',
     date: '2026-08-18',
     category: 'Belanja Suku Cadang (Parts)',
     description: 'Pembelian Freon R410A dan Pipa Tembaga Daikin (Untuk SPK-2026-0801)',
     amount: 1750000,
     referenceSpkId: 'SPK-2026-0801',
     recordedBy: 'Admin Jasa',
-    notes: 'Nota pembelian dari Toko Aneka Teknik terlampir.'
+    notes: 'Nota pembelian dari Toko Aneka Teknik terlampir.',
+    status: 'Selesai'
   },
   {
     id: 'EXP-JASA-2026002',
+    type: 'Pengeluaran',
     date: '2026-08-19',
     category: 'Transportasi & Akomodasi',
     description: 'Bensin & Tol Operasional Teknisi (Tim A - Budi Hartono)',
     amount: 350000,
-    recordedBy: 'Admin Jasa'
+    recordedBy: 'Admin Jasa',
+    status: 'Selesai'
   },
   {
     id: 'EXP-JASA-2026003',
+    type: 'Pengeluaran',
     date: '2026-08-20',
     category: 'Peralatan Kerja',
     description: 'Penggantian Mata Bor SDS & Tang Krimping Fiber Optic',
     amount: 850000,
     recordedBy: 'Admin Jasa',
-    notes: 'Peralatan sebelumnya rusak akibat pemakaian berat.'
+    notes: 'Peralatan sebelumnya rusak akibat pemakaian berat.',
+    status: 'Selesai'
   },
   {
     id: 'EXP-JASA-2026004',
+    type: 'Pengeluaran',
     date: '2026-08-21',
     category: 'Sewa Alat Khusus',
     description: 'Sewa Scaffolding 3 Set untuk Pemasangan OTB di Ketinggian (Untuk SPK-2026-0803)',
     amount: 450000,
     referenceSpkId: 'SPK-2026-0803',
-    recordedBy: 'Admin Jasa'
+    recordedBy: 'Admin Jasa',
+    status: 'Selesai'
+  },
+  {
+    id: 'INC-JASA-2026005',
+    type: 'Pemasukan',
+    date: '2026-08-22',
+    category: 'Pendapatan Jasa',
+    description: 'DP Proyek Instalasi Jaringan B2B',
+    amount: 5000000,
+    recordedBy: 'Admin Jasa',
+    status: 'Selesai'
   }
 ];
 

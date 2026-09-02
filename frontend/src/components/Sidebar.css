@@ -1,5 +1,5 @@
 /* ==========================================================================
-   BIZORA SIDEBAR - SNEAT / GEOMETRIC BALANCE STYLING
+   BIZORA SIDEBAR - UNIFIED JASA & RETAIL STYLING (FULL OVAL PILL CAPSULE)
    ========================================================================== */
 
 .sidebar {
@@ -9,27 +9,32 @@
   width: var(--sidebar-width, 260px);
   height: 100vh;
   background: #ffffff;
-  border-right: 1px solid #d9dee3;
+  border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   z-index: 60;
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
-  box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.05);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
 .sidebar--mobile-open {
   transform: translateX(0) !important;
+  width: 280px !important;
+  z-index: 9999 !important;
 }
 
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    width: 260px;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+    width: 280px !important;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.25);
+    z-index: 9999 !important;
   }
-  .sidebar.sidebar--collapsed {
-    width: 68px !important;
+  .sidebar.sidebar--mobile-open {
+    transform: translateX(0) !important;
+    width: 280px !important;
   }
 }
 
@@ -42,62 +47,84 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 18px 20px;
+  padding: 16px 18px;
   border-bottom: 1px solid #f1f5f9;
   min-height: 68px;
   flex-shrink: 0;
+  background: #ffffff;
 }
 
 .sidebar__logo-icon {
   width: 38px;
   height: 38px;
-  border-radius: 10px;
-  background: #696cff;
+  border-radius: 12px;
+  background: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(105, 108, 255, 0.35);
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.28);
+  transition: transform 0.2s ease;
+}
+
+.sidebar__logo-icon:hover {
+  transform: scale(1.04);
 }
 
 .sidebar__logo-brand {
-  font-size: 18px;
-  font-weight: 800;
-  color: #32475c;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .sidebar__logo-sub {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
-  color: #696cff;
-  background: #eaeaff;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 9999px;
   display: inline-block;
   margin-top: 2px;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* ── Navigation Container ── */
 .sidebar__nav {
   flex: 1;
-  padding: 16px 12px;
+  padding: 14px 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3.5px;
   overflow-y: auto;
+}
+
+.sidebar__nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar__nav::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+
+.sidebar__nav::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* ── Category / Section Headers ── */
 .sidebar__section-header {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #a1acb8;
-  letter-spacing: 0.06em;
-  padding: 16px 12px 6px 14px;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  padding: 12px 10px 4px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -106,61 +133,74 @@
 .sidebar__section-divider {
   height: 1px;
   background: #f1f5f9;
-  margin: 10px 8px 6px;
+  margin: 8px 6px 4px;
 }
 
-/* ── Navigation Item Link ── */
+/* ── Navigation Item Link (Full Oval Pill Capsule like Jasa) ── */
 .sidebar__item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 9.5px 14px;
-  border-radius: 8px;
-  font-size: 13.5px;
+  gap: 10px;
+  padding: 5.5px 14px 5.5px 5.5px;
+  border-radius: 9999px; /* Full Oval Pill */
+  font-size: 13px;
   font-weight: 500;
-  color: #566a7f;
+  color: #475569;
   text-decoration: none;
-  transition: all 0.18s ease-in-out;
+  transition: all 0.18s ease;
   border: none;
   background: transparent;
   width: 100%;
   text-align: left;
   cursor: pointer;
   user-select: none;
+  box-sizing: border-box;
 }
 
 .sidebar__item:hover {
-  background: #f5f5f9;
-  color: #696cff;
+  background: #f8fafc;
+  color: #0f172a;
 }
 
-/* ── Active State (Signature Sneat Purple Glow) ── */
+/* ── Active State (Full Oval Pill with Solid Circle Icon) ── */
 .sidebar__item--active,
 .sidebar__item.active {
-  background: #696cff !important;
-  color: #ffffff !important;
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: none !important;
   font-weight: 600 !important;
-  box-shadow: 0 2px 8px 0 rgba(105, 108, 255, 0.48) !important;
+  box-shadow: none !important;
 }
 
 .sidebar__item--active .sidebar__item-icon,
 .sidebar__item.active .sidebar__item-icon {
+  background: #2563eb !important;
   color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3) !important;
 }
 
 .sidebar__item-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  color: #8592a3;
-  transition: color 0.18s;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%; /* Circle */
+  background: transparent;
+  color: #64748b;
+  transition: all 0.18s ease;
   flex-shrink: 0;
 }
 
+.sidebar__item-icon svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.2;
+}
+
 .sidebar__item:hover .sidebar__item-icon {
-  color: #696cff;
+  color: #0f172a;
+  background: #f1f5f9;
 }
 
 .sidebar__item-label {
@@ -168,59 +208,72 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 13px;
+  letter-spacing: -0.01em;
 }
 
 /* ── Accordion Group Header ── */
 .sidebar__item--group {
   font-weight: 600;
-  color: #566a7f;
+  color: #475569;
 }
 
 .sidebar__item--group-active {
-  color: #696cff;
-  background: #f5f5f9;
+  color: #1d4ed8;
+  background: #f8fafc;
+}
+
+.sidebar__item--group-active .sidebar__item-icon {
+  color: #2563eb;
+  background: #eff6ff;
 }
 
 /* ── Submenu Container ── */
 .sidebar__submenu {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 4px 0 4px 28px;
+  gap: 2.5px;
+  padding: 3px 0 3px 8px;
+  margin-left: 18px;
+  border-left: 1.5px solid #e2e8f0;
   position: relative;
 }
 
-.sidebar__submenu::before {
-  content: '';
-  position: absolute;
-  left: 20px;
-  top: 4px;
-  bottom: 4px;
-  width: 1.5px;
-  background: #e2e8f0;
-}
-
+/* ── Submenu Item (Full Oval Pill Capsule) ── */
 .sidebar__submenu-item {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 5px 12px 5px 5px;
+  border-radius: 9999px; /* Full Oval Pill */
+  font-size: 12.5px;
+  font-weight: 500;
   color: #64748b;
   text-decoration: none;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
   text-align: left;
+  border: none;
+  background: transparent;
 }
 
 .sidebar__submenu-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%; /* Circle */
   flex-shrink: 0;
+  background: transparent;
+  color: #94a3b8;
+  transition: all 0.15s ease;
+}
+
+.sidebar__submenu-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.2;
 }
 
 .sidebar__submenu-item span:not(.sidebar__submenu-icon):not(.sidebar__badge) {
@@ -229,40 +282,58 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .sidebar__submenu-item:hover {
-  color: #696cff;
+  color: #0f172a;
   background: #f8fafc;
+}
+
+.sidebar__submenu-item:hover .sidebar__submenu-icon {
+  color: #2563eb;
+  background: #f1f5f9;
 }
 
 .sidebar__submenu-item--active,
 .sidebar__submenu-item.active {
-  color: #696cff !important;
-  font-weight: 700 !important;
-  background: #eaeaff !important;
+  color: #1d4ed8 !important;
+  font-weight: 600 !important;
+  background: #eff6ff !important;
+  border: none !important;
+}
+
+.sidebar__submenu-item--active .sidebar__submenu-icon,
+.sidebar__submenu-item.active .sidebar__submenu-icon {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3) !important;
 }
 
 /* ── Pill Badges in Sidebar ── */
 .sidebar__badge {
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 9999px;
   line-height: 1;
+  letter-spacing: 0.02em;
 }
 
 .sidebar__badge--amber {
-  background: #ffab00;
-  color: #ffffff;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
 }
 
 .sidebar__badge--rose {
-  background: #ff3e1d;
-  color: #ffffff;
+  background: #ffe4e6;
+  color: #be123c;
+  border: 1px solid #fecdd3;
 }
 
 .sidebar__badge--indigo {
-  background: #696cff;
-  color: #ffffff;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
 }

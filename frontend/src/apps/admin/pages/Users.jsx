@@ -136,21 +136,20 @@ export default function Users() {
         </div>
 
         {/* Table Card */}
-        <div className="card card-pad" style={{ padding: 0 }}>
+        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
           <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>👥 Daftar Pengguna Platform</h3>
+              <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1 }}>
+                <span className="search-icon">🔍</span>
+                <input
+                  id="input-search-users"
+                  className="form-input search-input"
+                  placeholder="Cari nama atau email..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div className="search-wrap" style={{ minWidth: 200, maxWidth: 260 }}>
-                  <span className="search-icon">🔍</span>
-                  <input
-                    id="input-search-users"
-                    className="form-input search-input"
-                    placeholder="Cari nama atau email..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
-                </div>
                 <div style={{ minWidth: 150 }}>
                   <select
                     value={filter}

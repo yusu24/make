@@ -322,5 +322,45 @@ export const jasaApi = {
       inventory_categories: payload.inventory_categories
     });
     return res.data?.data;
+  },
+
+  // Finance & Invoices
+  async getInvoices() {
+    const res = await apiClient.get('/jasa/invoices');
+    return Array.isArray(res.data?.data) ? res.data.data : [];
+  },
+
+  async updateInvoiceStatus(id: string | number, status: string) {
+    const res = await apiClient.put(`/jasa/invoices/${id}/status`, { status });
+    return res.data?.data;
+  },
+
+  // Expenses & Cashflow
+  async getExpenses() {
+    const res = await apiClient.get('/jasa/expenses');
+    return Array.isArray(res.data?.data) ? res.data.data : [];
+  },
+
+  async storeExpense(payload: {
+    description: string;
+    amount: number;
+    category?: string;
+    payment_method?: string;
+    transaction_date?: string;
+    reference_spk_id?: string;
+    recipient_or_payer?: string;
+  }) {
+    const res = await apiClient.post('/jasa/expenses', payload);
+    return res.data?.data;
+  },
+
+  async updateExpense(id: string | number, payload: any) {
+    const res = await apiClient.put(`/jasa/expenses/${id}`, payload);
+    return res.data?.data;
+  },
+
+  async deleteExpense(id: string | number) {
+    const res = await apiClient.delete(`/jasa/expenses/${id}`);
+    return res.data?.success;
   }
 };

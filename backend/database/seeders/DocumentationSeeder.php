@@ -173,6 +173,63 @@ class DocumentationSeeder extends Seeder
             'status' => 'published',
             'module' => 'retail',
             'published_at' => now(),
+            'version' => '1.1'
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catRetail->id,
+            'title' => 'Panduan Laporan Margin & Profitabilitas Produk',
+            'slug' => 'panduan-laporan-margin-profitabilitas-produk',
+            'short_description' => 'Cara menganalisis laba kotor riil, HPP, persentase margin keuntungan, dan membaca diagram ranking produk.',
+            'content' => '
+                <p>Laporan Margin Produk diakses melalui menu <b>Laporan Margin Produk</b> di sidebar Retail. Fitur ini dirancang khusus untuk membedakan antara omzet kotor, modal barang (HPP), dan laba bersih riil per item yang terjual.</p>
+
+                <h2>1. Mengapa Dipisahkan dari Katalog Produk?</h2>
+                <p>Katalog Produk difokuskan untuk kecepatan operasional (kasir dan staf gudang). Demi keamanan data bisnis dan kerahasiaan persentase keuntungan dari kasir umum, analisis laba kotor dan HPP ditempatkan secara khusus di menu Laporan Margin dengan kontrol hak akses (RBAC).</p>
+
+                <h2>2. Cara Membaca Status Margin</h2>
+                <p>Sistem secara otomatis mengelompokkan kesehatan profitabilitas produk berdasarkan persentase margin:</p>
+                <ul>
+                    <li><b>Sangat Sehat (&ge; 30%):</b> Badge Hijau Tua (Produk penyumbang laba sangat tinggi).</li>
+                    <li><b>Sehat (&ge; 20% - 29.9%):</b> Badge Hijau (Margin standar ritel yang aman).</li>
+                    <li><b>Normal (&ge; 10% - 19.9%):</b> Badge Biru (Margin wajar untuk barang perputaran cepat/FMCG).</li>
+                    <li><b>Tipis (&ge; 0% - 9.9%):</b> Badge Amber/Kuning (Margin tipis, perlu evaluasi harga kulakan atau harga jual).</li>
+                    <li><b>Rugi (&lt; 0%):</b> Badge Merah (Harga jual di bawah HPP, segera perbaiki harga jual atau biaya pengadaan).</li>
+                </ul>
+
+                <h2>3. Diagram Horizontal Top 10 Produk</h2>
+                <p>Pada bagian atas halaman laporan, sistem menampilkan grafik <b>Top 10 Produk Penyumbang Laba Kotor Terbesar</b>. Grafik horizontal memudahkan pembacaan nama produk dan menampilkan nilai Rupiah keuntungan riil.</p>
+
+                <h2>4. Cetak & Ekspor Laporan</h2>
+                <p>Anda dapat mencetak laporan dalam format dokumen resmi dengan mengklik tombol <b>Cetak Laporan</b> di kanan atas toolbar.</p>
+            ',
+            'status' => 'published',
+            'module' => 'retail',
+            'published_at' => now(),
+            'version' => '1.0'
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catRetail->id,
+            'title' => 'Panduan Akses Kasir Multi-Device (HP, Tablet, & PC) dalam Satu Wi-Fi',
+            'slug' => 'panduan-akses-multi-device-wifi-lokal',
+            'short_description' => 'Cara menghubungkan kasir dari smartphone atau tablet ke server komputer kasir lokal tanpa perlu konfigurasi IP manual.',
+            'content' => '
+                <p>Aplikasi Bizora mendukung akses kasir multi-device melalui jaringan Wi-Fi lokal secara otomatis.</p>
+
+                <h2>1. Pastikan Perangkat Terhubung ke Wi-Fi yang Sama</h2>
+                <p>Hubungkan HP, Tablet, atau Laptop kasir tambahan ke jaringan Wi-Fi / Hotspot yang sama dengan komputer utama (server).</p>
+
+                <h2>2. Membuka Alamat Aplikasi di HP/Tablet</h2>
+                <p>Di browser HP/Tablet (Chrome/Safari), ketik alamat IP komputer server diikuti port 5173 (contoh: <code>http://192.168.1.10:5173</code>).</p>
+                <p>Sistem API akan secara otomatis mengenali IP server tanpa perlu melakukan perubahan setting konfigurasi (.env) berulang kali.</p>
+
+                <h2>3. Login Akun Staf / Kasir</h2>
+                <p>Gunakan akun staf kasir yang telah didaftarkan di menu <b>Manajemen Staf</b> untuk mulai melayani transaksi pelanggan.</p>
+            ',
+            'status' => 'published',
+            'module' => 'retail',
+            'published_at' => now(),
             'version' => '1.0'
         ]);
 

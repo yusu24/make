@@ -43,8 +43,22 @@ class SubscriptionRequestController extends Controller
         $tenantId = $user->tenant_id;
         $tenant = Tenant::where('tenant_id', $tenantId)->firstOrFail();
 
-        // Determine price
         $planKey = strtolower($request->plan ?? 'basic');
+
+        if ($planKey === 'free') {
+            return response()->json(['message' => 'Paket Free adalah paket dasar gratis dan tidak memerlukan transaksi langganan.'], 422);
+        }
+
+        $tierRanks = ['free' => 0, 'basic' => 1, 'pro' => 2, 'enterprise' => 3];
+        $currentPlan = strtolower($tenant->subscription_plan ?? 'free');
+        $currentRank = $tierRanks[$currentPlan] ?? 0;
+        $targetRank = $tierRanks[$planKey] ?? 1;
+
+        if ($currentRank >= $targetRank && $currentPlan !== 'free') {
+            return response()->json(['message' => "Akun Anda saat ini sudah berada di paket {$tenant->subscription_plan}. Downgrade tidak didukung secara otomatis."], 422);
+        }
+
+        // Determine price
         $planModel = \App\Models\SubscriptionPlan::where('business_category_id', $tenant->business_category_id)
             ->where('plan_key', $planKey)
             ->first();
@@ -183,20 +197,28 @@ class SubscriptionRequestController extends Controller
                 return response()->json(['message' => 'Permintaan sudah diproses sebelumnya'], 422);
             }
 
-            // Update Tenant Plan
+            // Update Tenant Plan and Expiry
             $tenant = Tenant::where('tenant_id', $subReq->tenant_id)->first();
             if ($tenant) {
-                $tenant->update(['subscription_plan' => strtolower($subReq->plan)]);
+                $currentExpires = $tenant->subscription_expires_at && $tenant->subscription_expires_at->isFuture()
+                    ? $tenant->subscription_expires_at
+                    : now();
+
+                $tenant->update([
+                    'subscription_plan'       => strtolower($subReq->plan),
+                    'subscription_status'     => 'active',
+                    'subscription_expires_at' => $currentExpires->copy()->addDays(30),
+                ]);
                 
                 // Notify Tenant Owner
                 $owner = $tenant->owner;
                 if ($owner) {
                     \App\Models\Notification::create([
                         'user_id' => $owner->id,
-                        'type' => 'success',
-                        'title' => 'Langganan Diaktifkan! 🎉',
+                        'type'    => 'success',
+                        'title'   => 'Langganan Diaktifkan! 🎉',
                         'message' => "Permintaan upgrade Anda ke paket " . strtoupper($subReq->plan) . " telah disetujui.",
-                        'data' => ['link' => '/retail/subscription']
+                        'data'    => ['link' => '/retail/subscription']
                     ]);
 
                     if (!empty($owner->email)) {
@@ -205,7 +227,7 @@ class SubscriptionRequestController extends Controller
                                 'customer_name'  => $owner->name,
                                 'invoice_number' => 'REQ-' . $subReq->id,
                                 'plan'           => ucfirst($subReq->plan),
-                                'expires_at'     => now()->addDays(30)->format('d M Y'),
+                                'expires_at'     => $currentExpires->copy()->addDays(30)->format('d M Y'),
                             ]));
                         } catch (\Throwable $e) {
                             \Illuminate\Support\Facades\Log::warning('Gagal mengirim email persetujuan langganan: ' . $e->getMessage());
@@ -214,7 +236,7 @@ class SubscriptionRequestController extends Controller
                 }
             }
 
-            // Mark request as approved
+            // Mark this specific request as approved
             $subReq->update(['status' => 'approved']);
 
             return response()->json(['message' => 'Langganan berhasil diaktifkan!']);

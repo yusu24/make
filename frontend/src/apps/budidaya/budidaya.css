@@ -3,8 +3,8 @@
    AquaGrow — Budidaya Hewan Design System
    ═══════════════════════════════════════════════ */
 
-/* ── Google Font ── */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* ── Google Font (Inter - Matching Seller Clean Standard) ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
   --aq-primary:        #1B4332;
@@ -14,96 +14,105 @@
   --aq-card-bg:        #FFFFFF;
   
   /* Typography Colors */
-  --aq-text-primary:   #000000;
+  --aq-text-primary:   #0f172a;
   --aq-text-secondary: #334155;
   --aq-text-tertiary:  #475569;
   --aq-text-muted:     #64748B;
   
-  --aq-border:         #E9F0EC;
+  --aq-border:         #E2E8F0;
   --aq-shadow:         none;
   --aq-sidebar-w:      240px;
   --aq-sidebar-bg:     #FFFFFF;
   --aq-active-bg:      #F1F5F2;
 }
 
-/* ── Typography Scale ── */
+/* ── Typography Scale (Unified with Seller Standard) ── */
 .aq-page-title {
-  font-size: 24px !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 18px !important;
   font-weight: 600 !important;
-  color: var(--aq-text-primary);
+  color: #0f172a !important;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .aq-section-title {
-  font-size: 18px !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 14px !important;
   font-weight: 600 !important;
-  color: var(--aq-text-primary);
+  color: #1e293b !important;
   margin: 0;
 }
 
 .aq-kpi-label {
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  color: var(--aq-text-tertiary);
-  text-transform: none !important; /* Ensure Sentence case */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  color: #334155 !important;
+  text-transform: none !important;
   margin: 0;
 }
 
 .aq-kpi-value {
-  font-size: 20px !important;
-  font-weight: 600 !important;
-  color: var(--aq-text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
   margin: 4px 0 0;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .aq-body-text {
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  color: var(--aq-text-secondary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #334155 !important;
 }
 
 .aq-small-text {
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  color: var(--aq-text-tertiary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 400 !important;
+  color: #64748b !important;
 }
 
-/* ── Table Standardization (AquaGrow SaaS Standard) ── */
+/* ── Table Standardization (Matching Seller Clean Standard) ── */
 .aq-table-container {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background: var(--aq-card-bg);
+  background: #ffffff;
   border-radius: 16px;
-  border: 1px solid var(--aq-border);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  margin-bottom: 20px;
 }
 
 .aq-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  font-size: 12.5px;
 }
 
 .aq-table-header {
-  background: #FFFFFF !important;
-  border-bottom: 1px solid #E5E7EB !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important; /* Subtle depth */
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
 .aq-table-header-cell {
-  padding: 14px 16px !important; /* Slightly taller for elegance */
-  font-size: 13px !important;
-  font-weight: 600 !important; /* Bolder headers for premium look */
-  color: #000000 !important;
-  text-transform: none !important;
-  letter-spacing: 0.01em;
+  padding: 10px 16px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  background: #f8fafc !important;
   white-space: nowrap;
 }
 
 .aq-table-row {
-  border-bottom: 1px solid #F1F5F9 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
   transition: background 0.15s ease;
 }
 
@@ -112,28 +121,102 @@
 }
 
 .aq-table-row:not(.no-hover):hover {
-  background: #F8FAFC !important;
+  background: #f8fafc !important;
 }
 
 .aq-table-cell {
-  padding: 14px 16px !important;
-  font-size: 14px !important;
-  color: #000000 !important;
-  font-weight: 500 !important; /* Primary data */
-  line-height: 1.5;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  color: #334155 !important;
+  font-weight: 400 !important;
+  line-height: 1.4;
+  vertical-align: middle !important;
+}
+
+.aq-table-cell strong,
+.aq-table-cell b {
+  font-weight: 500 !important;
+  color: #0f172a;
 }
 
 .aq-table-cell-secondary {
-  color: #334155 !important;
-  font-weight: 450 !important; /* Secondary data slightly lighter */
+  color: #64748b !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
 }
 
-.capitalize-first-only {
-  text-transform: lowercase;
+/* Unified Table Actions & Badges (Seller / Retail Standard) */
+.table-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.capitalize-first-only::first-letter {
-  text-transform: uppercase;
+.btn-table-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-table-action:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.btn-table-action-primary {
+  background: #E8F5ED;
+  color: #1B4332;
+  border-color: #c3e6cb;
+}
+
+.btn-table-action-primary:hover {
+  background: #1B4332;
+  color: #ffffff;
+  border-color: #1B4332;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-pill-success {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-pill-warning {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.badge-pill-danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.badge-pill-neutral {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
 }
 
 .aq-text-white {
@@ -146,7 +229,7 @@
 
 /* ── Scope reset ── */
 .budidaya-scope {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--aq-bg);
   color: var(--aq-text-secondary);
   min-height: 100vh;
@@ -155,16 +238,16 @@
 
 /* Responsive Container Spacing */
 .aq-container {
-  padding: 16px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 @media (min-width: 1024px) {
   .aq-container {
-    padding: 28px 32px;
-    gap: 24px;
+    padding: 18px 24px;
+    gap: 12px;
   }
 }
 
@@ -203,7 +286,7 @@
 
 /* Only apply Inter to non-icon elements — don't override Material Symbols! */
 .budidaya-scope *:not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp) {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* ════════════════════════════════════════════════
@@ -498,3 +581,127 @@
 @media (max-width: 1024px) {
   .aq-grid-2 { grid-template-columns: 1fr !important; }
 }
+
+/* ── Budidaya Pagination Theme Overrides (Forest Deep Green #1B4332) ── */
+.sp-btn.active {
+  background: #1B4332 !important;
+  border-color: #1B4332 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(27, 67, 50, 0.25);
+  font-weight: 700;
+}
+
+.sp-btn:hover:not(:disabled):not(.active) {
+  border-color: #1B4332 !important;
+  color: #1B4332 !important;
+}
+
+.sp-select:focus {
+  border-color: #1B4332 !important;
+  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1) !important;
+}
+
+/* ── Responsive Header & Navbar Styles ── */
+.aq-header-container {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #E9F0EC;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.aq-header-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1B4332;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aq-header-btn-bell {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1.5px solid #E9F0EC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748B;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.aq-header-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #1B4332;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.35);
+}
+
+.aq-header-user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .aq-header-container {
+    height: 52px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .aq-header-title {
+    font-size: 14px;
+    max-width: 140px;
+  }
+  .aq-header-btn-bell {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+  .aq-header-btn-bell span {
+    font-size: 18px !important;
+  }
+  .aq-header-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 10.5px;
+  }
+  .aq-header-user-info {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .aq-header-title {
+    font-size: 13px;
+    max-width: 110px;
+  }
+}
+

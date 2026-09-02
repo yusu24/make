@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -9,8 +9,10 @@ import {
   PieChart as PieIcon,
   ShieldCheck,
   Star,
-  Users
+  Users,
+  Printer
 } from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
 import { 
   ResponsiveContainer, 
   AreaChart, 
@@ -32,6 +34,16 @@ import {
   CATEGORY_DISTRIBUTION_DATA, 
   formatRupiah 
 } from '../data/mockData';
+import '../jasa-print.css';
+import {
+  JasaPrintHeader,
+  JasaPrintSectionHeader,
+  JasaPrintAppendixHeader,
+  JasaPrintExplanationBox,
+  JasaPrintFooter,
+  formatRp,
+  formatDateIndo
+} from '../components/JasaPrintLayout';
 
 interface AnalyticsViewProps {
   stats: ServiceStats;
@@ -39,14 +51,26 @@ interface AnalyticsViewProps {
 }
 
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians }) => {
+  const printRef = useRef<HTMLDivElement>(null);
+  
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Laporan-Keuangan-Kinerja-Jasa-${new Date().toISOString().split('T')[0]}`,
+    pageStyle: "@page { size: A4; margin: 1cm !important; }",
+  });
+
   // Sort technicians by completed jobs
   const sortedTechs = [...technicians].sort((a, b) => b.completedJobs - a.completedJobs);
+
+  const totalRevenueAll = REVENUE_MONTHLY_CHART_DATA.reduce((acc, curr) => acc + curr.revenue, 0);
+  const totalLaborAll = REVENUE_MONTHLY_CHART_DATA.reduce((acc, curr) => acc + curr.laborCost, 0);
+  const grossServiceProfit = totalRevenueAll - totalLaborAll;
 
   return (
     <div className="space-y-6">
       {/* Header Bento Card */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-xs">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Business Intelligence</span>
             <h2 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center space-x-2 mt-0.5">
@@ -57,10 +81,17 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
               Evaluasi kinerja keuangan divisi servis, efisiensi waktu respon, utilisasi dan produktivitas teknisi
             </p>
           </div>
-          <div className="hidden sm:flex items-center space-x-2 text-xs">
-            <span className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-semibold">
+          <div className="flex items-center space-x-2.5">
+            <span className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-semibold text-xs">
               Siklus 2026 Q1 - Q3
             </span>
+            <button
+              onClick={() => handlePrint()}
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-xs"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Cetak Laporan PDF</span>
+            </button>
           </div>
         </div>
       </div>
@@ -295,6 +326,163 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
           </div>
         </div>
 
+      </div>
+
+      {/* ========================================================================= */}
+      {/* PRINT-ONLY FORMAL ACCOUNTING SERVICE REPORT TEMPLATE                     */}
+      {/* ========================================================================= */}
+      <div style={{ display: 'none' }}>
+        <div ref={printRef} className="print-only" style={{ padding: 0, fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: '#000000' }}>
+          
+          {/* 1. Header / Kop Laporan Resmi Jasa */}
+          <JasaPrintHeader
+            title="Laporan Kinerja & Keuangan Jasa"
+            subtitle="Rekapitulasi Omzet Layanan Servis & Biaya Tenaga Kerja Teknisi (Service Revenue Statement)"
+            periodText="Siklus 2026 (Januari - September 2026)"
+          />
+
+          {/* 2. Formal Summary Table (Horizontal Borders Only) */}
+          <div style={{ marginBottom: 22 }}>
+            <JasaPrintSectionHeader title="I. Ringkasan Posisi Keuangan Divisi Jasa (Service Financial Summary)" />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#000000' }}>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #000000' }}>
+                  <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                    A. AKUMULASI PENDAPATAN & BIAYA SERVIS
+                  </td>
+                  <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Total Pendapatan Kotor Jasa Layanan</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', width: 140, whiteSpace: 'nowrap' }}>+{formatRp(totalRevenueAll)}</td>
+                  <td style={{ width: 140 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Total Beban Tenaga Kerja / Upah Teknisi</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>({formatRp(totalLaborAll)})</td>
+                  <td></td>
+                </tr>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td style={{ padding: '7px 4px', fontSize: 11, color: '#000000' }}>
+                    LABA KOTOR DIVISI SERVIS (GROSS SERVICE PROFIT)
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>
+                    Margin: {totalRevenueAll > 0 ? ((grossServiceProfit / totalRevenueAll) * 100).toFixed(1) : 0}%
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'right', fontSize: 11.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {formatRp(grossServiceProfit)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 3. Detailed Formal Accounting Ledger Table (NO VERTICAL LINES, BLACK & WHITE) */}
+          <div style={{ marginBottom: 22 }}>
+            <JasaPrintSectionHeader 
+              title="II. Buku Register Pendapatan Jasa Bulanan (Monthly Service Register)" 
+              rightText={`Total ${REVENUE_MONTHLY_CHART_DATA.length} periode pencatatan`} 
+            />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000' }}>
+              <thead>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                  <th style={{ padding: '7px 4px', textAlign: 'center', width: 35, fontWeight: 600 }}>No</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'left', width: 140, fontWeight: 600 }}>Bulan Transaksi</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'right', width: 150, fontWeight: 600, whiteSpace: 'nowrap' }}>Pendapatan Jasa (Rp)</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'right', width: 150, fontWeight: 600, whiteSpace: 'nowrap' }}>Beban Teknisi (Rp)</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'right', width: 150, fontWeight: 600, whiteSpace: 'nowrap' }}>Laba Bersih Layanan (Rp)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {REVENUE_MONTHLY_CHART_DATA.map((item, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                    <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000' }}>{item.month} 2026</td>
+                    <td style={{ padding: '6px 6px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>
+                      +{formatRp(item.revenue)}
+                    </td>
+                    <td style={{ padding: '6px 6px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>
+                      ({formatRp(item.laborCost)})
+                    </td>
+                    <td style={{ padding: '6px 6px', textAlign: 'right', fontWeight: 600, color: '#000000', whiteSpace: 'nowrap' }}>
+                      {formatRp(item.revenue - item.laborCost)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td colSpan={2} style={{ padding: '7px 6px', textAlign: 'right', textTransform: 'uppercase', fontSize: 10, color: '#000000', whiteSpace: 'nowrap' }}>
+                    Total Rekapitulasi:
+                  </td>
+                  <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 10.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    +{formatRp(totalRevenueAll)}
+                  </td>
+                  <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 10.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    ({formatRp(totalLaborAll)})
+                  </td>
+                  <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 11, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {formatRp(grossServiceProfit)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* Kolom Tanda Tangan & Pengesahan Dokumen (Halaman 1) */}
+          <JasaPrintFooter />
+
+          {/* 4. HALAMAN 2: LAMPIRAN METODOLOGI AKUNTANSI JASA */}
+          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+            <JasaPrintAppendixHeader 
+              title="Lampiran: Penjelasan & Metodologi Kinerja Keuangan Jasa"
+              subtitle="Keterangan Metodologi Pengakuan Pendapatan Servis & Alokasi Biaya Tenaga Kerja Langsung"
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+              <JasaPrintExplanationBox
+                number="1"
+                title="Pengakuan Pendapatan Jasa (Service Revenue Recognition)"
+                desc="Pendapatan jasa diakui secara proporsional sesuai penyelesaian pekerjaan SPK dan telah diterbitkan berita acara serah terima oleh teknisi."
+                formula="Rumus: Omzet Jasa = Tarif Biaya Jasa Dasar + Biaya Jam Kerja Tambahan"
+                variant="default"
+              />
+
+              <JasaPrintExplanationBox
+                number="2"
+                title="Biaya Tenaga Kerja Langsung (Direct Labor Cost)"
+                desc="Alokasi upah teknisi per jam kerja dan insentif pengerjaan lapangan yang dibebankan langsung ke setiap proyek servis."
+                formula="Rumus: Biaya Teknisi = Total Jam Kerja × Standar Tarif Upah per Jam"
+                variant="emerald"
+              />
+
+              <JasaPrintExplanationBox
+                number="3"
+                title="Margin Laba Jasa (Gross Service Margin)"
+                desc="Tingkat profitabilitas murni layanan setelah menutup seluruh kompensasi teknisi pelaksana sebelum dikurangi beban kantor."
+                formula="Rumus: Margin = (Laba Kotor Jasa ÷ Total Pendapatan Jasa) × 100%"
+                variant="indigo"
+              />
+
+              <JasaPrintExplanationBox
+                number="4"
+                title="Tingkat Kepatuhan SLA (Service Level Agreement Rate)"
+                desc="Persentase pengerjaan SPK yang berhasil diselesaikan tepat waktu sesuai estimasi target durasi layanan."
+                variant="rose"
+              />
+
+              <JasaPrintExplanationBox
+                number="5"
+                title="Indeks Kepuasan Klien (Customer Satisfaction / CSAT)"
+                desc="Rata-rata penilaian kepuasan pelanggan atas kecepatan respon, keramahan teknisi, dan kualitas hasil perbaikan alat."
+                variant="dark"
+              />
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );

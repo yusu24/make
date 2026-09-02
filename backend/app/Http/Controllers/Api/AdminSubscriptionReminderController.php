@@ -168,7 +168,22 @@ class AdminSubscriptionReminderController extends Controller
                     $msg->to($request->target)->subject('[TEST REMINDER] ' . $subject);
                 });
             } catch (\Exception $e) {
-                // If mail driver fails, return message with success simulation for dev
+                // Handled gracefully in dev/sandbox
+            }
+        } elseif ($request->channel === 'whatsapp') {
+            // If WA Gateway token (e.g. Fonnte) is configured in env or settings, trigger dispatch
+            $waToken = env('FONNTE_TOKEN') ?? ($settings['fonnte_token'] ?? null);
+            if ($waToken) {
+                try {
+                    \Illuminate\Support\Facades\Http::withHeaders([
+                        'Authorization' => $waToken,
+                    ])->post('https://api.fonnte.com/send', [
+                        'target' => $request->target,
+                        'message' => $body,
+                    ]);
+                } catch (\Exception $e) {
+                    // Log error gracefully
+                }
             }
         }
 

@@ -7,6 +7,8 @@ import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import './KulinerDashboard.css';
 
+import ClientPagination from '../components/ClientPagination';
+
 const emptyForm = { 
   supplier_id: '', 
   purchase_date: new Date().toISOString().split('T')[0], 
@@ -24,6 +26,8 @@ export default function KulinerPurchases() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   // Data for the form
   const [suppliers, setSuppliers] = useState([]);
@@ -44,6 +48,7 @@ export default function KulinerPurchases() {
       setPurchases(resPurchases.data.data || []);
       setSuppliers(resSuppliers.data || []);
       setIngredients(resIngredients.data.data || []);
+      setCurrentPage(1);
     } catch (error) {
       toast.error('Gagal memuat data');
     } finally {
@@ -54,6 +59,9 @@ export default function KulinerPurchases() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const totalPages = Math.ceil(purchases.length / itemsPerPage) || 1;
+  const paginatedPurchases = purchases.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleOpenForm = () => {
     setForm({
@@ -185,8 +193,8 @@ export default function KulinerPurchases() {
           </button>
         </div>
 
-        <div className="kd-panel">
-          <div className="kd-table-container" style={{ overflowX: 'auto' }}>
+        <div className="kd-panel" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="kd-table-container" style={{ overflowX: 'auto', marginBottom: 0, border: 'none', borderRadius: 0 }}>
             {loading ? (
               <div className="kd-loading" style={{ padding: 40, textAlign: 'center' }}>Memuat...</div>
             ) : (
@@ -209,7 +217,7 @@ export default function KulinerPurchases() {
                     </td>
                   </tr>
                 ) : (
-                  purchases.map((p) => (
+                  paginatedPurchases.map((p) => (
                     <tr key={p.id}>
                       <td style={{ fontWeight: 600 }}>{p.reference_no}</td>
                       <td>{new Date(p.purchase_date).toLocaleDateString('id-ID')}</td>
@@ -228,6 +236,14 @@ export default function KulinerPurchases() {
               </table>
             )}
           </div>
+          <ClientPagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            setItemsPerPage={setItemsPerPage}
+            totalItems={purchases.length}
+          />
         </div>
       </div>
 

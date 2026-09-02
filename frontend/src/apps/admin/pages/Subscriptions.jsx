@@ -260,25 +260,23 @@ export default function Subscriptions({ defaultTab = 'list' }) {
         </div>
 
         {/* Single unified card — same as Finance.jsx */}
-        <div className="card card-pad" style={{ padding: 0 }}>
+        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
           {/* Card header toolbar */}
           <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>
-                {activeTab === 'list' ? '👥 Daftar Pelanggan Langganan' : '📥 Permintaan Langganan Baru'}
-              </h3>
+              {activeTab === 'list' ? (
+                <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1 }}>
+                  <span className="search-icon">🔍</span>
+                  <input
+                    className="form-input search-input"
+                    placeholder="Cari tenant atau email..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
+              ) : <div style={{ flex: 1 }} />}
+
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                {activeTab === 'list' && (
-                  <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
-                    <span className="search-icon">🔍</span>
-                    <input
-                      className="form-input search-input"
-                      placeholder="Cari tenant atau email..."
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                    />
-                  </div>
-                )}
                 <div className="filter-tabs">
                   <button
                     className={`filter-tab ${activeTab === 'list' ? 'filter-tab--active' : ''}`}

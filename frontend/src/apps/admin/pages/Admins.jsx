@@ -3,6 +3,9 @@ import { api } from '../../../lib/api'
 import { getAvatarStyle, getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
+import Modal from '../../../components/Modal'
+import { useAuth } from '../../../contexts/AuthContext'
+import { KeyRound, Edit3, Trash2 } from 'lucide-react'
 import './Shared.css'
 
 const ALL_PERMS = [
@@ -18,6 +21,7 @@ const ALL_PERMS = [
 ]
 
 export default function Admins() {
+  const { impersonateUser } = useAuth()
   const [admins, setAdmins] = useState([])
   const [roles, setRoles] = useState([])
   const [show, setShow]     = useState(false)
@@ -48,6 +52,16 @@ export default function Admins() {
     }
   }
 
+  const handleImpersonate = async (id) => {
+    if (!confirm('Apakah Anda yakin ingin login sebagai administrator ini?')) return
+    try {
+      const redirect = await impersonateUser(id)
+      window.location.href = redirect
+    } catch (err) {
+      alert('Gagal impersonate: ' + (err.response?.data?.message || err.message))
+    }
+  }
+
   const handleEdit = (admin) => {
     setEditingId(admin.id)
     setForm({
@@ -60,81 +74,45 @@ export default function Admins() {
     setShow(true)
   }
 
+  const handleDelete = async (id) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus admin ini?')) return
+    try {
+      await api.delete(`/admins/${id}`)
+      fetchData()
+    } catch (err) {
+      alert('Gagal menghapus admin: ' + (err.response?.data?.message || err.message))
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.name || !form.email || (!editingId && !form.password)) {
-      setError('Lengkapi semua field')
-      return
-    }
     setSaving(true)
     setError('')
-
-    const selectedRole = roles.find(r => r.id === parseInt(form.saas_role_id))
-
     try {
       if (editingId) {
-        await api.put(`/users/${editingId}`, {
+        const payload = {
           name: form.name,
           email: form.email,
-          role: 'admin',
-          saas_role_id: form.saas_role_id ? parseInt(form.saas_role_id) : null,
-          password: form.password || undefined
-        })
-        
-        setAdmins(v => v.map(a => a.id === editingId ? {
-          ...a,
-          name: form.name,
-          email: form.email,
-          saas_role_id: form.saas_role_id ? parseInt(form.saas_role_id) : null,
-          saas_role: selectedRole ? selectedRole.name : '-',
-          permissions: selectedRole ? (selectedRole.permissions || []) : []
-        } : a))
+          saas_role_id: form.saas_role_id || null
+        }
+        if (form.password) payload.password = form.password
+        await api.put(`/admins/${editingId}`, payload)
       } else {
-        const r = await api.post('/admins', {
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          role: 'admin',
-          saas_role_id: form.saas_role_id ? parseInt(form.saas_role_id) : null
-        })
-        const newAdmin = r.data?.data
-        
-        setAdmins(v => [...v, {
-          id: newAdmin?.id || Date.now(),
-          name: form.name,
-          email: form.email,
-          role: 'admin',
-          status: 'active',
-          joined: new Date().toISOString().slice(0, 10),
-          saas_role_id: form.saas_role_id ? parseInt(form.saas_role_id) : null,
-          saas_role: selectedRole ? selectedRole.name : '-',
-          permissions: selectedRole ? (selectedRole.permissions || []) : []
-        }])
+        await api.post('/admins', form)
       }
       setShow(false)
-      setForm({ name: '', email: '', password: '', saas_role_id: '' })
-      setEditingId(null)
+      fetchData()
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.errors?.email?.[0] || 'Gagal menyimpan admin')
+      setError(err.response?.data?.message || 'Gagal menyimpan data admin')
     } finally {
       setSaving(false)
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Hapus admin ini?')) return
-    setAdmins(v => v.filter(a => a.id !== id))
-    try {
-      await api.delete(`/admins/${id}`)
-    } catch (err) {
-      fetchData() // refresh on error
-    }
-  }
-
-  const filtered = admins.filter(a => {
-    const q = search.toLowerCase()
-    return a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q)
-  })
+  const filtered = admins.filter(a =>
+    a.name?.toLowerCase().includes(search.toLowerCase()) ||
+    a.email?.toLowerCase().includes(search.toLowerCase())
+  )
 
   const {
     currentPage, setCurrentPage,
@@ -146,40 +124,37 @@ export default function Admins() {
   return (
     <>
       <div className="animate-fade-in">
-        <div className="page-header">
+        <div className="page-header mb-4">
           <h2 className="page-title">Manajemen Admin</h2>
         </div>
 
         {/* Table Card */}
-        <div className="card card-pad" style={{ padding: 0 }}>
-          <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>🛡️ Daftar Administrator Sistem</h3>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
-                  <span className="search-icon">🔍</span>
-                  <input
-                    id="input-search-admins"
-                    className="form-input search-input"
-                    placeholder="Cari nama atau email..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
-                </div>
-                <button
-                  id="btn-add-admin"
-                  className="btn btn-primary btn-sm"
-                  style={{ height: 38 }}
-                  onClick={() => {
-                    setShow(true)
-                    setEditingId(null)
-                    setError('')
-                    setForm({ name: '', email: '', password: '', saas_role_id: '' })
-                  }}
-                >
-                  + Tambah Admin
-                </button>
+              <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1 }}>
+                <span className="search-icon">🔍</span>
+                <input
+                  id="input-search-admins"
+                  className="form-input search-input"
+                  placeholder="Cari nama atau email..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
               </div>
+              <button
+                id="btn-add-admin"
+                className="btn btn-primary"
+                style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6 }}
+                onClick={() => {
+                  setShow(true)
+                  setEditingId(null)
+                  setError('')
+                  setForm({ name: '', email: '', password: '', saas_role_id: '' })
+                }}
+              >
+                + Tambah Admin
+              </button>
             </div>
           </div>
 
@@ -243,27 +218,42 @@ export default function Admins() {
                       </span>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: 6 }}>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <button
+                          id={`btn-impersonate-admin-${admin.id}`}
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handleImpersonate(admin.id)}
+                          title="Login sebagai Admin ini"
+                          style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px' }}
+                        >
+                          <KeyRound size={12} />
+                          <span>Login</span>
+                        </button>
+
                         <button
                           id={`btn-edit-admin-${admin.id}`}
                           className="btn btn-secondary btn-sm"
                           onClick={() => handleEdit(admin)}
                           disabled={admin.role === 'super_admin'}
-                          style={{ color: admin.role === 'super_admin' ? 'var(--text-muted)' : 'var(--primary-500)', opacity: admin.role === 'super_admin' ? 0.5 : 1 }}
+                          style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px', opacity: admin.role === 'super_admin' ? 0.5 : 1 }}
                           title={admin.role === 'super_admin' ? 'Super Admin tidak bisa diedit' : 'Edit Admin'}
                         >
-                          ✏
+                          <Edit3 size={12} />
+                          <span>Edit</span>
                         </button>
-                        <button
-                          id={`btn-del-admin-${admin.id}`}
-                          className="btn btn-secondary btn-sm"
-                          style={{ color: admin.role === 'super_admin' ? 'var(--text-muted)' : 'var(--danger-400)', opacity: admin.role === 'super_admin' ? 0.5 : 1 }}
-                          onClick={() => handleDelete(admin.id)}
-                          disabled={admin.role === 'super_admin'}
-                          title={admin.role === 'super_admin' ? 'Super Admin tidak bisa dihapus' : 'Hapus Admin'}
-                        >
-                          🗑
-                        </button>
+
+                        {admin.role !== 'super_admin' && (
+                          <button
+                            id={`btn-del-admin-${admin.id}`}
+                            className="btn btn-secondary btn-sm"
+                            style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px', color: '#dc2626' }}
+                            onClick={() => handleDelete(admin.id)}
+                            title="Hapus Admin"
+                          >
+                            <Trash2 size={12} />
+                            <span>Hapus</span>
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -294,80 +284,82 @@ export default function Admins() {
       </div>
 
       {show && (
-        <div className="modal-overlay" onClick={() => setShow(false)}>
-          <div className="modal modal--lg" onClick={e => e.stopPropagation()}>
-            <h3 className="modal__title">{editingId ? 'Edit Admin' : 'Tambah Admin Baru'}</h3>
-            {error && <div className="auth-alert auth-alert--error" style={{ marginBottom: 12 }}><span>⚠</span> {error}</div>}
-            <form id="form-add-admin" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <div className="form-group">
-                  <label className="form-label">Nama Lengkap</label>
-                  <input
-                    className="form-input"
-                    placeholder="Nama admin"
-                    required
-                    value={form.name}
-                    onChange={e => setForm({ ...form, name: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Email</label>
-                  <input
-                    className="form-input"
-                    type="email"
-                    placeholder="admin@bizora.id"
-                    required
-                    value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })}
-                  />
-                </div>
-              </div>
+        <Modal 
+          isOpen={show} 
+          onClose={() => setShow(false)} 
+          title={editingId ? 'Edit Administrator' : 'Tambah Administrator Baru'}
+          maxWidth="540px"
+        >
+          {error && <div className="auth-alert auth-alert--error" style={{ marginBottom: 16 }}><span>⚠</span> {error}</div>}
+          <form id="form-add-admin" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div className="form-group">
-                <label className="form-label">{editingId ? 'Password (Kosongkan jika tidak diubah)' : 'Password'}</label>
+                <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Nama Lengkap</label>
                 <input
                   className="form-input"
-                  type="password"
-                  placeholder={editingId ? 'Min. 8 karakter' : 'Min. 8 karakter'}
-                  required={!editingId}
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  placeholder="Nama admin"
+                  required
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Pilih Role SaaS</label>
-                <select
-                  className="form-select"
+                <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Email</label>
+                <input
+                  className="form-input"
+                  type="email"
+                  placeholder="admin@bizora.id"
                   required
-                  value={form.saas_role_id}
-                  onChange={e => setForm({ ...form, saas_role_id: e.target.value })}
-                >
-                  <option value="">-- Pilih Role --</option>
-                  {roles.map(r => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
-                  ))}
-                </select>
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+                />
               </div>
-              <div className="modal__actions">
-                <button
-                  id="btn-cancel-admin"
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShow(false)}
-                >
-                  Batal
-                </button>
-                <button
-                  id="btn-save-admin"
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={saving}
-                >
-                  {saving ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Menyimpan...</> : 'Simpan Admin'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>{editingId ? 'Password (Kosongkan jika tidak diubah)' : 'Password'}</label>
+              <input
+                className="form-input"
+                type="password"
+                placeholder={editingId ? 'Min. 8 karakter (opsional)' : 'Min. 8 karakter'}
+                required={!editingId}
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Pilih Role SaaS</label>
+              <select
+                className="form-input"
+                required
+                value={form.saas_role_id}
+                onChange={e => setForm({ ...form, saas_role_id: e.target.value })}
+              >
+                <option value="">-- Pilih Role --</option>
+                {roles.map(r => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="modal__actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
+              <button
+                id="btn-cancel-admin"
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShow(false)}
+              >
+                Batal
+              </button>
+              <button
+                id="btn-save-admin"
+                type="submit"
+                className="btn btn-primary"
+                disabled={saving}
+              >
+                {saving ? 'Menyimpan...' : 'Simpan Admin'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </>
   )

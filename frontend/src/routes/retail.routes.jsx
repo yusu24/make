@@ -21,6 +21,7 @@ const RetailRoles = lazy(() => import('../apps/retail/pages/Roles'));
 const RetailSubscription = lazy(() => import('../apps/retail/pages/Subscription'));
 const RetailSalesReport = lazy(() => import('../apps/retail/pages/SalesReport'));
 const RetailProductReport = lazy(() => import('../apps/retail/pages/ProductReport'));
+const RetailProductMarginReport = lazy(() => import('../apps/retail/pages/ProductMarginReport'));
 const RetailCustomerReport = lazy(() => import('../apps/retail/pages/CustomerReport'));
 const RetailShiftReport = lazy(() => import('../apps/retail/pages/ShiftReport'));
 const RetailPaymentReport = lazy(() => import('../apps/retail/pages/PaymentReport'));
@@ -99,6 +100,7 @@ const retailRoutes = (
       <Route index element={<Navigate to="sales" replace />} />
       <Route path="sales" element={<RetailSalesReport />} />
       <Route path="products" element={<RetailProductReport />} />
+      <Route path="margins" element={<RetailProductMarginReport />} />
       <Route path="customers" element={<RetailCustomerReport />} />
       <Route path="consignment" element={<RetailConsignment />} />
       <Route path="shifts" element={<RetailShiftReport />} />

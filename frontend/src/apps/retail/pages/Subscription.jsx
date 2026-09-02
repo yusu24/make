@@ -233,19 +233,41 @@ export default function Subscription() {
                        </li>
                      ))}
                   </ul>
-                  {currentPlan === plan.id ? (
-                    <button className="btn btn-secondary" style={{ width: '100%' }} disabled>Paket Anda</button>
-                  ) : pendingReq?.plan === plan.id ? (
-                    <button className="btn btn-warning" style={{ width: '100%', cursor: 'default' }} disabled>Dalam Proses...</button>
-                  ) : (
-                    <button 
-                      className="btn btn-primary" 
-                      style={{ width: '100%', background: plan.id === 'pro' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : '', border: 'none' }}
-                      onClick={() => { setSelectedPlan(plan); setShowOrderModal(true); }}
-                    >
-                      Pilih Paket
-                    </button>
-                  )}
+                  {(() => {
+                    const PLAN_TIER = { free: 0, basic: 1, pro: 2, enterprise: 3 };
+                    const curTier = PLAN_TIER[currentPlan?.toLowerCase()] ?? 0;
+                    const targetTier = PLAN_TIER[plan.id?.toLowerCase()] ?? 0;
+                    const isCurrent = currentPlan?.toLowerCase() === plan.id?.toLowerCase();
+                    const isDowngrade = targetTier < curTier || (plan.id === 'free' && currentPlan !== 'free');
+
+                    if (isCurrent) {
+                      return <button className="btn btn-secondary" style={{ width: '100%' }} disabled>Paket Anda Saat Ini</button>;
+                    }
+                    if (pendingReq?.plan === plan.id) {
+                      return <button className="btn btn-warning" style={{ width: '100%', cursor: 'default' }} disabled>Dalam Proses Aktivasi...</button>;
+                    }
+                    if (isDowngrade) {
+                      return (
+                        <button 
+                          className="btn btn-secondary" 
+                          style={{ width: '100%', opacity: 0.5, cursor: 'not-allowed', background: 'var(--bg-elevated)', color: 'var(--text-muted)' }} 
+                          disabled 
+                          title="Downgrade paket tidak tersedia secara langsung"
+                        >
+                          Downgrade Tidak Tersedia
+                        </button>
+                      );
+                    }
+                    return (
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ width: '100%', background: plan.id === 'pro' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : '', border: 'none' }}
+                        onClick={() => { setSelectedPlan(plan); setShowOrderModal(true); }}
+                      >
+                        Pilih &amp; Upgrade Paket
+                      </button>
+                    );
+                  })()}
                </div>
              ))}
           </div>

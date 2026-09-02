@@ -4,20 +4,35 @@ import '../retail.css';
 
 
 export default function RetailPagination({
-  currentPage,
+  currentPage = 1,
   setCurrentPage,
-  pageSize,
+  pageSize = 10,
   setPageSize,
   totalPages,
-  totalItems,
+  totalItems = 0,
   startIndex,
   endIndex,
 }) {
+  const safeCurrentPage = Number(currentPage) || 1;
+  const safePageSize = Number(pageSize) || 10;
+  const safeTotalItems = Number(totalItems) || 0;
+  const safeTotalPages = Number(totalPages) || Math.ceil(safeTotalItems / safePageSize) || 1;
+
+  const calcStart = (startIndex !== undefined && !isNaN(startIndex))
+    ? Number(startIndex)
+    : (safeCurrentPage - 1) * safePageSize;
+  const calcEnd = (endIndex !== undefined && !isNaN(endIndex))
+    ? Number(endIndex)
+    : Math.min(calcStart + safePageSize, safeTotalItems);
+
+  const displayStart = safeTotalItems > 0 ? calcStart + 1 : 0;
+  const displayEnd = Math.min(calcEnd, safeTotalItems);
+
   const pageNumbers = [];
   
   // Calculate range of page numbers to show (max 5 pages shown at a time)
-  let startPage = Math.max(1, currentPage - 2);
-  let endPage = Math.min(totalPages, startPage + 4);
+  let startPage = Math.max(1, safeCurrentPage - 2);
+  let endPage = Math.min(safeTotalPages, startPage + 4);
   
   if (endPage - startPage < 4) {
     startPage = Math.max(1, endPage - 4);
@@ -30,7 +45,7 @@ export default function RetailPagination({
   return (
     <div className="retail-pagination-container">
       <div className="retail-pagination-info">
-        Menampilkan {totalItems > 0 ? startIndex + 1 : 0}–{endIndex} dari {totalItems} data
+        {displayStart}–{displayEnd} dari {safeTotalItems}
       </div>
       <div className="retail-pagination-controls">
         <div className="retail-pagination-select-wrapper">

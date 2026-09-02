@@ -45,5 +45,14 @@ Schedule::command('app:check-expired-subscriptions')->daily()->at('00:00')->name
 Schedule::command('backup:run')->daily()->at('03:00')->name('daily-backup')->withoutOverlapping();
 Schedule::command('backup:clean')->daily()->at('03:30')->name('cleanup-old-backups')->withoutOverlapping();
 
+// Backup otomatis terjadwal per tenant Retail ke email masing-masing
+Schedule::command('retail:auto-backup')->daily()->at('02:00')->name('tenant-retail-auto-backups')->withoutOverlapping();
+
+// Backup otomatis terjadwal per tenant Kuliner (F&B) ke email masing-masing
+Schedule::command('kuliner:auto-backup')->daily()->at('02:15')->name('tenant-kuliner-auto-backups')->withoutOverlapping();
+
+// Backup otomatis terjadwal per tenant Jasa (Service & Field Ops) ke email masing-masing
+Schedule::command('jasa:auto-backup')->daily()->at('02:30')->name('tenant-jasa-auto-backups')->withoutOverlapping();
+
 // Cek kesehatan backup (umur & ukuran) tiap hari, kirim notifikasi kalau ada yang tidak sehat.
 Schedule::command('backup:monitor')->daily()->at('08:00')->name('monitor-backup-health');

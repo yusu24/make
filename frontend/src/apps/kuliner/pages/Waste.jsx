@@ -87,8 +87,8 @@ export default function Waste() {
           <button className="kd-btn kd-btn-primary" onClick={openCreate}>{t('kulinerInventory.addWasteBtn')}</button>
         </div>
 
-        <div className="kd-panel">
-          <div className="kd-table-container" style={{ overflowX: 'auto' }}>
+        <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+          <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <table className="kd-table">
               <thead>
                 <tr>

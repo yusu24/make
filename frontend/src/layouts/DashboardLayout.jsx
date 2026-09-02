@@ -41,8 +41,9 @@ export default function DashboardLayout() {
 
   // Leaving the page restores whatever collapsed/header state the user had.
   const isPosPage = pathname === '/retail/pos' || pathname === '/seller/pos'
+  const isMobile = window.innerWidth < 768
   const effectiveCollapsed = isPosPage ? true : collapsed
-  const sidebarOffset = effectiveCollapsed ? 68 : 260
+  const sidebarOffset = isMobile ? 0 : (effectiveCollapsed ? 68 : 260)
 
   const handleExitImpersonate = () => {
     const redirectTo = exitImpersonate()

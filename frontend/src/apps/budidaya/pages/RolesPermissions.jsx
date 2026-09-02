@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import '../budidaya.css'
-import { LoadingButton } from '../components/UXComponents'
+import usePagination from '../../../hooks/usePagination'
+import BudidayaPagination from '../components/BudidayaPagination'
 
 const getPermissions = (terms) => {
   const opCategory = terms.isTanaman ? 'Operasi Kebun' : (terms.category === 'aquaculture' ? 'Operasi Tambak' : 'Operasi Peternakan')
@@ -119,25 +120,37 @@ export default function RolesPermissions() {
     }
   }
 
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(roles)
+
   return (
     <div className="aq-container">
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-        <button className="btn btn-primary" onClick={handleCreateNew} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_moderator</span>
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 0 }}>
+        <button className="btn btn-primary" onClick={handleCreateNew} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '38px', padding: '0 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add_moderator</span>
           Buat Peran Baru
         </button>
       </div>
 
       {/* Table Section */}
-      <div style={{ background: '#fff', borderRadius: '20px', padding: '0', border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+      <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
-            <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E9F0EC' }}>
-              <th style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '700', color: '#1E293B' }}>Nama Peran</th>
-              <th style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '700', color: '#1E293B' }}>Deskripsi</th>
-              <th style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '700', color: '#1E293B' }}>Hak Akses Aktif</th>
-              <th style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '700', color: '#1E293B', textAlign: 'right' }}>Aksi</th>
+            <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+              <th style={{ padding: '10px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Nama Peran</th>
+              <th style={{ padding: '10px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Deskripsi</th>
+              <th style={{ padding: '10px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Hak Akses Aktif</th>
+              <th style={{ padding: '10px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -146,46 +159,49 @@ export default function RolesPermissions() {
             ) : roles.length === 0 ? (
               <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>Belum ada peran terdaftar.</td></tr>
             ) : (
-              roles.map(role => {
+              paginatedData.map(role => {
                 // Count active permissions
                 const activePermsCount = Object.values(role.permissions || {}).filter(Boolean).length
                 return (
                   <tr key={role.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.2s' }}>
-                    <td style={{ padding: '18px 24px' }}>
+                    <td style={{ padding: '12px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#E8F5ED', color: '#2D6A4F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '12px' }}>
+                        <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E8F5ED', color: '#2D6A4F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '12px', flexShrink: 0 }}>
                           {role.name ? role.name.charAt(0).toUpperCase() : 'R'}
                         </div>
-                        <div>
-                          <p style={{ margin: 0, fontWeight: '700', color: '#1A1C1A', fontSize: '14px' }}>{role.name}</p>
-                          <span style={{ fontSize: '11px', color: '#94A3B8' }}>{role.is_system ? 'Bawaan Sistem' : 'Kustom Tenant'}</span>
-                        </div>
+                        <span style={{ color: '#0f172a', fontSize: '13px', fontWeight: 600 }}>{role.name}</span>
+                        {role.is_system && (
+                          <span style={{ fontSize: '10.5px', background: '#F1F5F9', color: '#64748B', padding: '2px 6px', borderRadius: '4px', fontWeight: 500 }}>
+                            Sistem
+                          </span>
+                        )}
                       </div>
                     </td>
-                    <td style={{ padding: '18px 24px', fontSize: '13px', color: '#64748B' }}>
+                    <td style={{ padding: '12px 16px', fontSize: '12.5px', color: '#64748B' }}>
                       {role.description || '-'}
                     </td>
-                    <td style={{ padding: '18px 24px' }}>
-                      <span style={{ padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: '#E8F5ED', color: '#2D6A4F' }}>
+                    <td style={{ padding: '12px 16px' }}>
+                      <span className="badge-pill badge-pill-success">
                         {activePermsCount} Izin Aktif
                       </span>
                     </td>
-                    <td style={{ padding: '18px 24px', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                      <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
                         <button
                           onClick={() => handleEdit(role)}
-                          style={{ border: 'none', background: '#F1F5F9', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: '#475569' }}
+                          className="btn-table-action"
+                          title="Edit Peran"
                         >
                           <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
-                          Edit
                         </button>
                         {!role.is_system && (
                           <button
                             onClick={() => handleDeleteRole(role)}
-                            style={{ border: 'none', background: '#FEE2E2', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: '#EF4444' }}
+                            className="btn-table-action"
+                            style={{ color: '#ef4444' }}
+                            title="Hapus Peran"
                           >
                             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
-                            Hapus
                           </button>
                         )}
                       </div>
@@ -196,6 +212,16 @@ export default function RolesPermissions() {
             )}
           </tbody>
         </table>
+        <BudidayaPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+        />
       </div>
 
       {/* Create / Edit Modal */}

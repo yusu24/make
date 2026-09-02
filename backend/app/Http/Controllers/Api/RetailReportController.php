@@ -435,4 +435,87 @@ class RetailReportController extends Controller
             'payments' => $paymentsFormatted
         ]);
     }
+
+    // GET /api/retail/reports/product-margins?startDate=&endDate=&category_id=
+    public function productMargins(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $start = $request->query('startDate', now()->startOfMonth()->toDateString());
+        $end = $request->query('endDate', now()->toDateString());
+        $categoryId = $request->query('category_id');
+
+        $query = RetailTransactionItem::whereHas('transaction', function ($q) use ($tenantId, $start, $end) {
+            $q->where('tenant_id', $tenantId)
+              ->where('status', 'paid')
+              ->whereBetween('created_at', ["$start 00:00:00", "$end 23:59:59"]);
+        })->with(['product.category']);
+
+        if ($categoryId) {
+            $query->whereHas('product', function($q) use ($categoryId) {
+                $q->where('category_id', $categoryId);
+            });
+        }
+
+        $items = $query->get();
+
+        // Group items by product_id
+        $grouped = $items->groupBy('product_id');
+
+        $marginList = [];
+        $totalSalesAll = 0;
+        $totalCogsAll = 0;
+
+        foreach ($grouped as $productId => $prodItems) {
+            $first = $prodItems->first();
+            $product = $first->product;
+
+            $totalQty = $prodItems->sum('qty');
+            $totalRevenue = $prodItems->sum('subtotal');
+            $totalCogs = $prodItems->sum(function ($item) use ($product) {
+                $cost = $item->cost_price > 0 ? $item->cost_price : ($product ? $product->price_buy : 0);
+                return $cost * $item->qty;
+            });
+
+            $marginRp = $totalRevenue - $totalCogs;
+            $marginPct = $totalRevenue > 0 ? round(($marginRp / $totalRevenue) * 100, 1) : 0;
+
+            $totalSalesAll += $totalRevenue;
+            $totalCogsAll += $totalCogs;
+
+            $marginList[] = [
+                'product_id' => $productId,
+                'name' => $product ? $product->name : 'Produk Dihapus',
+                'sku' => $product ? $product->sku : '-',
+                'category_name' => $product && $product->category ? $product->category->name : 'Umum',
+                'unit' => $product ? $product->unit : 'Pcs',
+                'total_qty' => (float) $totalQty,
+                'total_revenue' => (float) $totalRevenue,
+                'total_cogs' => (float) $totalCogs,
+                'margin_rp' => (float) $marginRp,
+                'margin_pct' => (float) $marginPct,
+            ];
+        }
+
+        // Sort by margin_rp descending
+        usort($marginList, fn($a, $b) => $b['margin_rp'] <=> $a['margin_rp']);
+
+        $totalMarginAll = $totalSalesAll - $totalCogsAll;
+        $avgMarginPct = $totalSalesAll > 0 ? round(($totalMarginAll / $totalSalesAll) * 100, 1) : 0;
+
+        // Top 10 products by margin
+        $topMargins = array_slice($marginList, 0, 10);
+
+        return response()->json([
+            'period' => ['start' => $start, 'end' => $end],
+            'summary' => [
+                'total_revenue' => (float) $totalSalesAll,
+                'total_cogs' => (float) $totalCogsAll,
+                'total_margin' => (float) $totalMarginAll,
+                'avg_margin_pct' => (float) $avgMarginPct,
+                'total_products_sold' => count($marginList),
+            ],
+            'top_margins' => $topMargins,
+            'data' => $marginList,
+        ]);
+    }
 }

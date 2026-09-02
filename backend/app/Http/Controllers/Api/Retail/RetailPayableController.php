@@ -12,7 +12,25 @@ class RetailPayableController extends Controller
 {
     public function index(Request $request)
     {
-        $payables = RetailPayable::with(['supplier', 'payments'])->latest()->get();
+        $query = RetailPayable::with(['supplier', 'payments'])->latest();
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('startDate')) {
+            $query->whereDate('created_at', '>=', $request->startDate);
+        }
+
+        if ($request->filled('endDate')) {
+            $query->whereDate('created_at', '<=', $request->endDate);
+        }
+
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->supplier_id);
+        }
+
+        $payables = $query->get();
 
         return response()->json([
             'data' => $payables,

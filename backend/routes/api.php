@@ -28,8 +28,10 @@ use App\Http\Controllers\Api\DocumentationReaderController;
 
 // ─── PUBLIC ROUTES ───────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login',    [AuthController::class, 'login']);
+    Route::post('register',     [AuthController::class, 'register']);
+    Route::post('login',        [AuthController::class, 'login']);
+    Route::post('verify-otp',   [AuthController::class, 'verifyOtp']);
+    Route::post('resend-otp',   [AuthController::class, 'resendOtp']);
     Route::post('demo-sandbox', [AuthController::class, 'createDemoSandbox']);
 });
 
@@ -247,6 +249,8 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 
                 Route::get('settings/backup', [\App\Http\Controllers\Api\Retail\RetailBackupController::class, 'download']);
                 Route::post('settings/backup/email', [\App\Http\Controllers\Api\Retail\RetailBackupController::class, 'email']);
+                Route::get('settings/backup/config', [\App\Http\Controllers\Api\Retail\RetailBackupController::class, 'getSettings']);
+                Route::post('settings/backup/config', [\App\Http\Controllers\Api\Retail\RetailBackupController::class, 'updateSettings']);
             });
 
             // Roles
@@ -405,6 +409,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::get('reports/customers', [RetailReportController::class, 'customersReport']);
                 Route::get('reports/shifts', [RetailReportController::class, 'shiftsReport']);
                 Route::get('reports/payments', [RetailReportController::class, 'paymentsReport']);
+                Route::get('reports/product-margins', [RetailReportController::class, 'productMargins']);
             });
         });
 
@@ -450,8 +455,11 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
 
             // Invoices & Expenses
             Route::get('invoices', [\App\Http\Controllers\Api\JasaController::class, 'getInvoices']);
+            Route::put('invoices/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateInvoiceStatus']);
             Route::get('expenses', [\App\Http\Controllers\Api\JasaController::class, 'getExpenses']);
             Route::post('expenses', [\App\Http\Controllers\Api\JasaController::class, 'storeExpense']);
+            Route::put('expenses/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateExpense']);
+            Route::delete('expenses/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyExpense']);
 
             // Inventory
             Route::get('inventory', [\App\Http\Controllers\Api\JasaController::class, 'getInventory']);
@@ -461,6 +469,14 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             
             // Calendar
             Route::get('calendar-events', [\App\Http\Controllers\Api\JasaController::class, 'getCalendarEvents']);
+
+            // Backup & Data Security
+            Route::prefix('settings/backup')->group(function () {
+                Route::get('config', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'getSettings']);
+                Route::post('config', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'updateSettings']);
+                Route::get('download', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'download']);
+                Route::post('email', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'email']);
+            });
         });
 
         // ─── BUDIDAYA (AQUACULTURE) ENDPOINTS ───────────────────────────────────
@@ -527,6 +543,21 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::get('finance/summary', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'getSummary']);
             Route::get('finance/ledger', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'getLedger']);
             Route::apiResource('expenses', \App\Http\Controllers\Api\Budidaya\FinanceController::class)->except(['show']);
+            Route::get('incomes', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'indexIncomes']);
+            Route::post('incomes', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'storeIncome']);
+            Route::put('incomes/{id}', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'updateIncome']);
+            Route::delete('incomes/{id}', [\App\Http\Controllers\Api\Budidaya\FinanceController::class, 'destroyIncome']);
+
+            // Master Data: Pos Keuangan & Satuan Dasar
+            Route::get('finance-categories', [\App\Http\Controllers\Api\Budidaya\MasterDataController::class, 'indexFinanceCategories']);
+            Route::post('finance-categories', [\App\Http\Controllers\Api\Budidaya\MasterDataController::class, 'storeFinanceCategory']);
+            Route::put('finance-categories/{id}', [\App\Http\Controllers\Api\Budidaya\MasterDataController::class, 'updateFinanceCategory']);
+            Route::delete('finance-categories/{id}', [\App\Http\Controllers\Api\Budidaya\MasterDataController::class, 'destroyFinanceCategory']);
+
+            Route::get('units', [\App\Http\Controllers\Api\Budidaya\MasterDataController::class, 'indexUnits']);
+            Route::post('units', [\App\Http\Controllers\Api\Budidaya\MasterDataController::class, 'storeUnit']);
+            Route::put('units/{id}', [\App\Http\Controllers\Api\Budidaya\MasterDataController::class, 'updateUnit']);
+            Route::delete('units/{id}', [\App\Http\Controllers\Api\Budidaya\MasterDataController::class, 'destroyUnit']);
             
             // Settings & Farming Context / Presets
             Route::get('context', [\App\Http\Controllers\Api\Budidaya\BudidayaSettingController::class, 'getContext']);
@@ -557,6 +588,12 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::post('cycle', [\App\Http\Controllers\Api\CoreBudidayaController::class, 'storeCycle']);
             Route::post('expense', [\App\Http\Controllers\Api\CoreBudidayaController::class, 'storeExpense']);
             Route::post('harvest', [\App\Http\Controllers\Api\CoreBudidayaController::class, 'storeHarvest']);
+
+            // Backup
+            Route::get('settings/backup/config',    [\App\Http\Controllers\Api\Budidaya\BudidayaBackupController::class, 'getSettings']);
+            Route::post('settings/backup/config',   [\App\Http\Controllers\Api\Budidaya\BudidayaBackupController::class, 'updateSettings']);
+            Route::get('settings/backup/download',  [\App\Http\Controllers\Api\Budidaya\BudidayaBackupController::class, 'download']);
+            Route::post('settings/backup/email',    [\App\Http\Controllers\Api\Budidaya\BudidayaBackupController::class, 'email']);
         });
 
         // Culinary Admin Routes (Accessible for all culinary tenants)
@@ -600,6 +637,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::post('ai-insights', [\App\Http\Controllers\Api\KulinerController::class, 'getAiInsights']);
             Route::get('testimonials', [\App\Http\Controllers\Api\KulinerController::class, 'getAdminTestimonials']);
             Route::patch('testimonials/{id}/status', [\App\Http\Controllers\Api\KulinerController::class, 'updateTestimonialStatus']);
+            Route::delete('testimonials/{id}', [\App\Http\Controllers\Api\KulinerController::class, 'destroyTestimonial']);
 
             // Promos
             Route::get('promos', [\App\Http\Controllers\Api\KulinerController::class, 'getPromos']);
@@ -696,6 +734,14 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::patch('tables/{id}/status', [\App\Http\Controllers\Api\Kuliner\TableController::class, 'updateStatus']);
                 Route::delete('tables/{id}', [\App\Http\Controllers\Api\Kuliner\TableController::class, 'destroy']);
             });
+
+            // ── Backup & Data Security ────────────────────────────────────────
+            Route::prefix('settings/backup')->group(function () {
+                Route::get('config', [\App\Http\Controllers\Api\Kuliner\KulinerBackupController::class, 'getSettings']);
+                Route::post('config', [\App\Http\Controllers\Api\Kuliner\KulinerBackupController::class, 'updateSettings']);
+                Route::get('download', [\App\Http\Controllers\Api\Kuliner\KulinerBackupController::class, 'download']);
+                Route::post('email', [\App\Http\Controllers\Api\Kuliner\KulinerBackupController::class, 'email']);
+            });
         });
 
         // Website Orders (Requires website_order module)
@@ -711,6 +757,9 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::get('staff', [RetailStaffController::class, 'index']);
         Route::get('tenants', [TenantController::class, 'index']);
         Route::post('tenants', [TenantController::class, 'store']);
+        Route::get('tenants/{tenant_id}', [TenantController::class, 'show']);
+        Route::put('tenants/{tenant_id}', [TenantController::class, 'update']);
+        Route::delete('tenants/{tenant_id}', [TenantController::class, 'destroy']);
         Route::put('tenants/{tenant_id}/plan', [TenantController::class, 'updatePlan']);
         Route::put('tenants/{tenant_id}/status', [TenantController::class, 'updateStatus']);
         Route::get('tenants/{tenant_id}/modules', [TenantController::class, 'getModules']);
@@ -747,8 +796,10 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         // Categories & Subscription Requests
         Route::get('categories', [BusinessCategoryController::class, 'index']);
         Route::get('subscription-plans', [\App\Http\Controllers\Api\SubscriptionPlanController::class, 'index']);
+        Route::post('subscription-plans', [\App\Http\Controllers\Api\SubscriptionPlanController::class, 'store']);
         Route::post('subscription-plans/defaults', [\App\Http\Controllers\Api\SubscriptionPlanController::class, 'createDefaults']);
         Route::put('subscription-plans/{id}', [\App\Http\Controllers\Api\SubscriptionPlanController::class, 'update']);
+        Route::delete('subscription-plans/{id}', [\App\Http\Controllers\Api\SubscriptionPlanController::class, 'destroy']);
         Route::get('subscription/requests', [SubscriptionRequestController::class, 'index']);
         Route::post('subscription/requests/{id}/approve', [SubscriptionRequestController::class, 'approve']);
         Route::post('subscription/requests/{id}/reject', [SubscriptionRequestController::class, 'reject']);
@@ -780,10 +831,29 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     // SELLER MODULE ROUTES
     // =========================================================================
     Route::prefix('seller')->group(function () {
+        // Warehouses
         Route::get('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'index']);
         Route::post('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'store']);
         Route::put('warehouses/{id}', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'update']);
         Route::delete('warehouses/{id}', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'destroy']);
+
+        // Products
+        Route::get('products', [\App\Http\Controllers\Api\SellerProductController::class, 'index']);
+        Route::post('products', [\App\Http\Controllers\Api\SellerProductController::class, 'store']);
+        Route::put('products/{id}', [\App\Http\Controllers\Api\SellerProductController::class, 'update']);
+        Route::patch('products/{id}/stock', [\App\Http\Controllers\Api\SellerProductController::class, 'updateStock']);
+        Route::delete('products/{id}', [\App\Http\Controllers\Api\SellerProductController::class, 'destroy']);
+
+        // Orders
+        Route::get('orders', [\App\Http\Controllers\Api\SellerOrderController::class, 'index']);
+        Route::post('orders', [\App\Http\Controllers\Api\SellerOrderController::class, 'store']);
+        Route::patch('orders/{id}/status', [\App\Http\Controllers\Api\SellerOrderController::class, 'updateStatus']);
+
+        // Channels & Sync
+        Route::get('channels', [\App\Http\Controllers\Api\SellerChannelController::class, 'index']);
+        Route::patch('channels/{id}/toggle', [\App\Http\Controllers\Api\SellerChannelController::class, 'toggle']);
+        Route::post('sync', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncNow']);
+        Route::get('sync-logs', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncLogs']);
     });
 });
 

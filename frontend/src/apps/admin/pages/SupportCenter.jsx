@@ -207,27 +207,43 @@ export default function SupportCenter() {
           </div>
 
           {/* ── Filters + Table ── */}
-          <div className="card card-pad" style={{ padding: 0 }}>
+          <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
                 <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
                   <span className="search-icon">🔍</span>
                   <input className="form-input search-input" placeholder="Cari tiket..." value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
-                <div className="filter-tabs">
-                  {['all', 'open', 'in_progress', 'resolved'].map(s => (
-                    <button key={s} className={`filter-tab ${filter === s ? 'filter-tab--active' : ''}`} onClick={() => setFilter(s)}>
-                      {s === 'all' ? 'Semua' : STATUS_LABEL[s]}
-                    </button>
-                  ))}
+                <div style={{ minWidth: 150 }}>
+                  <select
+                    id="select-filter-ticket-status"
+                    className="form-input"
+                    value={filter}
+                    onChange={e => setFilter(e.target.value)}
+                    style={{
+                      padding: '8px 12px',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      outline: 'none',
+                      height: 38,
+                      width: 'auto',
+                      minWidth: 150
+                    }}
+                  >
+                    <option value="all">Semua Status</option>
+                    <option value="open">📬 Baru</option>
+                    <option value="in_progress">⚙️ Diproses</option>
+                    <option value="resolved">✅ Selesai</option>
+                  </select>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <button className="btn btn-secondary" onClick={fetchData} disabled={loading}>
+                <button className="btn btn-secondary" onClick={fetchData} disabled={loading} style={{ height: 38, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
                   🔄 Refresh
                 </button>
-                <button className="btn btn-primary" onClick={() => setCreateOpen(true)}>
+                <button className="btn btn-primary" onClick={() => setCreateOpen(true)} style={{ height: 38, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
                   + Buat Tiket
                 </button>
               </div>

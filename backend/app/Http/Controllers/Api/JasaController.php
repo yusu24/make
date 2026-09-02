@@ -777,7 +777,12 @@ class JasaController extends Controller
     {
         $request->validate([
             'description' => 'required|string',
-            'amount' => 'required|numeric',
+            'amount' => 'required|numeric|min:0',
+            'category' => 'nullable|string',
+            'payment_method' => 'nullable|string',
+            'transaction_date' => 'nullable|date',
+            'reference_spk_id' => 'nullable|string',
+            'recipient_or_payer' => 'nullable|string',
         ]);
 
         $tenantId = $request->user()->tenant_id;
@@ -788,25 +793,110 @@ class JasaController extends Controller
             'tenant_id' => $tenantId,
             'transaction_number' => $trxNo,
             'type' => 'Pengeluaran',
-            'category' => 'Operasional & Transport',
+            'category' => $request->category ?: 'Biaya Operasional',
             'amount' => $request->amount,
-            'transaction_date' => now(),
-            'payment_method' => 'Transfer Bank',
+            'transaction_date' => $request->transaction_date ? date('Y-m-d', strtotime($request->transaction_date)) : now()->toDateString(),
+            'payment_method' => $request->payment_method ?: 'Kas / Tunai',
+            'reference_number' => $request->reference_spk_id,
+            'recipient_or_payer' => $request->recipient_or_payer ?: 'Vendor / Toko',
             'notes' => $request->description,
         ]);
 
         return response()->json([
             'success' => true,
             'data' => [
-                'id' => $expense->id,
+                'id' => (string) $expense->id,
                 'expenseNumber' => $expense->transaction_number,
                 'category' => $expense->category,
                 'description' => $expense->notes,
-                'amount' => $expense->amount,
-                'date' => clone $expense->transaction_date,
-                'recordedBy' => $request->user()->name
+                'amount' => (float) $expense->amount,
+                'date' => $expense->transaction_date ? $expense->transaction_date->format('Y-m-d') : date('Y-m-d'),
+                'paymentMethod' => $expense->payment_method,
+                'referenceSpkId' => $expense->reference_number,
+                'recordedBy' => $request->user()->name ?? 'Admin Jasa'
             ]
         ], 201);
+    }
+
+    /**
+     * Update Expense
+     */
+    public function updateExpense(Request $request, $id)
+    {
+        $tenantId = $request->user()->tenant_id;
+        $expense = JasaFinanceTransaction::where('tenant_id', $tenantId)
+            ->where('type', 'Pengeluaran')
+            ->findOrFail($id);
+
+        $request->validate([
+            'description' => 'required|string',
+            'amount' => 'required|numeric|min:0',
+            'category' => 'nullable|string',
+            'payment_method' => 'nullable|string',
+            'transaction_date' => 'nullable|date',
+            'reference_spk_id' => 'nullable|string',
+            'recipient_or_payer' => 'nullable|string',
+        ]);
+
+        $expense->update([
+            'category' => $request->category ?: $expense->category,
+            'amount' => $request->amount,
+            'transaction_date' => $request->transaction_date ? date('Y-m-d', strtotime($request->transaction_date)) : $expense->transaction_date,
+            'payment_method' => $request->payment_method ?: $expense->payment_method,
+            'reference_number' => $request->reference_spk_id !== null ? $request->reference_spk_id : $expense->reference_number,
+            'recipient_or_payer' => $request->recipient_or_payer ?: $expense->recipient_or_payer,
+            'notes' => $request->description,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => (string) $expense->id,
+                'expenseNumber' => $expense->transaction_number,
+                'category' => $expense->category,
+                'description' => $expense->notes,
+                'amount' => (float) $expense->amount,
+                'date' => $expense->transaction_date ? $expense->transaction_date->format('Y-m-d') : date('Y-m-d'),
+                'paymentMethod' => $expense->payment_method,
+                'referenceSpkId' => $expense->reference_number,
+                'recordedBy' => $request->user()->name ?? 'Admin Jasa'
+            ]
+        ]);
+    }
+
+    /**
+     * Destroy Expense
+     */
+    public function destroyExpense(Request $request, $id)
+    {
+        $tenantId = $request->user()->tenant_id;
+        $expense = JasaFinanceTransaction::where('tenant_id', $tenantId)
+            ->where('type', 'Pengeluaran')
+            ->findOrFail($id);
+            
+        $expense->delete();
+
+        return response()->json(['success' => true, 'message' => 'Pengeluaran berhasil dihapus']);
+    }
+
+    /**
+     * Update Invoice Status
+     */
+    public function updateInvoiceStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|string',
+        ]);
+
+        $tenantId = $request->user()->tenant_id;
+        $invoice = JasaFinanceTransaction::where('tenant_id', $tenantId)
+            ->where('type', 'Pemasukan')
+            ->findOrFail($id);
+
+        // Note: For simple status update or notes
+        $invoice->update(['notes' => $invoice->notes . ' [Status: ' . $request->status . ']']);
+
+        return response()->json(['success' => true, 'data' => $invoice]);
     }
 
     /**

@@ -12,8 +12,8 @@ const ICONS  = ['🛒','🐟','🔧','🏭','🍱','🏥','🏗️','📦']
 const SYSTEM_ROUTES = {
   'Toko Retail':      '/retail/dashboard',
   'Budidaya Hewan':    '/budidaya/dashboard',
-  'Jasa':             '/coming-soon',
-  'Manufaktur':       '/coming-soon',
+  'Jasa':             '/jasa/dashboard',
+  'Seller':           '/seller/dashboard',
   'Kuliner':          '/kuliner/admin',
 }
 
@@ -21,7 +21,7 @@ const DUMMY_CATS = [
   { id:1, name:'Toko Retail',   description:'Manajemen stok dan penjualan toko fisik',   tenant_count:142, active:true,  icon:'🛒', color:'#3b82f6' },
   { id:2, name:'Budidaya Hewan', description:'Pemantauan kandang/kolam dan siklus panen',    tenant_count:89,  active:true,  icon:'🐟', color:'#10b981' },
   { id:3, name:'Jasa',          description:'Manajemen booking dan layanan jasa',         tenant_count:76,  active:true,  icon:'🔧', color:'#8b5cf6' },
-  { id:4, name:'Manufaktur',    description:'Kontrol produksi dan manajemen bahan baku',  tenant_count:41,  active:true,  icon:'🏭', color:'#f59e0b' },
+  { id:4, name:'Seller',        description:'Manajemen toko online, marketplace & gudang',tenant_count:65,  active:true,  icon:'📦', color:'#6366f1' },
   { id:5, name:'Kuliner',       description:'Manajemen restoran, cafe, dan pesanan online', tenant_count:56, active:true,  icon:'🍱', color:'#ec4899' },
 ]
 
@@ -35,6 +35,8 @@ export default function Categories() {
       'Toko Retail': 'toko-retail',
       'Budidaya Hewan': 'budidaya-hewan',
       'Kuliner': 'kuliner',
+      'Seller': 'seller',
+      'Jasa': 'jasa',
     }
     const slug = slugMap[catName]
     if (!slug) {

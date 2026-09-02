@@ -91,6 +91,11 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (formData) => {
         const res = await api.post('/auth/register', formData);
+        return res.data;
+    };
+
+    const verifyOtp = async (email, otpCode) => {
+        const res = await api.post('/auth/verify-otp', { email, otp_code: otpCode });
         const { token, user: userData } = res.data.data;
         
         localStorage.setItem('umkm_token', token);
@@ -98,6 +103,11 @@ export const AuthProvider = ({ children }) => {
         
         setUser(userData);
         return userData;
+    };
+
+    const resendOtp = async (email) => {
+        const res = await api.post('/auth/resend-otp', { email });
+        return res.data;
     };
 
     const logout = () => {
@@ -240,7 +250,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ 
-            user, login, loginDemoSandbox, logout, register, loading, updateUser,
+            user, login, loginDemoSandbox, logout, register, verifyOtp, resendOtp, loading, updateUser,
             impersonate, impersonateUser, impersonateDemoSandbox, isSuperAdmin, isImpersonating, exitImpersonate 
         }}>
             {children}

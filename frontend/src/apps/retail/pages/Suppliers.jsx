@@ -6,7 +6,7 @@ import { api } from '../../../lib/api';
 import { Truck, Edit3, Trash2, ChevronRight, PackageCheck, Plus, RefreshCw } from 'lucide-react';
 
 import Modal from '../../../components/Modal';
-import RetailLoading from '../components/RetailLoading';
+import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 export default function Suppliers() {
   const [suppliers, setSuppliers] = useState([]);
@@ -16,9 +16,10 @@ export default function Suppliers() {
   const [search, setSearch] = useState('');
 
   const fetchSuppliers = async () => {
+    setLoading(true);
     try {
       const res = await api.get('/retail/suppliers');
-      setSuppliers(res.data);
+      setSuppliers(res.data || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -90,23 +91,26 @@ export default function Suppliers() {
             />
           </div>
           <button onClick={fetchSuppliers} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
-            <RefreshCw size={18} />
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
 
         <div className="retail-table-responsive"><table className="table">
           <thead>
             <tr>
-               <th className="pl-6 retail-table-header">Identitas Supplier</th>
-               <th className="retail-table-header">Kontak PIC</th>
-               <th className="retail-table-header">Alamat Operasional</th>
-               <th className="text-right pr-6 retail-table-header">Kontrol</th>
+               <th className="pl-6 retail-table-header whitespace-nowrap" style={{ minWidth: 140 }}>ID Supplier</th>
+               <th className="retail-table-header whitespace-nowrap">Nama Supplier</th>
+               <th className="retail-table-header whitespace-nowrap">Kontak PIC</th>
+               <th className="retail-table-header whitespace-nowrap">Alamat Operasional</th>
+               <th className="text-right pr-6 retail-table-header whitespace-nowrap" style={{ width: 100 }}>Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {filteredSuppliers.length === 0 ? (
+            {loading ? (
+              <RetailTableLoadingRow colSpan={5} text="Memuat data supplier..." />
+            ) : filteredSuppliers.length === 0 ? (
               <tr>
-                 <td colSpan="4" className="text-center" style={{ padding: 60 }}>
+                 <td colSpan="5" className="text-center" style={{ padding: 60 }}>
                     <div className="flex flex-col items-center gap-4 text-muted">
                        <Truck size={40} className="opacity-20" />
                        <p className="text-sm">Belum ada data supplier.</p>
@@ -117,20 +121,22 @@ export default function Suppliers() {
               paginatedData.map(s => (
                 <tr key={s.id}>
                   <td className="pl-6">
-                     <div>
-                        <div className="retail-text-primary">{s.name}</div>
-                        <div className="text-[10px] retail-text-secondary uppercase tracking-widest">{s.id.toString().padStart(4, '0')}</div>
-                     </div>
+                     <span className="retail-text-primary">
+                       #{s.id.toString().padStart(4, '0')}
+                     </span>
                   </td>
                   <td>
-                     <div className="text-sm retail-text-primary">
+                     <span className="retail-text-primary font-medium">{s.name}</span>
+                  </td>
+                  <td>
+                     <span className="retail-text-primary">
                         {s.contact || '-'}
-                     </div>
+                     </span>
                   </td>
                   <td>
-                     <div className="text-sm retail-text-primary max-w-xs truncate">
+                     <span className="retail-text-primary line-clamp-1 max-w-[280px]">
                         {s.address || '-'}
-                     </div>
+                     </span>
                   </td>
                   <td className="text-right pr-6">
                     <div className="flex gap-2 justify-end">

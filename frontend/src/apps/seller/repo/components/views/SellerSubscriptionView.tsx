@@ -230,20 +230,58 @@ export const SellerSubscriptionView: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  setSelectedPlan(p.plan_key);
-                  setShowOrderModal(true);
-                }}
-                disabled={isCurrent || (pendingReq && pendingReq.status === 'pending')}
-                className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  isCurrent
-                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
-                    : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-500/20'
-                }`}
-              >
-                {isCurrent ? 'Paket Aktif Saat Ini' : 'Pilih & Upgrade Paket'}
-              </button>
+              {(() => {
+                const PLAN_TIER: Record<string, number> = { free: 0, basic: 1, pro: 2, enterprise: 3 };
+                const curTier = PLAN_TIER[currentPlanKey?.toLowerCase()] ?? 0;
+                const targetTier = PLAN_TIER[p.plan_key?.toLowerCase()] ?? 0;
+                const isDowngrade = targetTier < curTier || (p.plan_key === 'free' && currentPlanKey !== 'free');
+
+                if (isCurrent) {
+                  return (
+                    <button
+                      disabled
+                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed"
+                    >
+                      Paket Aktif Saat Ini
+                    </button>
+                  );
+                }
+
+                if (pendingReq && pendingReq.status === 'pending' && pendingReq.plan === p.plan_key) {
+                  return (
+                    <button
+                      disabled
+                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-amber-100 text-amber-700 cursor-not-allowed"
+                    >
+                      Menunggu Aktivasi
+                    </button>
+                  );
+                }
+
+                if (isDowngrade) {
+                  return (
+                    <button
+                      disabled
+                      title="Downgrade tidak dapat dilakukan saat langganan aktif"
+                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed opacity-60"
+                    >
+                      Downgrade Tidak Tersedia
+                    </button>
+                  );
+                }
+
+                return (
+                  <button
+                    onClick={() => {
+                      setSelectedPlan(p.plan_key);
+                      setShowOrderModal(true);
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-500/20"
+                  >
+                    Pilih &amp; Upgrade Paket
+                  </button>
+                );
+              })()}
             </div>
           );
         })}

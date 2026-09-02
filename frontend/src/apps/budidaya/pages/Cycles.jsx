@@ -8,6 +8,8 @@ import {
  import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
  import { LoadingButton } from '../components/UXComponents'
  import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
+ import usePagination from '../../../hooks/usePagination'
+ import BudidayaPagination from '../components/BudidayaPagination'
  
  export default function Cycles() {
    const navigate = useNavigate()
@@ -61,112 +63,127 @@ import {
      }
    }
  
-   return (
+   const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(cycles)
+
+  return (
      <div className="aq-container">
        {/* Header Section */}
-       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 0 }}>
          <button 
            className="btn btn-primary" 
            onClick={() => setModalOpen(true)}
            style={{
-             display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px',
-             borderRadius: '12px', background: '#1B4332', color: '#fff', border: 'none',
-             fontWeight: 700, cursor: 'pointer'
+             display: 'flex', alignItems: 'center', gap: 6, height: '38px', padding: '0 16px',
+             borderRadius: '8px', background: '#1B4332', color: '#fff', border: 'none',
+             fontWeight: 600, fontSize: '13px', cursor: 'pointer'
            }}
          >
-           <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
+           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
            <span>{terms.startCycleLabel}</span>
          </button>
        </div>
  
-       {loading ? (
-         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
-           <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-           <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Menganalisis data siklus...</p>
-         </div>
-       ) : cycles.length === 0 ? (
-         <div style={{ 
-           background: '#fff', padding: '60px 20px', textAlign: 'center', 
-           borderRadius: 32, border: '1px solid #E9F0EC' 
-         }}>
-            <Activity size={48} style={{ marginBottom: 20, opacity: 0.2, color: '#1B4332' }} />
-            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Belum ada siklus berjalan</h3>
-            <p style={{ color: '#64748B', fontWeight: 500, fontSize: '13px' }}>{terms.emptyCyclesDesc}</p>
-         </div>
-       ) : (
-         <div style={{ background: '#fff', borderRadius: '24px', border: '1px solid #E9F0EC', overflow: 'hidden' }}>
-           <Table>
-             <TableHeader>
-               <TableRow isHoverable={false}>
-                 <TableHeaderCell>{terms.unit}</TableHeaderCell>
-                 <TableHeaderCell>Komoditas</TableHeaderCell>
-                 <TableHeaderCell>Tgl {terms.isTanaman ? 'Tanam' : 'Tebar'}</TableHeaderCell>
-                 <TableHeaderCell>Status</TableHeaderCell>
-                 <TableHeaderCell>Total Modal</TableHeaderCell>
-                 <TableHeaderCell>Pendapatan</TableHeaderCell>
-                 <TableHeaderCell>Laba/Rugi</TableHeaderCell>
-                 <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
-               </TableRow>
-             </TableHeader>
-             <TableBody>
-               {cycles.map((cycle) => (
-                 <TableRow key={cycle.id}>
-                   <TableCell>
-                     <div style={{ fontWeight: 600, color: '#1B4332' }}>{cycle.pond_name || '-'}</div>
-                     <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>ID: {cycle.id}</div>
-                   </TableCell>
-                   <TableCell>
-                     <div style={{ fontWeight: 600, color: '#1A1C1A' }}>{cycle.seed_type || '-'}</div>
-                     <div style={{ fontSize: 11, color: '#64748B' }}>{(cycle.seed_count || 0).toLocaleString()} {terms.populationCount}</div>
-                   </TableCell>
-                   <TableCell isSecondary>
-                     {cycle.seed_date ? new Date(cycle.seed_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
-                   </TableCell>
-                   <TableCell>
-                     <span style={{ 
-                       padding: '4px 10px', borderRadius: '40px', fontSize: '11px', fontWeight: '500',
-                       background: cycle.status === 'panen' ? '#F1F5F9' : '#D1FAE5',
-                       color: cycle.status === 'panen' ? '#475569' : '#065F46',
-                     }}>
-                       {cycle.status === 'panen' ? 'Selesai' : 'Aktif'}
-                     </span>
-                   </TableCell>
-                   <TableCell>
-                     <div style={{ color: '#EF4444', fontWeight: 500 }}>Rp {(Number(cycle.total_cost) || 0).toLocaleString('id-ID')}</div>
-                   </TableCell>
-                   <TableCell>
-                     <div style={{ color: '#059669', fontWeight: 500 }}>
-                       {cycle.status === 'panen' ? `Rp ${(Number(cycle.total_revenue) || 0).toLocaleString('id-ID')}` : '-'}
-                     </div>
-                   </TableCell>
-                   <TableCell>
-                     {cycle.status === 'panen' ? (
-                       <div style={{ color: (cycle.profit || 0) >= 0 ? '#1B4332' : '#EF4444', fontWeight: 600 }}>
-                         {(cycle.profit || 0) >= 0 ? '+' : ''}Rp {(Number(cycle.profit) || 0).toLocaleString()}
-                       </div>
-                     ) : '-'}
-                   </TableCell>
-                   <TableCell style={{ textAlign: 'right' }}>
-                     <button 
-                       onClick={() => navigate(`/budidaya/cycles/${cycle.id}`)}
-                       title="Detail Siklus"
-                       style={{
-                         width: '36px', height: '36px', borderRadius: '10px', background: '#F4F7F5', border: '1px solid #E9F0EC',
-                         color: '#1B4332', cursor: 'pointer', transition: 'all 0.2s',
-                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
-                       }}
-                       onMouseEnter={e => { e.currentTarget.style.background = '#1B4332'; e.currentTarget.style.color = '#fff' }}
-                       onMouseLeave={e => { e.currentTarget.style.background = '#F4F7F5'; e.currentTarget.style.color = '#1B4332' }}
-                     >
-                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>visibility</span>
-                     </button>
-                   </TableCell>
-                 </TableRow>
-               ))}
-             </TableBody>
-           </Table>
-         </div>
-       )}
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Menganalisis data siklus...</p>
+          </div>
+        ) : cycles.length === 0 ? (
+          <div style={{ 
+            background: '#fff', padding: '60px 20px', textAlign: 'center', 
+            borderRadius: 16, border: '1px solid #E9F0EC' 
+          }}>
+             <Activity size={48} style={{ marginBottom: 20, opacity: 0.2, color: '#1B4332' }} />
+             <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Belum ada siklus berjalan</h3>
+             <p style={{ color: '#64748B', fontWeight: 500, fontSize: '13px' }}>{terms.emptyCyclesDesc}</p>
+          </div>
+        ) : (
+          <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+            <Table>
+              <TableHeader>
+                <TableRow isHoverable={false}>
+                  <TableHeaderCell>{terms.unit}</TableHeaderCell>
+                  <TableHeaderCell>Komoditas</TableHeaderCell>
+                  <TableHeaderCell>Tgl {terms.isTanaman ? 'Tanam' : 'Tebar'}</TableHeaderCell>
+                  <TableHeaderCell>Status</TableHeaderCell>
+                  <TableHeaderCell>Total Modal</TableHeaderCell>
+                  <TableHeaderCell>Pendapatan</TableHeaderCell>
+                  <TableHeaderCell>Laba/Rugi</TableHeaderCell>
+                  <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.map((cycle) => (
+                  <TableRow key={cycle.id}>
+                    <TableCell>
+                      <span style={{ color: '#0f172a', fontSize: '13px', fontWeight: 500 }}>{cycle.pond_name || '-'}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span style={{ color: '#0f172a', fontSize: '13px' }}>{cycle.seed_type || '-'}</span>
+                      {cycle.seed_count ? <span style={{ color: '#64748B', marginLeft: 4, fontSize: '12px' }}>({(cycle.seed_count).toLocaleString()} {terms.populationCount})</span> : null}
+                    </TableCell>
+                    <TableCell>
+                      <span style={{ color: '#0f172a', fontSize: '13px' }}>
+                        {cycle.seed_date ? new Date(cycle.seed_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`badge-pill ${cycle.status === 'panen' ? 'badge-pill-neutral' : 'badge-pill-success'}`} style={{ fontSize: '11.5px' }}>
+                        {cycle.status === 'panen' ? 'Selesai' : 'Aktif'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div style={{ color: '#EF4444', fontSize: '13px', fontWeight: 500 }}>Rp {(Number(cycle.total_cost) || 0).toLocaleString('id-ID')}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div style={{ color: '#059669', fontSize: '13px', fontWeight: 500 }}>
+                        {cycle.status === 'panen' ? `Rp ${(Number(cycle.total_revenue) || 0).toLocaleString('id-ID')}` : '-'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {cycle.status === 'panen' ? (
+                        <div style={{ color: (cycle.profit || 0) >= 0 ? '#1B4332' : '#EF4444', fontSize: '13px', fontWeight: 500 }}>
+                          {(cycle.profit || 0) >= 0 ? '+' : ''}Rp {(Number(cycle.profit) || 0).toLocaleString()}
+                        </div>
+                      ) : <span style={{ fontSize: '13px' }}>-</span>}
+                    </TableCell>
+                    <TableCell style={{ textAlign: 'right' }}>
+                      <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
+                        <button 
+                          onClick={() => navigate(`/budidaya/cycles/${cycle.id}`)}
+                          title="Detail Siklus"
+                          className="btn-table-action"
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <BudidayaPagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              endIndex={endIndex}
+            />
+          </div>
+        )}
  
        {/* Start Cycle Modal */}
        <Modal 
@@ -186,7 +203,7 @@ import {
                      ))}
                   </select>
                </div>
-               {ponds.length === 0 && <p style={{ fontSize: '11px', color: 'var(--danger-500)', marginTop: 8, fontWeight: 900 }}>{terms.noUnitEmpty}</p>}
+               {ponds.length === 0 && <p style={{ fontSize: '11px', color: 'var(--danger-500)', marginTop: 8, fontWeight: 600 }}>{terms.noUnitEmpty}</p>}
             </div>
             
             <div className="field-row">
@@ -248,28 +265,28 @@ import {
         .premium-cycle-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); border-color: var(--accent-500); }
 
         .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
-        .p-name { margin: 0; font-size: 24px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em; }
-        .p-area { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); font-weight: 800; }
+        .p-name { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+        .p-area { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); font-weight: 500; }
         
         .doc-glimmer {
-           background: var(--accent-50); padding: 10px 16px; border-radius: 16px; text-align: center; border: 1px solid var(--accent-100);
+           background: var(--accent-50); padding: 8px 14px; border-radius: 14px; text-align: center; border: 1px solid var(--accent-100);
         }
-        .doc-num { display: block; font-size: 26px; font-weight: 950; color: var(--accent-600); line-height: 1; font-family: var(--font-heading); }
-        .doc-txt { font-size: 11px; font-weight: 700; color: var(--accent-500); }
+        .doc-num { display: block; font-size: 20px; font-weight: 700; color: var(--accent-600); line-height: 1; }
+        .doc-txt { font-size: 10.5px; font-weight: 600; color: var(--accent-500); }
 
         .stats-row { display: flex; gap: 24px; margin-bottom: 32px; }
         .s-item { flex: 1; }
-        .s-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
-        .s-val { font-size: 16px; font-weight: 800; color: var(--text-primary); }
-        .s-val small { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .s-label { display: block; font-size: 11.5px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
+        .s-val { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .s-val small { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
         .progress-section { margin-bottom: 32px; }
-        .p-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; color: var(--text-secondary); margin-bottom: 12px; }
-        .p-rail { height: 10px; background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 10px; overflow: hidden; }
+        .p-info { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .p-rail { height: 8px; background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 10px; overflow: hidden; }
         
         .card-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 24px; }
         .status-indicator {
-           display: flex; align-items: center; gap: 10px; background: var(--success-50); color: var(--success-600); padding: 8px 18px; border-radius: 40px; font-size: 13px; font-weight: 900;
+           display: flex; align-items: center; gap: 8px; background: var(--success-50); color: var(--success-600); padding: 6px 14px; border-radius: 40px; font-size: 12px; font-weight: 600;
         }
         .pulse-dot { width: 8px; height: 8px; background: var(--success-500); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse {

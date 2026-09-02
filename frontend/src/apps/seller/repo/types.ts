@@ -26,7 +26,8 @@ export type ActiveTab =
   | 'shipping-packing'
   | 'notification-center'
   | 'panduan'
-  | 'langganan';
+  | 'langganan'
+  | 'backup';
 
 export type MarketplacePlatform = 'Shopee' | 'Tokopedia' | 'TikTok Shop' | 'Lazada' | 'Blibli' | 'Manual/Offline';
 

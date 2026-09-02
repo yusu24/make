@@ -11,6 +11,16 @@ import {
   BarChart, Bar, Cell
 } from 'recharts';
 import './KulinerDashboard.css';
+import '../kuliner-print.css';
+import {
+  KulinerPrintHeader,
+  KulinerPrintSectionHeader,
+  KulinerPrintAppendixHeader,
+  KulinerPrintExplanationBox,
+  KulinerPrintFooter,
+  formatRp,
+  formatDateIndo
+} from '../components/KulinerPrintLayout';
 
 const SalesReport = () => {
   const { t } = useTranslation();
@@ -291,51 +301,76 @@ const SalesReport = () => {
             </div>
 
             {/* TRANSACTIONS TABLE */}
-            <div className="kd-panel no-print">
-              <div className="kd-panel-header no-print">
-                <div className="text-sm font-bold text-slate-800">
-                  {t('kulinerSales.historyTitle') || 'Detail Transaksi Periode Ini'}
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
-                  Menampilkan {filteredSales.length} transaksi
-                </div>
-              </div>
-
-              <div className="kd-table-container no-print">
-                <table className="kd-table">
+            <div className="no-print" style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', marginTop: 20 }}>
+              <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                   <thead>
-                    <tr>
-                      <th>{t('kulinerSales.headerOrderId') || 'ID Order'}</th>
-                      <th>{t('kulinerSales.headerCustomer') || 'Pelanggan'}</th>
-                      <th>Tipe Pesanan</th>
-                      <th>{t('kulinerSales.headerDate') || 'Tanggal'}</th>
-                      <th>Metode</th>
-                      <th>{t('kulinerSales.headerTotal') || 'Total'}</th>
-                      <th>Status</th>
+                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                        {t('kulinerSales.headerOrderId') || 'Order ID'}
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                        {t('kulinerSales.headerCustomer') || 'Pelanggan'}
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                        Tipe Pesanan
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                        {t('kulinerSales.headerDate') || 'Tanggal'}
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                        Metode
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        {t('kulinerSales.headerTotal') || 'Total'}
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredSales.length === 0 ? (
-                      <tr><td colSpan="7" className="text-center py-10 text-slate-400">{t('kulinerSales.emptyHistory') || 'Belum ada transaksi pada periode ini.'}</td></tr>
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '36px', color: '#94A3B8' }}>
+                          {t('kulinerSales.emptyHistory') || 'Belum ada transaksi pada periode ini.'}
+                        </td>
+                      </tr>
                     ) : (
                       currentSales.map(order => (
-                        <tr key={order.id}>
-                          <td className="font-mono text-xs text-slate-400">#ORD-{order.id.toString().padStart(5, '0')}</td>
-                          <td>
-                            <div style={{ color: '#1e293b' }}>{order.customer_name}</div>
+                        <tr key={order.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
+                          <td style={{ padding: '12px 18px', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: 12, color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: 6, fontFamily: 'monospace', fontWeight: 600 }}>
+                              #ORD-{order.id.toString().padStart(5, '0')}
+                            </span>
                           </td>
-                          <td>{order.order_type === 'dine_in' ? 'Makan di Tempat' : 'Bawa Pulang'}</td>
-                          <td className="text-xs text-slate-500">
+                          <td style={{ padding: '12px 18px', color: '#0F172A', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                            {order.customer_name}
+                          </td>
+                          <td style={{ padding: '12px 18px', color: '#475569', whiteSpace: 'nowrap' }}>
+                            {order.order_type === 'dine_in' ? 'Makan di Tempat' : 'Bawa Pulang'}
+                          </td>
+                          <td style={{ padding: '12px 18px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>
                             {new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </td>
-                          <td>
-                            <span className="text-[10px] px-2 py-1 bg-slate-100 rounded uppercase text-slate-500">
+                          <td style={{ padding: '12px 18px', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: 10.5, padding: '3px 8px', background: '#F1F5F9', borderRadius: 6, textTransform: 'uppercase', color: '#475569', fontWeight: 600 }}>
                               {order.payment_method}
                             </span>
                           </td>
-                          <td className="text-slate-800">{formatRp(order.total)}</td>
-                          <td>
-                            <span className={`kd-status-badge ${order.status === 'completed' || order.status === 'processing' ? 'kd-status-active' : 'kd-status-hidden'}`}>
+                          <td style={{ padding: '12px 18px', textAlign: 'right', fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap' }}>
+                            {formatRp(order.total)}
+                          </td>
+                          <td style={{ padding: '12px 18px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '2px 10px',
+                              borderRadius: 20,
+                              fontSize: 11.5,
+                              fontWeight: 600,
+                              background: order.status === 'completed' ? '#DCFCE7' : (order.status === 'processing' ? '#FEF3C7' : '#F1F5F9'),
+                              color: order.status === 'completed' ? '#166534' : (order.status === 'processing' ? '#92400E' : '#475569')
+                            }}>
                               {order.status === 'completed' ? 'Selesai' : (order.status === 'processing' ? 'Diproses' : 'Pending')}
                             </span>
                           </td>
@@ -347,88 +382,171 @@ const SalesReport = () => {
               </div>
               
               {/* PAGINATION */}
-              <ClientPagination setItemsPerPage={setItemsPerPage} 
+              <ClientPagination 
+                setItemsPerPage={setItemsPerPage} 
                 currentPage={currentPage}
                 setCurrentPage={handlePageChange}
                 totalPages={totalPages}
                 itemsPerPage={itemsPerPage}
                 totalItems={filteredSales.length}
               />
-              </div>
+            </div>
 
-              {/* PRINT ONLY TABLE - TEMPLATE LABA RUGI GITHUB YUSU24 */}
-              <div className="print-only w-full">
-                {/* Print Wrapper */}
-                <div
-                  id="financial-report-sheet"
-                  className="w-full text-slate-900 font-sans"
-                >
-                  {/* HEADER LAPORAN */}
-                  <div className="text-center mb-4 leading-tight">
-                    <h2 className="text-lg sm:text-xl font-bold uppercase tracking-wider text-slate-900 print:text-black">
-                      {t('kulinerSales.title') || 'Laporan Penjualan'}
-                    </h2>
-                    <h1 className="text-base sm:text-lg font-bold uppercase tracking-wide text-slate-900 print:text-black">
-                      {user?.tenant_name || 'Toko Kuliner'}
-                    </h1>
-                    <p className="text-xs font-semibold text-slate-800 print:text-black mt-1">
-                      Periode: {dateFilter === 'today' ? t('kulinerSales.filterToday') || 'Hari Ini' : dateFilter === 'week' ? t('kulinerSales.filterWeek') || '7 Hari Terakhir' : dateFilter === 'month' ? t('kulinerSales.filterMonth') || 'Bulan Ini' : t('kulinerSales.filterAll') || 'Semua'}
-                    </p>
-                  </div>
+              {/* ========================================================================= */}
+              {/* PRINT-ONLY FORMAL ACCOUNTING SALES REPORT TEMPLATE                       */}
+              {/* ========================================================================= */}
+              <div className="print-only" style={{ padding: 0, fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: '#000000' }}>
+                
+                {/* 1. Header / Kop Laporan Resmi Kuliner */}
+                <KulinerPrintHeader
+                  user={user}
+                  title="Laporan Penjualan Kasir"
+                  subtitle="Rekapitulasi Transaksi Pemesanan Makanan & Minuman (POS Sales Register)"
+                  periodText={dateFilter === 'today' ? 'Hari Ini' : dateFilter === 'week' ? '7 Hari Terakhir' : dateFilter === 'month' ? 'Bulan Ini' : 'Semua Periode'}
+                />
 
-                  {/* TABEL FINANSIAL */}
-                  <div className="overflow-x-auto my-6">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="border-y-2 border-slate-900 print:border-black text-xs uppercase font-bold text-slate-800 print:text-black bg-slate-50 print:bg-transparent">
-                          <th className="py-2 px-2 text-left">ID Order</th>
-                          <th className="py-2 px-2 text-left">Pelanggan</th>
-                          <th className="py-2 px-2 text-left">Tipe</th>
-                          <th className="py-2 px-2 text-left">Tanggal</th>
-                          <th className="py-2 px-2 text-right">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredSales.length === 0 ? (
-                          <tr><td colSpan="5" className="py-4 text-center text-slate-400 italic text-sm">Tidak ada transaksi.</td></tr>
-                        ) : (
-                          filteredSales.map(order => (
-                            <tr key={`print-${order.id}`} className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
-                              <td className="py-1 px-2 text-slate-800 print:text-black font-mono border-b border-slate-100 print:border-transparent">
-                                #ORD-{order.id.toString().padStart(5, '0')}
-                              </td>
-                              <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
-                                {order.customer_name}
-                              </td>
-                              <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
-                                {order.order_type === 'dine_in' ? 'Makan di Tempat' : 'Bawa Pulang'}
-                              </td>
-                              <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
-                                {new Date(order.created_at).toLocaleDateString('id-ID')}
-                              </td>
-                              <td className="py-1 px-2 text-right font-mono text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
-                                {formatRp(order.total)}
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                        <tr className="font-bold text-sm bg-slate-100/70 print:bg-transparent">
-                          <td colSpan="4" className="py-1.5 px-2 text-slate-900 print:text-black uppercase">
-                            TOTAL PENDAPATAN
+                {/* 2. Formal Summary Table (Horizontal Borders Only) */}
+                <div style={{ marginBottom: 22 }}>
+                  <KulinerPrintSectionHeader title="I. Ringkasan Kinerja Penjualan Restoran (Sales Performance)" />
+
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#000000' }}>
+                    <tbody>
+                      <tr style={{ borderBottom: '1px solid #000000' }}>
+                        <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                          A. AKUMULASI PENDAPATAN & VOLUME TRANSAKSI POS
+                        </td>
+                        <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600 }}></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Total Volume Pesanan Masuk (Order Count)</td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', width: 140, whiteSpace: 'nowrap' }}>{summary.totalOrders} Pesanan</td>
+                        <td style={{ width: 140 }}></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Rata-rata Nilai per Pesanan (Average Basket Size / Meja)</td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>
+                          {formatRp(summary.avgOrderValue)}
+                        </td>
+                        <td></td>
+                      </tr>
+                      <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                        <td style={{ padding: '7px 4px', fontSize: 11, color: '#000000' }}>TOTAL OMZET PENJUALAN KULINER TERCATAT</td>
+                        <td style={{ padding: '7px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>
+                          {filteredSales.length} Faktur / Pesanan
+                        </td>
+                        <td style={{ padding: '7px 4px', textAlign: 'right', fontSize: 11.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          {formatRp(summary.totalSales)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 3. Detailed Formal Accounting Ledger Table (NO VERTICAL LINES, BLACK & WHITE) */}
+                <div style={{ marginBottom: 22 }}>
+                  <KulinerPrintSectionHeader 
+                    title="II. Buku Register Transaksi Penjualan Restoran (Sales Invoice Register)" 
+                    rightText={`Total ${filteredSales.length} pesanan terbit`} 
+                  />
+
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000' }}>
+                    <thead>
+                      <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                        <th style={{ padding: '7px 4px', textAlign: 'center', width: 35, fontWeight: 600 }}>No</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'left', width: 130, fontWeight: 600 }}>ID Order</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'left', width: 130, fontWeight: 600 }}>Waktu Pesanan</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'left', fontWeight: 600 }}>Pelanggan</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'center', width: 110, fontWeight: 600, whiteSpace: 'nowrap' }}>Layanan</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'right', width: 140, fontWeight: 600, whiteSpace: 'nowrap' }}>Total Nilai (Rp)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredSales.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ textAlign: 'center', padding: 20, color: '#4B5563', fontStyle: 'italic', borderBottom: '1px solid #E5E7EB' }}>
+                            Tidak ada catatan penjualan pada periode yang dipilih.
                           </td>
-                          <td className="py-1.5 px-2 text-right font-mono text-slate-900 print:text-black border-t border-slate-900 print:border-black font-extrabold" style={{ borderBottom: '3px double #000' }}>
-                            {formatRp(summary.totalSales)}
-                          </td>
                         </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                      ) : (
+                        filteredSales.map((order, idx) => (
+                          <tr key={`print-${order.id}`} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                            <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                            <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000' }}>#ORD-{String(order.id).padStart(5, '0')}</td>
+                            <td style={{ padding: '6px 6px', color: '#000000', whiteSpace: 'nowrap' }}>{formatDateIndo(order.created_at)}</td>
+                            <td style={{ padding: '6px 6px', color: '#000000' }}>{order.customer_name || 'Pelanggan Umum (Walk-in)'}</td>
+                            <td style={{ padding: '6px 6px', textAlign: 'center', fontSize: 9.5, color: '#000000', whiteSpace: 'nowrap' }}>
+                              {order.order_type === 'dine_in' ? 'Dine In (Meja)' : 'Takeaway (Bungkus)'}
+                            </td>
+                            <td style={{ padding: '6px 6px', textAlign: 'right', fontWeight: 600, color: '#000000', whiteSpace: 'nowrap' }}>
+                              {formatRp(order.total)}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                        <td colSpan={5} style={{ padding: '7px 6px', textAlign: 'right', textTransform: 'uppercase', fontSize: 10, color: '#000000', whiteSpace: 'nowrap' }}>
+                          Total Rekapitulasi Omzet Penjualan:
+                        </td>
+                        <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 11, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          {formatRp(summary.totalSales)}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
 
-                  {/* FOOTER INFORMASI STANDAR */}
-                  <div className="mt-8 text-center text-[10px] text-slate-400 print:text-black italic border-t border-slate-100 print:border-slate-300 pt-2">
-                    Dokumen ini dicetak secara otomatis melalui Sistem Manajemen UMKM.
+                {/* Kolom Tanda Tangan & Pengesahan Dokumen (Halaman 1) */}
+                <KulinerPrintFooter user={user} showSignatures={true} />
+
+                {/* 4. HALAMAN 2: LAMPIRAN PENJELASAN & METODOLOGI PENJUALAN KULINER */}
+                <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+                  <KulinerPrintAppendixHeader 
+                    title="Lampiran: Penjelasan & Analisis Penjualan Restoran"
+                    subtitle={`Keterangan Metodologi Rekonsiliasi Kasir & Performa Penjualan F&B — ${user?.tenant_name || 'Restoran & Kafe'}`}
+                    user={user}
+                  />
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+                    <KulinerPrintExplanationBox
+                      number="1"
+                      title="Metodologi Pencatatan Omzet Penjualan (Revenue Recognition)"
+                      desc="Seluruh pesanan makanan dan minuman diakui sebagai omzet penjualan sah saat transaksi kasir telah berstatus Lunas (dibayar tunai, QRIS, transfer bank, atau kartu debit/kredit)."
+                      variant="default"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="2"
+                      title="Rata-rata Nilai Transaksi per Meja (Average Basket Size)"
+                      desc="Indikator seberapa besar nilai rata-rata belanja yang dihabiskan oleh setiap kelompok pelanggan atau meja saat berkunjung ke restoran."
+                      formula="Rumus: Basket Size = Total Omzet Penjualan ÷ Total Jumlah Pesanan"
+                      variant="emerald"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="3"
+                      title="Segmentasi Layanan Dine-in vs Takeaway"
+                      desc="Pemisahan pesanan yang dikonsumsi langsung di restoran (mempengaruhi pemakaian ruang & servis) dibanding pesanan bawa pulang (mempengaruhi biaya kemasan & plastik)."
+                      variant="indigo"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="4"
+                      title="Rekonsiliasi Kas Kasir vs Pembayaran Digital"
+                      desc="Total omzet pada laporan ini merupakan gabungan kas fisik di laci kasir dan mutasi rekening bank digital (QRIS/EDC) yang wajib dicocokkan setiap tutup shift."
+                      variant="rose"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="5"
+                      title="Analisis Waktu Ramai Restoran (Peak Hours)"
+                      desc="Data historis penjualan digunakan untuk memprediksi kebutuhan stok bahan baku dan penjadwalan staf pada hari dan jam sibuk operasional restoran."
+                      variant="dark"
+                    />
                   </div>
                 </div>
+
               </div>
             </div>
           </>

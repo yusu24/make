@@ -3,19 +3,32 @@ import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table';
 
+import usePagination from '../../../hooks/usePagination';
+import BudidayaPagination from '../components/BudidayaPagination';
+
 export default function FeedCategories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState(null);
 
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(categories)
+
   const fetchCategories = async () => {
     try {
-      // Note: Endpoint will follow Retail structure but for Budidaya
       const res = await api.get('/budidaya/feed-categories');
       setCategories(res.data);
     } catch (e) {
       console.error(e);
-      // Fallback for demo if backend migration not yet run
       setCategories([
         { id: 1, name: 'Pakan Pembesaran' },
         { id: 2, name: 'Pakan Benih (Starter)' },
@@ -36,7 +49,7 @@ export default function FeedCategories() {
       fetchCategories(); 
       e.target.reset(); 
     } catch (e) {
-      alert('Gagal menambah kategori (Backend Migration Required)');
+      alert('Gagal menambah kategori');
     }
   };
 
@@ -53,59 +66,66 @@ export default function FeedCategories() {
   return (
     <div className="aq-container">
 
-      <div className="card" style={{ maxWidth: 800 }}>
-        <div style={{ padding: 20, borderBottom: '1px solid var(--border-color)', background: 'var(--bg-elevated)' }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Daftar Kategori Pakan</h3>
+      <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden', maxWidth: 800 }}>
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#0f172a' }}>Daftar Kategori Pakan</h3>
         </div>
-        <div style={{ padding: 20 }}>
-          <form onSubmit={addCategory} style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-            <input name="name" className="form-input" placeholder="Misal: Pakan Protein Tinggi, Herbal..." required style={{flex: 1}}/>
-            <button type="submit" className="btn btn-primary">
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
+        <div style={{ padding: 14 }}>
+          <form onSubmit={addCategory} style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+            <input 
+              name="name" 
+              placeholder="Misal: Pakan Protein Tinggi, Herbal..." 
+              required 
+              style={{
+                flex: 1, padding: '8px 12px', background: '#ffffff',
+                border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '13px', outline: 'none'
+              }}
+            />
+            <button type="submit" className="btn btn-primary" style={{ height: '38px', padding: '0 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
               Tambah Kategori
             </button>
           </form>
           
           {loading ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '30vh', flexDirection: 'column', gap: 12 }}>
-              <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-              <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat kategori...</p>
+              <div style={{ width: 32, height: 32, border: '3px solid #E2E8F0', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <p style={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>Memuat kategori...</p>
             </div>
           ) : (
-            <div className="aq-table-container">
+            <>
               <Table>
                 <TableHeader>
                   <TableRow isHoverable={false}>
                     <TableHeaderCell style={{ width: 80 }}>ID</TableHeaderCell>
-                    <TableHeaderCell>Nama kategori</TableHeaderCell>
+                    <TableHeaderCell>Nama Kategori</TableHeaderCell>
                     <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {categories.length === 0 ? (
-                    <TableRow><TableCell colSpan="3" style={{ textAlign: 'center', color: 'var(--aq-text-tertiary)', padding: 32 }}>Belum ada data kategori pakan.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan="3" style={{ textAlign: 'center', color: '#64748b', padding: 32 }}>Belum ada data kategori pakan.</TableCell></TableRow>
                   ) : (
-                    categories.map(c => (
+                    paginatedData.map(c => (
                       <TableRow key={c.id}>
                         <TableCell>#{c.id}</TableCell>
-                        <TableCell style={{ fontWeight: 600 }}>{c.name}</TableCell>
+                        <TableCell style={{ color: '#0f172a' }}>{c.name}</TableCell>
                         <TableCell style={{ textAlign: 'right' }}>
-                          <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+                          <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
                             <button 
                               title="Edit Kategori"
-                              className="btn btn-sm btn-secondary" 
+                              className="btn-table-action" 
                               onClick={() => setEditingCategory(c)}
-                              style={{ width: '32px', height: '32px', padding: 0, borderRadius: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                             >
-                              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
+                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>edit</span>
                             </button>
                             <button 
                               title="Hapus Kategori"
-                              className="btn btn-sm btn-ghost" 
+                              className="btn-table-action" 
                               onClick={() => confirm('Hapus kategori ini?') && console.log('Delete logic')}
-                              style={{ width: '32px', height: '32px', padding: 0, borderRadius: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444' }}
+                              style={{ color: '#EF4444' }}
                             >
-                              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>delete</span>
                             </button>
                           </div>
                         </TableCell>
@@ -114,7 +134,17 @@ export default function FeedCategories() {
                   )}
                 </TableBody>
               </Table>
-            </div>
+              <BudidayaPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                startIndex={startIndex}
+                endIndex={endIndex}
+              />
+            </>
           )}
         </div>
       </div>

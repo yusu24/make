@@ -19,12 +19,19 @@ class JasaSetting extends Model
         'service_categories',
         'technician_specialties',
         'inventory_categories',
+        'auto_backup_enabled',
+        'auto_backup_frequency',
+        'auto_backup_format',
+        'auto_backup_email',
+        'last_auto_backup_at',
     ];
 
     protected $casts = [
-        'service_categories' => 'array',
+        'service_categories'     => 'array',
         'technician_specialties' => 'array',
-        'inventory_categories' => 'array',
+        'inventory_categories'   => 'array',
+        'auto_backup_enabled'    => 'boolean',
+        'last_auto_backup_at'    => 'datetime',
     ];
 
     public function tenant()

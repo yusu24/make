@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
-import { Search, Bell, User, LogOut, Shield, Calendar, Sparkles } from 'lucide-react'
+import { Search, Bell, User, LogOut, Shield, Calendar, Sparkles, CreditCard } from 'lucide-react'
 import './Header.css'
 
 const PAGE_TITLES = {
@@ -63,6 +63,7 @@ const PAGE_TITLES = {
   '/retail/finance-categories': { title: 'Kategori Keuangan' },
   '/retail/reports/sales':      { title: 'Laporan Penjualan' },
   '/retail/reports/products':   { title: 'Laporan Produk' },
+  '/retail/reports/margins':    { title: 'Laporan Margin Produk' },
   '/retail/reports/customers':  { title: 'Laporan Pelanggan' },
   '/retail/reports/consignment': { title: 'Laporan Konsinyasi' },
   '/retail/reports/shifts':     { title: 'Laporan Kasir & Shift' },
@@ -207,7 +208,7 @@ export default function Header({ onMenuToggle, collapsed }) {
 
         {!isSaasAdminPage && (
           <div className="header__title">
-            <h1 className="header__page-title" style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#32475c' }}>
+            <h1 className="header__page-title">
               {page.title || 'Bizora'}
             </h1>
           </div>
@@ -281,60 +282,214 @@ export default function Header({ onMenuToggle, collapsed }) {
             title="Menu Akun"
           >
             <div className="header__avatar">
-              {user?.name?.slice(0, 2).toUpperCase() || 'SA'}
+              {(user?.tenant_name || user?.business_name || user?.name || 'DE')
+                .split(' ')
+                .filter(Boolean)
+                .map(n => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase() || 'DE'}
               <span className="header__online-dot" />
             </div>
             <div className="header__user-info" style={{ display: window.innerWidth < 640 ? 'none' : 'flex' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span className="header__user-name">{user?.name || 'User'}</span>
-                {user?.subscription_plan && user?.role !== 'super_admin' && user?.role !== 'admin' && (
-                  <span 
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 800,
-                      padding: '2px 7px',
-                      borderRadius: 10,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.03em',
-                      background: user.subscription_plan === 'pro' 
-                        ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' 
-                        : user.subscription_plan === 'basic' 
-                        ? 'linear-gradient(135deg, #10b981, #059669)' 
-                        : '#64748b',
-                      color: '#ffffff',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
-                    }}
-                  >
-                    {user.subscription_plan === 'pro' ? '💎 PRO' : user.subscription_plan === 'basic' ? '⚡ BASIC' : 'FREE'}
-                  </span>
-                )}
+                <span className="header__user-name">
+                  {user?.tenant_name || user?.business_name || user?.name || 'Demo Store'}
+                </span>
+                <span 
+                  style={{
+                    fontSize: 9.5,
+                    fontWeight: 800,
+                    padding: '2px 7px',
+                    borderRadius: 9999,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    background: user?.role === 'super_admin' 
+                      ? '#2563eb' 
+                      : user?.subscription_plan === 'pro' 
+                      ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' 
+                      : user?.subscription_plan === 'basic' 
+                      ? 'linear-gradient(135deg, #10b981, #059669)' 
+                      : '#475569',
+                    color: '#ffffff',
+                    lineHeight: 1,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  {user?.role === 'super_admin' ? 'SUPER' : user?.subscription_plan === 'pro' ? 'PRO' : user?.subscription_plan === 'basic' ? 'BASIC' : 'FREE'}
+                </span>
               </div>
               <span className="header__user-role">
-                {user?.role === 'super_admin' ? '⭐ Super Admin'
-                  : user?.role === 'admin' ? '🔧 Admin'
-                  : (user?.business_name || user?.business_category || 'Customer')}
+                {user?.role === 'super_admin' ? 'Super Admin'
+                  : user?.role === 'admin' ? (user?.saas_role || 'Admin SaaS')
+                  : (user?.business_category ? user.business_category : 'Pengguna')}
               </span>
             </div>
           </div>
 
           {showProfile && (
-            <div className="header__dropdown" style={{ minWidth: 220 }}>
-              <div className="header__dropdown-header">
-                <div style={{ fontWeight: 700, fontSize: 13.5, color: '#32475c' }}>{user?.name || 'Admin'}</div>
-                <div style={{ fontSize: 11.5, color: '#8592a3', marginTop: 2 }}>{user?.email || 'admin@bizora.id'}</div>
+            <div
+              className="header__dropdown"
+              style={{
+                width: 290,
+                borderRadius: 20,
+                padding: '16px 18px',
+                background: '#ffffff',
+                boxShadow: '0 12px 36px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.06)',
+                border: '1px solid #e2e8f0',
+                fontSize: 12.5,
+              }}
+            >
+              {/* User Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 14, borderBottom: '1px solid #f1f5f9' }}>
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: '50%',
+                    background: '#696cff',
+                    color: '#ffffff',
+                    fontWeight: 800,
+                    fontSize: 15,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 2px 6px rgba(105, 108, 255, 0.35)',
+                  }}
+                >
+                  {(user?.name || 'DS')
+                    .split(' ')
+                    .filter(Boolean)
+                    .map(n => n[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase() || 'DS'}
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {user?.name || 'Pengguna'}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {user?.email || 'user@bizora.id'}
+                  </div>
+                </div>
               </div>
-              <div style={{ padding: '6px 0' }}>
-                <button className="header__dropdown-item" onClick={handleGoProfile}>
-                  <User size={15} />
-                  <span>Pengaturan Profil</span>
+
+              {/* Info Details */}
+              <div style={{ padding: '12px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#64748b', fontSize: 12 }}>Toko:</span>
+                  <span style={{ fontWeight: 700, color: '#1e293b', maxWidth: 170, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right', fontSize: 12.5 }}>
+                    {user?.tenant_name || user?.business_name || user?.name || '-'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#64748b', fontSize: 12 }}>Status Paket:</span>
+                  <span style={{ fontWeight: 700, color: '#696cff', textTransform: 'capitalize', fontSize: 12.5 }}>
+                    {user?.subscription_plan || (user?.role === 'super_admin' ? 'Super Admin' : user?.role === 'admin' ? 'Admin' : 'Free')}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#64748b', fontSize: 12 }}>
+                    {user?.business_category === 'Seller' ? 'Channel Terhubung:' : isRetail ? 'Kategori Bisnis:' : 'Kategori Bisnis:'}
+                  </span>
+                  <span style={{ fontWeight: 700, color: '#71dd37', fontSize: 12.5 }}>
+                    {user?.business_category === 'Seller' ? '1' : (user?.business_category || 'Retail')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 6, borderTop: '1px solid #f1f5f9' }}>
+                <button
+                  onClick={() => {
+                    setShowProfile(false)
+                    if (isRetail) navigate('/retail/subscription')
+                    else if (isKuliner) navigate('/kuliner/subscription')
+                    else if (user?.business_category === 'Budidaya Hewan' || user?.business_category === 'Budidaya Tanaman' || pathname.startsWith('/budidaya')) navigate('/budidaya/subscription')
+                    else if (user?.business_category === 'Seller' || pathname.startsWith('/seller')) navigate('/seller/subscription')
+                    else if (user?.business_category === 'Jasa' || pathname.startsWith('/jasa')) navigate('/jasa/subscription')
+                    else if (user?.role === 'super_admin' || user?.role === 'admin') navigate('/subscriptions')
+                    else navigate('/retail/subscription')
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    background: '#696cff',
+                    color: '#ffffff',
+                    fontWeight: 700,
+                    fontSize: 12.5,
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    boxShadow: '0 2px 8px rgba(105, 108, 255, 0.25)',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#5f61e6'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#696cff'}
+                >
+                  <CreditCard size={15} />
+                  <span>Upgrade & Paket Langganan</span>
                 </button>
-                <div style={{ height: 1, background: '#f1f5f9', margin: '4px 0' }} />
-                <button className="header__dropdown-item header__dropdown-item--danger" onClick={handleLogout}>
+
+                <button
+                  onClick={handleGoProfile}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    background: '#f0f1ff',
+                    color: '#696cff',
+                    fontWeight: 700,
+                    fontSize: 12.5,
+                    border: '1px solid #e0e2ff',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#e4e6ff'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#f0f1ff'}
+                >
+                  <span>Pengaturan Akun</span>
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    background: '#fef2f2',
+                    color: '#e11d48',
+                    fontWeight: 700,
+                    fontSize: 12.5,
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#fee2e2'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#fef2f2'}
+                >
                   <LogOut size={15} />
                   <span>
                     {isImpersonating && isImpersonating() 
                       ? 'Keluar dari Impersonate' 
-                      : 'Keluar (Logout)'}
+                      : (user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-sandbox-') || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com')))
+                      ? 'Keluar dari Akun Demo' 
+                      : 'Keluar'}
                   </span>
                 </button>
               </div>

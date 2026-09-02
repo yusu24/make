@@ -233,8 +233,8 @@ export default function Finance() {
             <RevenueChart data={months} />
           </div>
 
-          {/* ── Invoice Table ── */}
-          <div className="card card-pad" style={{ padding: 0 }}>
+          {/* Card tabel transaksi */}
+          <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>📄 Daftar Invoice</h3>
@@ -243,14 +243,30 @@ export default function Finance() {
                     <span className="search-icon">🔍</span>
                     <input className="form-input search-input" placeholder="Cari tenant / invoice..." value={search} onChange={e => setSearch(e.target.value)} />
                   </div>
-                  <div className="filter-tabs">
-                    {['all', 'paid', 'unpaid', 'overdue'].map(s => (
-                      <button key={s} className={`filter-tab ${filter === s ? 'filter-tab--active' : ''}`} onClick={() => setFilter(s)}>
-                        {s === 'all' ? 'Semua' : STATUS_LABEL[s]}
-                      </button>
-                    ))}
+                  <div style={{ minWidth: 150 }}>
+                    <select
+                      id="select-filter-invoice-status"
+                      className="form-input"
+                      value={filter}
+                      onChange={e => setFilter(e.target.value)}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        outline: 'none',
+                        height: 38,
+                        width: 'auto',
+                        minWidth: 150
+                      }}
+                    >
+                      <option value="all">Semua Status</option>
+                      <option value="paid">✓ Lunas</option>
+                      <option value="unpaid">⏳ Belum Bayar</option>
+                      <option value="overdue">⚠️ Jatuh Tempo</option>
+                    </select>
                   </div>
-                  <button className="btn btn-secondary btn-sm" onClick={fetchData} disabled={loading} style={{ height: 38 }}>
+                  <button className="btn btn-secondary" onClick={fetchData} disabled={loading} style={{ height: 38, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
                     🔄 Refresh
                   </button>
                 </div>

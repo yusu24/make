@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
+import Modal from '../../../components/Modal'
+import { Edit3, Trash2 } from 'lucide-react'
 import './Shared.css'
 
 const ALL_PERMS = [
@@ -82,7 +84,7 @@ export default function SaasRoles() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Hapus role ini?')) return
+    if (!window.confirm('Apakah Anda yakin ingin menghapus role ini?')) return
     try {
       await api.delete(`/saas-roles/${id}`)
       fetchRoles()
@@ -106,200 +108,211 @@ export default function SaasRoles() {
   return (
     <>
       <div className="animate-fade-in">
-        <div className="page-header">
-          <h2 className="page-title">SaaS Roles & Permissions</h2>
+        <div className="page-header mb-4">
+          <h2 className="page-title">SaaS Roles &amp; Permissions</h2>
         </div>
 
-        <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
-          <div className="search-wrap" style={{ flex: 1, minWidth: 200, maxWidth: 360 }}>
-            <span className="search-icon">🔍</span>
-            <input
-              id="input-search-roles"
-              className="form-input search-input"
-              placeholder="Cari nama role atau deskripsi..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+        {/* Table Card */}
+        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1 }}>
+                <span className="search-icon">🔍</span>
+                <input
+                  id="input-search-roles"
+                  className="form-input search-input"
+                  placeholder="Cari nama role atau deskripsi..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
+
+              <button
+                id="btn-add-role"
+                className="btn btn-primary"
+                style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6 }}
+                onClick={() => {
+                  setShow(true)
+                  setEditingId(null)
+                  setError('')
+                  setForm({ name: '', description: '', permissions: [] })
+                }}
+              >
+                + Tambah Role
+              </button>
+            </div>
           </div>
 
-          <button
-            id="btn-add-role"
-            className="btn btn-primary"
-            onClick={() => {
-              setShow(true)
-              setEditingId(null)
-              setError('')
-              setForm({ name: '', description: '', permissions: [] })
-            }}
-          >
-            + Tambah Role
-          </button>
-        </div>
-
-        <div className="table-wrap table-responsive">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Role</th>
-                <th>Deskripsi</th>
-                <th>Permissions</th>
-                <th>Jumlah Admin</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
+          <div className="table-responsive">
+            <table className="table">
+              <thead>
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                      <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                      <span>Memuat data role...</span>
-                    </div>
-                  </td>
+                  <th>#</th>
+                  <th>Role</th>
+                  <th>Deskripsi</th>
+                  <th>Permissions</th>
+                  <th>Jumlah Admin</th>
+                  <th>Aksi</th>
                 </tr>
-              ) : paginatedData.map((role, i) => (
-                <tr key={role.id}>
-                  <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
-                  <td>
-                    <span className="badge badge-violet" style={{ fontSize: 13, fontWeight: 600, padding: '4px 10px' }}>
-                      {role.name}
-                    </span>
-                  </td>
-                  <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{role.description || '-'}</td>
-                  <td>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 450 }}>
-                      {role.permissions && role.permissions.length > 0 ? (
-                        role.permissions.map(p => {
-                          const pm = ALL_PERMS.find(x => x.key === p)
-                          return <span key={p} className="badge badge-gray" style={{ fontSize: 10 }}>{pm?.label || p}</span>
-                        })
-                      ) : (
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tidak ada permission</span>
-                      )}
-                    </div>
-                  </td>
-                  <td style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {role.users_count || 0} Admin
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button
-                        id={`btn-edit-role-${role.id}`}
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => handleEdit(role)}
-                        style={{ color: 'var(--primary-500)' }}
-                        title="Edit Role"
-                      >
-                        ✏
-                      </button>
-                      <button
-                        id={`btn-del-role-${role.id}`}
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--danger-400)' }}
-                        onClick={() => handleDelete(role.id)}
-                        title="Hapus Role"
-                      >
-                        🗑
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!loading && filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
-                    Tidak ada role ditemukan
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          {!loading && filtered.length > 0 && (
-            <SaasPagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              startIndex={startIndex}
-              endIndex={endIndex}
-            />
-          )}
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                        <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
+                        <span>Memuat data role...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : paginatedData.map((role, i) => (
+                  <tr key={role.id}>
+                    <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
+                    <td>
+                      <span className="badge badge-violet" style={{ fontSize: 12, fontWeight: 600, padding: '2px 8px' }}>
+                        {role.name}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>{role.description || '-'}</td>
+                    <td>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 420 }}>
+                        {role.permissions && role.permissions.length > 0 ? (
+                          role.permissions.map(p => {
+                            const pm = ALL_PERMS.find(x => x.key === p)
+                            return <span key={p} className="badge badge-gray" style={{ fontSize: 10 }}>{pm?.label || p}</span>
+                          })
+                        ) : (
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tidak ada permission</span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      {role.users_count || 0} Admin
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          id={`btn-edit-role-${role.id}`}
+                          className="btn btn-secondary btn-sm"
+                          style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px' }}
+                          onClick={() => handleEdit(role)}
+                          title="Edit Role"
+                        >
+                          <Edit3 size={12} />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          id={`btn-del-role-${role.id}`}
+                          className="btn btn-secondary btn-sm"
+                          style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px', color: '#dc2626' }}
+                          onClick={() => handleDelete(role.id)}
+                          title="Hapus Role"
+                        >
+                          <Trash2 size={12} />
+                          <span>Hapus</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!loading && filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
+                      Tidak ada role ditemukan
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            {!loading && filtered.length > 0 && (
+              <SaasPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                startIndex={startIndex}
+                endIndex={endIndex}
+              />
+            )}
+          </div>
         </div>
       </div>
 
       {show && (
-        <div className="modal-overlay" onClick={() => setShow(false)}>
-          <div className="modal modal--lg" onClick={e => e.stopPropagation()}>
-            <h3 className="modal__title">{editingId ? 'Edit Role' : 'Tambah Role Baru'}</h3>
-            {error && <div className="auth-alert auth-alert--error" style={{ marginBottom: 12 }}><span>⚠</span> {error}</div>}
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div className="form-group">
-                <label className="form-label">Nama Role</label>
-                <input
-                  className="form-input"
-                  placeholder="Misal: Finance Admin, Support Staff"
-                  required
-                  value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                />
+        <Modal
+          isOpen={show}
+          onClose={() => setShow(false)}
+          title={editingId ? 'Edit Role SaaS' : 'Tambah Role SaaS Baru'}
+          maxWidth="540px"
+        >
+          {error && <div className="auth-alert auth-alert--error" style={{ marginBottom: 16 }}><span>⚠</span> {error}</div>}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 4 }}>
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Nama Role</label>
+              <input
+                className="form-input"
+                placeholder="Misal: Finance Admin, Support Staff"
+                required
+                value={form.name}
+                onChange={e => setForm({ ...form, name: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Deskripsi</label>
+              <input
+                className="form-input"
+                placeholder="Penjelasan singkat mengenai peran role ini"
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Hak Akses (Permissions)</label>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 10,
+                padding: '12px 14px',
+                background: 'var(--bg-elevated)',
+                borderRadius: 10,
+                maxHeight: 250,
+                overflowY: 'auto',
+                border: '1px solid var(--border-subtle)'
+              }}>
+                {ALL_PERMS.map(p => (
+                  <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 12.5 }}>
+                    <input
+                      type="checkbox"
+                      id={`perm-${p.key}`}
+                      checked={form.permissions.includes(p.key)}
+                      onChange={() => togglePerm(p.key)}
+                      style={{ width: 16, height: 16, accentColor: 'var(--primary-500)', cursor: 'pointer' }}
+                    />
+                    <span style={{ color: 'var(--text-secondary)' }}>{p.label}</span>
+                  </label>
+                ))}
               </div>
-              <div className="form-group">
-                <label className="form-label">Deskripsi</label>
-                <input
-                  className="form-input"
-                  placeholder="Penjelasan singkat mengenai peran role ini"
-                  value={form.description}
-                  onChange={e => setForm({ ...form, description: e.target.value })}
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Permissions</label>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: 10,
-                  padding: '12px 14px',
-                  background: 'var(--bg-elevated)',
-                  borderRadius: 10,
-                  maxHeight: 250,
-                  overflowY: 'auto'
-                }}>
-                  {ALL_PERMS.map(p => (
-                    <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13 }}>
-                      <input
-                        type="checkbox"
-                        id={`perm-${p.key}`}
-                        checked={form.permissions.includes(p.key)}
-                        onChange={() => togglePerm(p.key)}
-                        style={{ width: 16, height: 16, accentColor: 'var(--primary-500)', cursor: 'pointer' }}
-                      />
-                      <span style={{ color: 'var(--text-secondary)' }}>{p.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="modal__actions">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShow(false)}
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={saving}
-                >
-                  {saving ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Menyimpan...</> : 'Simpan Role'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            </div>
+            <div className="modal__actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShow(false)}
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={saving}
+              >
+                {saving ? 'Menyimpan...' : 'Simpan Role'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </>
   )

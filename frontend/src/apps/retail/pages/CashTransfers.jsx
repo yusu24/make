@@ -1,10 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import '../retail.css';
+import '../retail-print.css';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
-import { Plus, Search, Trash2, ArrowRightLeft } from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
+import { Plus, Trash2, ArrowRightLeft, Printer } from 'lucide-react';
 import { useToast } from '../../../components/Toast';
 import Skeleton from '../../../components/Skeleton';
 import Modal from '../../../components/Modal';
+import { 
+  RetailPrintHeader, 
+  RetailPrintSectionHeader, 
+  RetailPrintAppendixHeader,
+  RetailPrintExplanationBox,
+  RetailPrintFooter, 
+  formatRp, 
+  formatDateIndo 
+} from '../components/RetailPrintLayout';
 
 export default function CashTransfers() {
   const { user } = useAuth();
@@ -12,6 +24,7 @@ export default function CashTransfers() {
   const [transfers, setTransfers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const printRef = useRef(null);
   
   const [formData, setFormData] = useState({
     transfer_date: new Date().toISOString().split('T')[0],
@@ -35,13 +48,18 @@ export default function CashTransfers() {
     try {
       setLoading(true);
       const res = await api.get('/retail/finance/transfers');
-      setTransfers(res.data);
+      setTransfers(res.data || []);
     } catch (err) {
       toast.error('Gagal memuat mutasi kas');
     } finally {
       setLoading(false);
     }
   };
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Laporan-Mutasi-Kas-${user?.tenant_name || 'Retail'}-${new Date().toISOString().split('T')[0]}`,
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,6 +91,8 @@ export default function CashTransfers() {
     }
   };
 
+  const totalAmount = transfers.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
   if (!isPro) {
     return (
       <div className="p-6 max-w-4xl mx-auto text-center mt-20">
@@ -88,60 +108,217 @@ export default function CashTransfers() {
 
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
-      <div className="flex justify-end items-center mb-6">
+      <div className="flex justify-end items-center gap-3 mb-6 no-print">
+        <button className="btn btn-secondary flex items-center gap-2" onClick={handlePrint} disabled={loading || transfers.length === 0}>
+          <Printer size={16} /> Cetak / Export PDF
+        </button>
         <button onClick={() => setIsModalOpen(true)} className="btn btn-primary flex items-center gap-2">
           <Plus size={18} /> Tambah Mutasi
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="p-4 text-sm font-semibold text-gray-600">Tanggal</th>
-              <th className="p-4 text-sm font-semibold text-gray-600">Dari Akun</th>
-              <th className="p-4 text-sm font-semibold text-gray-600">Ke Akun</th>
-              <th className="p-4 text-sm font-semibold text-gray-600">Nominal</th>
-              <th className="p-4 text-sm font-semibold text-gray-600">Keterangan</th>
-              <th className="p-4 text-sm font-semibold text-gray-600 text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              [...Array(3)].map((_, i) => (
-                <tr key={i} className="border-b border-gray-50">
-                  <td className="p-4"><Skeleton width={80} /></td>
-                  <td className="p-4"><Skeleton width={120} /></td>
-                  <td className="p-4"><Skeleton width={120} /></td>
-                  <td className="p-4"><Skeleton width={100} /></td>
-                  <td className="p-4"><Skeleton width={150} /></td>
-                  <td className="p-4 text-right"><Skeleton width={40} /></td>
+      <div ref={printRef}>
+        {/* ========================================================= */}
+        {/* PRINT-ONLY FORMAL ACCOUNTING CASH TRANSFERS TEMPLATE      */}
+        {/* ========================================================= */}
+        <div className="print-only" style={{ padding: 0, fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: '#0f172a' }}>
+          
+          {/* 1. Header / Kop Laporan Resmi */}
+          <RetailPrintHeader
+            user={user}
+            title="Laporan Mutasi Kas & Bank"
+            subtitle="Riwayat Pemindahan & Rekonsiliasi Kas Antar Rekening / Akun Pembayaran (Transfer Statement)"
+            periodText="Semua Riwayat Tercatat"
+          />
+
+          {/* 2. Formal Cash Transfer Statement Table (NO VERTICAL LINES, BLACK & WHITE) */}
+          <div style={{ marginBottom: 22 }}>
+            <RetailPrintSectionHeader title="I. Laporan Rekapitulasi Mutasi Kas (Cash Transfers Summary)" />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#000000' }}>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #000000' }}>
+                  <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                    A. TOTAL AKTIVITAS MUTASI DANA
+                  </td>
+                  <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600 }}></td>
                 </tr>
-              ))
-            ) : transfers.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="p-8 text-center text-gray-500">
-                  Belum ada mutasi kas.
-                </td>
-              </tr>
-            ) : (
-              transfers.map(t => (
-                <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                  <td className="p-4 text-sm">{t.transfer_date}</td>
-                  <td className="p-4 text-sm font-medium text-red-600">{t.from_method}</td>
-                  <td className="p-4 text-sm font-medium text-green-600">{t.to_method}</td>
-                  <td className="p-4 text-sm font-medium">Rp {Number(t.amount).toLocaleString('id-ID')}</td>
-                  <td className="p-4 text-sm text-gray-500">{t.note || '-'}</td>
-                  <td className="p-4 text-sm text-right">
-                    <button onClick={() => handleDelete(t.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
-                      <Trash2 size={16} />
-                    </button>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>
+                    Frekuensi Pemindahan Kas Antar Akun / Rekening
+                  </td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', width: 130 }}>
+                    {transfers.length} Transaksi
+                  </td>
+                  <td style={{ width: 140 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1.5px solid #000000', fontWeight: 600 }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#000000' }}>
+                    Total Nilai Kas yang Dimutasi
+                  </td>
+                  <td></td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', fontSize: 11, fontWeight: 600 }}>
+                    {formatRp(totalAmount)}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 3. Detailed Formal Accounting Ledger Table (NO VERTICAL LINES, BLACK & WHITE) */}
+          <div style={{ marginBottom: 22 }}>
+            <RetailPrintSectionHeader 
+              title="II. Rincian Riwayat Pemindahan Kas Antar Rekening (Transfer Records)" 
+              rightText={`Total ${transfers.length} riwayat mutasi`} 
+            />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000' }}>
+              <thead>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                  <th style={{ padding: '7px 4px', textAlign: 'center', width: 35, fontWeight: 600 }}>No</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'left', width: 110, fontWeight: 600 }}>Tanggal</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'left', width: 130, fontWeight: 600 }}>Dari Akun (Sumber)</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'left', width: 130, fontWeight: 600 }}>Ke Akun (Tujuan)</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'right', width: 140, fontWeight: 600, whiteSpace: 'nowrap' }}>Nominal Mutasi (Rp)</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'left', fontWeight: 600 }}>Keterangan / Memo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transfers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: 20, color: '#4B5563', fontStyle: 'italic', borderBottom: '1px solid #E5E7EB' }}>
+                      Belum ada riwayat mutasi kas.
+                    </td>
+                  </tr>
+                ) : (
+                  transfers.map((t, idx) => (
+                    <tr key={t.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                      <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                      <td style={{ padding: '6px 6px', color: '#000000', whiteSpace: 'nowrap' }}>{t.transfer_date ? formatDateIndo(t.transfer_date) : '-'}</td>
+                      <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000' }}>{t.from_method}</td>
+                      <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000' }}>{t.to_method}</td>
+                      <td style={{ padding: '6px 6px', textAlign: 'right', fontWeight: 600, color: '#000000', whiteSpace: 'nowrap' }}>
+                        {formatRp(t.amount)}
+                      </td>
+                      <td style={{ padding: '6px 6px', color: '#374151', fontSize: 9.5 }}>{t.note || '-'}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td colSpan={4} style={{ padding: '7px 6px', textAlign: 'right', textTransform: 'uppercase', fontSize: 10, color: '#000000', whiteSpace: 'nowrap' }}>
+                    Total Akumulasi Mutasi:
+                  </td>
+                  <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 10.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {formatRp(totalAmount)}
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* Kolom Tanda Tangan & Pengesahan Dokumen (Halaman 1) */}
+          <RetailPrintFooter user={user} showSignatures={true} />
+
+          {/* 4. HALAMAN 2: LAMPIRAN PENJELASAN & PROSEDUR REKONSILIASI BANK (TANPA ROMAWI) */}
+          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+            <RetailPrintAppendixHeader 
+              title="Lampiran: Penjelasan & Tata Kelola Mutasi Kas & Rekening Bank"
+              subtitle={`Keterangan Prosedur Rekonsiliasi Rekening & Pemindahan Likuiditas — ${user?.tenant_name || 'Toko Retail'}`}
+              user={user}
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+              <RetailPrintExplanationBox
+                number="1"
+                title="Definisi & Karakteristik Mutasi Kas Antar Akun"
+                desc="Mutasi kas adalah transaksi pemindahan nilai uang dari satu pos/metode penyimpanan ke pos lainnya (contoh: setor uang tunai kasir ke rekening bank operasional atau pengisian kas kecil/petty cash)."
+                formula="Sifat Transaksi: Netral terhadap Laba Rugi (Hanya mengubah komposisi likuiditas aset lancar)"
+                variant="default"
+              />
+
+              <RetailPrintExplanationBox
+                number="2"
+                title="Validasi Akun Sumber & Akun Tujuan"
+                desc="Setiap pemindahan dana harus mencantumkan akun sumber yang mendebit kas serta akun tujuan yang mengkredit kas secara seimbang untuk menjaga neraca saldo kas tetap sinkron."
+                variant="indigo"
+              />
+
+              <RetailPrintExplanationBox
+                number="3"
+                title="Prosedur Setor Tunai Harian & Pengamanan Kas Toko"
+                desc="Toko ritel dianjurkan memindahkan akumulasi uang tunai kasir harian ke rekening bank resmi secara berkala untuk meminimalisir risiko kehilangan uang tunai di lokasi toko."
+                variant="emerald"
+              />
+
+              <RetailPrintExplanationBox
+                number="4"
+                title="Rekonsiliasi Bank & Audit Bukti Transfer"
+                desc="Seluruh riwayat mutasi harus dicocokkan dengan mutasi rekening koran bank bulanan. Bukti transfer atau slip setoran wajib disimpan sebagai lampiran pertanggungjawaban keuangan."
+                variant="dark"
+              />
+            </div>
+
+            {/* Catatan Audit Sistem (Tanpa Kolom Tanda Tangan Ulang) */}
+            <RetailPrintFooter user={user} showSignatures={false} />
+          </div>
+
+        </div>
+
+        {/* ========================================================= */}
+        {/* SCREEN-ONLY INTERACTIVE UI                                 */}
+        {/* ========================================================= */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden no-print">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="p-4 text-sm font-semibold text-gray-600">Tanggal</th>
+                <th className="p-4 text-sm font-semibold text-gray-600">Dari Akun</th>
+                <th className="p-4 text-sm font-semibold text-gray-600">Ke Akun</th>
+                <th className="p-4 text-sm font-semibold text-gray-600">Nominal</th>
+                <th className="p-4 text-sm font-semibold text-gray-600">Keterangan</th>
+                <th className="p-4 text-sm font-semibold text-gray-600 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                [...Array(3)].map((_, i) => (
+                  <tr key={i} className="border-b border-gray-50">
+                    <td className="p-4"><Skeleton width={80} /></td>
+                    <td className="p-4"><Skeleton width={120} /></td>
+                    <td className="p-4"><Skeleton width={120} /></td>
+                    <td className="p-4"><Skeleton width={100} /></td>
+                    <td className="p-4"><Skeleton width={150} /></td>
+                    <td className="p-4 text-right"><Skeleton width={40} /></td>
+                  </tr>
+                ))
+              ) : transfers.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="p-8 text-center text-gray-500">
+                    Belum ada mutasi kas.
+                  </td>
+                </tr>
+              ) : (
+                transfers.map(t => (
+                  <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                    <td className="p-4 text-sm font-medium text-slate-700">{formatDateIndo(t.transfer_date)}</td>
+                    <td className="p-4 text-sm font-medium text-red-600">{t.from_method}</td>
+                    <td className="p-4 text-sm font-medium text-green-600">{t.to_method}</td>
+                    <td className="p-4 text-sm font-medium">{formatRp(t.amount)}</td>
+                    <td className="p-4 text-sm text-gray-500">{t.note || '-'}</td>
+                    <td className="p-4 text-sm text-right">
+                      <button onClick={() => handleDelete(t.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors" title="Hapus Mutasi">
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Tambah Mutasi Kas">

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import {
-  Package, RefreshCw, Plus, TrendingUp,
-  Edit3, Trash2, AlertCircle, X, Download, Upload
+  Package, RefreshCw, Plus,
+  Edit3, Trash2, AlertCircle, Download, Upload
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
@@ -24,11 +23,6 @@ export default function Products() {
   const [formSku, setFormSku] = useState('');
   const [multiUnits, setMultiUnits] = useState([]);
   const [search, setSearch] = useState('');
-  const [historyProduct, setHistoryProduct] = useState(null);
-  const [historyData, setHistoryData] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
 
   const generateSKU = () => {
     const prefix = 'BRG';
@@ -44,7 +38,6 @@ export default function Products() {
 
   const fetchData = async () => {
     setLoading(true);
-    setHistoryProduct(null);
     try {
       const [pRes, cRes, sRes, uRes] = await Promise.all([
         api.get('/retail/products'),
@@ -64,19 +57,6 @@ export default function Products() {
   };
 
   useEffect(() => { fetchData(); }, []);
-
-  const viewHistory = async (p) => {
-    setHistoryProduct(p);
-    setHistoryLoading(true);
-    try {
-      const res = await api.get(`/retail/products/${p.id}/purchase-history`);
-      setHistoryData(res.data || []);
-    } catch (e) {
-      alert('Gagal memuat histori harga modal');
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
 
   const [errors, setErrors] = useState({});
 
@@ -253,135 +233,6 @@ export default function Products() {
             </div>
         </div>
       
-      {!historyProduct && (
-        <div className="card mb-6 animate-fade-in" style={{ padding: '20px' }}>
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-800">Perbandingan Harga Jual vs Modal (Semua Produk)</h3>
-              <p className="text-sm text-slate-500">Menampilkan harga jual dan estimasi modal terakhir untuk setiap produk.</p>
-            </div>
-            <div className="flex gap-2 items-center">
-              <input type="date" className="input text-sm h-9 border border-slate-300 rounded-md px-2" value={startDate} onChange={e => setStartDate(e.target.value)} title="Tanggal Awal" />
-              <span className="text-slate-400">-</span>
-              <input type="date" className="input text-sm h-9 border border-slate-300 rounded-md px-2" value={endDate} onChange={e => setEndDate(e.target.value)} title="Tanggal Akhir" />
-              <button className="btn btn-sm btn-ghost ml-1" onClick={() => { setStartDate(''); setEndDate(''); }} title="Reset Tanggal">
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4" style={{ height: 350 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={products.filter(p => {
-                  if (startDate && p.created_at < startDate) return false;
-                  if (endDate && p.created_at > endDate) return false;
-                  return true;
-              })} margin={{ top: 5, right: 20, bottom: 25, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#94a3b8"
-                    fontSize={11}
-                    tickMargin={15}
-                    angle={-15}
-                    textAnchor="end"
-                    height={50}
-                  />
-                  <YAxis 
-                    tickFormatter={(val) => `Rp${(val/1000)}k`} 
-                    stroke="#94a3b8" 
-                    fontSize={12}
-                  />
-                  <Tooltip 
-                    formatter={(value, name) => [`Rp ${Number(value).toLocaleString('id-ID')}`, name === 'price_sell' ? 'Harga Jual' : 'Harga Modal']}
-                    labelStyle={{ color: '#1e293b', fontWeight: 'bold', marginBottom: '8px' }}
-                  />
-                  <Line 
-                    name="price_sell"
-                    type="monotone" 
-                    dataKey="price_sell" 
-                    stroke="#3b82f6" 
-                    strokeWidth={2} 
-                    dot={{ fill: '#3b82f6', r: 3 }} 
-                    activeDot={{ r: 5 }}
-                  />
-                  <Line 
-                    name="price_buy"
-                    type="monotone" 
-                    dataKey="price_buy" 
-                    stroke="#ef4444" 
-                    strokeWidth={2} 
-                    dot={{ fill: '#ef4444', r: 3 }} 
-                    activeDot={{ r: 5 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-      )}
-
-      {/* Chart Section */}
-      {historyProduct && (
-        <div className="card mb-6 animate-fade-in" style={{ padding: '20px' }}>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-slate-800">Tren Margin: {historyProduct.name}</h3>
-            <div className="flex gap-2 items-center">
-              <input type="date" className="input text-sm h-9 border border-slate-300 rounded-md px-2" value={startDate} onChange={e => setStartDate(e.target.value)} />
-              <span className="text-slate-400">-</span>
-              <input type="date" className="input text-sm h-9 border border-slate-300 rounded-md px-2" value={endDate} onChange={e => setEndDate(e.target.value)} />
-              <button className="btn btn-sm btn-ghost ml-2" onClick={() => { setHistoryProduct(null); setStartDate(''); setEndDate(''); }}>
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-          {historyLoading ? (
-            <div className="flex justify-center py-10"><RefreshCw className="animate-spin text-indigo-500" /></div>
-          ) : historyData.length === 0 ? (
-            <div className="text-center py-10 text-slate-500">
-              Belum ada histori pembelian untuk produk ini.
-            </div>
-          ) : (
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4" style={{ height: 300 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart 
-                  data={historyData.filter(h => {
-                    if (startDate && h.purchase_date < startDate) return false;
-                    if (endDate && h.purchase_date > endDate) return false;
-                    return true;
-                  }).map(h => ({ ...h, margin: historyProduct.price_sell - h.cost_per_item }))} 
-                  margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                  <XAxis 
-                    dataKey="purchase_date" 
-                    tickFormatter={(val) => new Date(val).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
-                    stroke="#94a3b8"
-                    fontSize={12}
-                    tickMargin={10}
-                  />
-                  <YAxis 
-                    tickFormatter={(val) => `Rp${(val/1000)}k`} 
-                    stroke="#94a3b8" 
-                    fontSize={12}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [`Rp ${Number(value).toLocaleString('id-ID')}`, 'Margin']}
-                    labelFormatter={(label) => new Date(label).toLocaleDateString('id-ID', { dateStyle: 'long' })}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="margin" 
-                    stroke="#10b981" 
-                    strokeWidth={3} 
-                    dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }} 
-                    activeDot={{ r: 6, fill: '#10b981' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
@@ -390,13 +241,47 @@ export default function Products() {
             <span className="btn-text-mobile-hide">Tambah baru</span>
           </button>
           
-          <button title="Import" className="btn btn-secondary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }} onClick={() => setShowImportModal(true)}>
-            <Upload size={15} className="mr-2" />
+          <button 
+            title="Import" 
+            className="btn" 
+            style={{ 
+              whiteSpace: 'nowrap', 
+              flexShrink: 0, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              height: 42, 
+              padding: '0 16px',
+              background: '#eff6ff',
+              color: '#2563eb',
+              border: '1px solid #bfdbfe',
+              fontWeight: 600
+            }} 
+            onClick={() => setShowImportModal(true)}
+          >
+            <Upload size={15} className="mr-2 text-blue-600" />
             <span className="btn-text-mobile-hide">Import</span>
           </button>
           
-          <button title="Export" className="btn btn-secondary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }} onClick={handleExport}>
-            <Download size={15} className="mr-2" />
+          <button 
+            title="Export" 
+            className="btn" 
+            style={{ 
+              whiteSpace: 'nowrap', 
+              flexShrink: 0, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              height: 42, 
+              padding: '0 16px',
+              background: '#f0fdf4',
+              color: '#16a34a',
+              border: '1px solid #bbf7d0',
+              fontWeight: 600
+            }} 
+            onClick={handleExport}
+          >
+            <Download size={15} className="mr-2 text-green-600" />
             <span className="btn-text-mobile-hide">Export</span>
           </button>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
@@ -425,26 +310,20 @@ export default function Products() {
               <th className="retail-table-header">Posisi Stok</th>
               <th className="retail-table-header">Harga Modal</th>
               <th className="retail-table-header">Harga Jual</th>
-              <th className="retail-table-header">Margin</th>
-              <th className="retail-table-header">Porsi (%)</th>
               <th className="pr-6 text-right retail-table-header">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <RetailTableLoadingRow colSpan={9} text="Memuat katalog..." />
+              <RetailTableLoadingRow colSpan={7} text="Memuat katalog..." />
             ) : filteredProducts.length === 0 ? (
               <tr>
-                 <td colSpan="9" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
+                 <td colSpan="7" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
                     Belum ada data produk di katalog.
                  </td>
               </tr>
             ) : (
-              paginatedData.map(p => {
-                const margin = p.price_sell - p.price_buy;
-                const marginPercent = p.price_sell > 0 ? (margin / p.price_sell * 100).toFixed(1) : 0;
-                
-                return (
+              paginatedData.map(p => (
                 <tr key={p.id}>
                   <td className="pl-6">
                      <p className="retail-text-primary">{p.name}</p>
@@ -475,29 +354,18 @@ export default function Products() {
                      </span>
                   </td>
                   <td>
-                     <span className="retail-text-primary">
+                     <span className="retail-text-primary font-medium">
                          Rp {Number(p.price_sell || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}
-                     </span>
-                  </td>
-                  <td>
-                     <span className={`font-medium ${margin > 0 ? 'text-green-600' : margin < 0 ? 'text-red-600' : 'text-slate-600'}`}>
-                        Rp {Math.abs(margin).toLocaleString('id-ID', { maximumFractionDigits: 2 })}
-                     </span>
-                  </td>
-                  <td>
-                     <span className={`text-sm font-medium ${margin > 0 ? 'text-green-600' : margin < 0 ? 'text-red-600' : 'text-slate-600'}`}>
-                        {margin > 0 ? '+' : ''}{marginPercent}%
                      </span>
                   </td>
                   <td className="pr-6 text-right">
                      <div className="flex justify-end gap-2">
-                        <button className="btn btn-sm btn-ghost" title="Histori Harga Modal" onClick={() => viewHistory(p)}><TrendingUp size={14} /></button>
                         <button className="btn btn-sm btn-ghost" title="Edit Data" onClick={() => openEdit(p)}><Edit3 size={14} /></button>
                         <button className="btn btn-sm btn-ghost retail-text-danger" title="Hapus Data" onClick={() => handleDelete(p.id)}><Trash2 size={14} /></button>
                      </div>
                   </td>
                 </tr>
-              )})
+              ))
             )}
           </tbody>
         </table></div>

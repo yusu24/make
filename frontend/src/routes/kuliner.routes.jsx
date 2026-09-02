@@ -6,6 +6,7 @@ import KulinerAdminLayout from '../apps/kuliner/components/KulinerAdminLayout';
 
 const KulinerAdminMenu = lazy(() => import('../apps/kuliner/pages/AdminMenu'));
 const KulinerAdminSettings = lazy(() => import('../apps/kuliner/pages/AdminSettings'));
+const KulinerAdminBackup = lazy(() => import('../apps/kuliner/pages/AdminBackup'));
 const KulinerFinanceCategories = lazy(() => import('../apps/kuliner/pages/KulinerFinanceCategories'));
 const KulinerCategoryStorefront = lazy(() => import('../apps/kuliner/pages/CategoryStorefront'));
 const KulinerFullMenu = lazy(() => import('../apps/kuliner/pages/FullMenu'));
@@ -62,6 +63,7 @@ const kulinerRoutes = (
       <Route path="admin/transactions" element={<KulinerTransactions />} />
       <Route path="admin/finance-categories" element={<KulinerFinanceCategories />} />
       <Route path="admin/settings" element={<KulinerAdminSettings />} />
+      <Route path="admin/backup" element={<KulinerAdminBackup />} />
       <Route path="admin/staff" element={<KulinerStaff />} />
       <Route path="admin/roles" element={<KulinerRoles />} />
       <Route path="admin/profile" element={<KulinerProfile />} />

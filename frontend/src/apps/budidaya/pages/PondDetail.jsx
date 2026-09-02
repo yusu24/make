@@ -12,6 +12,8 @@ import {
 import Modal from '../../../components/Modal'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
+import usePagination from '../../../hooks/usePagination'
+import BudidayaPagination from '../components/BudidayaPagination'
 
 // Helper for card styles to match high-fidelity UI
 const cardStyle = {
@@ -425,6 +427,18 @@ export default function PondDetail() {
 
     return list.sort((a, b) => new Date(b.date) - new Date(a.date))
   }, [cycle, terms])
+
+  const {
+    currentPage: logPage,
+    setCurrentPage: setLogPage,
+    pageSize: logPageSize,
+    setPageSize: setLogPageSize,
+    totalPages: logTotalPages,
+    totalItems: logTotalItems,
+    paginatedData: paginatedLogs,
+    startIndex: logStartIndex,
+    endIndex: logEndIndex
+  } = usePagination(activityLogs)
 
   const handleTriggerEdit = (log) => {
     setEditingLog(log.original)
@@ -1043,7 +1057,6 @@ export default function PondDetail() {
                </div>
               )}
            </div>
-               <div className="aq-table-container">
                  <Table>
                     <TableHeader>
                        <TableRow isHoverable={false}>
@@ -1056,71 +1069,78 @@ export default function PondDetail() {
                        </TableRow>
                     </TableHeader>
                     <TableBody>
-                       {activityLogs.map((log) => {
-                          const isEditable = cycle?.status !== 'panen' || log.logType === 'harvest';
-                          return (
-                            <TableRow key={log.id}>
-                               <TableCell style={{ fontWeight: 600 }}>{new Date(log.date).toLocaleDateString('id-ID')}</TableCell>
-                               <TableCell style={{ 
-                                  color: log.logType === 'health' ? '#EF4444' : 
-                                         log.logType === 'sampling' ? '#7C3AED' : 
-                                         log.logType === 'expense' ? '#1B4332' : 
-                                         log.logType === 'harvest' ? '#D97706' : 'inherit',
-                                  fontWeight: 700 
-                               }}>{log.type}</TableCell>
-                               <TableCell isSecondary>{log.detail}</TableCell>
-                               <TableCell isSecondary>{log.notes}</TableCell>
-                               <TableCell>
-                                  <span style={{ 
-                                     fontSize: 12, 
-                                     padding: '4px 10px', 
-                                     background: log.statusColor.bg, 
-                                     color: log.statusColor.text, 
-                                     borderRadius: 20, 
-                                     fontWeight: 600 
-                                  }}>{log.statusText}</span>
-                               </TableCell>
-                               <TableCell style={{ textAlign: 'right' }}>
-                                   {isEditable ? (
-                                      <div style={{ display: 'inline-flex', gap: 8 }}>
-                                         <button 
-                                            onClick={() => handleTriggerEdit(log)}
-                                            title="Edit Aktivitas"
-                                            style={{ 
-                                               background: '#F4F7F5', border: '1px solid #E9F0EC', color: '#1B4332', 
-                                               cursor: 'pointer', width: '32px', height: '32px', borderRadius: '8px',
-                                               display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
-                                            }}
-                                         >
-                                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
-                                         </button>
-                                         <button 
-                                            onClick={() => handleDeleteLog(log)}
-                                            title="Hapus Aktivitas"
-                                            style={{ 
-                                               background: '#FEF2F2', border: '1px solid #FEE2E2', color: '#EF4444', 
-                                               cursor: 'pointer', width: '32px', height: '32px', borderRadius: '8px',
-                                               display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
-                                            }}
-                                         >
-                                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
-                                         </button>
-                                      </div>
-                                   ) : (
-                                      <span title="Terkunci (Siklus Selesai)" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', color: '#94A3B8' }}>
-                                         <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>lock</span>
-                                      </span>
-                                   )}
+                        {paginatedLogs.map((log) => {
+                           const isEditable = cycle?.status !== 'panen' || log.logType === 'harvest';
+                           return (
+                             <TableRow key={log.id}>
+                                <TableCell>{new Date(log.date).toLocaleDateString('id-ID')}</TableCell>
+                                <TableCell style={{ 
+                                   color: log.logType === 'health' ? '#EF4444' : 
+                                          log.logType === 'sampling' ? '#7C3AED' : 
+                                          log.logType === 'expense' ? '#1B4332' : 
+                                          log.logType === 'harvest' ? '#D97706' : 'inherit'
+                                }}>{log.type}</TableCell>
+                                <TableCell isSecondary>{log.detail}</TableCell>
+                                <TableCell isSecondary>{log.notes}</TableCell>
+                                <TableCell>
+                                   <span style={{ 
+                                      fontSize: 12, 
+                                      padding: '4px 10px', 
+                                      background: log.statusColor.bg, 
+                                      color: log.statusColor.text, 
+                                      borderRadius: 20
+                                   }}>{log.statusText}</span>
                                 </TableCell>
-                            </TableRow>
-                          )
-                       })}
-                       {activityLogs.length === 0 && (
-                         <TableRow><TableCell colSpan="6" style={{ padding: '40px 0', textAlign: 'center', color: '#64748B' }}>Belum ada riwayat aktivitas untuk siklus ini.</TableCell></TableRow>
-                       )}
-                    </TableBody>
+                                <TableCell style={{ textAlign: 'right' }}>
+                                    {isEditable ? (
+                                       <div style={{ display: 'inline-flex', gap: 8 }}>
+                                          <button 
+                                             onClick={() => handleTriggerEdit(log)}
+                                             title="Edit Aktivitas"
+                                             style={{ 
+                                                background: '#F4F7F5', border: '1px solid #E9F0EC', color: '#1B4332', 
+                                                cursor: 'pointer', width: '32px', height: '32px', borderRadius: '8px',
+                                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                                             }}
+                                          >
+                                             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
+                                          </button>
+                                          <button 
+                                             onClick={() => handleDeleteLog(log)}
+                                             title="Hapus Aktivitas"
+                                             style={{ 
+                                                background: '#FEF2F2', border: '1px solid #FEE2E2', color: '#EF4444', 
+                                                cursor: 'pointer', width: '32px', height: '32px', borderRadius: '8px',
+                                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                                             }}
+                                          >
+                                             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                                          </button>
+                                       </div>
+                                    ) : (
+                                       <span title="Terkunci (Siklus Selesai)" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', color: '#94A3B8' }}>
+                                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>lock</span>
+                                       </span>
+                                    )}
+                                 </TableCell>
+                             </TableRow>
+                           )
+                        })}
+                        {activityLogs.length === 0 && (
+                          <TableRow><TableCell colSpan="6" style={{ padding: '40px 0', textAlign: 'center', color: '#64748B' }}>Belum ada riwayat aktivitas untuk siklus ini.</TableCell></TableRow>
+                        )}
+                     </TableBody>
                  </Table>
-               </div>
+                 <BudidayaPagination
+                    currentPage={logPage}
+                    setCurrentPage={setLogPage}
+                    pageSize={logPageSize}
+                    setPageSize={setLogPageSize}
+                    totalPages={logTotalPages}
+                    totalItems={logTotalItems}
+                    startIndex={logStartIndex}
+                    endIndex={logEndIndex}
+                  />
          </div>
       </div>
         )}

@@ -66,29 +66,6 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
           </div>
 
-          {/* Center: Search Bar */}
-          <div className="flex-1 max-w-md mx-2 hidden md:block">
-            <div className="relative w-full">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                id="topbar-search-input"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nomor SPK, nama pelanggan, peralatan, teknisi..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-8 py-2 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-2xs"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700 bg-slate-200 hover:bg-slate-300 w-5 h-5 rounded-full flex items-center justify-center"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div>
-
           {/* Right: Quick Actions & Urgent Alert */}
           <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
             {/* Urgent Alert Badge Button */}

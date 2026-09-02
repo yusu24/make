@@ -12,7 +12,25 @@ class RetailReceivableController extends Controller
 {
     public function index(Request $request)
     {
-        $receivables = RetailReceivable::with(['customer', 'payments'])->latest()->get();
+        $query = RetailReceivable::with(['customer', 'payments'])->latest();
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('startDate')) {
+            $query->whereDate('created_at', '>=', $request->startDate);
+        }
+
+        if ($request->filled('endDate')) {
+            $query->whereDate('created_at', '<=', $request->endDate);
+        }
+
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+        }
+
+        $receivables = $query->get();
 
         return response()->json([
             'data' => $receivables,

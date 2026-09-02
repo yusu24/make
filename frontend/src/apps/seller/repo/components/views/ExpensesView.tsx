@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   Plus,
   Search,
@@ -14,11 +14,24 @@ import {
   Building2,
   FileSpreadsheet,
   Download,
-  AlertCircle
+  AlertCircle,
+  Printer
 } from 'lucide-react';
 import { Expense, ExpenseCategory, StoreChannel } from '../../types';
 import { formatIDR } from '../../utils/formatters';
 import { useTranslation } from '../../../../../contexts/I18nContext';
+import { useAuth } from '../../../../../contexts/AuthContext';
+import { useReactToPrint } from 'react-to-print';
+import '../../../seller-print.css';
+import {
+  SellerPrintHeader,
+  SellerPrintSectionHeader,
+  SellerPrintAppendixHeader,
+  SellerPrintExplanationBox,
+  SellerPrintFooter,
+  formatRp,
+  formatDateIndo
+} from '../SellerPrintLayout';
 
 interface ExpensesViewProps {
   expenses: Expense[];
@@ -37,6 +50,7 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
   stores,
   selectedStoreId,
 }) => {
+  const { user } = useAuth();
   const i18n = useTranslation();
   const t = i18n?.t || ((key: string) => key);
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,6 +58,12 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
   const [selectedDateFilter, setSelectedDateFilter] = useState<string>('Semua Tanggal');
   const [pageSize, setPageSize] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Buku-Kas-Pengeluaran-Ecommerce-${new Date().toISOString().split('T')[0]}`,
+  });
 
   // Filter expenses
   const filteredExpenses = useMemo(() => {
@@ -177,6 +197,15 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>Tambah Pengeluaran</span>
+          </button>
+
+          {/* Cetak / Export PDF Button */}
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer shrink-0"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Cetak / Export PDF</span>
           </button>
 
           {/* Search Box */}
@@ -375,6 +404,159 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* PRINT-ONLY FORMAL 2-PAGE EXPENSE ACCOUNTING REPORT                        */}
+      {/* ========================================================================= */}
+      <div style={{ display: 'none' }}>
+        <div ref={printRef} className="print-only" style={{ padding: 0, fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: '#000000' }}>
+          
+          {/* 1. Header / Kop Surat Resmi Toko Online */}
+          <SellerPrintHeader
+            user={user}
+            title="Buku Kas Pengeluaran Toko Online"
+            subtitle="Rekapitulasi Arus Kas Keluar, Beban Iklan & Biaya Operasional Multi-Channel"
+            periodText={`Filter: ${selectedDateFilter} • Kategori: ${selectedCategory === 'all' ? 'Semua Kategori' : selectedCategory}`}
+          />
+
+          {/* 2. Formal Summary Table (Horizontal Borders Only) */}
+          <div style={{ marginBottom: 20 }}>
+            <SellerPrintSectionHeader title="I. Ringkasan Kas Pengeluaran Operasional Toko" />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#000000' }}>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #000000' }}>
+                  <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                    A. REKAPITULASI PENGELUARAN KAS
+                  </td>
+                  <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Total Volume Transaksi Pengeluaran Dicatat</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', width: 140, whiteSpace: 'nowrap' }}>{filteredExpenses.length} Transaksi</td>
+                  <td style={{ width: 140 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Alokasi Beban Iklan & Marketing (Ads Top-up)</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>({formatRp(adsExpenseAmount)})</td>
+                  <td></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Alokasi Packing, Dus & Bahan Pembungkus</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>({formatRp(packingExpenseAmount)})</td>
+                  <td></td>
+                </tr>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td style={{ padding: '7px 4px', fontSize: 11, color: '#000000' }}>
+                    TOTAL BEBAN KAS KELUAR (TOTAL CASH OUTFLOW)
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>
+                    100.0%
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'right', fontSize: 11.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    ({formatRp(totalExpensesAmount)})
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 3. Detailed Formal Accounting Ledger Table */}
+          <div style={{ marginBottom: 20 }}>
+            <SellerPrintSectionHeader 
+              title="II. Buku Register Transaksi Pengeluaran Kas (Expense Ledger)" 
+              rightText={`Total ${filteredExpenses.length} item pengeluaran`} 
+            />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000' }}>
+              <thead>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                  <th style={{ padding: '7px 4px', textAlign: 'center', width: 35, fontWeight: 600 }}>No</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'left', width: 90, fontWeight: 600 }}>Tanggal</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'left', width: 140, fontWeight: 600 }}>Kategori Beban</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'left', fontWeight: 600 }}>Keterangan & Rincian Pengeluaran</th>
+                  <th style={{ padding: '7px 6px', textAlign: 'right', width: 160, fontWeight: 600, whiteSpace: 'nowrap' }}>Kas Keluar / Outflow (Rp)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredExpenses.map((e, idx) => (
+                  <tr key={e.id || idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                    <td style={{ padding: '6px 6px', color: '#000000', whiteSpace: 'nowrap' }}>{e.date}</td>
+                    <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000' }}>{e.category}</td>
+                    <td style={{ padding: '6px 6px', color: '#000000' }}>{e.description || '-'}</td>
+                    <td style={{ padding: '6px 6px', textAlign: 'right', fontWeight: 500, color: '#000000', whiteSpace: 'nowrap' }}>
+                      ({formatRp(e.amount)})
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td colSpan={4} style={{ padding: '7px 6px', textAlign: 'right', textTransform: 'uppercase', fontSize: 10, color: '#000000', whiteSpace: 'nowrap' }}>
+                    Total Rekapitulasi Pengeluaran:
+                  </td>
+                  <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 11, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    ({formatRp(totalExpensesAmount)})
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* Kolom Tanda Tangan & Pengesahan Dokumen (Halaman 1) */}
+          <SellerPrintFooter user={user} />
+
+          {/* 4. HALAMAN 2: LAMPIRAN PANDUAN PENGENDALIAN BIAYA TOKO ONLINE */}
+          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+            <SellerPrintAppendixHeader 
+              title="Lampiran: Panduan & Pengendalian Biaya Operasional E-Commerce"
+              subtitle={`Standar Efisiensi Belanja Iklan, Packing & Rekonsiliasi Nota Kas — ${user?.tenant_name || 'Toko Online'}`}
+              user={user}
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+              <SellerPrintExplanationBox
+                number="1"
+                title="Tata Kelola Kas Operasional Toko Online"
+                desc="Setiap pengeluaran kas kecil (pembelian bubble wrap, solasi, biaya kurir pick-up khusus) wajib diinput bersama foto struk atau bukti transfer."
+                variant="default"
+              />
+
+              <SellerPrintExplanationBox
+                number="2"
+                title="Pengendalian Biaya Iklan (Shopee / TikTok Ads)"
+                desc="Top-up saldo iklan wajib dimonitor setiap hari melalui perbandingan nilai ROAS (Return On Ad Spend) dan konversi order aktual."
+                formula="Batas Aman Biaya Iklan: Maksimal 10% - 15% dari total omzet penjualan kotor"
+                variant="emerald"
+              />
+
+              <SellerPrintExplanationBox
+                number="3"
+                title="Optimalisasi Bahan Packing & Perlengkapan Gudang"
+                desc="Pembelian kardus packing, plastik polymailer, dan lakban dalam jumlah grosir (bulk purchase) untuk menekan biaya kemasan per paket kiriman."
+                variant="indigo"
+              />
+
+              <SellerPrintExplanationBox
+                number="4"
+                title="Alokasi Upah Packing & Admin Customer Service"
+                desc="Biaya tenaga kerja pemrosesan pesanan dicatat secara konsisten setiap periode penggajian untuk mencerminkan HPP layanan yang akurat."
+                variant="rose"
+              />
+
+              <SellerPrintExplanationBox
+                number="5"
+                title="Audit Bukti Transaksi & Rekonsiliasi Bank"
+                desc="Pencocokan berkala antara total kas keluar di sistem dengan mutasi rekening bank operasional toko online."
+                variant="dark"
+              />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   );
 };

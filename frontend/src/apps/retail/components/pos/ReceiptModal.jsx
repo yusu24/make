@@ -82,8 +82,9 @@ export default function ReceiptModal({ isOpen, order, outletName, cashierName, r
               </div>
 
               {changeAmount > 0 && (
-                <div className="flex justify-between font-semibold text-slate-800">
-                  <span>Kembalian:</span><span>{fmtRp(changeAmount)}</span>
+                <div className="flex justify-between items-center font-bold text-emerald-800 bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-200 text-[11px] mt-1.5">
+                  <span>KEMBALIAN:</span>
+                  <span className="font-extrabold text-xs">{fmtRp(changeAmount)}</span>
                 </div>
               )}
             </div>

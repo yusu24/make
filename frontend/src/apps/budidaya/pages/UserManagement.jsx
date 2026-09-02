@@ -4,6 +4,7 @@ import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
+import BudidayaPagination from '../components/BudidayaPagination'
 
 export default function UserManagement() {
   const terms = useBudidayaTerms()
@@ -108,106 +109,90 @@ export default function UserManagement() {
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{s.icon}</span>
               </div>
             </div>
-            <h2 className="aq-kpi-value" style={{ fontSize: '28px' }}>{s.val}</h2>
+            <h2 className="aq-kpi-value">{s.val}</h2>
             <p className="aq-small-text" style={{ fontWeight: '600', color: s.subColor, marginTop: '4px' }}>{s.sub}</p>
           </div>
         ))}
       </div>
 
       {/* Table */}
-      <div style={cardStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
-          <div style={{ position: 'relative', width: '400px' }}>
-            <span className="material-symbols-outlined" style={{ position: 'absolute', left: '16px', top: '12px', color: '#64748B', fontSize: '20px' }}>search</span>
+      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #E9F0EC', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ position: 'relative', width: '320px' }}>
+            <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '9px', color: '#64748B', fontSize: '18px' }}>search</span>
             <input
               placeholder="Cari berdasarkan nama, email atau peran..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
-              style={{ width: '100%', padding: '12px 16px 12px 48px', background: '#F1F5F9', border: 'none', borderRadius: '12px', fontSize: '14px', outline: 'none' }}
+              style={{ width: '100%', padding: '8px 12px 8px 36px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
             />
           </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>filter_list</span>Filter
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '36px', padding: '0 12px', fontSize: '13px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>filter_list</span>Filter
             </button>
-            <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>upload</span>Ekspor
+            <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '36px', padding: '0 12px', fontSize: '13px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>upload</span>Ekspor
             </button>
           </div>
         </div>
 
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', flexDirection: 'column', gap: 12 }}>
-            <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat data pengguna...</p>
+            <div style={{ width: 32, height: 32, border: '3px solid #E2E8F0', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <p style={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>Memuat data pengguna...</p>
           </div>
         ) : (
-          <div className="aq-table-container">
-            <Table>
-              <TableHeader>
-                <TableRow isHoverable={false}>
-                  {['Nama staf', 'Email', 'Peran', 'Status', 'Posisi', ''].map(h => (
-                    <TableHeaderCell key={h}>{h}</TableHeaderCell>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {staff.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>Belum ada staf terdaftar</TableCell></TableRow>
-                ) : staff.map((u, i) => (
-                  <TableRow key={u.id}>
-                    <TableCell>
-                      <div>
-                        <p className="aq-body-text" style={{ fontWeight: 700, color: 'var(--aq-text-primary)', margin: 0 }}>{u.name}</p>
-                        <p className="aq-small-text" style={{ marginTop: '2px' }}>{u.position ?? 'Staf budidaya'}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell isSecondary>{u.email ?? '-'}</TableCell>
-                    <TableCell>
-                      <span style={badge('#D1FAE5', '#059669')}>{u.role?.name ?? getRoleLabel(u.budidaya_role_id) ?? 'Pekerja'}</span>
-                    </TableCell>
-                    <TableCell>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: u.status === 'aktif' ? '#059669' : '#64748B' }}></span>
-                        <span style={{ fontSize: '12px', fontWeight: 600, color: u.status === 'aktif' ? '#059669' : '#64748B' }}>
-                          {u.status === 'aktif' ? 'Aktif' : 'Tidak aktif'}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell isSecondary>{u.position ?? '-'}</TableCell>
-                    <TableCell>
-                      <button onClick={() => handleDelete(u.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>more_vert</span>
-                      </button>
-                    </TableCell>
-                  </TableRow>
+          <Table>
+            <TableHeader>
+              <TableRow isHoverable={false}>
+                {['Nama Staf', 'Email', 'Peran', 'Status', 'Posisi', 'Aksi'].map(h => (
+                  <TableHeaderCell key={h}>{h}</TableHeaderCell>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {staff.length === 0 ? (
+                <TableRow><TableCell colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>Belum ada staf terdaftar</TableCell></TableRow>
+              ) : staff.map((u, i) => (
+                <TableRow key={u.id}>
+                  <TableCell>
+                    <span style={{ color: '#0f172a', fontSize: '13px' }}>{u.name}</span>
+                  </TableCell>
+                  <TableCell isSecondary>{u.email ?? '-'}</TableCell>
+                  <TableCell>
+                    <span className="badge-pill badge-pill-success">{u.role?.name ?? getRoleLabel(u.budidaya_role_id) ?? 'Pekerja'}</span>
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: u.status === 'aktif' ? '#10b981' : '#94a3b8' }}></span>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: u.status === 'aktif' ? '#059669' : '#64748B' }}>
+                        {u.status === 'aktif' ? 'Aktif' : 'Tidak aktif'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell isSecondary>{u.position ?? '-'}</TableCell>
+                  <TableCell style={{ textAlign: 'right' }}>
+                    <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
+                      <button className="btn-table-action" onClick={() => handleDelete(u.id)} title="Hapus Staf" style={{ color: '#ef4444' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
 
         {/* Pagination */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', paddingTop: '24px', borderTop: '1.5px solid #F1F5F9' }}>
-          <p style={{ fontSize: '13px', color: '#64748B' }}>Menampilkan {staff.length} dari {total} pengguna</p>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-              style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E9F0EC', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', cursor: 'pointer' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_left</span>
-            </button>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(p => (
-              <button key={p} onClick={() => setPage(p)} style={{
-                width: '32px', height: '32px', borderRadius: '8px', border: 'none',
-                background: page === p ? '#1B4332' : 'transparent',
-                color: page === p ? '#fff' : '#475569', fontWeight: '700', fontSize: '13px', cursor: 'pointer'
-              }}>{p}</button>
-            ))}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-              style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E9F0EC', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', cursor: 'pointer' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
-            </button>
-          </div>
-        </div>
+        <BudidayaPagination
+          currentPage={page}
+          setCurrentPage={setPage}
+          pageSize={PER_PAGE}
+          totalPages={totalPages}
+          totalItems={total}
+        />
       </div>
 
       {/* Bottom */}

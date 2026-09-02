@@ -47,6 +47,7 @@ import { PackingImprovementView } from './components/omnichannel/PackingImprovem
 import { NotificationCenterView } from './components/omnichannel/NotificationCenterView';
 import { GuideView } from './components/views/GuideView';
 import { SellerSubscriptionView } from './components/views/SellerSubscriptionView';
+import { BackupView } from './components/views/BackupView';
 
 import { AddExpenseModal } from './components/modals/AddExpenseModal';
 import { AddIncomeModal } from './components/modals/AddIncomeModal';
@@ -94,6 +95,7 @@ const pathToTab = (p: string): ActiveTab => {
   if (p.includes('/settings/users')) return 'settings-users';
   if (p.includes('/subscription') || p.includes('/langganan')) return 'langganan';
   if (p.includes('/guide') || p.includes('/panduan')) return 'panduan';
+  if (p.includes('/backup')) return 'backup';
   return 'menu-utama';
 };
 
@@ -126,6 +128,7 @@ const tabToPath = (tab: ActiveTab): string => {
     case 'notification-center': return '/seller/notifications';
     case 'panduan': return '/seller/guide';
     case 'langganan': return '/seller/subscription';
+    case 'backup': return '/seller/backup';
     default: return '/seller/dashboard';
   }
 };
@@ -284,31 +287,103 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Fetch initial data from Laravel backend
+  // Fetch initial data from Laravel backend (Seller API + fallback)
   useEffect(() => {
-    const fetchRetailData = async () => {
+    const fetchSellerData = async () => {
       try {
-        const [prodRes, expRes, incRes, transRes] = await Promise.all([
-          api.get('/retail/products').catch(() => ({ data: [] })),
+        const [sellerProdRes, sellerOrderRes, sellerChannelRes, expRes, incRes] = await Promise.all([
+          api.get('/seller/products').catch(() => ({ data: { data: [] } })),
+          api.get('/seller/orders').catch(() => ({ data: { data: [] } })),
+          api.get('/seller/channels').catch(() => ({ data: { data: [] } })),
           api.get('/retail/finance/expenses').catch(() => ({ data: [] })),
-          api.get('/retail/finance/incomes').catch(() => ({ data: [] })),
-          api.get('/retail/transactions', { params: { per_page: 100 } }).catch(() => ({ data: { data: [] } }))
+          api.get('/retail/finance/incomes').catch(() => ({ data: [] }))
         ]);
 
-        // Unlike /retail/transactions (paginated, body wrapped in {data:[...]}),
-        // /retail/products responds with a bare array — checking `.data.data`
-        // here would always be undefined and silently skip setProducts.
-        const productsById: Record<string, any> = {};
-        let mappedProducts: Product[] = [];
-        if (Array.isArray(prodRes.data) && prodRes.data.length > 0) {
-          mappedProducts = prodRes.data.map((p: any) => {
-            const mapped = mapProduct(p);
-            productsById[String(p.id)] = mapped;
-            return mapped;
+        // 1. Products
+        const rawProds = sellerProdRes.data?.data || sellerProdRes.data || [];
+        if (Array.isArray(rawProds) && rawProds.length > 0) {
+          const mapped = rawProds.map((p: any) => {
+            const stock = parseFloat(p.stock) || 0;
+            const stockMin = parseFloat(p.min_stock || p.stock_min) || 0;
+            const price = parseFloat(p.price || p.price_sell) || 0;
+            const costPrice = parseFloat(p.cost_price || p.price_buy) || 0;
+            return {
+              id: p.id?.toString(),
+              sku: p.sku || `SKU-${p.id}`,
+              name: p.name,
+              category: p.category || p.category?.name || 'Umum',
+              categoryId: p.category_id?.toString() || '',
+              unit: p.unit || 'Pcs',
+              image: p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30',
+              rawImageUrl: p.image_url || null,
+              hpp: costPrice,
+              priceOffline: price,
+              priceShopee: price,
+              priceTokopedia: price,
+              priceTiktok: price,
+              priceLazada: price,
+              totalStock: stock,
+              stockMin: stockMin,
+              warehouseStock: {},
+              status: stock <= 0 ? 'Habis' : stock <= stockMin ? 'Stok Menipis' : 'Aktif',
+              connectedChannels: ['Shopee', 'Tokopedia', 'TikTok Shop'],
+            };
           });
-          setProducts(mappedProducts);
+          setProducts(mapped);
         }
 
+        // 2. Channels
+        const rawChannels = sellerChannelRes.data?.data || [];
+        if (Array.isArray(rawChannels) && rawChannels.length > 0) {
+          const mappedChannels: StoreChannel[] = rawChannels.map((c: any) => ({
+            id: c.id?.toString(),
+            name: c.store_name,
+            platform: c.platform === 'shopee' ? 'Shopee' : c.platform === 'tokopedia' ? 'Tokopedia' : c.platform === 'tiktok' ? 'TikTok Shop' : c.platform === 'lazada' ? 'Lazada' : c.platform,
+            storeName: c.store_name,
+            accountName: c.account_id || c.store_name,
+            status: c.status === 'connected' ? 'Connected' : 'Disconnected',
+            autoSync: !!c.auto_sync,
+            lastSync: c.last_sync_at ? new Date(c.last_sync_at).toLocaleString('id-ID') : 'Belum sync',
+            revenueToday: 0,
+            totalOrdersToday: 0,
+          }));
+          setStores(mappedChannels);
+        }
+
+        // 3. Orders
+        const rawOrders = sellerOrderRes.data?.data || [];
+        if (Array.isArray(rawOrders) && rawOrders.length > 0) {
+          const mappedOrders: Order[] = rawOrders.map((o: any) => ({
+            id: o.id?.toString(),
+            orderNumber: o.order_no || `ORD-${o.id}`,
+            platform: o.platform === 'shopee' ? 'Shopee' : o.platform === 'tokopedia' ? 'Tokopedia' : o.platform === 'tiktok' ? 'TikTok Shop' : o.platform === 'lazada' ? 'Lazada' : 'Manual/Offline',
+            storeName: o.platform,
+            customerName: o.customer_name || 'Pelanggan',
+            customerPhone: o.customer_phone || '-',
+            address: o.customer_address || '-',
+            orderDate: o.order_date?.replace('T', ' ').substring(0, 16) || new Date().toISOString().substring(0, 16),
+            status: o.status === 'Perlu Dikirim' ? 'Perlu Diproses' : o.status === 'Dikirim' ? 'Dalam Pengiriman' : o.status === 'Selesai' ? 'Selesai' : o.status,
+            items: (o.items || []).map((it: any) => ({
+              productId: it.sku,
+              sku: it.sku,
+              productName: it.name,
+              quantity: parseFloat(it.qty) || 1,
+              price: parseFloat(it.price) || 0,
+            })),
+            subtotal: parseFloat(o.total_amount) || 0,
+            shippingFee: parseFloat(o.shipping_cost) || 0,
+            discounts: 0,
+            platformFee: 0,
+            totalAmount: parseFloat(o.total_amount) || 0,
+            courier: o.courier || 'J&T Express',
+            trackingNumber: o.tracking_no || `TRK-${o.id}`,
+            paymentMethod: o.payment_method || 'Transfer',
+            isPrintedAWB: false,
+          }));
+          setOrders(mappedOrders);
+        }
+
+        // 4. Expenses
         if (Array.isArray(expRes.data) && expRes.data.length > 0) {
           const mappedExpenses = expRes.data.map((e: any) => ({
             id: e.id?.toString(),
@@ -323,6 +398,7 @@ export default function App() {
           setExpenses(mappedExpenses);
         }
 
+        // 5. Incomes
         if (Array.isArray(incRes.data) && incRes.data.length > 0) {
           const mappedIncomes = incRes.data.map((inc: any) => ({
             id: inc.id?.toString(),
@@ -335,53 +411,11 @@ export default function App() {
           setIncomes(mappedIncomes);
         }
 
-        if (transRes.data?.data && transRes.data.data.length > 0) {
-          const mappedOrders: Order[] = transRes.data.data.map((t: any) => ({
-            id: t.id?.toString(),
-            orderNumber: t.invoice_no || `TRX-${t.id}`,
-            platform: 'Manual/Offline',
-            storeName: 'Toko Offline',
-            customerName: t.customer?.name || 'Pelanggan Offline',
-            customerPhone: t.customer?.phone || '-',
-            address: '-',
-            orderDate: t.created_at?.replace('T', ' ').substring(0, 16) || new Date().toISOString().substring(0, 16),
-            status: 'Selesai',
-            items: (t.items || []).map((it: any) => ({
-              productId: it.product_id?.toString(),
-              sku: productsById[String(it.product_id)]?.sku || `SKU-${it.product_id}`,
-              productName: productsById[String(it.product_id)]?.name || `Produk #${it.product_id}`,
-              quantity: parseFloat(it.qty) || 0,
-              price: parseFloat(it.price) || 0,
-            })),
-            subtotal: parseFloat(t.total_amount) || 0,
-            shippingFee: 0,
-            discounts: parseFloat(t.discount_amount) || 0,
-            platformFee: 0,
-            totalAmount: parseFloat(t.total_amount) || 0,
-            courier: '-',
-            trackingNumber: `TRX-${t.id}`,
-            paymentMethod: t.payment_method || '-',
-            isPrintedAWB: false,
-          }));
-          setOrders(mappedOrders);
-
-          const todayStr = new Date().toISOString().substring(0, 10);
-          const todaysOrders = mappedOrders.filter((o) => o.orderDate.startsWith(todayStr));
-          if (todaysOrders.length > 0) {
-            const todaysRevenue = todaysOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-            setStores((prev) => prev.map((st) =>
-              st.platform === 'Manual/Offline'
-                ? { ...st, revenueToday: todaysRevenue, totalOrdersToday: todaysOrders.length }
-                : st
-            ));
-          }
-        }
-
       } catch (err) {
         console.error('Failed to fetch backend data for seller:', err);
       }
     };
-    fetchRetailData();
+    fetchSellerData();
   }, []);
 
 
@@ -863,6 +897,7 @@ export default function App() {
           {activeTab === 'notification-center' && <NotificationCenterView />}
           {activeTab === 'panduan' && <GuideView />}
           {activeTab === 'langganan' && <SellerSubscriptionView />}
+          {activeTab === 'backup' && <BackupView />}
         </main>
       </div>
 

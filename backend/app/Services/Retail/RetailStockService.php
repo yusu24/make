@@ -24,10 +24,24 @@ class RetailStockService
 
     private function getStockRecord(RetailProduct $product, $outletId)
     {
-        return RetailProductStock::lockForUpdate()->firstOrCreate(
-            ['tenant_id' => $product->tenant_id, 'product_id' => $product->id, 'outlet_id' => $outletId],
-            ['stock' => 0]
+        $record = RetailProductStock::lockForUpdate()->firstOrNew(
+            ['tenant_id' => $product->tenant_id, 'product_id' => $product->id, 'outlet_id' => $outletId]
         );
+
+        if (!$record->exists) {
+            $existingTotal = RetailProductStock::where('product_id', $product->id)->sum('stock');
+            $initialStock = ($existingTotal == 0 && $product->stock > 0) ? (float)$product->stock : 0;
+            $record->stock = $initialStock;
+            $record->save();
+        } elseif ($record->stock == 0 && (float)$product->stock > 0) {
+            $otherOutletsStock = RetailProductStock::where('product_id', $product->id)->where('id', '!=', $record->id)->sum('stock');
+            if ($otherOutletsStock == 0) {
+                $record->stock = (float)$product->stock;
+                $record->save();
+            }
+        }
+
+        return $record;
     }
 
     private function syncTotalStock(RetailProduct $product)

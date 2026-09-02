@@ -69,8 +69,8 @@ export default function ModuleDocumentation() {
       icon: <Store size={18} />,
       title: 'Modul Toko Retail & POS (Point of Sale)',
       description: 'Sistem operasional terintegrasi untuk bisnis retail modern, minimarket, grosir, dan toko kelontong dengan fitur kasir cepat, multi-outlet, multi-satuan, pelacakan batch & serial, inventaris berkala, akuntansi kas, dan kontrol hak akses staf.',
-      version: 'v2.4.0 (Enterprise Ready)',
-      lastUpdated: '2026-08-20',
+      version: 'v2.4.5 (Enhanced Margin Analytics & Mobile LAN Sync)',
+      lastUpdated: '2026-08-31',
       leadDeveloper: 'Bizora Core Engineering Team',
 
       domains: [
@@ -95,9 +95,11 @@ export default function ModuleDocumentation() {
         ],
         frontend: [
           { name: 'React 18.x', role: 'User Interface Component Library', tag: 'UI Library' },
-          { name: 'Vite 5.x', role: 'High-speed Build Tool & Development Server', tag: 'Bundler' },
+          { name: 'Vite 5.x + Auto LAN Host', role: 'Bundler with automatic local network & mobile hotspot binding', tag: 'Bundler' },
+          { name: 'Dynamic API Resolver', role: 'window.location.hostname detection for seamless multi-device access (HP/Tablet/PC)', tag: 'Networking' },
           { name: 'React Router v6', role: 'Client-side Declarative Routing & Navigation Guards', tag: 'Routing' },
           { name: 'Axios Interceptors', role: 'Centralized HTTP Client, Token Injection & 401/402 Error Handlers', tag: 'Networking' },
+          { name: 'Recharts 2.x', role: 'Top 10 Horizontal Bar & Analytics Visualizations', tag: 'Charts' },
           { name: 'Context API', role: 'Global State (AuthContext, ThemeContext, TenantContext)', tag: 'State' },
           { name: 'Lucide React', role: 'Consistent & Modern SVG Iconography', tag: 'Icons' },
           { name: 'Pure CSS Design System', role: 'Scoped CSS variables (--retail-*), animations, zero Tailwind lock-in', tag: 'Styling' },
@@ -129,12 +131,13 @@ export default function ModuleDocumentation() {
           category: 'Katalog & Multi-Satuan Produk',
           icon: <Package size={20} className="text-primary" />,
           items: [
+            'Pemisahan Katalog Produk dari Laporan Margin sensitif (tampilan operasional bersih & aman dari kasir)',
             'Hierarki kategori produk & pengelompokan rak/etalase',
             'Multi-satuan per produk (Pcs, Box, Dus, Lusin, Karton) dengan rasio konversi otomatis',
             'Daftar Harga Khusus (Pricelist Tier: Grosir, Reseller, Member VIP)',
             'Pelacakan Nomor Batch & Tanggal Kedaluwarsa (Expired Date Warning)',
             'Pelacakan Nomor Serial / IMEI unik untuk produk elektronik & garansi',
-            'Import & Export massal data produk melalui format CSV / Excel',
+            'Import & Export terpisah dengan visual tombol Sky Blue & Emerald Excel',
             'Upload foto produk & cetak label barcode / price tag siap tempel',
           ]
         },
@@ -189,18 +192,22 @@ export default function ModuleDocumentation() {
             'Transfer Kas antar-rekening/kasir dengan verifikasi saldo',
             'Laporan Arus Kas (Cash Flow) terpadu antara operasional, penjualan, dan beban',
             'Laporan Rekapitulasi Pajak PPN keluaran penjualan',
+            'Tampilan High-Contrast Bold pada baris Laba Bersih (Net Profit) untuk kemudahan analisis owner',
           ]
         },
         {
           category: 'Laporan Komprehensif & Analitik',
           icon: <BarChart2 size={20} className="text-primary" />,
           items: [
+            'Laporan Margin & Profitabilitas Produk terdedikasi (/retail/reports/margins) dengan Top 10 Horizontal Bar Chart',
+            'Status margin dinamis (Sangat Sehat >=30%, Sehat >=20%, Normal >=10%, Tipis >=0%, Rugi <0%)',
             'Laporan Penjualan harian, mingguan, bulanan dengan filter outlet & kasir',
             'Laporan Laba Kotor (Gross Margin Analysis) per produk dan per transaksi',
             'Laporan Produk Terlaris (Top Selling Items & Dead Stock Analysis)',
             'Laporan Penjualan Barang Konsinyasi (Titip Jual) dengan supplier',
             'Laporan Kinerja Shift & Kasir beserta komparasi performa penjualan',
             'Laporan Metode Pembayaran (Cash vs QRIS vs Transfer vs EDC)',
+            'Fitur Cetak & Export Laporan standar resmi A4 / Thermal',
           ]
         },
         {
@@ -904,6 +911,7 @@ export default function ModuleDocumentation() {
 │   │   ├── Shifts.jsx           # Rekonsiliasi Kas Laci & Riwayat Shift Kasir
 │   │   ├── FinanceSummary.jsx   # Buku Kas Toko, Arus Kas & PPN
 │   │   ├── SalesReport.jsx      # Analitik Penjualan & Margin Laba Kotor
+│   │   ├── ProductMarginReport.jsx # Laporan Margin Produk & Top 10 Profit
 │   │   ├── Staff.jsx & Roles.jsx# Manajemen Karyawan & Hak Akses (RBAC)
 │   │   └── Settings.jsx         # Branding Nota, Logo, QRIS, & Tab KYC
 │   ├── components/              # Retail-specific widgets & thermal receipt modals
@@ -923,6 +931,7 @@ export default function ModuleDocumentation() {
         { method: 'POST', path: '/api/retail/purchases', name: 'Simpan Purchase Order', perm: 'purchasing', desc: 'Mencatat PO ke supplier dan membuat jadwal hutang tempo otomatis' },
         { method: 'POST', path: '/api/retail/shifts/close', name: 'Tutup Shift Kasir', perm: 'pos', desc: 'Menghitung total kas laci dan mencatat selisih fisik vs sistem' },
         { method: 'GET', path: '/api/retail/reports/sales', name: 'Laporan Penjualan & Laba', perm: 'reports', desc: 'Agregasi omzet, HPP (COGS), dan laba bersih per rentang tanggal' },
+        { method: 'GET', path: '/api/retail/reports/product-margins', name: 'Laporan Margin Produk', perm: 'reports', desc: 'Agregasi omzet, HPP riil, laba kotor, dan % margin per produk dengan Top 10 ranking' },
         { method: 'POST', path: '/api/settings/kyc', name: 'Upload Dokumen KYC Usaha', perm: 'master', desc: 'Mengunggah KTP/NIB untuk diverifikasi oleh Super Admin' }
       ]
     },

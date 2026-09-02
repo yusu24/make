@@ -29,7 +29,8 @@ import {
   Box,
   Bell,
   QrCode,
-  CreditCard
+  CreditCard,
+  Archive
 } from 'lucide-react';
 import { ActiveTab, StoreChannel } from '../types';
 import { useTranslation } from '../../../../contexts/I18nContext';
@@ -119,12 +120,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Links */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1 custom-scrollbar">
         {/* Dashboard */}
         <button
           onClick={() => setActiveTab('menu-utama')}
           title={collapsed ? t('seller.dashboard') : ''}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
             activeTab === 'menu-utama'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -138,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => setActiveTab('pesanan')}
           title={collapsed ? t('seller.allOrders') : ''}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
             activeTab === 'pesanan'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -152,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => setActiveTab('katalog')}
           title={collapsed ? t('seller.katalog') : ''}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
             activeTab === 'katalog'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -174,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.marketplace') : ''}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
               isMarketplaceActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -195,57 +196,57 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('marketplace-dashboard')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-dashboard'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <LayoutDashboard className="w-3.5 h-3.5 text-blue-500" />
+                <LayoutDashboard className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
                 <span>{t('seller.connectionStatus')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-connected')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-connected'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Link className="w-3.5 h-3.5 text-indigo-500" />
+                <Link className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
                 <span>{t('seller.connectedAccounts')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-mapping')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-mapping'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Layers className="w-3.5 h-3.5 text-purple-500" />
+                <Layers className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
                 <span>{t('seller.productMapping')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-sync')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-sync'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <RefreshCw className="w-3.5 h-3.5 text-emerald-500" />
+                <RefreshCw className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                 <span>{t('seller.syncCenter')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-history')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-history'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <History className="w-3.5 h-3.5 text-amber-500" />
+                <History className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                 <span>{t('seller.syncHistory')}</span>
               </button>
             </div>
@@ -264,7 +265,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.gudangStok') : ''}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
               isGudangActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -286,37 +287,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('gudang')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'gudang'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <WarehouseIcon className="w-3.5 h-3.5 text-indigo-500" />
+                <WarehouseIcon className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
                 <span>{t('seller.gudang')}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('penerimaan-barang')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'penerimaan-barang'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Truck className="w-3.5 h-3.5 text-orange-500" />
+                <Truck className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
                 <span>{t('seller.penerimaanBarang')}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('stock-opname')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'stock-opname'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <ClipboardCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <ClipboardCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                 <span>{t('seller.stockOpname')}</span>
               </button>
             </div>
@@ -335,7 +336,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.pengiriman') : ''}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
               isShippingActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -356,35 +357,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('shipping-dashboard')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'shipping-dashboard'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <LayoutDashboard className="w-3.5 h-3.5 text-teal-500" />
+                <LayoutDashboard className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
                 <span>{t('seller.fulfillmentDashboard')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('shipping-management')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'shipping-management'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Box className="w-3.5 h-3.5 text-orange-500" />
+                <Box className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
                 <span>{t('seller.manajemenEkspedisi')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('shipping-packing')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'shipping-packing'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <QrCode className="w-3.5 h-3.5 text-indigo-500" />
+                <QrCode className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
                 <span>{t('seller.packingImprovement')}</span>
               </button>
             </div>
@@ -395,7 +396,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => setActiveTab('toko-offline')}
           title={collapsed ? t('seller.kasirPos') : ''}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
             activeTab === 'toko-offline'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -422,7 +423,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.keuangan') : ''}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
               isKeuanganActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -444,49 +445,49 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('keuangan-pemasukan')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-pemasukan'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                 <span>{t('seller.pemasukanLain')}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('keuangan-pengeluaran')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-pengeluaran'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
+                <TrendingDown className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
                 <span>{t('seller.pengeluaran')}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('keuangan-kas')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-kas'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Coins className="w-3.5 h-3.5 text-amber-500" />
+                <Coins className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                 <span>{t('seller.ringkasanKas')}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('keuangan-laporan')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-laporan'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-blue-500" />
+                <FileSpreadsheet className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
                 <span>{t('seller.laporanPenjualan')}</span>
               </button>
             </div>
@@ -505,7 +506,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.dataMaster') : ''}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
               isMasterActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -527,25 +528,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('master-data')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'master-data'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Layers className="w-3.5 h-3.5 text-violet-500" />
+                <Layers className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />
                 <span>{t('seller.masterDataIntegrasi')}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('pelanggan')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
                   activeTab === 'pelanggan'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Users className="w-3.5 h-3.5 text-teal-500" />
+                <Users className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
                 <span>{t('seller.dataPelanggan')}</span>
               </button>
             </div>
@@ -556,7 +557,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => setActiveTab('notification-center')}
           title={collapsed ? t('seller.pusatNotifikasi') : ''}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
             activeTab === 'notification-center'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -570,7 +571,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => setActiveTab('langganan')}
           title={collapsed ? 'Paket & Langganan' : ''}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
             activeTab === 'langganan'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -592,7 +593,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.pengaturanSistem') : ''}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
               isSettingsActive
                 ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -614,51 +615,67 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('settings-app')}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 text-left ${
                   activeTab === 'settings-app'
                     ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Store className="w-3.5 h-3.5 text-orange-500" />
+                <Store className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
                 <span>{t('seller.pengaturanAplikasi')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings-account')}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 text-left ${
                   activeTab === 'settings-account'
                     ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <User className="w-3.5 h-3.5 text-sky-500" />
+                <User className="w-3.5 h-3.5 text-sky-500 shrink-0 mt-0.5" />
                 <span>{t('seller.akunSaya')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings-roles')}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 text-left ${
                   activeTab === 'settings-roles'
                     ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Shield className="w-3.5 h-3.5 text-violet-500" />
+                <Shield className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />
                 <span>{t('seller.hakAksesPeran')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings-users')}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 text-left ${
                   activeTab === 'settings-users'
                     ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Users className="w-3.5 h-3.5 text-teal-500" />
+                <Users className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
                 <span>{t('seller.manajemenUser')}</span>
               </button>
             </div>
           )}
         </div>
+      </div>
+
+      {/* Backup Data */}
+      <div className="px-3 pb-1">
+        <button
+          onClick={() => setActiveTab('backup')}
+          title={collapsed ? 'Backup Data Toko' : ''}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+            activeTab === 'backup'
+              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
+          }`}
+        >
+          <Archive className={`w-5 h-5 shrink-0 ${activeTab === 'backup' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+          {!collapsed && <span className="flex-1 text-left truncate">Backup Data Toko</span>}
+        </button>
       </div>
 
       {/* Panduan Aplikasi */}
@@ -706,3 +723,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </aside>
   );
 };
+
+
+
+
+

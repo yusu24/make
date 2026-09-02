@@ -1334,6 +1334,23 @@ class KulinerController extends Controller
         ]);
     }
 
+    /**
+     * DELETE /api/kuliner/admin/testimonials/{id}
+     */
+    public function destroyTestimonial(Request $request, $id)
+    {
+        $tenantId = auth('sanctum')->user()?->tenant_id;
+        $testimonial = KulinerTestimonial::where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->firstOrFail();
+
+        $testimonial->delete();
+
+        return response()->json([
+            'message' => 'Ulasan berhasil dihapus!'
+        ]);
+    }
+
     public function getDashboardStats(Request $request)
     {
         $tenantId = auth('sanctum')->user()?->tenant_id;

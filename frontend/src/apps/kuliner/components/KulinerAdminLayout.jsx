@@ -3,13 +3,52 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTranslation } from '../../../contexts/I18nContext';
 import { api } from '../../../lib/api';
+import { CreditCard, LogOut } from 'lucide-react';
 import '../pages/KulinerDashboard.css';
 
-const KulinerAdminLayout = ({ children }) => {
+const KulinerAdminLayout = ({ children, title }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isImpersonating, exitImpersonate, logout, updateUser } = useAuth();
   const { t, language, toggleLanguage } = useTranslation();
+
+  const getPageTitle = () => {
+    if (title) return title;
+    const path = location.pathname;
+    const titles = {
+      '/kuliner/admin': 'Dashboard Resto',
+      '/kuliner/admin/orders': 'Pesanan Masuk',
+      '/kuliner/admin/kitchen-queue': 'Antrean Dapur (KDS)',
+      '/kuliner/admin/shift': 'Manajemen Shift Kasir',
+      '/kuliner/admin/stock-opname': 'Stok Opname Bahan',
+      '/kuliner/admin/waste': 'Pencatatan Waste & Basi',
+      '/kuliner/admin/purchases': 'Pembelian Bahan Baku (PO)',
+      '/kuliner/admin/categories': 'Kategori & Menu Makanan',
+      '/kuliner/admin/modifiers': 'Modifier & Varian',
+      '/kuliner/admin/addons': 'Add-on & Tambahan',
+      '/kuliner/admin/bundles': 'Paket Menu / Bundling',
+      '/kuliner/admin/ingredients': 'Daftar Bahan Baku',
+      '/kuliner/admin/recipes': 'Resep & HPP Otomatis',
+      '/kuliner/admin/suppliers': 'Master Supplier Bahan',
+      '/kuliner/admin/finance-categories': 'Kategori Keuangan Kas',
+      '/kuliner/admin/tables': 'Manajemen Meja Dine-In',
+      '/kuliner/admin/finance-summary': 'Laporan Laba Rugi',
+      '/kuliner/admin/expenses': 'Pencatatan Kas',
+      '/kuliner/admin/reports': 'Laba & Margin Menu',
+      '/kuliner/admin/analytics': 'Analitik Penjualan',
+      '/kuliner/admin/transactions': 'Jurnal Transaksi Kas',
+      '/kuliner/admin/promos': 'Manajemen Promo & Diskon',
+      '/kuliner/admin/reviews': 'Ulasan & Rating',
+      '/kuliner/admin/staff': 'Manajemen Staf',
+      '/kuliner/admin/roles': 'Hak Akses & Role',
+      '/kuliner/admin/settings': 'Pengaturan Toko',
+      '/kuliner/admin/backup': 'Backup Data Toko',
+      '/kuliner/admin/support': 'Pusat Bantuan',
+      '/kuliner/admin/profile': 'Pengaturan Profil',
+      '/kuliner/subscription': 'Paket Langganan'
+    };
+    return titles[path] || 'Admin Resto';
+  };
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -60,7 +99,7 @@ const KulinerAdminLayout = ({ children }) => {
       finance: path === '/kuliner/admin/finance-summary' || path === '/kuliner/admin/expenses',
       reports: path === '/kuliner/admin/reports' || path === '/kuliner/admin/analytics' || path === '/kuliner/admin/transactions' || path === '/kuliner/admin/reports-advanced',
       marketing: path === '/kuliner/admin/promos' || path === '/kuliner/admin/reviews',
-      settings: path === '/kuliner/admin/staff' || path === '/kuliner/admin/roles' || path === '/kuliner/admin/settings' || path === '/kuliner/admin/support'
+      settings: path === '/kuliner/admin/staff' || path === '/kuliner/admin/roles' || path === '/kuliner/admin/settings' || path === '/kuliner/admin/backup' || path === '/kuliner/admin/support'
     });
   }, [location.pathname]);
 
@@ -158,15 +197,6 @@ const KulinerAdminLayout = ({ children }) => {
     <div className="kd-body">
 
       <div className="kd-dashboard">
-        {/* MOBILE HEADER */}
-        <div className="kd-mobile-header">
-          <button className="kd-hamburger" onClick={() => setSidebarOpen(true)}>
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-        </div>
-
         {/* OVERLAY */}
         <div className={`kd-sidebar-overlay ${sidebarOpen ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}></div>
 
@@ -395,8 +425,8 @@ const KulinerAdminLayout = ({ children }) => {
                       to="/kuliner/admin/reports-advanced"
                       className={`kd-nav-item ${location.pathname === '/kuliner/admin/reports-advanced' ? 'active' : ''}`}
                     >
-                      <span className="kd-nav-icon">📑</span>
-                      <span>{t('sidebar.advancedReports')}</span>
+                      <span className="kd-nav-icon">💰</span>
+                      <span>Laba & Margin Menu</span>
                     </Link>
                   )}
                   {hasPermission('analytics') && (
@@ -500,6 +530,15 @@ const KulinerAdminLayout = ({ children }) => {
                       <span>{t('sidebar.storeConfig')}</span>
                     </Link>
                   )}
+                  {hasPermission('settings') && (
+                    <Link 
+                      to="/kuliner/admin/backup" 
+                      className={`kd-nav-item ${location.pathname === '/kuliner/admin/backup' ? 'active' : ''}`}
+                    >
+                      <span className="kd-nav-icon">🛡️</span>
+                      <span>Backup Data Toko</span>
+                    </Link>
+                  )}
                   <Link 
                     to="/kuliner/subscription" 
                     className={`kd-nav-item ${location.pathname === '/kuliner/subscription' ? 'active' : ''}`}
@@ -521,35 +560,40 @@ const KulinerAdminLayout = ({ children }) => {
         </aside>
 
         <main className="kd-main">
-          {/* FIXED NAVBAR ACTIONS — sits inside every page's kd-topbar automatically */}
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            right: 0,
-            height: 70,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            paddingRight: 24,
-            zIndex: 100,
-            pointerEvents: 'auto',
-          }}>
-            {/* Language Toggle Button */}
-            <button
-              onClick={toggleLanguage}
-              style={{
-                width: 38, height: 38,
-                borderRadius: 10,
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', fontSize: 13, fontWeight: 'bold', color: '#64748b',
-                transition: 'all 0.2s',
-              }}
-              title="Ganti Bahasa / Change Language"
-            >
-              {language === 'id' ? 'ID' : 'EN'}
-            </button>
+          {/* STICKY TOPBAR HEADER */}
+          <header className="kd-mobile-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button 
+                className="kd-hamburger" 
+                onClick={() => setSidebarOpen(true)}
+                title="Buka Menu Sidebar"
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </button>
+              <h1 className="kd-navtop-title" style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
+                {getPageTitle()}
+              </h1>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Language Toggle Button */}
+              <button
+                onClick={toggleLanguage}
+                style={{
+                  width: 36, height: 36,
+                  borderRadius: 10,
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', fontSize: 12, fontWeight: 'bold', color: '#64748b',
+                  transition: 'all 0.2s',
+                }}
+                title="Ganti Bahasa / Change Language"
+              >
+                {language === 'id' ? 'ID' : 'EN'}
+              </button>
 
             {/* Notification Bell — dropdown panel */}
             <div ref={notifRef} style={{ position: 'relative' }}>
@@ -582,6 +626,7 @@ const KulinerAdminLayout = ({ children }) => {
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 10px)', right: 0,
                   width: 320,
+                  maxWidth: 'calc(100vw - 24px)',
                   background: '#fff',
                   border: '1px solid #e2e8f0',
                   borderRadius: 14,
@@ -650,103 +695,249 @@ const KulinerAdminLayout = ({ children }) => {
               <button
                 onClick={() => setShowProfileMenu(v => !v)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '6px 10px',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '4px 6px 4px 10px',
                   borderRadius: 10,
-                  background: showProfileMenu ? '#f1f5f9' : 'transparent',
-                  border: '1px solid transparent',
+                  background: showProfileMenu ? '#fdf8ec' : 'transparent',
+                  border: 'none',
                   cursor: 'pointer',
-                  transition: 'all 0.2s',
+                  transition: 'all 0.15s',
                 }}
               >
                 <div style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #b48c36, #d4a853)',
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: '#b48c36',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: '#fff', fontWeight: 700, fontSize: 13,
                   flexShrink: 0,
+                  position: 'relative',
+                  boxShadow: '0 2px 6px rgba(180, 140, 54, 0.35)',
                 }}>
-                  {(user?.name || 'T').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                  {(storeName || user?.tenant_name || user?.name || 'DK')
+                    .split(' ')
+                    .filter(Boolean)
+                    .map(n => n[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase() || 'DK'}
+                  <span 
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      width: 10,
+                      height: 10,
+                      background: '#22c55e',
+                      borderRadius: '50%',
+                      border: '2px solid #ffffff'
+                    }} 
+                  />
                 </div>
-                <div className="kd-profile-text" style={{ textAlign: 'left', lineHeight: 1.3 }}>
+                <div className="kd-profile-text" style={{ textAlign: 'left', lineHeight: 1.2 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{user?.name || 'Pemilik Toko'}</div>
-                    {user?.subscription_plan && (
-                      <span style={{
-                        fontSize: 9,
-                        fontWeight: 800,
-                        padding: '1px 6px',
-                        borderRadius: 8,
-                        background: user.subscription_plan === 'pro' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : user.subscription_plan === 'basic' ? 'linear-gradient(135deg, #10b981, #059669)' : '#64748b',
-                        color: '#fff'
-                      }}>
-                        {user.subscription_plan === 'pro' ? '💎 PRO' : user.subscription_plan === 'basic' ? '⚡ BASIC' : 'FREE'}
-                      </span>
-                    )}
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {storeName || user?.tenant_name || user?.name || 'Toko Kuliner'}
+                    </span>
+                    <span style={{
+                      fontSize: 9.5,
+                      fontWeight: 800,
+                      padding: '2px 7px',
+                      borderRadius: 9999,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                      background: user?.subscription_plan === 'pro' 
+                        ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' 
+                        : user?.subscription_plan === 'basic' 
+                        ? 'linear-gradient(135deg, #10b981, #059669)' 
+                        : '#475569',
+                      color: '#ffffff',
+                      lineHeight: 1,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                    }}>
+                      {user?.subscription_plan === 'pro' ? 'PRO' : user?.subscription_plan === 'basic' ? 'BASIC' : 'FREE'}
+                    </span>
                   </div>
-                  <div style={{ fontSize: 11, color: '#94a3b8' }}>Admin Toko</div>
+                  <span style={{ fontSize: 10.5, fontWeight: 600, color: '#8592a3', marginTop: 1, display: 'block' }}>
+                    {user?.business_category || 'Toko Kuliner'}
+                  </span>
                 </div>
-                <span className="kd-profile-text" style={{ fontSize: 10, color: '#94a3b8', marginLeft: 2 }}>▾</span>
               </button>
 
               {/* Dropdown Menu */}
               {showProfileMenu && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  width: 200,
-                  background: '#fff',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 12,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                  overflow: 'hidden',
-                  zIndex: 200,
-                  animation: 'kd-fadeIn 0.15s ease',
-                }}>
-                  <div style={{ padding: '14px 16px', borderBottom: '1px solid #f1f5f9' }}>
-                    <div style={{ fontSize: 12, color: '#94a3b8' }}>Masuk sebagai</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', marginTop: 2 }}>{user?.name}</div>
-                    <div style={{ fontSize: 11, color: '#b48c36', marginTop: 1 }}>{storeName}</div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    width: 290,
+                    maxWidth: 'calc(100vw - 24px)',
+                    background: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 20,
+                    padding: '16px 18px',
+                    boxShadow: '0 12px 36px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.06)',
+                    zIndex: 200,
+                    animation: 'kd-fadeIn 0.15s ease',
+                    fontSize: 12.5,
+                  }}
+                >
+                  {/* User Header */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 14, borderBottom: '1px solid #f1f5f9' }}>
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #b48c36, #d4a853)',
+                        color: '#ffffff',
+                        fontWeight: 800,
+                        fontSize: 15,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        boxShadow: '0 2px 6px rgba(180, 140, 54, 0.3)',
+                      }}
+                    >
+                      {(user?.name || 'DK')
+                        .split(' ')
+                        .filter(Boolean)
+                        .map(n => n[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase() || 'DK'}
+                    </div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13.5, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {user?.name || 'Pengguna Kuliner'}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {user?.email || 'kuliner@bizora.id'}
+                      </div>
+                    </div>
                   </div>
-                  <Link
-                    to="/kuliner/admin/profile"
-                    onClick={() => setShowProfileMenu(false)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '11px 16px',
-                      textDecoration: 'none',
-                      color: '#374151',
-                      fontSize: 13, fontWeight: 500,
-                      transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background='#f8fafc'}
-                    onMouseLeave={e => e.currentTarget.style.background='transparent'}
-                  >
-                    <span>👤</span>
-                    <span>Profil Saya</span>
-                  </Link>
-                  <div style={{ height: 1, background: '#f1f5f9' }} />
-                  <button
-                    onClick={() => { setShowProfileMenu(false); handleLogout(); }}
-                    style={{
-                      width: '100%', textAlign: 'left',
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '11px 16px',
-                      background: 'none', border: 'none',
-                      color: '#ef4444',
-                      fontSize: 13, fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background='#fef2f2'}
-                    onMouseLeave={e => e.currentTarget.style.background='transparent'}
-                  >
-                    <span>🚪</span>
-                    <span>{isDemo ? 'Keluar dari Akun Demo' : 'Keluar Akun'}</span>
-                  </button>
+
+                  {/* Info Details */}
+                  <div style={{ padding: '12px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: '#64748b', fontSize: 12 }}>Toko:</span>
+                      <span style={{ fontWeight: 700, color: '#1e293b', maxWidth: 170, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right', fontSize: 12.5 }}>
+                        {storeName || user?.tenant_name || '-'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: '#64748b', fontSize: 12 }}>Status Paket:</span>
+                      <span style={{ fontWeight: 700, color: '#b48c36', textTransform: 'capitalize', fontSize: 12.5 }}>
+                        {user?.subscription_plan || 'Free'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: '#64748b', fontSize: 12 }}>Kategori Bisnis:</span>
+                      <span style={{ fontWeight: 700, color: '#b48c36', fontSize: 12.5 }}>
+                        {user?.business_category || 'Kuliner / Resto'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 6, borderTop: '1px solid #f1f5f9' }}>
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        navigate('/kuliner/subscription');
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: 12,
+                        background: 'linear-gradient(135deg, #b48c36, #9c772d)',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        fontSize: 12.5,
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        boxShadow: '0 2px 8px rgba(180, 140, 54, 0.25)',
+                        transition: 'opacity 0.15s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+                      onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                    >
+                      <CreditCard size={15} />
+                      <span>Upgrade & Paket Langganan</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        navigate('/kuliner/admin/profile');
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: 12,
+                        background: '#fffbeb',
+                        color: '#b48c36',
+                        fontWeight: 700,
+                        fontSize: 12.5,
+                        border: '1px solid #fef3c7',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#fef3c7'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#fffbeb'}
+                    >
+                      <span>Pengaturan Akun</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        handleLogout();
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: 12,
+                        background: '#fef2f2',
+                        color: '#e11d48',
+                        fontWeight: 700,
+                        fontSize: 12.5,
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#fee2e2'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#fef2f2'}
+                    >
+                      <LogOut size={15} />
+                      <span>
+                        {isImpersonating && isImpersonating()
+                          ? 'Keluar dari Impersonate'
+                          : isDemo
+                          ? 'Keluar dari Akun Demo'
+                          : 'Keluar'}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           </div>
+          </header>
 
           {children}
         </main>

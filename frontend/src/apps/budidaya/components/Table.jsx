@@ -5,9 +5,9 @@ import React from 'react'
  * Following strict SaaS design rules for consistency and readability.
  */
 
-export const Table = ({ children, className = '', ...props }) => (
-  <div className={`aq-table-container ${className}`}>
-    <table className="aq-table" {...props}>
+export const Table = ({ children, className = '', style = {}, ...props }) => (
+  <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', ...style }}>
+    <table className={`aq-table ${className}`} {...props}>
       {children}
     </table>
   </div>
@@ -36,7 +36,7 @@ export const TableRow = ({ children, className = '', isHoverable = true, ...prop
 
 export const TableHeaderCell = ({ children, className = '', ...props }) => (
   <th 
-    className={`aq-table-header-cell capitalize-first-only ${className}`} 
+    className={`aq-table-header-cell ${className}`} 
     {...props}
   >
     {children}

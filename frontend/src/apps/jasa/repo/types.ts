@@ -199,10 +199,14 @@ export type ExpenseCategory =
   | 'Peralatan Kerja'
   | 'Sewa Alat Khusus'
   | 'Biaya Operasional'
+  | 'Pendapatan Jasa'
+  | 'Pendapatan Penjualan'
+  | 'Pendapatan Lain-lain'
   | 'Lain-lain';
 
 export interface JasaExpense {
   id: string; // e.g., EXP-2026001
+  type?: 'Pemasukan' | 'Pengeluaran'; // Added to support Cashbook view
   date: string;
   category: ExpenseCategory;
   description: string;

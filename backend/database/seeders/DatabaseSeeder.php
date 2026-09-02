@@ -72,8 +72,11 @@ class DatabaseSeeder extends Seeder
         $this->command->info('Ã¢Å“â€¦ Subscription plans seeded.');
 
         // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 2. Super Admin Logins Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+        $devEmail = env('DEV_EMAIL', 'needleproject240696@gmail.com');
+        $devPassword = env('DEV_PASSWORD', 'Aku240696@');
+
         $superAdmins = [
-            ['email' => 'needleproject240696@gmail.com', 'name' => 'Super Admin SaaS', 'password' => 'Aku240696@'],
+            ['email' => $devEmail, 'name' => 'Super Admin SaaS (Dev)', 'password' => $devPassword],
         ];
 
         foreach ($superAdmins as $sa) {

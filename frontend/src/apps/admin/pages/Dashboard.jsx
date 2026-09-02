@@ -206,7 +206,7 @@ export default function Dashboard() {
         {/* 2 Mini KPI Cards beside Hero */}
         <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 20 }}>
           {/* Mini Profit */}
-          <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-indigo-100 h-full">
+          <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-5 flex flex-col justify-between h-full">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
@@ -225,7 +225,7 @@ export default function Dashboard() {
           </div>
 
           {/* Mini Sales / Invoices */}
-          <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-emerald-100 h-full">
+          <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-5 flex flex-col justify-between h-full">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
@@ -249,7 +249,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Total Users */}
-        <div className="bg-sky-50/70 border border-sky-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-sky-100">
+        <div className="bg-sky-50/70 border border-sky-100 rounded-2xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600 shrink-0">
@@ -268,7 +268,7 @@ export default function Dashboard() {
         </div>
 
         {/* Total Tenants */}
-        <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-indigo-100">
+        <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
@@ -287,7 +287,7 @@ export default function Dashboard() {
         </div>
 
         {/* Monthly Recurring Revenue */}
-        <div className="bg-amber-50/70 border border-amber-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-amber-100">
+        <div className="bg-amber-50/70 border border-amber-100 rounded-2xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-100/80 flex items-center justify-center text-amber-600 shrink-0">
@@ -306,7 +306,7 @@ export default function Dashboard() {
         </div>
 
         {/* Churn Rate */}
-        <div className="bg-red-50/70 border border-red-100 rounded-2xl p-5 flex flex-col justify-between transition-all hover:-translate-y-1 hover:shadow-md hover:shadow-red-100">
+        <div className="bg-red-50/70 border border-red-100 rounded-2xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600 shrink-0">

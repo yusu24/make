@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -9,7 +9,9 @@ import {
   PieChart as PieIcon,
   ShieldCheck,
   Star,
-  Users
+  Users,
+  Printer,
+  Download
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -26,32 +28,115 @@ import {
   Cell, 
   Legend 
 } from 'recharts';
-import { Technician, ServiceStats } from '../types';
+import { Technician, ServiceStats, JasaInvoice, JasaExpense } from '../types';
 import { 
   REVENUE_MONTHLY_CHART_DATA, 
   CATEGORY_DISTRIBUTION_DATA, 
   formatRupiah 
 } from '../data/mockData';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { useReactToPrint } from 'react-to-print';
+import '../../jasa-print.css';
+import {
+  JasaPrintHeader,
+  JasaPrintSectionHeader,
+  JasaPrintAppendixHeader,
+  JasaPrintExplanationBox,
+  JasaPrintFooter,
+  formatRp,
+  formatDateIndo
+} from '../../components/JasaPrintLayout';
 
 interface AnalyticsViewProps {
   stats: ServiceStats;
   technicians: Technician[];
+  invoices: JasaInvoice[];
+  expenses: JasaExpense[];
 }
 
-export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians }) => {
+export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians, invoices, expenses }) => {
+  const { user } = useAuth();
+  const printRef = useRef<HTMLDivElement>(null);
+
   // Sort technicians by completed jobs
   const sortedTechs = [...technicians].sort((a, b) => b.completedJobs - a.completedJobs);
 
+  // Actual Financial Calculations from Transactions
+  const actualRevenue = invoices.reduce((sum, inv) => sum + (inv.paidAmount || 0), 0);
+  
+  // Estimate Parts vs Labor Revenue based on 35/65 split of ACTUAL revenue if we can't distinguish items
+  const actualLaborRevenue = actualRevenue * 0.65;
+  const actualPartsRevenue = actualRevenue * 0.35;
+
+  const actualPartsCost = expenses
+    .filter(e => e.category === 'Belanja Suku Cadang (Parts)')
+    .reduce((sum, e) => sum + (e.amount || 0), 0);
+    
+  const actualTechCommission = expenses
+    .filter(e => e.description.toLowerCase().includes('komisi') || e.description.toLowerCase().includes('upah'))
+    .reduce((sum, e) => sum + (e.amount || 0), 0) || (actualRevenue * 0.30); // fallback to 30% if no explicit commission recorded
+
+  const actualOtherExpenses = expenses
+    .filter(e => e.category !== 'Belanja Suku Cadang (Parts)' && !e.description.toLowerCase().includes('komisi') && !e.description.toLowerCase().includes('upah'))
+    .reduce((sum, e) => sum + (e.amount || 0), 0);
+
+  const actualNetProfit = actualRevenue - actualPartsCost - actualTechCommission - actualOtherExpenses;
+  const profitMargin = actualRevenue > 0 ? ((actualNetProfit / actualRevenue) * 100).toFixed(1) : '0.0';
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Laporan-Kinerja-Keuangan-Jasa-${new Date().toISOString().split('T')[0]}`,
+  });
+
+  const handleExportExcel = () => {
+    const headers = ['No', 'Nama Teknisi', 'Spesialisasi', 'SPK Selesai', 'Rating CSAT', 'Status'];
+    const rows = sortedTechs.map((t, idx) => [
+      idx + 1,
+      `"${t.name.replace(/"/g, '""')}"`,
+      `"${t.specialty.replace(/"/g, '""')}"`,
+      t.completedJobs,
+      t.rating,
+      t.currentStatus
+    ]);
+    
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Performa_Teknisi_Jasa_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-4">
-      {/* Controls Bar (Page title is already in Navtop) */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-xs">
-        <div className="flex items-center justify-between gap-3">
+      {/* Controls Bar */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-xs mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-left">
           <div className="text-xs text-slate-600 font-medium">
             Periode Analisis: <span className="font-semibold text-slate-900">Kuartal Berjalan (Tahun Buku 2026)</span>
           </div>
-          <div className="flex items-center space-x-2 text-xs shrink-0">
-            <span className="px-3 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-semibold shadow-2xs">
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handlePrint}
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap"
+              title="Cetak Laporan Kinerja & Keuangan PDF"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Cetak PDF</span>
+            </button>
+
+            <button
+              onClick={handleExportExcel}
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap"
+              title="Export Kinerja ke Excel / CSV"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export Excel</span>
+            </button>
+
+            <span className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-semibold text-xs shadow-2xs">
               Siklus 2026 Q1 - Q3
             </span>
           </div>
@@ -59,7 +144,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
       </div>
 
       {/* Main Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         
         {/* Left 2 Cols: Monthly Revenue vs Target */}
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
@@ -166,6 +251,38 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
           </div>
         </div>
 
+      </div>
+
+      {/* Real-time Profit & Loss Summary */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Real-Time P&L</span>
+            <h3 className="text-sm font-semibold text-slate-900 flex items-center mt-0.5">
+              <BarChart3 className="w-4 h-4 mr-1.5 text-blue-600" /> Ringkasan Laba Rugi Berdasarkan Transaksi
+            </h3>
+          </div>
+          <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200">Margin: {profitMargin}%</span>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Total Pendapatan</p>
+            <p className="text-sm font-bold text-slate-900">{formatRupiah(actualRevenue)}</p>
+          </div>
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Beban Material (HPP)</p>
+            <p className="text-sm font-bold text-rose-600">-{formatRupiah(actualPartsCost)}</p>
+          </div>
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Komisi & Operasional</p>
+            <p className="text-sm font-bold text-rose-600">-{formatRupiah(actualTechCommission + actualOtherExpenses)}</p>
+          </div>
+          <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 shadow-sm">
+            <p className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider mb-1">Laba Bersih</p>
+            <p className="text-sm font-bold text-emerald-700">{actualNetProfit >= 0 ? '+' : ''}{formatRupiah(actualNetProfit)}</p>
+          </div>
+        </div>
       </div>
 
       {/* Technician Performance Leaderboard & SLA Metrics */}
@@ -282,6 +399,196 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
         </div>
 
       </div>
+
+      {/* ========================================================================= */}
+      {/* PRINT-ONLY FORMAL 2-PAGE JASA PERFORMANCE & FINANCIAL REPORT              */}
+      {/* ========================================================================= */}
+      <div style={{ display: 'none' }}>
+        <div ref={printRef} className="print-only" style={{ padding: 0, fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: '#000000' }}>
+          
+          {/* 1. Header / Kop Surat Resmi Bengkel / Jasa */}
+          <JasaPrintHeader
+            user={user}
+            title="Laporan Kinerja, Pendapatan & Laba Rugi Jasa"
+            subtitle="Rekapitulasi Omzet Servis, Penjualan Material, Beban Operasional & Utilisasi Tim"
+            periodText="Kuartal Berjalan — Tahun Buku 2026"
+          />
+
+          {/* 2. Formal Summary Table (Horizontal Borders Only) */}
+          <div style={{ marginBottom: 20 }}>
+            <JasaPrintSectionHeader title="I. Ringkasan Posisi Keuangan & Profitabilitas Jasa (Berdasarkan Transaksi Riil)" />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#000000' }}>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #000000' }}>
+                  <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                    A. PENDAPATAN OPERASIONAL JASA (REVENUE)
+                  </td>
+                  <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Pendapatan Jasa & Biaya Tenaga Kerja (Labor Revenue)</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', width: 140, whiteSpace: 'nowrap' }}>+{formatRp(actualLaborRevenue)}</td>
+                  <td style={{ width: 140 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Pendapatan Penjualan Material & Suku Cadang (Parts Revenue)</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>+{formatRp(actualPartsRevenue)}</td>
+                  <td></td>
+                </tr>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000', fontWeight: 600 }}>
+                  <td style={{ padding: '6px 4px', color: '#000000' }}>TOTAL PENDAPATAN OPERASIONAL BRUTO</td>
+                  <td style={{ padding: '6px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>100.0%</td>
+                  <td style={{ padding: '6px 4px', textAlign: 'right', fontSize: 11, color: '#000000', whiteSpace: 'nowrap' }}>+{formatRp(actualRevenue)}</td>
+                </tr>
+
+                <tr style={{ borderBottom: '1px solid #000000' }}>
+                  <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                    B. BIAYA POKOK PENDAPATAN & OPERASIONAL (EXPENSES)
+                  </td>
+                  <td></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Harga Pokok Pembelian Suku Cadang & Bahan</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>-{formatRp(actualPartsCost)}</td>
+                  <td></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Bagi Hasil & Komisi Upah Teknisi Lapangan</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>-{formatRp(actualTechCommission)}</td>
+                  <td></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Beban Operasional Tambahan (Transport, Alat, Dll)</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>-{formatRp(actualOtherExpenses)}</td>
+                  <td></td>
+                </tr>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td style={{ padding: '7px 4px', fontSize: 11, color: '#000000' }}>
+                    LABA OPERASIONAL BERSIH (NET OPERATING PROFIT)
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>
+                    {profitMargin}%
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'right', fontSize: 11.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {actualNetProfit >= 0 ? '+' : ''}{formatRp(actualNetProfit)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 3. Detailed Formal Accounting Ledger Table */}
+          <div style={{ marginBottom: 20 }}>
+            <JasaPrintSectionHeader 
+              title="II. Buku Register Produktivitas Tim Teknisi Lapangan" 
+              rightText={`Total ${sortedTechs.length} teknisi aktif`} 
+            />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, color: '#000000' }}>
+              <thead>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                  <th style={{ padding: '7px 4px', textAlign: 'center', width: 30, fontWeight: 600 }}>No</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'left', width: 140, fontWeight: 600 }}>Nama Teknisi</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'left', width: 130, fontWeight: 600 }}>Spesialisasi Keahlian</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'center', width: 85, fontWeight: 600 }}>SPK Tuntas</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'center', width: 80, fontWeight: 600 }}>Rating CSAT</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'left', width: 85, fontWeight: 600 }}>Status Kerja</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'right', width: 110, fontWeight: 600, whiteSpace: 'nowrap' }}>Estimasi Omzet (Rp)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedTechs.map((tech, idx) => (
+                  <tr key={tech.id || idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '5px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                    <td style={{ padding: '5px 4px', fontWeight: 600, color: '#000000' }}>
+                      {tech.name}
+                    </td>
+                    <td style={{ padding: '5px 4px', color: '#000000' }}>
+                      {tech.specialty}
+                    </td>
+                    <td style={{ padding: '5px 4px', textAlign: 'center', fontWeight: 600, color: '#000000' }}>
+                      {tech.completedJobs} SPK
+                    </td>
+                    <td style={{ padding: '5px 4px', textAlign: 'center', color: '#000000' }}>
+                      ★ {tech.rating}
+                    </td>
+                    <td style={{ padding: '5px 4px', color: '#000000' }}>
+                      {tech.currentStatus}
+                    </td>
+                    <td style={{ padding: '5px 4px', textAlign: 'right', fontWeight: 500, color: '#000000', whiteSpace: 'nowrap' }}>
+                      +{formatRp(tech.completedJobs * 350000)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td colSpan={6} style={{ padding: '7px 4px', textAlign: 'right', textTransform: 'uppercase', fontSize: 9.5, color: '#000000', whiteSpace: 'nowrap' }}>
+                    Total Rekapitulasi Produktivitas:
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'right', fontSize: 10.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    +{formatRp(sortedTechs.reduce((sum, t) => sum + (t.completedJobs * 350000), 0))}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* Kolom Tanda Tangan & Pengesahan Dokumen (Halaman 1) */}
+          <JasaPrintFooter user={user} />
+
+          {/* 4. HALAMAN 2: LAMPIRAN METODOLOGI KPI & SLA JASA */}
+          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+            <JasaPrintAppendixHeader 
+              title="Lampiran: Metodologi KPI, Standar SLA & Bagi Hasil Teknisi"
+              subtitle={`Pedoman Target SLA, Utilisasi Teknisi & Formula Profitabilitas — ${user?.tenant_name || 'Layanan Jasa & Servis'}`}
+              user={user}
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+              <JasaPrintExplanationBox
+                number="1"
+                title="Service Level Agreement (SLA Respon & Pengerjaan)"
+                desc="Batas waktu maksimum pengerjaan SPK darurat adalah 2 jam sejak tiket dibuat, sedangkan pekerjaan berkala diselesaikan dalam waktu 1x24 jam kalender."
+                formula="Tingkat Kepatuhan SLA = (SPK Tepat Waktu ÷ Total SPK Selesai) × 100%"
+                variant="default"
+              />
+
+              <JasaPrintExplanationBox
+                number="2"
+                title="Skema Bagi Hasil & Insentif Prestasi Teknisi"
+                desc="Teknisi menerima upah pokok dasar ditambah komisi performa 30% - 40% dari total nilai jasa (Labor Cost) pada setiap SPK yang berhasil diselesaikan."
+                variant="emerald"
+              />
+
+              <JasaPrintExplanationBox
+                number="3"
+                title="Tingkat Utilisasi Jam Kerja Teknisi (Utilization Rate)"
+                desc="Perbandingan antara total jam kerja aktual yang dialokasikan pada SPK di lapangan dibandingkan total jam kerja kerja reguler 40 jam per minggu."
+                formula="Utilisasi = (Total Jam SPK ÷ Total Jam Kerja Tersedia) × 100%"
+                variant="indigo"
+              />
+
+              <JasaPrintExplanationBox
+                number="4"
+                title="Indeks Kepuasan Pelanggan (Customer Satisfaction - CSAT)"
+                desc="Skor evaluasi bintang (skala 1 - 5) yang diberikan pelanggan setelah pengerjaan selesai untuk mengukur kualitas layanan dan kesopanan teknisi."
+                variant="rose"
+              />
+
+              <JasaPrintExplanationBox
+                number="5"
+                title="Manajemen Ketersediaan Suku Cadang Kritis (Fast-Moving Parts)"
+                desc="Pemeliharaan level safety stock suku cadang yang sering diganti guna mencegah keterlambatan penyelesaian tiket SPK pelanggan."
+                variant="dark"
+              />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   );
 };

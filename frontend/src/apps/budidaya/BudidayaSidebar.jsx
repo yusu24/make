@@ -29,8 +29,19 @@ const getNavItems = (terms) => [
     icon: 'analytics',
     children: [
       { label: 'Laba Rugi', icon: 'trending_up', path: '/budidaya/finance-summary' },
-      { label: 'Pengeluaran', icon: 'payments', path: '/budidaya/expenses' },
+      { label: 'Buku Kas & Transaksi', icon: 'payments', path: '/budidaya/expenses' },
       { label: 'Laporan & Analisa', icon: 'bar_chart', path: '/budidaya/reports' },
+    ],
+  },
+  {
+    type: 'dropdown',
+    id: 'master-data',
+    label: 'Master Data',
+    icon: 'dataset',
+    children: [
+      { label: 'Kategori Keuangan', icon: 'sell', path: '/budidaya/master-data?tab=finance', tab: 'finance' },
+      { label: 'Satuan Dasar', icon: 'straighten', path: '/budidaya/master-data?tab=units', tab: 'units' },
+      { label: 'Kategori Pakan', icon: 'package_2', path: '/budidaya/master-data?tab=feeds', tab: 'feeds' },
     ],
   },
   {
@@ -39,42 +50,55 @@ const getNavItems = (terms) => [
     label: 'Pengaturan & Tim',
     icon: 'tune',
     children: [
-      { label: 'Manajemen Pengguna', icon: 'group', path: '/budidaya/users' },
-      { label: 'Peran & Izin', icon: 'verified_user', path: '/budidaya/roles' },
-      { label: 'Paket Langganan', icon: 'credit_card', path: '/budidaya/subscription' },
-      { label: 'Pengaturan Profil', icon: 'settings', path: '/budidaya/settings' },
-      { label: 'Pusat Bantuan', icon: 'help', path: '/budidaya/support' },
+      { label: 'Manajemen Pengguna', icon: 'group',       path: '/budidaya/users' },
+      { label: 'Peran & Izin',       icon: 'verified_user', path: '/budidaya/roles' },
+      { label: 'Paket Langganan',    icon: 'credit_card',   path: '/budidaya/subscription' },
+      { label: 'Pengaturan Profil',  icon: 'settings',      path: '/budidaya/settings' },
+      { label: 'Pusat Bantuan',      icon: 'help',          path: '/budidaya/support' },
+      { label: 'Backup Data',        icon: 'backup',        path: '/budidaya/backup' },
     ],
   },
 ]
 
 export default function BudidayaSidebar({ mobileOpen, onToggle }) {
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   const { user } = useAuth()
   const terms = useBudidayaTerms()
   const navItems = getNavItems(terms)
+  const currentTab = new URLSearchParams(search).get('tab') || 'finance'
 
-  // Track open state of dropdown groups
-  const [openGroups, setOpenGroups] = useState({
-    operasional: true,
-    keuangan: false,
-    pengaturan: false,
-  })
+  // Identify which group contains the current active route
+  const activeGroupId = navItems.find(item => 
+    item.type === 'dropdown' && item.children.some(child => 
+      child.tab ? (pathname === '/budidaya/master-data' && currentTab === child.tab) : (pathname === child.path || pathname.startsWith(child.path + '/'))
+    )
+  )?.id
 
-  // Automatically open dropdown group if active route is inside it
+  // Track manually collapsed active group & expanded non-active group
+  const [collapsedActive, setCollapsedActive] = useState(false)
+  const [expandedNonActive, setExpandedNonActive] = useState(null)
+
+  // Reset manual overrides whenever route changes (active group auto-opens, others auto-close)
   useEffect(() => {
-    navItems.forEach(item => {
-      if (item.type === 'dropdown') {
-        const hasActive = item.children.some(child => pathname === child.path || pathname.startsWith(child.path + '/'))
-        if (hasActive) {
-          setOpenGroups(prev => ({ ...prev, [item.id]: true }))
-        }
-      }
-    })
-  }, [pathname])
+    setCollapsedActive(false)
+    setExpandedNonActive(null)
+  }, [pathname, search])
 
   const toggleGroup = (id) => {
-    setOpenGroups(prev => ({ ...prev, [id]: !prev[id] }))
+    if (id === activeGroupId) {
+      // Toggle the active group only when user clicks its header/arrow
+      setCollapsedActive(prev => !prev)
+    } else {
+      // Toggle non-active group (auto-closing other non-active groups)
+      setExpandedNonActive(prev => (prev === id ? null : id))
+    }
+  }
+
+  const isGroupOpen = (id) => {
+    if (id === activeGroupId) {
+      return !collapsedActive
+    }
+    return expandedNonActive === id
   }
 
   return (
@@ -150,10 +174,11 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 4,
-            padding: '4px 12px 24px',
+            gap: 3.5,
+            padding: '14px 10px 24px',
             overflowY: 'auto',
             flex: 1,
+            fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
           }}
         >
           {navItems.map((item) => {
@@ -168,51 +193,61 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 10,
-                    padding: '10px 14px',
-                    borderRadius: 10,
+                    padding: '5.5px 14px 5.5px 5.5px',
+                    borderRadius: 9999,
                     textDecoration: 'none',
                     background: isActive ? '#E8F5ED' : 'transparent',
-                    color: isActive ? '#1B4332' : '#1A1C1A',
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 13.5,
+                    color: isActive ? '#1B4332' : '#475569',
+                    fontSize: 13,
                     fontWeight: isActive ? 700 : 500,
-                    transition: 'background 0.15s, color 0.15s',
+                    transition: 'all 0.18s ease',
                     cursor: 'pointer',
                   }}
                   onMouseEnter={e => {
                     if (!isActive) {
-                      e.currentTarget.style.background = '#F0F4F2'
-                      e.currentTarget.style.color = '#2D6A4F'
+                      e.currentTarget.style.background = '#F0F7F2'
+                      e.currentTarget.style.color = '#1B4332'
                     }
                   }}
                   onMouseLeave={e => {
                     if (!isActive) {
                       e.currentTarget.style.background = 'transparent'
-                      e.currentTarget.style.color = '#1A1C1A'
+                      e.currentTarget.style.color = '#475569'
                     }
                   }}
                 >
-                  <span
-                    className="material-symbols-outlined"
+                  <div
                     style={{
-                      fontVariationSettings: isActive
-                        ? "'FILL' 0, 'wght' 500"
-                        : "'FILL' 0, 'wght' 300",
-                      fontSize: 20,
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      background: isActive ? '#1B4332' : 'transparent',
+                      color: isActive ? '#ffffff' : '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       flexShrink: 0,
-                      color: isActive ? '#1B4332' : '#475569',
-                      lineHeight: 1,
+                      boxShadow: isActive ? '0 2px 6px rgba(27, 67, 50, 0.35)' : 'none',
+                      transition: 'all 0.18s ease',
                     }}
                   >
-                    {item.icon}
-                  </span>
-                  <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 16,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {item.icon}
+                    </span>
+                  </div>
+                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
                 </NavLink>
               )
             }
 
             if (item.type === 'dropdown') {
-              const isExpanded = openGroups[item.id]
+              const isExpanded = isGroupOpen(item.id)
               const hasActiveChild = item.children.some(child => pathname === child.path || pathname.startsWith(child.path + '/'))
 
               return (
@@ -225,44 +260,55 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: 10,
+                      padding: '5.5px 14px 5.5px 5.5px',
+                      borderRadius: 9999,
                       border: 'none',
                       outline: 'none',
                       background: hasActiveChild && !isExpanded ? '#E8F5ED' : 'transparent',
-                      color: hasActiveChild ? '#1B4332' : '#1A1C1A',
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 13.5,
+                      color: hasActiveChild ? '#1B4332' : '#475569',
+                      fontSize: 13,
                       fontWeight: hasActiveChild ? 700 : 500,
-                      transition: 'background 0.15s, color 0.15s',
+                      transition: 'all 0.18s ease',
                       cursor: 'pointer',
                       textAlign: 'left',
                     }}
                     onMouseEnter={e => {
                       if (!(hasActiveChild && !isExpanded)) {
-                        e.currentTarget.style.background = '#F0F4F2'
-                        e.currentTarget.style.color = '#2D6A4F'
+                        e.currentTarget.style.background = '#F0F7F2'
+                        e.currentTarget.style.color = '#1B4332'
                       }
                     }}
                     onMouseLeave={e => {
                       if (!(hasActiveChild && !isExpanded)) {
                         e.currentTarget.style.background = 'transparent'
-                        e.currentTarget.style.color = hasActiveChild ? '#1B4332' : '#1A1C1A'
+                        e.currentTarget.style.color = hasActiveChild ? '#1B4332' : '#475569'
                       }
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                      <span
-                        className="material-symbols-outlined"
+                      <div
                         style={{
-                          fontSize: 20,
+                          width: 28,
+                          height: 28,
+                          borderRadius: '50%',
+                          background: hasActiveChild ? '#E8F5ED' : 'transparent',
+                          color: hasActiveChild ? '#1B4332' : '#64748b',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                           flexShrink: 0,
-                          color: hasActiveChild ? '#1B4332' : '#475569',
-                          lineHeight: 1,
                         }}
                       >
-                        {item.icon}
-                      </span>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{
+                            fontSize: 16,
+                            lineHeight: 1,
+                          }}
+                        >
+                          {item.icon}
+                        </span>
+                      </div>
                       <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.label}
                       </span>
@@ -282,9 +328,11 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
 
                   {/* Submenu Children */}
                   {isExpanded && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingLeft: 12, borderLeft: '2px solid #E2E8F0', marginLeft: 20, marginTop: 2, marginBottom: 4 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2.5, paddingLeft: 8, borderLeft: '1.5px solid #D8ECE0', marginLeft: 18, marginTop: 2, marginBottom: 4 }}>
                       {item.children.map((child) => {
-                        const isChildActive = pathname === child.path || pathname.startsWith(child.path + '/')
+                        const isChildActive = child.tab 
+                          ? (pathname === '/budidaya/master-data' && currentTab === child.tab)
+                          : (pathname === child.path || pathname.startsWith(child.path + '/'))
 
                         return (
                           <NavLink
@@ -294,44 +342,54 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                               display: 'flex',
                               alignItems: 'center',
                               gap: 10,
-                              padding: '8.5px 12px',
-                              borderRadius: 8,
+                              padding: '5px 12px 5px 5px',
+                              borderRadius: 9999,
                               textDecoration: 'none',
                               background: isChildActive ? '#E8F5ED' : 'transparent',
-                              color: isChildActive ? '#1B4332' : '#334155',
-                              fontFamily: "'Inter', sans-serif",
-                              fontSize: 13.5,
+                              color: isChildActive ? '#1B4332' : '#64748B',
+                              fontSize: 12.5,
                               fontWeight: isChildActive ? 700 : 500,
-                              transition: 'background 0.15s, color 0.15s',
+                              transition: 'all 0.18s ease',
                               cursor: 'pointer',
                             }}
                             onMouseEnter={e => {
                               if (!isChildActive) {
-                                e.currentTarget.style.background = '#F0F4F2'
-                                e.currentTarget.style.color = '#2D6A4F'
+                                e.currentTarget.style.background = '#F0F7F2'
+                                e.currentTarget.style.color = '#1B4332'
                               }
                             }}
                             onMouseLeave={e => {
                               if (!isChildActive) {
                                 e.currentTarget.style.background = 'transparent'
-                                e.currentTarget.style.color = '#334155'
+                                e.currentTarget.style.color = '#64748B'
                               }
                             }}
                           >
-                            <span
-                              className="material-symbols-outlined"
+                            <div
                               style={{
-                                fontVariationSettings: isChildActive
-                                  ? "'FILL' 0, 'wght' 500"
-                                  : "'FILL' 0, 'wght' 300",
-                                fontSize: 18,
+                                width: 26,
+                                height: 26,
+                                borderRadius: '50%',
+                                background: isChildActive ? '#1B4332' : 'transparent',
+                                color: isChildActive ? '#ffffff' : '#94A3B8',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 flexShrink: 0,
-                                color: isChildActive ? '#1B4332' : '#64748B',
-                                lineHeight: 1,
+                                boxShadow: isChildActive ? '0 2px 5px rgba(27, 67, 50, 0.35)' : 'none',
+                                transition: 'all 0.18s ease',
                               }}
                             >
-                              {child.icon}
-                            </span>
+                              <span
+                                className="material-symbols-outlined"
+                                style={{
+                                  fontSize: 15,
+                                  lineHeight: 1,
+                                }}
+                              >
+                                {child.icon}
+                              </span>
+                            </div>
                             <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {child.label}
                             </span>

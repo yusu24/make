@@ -14,16 +14,17 @@ class User extends Authenticatable
     protected $fillable = [
         'tenant_id', 'name', 'email', 'password', 'role',
         'status', 'business_category_id', 'phone', 'kuliner_role_id', 'saas_role_id', 'retail_role_id',
-        'last_seen_at',
+        'last_seen_at', 'otp_code', 'otp_expires_at',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'otp_code',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'otp_expires_at'    => 'datetime',
+        'password'          => 'hashed',
     ];
 
     // Relationships

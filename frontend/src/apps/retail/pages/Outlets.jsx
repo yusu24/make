@@ -125,18 +125,21 @@ export default function Outlets() {
           <table className="table">
             <thead>
               <tr>
-                <th className="pl-6 retail-table-header" style={{ width: 250 }}>Nama Cabang</th>
-                <th className="retail-table-header">Informasi Cabang</th>
-                <th className="retail-table-header" style={{ width: 120 }}>Status</th>
-                <th className="text-right pr-6 retail-table-header" style={{ width: 100 }}>Aksi</th>
+                <th className="pl-6 retail-table-header whitespace-nowrap" style={{ minWidth: 120 }}>ID Cabang</th>
+                <th className="retail-table-header whitespace-nowrap">Nama Cabang</th>
+                <th className="retail-table-header whitespace-nowrap" style={{ width: 160 }}>Tipe Cabang</th>
+                <th className="retail-table-header whitespace-nowrap">Alamat Cabang</th>
+                <th className="retail-table-header whitespace-nowrap" style={{ width: 160 }}>No. Telepon</th>
+                <th className="retail-table-header whitespace-nowrap" style={{ width: 100 }}>Status</th>
+                <th className="text-right pr-6 retail-table-header whitespace-nowrap" style={{ width: 100 }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                 <RetailTableLoadingRow colSpan={4} text="Memuat daftar cabang..." />
+                 <RetailTableLoadingRow colSpan={7} text="Memuat daftar cabang..." />
               ) : filteredOutlets.length === 0 ? (
                  <tr>
-                   <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
+                   <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
                      Belum ada data cabang / outlet.
                    </td>
                  </tr>
@@ -144,47 +147,41 @@ export default function Outlets() {
                 paginatedData.map(o => (
                   <tr key={o.id}>
                     <td className="pl-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500">
-                           <Store size={20} />
-                        </div>
-                        <div>
-                           <p className="font-semibold text-slate-800 text-[14px]">{o.name}</p>
-                           {o.is_primary ? (
-                             <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 mt-1 w-max">
-                               <Star size={10} fill="currentColor" /> Pusat / Utama
-                             </span>
-                           ) : (
-                             <span className="text-[11px] text-slate-500 mt-1 block">Cabang Pembantu</span>
-                           )}
-                        </div>
-                      </div>
+                      <span className="retail-text-primary">#{o.id.toString().padStart(4, '0')}</span>
                     </td>
                     <td>
-                      <div className="flex flex-col gap-1 text-[13px]">
-                        {o.address ? (
-                          <div className="flex gap-2 items-start text-slate-600">
-                             <MapPin size={14} className="mt-0.5 text-slate-400 shrink-0" />
-                             <span>{o.address}</span>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic">Alamat belum diatur</span>
-                        )}
-                        {o.phone && (
-                          <div className="flex gap-2 items-center text-slate-600">
-                             <Phone size={14} className="text-slate-400 shrink-0" />
-                             <span>{o.phone}</span>
-                          </div>
-                        )}
-                      </div>
+                      <span className="retail-text-primary font-medium">{o.name}</span>
                     </td>
                     <td>
-                      <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">Aktif</span>
+                      {o.is_primary ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                          <Star size={11} fill="currentColor" /> Pusat / Utama
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-[11px] font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                          Cabang Pembantu
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      <span className="retail-text-primary line-clamp-1 max-w-[280px]">
+                        {o.address || <span className="text-slate-400 italic">Alamat belum diatur</span>}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="retail-text-primary">
+                        {o.phone || '-'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                        Aktif
+                      </span>
                     </td>
                     <td style={{ textAlign: 'right' }} className="pr-6">
                       <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                        <button className="btn btn-sm btn-ghost" onClick={() => openEdit(o)}><Edit3 size={14} /></button>
-                        <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(o.id)}><Trash2 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => openEdit(o)} title="Edit Cabang"><Edit3 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(o.id)} title="Hapus Cabang"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>

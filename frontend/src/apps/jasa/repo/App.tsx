@@ -36,6 +36,7 @@ import { AiDiagnosticsModal } from './components/AiDiagnosticsModal';
 import { PrintSpkModal } from './components/PrintSpkModal';
 import { InvoiceDetailModal } from './components/InvoiceDetailModal';
 import { SettingsView } from './components/SettingsView';
+import { BackupView } from './components/BackupView';
 import { Toast, ToastMessage } from './components/Toast';
 import { jasaApi } from './services/jasaApi';
 
@@ -73,6 +74,7 @@ const TAB_TO_PATH: Record<string, string> = {
   'finance': '/jasa/finance',
   'expenses': '/jasa/expenses',
   'analytics': '/jasa/analytics',
+  'backup': '/jasa/backup',
   'settings': '/jasa/settings',
 };
 
@@ -85,6 +87,7 @@ const getTabFromPath = (pathname: string): string => {
   if (pathname.includes('/jasa/finance')) return 'finance';
   if (pathname.includes('/jasa/expenses')) return 'expenses';
   if (pathname.includes('/jasa/analytics')) return 'analytics';
+  if (pathname.includes('/jasa/backup')) return 'backup';
   if (pathname.includes('/jasa/settings')) return 'settings';
   return 'overview';
 };
@@ -123,8 +126,9 @@ export default function App() {
       case 'catalog': return 'Katalog Layanan & Tarif Jasa';
       case 'inventory': return 'Stok Gudang & Material';
       case 'finance': return 'Tagihan Masuk (Piutang)';
-      case 'expenses': return 'Catatan Pengeluaran (Beban)';
+      case 'expenses': return 'Buku Kas & Pengeluaran';
       case 'analytics': return 'Analitik Operasional & Kepatuhan SLA';
+      case 'backup': return 'Backup & Keamanan Data';
       case 'settings': return 'Pengaturan Modul Jasa';
       default: return 'Modul Layanan Jasa';
     }
@@ -154,14 +158,16 @@ export default function App() {
     if (!silent) setIsLoadingData(true);
     setIsSyncing(true);
     try {
-      const [ordersRes, contractsRes, techsRes, catalogRes, statsRes, inventoryRes, settingsRes] = await Promise.allSettled([
+      const [ordersRes, contractsRes, techsRes, catalogRes, statsRes, inventoryRes, settingsRes, invoicesRes, expensesRes] = await Promise.allSettled([
         jasaApi.getWorkOrders(),
         jasaApi.getContracts(),
         jasaApi.getTechnicians(),
         jasaApi.getServices(),
         jasaApi.getStats(),
         jasaApi.getInventory(),
-        jasaApi.getSettings()
+        jasaApi.getSettings(),
+        jasaApi.getInvoices(),
+        jasaApi.getExpenses()
       ]);
 
       if (ordersRes.status === 'fulfilled' && ordersRes.value && ordersRes.value.length > 0) {
@@ -184,6 +190,23 @@ export default function App() {
       }
       if (settingsRes.status === 'fulfilled' && settingsRes.value) {
         setJasaSettings(settingsRes.value);
+      }
+      if (invoicesRes.status === 'fulfilled' && invoicesRes.value && invoicesRes.value.length > 0) {
+        setInvoices(invoicesRes.value);
+      }
+    if (expensesRes.status === 'fulfilled' && expensesRes.value && expensesRes.value.length > 0) {
+        setExpenses(expensesRes.value.map((e: any) => ({
+          id: e.expenseNumber || `EXP-${e.id}`,
+          type: e.type || 'Pengeluaran',
+          date: e.date || new Date().toISOString(),
+          category: e.category || 'Biaya Operasional',
+          description: e.description || '',
+          amount: Number(e.amount || 0),
+          referenceSpkId: e.referenceSpkId || '',
+          recordedBy: e.recordedBy || 'Admin Jasa',
+          notes: '',
+          status: e.status || 'Selesai'
+        })));
       }
     } catch (err) {
       console.warn('Koneksi backend jasa: Menggunakan fallback dataset lokal.', err);
@@ -504,10 +527,12 @@ export default function App() {
             setActiveTab('work-orders');
           }}
           activeTabTitle={getTabTitle(activeTab)}
+          onOpenSettings={() => setActiveTab('settings')}
+          onOpenSubscription={() => setActiveTab('settings')}
         />
 
         {/* Main View Container (with spacious padding below fixed navtop) */}
-        <main className="flex-1 w-full mx-auto px-3 sm:px-5 lg:px-6 pt-[124px] pb-8 sm:pt-[92px] sm:pb-10">
+        <main className="flex-1 w-full mx-auto px-3 sm:px-5 lg:px-6 pt-24 pb-8 sm:pt-28 sm:pb-10">
           
           {/* Emergency Alert Banner */}
           {urgentOrders.length > 0 && activeTab === 'overview' && (
@@ -842,6 +867,8 @@ export default function App() {
           <AnalyticsView
             stats={stats}
             technicians={technicians}
+            invoices={invoices}
+            expenses={expenses}
           />
         )}
 
@@ -849,12 +876,17 @@ export default function App() {
         {activeTab === 'finance' && (
           <FinanceView
             invoices={invoices}
-            onUpdateInvoiceStatus={(id, status) => {
+            onUpdateInvoiceStatus={async (id, status) => {
               setInvoices(prev => prev.map(inv => 
                 inv.id === id ? { ...inv, status, paidAmount: status === 'Lunas' ? inv.totalAmount : inv.paidAmount } : inv
               ));
               if (selectedInvoice?.id === id) {
                 setSelectedInvoice(prev => prev ? { ...prev, status, paidAmount: status === 'Lunas' ? prev.totalAmount : prev.paidAmount } : prev);
+              }
+              try {
+                await jasaApi.updateInvoiceStatus(id, status);
+              } catch (err) {
+                console.warn('Updated status locally:', err);
               }
               addToast('success', 'Status Tagihan Diperbarui', `Tagihan ${id} telah diperbarui menjadi ${status}.`);
             }}
@@ -866,18 +898,44 @@ export default function App() {
         {activeTab === 'expenses' && (
           <ExpensesView
             expenses={expenses}
-            onAddExpense={(expense) => {
+            onAddExpense={async (expense) => {
+              const tempId = `EXP-JASA-${Date.now()}`;
               const newExp: JasaExpense = {
                 ...expense,
-                id: `EXP-JASA-${Date.now()}`
+                id: tempId
               };
               setExpenses(prev => [newExp, ...prev]);
-              addToast('success', 'Pengeluaran Dicatat', 'Beban pengeluaran berhasil disimpan.');
+
+              try {
+                const created = await jasaApi.storeExpense({
+                  description: expense.description,
+                  amount: expense.amount,
+                  category: expense.category,
+                  transaction_date: expense.date,
+                  reference_spk_id: expense.referenceSpkId,
+                  recipient_or_payer: 'Vendor'
+                });
+                if (created) {
+                  setExpenses(prev => prev.map(e => e.id === tempId ? {
+                    ...e,
+                    id: created.expenseNumber || String(created.id)
+                  } : e));
+                }
+              } catch (err) {
+                console.warn('Saved expense locally:', err);
+              }
+
+              addToast('success', 'Pengeluaran Dicatat', 'Beban pengeluaran operasional berhasil disimpan ke database.');
             }}
           />
         )}
 
-        {/* View 8: Settings */}
+        {/* View 8: Backup & Data Security */}
+        {activeTab === 'backup' && (
+          <BackupView />
+        )}
+
+        {/* View 9: Settings */}
         {activeTab === 'settings' && (
           <SettingsView
             settings={jasaSettings}

@@ -72,6 +72,10 @@ export default function Login() {
         }
       }
     } catch (err) {
+      if (err.response?.data?.requires_verification) {
+        navigate(`/register?verify_email=${encodeURIComponent(form.email)}`)
+        return
+      }
       setError(err.response?.data?.message || 'Email atau password salah. Silakan coba lagi.')
     } finally {
       setLoading(false)

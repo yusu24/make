@@ -1,6 +1,5 @@
 /* ==========================================================================
-   BIZORA ADMIN SAAS - SNEAT / GEOMETRIC BALANCE DESIGN SYSTEM
-   Inspired by yusu24/dashboard-new
+   BIZORA ADMIN SAAS - CLEAN & LIGHTWEIGHT (NO HEAVY EFFECTS / TRANSITIONS)
    ========================================================================== */
 
 :root {
@@ -33,14 +32,26 @@
   --saas-bg: #f5f5f9;
   --saas-card: #ffffff;
   
-  /* ── Shadows & Radii ── */
+  /* ── Shadows & Radii (Flat / Zero Shadow for maximum performance) ── */
   --saas-radius: 12px;
   --saas-radius-lg: 16px;
   --saas-radius-pill: 9999px;
-  --saas-shadow-xs: 0 2px 6px 0 rgba(67, 89, 113, 0.08);
-  --saas-shadow-md: 0 4px 14px 0 rgba(67, 89, 113, 0.12);
-  --saas-shadow-lg: 0 8px 24px 0 rgba(67, 89, 113, 0.16);
-  --saas-glow-primary: 0 4px 12px 0 rgba(105, 108, 255, 0.4);
+  --saas-shadow-xs: none;
+  --saas-shadow-md: none;
+  --saas-shadow-lg: none;
+  --saas-glow-primary: none;
+}
+
+/* ── Disable all fade-in & movement animations across SaaS Admin ── */
+.animate-fade-in,
+.stagger,
+.fade-in,
+.animate-slide-up,
+.animate-bounce {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
 }
 
 /* ── Container Styles ── */
@@ -50,7 +61,7 @@
   margin: 0 auto;
 }
 
-/* ── Sneat / Geometric Cards ── */
+/* ── Sneat / Geometric Cards (Zero Hover Jump / Zero Shadow) ── */
 .card,
 .sneat-card,
 .geometric-card,
@@ -58,8 +69,9 @@
   background: var(--saas-card) !important;
   border-radius: var(--saas-radius-lg) !important;
   border: 1px solid var(--saas-border) !important;
-  box-shadow: var(--saas-shadow-xs) !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: none !important;
+  transition: none !important;
+  transform: none !important;
   overflow: hidden;
 }
 
@@ -67,8 +79,10 @@
 .sneat-card:hover,
 .geometric-card:hover,
 .shared-card:hover {
-  box-shadow: var(--saas-shadow-md) !important;
-  border-color: #c7cdd4 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  border-color: var(--saas-border) !important;
+  transition: none !important;
 }
 
 /* ── Page Header ── */
@@ -98,68 +112,78 @@
   display: none !important;
 }
 
-/* ── Sneat Buttons ── */
+/* ── Sneat Buttons (No Shadow / No Hover Lift) ── */
 .btn {
   font-family: inherit;
   font-weight: 600 !important;
   font-size: 13.5px;
   padding: 8px 18px;
   border-radius: var(--saas-radius);
-  transition: all 0.2s ease-in-out;
+  transition: background 0.1s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
   border: 1px solid transparent;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .btn-primary {
   background: var(--saas-primary) !important;
   border-color: var(--saas-primary) !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(105, 108, 255, 0.35) !important;
+  box-shadow: none !important;
 }
 
 .btn-primary:hover {
   background: var(--saas-primary-hover) !important;
   border-color: var(--saas-primary-hover) !important;
-  box-shadow: var(--saas-glow-primary) !important;
-  transform: translateY(-1px);
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .btn-secondary {
   background: var(--saas-secondary-light) !important;
   color: var(--saas-secondary) !important;
   border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .btn-secondary:hover {
   background: #e1e4e8 !important;
   color: var(--saas-heading) !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .btn-ghost {
   background: transparent !important;
   color: var(--saas-body) !important;
   border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .btn-ghost:hover {
   background: var(--saas-primary-light) !important;
   color: var(--saas-primary) !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .btn-outline-primary {
   background: transparent !important;
   border-color: var(--saas-primary) !important;
   color: var(--saas-primary) !important;
+  box-shadow: none !important;
 }
 
 .btn-outline-primary:hover {
   background: var(--saas-primary) !important;
   color: #ffffff !important;
-  box-shadow: var(--saas-glow-primary) !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .btn-sm {
@@ -236,41 +260,57 @@
 .search-wrap {
   position: relative;
   flex: 1;
-  min-width: 240px;
-  max-width: 380px;
+  min-width: 200px;
+  max-width: 320px;
+  height: 38px;
+  display: flex;
+  align-items: center;
 }
 
 .search-icon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 15px;
+  font-size: 14px;
   color: var(--saas-muted);
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
 }
 
 .form-input,
 .form-control {
   width: 100%;
-  padding: 9px 14px;
-  font-size: 13.5px;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
   border-radius: var(--saas-radius);
   border: 1px solid var(--saas-border);
   background: #ffffff;
   color: var(--saas-heading);
-  transition: all 0.2s;
+  transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
+  box-sizing: border-box;
+  line-height: 36px;
 }
 
 .form-input:focus,
 .form-control:focus {
   border-color: var(--saas-primary);
-  box-shadow: 0 0 0 3px rgba(105, 108, 255, 0.15);
+  box-shadow: 0 0 0 2px rgba(105, 108, 255, 0.15);
 }
 
 .search-input {
-  padding-left: 42px !important;
+  height: 38px !important;
+  padding-left: 36px !important;
+  padding-right: 14px !important;
+  font-size: 13px !important;
+  line-height: 36px !important;
+  border-radius: var(--saas-radius) !important;
 }
 
 /* ── Sneat Filter Tabs (Pill Buttons) ── */
@@ -293,7 +333,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.18s ease-in-out;
+  transition: background 0.15s;
   white-space: nowrap;
   line-height: 1.2;
 }
@@ -307,7 +347,7 @@
 .filter-tab.active {
   background: #696cff !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 6px rgba(105, 108, 255, 0.4);
+  box-shadow: none !important;
 }
 
 /* ── Sneat Tables ── */
@@ -315,7 +355,7 @@
   background: #ffffff;
   border-radius: var(--saas-radius-lg);
   border: 1px solid var(--saas-border);
-  box-shadow: var(--saas-shadow-xs);
+  box-shadow: none !important;
   overflow-x: auto;
   margin-bottom: 20px;
 }
@@ -336,6 +376,26 @@
   border-radius: 0 !important;
   margin-bottom: 0 !important;
   background: transparent !important;
+}
+
+/* Hilangkan seluruh efek (shadow, transform/lift, hover effect) pada card yang membungkus tabel */
+.table-card,
+.card:has(.table),
+.card:has(.table-responsive),
+.card:has(.table-wrap) {
+  box-shadow: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.table-card:hover,
+.card:has(.table):hover,
+.card:has(.table-responsive):hover,
+.card:has(.table-wrap):hover {
+  box-shadow: none !important;
+  transform: none !important;
+  border-color: var(--saas-border, #d9dee3) !important;
+  transition: none !important;
 }
 
 .table {
@@ -395,7 +455,7 @@
 }
 
 .table tbody tr {
-  transition: background 0.15s ease-in-out;
+  transition: none !important;
 }
 
 .table tbody tr:hover {
@@ -413,20 +473,21 @@
   border-radius: var(--saas-radius-lg);
   border: 1px solid var(--saas-border);
   padding: 22px;
-  box-shadow: var(--saas-shadow-xs);
+  box-shadow: none !important;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: none !important;
+  transform: none !important;
   position: relative;
   overflow: hidden;
 }
 
 .kpi-card:hover,
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--saas-shadow-md);
-  border-color: #c7cdd4;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: var(--saas-border) !important;
 }
 
 .kpi-icon-wrap {
@@ -476,26 +537,19 @@
   color: #ffffff !important;
 }
 
-/* ── Hero Congratulations Card ── */
+/* ── Hero Congratulations Card (Clean flat styling) ── */
 .sneat-hero-card {
   background: #ffffff;
   border-radius: var(--saas-radius-lg);
   border: 1px solid var(--saas-border);
   padding: 26px 30px;
-  box-shadow: var(--saas-shadow-xs);
+  box-shadow: none !important;
   position: relative;
   overflow: hidden;
 }
 
 .sneat-hero-bg-accent {
-  position: absolute;
-  right: -30px;
-  bottom: -30px;
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.05) 0%, rgba(79, 70, 229, 0) 70%);
-  border-radius: 50%;
-  pointer-events: none;
+  display: none !important;
 }
 
 /* ── Custom Scrollbar ── */
@@ -518,7 +572,7 @@
 }
 
 /* ==========================================================================
-   SAAS PAGINATION STYLES (Sama Persis dengan Modul Retail)
+   SAAS PAGINATION STYLES (Clean / Flat)
    ========================================================================== */
 .saas-pagination-container {
   display: flex;
@@ -575,7 +629,6 @@
   cursor: pointer;
   height: 36px;
   min-width: 64px;
-  transition: all 0.2s ease;
 }
 
 .saas-pagination-select:focus {
@@ -596,7 +649,8 @@
   border: none;
   background: #f3f4f6;
   color: #475569;
-  transition: all 0.2s ease;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .saas-pagination-btn:hover:not(.active):not(:disabled) {
@@ -607,7 +661,7 @@
 .saas-pagination-btn.active {
   background: #696cff !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(105, 108, 255, 0.4);
+  box-shadow: none !important;
   font-weight: 700;
 }
 
@@ -623,7 +677,7 @@
 }
 
 /* ==========================================================================
-   CATEGORY CARDS STYLING (Tampilan Asli/Sebelumnya)
+   CATEGORY CARDS STYLING (Clean / Flat)
    ========================================================================== */
 .cat-card {
   display: flex;
@@ -633,14 +687,15 @@
   border-radius: 16px !important;
   border: 1px solid #d9dee3 !important;
   padding: 22px !important;
-  box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.08) !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: none !important;
+  transition: none !important;
+  transform: none !important;
 }
 
 .cat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px 0 rgba(67, 89, 113, 0.12) !important;
-  border-color: #c7cdd4 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: #d9dee3 !important;
 }
 
 .cat-card__top {
@@ -716,7 +771,7 @@
   position: relative;
   border: none;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.15s ease;
   padding: 0;
   flex-shrink: 0;
 }
@@ -737,8 +792,50 @@
   border-radius: 50%;
   background: white;
   box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-  transition: left 0.2s ease;
+  transition: left 0.15s ease;
 }
 
 .toggle-btn--on .toggle-knob { left: 18px; }
 .toggle-btn--off .toggle-knob { left: 2px; }
+
+/* ── SaaS Admin Responsive Mobile Adjustments ── */
+@media (max-width: 768px) {
+  .shared-page-container {
+    padding: 0 10px 24px 10px !important;
+  }
+
+  .page-header, .shared-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .page-title, .shared-title {
+    font-size: 16px !important;
+  }
+
+  .cat-card, .shared-card, .sneat-card {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+
+  .cat-card__name {
+    font-size: 15px !important;
+  }
+
+  .cat-card__stat-num {
+    font-size: 18px !important;
+  }
+
+  .sneat-table th, .shared-table th {
+    padding: 8px 10px !important;
+    font-size: 10.5px !important;
+  }
+
+  .sneat-table td, .shared-table td {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+}
+

@@ -179,8 +179,8 @@ export default function SystemMonitoring() {
         </div>
       </div>
 
-      {/* ── Recent Logs ── */}
-      <div className="card card-pad" style={{ padding: 0 }}>
+      {/* ── Active Server Logs ── */}
+      <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
         <div style={{ padding: '20px 24px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
           <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 4 }}>📋 Log Sistem Terbaru</h3>
           <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>

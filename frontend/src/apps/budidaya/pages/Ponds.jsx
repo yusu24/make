@@ -6,11 +6,14 @@ import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } f
 import { LoadingButton, EmptyState } from '../components/UXComponents'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
+import usePagination from '../../../hooks/usePagination'
+import BudidayaPagination from '../components/BudidayaPagination'
+
 // ── Colour helpers ──────────────────────────────────────────────────────────
 const STATUS = {
-  healthy: { label: 'AKTIF', bg: '#D1FAE5', text: '#059669' },
-  warning: { label: 'PERINGATAN', bg: '#FEE2E2', text: '#EF4444' },
-  kosong:  { label: 'KOSONG',   bg: '#F1F5F9', text: '#64748B' },
+  healthy: { label: 'Aktif', bg: '#D1FAE5', text: '#059669' },
+  warning: { label: 'Peringatan', bg: '#FEE2E2', text: '#EF4444' },
+  kosong:  { label: 'Kosong',   bg: '#F1F5F9', text: '#64748B' },
 }
 
 export default function Ponds() {
@@ -88,67 +91,87 @@ export default function Ponds() {
     p.code?.toLowerCase().includes(search.toLowerCase())
   )
 
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+    paginatedData,
+    startIndex,
+    endIndex
+  } = usePagination(filtered)
+
   const renderTableView = () => (
-    <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
-      <div className="aq-table-container">
-        <Table>
-          <TableHeader>
-            <TableRow isHoverable={false}>
-              <TableHeaderCell>{terms.unitCode}</TableHeaderCell>
-              <TableHeaderCell>{terms.unitName}</TableHeaderCell>
-              <TableHeaderCell>{terms.typeUnit}</TableHeaderCell>
-              <TableHeaderCell>Usia (hari)</TableHeaderCell>
-              <TableHeaderCell>{terms.populationCountTitle}</TableHeaderCell>
-              <TableHeaderCell>Status</TableHeaderCell>
-              <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((pond) => {
-              const st = STATUS[pond.status_key] || STATUS.kosong
-              return (
-                <TableRow key={pond.id} onClick={() => navigate(`/budidaya/ponds/${pond.id}`)} style={{ cursor: 'pointer' }}>
-                  <TableCell>
-                    <span style={{ fontWeight: 700, color: '#1B4332', background: '#E8F5ED', padding: '4px 10px', borderRadius: 6, fontSize: 12 }}>
-                      {pond.code}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span style={{ fontWeight: 600, color: '#1E293B' }}>{pond.name}</span>
-                  </TableCell>
-                  <TableCell isSecondary>
-                    <span style={{ textTransform: 'capitalize' }}>{pond.type || '-'}</span>
-                  </TableCell>
-                  <TableCell>{pond.age_days} hari</TableCell>
-                  <TableCell>
-                    <span style={{ fontWeight: 600 }}>
-                      {(pond.population || 0).toLocaleString()} {terms.populationCount}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span style={{ 
-                      padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700',
-                      background: st.bg, color: st.text, display: 'inline-block'
-                    }}>
-                      {st.label}
-                    </span>
-                  </TableCell>
-                  <TableCell style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
-                      <button 
-                        style={{ padding: '6px 12px', background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
-                        onClick={(e) => { e.stopPropagation(); navigate(`/budidaya/ponds/${pond.id}`) }}
-                      >
-                        Detail
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </div>
+    <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+      <Table>
+        <TableHeader>
+          <TableRow isHoverable={false}>
+            <TableHeaderCell>{terms.unitCode}</TableHeaderCell>
+            <TableHeaderCell>{terms.unitName}</TableHeaderCell>
+            <TableHeaderCell>{terms.typeUnit}</TableHeaderCell>
+            <TableHeaderCell>Usia (hari)</TableHeaderCell>
+            <TableHeaderCell>{terms.populationCountTitle}</TableHeaderCell>
+            <TableHeaderCell>Status</TableHeaderCell>
+            <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {paginatedData.map((pond) => {
+            const st = STATUS[pond.status_key] || STATUS.kosong
+            return (
+              <TableRow key={pond.id} onClick={() => navigate(`/budidaya/ponds/${pond.id}`)} style={{ cursor: 'pointer' }}>
+                <TableCell>
+                  <span style={{ color: '#1B4332', background: '#E8F5ED', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 500 }}>
+                    {pond.code}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span style={{ color: '#1E293B' }}>{pond.name}</span>
+                </TableCell>
+                <TableCell isSecondary>
+                  <span style={{ textTransform: 'capitalize' }}>{pond.type || '-'}</span>
+                </TableCell>
+                <TableCell>{pond.age_days} hari</TableCell>
+                <TableCell>
+                  <span>
+                    {(pond.population || 0).toLocaleString()} {terms.populationCount}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span className="badge-pill" style={{ 
+                    background: st.bg, color: st.text
+                  }}>
+                    {st.label}
+                  </span>
+                </TableCell>
+                <TableCell style={{ textAlign: 'right' }}>
+                  <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
+                    <button 
+                      className="btn-table-action"
+                      title="Detail"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/budidaya/ponds/${pond.id}`) }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
+                    </button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+      <BudidayaPagination
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        pageSize={pageSize}
+        setPageSize={setPageSize}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        startIndex={startIndex}
+        endIndex={endIndex}
+      />
     </div>
   )
 
@@ -156,7 +179,7 @@ export default function Ponds() {
     <div className="aq-container">
 
       {/* ── Page Actions ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 0 }}>
         {/* Search bar */}
         <div style={{ position: 'relative', width: '320px' }}>
           <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748B', fontSize: '18px' }}>search</span>
@@ -164,7 +187,7 @@ export default function Ponds() {
             placeholder={`Cari kode atau nama ${terms.unitLower}...`}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', padding: '10px 12px 10px 38px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px', fontSize: '13.5px', outline: 'none' }}
+            style={{ width: '100%', padding: '9px 12px 9px 38px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
           />
         </div>
 
@@ -172,12 +195,12 @@ export default function Ponds() {
           className="btn btn-primary" 
           onClick={() => setModalOpen(true)}
           style={{
-            display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px',
-            borderRadius: '10px', background: '#1B4332', color: '#fff', border: 'none',
-            fontWeight: 700, cursor: 'pointer'
+            display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px',
+            borderRadius: '8px', background: '#1B4332', color: '#fff', border: 'none',
+            fontWeight: 600, fontSize: '13px', cursor: 'pointer'
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
           {terms.addUnit}
         </button>
       </div>

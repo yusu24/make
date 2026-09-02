@@ -145,11 +145,8 @@ export default function SubscriptionReminders() {
       )}
 
       {/* ── Page Header ── */}
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Zap style={{ color: '#f59e0b' }} size={26} />
-          Pengingat &amp; Otomasi Tagihan
-        </h2>
+      <div className="page-header mb-4">
+        <h2 className="page-title">Pengingat &amp; Otomasi Tagihan</h2>
       </div>
 
       {/* ── Master Status & Delivery Channels Card ── */}

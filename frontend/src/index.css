@@ -1033,3 +1033,64 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
+
+/* ==========================================================================
+   GLOBAL RESPONSIVE SYSTEM (All Modules: Retail, Kuliner, Budidaya, Jasa, Seller, SaaS Admin)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* ── Typography Scale Down on Mobile ── */
+  h1, .page-title, .kd-page-title, .aq-page-title, .admin-page-title, .shared-title {
+    font-size: 15px !important;
+    line-height: 1.3 !important;
+  }
+
+  h2 {
+    font-size: 14px !important;
+  }
+
+  h3 {
+    font-size: 13px !important;
+  }
+
+  .kpi-val, .metric-value, .stat-value, .cat-card__stat-num {
+    font-size: 18px !important;
+  }
+
+  .kpi-label, .metric-label, .stat-label {
+    font-size: 11px !important;
+  }
+
+  /* ── Charts & Diagrams Auto Scaling ── */
+  .recharts-cartesian-axis-tick text {
+    font-size: 9px !important;
+  }
+
+  .recharts-tooltip-wrapper {
+    font-size: 11.5px !important;
+  }
+
+  /* ── Layout & Containers ── */
+  .main-content, .kd-content, .aq-main-content, .shared-page-container {
+    padding: 10px 12px 24px 12px !important;
+  }
+
+  .card, .kd-panel, .aq-card, .shared-card, .glass-card {
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+  }
+
+  /* ── Modals & Dialogs on Mobile ── */
+  .modal-content, .kd-modal, .aq-modal, .subscription-lock-card {
+    padding: 16px !important;
+    width: 94vw !important;
+    max-width: 94vw !important;
+    border-radius: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  h1, .page-title, .kd-page-title, .aq-page-title, .admin-page-title, .shared-title {
+    font-size: 13.5px !important;
+  }
+}
+

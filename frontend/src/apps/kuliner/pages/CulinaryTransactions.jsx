@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../../contexts/I18nContext';
 import { Eye } from 'lucide-react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import ClientPagination from '../components/ClientPagination';
 import api from '../../../services/api';
 import KulinerLoading from '../components/KulinerLoading';
 import './KulinerDashboard.css';
@@ -16,7 +17,7 @@ const CulinaryTransactions = () => {
   const [filterDate, setFilterDate] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [balanceSummary, setBalanceSummary] = useState({
     totalIncome: 0,
@@ -98,7 +99,7 @@ const CulinaryTransactions = () => {
   });
 
   // Pagination Logic
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredTransactions.length / (itemsPerPage || 10)) || 1;
   const currentTransactions = filteredTransactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handlePageChange = (newPage) => {
@@ -137,21 +138,28 @@ const CulinaryTransactions = () => {
                 <div className="text-3xl font-black text-slate-800">{formatRp(balanceSummary.netBalance)}</div>
               </div>
             </div>
-
-            <div className="kd-panel">
-              <div className="kd-panel-header">
-                <div className="text-sm font-bold text-slate-800">{t('kulinerTransactions.journalTitle') || 'Jurnal Transaksi Terbaru'}</div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            
+            <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', marginTop: 20 }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#0F172A' }}>
+                    {t('kulinerTransactions.journalTitle') || 'Jurnal Transaksi Terbaru'}
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748B' }}>
+                    Riwayat kas masuk dan keluar operasional
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                   <input 
                     type="date" 
                     className="kd-form-input" 
-                    style={{ padding: '6px 12px', fontSize: 11, width: 'auto', minHeight: 'unset' }}
+                    style={{ width: 'auto', height: 34, padding: '0 10px', fontSize: 12, borderRadius: 8, border: '1px solid #CBD5E1' }}
                     value={filterDate}
                     onChange={(e) => { setFilterDate(e.target.value); setCurrentPage(1); }}
                   />
                   <select 
                     className="kd-form-select" 
-                    style={{ padding: '6px 12px', fontSize: 11, width: 'auto', minHeight: 'unset' }}
+                    style={{ width: 'auto', height: 34, padding: '0 10px', fontSize: 12, borderRadius: 8, border: '1px solid #CBD5E1' }}
                     value={filterType}
                     onChange={(e) => { setFilterType(e.target.value); setCurrentPage(1); }}
                   >
@@ -161,7 +169,7 @@ const CulinaryTransactions = () => {
                   </select>
                   <select 
                     className="kd-form-select" 
-                    style={{ padding: '6px 12px', fontSize: 11, width: 'auto', minHeight: 'unset' }}
+                    style={{ width: 'auto', height: 34, padding: '0 10px', fontSize: 12, borderRadius: 8, border: '1px solid #CBD5E1' }}
                     value={filterCategory}
                     onChange={(e) => { setFilterCategory(e.target.value); setCurrentPage(1); }}
                   >
@@ -176,7 +184,7 @@ const CulinaryTransactions = () => {
                   {(filterDate || filterType !== 'all' || filterCategory !== 'all') && (
                     <button 
                       className="kd-btn kd-btn-secondary" 
-                      style={{ padding: '6px 8px', fontSize: 11 }}
+                      style={{ height: 34, padding: '0 10px', fontSize: 12, borderRadius: 8 }}
                       onClick={() => { setFilterDate(''); setFilterType('all'); setFilterCategory('all'); setCurrentPage(1); }}
                       title="Reset Filter"
                     >
@@ -185,46 +193,85 @@ const CulinaryTransactions = () => {
                   )}
                 </div>
               </div>
-              <div className="kd-table-container">
-                <table className="kd-table">
+
+              <div style={{ width: '100%', overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                   <thead>
-                    <tr>
-                        <th>{t('kulinerTransactions.tableHeaderDate') || 'Tanggal'}</th>
-                        <th>{t('kulinerTransactions.tableHeaderDesc') || 'Keterangan'}</th>
-                        <th>Ref ID</th>
-                      <th>{t('kulinerTransactions.tableHeaderCategory') || 'Kategori / Tipe'}</th>
-                      <th>Tipe</th>
-                      <th>{t('kulinerTransactions.tableHeaderAmount') || 'Nominal'}</th>
-                      <th className="text-right">{t('kulinerTransactions.tableHeaderAction') || 'Aksi'}</th>
+                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        {t('kulinerTransactions.tableHeaderDate') || 'Tanggal'}
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        {t('kulinerTransactions.tableHeaderDesc') || 'Keterangan'}
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Ref ID
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        {t('kulinerTransactions.tableHeaderCategory') || 'Kategori'}
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Tipe
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                        {t('kulinerTransactions.tableHeaderAmount') || 'Nominal'}
+                      </th>
+                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                        {t('kulinerTransactions.tableHeaderAction') || 'Aksi'}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredTransactions.length === 0 ? (
-                        <tr><td colSpan="7" className="text-center py-10 text-slate-400">{t('kulinerTransactions.emptyTransactions') || 'Tidak ada transaksi yang cocok dengan filter.'}</td></tr>
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '36px', color: '#94A3B8' }}>
+                          {t('kulinerTransactions.emptyTransactions') || 'Tidak ada transaksi yang cocok dengan filter.'}
+                        </td>
+                      </tr>
                     ) : (
                       currentTransactions.map(item => (
-                        <tr key={item.id}>
-                            <td className="text-xs text-slate-500">
-                              {new Date(item.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date(item.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
-                            </td>
-                            <td>
-                              <div style={{ color: '#1e293b' }}>{item.description}</div>
-                            </td>
-                            <td><span className="text-xs text-slate-400">{item.id}</span></td>
-                          <td><span className="text-sm bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-bold">{item.category}</span></td>
-                          <td>
-                            <div className="flex items-center gap-2">
-                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.type === 'income' ? '#10b981' : '#ef4444' }} />
-                              <span className={`text-sm font-medium ${item.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                                {item.type === 'income' ? t('kulinerTransactions.detailIncome') || 'Pemasukan' : t('kulinerTransactions.detailExpense') || 'Pengeluaran'}
-                              </span>
-                            </div>
+                        <tr key={item.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
+                          <td style={{ padding: '12px 18px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>
+                            {new Date(item.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })} • {new Date(item.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
                           </td>
-                          <td className="text-slate-900 font-medium">
+                          <td style={{ padding: '12px 18px', color: '#0F172A', fontWeight: 500 }}>
+                            {item.description}
+                          </td>
+                          <td style={{ padding: '12px 18px' }}>
+                            <span style={{ fontSize: 11.5, color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: 6, fontFamily: 'monospace', fontWeight: 600 }}>
+                              {item.id}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 18px' }}>
+                            <span style={{ fontSize: 11.5, background: '#F1F5F9', color: '#334155', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>
+                              {item.category}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 18px' }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: item.type === 'income' ? '#059669' : '#DC2626'
+                            }}>
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: item.type === 'income' ? '#059669' : '#DC2626' }} />
+                              {item.type === 'income' ? (t('kulinerTransactions.detailIncome') || 'Pemasukan') : (t('kulinerTransactions.detailExpense') || 'Pengeluaran')}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 18px', textAlign: 'right', fontWeight: 700, color: item.type === 'income' ? '#059669' : '#DC2626' }}>
                             {item.type === 'income' ? '+' : '-'}{formatRp(item.amount)}
                           </td>
-                          <td className="text-right">
-                            <button className="kd-icon-btn" title={t('kulinerTransactions.detailBtn') || 'Detail'} onClick={() => setDetailItem(item)}><Eye size={16} /></button>
+                          <td style={{ padding: '12px 18px', textAlign: 'right' }}>
+                            <button 
+                              className="kd-icon-btn" 
+                              title={t('kulinerTransactions.detailBtn') || 'Detail'} 
+                              onClick={() => setDetailItem(item)}
+                              style={{ background: '#F1F5F9', border: 'none', borderRadius: 6, width: 30, height: 30, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#4F46E5', cursor: 'pointer' }}
+                            >
+                              <Eye size={15} />
+                            </button>
                           </td>
                         </tr>
                       ))
@@ -233,44 +280,14 @@ const CulinaryTransactions = () => {
                 </table>
               </div>
               
-              {/* PAGINATION */}
-              {totalPages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderTop: '1px solid #f1f5f9' }}>
-                  <span className="text-xs text-slate-500">
-                    Menampilkan <span className="font-bold text-slate-700">{filteredTransactions.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}</span> hingga <span className="font-bold text-slate-700">{Math.min(currentPage * itemsPerPage, filteredTransactions.length)}</span> dari <span className="font-bold text-slate-700">{filteredTransactions.length}</span> transaksi
-                  </span>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button 
-                      className="kd-btn kd-btn-secondary" 
-                      style={{ padding: '6px 12px', fontSize: 11 }}
-                      disabled={currentPage === 1}
-                      onClick={() => handlePageChange(currentPage - 1)}
-                    >
-                      &laquo; Sebelumnya
-                    </button>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      {[...Array(totalPages)].map((_, idx) => (
-                        <button 
-                          key={idx}
-                          className={`kd-btn ${currentPage === idx + 1 ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
-                          style={{ padding: '6px 12px', fontSize: 11, minWidth: 32 }}
-                          onClick={() => handlePageChange(idx + 1)}
-                        >
-                          {idx + 1}
-                        </button>
-                      ))}
-                    </div>
-                    <button 
-                      className="kd-btn kd-btn-secondary" 
-                      style={{ padding: '6px 12px', fontSize: 11 }}
-                      disabled={currentPage === totalPages}
-                      onClick={() => handlePageChange(currentPage + 1)}
-                    >
-                      Selanjutnya &raquo;
-                    </button>
-                  </div>
-                </div>
-              )}
+              <ClientPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                itemsPerPage={itemsPerPage}
+                setItemsPerPage={setItemsPerPage}
+                totalItems={filteredTransactions.length}
+              />
             </div>
 
             {/* EXPENSE MODAL */}

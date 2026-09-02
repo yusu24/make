@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   ShoppingBag,
   Search,
@@ -21,6 +21,18 @@ import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
 import { exportToCsv } from '../../utils/excelExport';
 import { useTranslation } from '../../../../../contexts/I18nContext';
+import { useAuth } from '../../../../../contexts/AuthContext';
+import { useReactToPrint } from 'react-to-print';
+import '../../../seller-print.css';
+import {
+  SellerPrintHeader,
+  SellerPrintSectionHeader,
+  SellerPrintAppendixHeader,
+  SellerPrintExplanationBox,
+  SellerPrintFooter,
+  formatRp,
+  formatDateIndo
+} from '../SellerPrintLayout';
 
 interface OrdersViewProps {
   orders: Order[];
@@ -33,12 +45,19 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
   onOpenAwbModal,
   onUpdateOrderStatus,
 }) => {
+  const { user } = useAuth();
   const i18n = useTranslation();
   const t = i18n?.t || ((key: string) => key);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('Perlu Diproses');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Laporan-Pesanan-Pelanggan-Ecommerce-${new Date().toISOString().split('T')[0]}`,
+  });
 
   const statusOptions: OrderStatus[] = [
     'Perlu Diproses',
@@ -105,6 +124,14 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         </div>
 
         <div className="shrink-0 flex items-center gap-2">
+          <button
+            onClick={handlePrint}
+            className="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
+            title="Cetak Laporan Register Pesanan PDF"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Cetak / Export PDF</span>
+          </button>
           <button
             onClick={handleExportExcel}
             className="px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
@@ -338,6 +365,166 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
           />
         )}
       </div>
+
+      {/* ========================================================================= */}
+      {/* PRINT-ONLY FORMAL 2-PAGE CUSTOMER ORDERS REPORT                           */}
+      {/* ========================================================================= */}
+      <div style={{ display: 'none' }}>
+        <div ref={printRef} className="print-only" style={{ padding: 0, fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: '#000000' }}>
+          
+          {/* 1. Header / Kop Surat Resmi Toko Online */}
+          <SellerPrintHeader
+            user={user}
+            title="Laporan Register Pesanan Pelanggan"
+            subtitle="Rekapitulasi Pemenuhan Pesanan (Fulfillment), Logistik Kurir & Nilai Transaksi"
+            periodText={`Status: ${activeStatusTab} • Channel: ${selectedPlatform === 'all' ? 'Semua Platform' : selectedPlatform}`}
+          />
+
+          {/* 2. Formal Summary Table (Horizontal Borders Only) */}
+          <div style={{ marginBottom: 20 }}>
+            <SellerPrintSectionHeader title="I. Ringkasan Volume & Nilai Transaksi Pesanan" />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#000000' }}>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #000000' }}>
+                  <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                    A. REKAPITULASI PESANAN MASUK
+                  </td>
+                  <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600 }}></td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Total Volume Pesanan Terdaftar</td>
+                  <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', width: 140, whiteSpace: 'nowrap' }}>{filteredOrders.length} Pesanan</td>
+                  <td style={{ width: 140 }}></td>
+                </tr>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td style={{ padding: '7px 4px', fontSize: 11, color: '#000000' }}>
+                    TOTAL NILAI BRUTO PESANAN (GROSS ORDER VALUE)
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>
+                    100.0%
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'right', fontSize: 11.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    +{formatRp(filteredOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0))}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 3. Detailed Formal Accounting Ledger Table */}
+          <div style={{ marginBottom: 20 }}>
+            <SellerPrintSectionHeader 
+              title="II. Buku Register Transaksi Pesanan Pelanggan (Orders Ledger)" 
+              rightText={`Total ${filteredOrders.length} pesanan`} 
+            />
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, color: '#000000' }}>
+              <thead>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                  <th style={{ padding: '7px 4px', textAlign: 'center', width: 30, fontWeight: 600 }}>No</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'left', width: 110, fontWeight: 600 }}>No. Pesanan</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'left', width: 75, fontWeight: 600 }}>Tanggal</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'left', width: 85, fontWeight: 600 }}>Channel</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'left', width: 110, fontWeight: 600 }}>Pembeli</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'left', width: 110, fontWeight: 600 }}>Kurir & Resi</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'left', width: 85, fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: '7px 4px', textAlign: 'right', width: 110, fontWeight: 600, whiteSpace: 'nowrap' }}>Nilai Pembayaran (Rp)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((o, idx) => (
+                  <tr key={o.id || idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '5px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                    <td style={{ padding: '5px 4px', fontWeight: 600, color: '#000000', fontFamily: 'monospace' }}>
+                      {o.orderNumber}
+                    </td>
+                    <td style={{ padding: '5px 4px', color: '#000000', whiteSpace: 'nowrap' }}>
+                      {o.orderDate ? o.orderDate.substring(0, 10) : '-'}
+                    </td>
+                    <td style={{ padding: '5px 4px', color: '#000000', textTransform: 'capitalize' }}>
+                      {o.platform}
+                    </td>
+                    <td style={{ padding: '5px 4px', color: '#000000' }}>
+                      {o.customerName || '-'}
+                    </td>
+                    <td style={{ padding: '5px 4px', color: '#000000' }}>
+                      {o.courier} {o.trackingNumber ? `(${o.trackingNumber})` : ''}
+                    </td>
+                    <td style={{ padding: '5px 4px', color: '#000000', textTransform: 'capitalize' }}>
+                      {o.status}
+                    </td>
+                    <td style={{ padding: '5px 4px', textAlign: 'right', fontWeight: 500, color: '#000000', whiteSpace: 'nowrap' }}>
+                      +{formatRp(o.totalAmount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                  <td colSpan={7} style={{ padding: '7px 4px', textAlign: 'right', textTransform: 'uppercase', fontSize: 9.5, color: '#000000', whiteSpace: 'nowrap' }}>
+                    Total Rekapitulasi Nilai Pesanan:
+                  </td>
+                  <td style={{ padding: '7px 4px', textAlign: 'right', fontSize: 10.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    +{formatRp(filteredOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0))}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* Kolom Tanda Tangan & Pengesahan Dokumen (Halaman 1) */}
+          <SellerPrintFooter user={user} />
+
+          {/* 4. HALAMAN 2: LAMPIRAN PANDUAN SLA PENGIRIMAN & FULFILLMENT */}
+          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+            <SellerPrintAppendixHeader 
+              title="Lampiran: Panduan SLA Pengiriman & Pemenuhan Pesanan (Fulfillment)"
+              subtitle={`Standar Operasional Packing, Batas Waktu Kirim & Protokol Ekspedisi — ${user?.tenant_name || 'Toko Online'}`}
+              user={user}
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+              <SellerPrintExplanationBox
+                number="1"
+                title="Service Level Agreement (SLA Batas Waktu Pengiriman)"
+                desc="Pesanan yang masuk sebelum batas cut-off operasional (pukul 15.00 WIB) wajib diproses dan diserahterimakan ke kurir pada hari yang sama untuk mempertahankan skor performa toko."
+                variant="default"
+              />
+
+              <SellerPrintExplanationBox
+                number="2"
+                title="Prosedur Validasi Pick & Pack (Zero-Error Picking)"
+                desc="Admin gudang wajib melakukan pemindaian barcode resi dan SKU barang untuk memastikan kesesuaian varian (warna, ukuran, jumlah) sebelum paket disegel lakban."
+                variant="emerald"
+              />
+
+              <SellerPrintExplanationBox
+                number="3"
+                title="Standar Pengemasan Barang Rentan (Fragile Packing Standards)"
+                desc="Produk cair atau pecah belah wajib dibalut minimal 3 lapis bubble wrap tebal, menggunakan kardus gelombang ganda, dan ditempeli stiker Fragile di bagian atas."
+                variant="rose"
+              />
+
+              <SellerPrintExplanationBox
+                number="4"
+                title="Serah Terima Manifest Kurir Ekspedisi"
+                desc="Petugas pick-up kurir wajib menandatangani lembar manifest penyerahan paket dengan mencantumkan jumlah total koli dan jam penjemputan barang."
+                variant="indigo"
+              />
+
+              <SellerPrintExplanationBox
+                number="5"
+                title="Penanganan Pesanan Retur & Gagal Kirim COD (RTS)"
+                desc="Paket yang kembali karena alamat tidak ditemukan atau penolakan COD diinspeksi keutuhan segelnya dan dicatat ke dalam modul retur sebelum stok dimasukkan kembali."
+                variant="dark"
+              />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   );
 };

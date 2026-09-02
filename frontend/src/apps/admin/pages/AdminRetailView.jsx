@@ -188,55 +188,59 @@ const RETAIL_SECTIONS = [
 ]
 
 const CAT_META = {
-  'Toko Retail':      { emoji: '🛒', color: '#3b82f6', sections: RETAIL_SECTIONS },
-  'Budidaya Hewan':    { emoji: '🐟', color: '#10b981', sections: [] },
-  'Budidaya Tanaman': { emoji: '🌱', color: '#84cc16', sections: [] },
-  'Jasa':             { emoji: '🔧', color: '#8b5cf6', sections: [] },
-  'Manufaktur':       { emoji: '🏭', color: '#f59e0b', sections: [] },
+  'Toko Retail':      { emoji: '🛒', color: '#3b82f6', route: '/retail/dashboard', sections: RETAIL_SECTIONS },
+  'Budidaya Hewan':    { emoji: '🐟', color: '#10b981', route: '/budidaya/dashboard', sections: [] },
+  'Budidaya Tanaman': { emoji: '🌱', color: '#84cc16', route: '/budidaya/dashboard', sections: [] },
+  'Jasa':             { emoji: '🔧', color: '#8b5cf6', route: '/jasa/dashboard', sections: [] },
+  'Seller':           { emoji: '📦', color: '#6366f1', route: '/seller/dashboard', sections: [] },
+  'Kuliner':          { emoji: '🍱', color: '#ec4899', route: '/kuliner/admin', sections: [] },
+  'Manufaktur':       { emoji: '🏭', color: '#f59e0b', route: '/coming-soon', sections: [] },
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminRetailView() {
   const { categoryName } = useParams()   // URL-encoded category name
   const navigate = useNavigate()
-  const decodedName = decodeURIComponent(categoryName)
+  const decodedName = decodeURIComponent(categoryName || '')
+  const meta = CAT_META[decodedName] || { emoji: '🏢', color: '#64748b', sections: [] }
 
-  // For now, tenantId is the admin's own (dev context: TN-001)
-  // To support selecting a specific tenant you could add a <select> here
-  const [tenantId, setTenantId] = useState('TN-001')
   const [tenants, setTenants] = useState([])
+  const [tenantId, setTenantId] = useState('')
 
   useEffect(() => {
-    // Fetch tenants with this business_category so admin can switch
-    api.get('/tenants').then(r => {
-      const list = (r.data?.data || r.data || []).filter(t =>
-        t.business_category === decodedName || !t.business_category
-      )
-      setTenants(list)
-      if (list.length > 0 && !list.find(t => t.tenant_id === tenantId)) {
-        setTenantId(list[0].tenant_id)
-      }
-    }).catch(() => {})
+    api.get('/tenants')
+      .then(res => {
+        const list = (res.data?.data || res.data || []).filter(t => {
+          if (!decodedName || decodedName === 'Toko Retail') {
+            return !t.business_category || t.business_category?.name === decodedName || t.business_category?.slug === 'toko-retail'
+          }
+          return t.business_category?.name === decodedName || t.business_category?.slug === decodedName.toLowerCase()
+        })
+        setTenants(list)
+        if (list.length > 0) setTenantId(list[0].tenant_id)
+      })
+      .catch(() => {})
   }, [decodedName])
 
-  const meta = CAT_META[decodedName] || { emoji: '🏢', color: '#6b7280', sections: [] }
-
   return (
-    <div className="animate-fade-in">
+    <div className="admin-content" style={{ maxWidth: 1100 }}>
       {/* ── Header ── */}
-      <div className="page-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: 20, flexWrap: 'wrap', gap: 12,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             className="btn btn-secondary btn-sm"
             onClick={() => navigate('/categories')}
-            style={{ padding: '8px 14px' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
           >
             ← Kembali
           </button>
           <div
             style={{
-              width: 48, height: 48, borderRadius: 14,
-              background: meta.color + '22',
+              width: 44, height: 44, borderRadius: 12,
+              background: `${meta.color}18`, border: `1.5px solid ${meta.color}40`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 24, flexShrink: 0,
             }}
@@ -247,7 +251,7 @@ export default function AdminRetailView() {
             <h2 className="page-title" style={{ marginBottom: 2 }}>
               Developer View — {decodedName}
             </h2>
-            <p className="page-sub">Full akses data master kategori bisnis ini. Gunakan dengan bijak.</p>
+            <p className="page-sub">Akses manajemen data dan sistem operasional kategori ini.</p>
           </div>
         </div>
 
@@ -283,18 +287,46 @@ export default function AdminRetailView() {
       }}>
         <span style={{ fontSize: 18 }}>⚠️</span>
         <span style={{ color: 'var(--text-secondary)' }}>
-          Mode <strong style={{ color: '#f59e0b' }}>Developer / Super Admin</strong> — Semua perubahan langsung tersimpan ke database.
-          {tenantId && <span> Data tenant: <code style={{ background: 'var(--bg-elevated)', padding: '1px 6px', borderRadius: 4 }}>{tenantId}</code></span>}
+          Mode <strong style={{ color: '#f59e0b' }}>Developer / Super Admin</strong> — Kelola data atau masuk ke dashboard aplikasi tenant.
+          {tenantId && <span> Data tenant terpilih: <code style={{ background: 'var(--bg-elevated)', padding: '1px 6px', borderRadius: 4 }}>{tenantId}</code></span>}
         </span>
       </div>
 
       {/* ── Sections ── */}
       {meta.sections.length === 0 ? (
-        <div className="card" style={{ padding: 48, textAlign: 'center' }}>
-          <p style={{ fontSize: 36, marginBottom: 12 }}>🚧</p>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-            Developer view untuk kategori <strong style={{ fontWeight: 600 }}>{decodedName}</strong> belum tersedia.
+        <div className="card" style={{ padding: '48px 32px', textAlign: 'center', background: 'var(--bg-card)' }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: 20,
+            background: `${meta.color}15`, border: `2px solid ${meta.color}30`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 32, margin: '0 auto 16px'
+          }}>
+            {meta.emoji}
+          </div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>
+            Aplikasi Modul {decodedName}
+          </h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, maxWidth: 480, margin: '0 auto 24px', lineHeight: 1.5 }}>
+            Modul <strong>{decodedName}</strong> menggunakan sistem dashboard terpadu mandiri. Anda dapat langsung membuka dashboard operasional aplikasi ini di bawah:
           </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+            {meta.route && (
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate(meta.route)}
+                style={{ padding: '10px 20px', fontWeight: 600, fontSize: 14 }}
+              >
+                🚀 Buka Dashboard {decodedName} ({meta.route})
+              </button>
+            )}
+            <button
+              className="btn btn-secondary"
+              onClick={() => navigate('/categories')}
+              style={{ padding: '10px 18px', fontSize: 14 }}
+            >
+              Kembali ke Kelola Kategori
+            </button>
+          </div>
         </div>
       ) : (
         meta.sections.map(sec => (

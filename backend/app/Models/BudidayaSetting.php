@@ -21,10 +21,17 @@ class BudidayaSetting extends Model
         'feature_flags',
         'terminology',
         'farm_name',
+        'auto_backup_enabled',
+        'auto_backup_frequency',
+        'auto_backup_format',
+        'auto_backup_email',
+        'last_auto_backup_at',
     ];
 
     protected $casts = [
-        'feature_flags' => 'array',
-        'terminology' => 'array',
+        'feature_flags'         => 'array',
+        'terminology'           => 'array',
+        'auto_backup_enabled'   => 'boolean',
+        'last_auto_backup_at'   => 'datetime',
     ];
 }

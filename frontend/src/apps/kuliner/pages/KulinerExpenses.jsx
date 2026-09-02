@@ -11,6 +11,16 @@ import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
 import { useAuth } from '../../../contexts/AuthContext';
 import './KulinerDashboard.css';
+import '../kuliner-print.css';
+import {
+  KulinerPrintHeader,
+  KulinerPrintSectionHeader,
+  KulinerPrintAppendixHeader,
+  KulinerPrintExplanationBox,
+  KulinerPrintFooter,
+  formatRp,
+  formatDateIndo
+} from '../components/KulinerPrintLayout';
 
 export default function KulinerExpenses() {
   const { user } = useAuth();
@@ -150,32 +160,51 @@ export default function KulinerExpenses() {
   });
 
   const renderExpenseRows = (items, { withActions }) => items.map(ex => (
-    <tr key={ex.id}>
-      <td className="text-xs text-slate-500">
-        {new Date(ex.date).toLocaleDateString('id-ID')}
+    <tr key={ex.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
+      <td style={{ padding: '12px 18px', fontSize: 12.5, color: '#64748B', whiteSpace: 'nowrap' }}>
+        {new Date(ex.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
       </td>
-      <td>
+      <td style={{ padding: '12px 18px', whiteSpace: 'nowrap' }}>
         <span style={{ 
-            background: ex.type === 'income' ? '#dcfce7' : '#fff7ed', 
-            color: ex.type === 'income' ? '#166534' : '#ea580c', 
-            padding: '4px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, 
-            border: `1px solid ${ex.type === 'income' ? '#bbf7d0' : '#ffedd5'}` 
+            background: ex.type === 'income' ? '#DCFCE7' : '#F1F5F9', 
+            color: ex.type === 'income' ? '#166534' : '#475569', 
+            padding: '3px 10px', 
+            borderRadius: 20, 
+            fontSize: 11.5, 
+            fontWeight: 600, 
+            display: 'inline-block'
         }}>
             {ex.category}
         </span>
       </td>
-      <td style={{ color: '#1e293b', fontWeight: 500 }}>{ex.description}</td>
-      <td style={{ color: '#10b981', fontWeight: 600, textAlign: 'right' }}>
+      <td style={{ padding: '12px 18px', color: '#0F172A', fontWeight: 500 }}>
+        {ex.description}
+      </td>
+      <td style={{ padding: '12px 18px', color: '#16A34A', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {ex.type === 'income' ? formatRp(ex.amount) : '-'}
       </td>
-      <td style={{ color: '#ef4444', fontWeight: 600, paddingRight: withActions ? 0 : 24, textAlign: 'right' }}>
+      <td style={{ padding: '12px 18px', color: '#DC2626', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {(!ex.type || ex.type === 'expense') ? formatRp(ex.amount) : '-'}
       </td>
       {withActions && (
-        <td style={{ textAlign: 'right', paddingRight: 24 }}>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <button className="kd-btn kd-btn-secondary" style={{ padding: '6px' }} onClick={() => openEdit(ex)} title="Edit"><Edit3 size={15} /></button>
-            <button className="kd-btn" style={{ padding: '6px', background: '#fef2f2', color: '#ef4444', borderColor: '#fee2e2' }} onClick={async () => { if (confirm('Hapus pencatatan kas ini?')) { await api.delete(`/kuliner/admin/expenses/${ex.id}`); fetchExpenses(startDate, endDate); } }} title="Hapus"><Trash2 size={15} /></button>
+        <td style={{ padding: '12px 18px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
+            <button 
+              className="kd-btn" 
+              style={{ width: 32, height: 32, padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, color: '#475569', cursor: 'pointer' }} 
+              onClick={() => openEdit(ex)} 
+              title="Edit"
+            >
+              <Edit3 size={14} />
+            </button>
+            <button 
+              className="kd-btn" 
+              style={{ width: 32, height: 32, padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#FEF2F2', border: '1px solid #FEE2E2', borderRadius: 8, color: '#EF4444', cursor: 'pointer' }} 
+              onClick={async () => { if (confirm('Hapus pencatatan kas ini?')) { await api.delete(`/kuliner/admin/expenses/${ex.id}`); fetchExpenses(startDate, endDate); } }} 
+              title="Hapus"
+            >
+              <Trash2 size={14} />
+            </button>
           </div>
         </td>
       )}
@@ -207,20 +236,69 @@ export default function KulinerExpenses() {
           <KulinerLoading message="Memuat pengeluaran operasional..." />
         ) : (
           <>
-            <div className="kd-page-actions no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  className="kd-btn kd-btn-primary"
-                  style={{ display: 'flex', alignItems: 'center', height: 36 }}
-                  onClick={() => { setEditingExpense(null); setModalType('expense'); setShowModal(true); }}
-                >
-                  <Plus size={16} style={{ marginRight: 8 }} />
-                  Tambah Transaksi Kas
-                </button>
+            {/* RESPONSIVE ACTION & FILTER BAR */}
+            <div className="no-print" style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              flexWrap: 'wrap', 
+              gap: 12, 
+              marginBottom: 20 
+            }}>
+              {/* Left: Primary Action Button */}
+              <button
+                className="kd-btn kd-btn-primary"
+                style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  height: 38, 
+                  padding: '0 18px',
+                  borderRadius: 10,
+                  fontWeight: 600,
+                  fontSize: 13,
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => { setEditingExpense(null); setModalType('expense'); setShowModal(true); }}
+              >
+                <Plus size={16} style={{ marginRight: 6 }} />
+                Tambah Transaksi Kas
+              </button>
+
+              {/* Right: Search + Type Filter + Date Filter + Print Button */}
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, flex: '1 1 auto', justifyContent: 'flex-end' }}>
+                <div style={{ minWidth: 160, flex: '1 1 180px', maxWidth: 260 }}>
+                  <input
+                    style={{ 
+                      width: '100%', 
+                      height: 38, 
+                      padding: '0 12px', 
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1', 
+                      borderRadius: 10, 
+                      fontSize: 13,
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="🔍 Cari transaksi..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
 
                 <select 
-                  className="kd-input" 
-                  style={{ height: 36, padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: 6, outline: 'none' }}
+                  style={{ 
+                    height: 38, 
+                    padding: '0 10px', 
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1', 
+                    borderRadius: 10, 
+                    fontSize: 13,
+                    fontWeight: 500,
+                    outline: 'none',
+                    color: '#334155',
+                    boxSizing: 'border-box'
+                  }}
                   value={typeFilter}
                   onChange={e => { setTypeFilter(e.target.value); setCurrentPage(1); }}
                 >
@@ -229,38 +307,62 @@ export default function KulinerExpenses() {
                   <option value="expense">Hanya Pengeluaran</option>
                 </select>
 
-                <div style={{ position: 'relative', width: 220 }}>
-                  <input
-                    className="kd-input"
-                    style={{ width: '100%', height: 36, padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: 6, outline: 'none' }}
-                    placeholder="Cari transaksi..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Calendar size={18} color="#64748b" />
-                  <select className="kd-input" style={{ width: 'auto', height: 36, padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: 6, outline: 'none' }} value={dateFilter} onChange={handleDateFilterChange}>
-                    <option value="all">Semua</option>
-                    <option value="today">Hari Ini</option>
-                    <option value="month">Bulan Ini</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </div>
+                <select 
+                  style={{ 
+                    height: 38, 
+                    padding: '0 10px', 
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1', 
+                    borderRadius: 10, 
+                    fontSize: 13,
+                    fontWeight: 500,
+                    outline: 'none',
+                    color: '#334155',
+                    boxSizing: 'border-box'
+                  }} 
+                  value={dateFilter} 
+                  onChange={handleDateFilterChange}
+                >
+                  <option value="all">📅 Semua Waktu</option>
+                  <option value="today">📅 Hari Ini</option>
+                  <option value="month">📅 Bulan Ini</option>
+                  <option value="custom">📅 Custom</option>
+                </select>
 
                 {dateFilter === 'custom' && (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <input type="date" className="kd-input" style={{ height: 36, padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: 6, outline: 'none' }} value={startDate} onChange={e => setStartDate(e.target.value)} />
-                    <span style={{ color: '#64748b' }}>-</span>
-                    <input type="date" className="kd-input" style={{ height: 36, padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: 6, outline: 'none' }} value={endDate} onChange={e => setEndDate(e.target.value)} />
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <input 
+                      type="date" 
+                      style={{ height: 38, padding: '0 8px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: 10, fontSize: 12 }} 
+                      value={startDate} 
+                      onChange={e => setStartDate(e.target.value)} 
+                    />
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>–</span>
+                    <input 
+                      type="date" 
+                      style={{ height: 38, padding: '0 8px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: 10, fontSize: 12 }} 
+                      value={endDate} 
+                      onChange={e => setEndDate(e.target.value)} 
+                    />
                   </div>
                 )}
 
-                <button className="kd-btn kd-btn-secondary" onClick={handlePrint}>
-                  <Printer size={16} style={{ marginRight: 6 }} /> Cetak
+                <button 
+                  className="kd-btn kd-btn-secondary" 
+                  onClick={handlePrint}
+                  style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    height: 38, 
+                    padding: '0 14px',
+                    borderRadius: 10,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  <Printer size={15} style={{ marginRight: 6 }} /> Cetak
                 </button>
               </div>
             </div>
@@ -296,140 +398,202 @@ export default function KulinerExpenses() {
             )}
 
             <div ref={printRef}>
-              <div className="kd-panel no-print">
-                <div className="kd-panel-header no-print">
-                  <div className="text-sm font-bold text-slate-800">
-                    Daftar Pencatatan Kas
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
-                    Saldo: <span style={{ color: totalBalance >= 0 ? '#10b981' : '#ef4444' }}>{formatRp(totalBalance)}</span> ({filteredExpenses.length} data)
-                  </div>
-                </div>
-
-                <div className="kd-table-container no-print">
-                  <table className="kd-table">
+              <div className="no-print" style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', marginBottom: 24 }}>
+                <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                     <thead>
-                      <tr>
-                        <th>Tanggal</th>
-                        <th>Kategori</th>
-                        <th>Keterangan</th>
-                        <th style={{ textAlign: 'right' }}>Pemasukan</th>
-                        <th style={{ textAlign: 'right' }}>Pengeluaran</th>
-                        <th style={{ textAlign: 'right', paddingRight: 24 }}>Aksi</th>
+                      <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Tanggal</th>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Kategori</th>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Keterangan</th>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>Pemasukan</th>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>Pengeluaran</th>
+                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', paddingRight: 24, whiteSpace: 'nowrap' }}>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredExpenses.length === 0 ? (
-                        <tr><td colSpan="6" className="text-center py-10 text-slate-400">Belum ada pencatatan kas.</td></tr>
+                        <tr>
+                          <td colSpan="6" style={{ textAlign: 'center', padding: '36px', color: '#94A3B8' }}>
+                            Belum ada pencatatan kas.
+                          </td>
+                        </tr>
                       ) : (
                         renderExpenseRows(paginatedData, { withActions: true })
                       )}
                     </tbody>
                   </table>
                 </div>
-                <div className="no-print">
-                  <ClientPagination
-                    currentPage={currentPage}
-                    setCurrentPage={setCurrentPage}
-                    itemsPerPage={pageSize}
-                    setItemsPerPage={setPageSize}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                  />
-                </div>
+                
+                <ClientPagination
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  itemsPerPage={pageSize}
+                  setItemsPerPage={setPageSize}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                />
               </div>
 
-              {/* PRINT ONLY TABLE - TEMPLATE LABA RUGI GITHUB YUSU24 */}
-              <div className="print-only w-full">
-                {/* Print Wrapper */}
-                <div
-                  id="financial-report-sheet"
-                  className="w-full text-slate-900 font-sans"
-                >
-                  {/* HEADER LAPORAN */}
-                  <div className="text-center mb-4 leading-tight">
-                    <h2 className="text-lg sm:text-xl font-bold uppercase tracking-wider text-slate-900 print:text-black">
-                      Laporan Pencatatan Kas Operasional
-                    </h2>
-                    <h1 className="text-base sm:text-lg font-bold uppercase tracking-wide text-slate-900 print:text-black">
-                      {user?.tenant_name || 'Toko Kuliner'}
-                    </h1>
-                    <p className="text-xs font-semibold text-slate-800 print:text-black mt-1">
-                      Periode: {startDate && endDate ? `${formatDate(startDate)} - ${formatDate(endDate)}` : 'Semua Waktu'}
-                    </p>
-                  </div>
+              {/* ========================================================================= */}
+              {/* PRINT-ONLY FORMAL ACCOUNTING CASH & EXPENSE REPORT TEMPLATE              */}
+              {/* ========================================================================= */}
+              <div className="print-only" style={{ padding: 0, fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: '#000000' }}>
+                
+                {/* 1. Header / Kop Laporan Resmi Kuliner */}
+                <KulinerPrintHeader
+                  user={user}
+                  title="Laporan Catatan Kas Resto"
+                  subtitle="Rekapitulasi Mutasi Kas Masuk & Pengeluaran Operasional Restoran / Kafe"
+                  startDate={startDate}
+                  endDate={endDate}
+                />
 
-                  {/* TABEL FINANSIAL */}
-                  <div className="overflow-x-auto my-6">
-                    <table className="w-full text-xs sm:text-sm text-left mb-6" style={{ borderCollapse: 'collapse' }}>
-                      <thead className="bg-slate-100 print:bg-gray-200">
-                        <tr>
-                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black">Tanggal</th>
-                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black">Kategori</th>
-                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black">Keterangan</th>
-                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black text-right">Pemasukan</th>
-                          <th className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black text-right">Pengeluaran</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredExpenses.length === 0 ? (
-                          <tr>
-                            <td colSpan="5" className="text-center py-6 text-slate-500 italic">Belum ada pencatatan kas.</td>
-                          </tr>
-                        ) : (
-                           filteredExpenses.map(ex => (
-                              <tr key={`print-${ex.id}`} className="hover:bg-slate-50/50 print:hover:bg-transparent text-sm">
-                                <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
-                                  {new Date(ex.date).toLocaleDateString('id-ID')}
-                                </td>
-                                <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
-                                  {ex.category}
-                                </td>
-                                <td className="py-1 px-2 text-slate-800 print:text-black border-b border-slate-100 print:border-transparent">
-                                  {ex.description || '-'}
-                                </td>
-                            <td className="py-2 px-3 border border-slate-300 font-bold text-emerald-600 print:text-black text-right">
-                              {ex.type === 'income' ? formatRp(ex.amount) : '-'}
-                            </td>
-                            <td className="py-2 px-3 border border-slate-300 font-bold text-rose-600 print:text-black text-right">
-                              {(!ex.type || ex.type === 'expense') ? formatRp(ex.amount) : '-'}
-                            </td>
-                          </tr>
-                           ))
-                        )}
-                        <tr>
-                          <td colSpan="3" className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black text-right bg-slate-50 print:bg-gray-100">
-                            TOTAL PEMASUKAN
-                          </td>
-                          <td colSpan="2" className="py-2 px-3 border border-slate-300 font-bold text-emerald-600 print:text-black text-right bg-slate-50 print:bg-gray-100">
-                            {formatRp(totalIncome)}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td colSpan="3" className="py-2 px-3 border border-slate-300 font-bold text-slate-800 print:text-black text-right bg-slate-50 print:bg-gray-100">
-                            TOTAL PENGELUARAN
-                          </td>
-                          <td colSpan="2" className="py-2 px-3 border border-slate-300 font-bold text-rose-600 print:text-black text-right bg-slate-50 print:bg-gray-100">
-                            {formatRp(totalExpense)}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td colSpan="3" className="py-2 px-3 border border-slate-300 font-bold text-slate-900 print:text-black text-right bg-slate-200 print:bg-gray-300 text-base">
-                            SALDO AKHIR
-                          </td>
-                          <td colSpan="2" className={`py-2 px-3 border border-slate-300 font-bold print:text-black text-right bg-slate-200 print:bg-gray-300 text-base ${totalBalance >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
-                            {formatRp(totalBalance)}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                {/* 2. Ringkasan Saldo Kas (Horizontal borders only) */}
+                <div style={{ marginBottom: 22 }}>
+                  <KulinerPrintSectionHeader title="I. Ringkasan Mutasi Kas & Saldo Operasional" />
 
-                  {/* FOOTER INFORMASI STANDAR */}
-                  <div className="mt-8 text-center text-[10px] text-slate-400 print:text-black italic border-t border-slate-100 print:border-slate-300 pt-2">
-                    Dokumen ini dicetak secara otomatis melalui Sistem Manajemen UMKM.
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#000000' }}>
+                    <tbody>
+                      <tr style={{ borderBottom: '1px solid #000000' }}>
+                        <td colSpan={2} style={{ padding: '6px 4px', fontWeight: 600, color: '#000000' }}>
+                          A. AKUMULASI TRANSAKSI KAS RESTORAN
+                        </td>
+                        <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600 }}></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Total Penerimaan / Pemasukan Kas Operasional</td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', width: 140, whiteSpace: 'nowrap' }}>+{formatRp(totalIncome)}</td>
+                        <td style={{ width: 140 }}></td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td style={{ padding: '5px 4px 5px 20px', color: '#111827' }}>Total Pengeluaran / Beban Operasional Resto</td>
+                        <td style={{ padding: '5px 4px', textAlign: 'right', color: '#000000', whiteSpace: 'nowrap' }}>({formatRp(totalExpense)})</td>
+                        <td></td>
+                      </tr>
+                      <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                        <td style={{ padding: '7px 4px', fontSize: 11, color: '#000000' }}>
+                          SALDO MUTASI KAS BERSIH (NET CASH MOVEMENT)
+                        </td>
+                        <td style={{ padding: '7px 4px', textAlign: 'center', fontSize: 10, color: '#000000' }}>
+                          {filteredExpenses.length} Transaksi Tercatat
+                        </td>
+                        <td style={{ padding: '7px 4px', textAlign: 'right', fontSize: 11.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          {formatRp(totalBalance)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 3. Buku Kas Register Transaksi (NO VERTICAL LINES, BLACK & WHITE) */}
+                <div style={{ marginBottom: 22 }}>
+                  <KulinerPrintSectionHeader 
+                    title="II. Buku Register Transaksi Kas Operasional Restoran" 
+                    rightText={`Total ${filteredExpenses.length} transaksi`} 
+                  />
+
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: '#000000' }}>
+                    <thead>
+                      <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '1.5px solid #000000' }}>
+                        <th style={{ padding: '7px 4px', textAlign: 'center', width: 35, fontWeight: 600 }}>No</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'left', width: 110, fontWeight: 600 }}>Tanggal</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'left', width: 130, fontWeight: 600 }}>Kategori</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'left', fontWeight: 600 }}>Keterangan / Deskripsi</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'right', width: 135, fontWeight: 600, whiteSpace: 'nowrap' }}>Kas Masuk / Inflow (Rp)</th>
+                        <th style={{ padding: '7px 6px', textAlign: 'right', width: 135, fontWeight: 600, whiteSpace: 'nowrap' }}>Kas Keluar / Outflow (Rp)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredExpenses.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ textAlign: 'center', padding: 20, color: '#4B5563', fontStyle: 'italic', borderBottom: '1px solid #E5E7EB' }}>
+                            Tidak ada transaksi kas pada filter periode ini.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredExpenses.map((ex, idx) => (
+                          <tr key={ex.id || idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                            <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
+                            <td style={{ padding: '6px 6px', color: '#000000', whiteSpace: 'nowrap' }}>{formatDateIndo(ex.date)}</td>
+                            <td style={{ padding: '6px 6px', fontWeight: 500, color: '#000000' }}>{ex.category || '-'}</td>
+                            <td style={{ padding: '6px 6px', color: '#374151', fontSize: 9.5 }}>{ex.description || '-'}</td>
+                            <td style={{ padding: '6px 6px', textAlign: 'right', color: '#000000', fontWeight: ex.type === 'income' ? 600 : 400, whiteSpace: 'nowrap' }}>
+                              {ex.type === 'income' ? `+${formatRp(ex.amount)}` : '-'}
+                            </td>
+                            <td style={{ padding: '6px 6px', textAlign: 'right', color: '#000000', fontWeight: (!ex.type || ex.type === 'expense') ? 600 : 400, whiteSpace: 'nowrap' }}>
+                              {(!ex.type || ex.type === 'expense') ? `(${formatRp(ex.amount)})` : '-'}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ borderTop: '1.5px solid #000000', borderBottom: '3px double #000000', fontWeight: 600 }}>
+                        <td colSpan={4} style={{ padding: '7px 6px', textAlign: 'right', textTransform: 'uppercase', fontSize: 10, color: '#000000', whiteSpace: 'nowrap' }}>
+                          Total Rekapitulasi Kas:
+                        </td>
+                        <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 10.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          +{formatRp(totalIncome)}
+                        </td>
+                        <td style={{ padding: '7px 6px', textAlign: 'right', fontSize: 10.5, color: '#000000', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          ({formatRp(totalExpense)})
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                {/* Kolom Tanda Tangan & Pengesahan Dokumen (Halaman 1) */}
+                <KulinerPrintFooter user={user} showSignatures={true} />
+
+                {/* 4. HALAMAN 2: LAMPIRAN TATA KELOLA KAS OPERASIONAL RESTORAN */}
+                <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: 16 }}>
+                  <KulinerPrintAppendixHeader 
+                    title="Lampiran: Penjelasan & Tata Kelola Kas Operasional Restoran"
+                    subtitle={`Keterangan Kebijakan Kas Kecil (Petty Cash) & Pengeluaran Dapur — ${user?.tenant_name || 'Restoran & Kafe'}`}
+                    user={user}
+                  />
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 16 }}>
+                    <KulinerPrintExplanationBox
+                      number="1"
+                      title="Kas Masuk Operasional (Inflow)"
+                      desc="Seluruh aliran dana yang masuk ke laci kasir atau rekening operasional di luar transaksi penjualan POS harian, seperti setoran modal tambahan pemilik atau pengembalian belanja pasar."
+                      variant="default"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="2"
+                      title="Belanja Harian Pasar & Bahan Segar (Fresh Ingredients)"
+                      desc="Pengeluaran kas kecil (petty cash) langsung untuk pembelian sayur, bumbu segar, es batu, atau bahan baku mendadak yang dibeli secara tunai setiap pagi."
+                      variant="emerald"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="3"
+                      title="Beban Utilitas Dapur & Restoran (Kitchen Utilities)"
+                      desc="Biaya pemakaian gas LPG restoran, token listrik dapur, tagihan air PDAM, serta iuran kebersihan dan pembuangan limbah sisa makanan."
+                      variant="indigo"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="4"
+                      title="Beban Operasional & Servis (Operational & Front-of-House)"
+                      desc="Biaya kemasan takeaway, sedotan, tisu makan, sabun cuci piring, perawatan kompor/blender, serta insentif operasional kru restoran."
+                      variant="rose"
+                    />
+
+                    <KulinerPrintExplanationBox
+                      number="5"
+                      title="Rekonsiliasi Kas Akhir Shift (Cash Drawer Reconciliation)"
+                      desc="Setiap pergantian shift kasir, sisa fisik uang tunai di laci wajib dihitung dan dicocokkan dengan saldo mutasi kas bersih pada sistem."
+                      formula="Rumus: Fisik Kas = Kas Awal Modal + Total Kas Masuk - Total Kas Keluar"
+                      variant="dark"
+                    />
                   </div>
                 </div>
+
               </div>
             </div>
           </>

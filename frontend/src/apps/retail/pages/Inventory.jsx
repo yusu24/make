@@ -153,10 +153,10 @@ export default function Inventory() {
           </thead>
           <tbody>
             {loading ? (
-              <RetailTableLoadingRow colSpan={5} text="Memuat data stok..." />
+              <RetailTableLoadingRow colSpan={6} text="Memuat data stok..." />
             ) : filteredProducts.length === 0 ? (
               <tr>
-                 <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
+                 <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
                     Belum ada data persediaan barang.
                  </td>
               </tr>

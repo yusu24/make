@@ -9,6 +9,10 @@ class OrderStatusService
 {
     private const TERMINAL = ['completed', 'cancelled'];
 
+    public function __construct(private ?RecipeService $recipeService = null)
+    {
+    }
+
     /**
      * Change an order's status and record it in the audit log
      * (kuliner_order_status_logs). Permissive by design — it does not enforce a
@@ -35,6 +39,15 @@ class OrderStatusService
             'note' => $note,
             'created_at' => now(),
         ]);
+
+        // When order is completed, automatically deduct BOM ingredients stock
+        if ($toStatus === 'completed' && $this->recipeService) {
+            try {
+                $this->recipeService->consumeForOrder($order);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
         return $order->fresh();
     }

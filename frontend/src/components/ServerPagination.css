@@ -2,42 +2,49 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 14px 20px;
-  border-top: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  flex-wrap: nowrap !important;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid #E2E8F0;
+  background: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
 }
 .sp-info {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: #64748B;
   font-weight: 500;
+  white-space: nowrap !important;
+  flex-shrink: 0;
 }
 .sp-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: nowrap !important;
 }
 .sp-select {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  padding: 7px 10px;
-  font-size: 12.5px;
+  background: var(--bg-elevated, #F8FAFC);
+  border: 1px solid var(--border-default, #CBD5E1);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-primary, #334155);
+  padding: 6px 8px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   outline: none;
+  height: 32px;
 }
 .sp-btn {
-  min-width: 32px;
-  height: 32px;
-  padding: 0 8px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  font-size: 12.5px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-default, #CBD5E1);
+  background: var(--bg-elevated, #F8FAFC);
+  color: var(--text-secondary, #64748B);
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -45,12 +52,41 @@
   justify-content: center;
   transition: all 0.15s;
 }
-.sp-btn:hover:not(:disabled) { border-color: var(--primary-500); color: var(--primary-500); }
-.sp-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.sp-btn.active { background: var(--primary-500); border-color: var(--primary-500); color: #fff; }
+.sp-btn:hover:not(:disabled) { border-color: #b45309; color: #b45309; }
+.sp-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.sp-btn.active { background: #b45309; border-color: #b45309; color: #fff; }
 
 .sp-container.sp-compact {
   flex-direction: column;
   justify-content: center;
   padding: 16px 12px;
+}
+
+@media (max-width: 640px) {
+  .sp-container {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+  }
+  .sp-info {
+    font-size: 10.5px !important;
+    white-space: nowrap !important;
+  }
+  .sp-controls {
+    gap: 3px !important;
+    flex-wrap: nowrap !important;
+  }
+  .sp-select {
+    padding: 2px 4px !important;
+    font-size: 10.5px !important;
+    height: 26px !important;
+    border-radius: 6px !important;
+  }
+  .sp-btn {
+    min-width: 25px !important;
+    height: 25px !important;
+    padding: 0 3px !important;
+    font-size: 10px !important;
+    border-radius: 6px !important;
+  }
 }

@@ -157,12 +157,12 @@ export default function Customers() {
         <div className="retail-table-responsive"><table className="table">
           <thead>
             <tr>
-              <th className="pl-6 retail-table-header">Informasi Profil</th>
-              <th className="retail-table-header">ID Pelanggan</th>
-              <th className="retail-table-header">No. Telepon</th>
-              <th className="retail-table-header">Email</th>
-              <th className="retail-table-header">Alamat Terdaftar</th>
-              <th className="pr-6 text-right retail-table-header">Aksi</th>
+              <th className="pl-6 retail-table-header whitespace-nowrap" style={{ minWidth: 140 }}>ID Pelanggan</th>
+              <th className="retail-table-header whitespace-nowrap">Nama Pelanggan</th>
+              <th className="retail-table-header whitespace-nowrap">No. Telepon</th>
+              <th className="retail-table-header whitespace-nowrap">Email</th>
+              <th className="retail-table-header whitespace-nowrap">Alamat Terdaftar</th>
+              <th className="pr-6 text-right retail-table-header whitespace-nowrap" style={{ width: 100 }}>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -178,10 +178,10 @@ export default function Customers() {
               paginatedData.map(c => (
                 <tr key={c.id}>
                   <td className="pl-6">
-                     <p className="retail-text-primary">{c.name}</p>
+                     <span className="retail-text-primary">#{c.id.toString().padStart(4, '0')}</span>
                   </td>
                   <td>
-                     <code className="retail-text-primary uppercase tracking-wider">#{c.id.toString().padStart(4, '0')}</code>
+                     <span className="retail-text-primary font-medium">{c.name}</span>
                   </td>
                   <td>
                      <span className="retail-text-primary">{c.contact || '-'}</span>
@@ -194,8 +194,8 @@ export default function Customers() {
                   </td>
                   <td className="pr-6 text-right">
                      <div className="flex justify-end gap-2">
-                        <button className="btn btn-sm btn-ghost" onClick={() => openEdit(c)}><Edit3 size={14} /></button>
-                        <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(c.id)}><Trash2 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => openEdit(c)} title="Edit Data"><Edit3 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(c.id)} title="Hapus Data"><Trash2 size={14} /></button>
                      </div>
                   </td>
                 </tr>

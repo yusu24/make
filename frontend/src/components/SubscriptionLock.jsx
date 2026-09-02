@@ -23,6 +23,24 @@ const SubscriptionLock = ({ status, daysLeft }) => {
   if (!effectiveStatus || effectiveStatus === 'active') return null;
   if (user?.role === 'super_admin' || user?.role === 'admin') return null;
 
+  const getSubscriptionPath = () => {
+    if (user?.business_category === 'Budidaya Hewan' || user?.business_category === 'Budidaya Tanaman' || location.pathname.startsWith('/budidaya')) {
+      return '/budidaya/subscription';
+    }
+    if (user?.business_category === 'Kuliner' || location.pathname.startsWith('/kuliner')) {
+      return '/kuliner/subscription';
+    }
+    if (user?.business_category === 'Seller' || location.pathname.startsWith('/seller')) {
+      return '/seller/subscription';
+    }
+    if (user?.business_category === 'Jasa' || location.pathname.startsWith('/jasa')) {
+      return '/jasa/subscription';
+    }
+    return '/retail/subscription';
+  };
+
+  const subPath = getSubscriptionPath();
+
   if (status === 'warning') {
     return (
       <div className="subscription-warning">
@@ -32,7 +50,7 @@ const SubscriptionLock = ({ status, daysLeft }) => {
             Masa percobaan tester Anda akan habis dalam <strong>{daysLeft} hari</strong>. 
             Segera upgrade paket untuk tetap bisa menggunakan layanan.
           </p>
-          <button onClick={() => navigate('/retail/subscription')} className="btn btn-sm btn-primary">
+          <button onClick={() => navigate(subPath)} className="btn btn-sm btn-primary">
             Upgrade Sekarang
           </button>
         </div>
@@ -42,7 +60,7 @@ const SubscriptionLock = ({ status, daysLeft }) => {
 
   // If locked, we MUST hide the overlay IF the user is currently looking at the subscription page, 
   // otherwise they can never actually upgrade.
-  if (effectiveStatus === 'locked' && location.pathname !== '/retail/subscription') {
+  if (effectiveStatus === 'locked' && location.pathname !== subPath) {
     return (
       <div className="subscription-lock-overlay">
         <div className="subscription-lock-card animate-fade-in">
@@ -55,7 +73,7 @@ const SubscriptionLock = ({ status, daysLeft }) => {
             Silakan pilih paket langganan di bawah ini untuk mengaktifkan kembali akun Anda.
           </p>
           <div className="subscription-lock-card__options">
-            <div className="lock-option" onClick={() => navigate('/retail/subscription')}>
+            <div className="lock-option" onClick={() => navigate(subPath)}>
               <div className="lock-option__main">
                 <Rocket size={24} />
                 <div>

@@ -12,28 +12,59 @@ class TenantController extends Controller
 {
     public function index(Request $request)
     {
+        // Cleanup expired demo tenants older than 24 hours (1 day TTL)
+        Tenant::where(function($q) {
+            $q->where('tenant_id', 'like', '%demo%')
+              ->orWhere('tenant_id', 'like', '%sandbox%');
+        })->where('created_at', '<', now()->subHours(24))->each(function($t) {
+            \App\Models\User::where('tenant_id', $t->tenant_id)->delete();
+            $t->delete();
+        });
+
         $query = Tenant::with('user', 'businessCategory')->latest();
 
         if ($request->search) {
             $q = $request->search;
-            $query->whereHas('user', fn ($q2) => $q2->where('name', 'like', "%$q%")->orWhere('email', 'like', "%$q%"));
+            $query->where(function($sub) use ($q) {
+                $sub->where('tenant_id', 'like', "%$q%")
+                    ->orWhere('business_name', 'like', "%$q%")
+                    ->orWhereHas('user', fn ($q2) => $q2->where('name', 'like', "%$q%")->orWhere('email', 'like', "%$q%"));
+            });
         }
 
-        if ($request->status) $query->where('status', $request->status);
-        if ($request->plan)   $query->where('subscription_plan', $request->plan);
+        if ($request->status) {
+            if ($request->status === 'demo') {
+                $query->where(function($q) {
+                    $q->where('tenant_id', 'like', '%demo%')
+                      ->orWhere('tenant_id', 'like', '%sandbox%');
+                });
+            } else {
+                $query->where('status', $request->status);
+            }
+        }
 
-        $tenants = $query->paginate($request->per_page ?? 20);
+        if ($request->plan) $query->where('subscription_plan', $request->plan);
 
-        $data = collect($tenants->items())->map(fn ($t) => [
-            'id'          => $t->id,
-            'tenant_id'   => $t->tenant_id,
-            'name'        => $t->user?->name,
-            'email'       => $t->user?->email,
-            'category'    => $t->businessCategory?->name,
-            'plan'        => $t->subscription_plan,
-            'status'      => $t->status,
-            'joined'      => $t->created_at->format('Y-m-d'),
-        ]);
+        $tenants = $query->paginate($request->per_page ?? 50);
+
+        $data = collect($tenants->items())->map(function ($t) {
+            $isDemo = str_contains(strtolower($t->tenant_id ?? ''), 'demo') || 
+                      str_contains(strtolower($t->user?->email ?? ''), 'demo') || 
+                      str_contains(strtolower($t->tenant_id ?? ''), 'sandbox');
+
+            return [
+                'id'          => $t->id,
+                'tenant_id'   => $t->tenant_id,
+                'name'        => $t->business_name ?: ($t->user?->name ?? $t->tenant_id),
+                'email'       => $t->user?->email,
+                'category'    => $t->businessCategory?->name ?? 'Toko Retail',
+                'plan'        => $t->subscription_plan,
+                'status'      => $t->status,
+                'is_demo'     => $isDemo,
+                'joined'      => $t->created_at->format('Y-m-d'),
+                'created_at'  => $t->created_at->toISOString(),
+            ];
+        });
 
         return response()->json(['success' => true, 'data' => $data, 'meta' => [
             'total'        => $tenants->total(),
@@ -42,49 +73,125 @@ class TenantController extends Controller
         ]]);
     }
 
-    public function show(Tenant $tenant)
+    public function show(string $id)
     {
-        $tenant->load('user', 'businessCategory');
-        return response()->json(['success' => true, 'data' => $tenant]);
+        $tenant = Tenant::where('tenant_id', $id)->orWhere('id', $id)->with(['user', 'businessCategory', 'modules'])->firstOrFail();
+        
+        $isDemo = str_contains(strtolower($tenant->tenant_id ?? ''), 'demo') || 
+                  str_contains(strtolower($tenant->user?->email ?? ''), 'demo') || 
+                  str_contains(strtolower($tenant->tenant_id ?? ''), 'sandbox');
+
+        // Total products across catalog tables
+        $productsCount = \App\Models\RetailProduct::where('tenant_id', $tenant->tenant_id)->count()
+            + \App\Models\KulinerProduct::where('tenant_id', $tenant->tenant_id)->count()
+            + \App\Models\SellerProduct::where('tenant_id', $tenant->tenant_id)->count();
+
+        // Total transactions
+        $transactionsCount = \App\Models\RetailTransaction::where('tenant_id', $tenant->tenant_id)->count()
+            + \App\Models\KulinerOrder::where('tenant_id', $tenant->tenant_id)->count()
+            + \App\Models\SellerOrder::where('tenant_id', $tenant->tenant_id)->count();
+
+        // Invoices
+        $invoices = \App\Models\SaaSInvoice::where('tenant_id', $tenant->tenant_id)->latest()->take(5)->get();
+
+        // Subscription plan info
+        $planConfig = \App\Models\SubscriptionPlan::where('business_category_id', $tenant->business_category_id)
+            ->where('plan_key', $tenant->subscription_plan)
+            ->first();
+
+        $stats = [
+            'total_users'        => \App\Models\User::where('tenant_id', $tenant->tenant_id)->count(),
+            'total_products'     => $productsCount,
+            'total_transactions' => $transactionsCount,
+            'total_invoices'     => \App\Models\SaaSInvoice::where('tenant_id', $tenant->tenant_id)->count(),
+            'active_modules'     => $tenant->modules()->where('is_active', true)->pluck('name')->toArray(),
+            'is_demo'            => $isDemo,
+            'plan_price'         => $planConfig?->price ?? 0,
+            'max_staff'          => $planConfig?->max_staff ?? 'Unlimited',
+            'max_products'       => $planConfig?->max_products ?? 'Unlimited',
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data'    => array_merge($tenant->toArray(), [
+                'name'         => $tenant->business_name ?: ($tenant->user?->name ?? $tenant->tenant_id),
+                'email'        => $tenant->user?->email,
+                'category'     => $tenant->businessCategory?->name ?? 'Toko Retail',
+                'joined'       => $tenant->created_at->format('d M Y'),
+                'expires_at'   => $tenant->subscription_expires_at ? $tenant->subscription_expires_at->format('d M Y') : 'Aktif Selamanya',
+                'stats'        => $stats,
+                'invoices'     => $invoices,
+                'is_demo'      => $isDemo,
+            ]),
+        ]);
     }
 
     public function store(Request $request)
     {
         // Find business category ID based on name
-        $category = \App\Models\BusinessCategory::where('name', $request->category)->first();
+        $category = \App\Models\BusinessCategory::where('name', $request->category)->orWhere('slug', $request->category)->first();
         
         $user = \App\Models\User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt('password123'),
-            'role' => 'admin', // Tenant owner is an admin of their own store
-            'tenant_id' => $request->tenant_id,
+            'name'                 => $request->name,
+            'email'                => $request->email,
+            'password'             => bcrypt('password123'),
+            'role'                 => 'customer',
+            'tenant_id'            => $request->tenant_id,
             'business_category_id' => $category ? $category->id : null,
         ]);
 
         $tenant = Tenant::create([
-            'user_id' => $user->id,
-            'tenant_id' => $request->tenant_id,
+            'user_id'              => $user->id,
+            'tenant_id'            => $request->tenant_id,
+            'business_name'        => $request->name,
             'business_category_id' => $category ? $category->id : null,
-            'subscription_plan' => $request->plan ?? 'free',
-            'status' => 'active',
+            'subscription_plan'    => $request->plan ?? 'free',
+            'status'               => 'active',
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Tenant berhasil dibuat']);
+        return response()->json(['success' => true, 'message' => 'Tenant berhasil dibuat', 'data' => $tenant]);
     }
 
-    public function update(Request $request, Tenant $tenant)
+    public function update(Request $request, string $id)
     {
-        $tenant->update($request->only('status', 'subscription_plan', 'business_name'));
+        $tenant = Tenant::where('tenant_id', $id)->orWhere('id', $id)->firstOrFail();
+        
+        if ($request->filled('business_name') || $request->filled('name')) {
+            $tenant->business_name = $request->business_name ?? $request->name;
+        }
+        if ($request->filled('subscription_plan')) {
+            $tenant->subscription_plan = strtolower($request->subscription_plan);
+        }
+        if ($request->filled('status')) {
+            $tenant->status = $request->status;
+        }
+        if ($request->filled('category')) {
+            $cat = \App\Models\BusinessCategory::where('name', $request->category)->orWhere('slug', $request->category)->first();
+            if ($cat) $tenant->business_category_id = $cat->id;
+        }
+        $tenant->save();
+
+        if ($tenant->user && ($request->filled('name') || $request->filled('email'))) {
+            $user = $tenant->user;
+            if ($request->filled('name'))  $user->name = $request->name;
+            if ($request->filled('email')) $user->email = $request->email;
+            $user->save();
+        }
+
         ActivityLog::record('edit_tenant', 'Tenant: ' . $tenant->tenant_id, 'info');
-        return response()->json(['success' => true, 'message' => 'Tenant diperbarui']);
+        return response()->json(['success' => true, 'message' => 'Tenant berhasil diperbarui', 'data' => $tenant]);
     }
 
-    public function destroy(Tenant $tenant)
+    public function destroy(string $id)
     {
+        $tenant = Tenant::where('tenant_id', $id)->orWhere('id', $id)->firstOrFail();
         ActivityLog::record('delete_tenant', 'Tenant: ' . $tenant->tenant_id, 'danger');
+        
+        // Delete associated users and tenant
+        \App\Models\User::where('tenant_id', $tenant->tenant_id)->delete();
         $tenant->delete();
-        return response()->json(['success' => true, 'message' => 'Tenant dihapus']);
+        
+        return response()->json(['success' => true, 'message' => 'Tenant berhasil dihapus dari sistem']);
     }
 
     public function getModules(string $tenant_id)

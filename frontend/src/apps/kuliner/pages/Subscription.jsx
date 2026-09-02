@@ -341,24 +341,37 @@ export default function Subscription() {
             <h3 style={{ fontSize: 18, fontWeight: 800, color: '#EA580C', marginBottom: 16 }}>Daftar Paket Upgrade</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20 }}>
               {PLANS.map((plan) => {
-                const isCurrent = currentPlan === plan.id;
+                const PLAN_TIER = { free: 0, basic: 1, pro: 2, enterprise: 3 };
+                const curTier = PLAN_TIER[currentPlan?.toLowerCase()] ?? 0;
+                const targetTier = PLAN_TIER[plan.id?.toLowerCase()] ?? 0;
+                const isCurrent = currentPlan?.toLowerCase() === plan.id?.toLowerCase();
+                const isDowngrade = targetTier < curTier || (plan.id === 'free' && currentPlan !== 'free');
                 const isPromo = plan.id !== 'free' && categoryPromo && categoryPromo.discount_pct > 0;
                 
                 return (
-                  <div key={plan.id} className="plan-card" style={isCurrent ? { borderColor: plan.color, borderWidth: 2 } : {}}>
+                  <div key={plan.id} className="plan-card" style={isCurrent ? { borderColor: plan.color, borderWidth: 2 } : (isDowngrade ? { opacity: 0.6 } : {})}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                       <span style={{ fontSize: 15, fontWeight: 800, color: '#EA580C' }}>{plan.name}</span>
-                      {isCurrent && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: plan.color, padding: '3px 8px', borderRadius: 20 }}>AKTIF</span>}
+                      {isCurrent && (
+                        <span style={{ background: '#FEF3C7', color: '#D97706', fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>
+                          AKTIF
+                        </span>
+                      )}
+                      {isPromo && !isCurrent && (
+                        <span style={{ background: '#fee2e2', color: '#ef4444', fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>
+                          PROMO {categoryPromo.discount_pct}%
+                        </span>
+                      )}
                     </div>
 
                     <div style={{ marginBottom: 20 }}>
                       {isPromo ? (
                         <>
-                          <div style={{ fontSize: 11, color: '#EF4444', textDecoration: 'line-through', marginBottom: 2 }}>
-                            {getPlanPriceInfo(plan.id).original}
+                          <div style={{ fontSize: 12, textDecoration: 'line-through', color: '#94a3b8', marginBottom: 2 }}>
+                            {plan.price}
                           </div>
                           <div style={{ fontSize: 20, fontWeight: 900, color: '#EA580C' }}>
-                            {plan.price}
+                            {formatRupiah(getPlanPriceInfo(plan.id, apiPlans?.find(p => p.plan_key === plan.id)?.price).numeric)}
                           </div>
                         </>
                       ) : (
@@ -379,11 +392,21 @@ export default function Subscription() {
 
                     <button
                       className="btn-upgrade"
-                      disabled={isCurrent || plan.id === 'free' || pendingReq?.plan === plan.id}
+                      disabled={isCurrent || isDowngrade || pendingReq?.plan === plan.id}
                       onClick={() => handleOrderUpgrade(plan.id)}
-                      style={plan.id === 'pro' ? { background: '#EA580C' } : {}}
+                      style={
+                        isCurrent 
+                          ? { background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed' }
+                          : isDowngrade
+                            ? { background: '#f8fafc', color: '#94a3b8', cursor: 'not-allowed', border: '1px solid #e2e8f0' }
+                            : (plan.id === 'pro' ? { background: '#EA580C' } : {})
+                      }
                     >
-                      {isCurrent ? 'Paket Aktif Saat Ini' : (pendingReq?.plan === plan.id ? 'Menunggu Aktivasi' : 'Pilih Paket')}
+                      {isCurrent 
+                        ? 'Paket Aktif Saat Ini' 
+                        : (pendingReq?.plan === plan.id 
+                            ? 'Menunggu Aktivasi' 
+                            : (isDowngrade ? 'Downgrade Tidak Tersedia' : 'Pilih & Upgrade Paket'))}
                     </button>
                   </div>
                 );

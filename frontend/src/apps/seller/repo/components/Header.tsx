@@ -222,21 +222,31 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative shrink-0" ref={profileRef}>
           <button
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-            className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800 cursor-pointer group"
+            className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-left"
             title="Profil Pengguna"
           >
-            <div className="hidden xl:flex flex-col text-right">
-              <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors leading-tight max-w-[120px] truncate">
-                {user?.name || 'Pengguna'}
-              </span>
-              <div className="flex items-center justify-end gap-1">
-                <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/80 px-1.5 py-0.2 rounded border border-indigo-200/60 dark:border-indigo-800 capitalize">
-                  {user?.subscription_plan || 'Free'}
+            <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-indigo-500/25 shrink-0 relative">
+              {(user?.tenant_name || user?.business_name || user?.name || 'SL')
+                .split(' ')
+                .filter(Boolean)
+                .map((n: string) => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase() || 'SL'}
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
+            </div>
+            <div className="hidden sm:flex flex-col leading-tight">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 truncate max-w-[130px]">
+                  {user?.tenant_name || user?.business_name || user?.name || 'Demo Store'}
+                </span>
+                <span className="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider bg-slate-600 text-white leading-none inline-flex items-center shadow-xs">
+                  {user?.subscription_plan === 'pro' ? 'PRO' : user?.subscription_plan === 'basic' ? 'BASIC' : 'FREE'}
                 </span>
               </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-600 text-white font-extrabold text-xs flex items-center justify-center shadow-md shadow-indigo-500/20 ring-2 ring-indigo-500/30 group-hover:scale-105 transition-transform shrink-0">
-              {initials}
+              <span className="text-[10.5px] font-semibold text-slate-400 dark:text-slate-400 mt-0.5">
+                {user?.business_category || 'Seller Omni-Channel'}
+              </span>
             </div>
           </button>
 

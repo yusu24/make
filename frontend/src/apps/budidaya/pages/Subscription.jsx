@@ -247,18 +247,18 @@ export default function Subscription() {
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
               <div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#2D6A4F', background: '#E8F5ED', padding: '6px 14px', borderRadius: 20 }}>Paket Langganan</span>
-                <h1 style={{ fontSize: 32, fontWeight: 900, color: '#1B4332', margin: '8px 0 0 0', letterSpacing: '-0.02em', textTransform: 'capitalize' }}>{currentPlan}</h1>
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: '#2D6A4F', background: '#E8F5ED', padding: '4px 12px', borderRadius: 20 }}>Paket Langganan</span>
+                <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1B4332', margin: '6px 0 0 0', letterSpacing: '-0.01em', textTransform: 'capitalize' }}>{currentPlan}</h1>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>Status Layanan</div>
+                <div style={{ color: '#64748b', fontSize: 12, fontWeight: 500 }}>Status Layanan</div>
                 {pendingReq ? (
-                  <div style={{ color: '#D97706', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6, fontSize: 14 }}>
+                  <div style={{ color: '#D97706', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
                     <span className="animate-pulse">⏳</span> Verifikasi Upgrade
                   </div>
                 ) : (
-                  <div style={{ color: '#10B981', fontWeight: 800, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 16 }}>✓</span> Akun Aktif
+                  <div style={{ color: '#10B981', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 14 }}>✓</span> Akun Aktif
                   </div>
                 )}
               </div>
@@ -341,12 +341,12 @@ export default function Subscription() {
                           <div style={{ fontSize: 11, color: '#EF4444', textDecoration: 'line-through', marginBottom: 2 }}>
                             {getPlanPriceInfo(plan.id).original}
                           </div>
-                          <div style={{ fontSize: 20, fontWeight: 900, color: '#2D6A4F' }}>
+                          <div style={{ fontSize: 18, fontWeight: 700, color: '#2D6A4F' }}>
                             {plan.price}
                           </div>
                         </>
                       ) : (
-                        <div style={{ fontSize: 20, fontWeight: 900, color: '#1B4332' }}>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: '#1B4332' }}>
                           {plan.price}
                         </div>
                       )}
@@ -355,7 +355,7 @@ export default function Subscription() {
                     <ul style={{ padding: 0, margin: '0 0 24px 0', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10, fontSize: 12.5, color: '#475569' }}>
                       {plan.features.map((f, i) => (
                         <li key={i} style={{ display: 'flex', gap: 8 }}>
-                          <span style={{ color: '#2D6A4F', fontWeight: 800 }}>✓</span>
+                          <span style={{ color: '#2D6A4F', fontWeight: 600 }}>✓</span>
                           <span>{f}</span>
                         </li>
                       ))}
@@ -380,18 +380,18 @@ export default function Subscription() {
         {/* Right Side: Billing Transfer info */}
         <div>
           <div style={{ background: '#fff', border: '1px solid #E9F0EC', borderRadius: 20, padding: 28, boxShadow: '0 4px 12px rgba(27, 67, 50, 0.02)' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: 16, fontWeight: 800, color: '#1B4332' }}>Informasi Pembayaran</h3>
-            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.5, marginBottom: 24 }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: 15, fontWeight: 700, color: '#1B4332' }}>Informasi Pembayaran</h3>
+            <p style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.5, marginBottom: 24 }}>
               Pembayaran menggunakan transfer bank manual. Rekening pembayaran resmi platform AquaGrow:
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ background: '#F8FAFC', padding: '16px 20px', borderRadius: 16, border: '1px solid #E2E8F0', position: 'relative' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>Bank Transfer</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#1B4332' }}>{globalSettings?.bank_name || 'BANK BCA'}</div>
+                <div style={{ fontSize: 11.5, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Bank Transfer</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#1B4332' }}>{globalSettings?.bank_name || 'BANK BCA'}</div>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-                  <div style={{ fontSize: 18, fontWeight: 900, color: '#1B4332', letterSpacing: '0.03em' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: '#1B4332', letterSpacing: '0.02em' }}>
                     {globalSettings?.bank_account_no || '8837 001 992'}
                   </div>
                   <button 
@@ -399,7 +399,7 @@ export default function Subscription() {
                       navigator.clipboard.writeText(globalSettings?.bank_account_no || '8837 001 992');
                       alert('Nomor Rekening Disalin!');
                     }}
-                    style={{ background: '#fff', border: '1px solid #E2E8F0', padding: '4px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#1B4332', cursor: 'pointer' }}
+                    style={{ background: '#fff', border: '1px solid #E2E8F0', padding: '4px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, color: '#1B4332', cursor: 'pointer' }}
                   >
                     Salin
                   </button>
@@ -430,14 +430,14 @@ export default function Subscription() {
           <div className="animate-scale-in" style={{ background: '#fff', borderRadius: 24, padding: 32, width: '100%', maxWidth: 440, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1B4332', margin: 0 }}>Konfirmasi Upgrade Paket</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1B4332', margin: 0 }}>Konfirmasi Upgrade Paket</h3>
               <button onClick={() => setShowOrderModal(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#64748b' }}>×</button>
             </div>
 
             <div style={{ textAlign: 'center', padding: '16px 0 24px 0' }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>💳</div>
               <div style={{ fontSize: 13, color: '#64748b', marginBottom: 4 }}>Anda memilih paket <strong style={{ color: '#1B4332', textTransform: 'capitalize' }}>{selectedPlan}</strong></div>
-              <div style={{ fontSize: 32, fontWeight: 900, color: '#1B4332' }}>
+              <div style={{ fontSize: 24, fontWeight: 700, color: '#1B4332' }}>
                 {getPlanPriceInfo(selectedPlan).display}
               </div>
             </div>

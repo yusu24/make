@@ -4,7 +4,8 @@ import {
   Save, Upload, Trash2, Check, AlertCircle,
   ChevronRight, ChevronDown, ToggleLeft, ToggleRight, Eye, EyeOff,
   Phone, MapPin, Building2, Percent, Star, Package,
-  Receipt, Shield, Database, Download, Mail
+  Receipt, Shield, Database, Download, Mail, Calendar, Clock,
+  FileSpreadsheet, FileCode
 } from 'lucide-react';
 import { api } from '../../../lib/api';
 import RetailLoading from '../components/RetailLoading';
@@ -108,6 +109,13 @@ export default function Settings() {
   const [backupDownloading, setBackupDownloading] = useState(false);
   const [backupEmailing, setBackupEmailing] = useState(false);
   const [backupEmail, setBackupEmail] = useState('');
+  const [manualEmailFormat, setManualEmailFormat] = useState('excel');
+  const [autoBackupEnabled, setAutoBackupEnabled] = useState(false);
+  const [autoBackupFrequency, setAutoBackupFrequency] = useState('weekly');
+  const [autoBackupFormat, setAutoBackupFormat] = useState('excel');
+  const [autoBackupEmail, setAutoBackupEmail] = useState('');
+  const [lastAutoBackupAt, setLastAutoBackupAt] = useState(null);
+  const [savingAutoBackup, setSavingAutoBackup] = useState(false);
   const qrisInputRef = useRef(null);
   const iconInputRef = useRef(null);
   const kycInputRef = useRef(null);
@@ -131,9 +139,28 @@ export default function Settings() {
     }
   };
 
+  const fetchBackupConfig = async () => {
+    try {
+      const res = await api.get('/retail/settings/backup/config');
+      if (res.data?.data) {
+        setAutoBackupEnabled(Boolean(res.data.data.auto_backup_enabled));
+        setAutoBackupFrequency(res.data.data.auto_backup_frequency || 'weekly');
+        setAutoBackupFormat(res.data.data.auto_backup_format || 'excel');
+        setAutoBackupEmail(res.data.data.auto_backup_email || '');
+        setLastAutoBackupAt(res.data.data.last_auto_backup_at || null);
+        if (!backupEmail && res.data.data.auto_backup_email) {
+          setBackupEmail(res.data.data.auto_backup_email);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => { 
     fetchSettings(); 
     fetchKyc(); 
+    fetchBackupConfig();
   }, []);
 
   const showToast = (msg, type = 'success') => setToast({ msg, type });
@@ -924,59 +951,313 @@ export default function Settings() {
                   <Database size={20} color="#0284c7" />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--retail-text-primary)' }}>Backup Data Toko</h3>
-                  <p style={{ margin: 0, fontSize: 13, color: 'var(--retail-text-secondary)' }}>Unduh atau kirimkan salinan data produk, transaksi, dan inventaris</p>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--retail-text-primary)' }}>Backup & Keamanan Data Toko</h3>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--retail-text-secondary)' }}>Atur jadwal backup otomatis ke email atau unduh data toko dalam format Excel / JSON</p>
                 </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                {/* Download Backup */}
-                <div style={{ padding: 20, border: '1px solid var(--retail-border)', borderRadius: 12, background: '#f8fafc' }}>
-                  <h4 style={{ margin: '0 0 8px 0', fontSize: 14, color: 'var(--retail-text-primary)' }}>Unduh ke Perangkat</h4>
+                {/* ── 1. Jadwal Backup Otomatis ke Email ── */}
+                <div style={{ padding: 20, border: '1px solid var(--retail-border)', borderRadius: 12, background: '#ffffff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <Clock size={18} color="var(--retail-primary, #4318FF)" />
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--retail-text-primary)' }}>Jadwal Backup Otomatis ke Email</h4>
+                  </div>
                   <p style={{ margin: '0 0 16px 0', fontSize: 13, color: 'var(--retail-text-secondary)' }}>
-                    Data toko akan diunduh ke komputer/HP Anda dalam format JSON. Anda bisa menyimpannya sebagai arsip.
+                    Sistem server Bizora akan secara otomatis mengekstrak seluruh data produk, stok, dan transaksi toko Anda lalu mengirimkannya ke email pemilik.
                   </p>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    disabled={backupDownloading}
-                    onClick={async () => {
-                      setBackupDownloading(true);
-                      try {
-                        const res = await api.get('/retail/settings/backup', { responseType: 'blob' });
-                        const url = window.URL.createObjectURL(new Blob([res.data]));
-                        const link = document.createElement('a');
-                        link.href = url;
-                        // Attempt to extract filename from header or use default
-                        let filename = 'backup.json';
-                        const disposition = res.headers['content-disposition'];
-                        if (disposition && disposition.includes('filename=')) {
-                           filename = disposition.split('filename=')[1].replace(/"/g, '');
-                        }
-                        link.setAttribute('download', filename);
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                        showToast('Backup berhasil diunduh');
-                      } catch (e) {
-                        showToast('Gagal mengunduh backup', 'error');
-                      } finally {
-                        setBackupDownloading(false);
-                      }
-                    }}
-                  >
-                    <Download size={16} style={{ marginRight: 8 }} />
-                    {backupDownloading ? 'Mengunduh...' : 'Unduh File JSON'}
-                  </button>
+
+                  <ToggleSwitch
+                    label="Aktifkan Backup Otomatis"
+                    description="Kirimkan file backup data toko secara berkala ke alamat email tanpa perlu tindakan manual."
+                    checked={autoBackupEnabled}
+                    onChange={setAutoBackupEnabled}
+                  />
+
+                  {autoBackupEnabled && (
+                    <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeIn 0.2s ease-in' }}>
+                      {/* Pilihan Format File */}
+                      <div>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--retail-text-primary)', marginBottom: 8 }}>
+                          Format File Backup
+                        </label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                          {[
+                            {
+                              id: 'excel',
+                              label: 'Microsoft Excel (.xlsx)',
+                              desc: 'Sangat mudah dibaca di Excel, Google Sheets, atau aplikasi HP. Terbagi atas sheet Produk, Transaksi, Pelanggan, & Supplier.',
+                              icon: FileSpreadsheet,
+                              color: '#16a34a',
+                              bg: 'rgba(22, 163, 74, 0.08)'
+                            },
+                            {
+                              id: 'json',
+                              label: 'JSON Data (.json)',
+                              desc: 'Format data terstruktur untuk arsip teknis sistem dan kebutuhan restore database.',
+                              icon: FileCode,
+                              color: '#0284c7',
+                              bg: 'rgba(2, 132, 199, 0.08)'
+                            },
+                          ].map(fmt => {
+                            const isSelected = autoBackupFormat === fmt.id;
+                            const IconComponent = fmt.icon;
+                            return (
+                              <div
+                                key={fmt.id}
+                                onClick={() => setAutoBackupFormat(fmt.id)}
+                                style={{
+                                  padding: '14px',
+                                  borderRadius: 10,
+                                  border: isSelected ? `2px solid ${fmt.color}` : '1px solid var(--retail-border, #e2e8f0)',
+                                  background: isSelected ? fmt.bg : '#f8fafc',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s ease'
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <IconComponent size={18} color={fmt.color} />
+                                    <span style={{ fontSize: 13, fontWeight: 700, color: isSelected ? fmt.color : 'var(--retail-text-primary)' }}>
+                                      {fmt.label}
+                                    </span>
+                                  </div>
+                                  {isSelected && <Check size={16} color={fmt.color} />}
+                                </div>
+                                <p style={{ margin: 0, fontSize: 12, color: 'var(--retail-text-secondary)', lineHeight: 1.4 }}>
+                                  {fmt.desc}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Email Tujuan */}
+                      <div>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--retail-text-primary)', marginBottom: 6 }}>
+                          Alamat Email Penerima Backup
+                        </label>
+                        <div style={{ position: 'relative', maxWidth: 450 }}>
+                          <Mail size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--retail-text-secondary)' }} />
+                          <input
+                            type="email"
+                            className="form-input"
+                            placeholder="nama@email.com"
+                            value={autoBackupEmail}
+                            onChange={e => setAutoBackupEmail(e.target.value)}
+                            style={{ paddingLeft: 38 }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pilihan Frekuensi */}
+                      <div>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--retail-text-primary)', marginBottom: 8 }}>
+                          Frekuensi Pengiriman
+                        </label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                          {[
+                            { id: 'daily', label: 'Harian (Daily)', desc: 'Setiap hari jam 02:00 WIB' },
+                            { id: 'weekly', label: 'Mingguan (Weekly)', desc: 'Setiap hari Minggu jam 02:00 WIB' },
+                            { id: 'monthly', label: 'Bulanan (Monthly)', desc: 'Setiap tanggal 1 jam 02:00 WIB' },
+                          ].map(opt => {
+                            const isSelected = autoBackupFrequency === opt.id;
+                            return (
+                              <div
+                                key={opt.id}
+                                onClick={() => setAutoBackupFrequency(opt.id)}
+                                style={{
+                                  padding: '12px 14px',
+                                  borderRadius: 10,
+                                  border: isSelected ? '2px solid var(--retail-primary, #4318FF)' : '1px solid var(--retail-border, #e2e8f0)',
+                                  background: isSelected ? 'var(--retail-primary-subtle, rgba(67, 24, 255, 0.05))' : '#f8fafc',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s ease'
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                                  <span style={{ fontSize: 13, fontWeight: 700, color: isSelected ? 'var(--retail-primary, #4318FF)' : 'var(--retail-text-primary)' }}>
+                                    {opt.label}
+                                  </span>
+                                  {isSelected && <Check size={14} color="var(--retail-primary, #4318FF)" />}
+                                </div>
+                                <span style={{ fontSize: 11.5, color: 'var(--retail-text-secondary)' }}>{opt.desc}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Status Terakhir */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--retail-text-secondary)', background: '#f8fafc', padding: '10px 14px', borderRadius: 8, border: '1px solid #f1f5f9' }}>
+                        <Calendar size={15} />
+                        <span>
+                          Status: {lastAutoBackupAt ? `Backup terakhir terkirim pada ${new Date(lastAutoBackupAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })} WIB` : 'Belum ada riwayat pengiriman backup otomatis.'}
+                        </span>
+                      </div>
+
+                      <div>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          disabled={savingAutoBackup}
+                          onClick={async () => {
+                            setSavingAutoBackup(true);
+                            try {
+                              const res = await api.post('/retail/settings/backup/config', {
+                                auto_backup_enabled: autoBackupEnabled,
+                                auto_backup_frequency: autoBackupFrequency,
+                                auto_backup_format: autoBackupFormat,
+                                auto_backup_email: autoBackupEmail,
+                              });
+                              showToast(res.data.message || 'Pengaturan backup otomatis berhasil disimpan');
+                            } catch (e) {
+                              showToast(e.response?.data?.message || 'Gagal menyimpan pengaturan backup', 'error');
+                            } finally {
+                              setSavingAutoBackup(false);
+                            }
+                          }}
+                        >
+                          <Save size={15} style={{ marginRight: 6 }} />
+                          {savingAutoBackup ? 'Menyimpan...' : 'Simpan Pengaturan Jadwal'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {!autoBackupEnabled && (
+                    <div style={{ marginTop: 12 }}>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        disabled={savingAutoBackup}
+                        onClick={async () => {
+                          setSavingAutoBackup(true);
+                          try {
+                            const res = await api.post('/retail/settings/backup/config', {
+                              auto_backup_enabled: false,
+                              auto_backup_frequency: autoBackupFrequency,
+                              auto_backup_format: autoBackupFormat,
+                              auto_backup_email: autoBackupEmail,
+                            });
+                            showToast(res.data.message || 'Pengaturan backup berhasil disimpan');
+                          } catch (e) {
+                            showToast('Gagal menyimpan pengaturan backup', 'error');
+                          } finally {
+                            setSavingAutoBackup(false);
+                          }
+                        }}
+                      >
+                        <Save size={15} style={{ marginRight: 6 }} />
+                        {savingAutoBackup ? 'Menyimpan...' : 'Simpan Status'}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {/* Email Backup */}
+                {/* ── 2. Unduh Backup Manual ── */}
                 <div style={{ padding: 20, border: '1px solid var(--retail-border)', borderRadius: 12, background: '#f8fafc' }}>
-                  <h4 style={{ margin: '0 0 8px 0', fontSize: 14, color: 'var(--retail-text-primary)' }}>Kirim via Email</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <Download size={18} color="#0284c7" />
+                    <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--retail-text-primary)' }}>Unduh Manual ke Perangkat</h4>
+                  </div>
                   <p style={{ margin: '0 0 16px 0', fontSize: 13, color: 'var(--retail-text-secondary)' }}>
-                    File backup (JSON) akan dikirimkan sebagai lampiran ke alamat email yang Anda tentukan.
+                    Pilih format file dan unduh seketika ke komputer atau smartphone Anda:
                   </p>
-                  <div style={{ display: 'flex', gap: 12, maxWidth: 400 }}>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      disabled={backupDownloading}
+                      style={{ background: '#16a34a', borderColor: '#16a34a' }}
+                      onClick={async () => {
+                        setBackupDownloading(true);
+                        try {
+                          const res = await api.get('/retail/settings/backup?format=excel', { responseType: 'blob' });
+                          const url = window.URL.createObjectURL(new Blob([res.data]));
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.setAttribute('download', `backup_retail_${new Date().toISOString().slice(0,10)}.xlsx`);
+                          document.body.appendChild(link);
+                          link.click();
+                          link.remove();
+                          showToast('File Excel backup berhasil diunduh');
+                        } catch (e) {
+                          showToast('Gagal mengunduh file Excel backup', 'error');
+                        } finally {
+                          setBackupDownloading(false);
+                        }
+                      }}
+                    >
+                      <FileSpreadsheet size={16} style={{ marginRight: 8 }} />
+                      {backupDownloading ? 'Mengunduh...' : 'Unduh Excel (.xlsx)'}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      disabled={backupDownloading}
+                      onClick={async () => {
+                        setBackupDownloading(true);
+                        try {
+                          const res = await api.get('/retail/settings/backup?format=json', { responseType: 'blob' });
+                          const url = window.URL.createObjectURL(new Blob([res.data]));
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.setAttribute('download', `backup_retail_${new Date().toISOString().slice(0,10)}.json`);
+                          document.body.appendChild(link);
+                          link.click();
+                          link.remove();
+                          showToast('File JSON backup berhasil diunduh');
+                        } catch (e) {
+                          showToast('Gagal mengunduh file JSON backup', 'error');
+                        } finally {
+                          setBackupDownloading(false);
+                        }
+                      }}
+                    >
+                      <FileCode size={16} style={{ marginRight: 8 }} />
+                      {backupDownloading ? 'Mengunduh...' : 'Unduh JSON (.json)'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── 3. Kirim via Email Manual (On-Demand) ── */}
+                <div style={{ padding: 20, border: '1px solid var(--retail-border)', borderRadius: 12, background: '#f8fafc' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <Mail size={18} color="#0284c7" />
+                    <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--retail-text-primary)' }}>Kirim Manual via Email Sekarang</h4>
+                  </div>
+                  <p style={{ margin: '0 0 16px 0', fontSize: 13, color: 'var(--retail-text-secondary)' }}>
+                    Kirimkan salinan data saat ini dalam format pilihan Anda ke alamat email tujuan.
+                  </p>
+                  
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 12, alignItems: 'center' }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--retail-text-primary)' }}>Format:</span>
+                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                      <input
+                        type="radio"
+                        name="manualFormat"
+                        value="excel"
+                        checked={manualEmailFormat === 'excel'}
+                        onChange={() => setManualEmailFormat('excel')}
+                      />
+                      Excel (.xlsx)
+                    </label>
+                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', marginLeft: 10 }}>
+                      <input
+                        type="radio"
+                        name="manualFormat"
+                        value="json"
+                        checked={manualEmailFormat === 'json'}
+                        onChange={() => setManualEmailFormat('json')}
+                      />
+                      JSON (.json)
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 12, maxWidth: 460 }}>
                     <div style={{ flex: 1, position: 'relative' }}>
                       <Mail size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--retail-text-secondary)' }} />
                       <input
@@ -996,9 +1277,11 @@ export default function Settings() {
                         if (!backupEmail) return;
                         setBackupEmailing(true);
                         try {
-                          const res = await api.post('/retail/settings/backup/email', { email: backupEmail });
+                          const res = await api.post('/retail/settings/backup/email', {
+                            email: backupEmail,
+                            format: manualEmailFormat
+                          });
                           showToast(res.data.message || 'Backup berhasil dikirim ke email');
-                          setBackupEmail('');
                         } catch (e) {
                           showToast(e.response?.data?.message || 'Gagal mengirim email backup', 'error');
                         } finally {
@@ -1006,7 +1289,7 @@ export default function Settings() {
                         }
                       }}
                     >
-                      {backupEmailing ? 'Mengirim...' : 'Kirim Email'}
+                      {backupEmailing ? 'Mengirim...' : 'Kirim Sekarang'}
                     </button>
                   </div>
                 </div>

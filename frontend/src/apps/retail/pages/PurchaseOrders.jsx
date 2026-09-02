@@ -210,32 +210,32 @@ export default function PurchaseOrders() {
       </div>
 
       <div className="card animate-fade-in overflow-hidden">
-        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)', flexWrap: 'wrap' }}>
+        <div className="toolbar-no-stack" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--retail-border, #e2e8f0)', flexWrap: 'wrap' }}>
           <button title="Buat PO Baru" 
             className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 40, padding: '0 14px' }}
             onClick={() => {
               setItems([{ product_id: '', qty: 1, cost_per_item: 0 }]);
               setShowModal(true);
             }}
           >
-            <Plus size={15} className="mr-2 mobile-no-margin" />
+            <Plus size={15} className="mr-1.5 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Buat PO Baru</span>
           </button>
-          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
+          <div className="airy-search-wrapper" style={{ margin: 0 }}>
             <input 
               placeholder="Cari Supplier..." 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap' }}>
             <input 
               type="date" 
               className="form-input" 
               value={startDate} 
               onChange={e => setStartDate(e.target.value)} 
-              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+              style={{ width: 'auto', margin: 0, padding: '6px 10px' }}
             />
             <span style={{ color: 'var(--text-muted)' }}>-</span>
             <input 
@@ -243,16 +243,16 @@ export default function PurchaseOrders() {
               className="form-input" 
               value={endDate} 
               onChange={e => setEndDate(e.target.value)} 
-              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+              style={{ width: 'auto', margin: 0, padding: '6px 10px' }}
             />
           </div>
           <button 
             onClick={fetchData} 
             className="btn-reset-sync"
-            style={{ width: 42, height: 42, flexShrink: 0 }}
+            style={{ flexShrink: 0 }}
             title="Segarkan Data"
           >
-            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
 

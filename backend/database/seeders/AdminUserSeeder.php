@@ -13,14 +13,17 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Insert or update the SaaS admin account
+        $devEmail = env('DEV_EMAIL', 'needleproject240696@gmail.com');
+        $devPassword = env('DEV_PASSWORD', 'Aku240696@');
+
+        // Insert or update the SaaS super admin developer account
         User::updateOrCreate(
-            ['email' => 'admin@umkm.com'],
+            ['email' => $devEmail],
             [
-                'name' => 'SaaS Admin',
-                'password' => Hash::make('password'),
-                // Adjust fields according to your user schema
-                // e.g., 'role' => 'admin', 'is_saas_admin' => true,
+                'name' => 'Super Admin (Developer)',
+                'password' => Hash::make($devPassword),
+                'role' => 'super_admin',
+                'status' => 'active',
             ]
         );
     }

