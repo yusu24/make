@@ -855,6 +855,62 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::post('sync', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncNow']);
         Route::get('sync-logs', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncLogs']);
     });
+
+    // =========================================================================
+    // JASA (SERVICES OS) ENDPOINTS
+    // =========================================================================
+    Route::prefix('jasa')->group(function () {
+        // Settings & Stats
+        Route::get('settings', [\App\Http\Controllers\Api\JasaController::class, 'getSettings']);
+        Route::post('settings', [\App\Http\Controllers\Api\JasaController::class, 'updateSettings']);
+        Route::get('stats', [\App\Http\Controllers\Api\JasaController::class, 'getStats']);
+
+        // Work Orders (SPK)
+        Route::get('work-orders', [\App\Http\Controllers\Api\JasaController::class, 'getWorkOrders']);
+        Route::post('work-orders', [\App\Http\Controllers\Api\JasaController::class, 'storeWorkOrder']);
+        Route::patch('work-orders/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateStatus']);
+
+        // Technicians
+        Route::get('technicians', [\App\Http\Controllers\Api\JasaController::class, 'getTechnicians']);
+        Route::post('technicians', [\App\Http\Controllers\Api\JasaController::class, 'storeTechnician']);
+        Route::put('technicians/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateTechnician']);
+        Route::delete('technicians/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyTechnician']);
+        Route::put('technicians/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateTechnicianStatus']);
+
+        // Service Catalog
+        Route::get('services', [\App\Http\Controllers\Api\JasaController::class, 'getServices']);
+        Route::post('services', [\App\Http\Controllers\Api\JasaController::class, 'storeService']);
+        Route::put('services/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateService']);
+        Route::delete('services/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyService']);
+
+        // Contracts B2B
+        Route::get('contracts', [\App\Http\Controllers\Api\JasaController::class, 'getContracts']);
+        Route::post('contracts', [\App\Http\Controllers\Api\JasaController::class, 'storeContract']);
+        Route::post('contracts/{id}/generate-spk', [\App\Http\Controllers\Api\JasaController::class, 'generateSpkFromContract']);
+
+        // Calendar
+        Route::get('calendar-events', [\App\Http\Controllers\Api\JasaController::class, 'getCalendarEvents']);
+
+        // Finance / Invoices & Expenses
+        Route::get('invoices', [\App\Http\Controllers\Api\JasaController::class, 'getInvoices']);
+        Route::patch('invoices/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateInvoiceStatus']);
+        Route::get('expenses', [\App\Http\Controllers\Api\JasaController::class, 'getExpenses']);
+        Route::post('expenses', [\App\Http\Controllers\Api\JasaController::class, 'storeExpense']);
+        Route::put('expenses/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateExpense']);
+        Route::delete('expenses/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyExpense']);
+
+        // Inventory (Spareparts)
+        Route::get('inventory', [\App\Http\Controllers\Api\JasaController::class, 'getInventory']);
+        Route::post('inventory', [\App\Http\Controllers\Api\JasaController::class, 'storeInventory']);
+        Route::put('inventory/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateInventory']);
+        Route::delete('inventory/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyInventory']);
+
+        // Backup
+        Route::get('settings/backup/config', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'getSettings']);
+        Route::post('settings/backup/config', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'updateSettings']);
+        Route::get('backup/manual', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'manualBackup']);
+        Route::post('backup/test-email', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'testEmail']);
+    });
 });
 
 // ─── KULINER PUBLIC ROUTES (NO AUTH REQUIRED) ───────────────────────────────
