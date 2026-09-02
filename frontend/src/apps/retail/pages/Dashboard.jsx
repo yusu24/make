@@ -224,34 +224,34 @@ export default function RetailDashboard() {
           {/* Recent Transactions */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-sm">Transaksi Terbaru</h3>
+              <h3 className="font-bold text-slate-900 text-[15px]">Transaksi Terbaru</h3>
               <Link to="/retail/transactions" className="text-xs text-indigo-600 hover:underline font-medium flex items-center gap-1">
-                Lihat semua <ArrowRight size={12} />
+                Lihat semua <ArrowRight size={13} />
               </Link>
             </div>
             <div className="divide-y divide-slate-50">
               {data.recent_transactions.length > 0 ? data.recent_transactions.slice(0, 5).map((t) => (
                 <div key={t.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/80 transition-colors">
                   <div className="p-2 bg-indigo-50 rounded-lg shrink-0">
-                    <Receipt size={14} className="text-indigo-500" />
+                    <Receipt size={16} className="text-indigo-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-normal text-slate-800 truncate">#{t.invoice_no}</p>
-                    <p className="text-[10px] text-slate-400">{t.cashier_name || 'Kasir'}</p>
+                    <p className="text-[13.5px] font-medium text-slate-800 truncate">#{t.invoice_no}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{t.cashier_name || 'Kasir'}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs font-semibold text-slate-900">{fmtRp(t.total_amount)}</p>
-                    <span className={`inline-flex items-center gap-0.5 text-[9px] font-normal px-1.5 py-0.5 rounded-full ${
+                    <p className="text-[13.5px] font-semibold text-slate-900">{fmtRp(t.total_amount)}</p>
+                    <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full mt-0.5 ${
                       t.status === 'paid' ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50'
                     }`}>
-                      {t.status === 'paid' ? <><CheckCircle size={9} /> Lunas</> : t.status}
+                      {t.status === 'paid' ? <><CheckCircle size={10} /> Lunas</> : t.status}
                     </span>
                   </div>
                 </div>
               )) : (
                 <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
                   <Receipt size={28} className="opacity-30" />
-                  <p className="text-xs">Belum ada transaksi.</p>
+                  <p className="text-sm">Belum ada transaksi.</p>
                 </div>
               )}
             </div>
@@ -260,26 +260,26 @@ export default function RetailDashboard() {
           {/* Low Stock Products */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <AlertTriangle size={14} className="text-amber-500" />
+              <h3 className="font-bold text-slate-900 text-[15px] flex items-center gap-2">
+                <AlertTriangle size={16} className="text-amber-500" />
                 Stok Hampir Habis
               </h3>
               <Link to="/retail/inventory" className="text-xs text-indigo-600 hover:underline font-medium flex items-center gap-1">
-                Kelola stok <ArrowRight size={12} />
+                Kelola stok <ArrowRight size={13} />
               </Link>
             </div>
             <div className="divide-y divide-slate-50">
               {data.low_stock.length > 0 ? data.low_stock.slice(0, 5).map((p) => (
                 <div key={p.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/80 transition-colors">
                   <div className="p-2 bg-amber-50 rounded-lg shrink-0">
-                    <Package size={14} className="text-amber-500" />
+                    <Package size={16} className="text-amber-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-normal text-slate-800 truncate">{p.name}</p>
-                    <p className="text-[10px] text-slate-400">{p.category || 'Tanpa Kategori'}</p>
+                    <p className="text-[13.5px] font-medium text-slate-800 truncate">{p.name}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{p.category || 'Tanpa Kategori'}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className={`inline-block text-[9px] font-normal px-2 py-0.5 rounded-full ${
+                    <span className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
                       p.stock <= 0 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
                     }`}>
                       Sisa: {Math.round(p.stock)}
@@ -289,7 +289,7 @@ export default function RetailDashboard() {
               )) : (
                 <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
                   <Star size={28} className="opacity-30 text-emerald-500" />
-                  <p className="text-xs text-emerald-600 font-medium">Semua stok aman! 🎉</p>
+                  <p className="text-sm text-emerald-600 font-medium">Semua stok aman! 🎉</p>
                 </div>
               )}
             </div>
