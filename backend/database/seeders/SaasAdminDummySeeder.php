@@ -126,26 +126,9 @@ class SaasAdminDummySeeder extends Seeder
             'created_by' => $admin->id,
         ]);
 
-        // 5. Landing Settings (update or create)
-        LandingSetting::updateOrCreate(
-            ['id' => 1],
-            [
-                'hero_title' => 'Solusi Manajemen UMKM Digital Terbaik',
-                'hero_subtitle' => '',
-                'hero_desc' => 'Tingkatkan produktivitas bisnis Anda dengan fitur terlengkap.',
-                'campaign_text' => 'Diskon 50% untuk langganan tahunan! Gunakan kode: MERDEKA50',
-                'campaign_active' => true,
-                'show_sandbox' => true,
-                'show_features' => true,
-                'show_testimonials' => true,
-                'featured_categories' => ['Toko Retail', 'Kuliner', 'Budidaya Hewan'],
-                'bank_name' => 'BCA',
-                'bank_account_no' => '1234567890',
-                'bank_account_name' => 'PT UMKM Digital Nusantara',
-                'price_basic' => 149000,
-                'price_pro' => 299000,
-            ]
-        );
+        // 5. Landing Settings (run complete seeder)
+        (new LandingSettingSeeder())->run();
+
 
         // 6. Package Features
         PackageFeature::truncate();

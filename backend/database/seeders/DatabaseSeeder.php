@@ -1318,5 +1318,8 @@ class DatabaseSeeder extends Seeder
                 ['mortality_count' => 10, 'disease_note' => 'Daun keriting/layu', 'treatment_note' => 'Pemberian pestisida nabati']
             );
         }
+
+        $this->call(LandingSettingSeeder::class);
     }
 }
+
