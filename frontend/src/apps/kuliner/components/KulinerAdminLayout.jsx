@@ -82,6 +82,12 @@ const KulinerAdminLayout = ({ children, title }) => {
   // Prioritize user data from context for instant display
   const [storeName, setStoreName] = useState(user?.tenant_name || user?.name || 'Toko Kuliner');
 
+  useEffect(() => {
+    if (user?.tenant_name || user?.name) {
+      setStoreName(user.tenant_name || user.name);
+    }
+  }, [user]);
+
   const [openGroups, setOpenGroups] = useState({
     operational: false,
     inventory: false,
