@@ -1232,14 +1232,19 @@ export default function LandingSettings({ defaultTab = 'general' }) {
               <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 14 }}>Silakan lakukan transfer sesuai nominal paket ke rekening berikut:</p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border-default)' }}>
-                  <div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{form.bank_name}</div>
-                    <div style={{ fontWeight: 600, fontSize: 15, letterSpacing: '0.05em' }}>{form.bank_account_no}</div>
+                {((form.bank_accounts && form.bank_accounts.length > 0)
+                  ? form.bank_accounts
+                  : [{ bank_name: form.bank_name || 'BANK BCA', bank_account_no: form.bank_account_no || '8837 001 992', bank_account_name: form.bank_account_name || 'PT Antigravity Global SaaS' }]
+                ).map((acc, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border-default)' }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{acc.bank_name}</div>
+                      <div style={{ fontWeight: 600, fontSize: 14, letterSpacing: '0.03em' }}>{acc.bank_account_no || acc.bank_account_number}</div>
+                      <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2 }}>a.n. <strong style={{ fontWeight: 600 }}>{acc.bank_account_name}</strong></div>
+                    </div>
+                    <span style={{ fontSize: 10, background: 'var(--border-default)', padding: '4px 8px', borderRadius: 6, fontWeight: 600 }}>Salin</span>
                   </div>
-                  <span style={{ fontSize: 10, background: 'var(--border-default)', padding: '4px 8px', borderRadius: 6, fontWeight: 600 }}>Salin</span>
-                </div>
-                <div style={{ fontSize: 11, textAlign: 'center', color: 'var(--text-muted)' }}>a.n. <strong style={{ fontWeight: 600 }}>{form.bank_account_name}</strong></div>
+                ))}
               </div>
             </div>
 
