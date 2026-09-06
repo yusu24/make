@@ -258,21 +258,21 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
-                <th className="py-3 px-4">TANGGAL</th>
-                <th className="py-3 px-4">KATEGORI</th>
-                <th className="py-3 px-4">KETERANGAN</th>
-                <th className="py-3 px-4">NOMINAL</th>
-                <th className="py-3 px-4 text-center">AKSI</th>
+              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
+                <th className="py-3.5 px-4">TANGGAL</th>
+                <th className="py-3.5 px-4">KATEGORI</th>
+                <th className="py-3.5 px-4">KETERANGAN</th>
+                <th className="py-3.5 px-4">NOMINAL</th>
+                <th className="py-3.5 px-4 text-center">AKSI</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px]">
               {paginatedExpenses.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertCircle className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-                      <span className="font-semibold text-slate-600 dark:text-slate-300">
+                      <span className="font-semibold text-slate-600 dark:text-slate-300 text-sm">
                         Tidak ada data pengeluaran ditemukan
                       </span>
                       <span className="text-xs text-slate-400">
@@ -294,25 +294,25 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
 
                     {/* Kategori */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/40">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/40">
                         {exp.category}
                       </span>
                     </td>
 
                     {/* Keterangan & Store Tag */}
                     <td className="py-3.5 px-4">
-                      <div className="font-medium text-slate-800 dark:text-slate-100">
+                      <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">
                         {exp.description}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-xs text-slate-400">
                           {exp.storeName || 'Semua Toko'} • {exp.paymentMethod}
                         </span>
                       </div>
                     </td>
 
                     {/* Nominal */}
-                    <td className="py-3.5 px-4 font-extrabold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-bold text-sm text-rose-600 dark:text-rose-400 whitespace-nowrap">
                       {formatIDR(exp.amount)}
                     </td>
 
@@ -324,14 +324,14 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
                           className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors"
                           title="Edit Pengeluaran"
                         >
-                          <Edit2 className="w-3.5 h-3.5" />
+                          <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => onDeleteExpense(exp.id)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors"
                           title="Hapus Pengeluaran"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -344,16 +344,15 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
 
         {/* Footer Pagination Bar - EXACT MATCH TO SCREENSHOT */}
         <div className="p-4 bg-slate-50/50 dark:bg-slate-800/50 border-t border-slate-200/80 dark:border-slate-700 flex flex-row flex-nowrap whitespace-nowrap items-center justify-between gap-3 text-xs text-slate-500 w-full overflow-x-auto">
-          <div>
-            Menampilkan{' '}
-            <span className="font-semibold text-slate-700 dark:text-slate-200">
+          <div className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-400 font-medium">
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
               {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0}
             </span>
             -
-            <span className="font-semibold text-slate-700 dark:text-slate-200">
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
               {Math.min(currentPage * pageSize, totalItems)}
             </span>{' '}
-            dari <span className="font-semibold text-slate-700 dark:text-slate-200">{totalItems}</span> data
+            / <span className="font-semibold text-slate-800 dark:text-slate-100">{totalItems}</span>
           </div>
 
           <div className="flex items-center gap-3">

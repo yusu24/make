@@ -1,7 +1,8 @@
 import React from 'react';
-import { X, Printer } from 'lucide-react';
+import { X, Printer, MessageCircle } from 'lucide-react';
 import { WorkOrder, JasaInvoice } from '../types';
 import { formatRupiah } from '../data/mockData';
+import { useJasa } from '../contexts/JasaContext';
 
 interface PrintReceiptModalProps {
   order?: WorkOrder | null;
@@ -11,13 +12,15 @@ interface PrintReceiptModalProps {
 }
 
 export const PrintReceiptModal: React.FC<PrintReceiptModalProps> = ({ order, invoice, onClose, settings }) => {
+  const { terms } = useJasa();
+
   if (!order && !invoice) return null;
 
   const handlePrint = () => {
     window.print();
   };
 
-  const businessType = settings?.businessType || 'Servis & Jasa';
+  const businessType = settings?.businessType || `BIZORA ${terms.categoryName.toUpperCase()}`;
   
   // Extract data generically
   const id = invoice?.id || order?.id || '';
@@ -39,6 +42,44 @@ export const PrintReceiptModal: React.FC<PrintReceiptModalProps> = ({ order, inv
   
   const remaining = Math.max(0, grandTotal - dpAmount);
 
+  const handleShareWhatsApp = () => {
+    const rawPhone = (order?.customerPhone || '').replace(/[^0-9]/g, '');
+    const phone = rawPhone.startsWith('0') ? '62' + rawPhone.slice(1) : rawPhone;
+    
+    let details = '';
+    if (order) {
+      details = `Perangkat/Objek: ${order.serviceObjectName}\n` +
+        `Keluhan/Layanan: ${order.serviceDescription}\n` +
+        `Teknisi: ${order.technicianName || '-'}\n` +
+        `Estimasi Selesai: ${order.scheduledDate} ${order.scheduledTime || ''}\n` +
+        `Status: ${order.status} (${order.paymentStatus})\n` +
+        `Total Estimasi: ${formatRupiah(grandTotal)}\n` +
+        (dpAmount > 0 ? `DP Dibayar: ${formatRupiah(dpAmount)}\nSisa: ${formatRupiah(remaining)}\n` : '');
+    } else if (invoice) {
+      details = `Faktur: ${invoice.id}\n` +
+        `Jatuh Tempo: ${invoice.dueDate}\n` +
+        `Status: ${invoice.status}\n` +
+        `Total: ${formatRupiah(grandTotal)}\n` +
+        (dpAmount > 0 ? `Terbayar: ${formatRupiah(dpAmount)}\nSisa Tagihan: ${formatRupiah(remaining)}\n` : '');
+    }
+
+    const msg = 
+      `*NOTIFIKASI LAYANAN — ${businessType}*\n` +
+      `--------------------------------\n` +
+      `No. SPK/Ref : #${id}\n` +
+      `Tanggal     : ${dateStr}\n` +
+      `Pelanggan   : ${customerName}\n` +
+      `--------------------------------\n` +
+      details +
+      `--------------------------------\n` +
+      `Terima kasih telah mempercayakan layanan kepada kami! 🙏`;
+
+    const url = phone 
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-5">
       <div className="bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[95vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150">
@@ -57,8 +98,15 @@ export const PrintReceiptModal: React.FC<PrintReceiptModalProps> = ({ order, inv
 
           <div className="flex items-center space-x-2">
             <button
+              onClick={handleShareWhatsApp}
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all shadow-xs cursor-pointer"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>WhatsApp</span>
+            </button>
+            <button
               onClick={handlePrint}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-xs cursor-pointer"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-xs cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Cetak Thermal</span>

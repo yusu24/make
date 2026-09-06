@@ -11,7 +11,8 @@ import {
   ChevronRight,
   Activity,
   Layers,
-  Wrench
+  Wrench,
+  ShoppingBag
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -51,6 +52,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: ClipboardList, 
       badge: urgentCount > 0 ? `${urgentCount} Darurat` : `${totalOrders}`,
       badgeType: urgentCount > 0 ? 'urgent' : 'neutral'
+    },
+    { 
+      id: 'pos', 
+      label: 'Kasir POS Cepat', 
+      desc: 'Jual Sparepart & Jasa',
+      icon: ShoppingBag,
+      badge: 'Kasir',
+      badgeType: 'neutral'
     },
     { 
       id: 'technicians', 

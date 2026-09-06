@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Edit3, Trash2 } from 'lucide-react';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useConfirm } from '../../../components/ConfirmDialog';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
@@ -9,6 +10,7 @@ import './KulinerDashboard.css';
 
 const AdminMenu = () => {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -168,7 +170,8 @@ const AdminMenu = () => {
   };
 
   const handleDeleteProduct = async (id) => {
-    if (window.confirm(t('adminMenu.confirmDeleteMenu'))) {
+    const ok = await confirm(t('adminMenu.confirmDeleteMenu'));
+    if (ok) {
       try {
         await api.delete(`/kuliner/admin/products/${id}`);
         alert(t('adminMenu.alertDeleteMenuSuccess'));
@@ -218,7 +221,8 @@ const AdminMenu = () => {
   };
 
   const handleDeleteCategory = async (id) => {
-    if (window.confirm(t('adminMenu.confirmDeleteCategory'))) {
+    const ok = await confirm(t('adminMenu.confirmDeleteCategory'));
+    if (ok) {
       try {
         await api.delete(`/kuliner/admin/categories/${id}`);
         fetchData();

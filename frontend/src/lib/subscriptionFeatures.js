@@ -8,5 +8,8 @@ export const FEATURE_LABELS = {
   apiAccess: { label: 'Akses API', icon: '🔌' },
   prioritySupport: { label: 'Priority Support', icon: '🎧' },
   customDomain: { label: 'Custom Domain', icon: '🌐' },
-  exportExcel: { label: 'Export Excel/PDF', icon: '📁' },
+  exportExcel: { label: 'Export Data Excel/PDF', icon: '📁' },
+  importData: { label: 'Import Data Massal (Excel/CSV)', icon: '📥' },
+  ai_assistant: { label: 'AI Business Advisor & Diagnosa PRO', icon: '🤖' },
 };
+

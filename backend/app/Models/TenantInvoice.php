@@ -18,6 +18,7 @@ class TenantInvoice extends Model
         'date',
         'due_date',
         'paid_at',
+        'payment_method',
     ];
 
     protected $casts = [

@@ -1,7 +1,7 @@
-/* eslint-disable react-refresh/only-export-components */
+import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import { CategoryRoute, ProtectedRoute } from './guards';
-import JasaApp from '../apps/jasa/repo/App';
+const JasaApp = lazy(() => import('../apps/jasa/repo/App'));
 
 const jasaRoutes = (
   <Route path="/jasa/*" element={<ProtectedRoute><CategoryRoute allowedCategory="Jasa"><JasaApp /></CategoryRoute></ProtectedRoute>} />

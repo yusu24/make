@@ -19,10 +19,25 @@ class PaymentWebhookController extends Controller
     {
         Log::info('Payment Webhook Received:', $request->all());
 
-        // Extract order_id / invoice_number
-        $invoiceNumber = $request->order_id ?? $request->merchant_ref ?? $request->invoice_number ?? $request->id;
-        $transactionStatus = $request->transaction_status ?? $request->status ?? 'settlement';
-        $paymentType = $request->payment_type ?? $request->payment_method ?? 'QRIS';
+        // Extract order_id / invoice_number (Support DOKU, Midtrans, Xendit, Tripay)
+        $invoiceNumber = $request->order_id 
+            ?? $request->merchant_ref 
+            ?? $request->invoice_number 
+            ?? $request->input('order.invoice_number') 
+            ?? $request->input('order.invoiceNumber') 
+            ?? $request->id;
+
+        $transactionStatus = $request->transaction_status 
+            ?? $request->status 
+            ?? $request->input('transaction.status') 
+            ?? $request->input('result.status') 
+            ?? 'settlement';
+
+        $paymentType = $request->payment_type 
+            ?? $request->payment_method 
+            ?? $request->input('channel.id') 
+            ?? $request->input('service.id') 
+            ?? 'DOKU';
 
         if (!$invoiceNumber) {
             return response()->json(['success' => false, 'message' => 'Invalid payload: missing invoice/order ID.'], 400);

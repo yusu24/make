@@ -55,7 +55,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight">
+                <h1 className="text-[15px] sm:text-base lg:text-[17px] font-bold text-slate-900 tracking-tight truncate whitespace-nowrap">
                   {activeTabTitle}
                 </h1>
                 <span className="hidden sm:inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">

@@ -51,6 +51,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const [totalStock, setTotalStock] = useState('0');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -123,31 +124,35 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !sku) return;
+    if (!name || !sku || isSubmitting) return;
 
-    onSaveProduct(
-      {
-        sku,
-        name,
-        unit,
-        categoryId,
-        hpp: parseFormattedNumber(hpp),
-        priceOffline: parseFormattedNumber(priceOffline),
-        priceShopee: parseFormattedNumber(priceShopee),
-        priceTokopedia: parseFormattedNumber(priceTokopedia),
-        priceTiktok: parseFormattedNumber(priceTiktok),
-        stockMin: parseFormattedNumber(stockMin),
-        ...(isEdit ? {} : { totalStock: parseFormattedNumber(totalStock) }),
-      },
-      productToEdit ? productToEdit.id : undefined
-    );
-
-    onClose();
+    setIsSubmitting(true);
+    try {
+      await onSaveProduct(
+        {
+          sku,
+          name,
+          unit,
+          categoryId,
+          hpp: parseFormattedNumber(hpp),
+          priceOffline: parseFormattedNumber(priceOffline),
+          priceShopee: parseFormattedNumber(priceShopee),
+          priceTokopedia: parseFormattedNumber(priceTokopedia),
+          priceTiktok: parseFormattedNumber(priceTiktok),
+          stockMin: parseFormattedNumber(stockMin),
+          ...(isEdit ? {} : { totalStock: parseFormattedNumber(totalStock) }),
+        },
+        productToEdit ? productToEdit.id : undefined
+      );
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
@@ -157,7 +162,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             <Package className="w-5 h-5 text-indigo-600" />
             {isEdit ? 'Edit Produk' : 'Tambah Produk Baru'}
           </h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 cursor-pointer">
+          <button onClick={onClose} disabled={isSubmitting} className="p-2 text-slate-400 hover:text-slate-700 cursor-pointer disabled:opacity-50">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -180,13 +185,14 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                   <label className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold cursor-pointer inline-flex items-center gap-1.5 w-fit">
                     <Upload className="w-3.5 h-3.5" />
                     {uploadingImage ? 'Mengunggah...' : imageUrl ? 'Ganti Foto' : 'Unggah Foto'}
-                    <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleUploadImage} disabled={uploadingImage} />
+                    <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleUploadImage} disabled={uploadingImage || isSubmitting} />
                   </label>
                   {imageUrl && (
                     <button
                       type="button"
+                      disabled={isSubmitting}
                       onClick={handleRemoveImage}
-                      className="px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-semibold inline-flex items-center gap-1.5 w-fit"
+                      className="px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-semibold inline-flex items-center gap-1.5 w-fit disabled:opacity-50"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       Hapus Foto
@@ -342,15 +348,24 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold"
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold disabled:opacity-50 cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-indigo-600 text-white font-extrabold shadow-md"
+              disabled={isSubmitting}
+              className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
             >
-              {isEdit ? 'Simpan Perubahan' : 'Simpan Produk'}
+              {isSubmitting ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                isEdit ? 'Simpan Perubahan' : 'Simpan Produk'
+              )}
             </button>
           </div>
         </form>

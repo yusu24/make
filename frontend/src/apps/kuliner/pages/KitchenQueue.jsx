@@ -1,9 +1,62 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Volume2, VolumeX, Bell } from 'lucide-react';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
 import './KulinerDashboard.css';
+
+// Web Audio API Synthesized Chime (Zero External Asset Dependency)
+const playKitchenChime = (type = 'new_order') => {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+
+    if (type === 'new_order') {
+      // Pleasant dual-tone bell chime (Ding-Dong: E5 -> G5)
+      const now = ctx.currentTime;
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(659.25, now);
+      gain1.gain.setValueAtTime(0.35, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.5);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(783.99, now + 0.15);
+      gain2.gain.setValueAtTime(0.35, now + 0.15);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.15);
+      osc2.stop(now + 0.8);
+    } else if (type === 'ready') {
+      // Cheerful triplet chime (C6 -> E6 -> G6)
+      const now = ctx.currentTime;
+      [1046.5, 1318.5, 1567.98].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + i * 0.1);
+        gain.gain.setValueAtTime(0.25, now + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.1);
+        osc.stop(now + i * 0.1 + 0.4);
+      });
+    }
+  } catch (err) {
+    console.warn('Audio alert error:', err);
+  }
+};
 
 const COLUMNS = [
   { key: 'waiting', label: 'Menunggu', statuses: ['pending', 'waiting'], color: '#f59e0b', next: 'cooking' },
@@ -15,9 +68,9 @@ export default function KitchenQueue() {
   const { t } = useTranslation();
   const toast = useToast();
   const [orders, setOrders] = useState([]);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Use translation inside the component, but we have COLUMNS array outside.
-  // We can redefine COLUMNS inside or map it. Let's map it in render.
+  // Use translation inside the component
   const COLUMNS_DEF = [
     { key: 'waiting', label: t('kulinerOrders.tabNew') || 'Menunggu', statuses: ['pending', 'waiting'], color: '#f59e0b', next: 'cooking' },
     { key: 'cooking', label: t('kulinerOrders.tabProcess') || 'Diproses', statuses: ['processing', 'cooking'], color: '#3b82f6', next: 'ready' },
@@ -26,18 +79,34 @@ export default function KitchenQueue() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const timerRef = useRef(null);
+  const prevOrdersRef = useRef([]);
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
       const res = await api.get('/kuliner/admin/kitchen-queue');
-      setOrders(res.data);
+      const newOrders = res.data || [];
+
+      // Detect new incoming waiting orders
+      if (silent && prevOrdersRef.current.length > 0 && soundEnabled) {
+        const prevIds = new Set(prevOrdersRef.current.map((o) => o.id));
+        const hasNewOrder = newOrders.some(
+          (o) => !prevIds.has(o.id) && ['pending', 'waiting'].includes(o.status)
+        );
+        if (hasNewOrder) {
+          playKitchenChime('new_order');
+          toast.success('🔔 Pesanan baru masuk ke dapur!');
+        }
+      }
+
+      prevOrdersRef.current = newOrders;
+      setOrders(newOrders);
     } catch {
       // silent — auto-refresh shouldn't spam errors
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [soundEnabled, toast]);
 
   useEffect(() => {
     load();
@@ -50,6 +119,9 @@ export default function KitchenQueue() {
     try {
       await api.patch(`/kuliner/admin/orders/${order.id}/status`, { status: nextStatus });
       toast.success(`Pesanan #${order.order_number || order.id} → ${nextStatus}`);
+      if (nextStatus === 'ready' && soundEnabled) {
+        playKitchenChime('ready');
+      }
       load(true);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Gagal memperbarui status pesanan');
@@ -62,8 +134,37 @@ export default function KitchenQueue() {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
+      <div className="kd-topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <h1 className="kd-page-title">{t('kulinerOrders.kitchenTitle')}</h1>
+        
+        {/* Sound & Alert Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            type="button"
+            onClick={() => {
+              playKitchenChime('new_order');
+              toast.info('🔔 Uji bunyi notifikasi dapur');
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer border border-slate-200"
+            title="Tes Suara Notifikasi"
+          >
+            <Bell size={13} className="text-amber-500" />
+            <span>Tes Bunyi</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer border ${
+              soundEnabled
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+            }`}
+            title="Toggle Suara Notifikasi Dapur"
+          >
+            {soundEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
+            <span>{soundEnabled ? 'Suara: Aktif' : 'Suara: Mute'}</span>
+          </button>
+        </div>
       </div>
       <div className="kd-content">
         <div className="kd-kanban-grid">

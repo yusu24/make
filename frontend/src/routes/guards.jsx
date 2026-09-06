@@ -18,6 +18,35 @@ export const PageLoader = () => (
   </div>
 );
 
+export function getCategoryDashboardPath(category) {
+  if (!category) return '/coming-soon';
+  const cat = String(category).toLowerCase();
+  
+  if (cat.includes('retail') || cat.includes('toko')) return '/retail/dashboard';
+  if (cat.includes('budi') || cat.includes('ternak') || cat.includes('tani') || cat.includes('ikan') || cat.includes('agri')) return '/budidaya/dashboard';
+  if (cat.includes('kuliner') || cat.includes('resto') || cat.includes('cafe') || cat.includes('kafe') || cat.includes('f&b')) return '/kuliner/admin';
+  if (cat.includes('seller') || cat.includes('online') || cat.includes('commerce') || cat.includes('omnichannel')) return '/seller/dashboard';
+  if (cat.includes('jasa') || cat.includes('repair') || cat.includes('servis') || cat.includes('bengkel')) return '/jasa/dashboard';
+  
+  return '/coming-soon';
+}
+
+export function isCategoryAllowed(userCategory, allowedCategories) {
+  if (!userCategory) return false;
+  const userCat = String(userCategory).toLowerCase();
+  const list = Array.isArray(allowedCategories) ? allowedCategories : [allowedCategories];
+  
+  return list.some(item => {
+    const target = String(item).toLowerCase();
+    if ((target === 'retail' || target === 'toko retail') && (userCat.includes('retail') || userCat.includes('toko'))) return true;
+    if ((target === 'budidaya' || target.includes('budidaya')) && (userCat.includes('budi') || userCat.includes('ternak') || userCat.includes('tani') || userCat.includes('ikan') || userCat.includes('agri'))) return true;
+    if ((target === 'kuliner' || target.includes('kuliner')) && (userCat.includes('kuliner') || userCat.includes('resto') || userCat.includes('cafe') || userCat.includes('kafe') || userCat.includes('f&b'))) return true;
+    if ((target === 'seller' || target.includes('seller')) && (userCat.includes('seller') || userCat.includes('online') || userCat.includes('commerce') || userCat.includes('omnichannel'))) return true;
+    if ((target === 'jasa' || target.includes('jasa')) && (userCat.includes('jasa') || userCat.includes('repair') || userCat.includes('servis') || userCat.includes('bengkel'))) return true;
+    return userCat === target;
+  });
+}
+
 export const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
@@ -34,12 +63,8 @@ export const GuestRoute = ({ children }) => {
   if (loading) return <PageLoader />;
   if (user) {
     if (user.role === 'super_admin' || user.role === 'admin') return <Navigate to="/dashboard" replace />;
-    if (user.business_category === 'Toko Retail') return <Navigate to="/retail/dashboard" replace />;
-    if (user.business_category === 'Budidaya Hewan' || user.business_category === 'Budidaya Tanaman') return <Navigate to="/budidaya/dashboard" replace />;
-    if (user.business_category === 'Kuliner') return <Navigate to="/kuliner/admin" replace />;
-    if (user.business_category === 'Seller') return <Navigate to="/seller/dashboard" replace />;
-    if (user.business_category === 'Jasa') return <Navigate to="/jasa/dashboard" replace />;
-    return <Navigate to="/coming-soon" replace />;
+    const targetPath = getCategoryDashboardPath(user.business_category);
+    return <Navigate to={targetPath} replace />;
   }
   return children;
 };
@@ -47,24 +72,8 @@ export const GuestRoute = ({ children }) => {
 export const RootRedirect = () => {
   const { user } = useAuth();
   if (user?.role === 'super_admin' || user?.role === 'admin') return <Navigate to="/dashboard" replace />;
-
-  if (user?.business_category === 'Toko Retail') {
-    return <Navigate to="/retail/dashboard" replace />;
-  }
-  if (user?.business_category === 'Budidaya Hewan' || user?.business_category === 'Budidaya Tanaman') {
-    return <Navigate to="/budidaya/dashboard" replace />;
-  }
-  if (user?.business_category === 'Kuliner') {
-    return <Navigate to="/kuliner/admin" replace />;
-  }
-  if (user?.business_category === 'Seller') {
-    return <Navigate to="/seller/dashboard" replace />;
-  }
-  if (user?.business_category === 'Jasa') {
-    return <Navigate to="/jasa/dashboard" replace />;
-  }
-  
-  return <Navigate to="/coming-soon" replace />;
+  const targetPath = getCategoryDashboardPath(user?.business_category);
+  return <Navigate to={targetPath} replace />;
 };
 
 export const CategoryRoute = ({ children, allowedCategory }) => {
@@ -73,8 +82,7 @@ export const CategoryRoute = ({ children, allowedCategory }) => {
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'super_admin') return children;
   
-  const allowed = Array.isArray(allowedCategory) ? allowedCategory : [allowedCategory];
-  if (!allowed.includes(user.business_category)) {
+  if (!isCategoryAllowed(user.business_category, allowedCategory)) {
     return <Navigate to="/dashboard-redirect" replace />;
   }
   return children;

@@ -174,11 +174,29 @@ class SubscriptionRequestController extends Controller
             : collect();
 
         return response()->json([
-            'data' => $req,
-            'category_promo' => $promo,
+            'data'            => $req,
+            'category_promo'  => $promo,
             'global_settings' => $settings,
-            'plans' => $plans,
+            'plans'           => $plans,
+            'invoices'        => \App\Models\TenantInvoice::where('tenant_id', $tenantId)
+                                    ->orderBy('created_at', 'desc')
+                                    ->limit(10)
+                                    ->get(),
         ]);
+    }
+
+    /**
+     * Get invoice history for the logged in tenant
+     */
+    public function invoices(Request $request)
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $invoices = \App\Models\TenantInvoice::where('tenant_id', $tenantId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json(['data' => $invoices]);
     }
 
     /**

@@ -7,13 +7,35 @@ import { Truck, Edit3, Trash2, ChevronRight, PackageCheck, Plus, RefreshCw } fro
 
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import EmptyTableState from '../../../components/EmptyTableState';
+import FormLabel from '../../../components/FormLabel';
 
 export default function Suppliers() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [search, setSearch] = useState('');
+
+  const handleDelete = async (id) => {
+    const ok = await confirm('Apakah Anda yakin ingin menghapus data supplier ini?', {
+      title: 'Hapus Supplier',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/retail/suppliers/${id}`);
+      toast.success('Data supplier berhasil dihapus');
+      fetchSuppliers();
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Gagal menghapus data supplier');
+    }
+  };
 
   const fetchSuppliers = async () => {
     setLoading(true);
@@ -109,14 +131,17 @@ export default function Suppliers() {
             {loading ? (
               <RetailTableLoadingRow colSpan={5} text="Memuat data supplier..." />
             ) : filteredSuppliers.length === 0 ? (
-              <tr>
-                 <td colSpan="5" className="text-center" style={{ padding: 60 }}>
-                    <div className="flex flex-col items-center gap-4 text-muted">
-                       <Truck size={40} className="opacity-20" />
-                       <p className="text-sm">Belum ada data supplier.</p>
-                    </div>
-                 </td>
-              </tr>
+              <EmptyTableState
+                colSpan={5}
+                icon={Truck}
+                title="Belum ada data supplier"
+                description={search ? `Tidak ada supplier yang cocok dengan pencarian "${search}".` : "Tambahkan data supplier atau distributor barang untuk toko Anda."}
+                actionLabel={search ? "Reset Pencarian" : "Tambah Supplier"}
+                onAction={() => {
+                  if (search) setSearch('');
+                  else setShowModal(true);
+                }}
+              />
             ) : (
               paginatedData.map(s => (
                 <tr key={s.id}>
@@ -144,7 +169,7 @@ export default function Suppliers() {
                          <Edit3 size={15} />
                       </button>
 
-                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if(confirm('Hapus supplier ini?')) { await api.delete(`/retail/suppliers/${s.id}`); fetchSuppliers(); } }} title="Hapus Data">
+                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(s.id)} title="Hapus Data">
                          <Trash2 size={15} />
                       </button>
                     </div>
@@ -173,17 +198,17 @@ export default function Suppliers() {
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="form-group">
-            <label className="form-label">Nama Badan Usaha / Supplier</label>
+            <FormLabel required>Nama Badan Usaha / Supplier</FormLabel>
             <input name="name" className="form-input" defaultValue={editingSupplier?.name} required placeholder="Contoh: PT. Sumber Makmur" />
           </div>
           
           <div className="form-group">
-            <label className="form-label">Nomor Kontak / PIC (WhatsApp)</label>
+            <FormLabel helper="WhatsApp">Nomor Kontak / PIC</FormLabel>
             <input name="contact" className="form-input" defaultValue={editingSupplier?.contact} placeholder="0812xxxx" />
           </div>
 
           <div className="form-group">
-            <label className="form-label">Alamat Kantor / Gudang</label>
+            <FormLabel helper="Opsional">Alamat Kantor / Gudang</FormLabel>
             <textarea name="address" className="form-input min-h-[100px]" defaultValue={editingSupplier?.address} placeholder="Jl. Industri No. 45..."></textarea>
           </div>
 

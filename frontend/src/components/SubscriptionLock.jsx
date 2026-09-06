@@ -24,16 +24,17 @@ const SubscriptionLock = ({ status, daysLeft }) => {
   if (user?.role === 'super_admin' || user?.role === 'admin') return null;
 
   const getSubscriptionPath = () => {
-    if (user?.business_category === 'Budidaya Hewan' || user?.business_category === 'Budidaya Tanaman' || location.pathname.startsWith('/budidaya')) {
+    const cat = String(user?.business_category || '').toLowerCase();
+    if (cat.includes('budi') || cat.includes('ternak') || cat.includes('tani') || location.pathname.startsWith('/budidaya')) {
       return '/budidaya/subscription';
     }
-    if (user?.business_category === 'Kuliner' || location.pathname.startsWith('/kuliner')) {
+    if (cat.includes('kuliner') || cat.includes('resto') || cat.includes('cafe') || location.pathname.startsWith('/kuliner')) {
       return '/kuliner/subscription';
     }
-    if (user?.business_category === 'Seller' || location.pathname.startsWith('/seller')) {
+    if (cat.includes('seller') || cat.includes('online') || cat.includes('commerce') || location.pathname.startsWith('/seller')) {
       return '/seller/subscription';
     }
-    if (user?.business_category === 'Jasa' || location.pathname.startsWith('/jasa')) {
+    if (cat.includes('jasa') || cat.includes('repair') || cat.includes('servis') || cat.includes('bengkel') || location.pathname.startsWith('/jasa')) {
       return '/jasa/subscription';
     }
     return '/retail/subscription';

@@ -20,6 +20,7 @@ import {
   ServiceItemRequirement 
 } from '../types';
 import { formatRupiah, formatNumberInput, parseNumberInput } from '../data/mockData';
+import { useJasa } from '../contexts/JasaContext';
 
 interface NewWorkOrderModalProps {
   technicians: Technician[];
@@ -54,6 +55,8 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
   onSubmit,
   onOpenAiAssistant
 }) => {
+  const { terms } = useJasa();
+
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<ServiceCategory>('Perbaikan & Troubleshooting (Corrective)');
   const [customerCompany, setCustomerCompany] = useState('');
@@ -63,6 +66,8 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
   const [customerAddress, setCustomerAddress] = useState('');
   const [serviceObjectName, setServiceObjectName] = useState('');
   const [serviceObjectIdentifier, setServiceObjectIdentifier] = useState('');
+  const [customField1, setCustomField1] = useState('');
+  const [customField2, setCustomField2] = useState('');
   const [dpAmountInput, setDpAmountInput] = useState('');
   const [priority, setPriority] = useState<PriorityLevel>('Sedang');
   const [assignedTechnicianId, setAssignedTechnicianId] = useState(technicians[0]?.id || '');
@@ -80,6 +85,7 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
   const [isCustomPart, setIsCustomPart] = useState(false);
   const [partQtyInput, setPartQtyInput] = useState('');
   const [partCostInput, setPartCostInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddPart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -107,60 +113,69 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
   const totalLaborCost = parseNumberInput(laborRate) || 0;
   const grandTotal = totalPartsCost + totalLaborCost;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!title || !customerCompany || !serviceObjectName || !serviceDescription) {
       alert('Harap lengkapi semua field yang berbintang (*)');
       return;
     }
 
-    const assignedTech = technicians.find(t => t.id === assignedTechnicianId);
-    const orderIdNumber = Math.floor(1000 + Math.random() * 9000);
-    const newId = `SPK-2026-${orderIdNumber}`;
+    setIsSubmitting(true);
+    try {
+      const assignedTech = technicians.find(t => t.id === assignedTechnicianId);
+      const orderIdNumber = Math.floor(1000 + Math.random() * 9000);
+      const newId = `SPK-2026-${orderIdNumber}`;
 
-    const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
+      const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
 
-    const newOrder: WorkOrder = {
-      id: newId,
-      title: title.trim(),
-      customerName: customerName.trim() || customerCompany.trim(),
-      customerCompany: customerCompany.trim(),
-      customerPhone: customerPhone.trim() || '0812-0000-0000',
-      customerEmail: customerEmail.trim() || 'pic@perusahaan.co.id',
-      customerAddress: customerAddress.trim() || 'Jakarta & Sekitarnya',
-      category,
-      serviceObjectName: serviceObjectName.trim(),
-      serviceObjectIdentifier: serviceObjectIdentifier.trim() || undefined,
-      priority,
-      status: 'Antrean',
-      createdAt: nowStr,
-      scheduledDate,
-      scheduledTime,
-      assignedTechnicianId,
-      technicianName: assignedTech ? assignedTech.name : 'Tim Teknisi Jasa',
-      estimatedHours: Number(estimatedHours),
-      laborRate: Number(laborRate),
-      serviceDescription: serviceDescription.trim(),
-      partsUsed: parts,
-      totalPartsCost,
-      totalLaborCost,
-      dpAmount: parseNumberInput(dpAmountInput) || 0,
-      grandTotal,
-      paymentStatus: (parseNumberInput(dpAmountInput) || 0) > 0 ? 'Sebagian (DP)' : 'Belum Bayar',
-      warrantyPeriod,
-      slaDeadline: `${scheduledDate} 17:00`,
-      logs: [
-        {
-          id: `L-${Date.now()}`,
-          timestamp: nowStr,
-          author: 'Customer Service & Dispatcher',
-          action: 'SPK Diterbitkan',
-          notes: `SPK baru diterbitkan dan dialokasikan ke teknisi ${assignedTech?.name || 'Teknisi'}.`
-        }
-      ]
-    };
+      const newOrder: WorkOrder = {
+        id: newId,
+        title: title.trim(),
+        customerName: customerName.trim() || customerCompany.trim(),
+        customerCompany: customerCompany.trim(),
+        customerPhone: customerPhone.trim() || '0812-0000-0000',
+        customerEmail: customerEmail.trim() || 'pic@perusahaan.co.id',
+        customerAddress: customerAddress.trim() || 'Jakarta & Sekitarnya',
+        category,
+        serviceObjectName: serviceObjectName.trim(),
+        serviceObjectIdentifier: serviceObjectIdentifier.trim() || undefined,
+        customField1Value: customField1.trim() || undefined,
+        customField2Value: customField2.trim() || undefined,
+        jasaCategory: terms.categoryId,
+        priority,
+        status: 'Antrean',
+        createdAt: nowStr,
+        scheduledDate,
+        scheduledTime,
+        assignedTechnicianId,
+        technicianName: assignedTech ? assignedTech.name : terms.technicianLabel,
+        estimatedHours: Number(estimatedHours),
+        laborRate: Number(laborRate),
+        serviceDescription: serviceDescription.trim(),
+        partsUsed: parts,
+        totalPartsCost,
+        totalLaborCost,
+        dpAmount: parseNumberInput(dpAmountInput) || 0,
+        grandTotal,
+        paymentStatus: (parseNumberInput(dpAmountInput) || 0) > 0 ? 'Sebagian (DP)' : 'Belum Bayar',
+        warrantyPeriod,
+        slaDeadline: `${scheduledDate} 17:00`,
+        logs: [
+          {
+            id: `L-${Date.now()}`,
+            timestamp: nowStr,
+            author: 'Customer Service & Dispatcher',
+            action: `${terms.workOrderLabel} Diterbitkan`,
+            notes: `${terms.workOrderLabel} baru diterbitkan dan dialokasikan ke ${terms.technicianLabel} ${assignedTech?.name || ''}.`
+          }
+        ]
+      };
 
-    onSubmit(newOrder);
+      await onSubmit(newOrder);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -174,9 +189,9 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
               <ClipboardCheck className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Order Creation</span>
-              <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Terbitkan Surat Perintah Kerja (SPK)</h2>
-              <p className="text-xs text-slate-500">Isi data permintaan servis, objek kerja, dan alokasi tim lapangan</p>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Order Creation &bull; {terms.badgeName}</span>
+              <h2 className="text-lg sm:text-xl font-semibold text-slate-900">{terms.newWorkOrderBtn} ({terms.workOrderLabel})</h2>
+              <p className="text-xs text-slate-500">Isi data permintaan {terms.categoryName.toLowerCase()}, objek {terms.unitLabel.toLowerCase()}, dan alokasi {terms.technicianLabel.toLowerCase()}</p>
             </div>
           </div>
 
@@ -205,19 +220,19 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
           
           {/* Section 1: Ringkasan Tugas SPK */}
           <div className="space-y-3.5 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80">
-            <span className="text-[10px] font-semibold text-blue-700 uppercase tracking-widest block">1. Informasi Pekerjaan & Layanan</span>
+            <span className="text-[10px] font-semibold text-blue-700 uppercase tracking-widest block">1. Informasi {terms.workOrderLabel}</span>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="md:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Judul SPK / Perintah Kerja *
+                  Judul {terms.workOrderLabel} *
                 </label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: Perbaikan Darurat Chiller VRV Gedung Tower B"
+                  placeholder={`Contoh: ${terms.presetServices[0]?.name || 'Layanan Servis Utama'}`}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-2xs"
                 />
               </div>
@@ -259,7 +274,7 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Pekerja / Tim Ditugaskan
+                  {terms.technicianLabel} Ditugaskan
                 </label>
                 <select
                   value={assignedTechnicianId}
@@ -277,7 +292,7 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Tanggal Servis
+                  Tanggal Masuk / Servis
                 </label>
                 <input
                   type="date"
@@ -304,49 +319,49 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Deskripsi Kendala / Ruang Lingkup Pengerjaan *
+                {terms.problemLabel} *
               </label>
               <textarea
                 required
                 rows={2}
                 value={serviceDescription}
                 onChange={(e) => setServiceDescription(e.target.value)}
-                placeholder="Rincikan gejala kerusakan, batas tanggung jawab pengerjaan, instruksi khusus teknisi..."
+                placeholder={terms.problemPlaceholder}
                 className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs shadow-2xs"
               />
             </div>
           </div>
 
-          {/* Section 2: Data Pelanggan & Objek Servis */}
+          {/* Section 2: Data Pelanggan & Objek Servis (Dinamis Sesuai Kategori) */}
           <div className="space-y-3.5 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80">
-            <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest block">2. Data Pelanggan & Objek Servis</span>
+            <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest block">2. Data Pelanggan & {terms.unitLabel}</span>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Perusahaan / Klien *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Pelanggan / Usaha *</label>
                 <input
                   type="text"
                   required
                   value={customerCompany}
                   onChange={(e) => setCustomerCompany(e.target.value)}
-                  placeholder="PT Sinarmas / RS Graha Medika"
+                  placeholder="Nama Pemilik / Pelanggan"
                   className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 shadow-2xs"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Nama PIC Lapangan</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Nama PIC / Pembawa</label>
                 <input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Ir. Handoko Prasetyo"
+                  placeholder="Nama yang mengantar/kontak"
                   className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 shadow-2xs"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">No. Kontak / WA</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">No. Kontak / WhatsApp</label>
                 <input
                   type="text"
                   value={customerPhone}
@@ -357,42 +372,75 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Alamat Lokasi Pengerjaan</label>
-                <input
-                  type="text"
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  placeholder="Jl. Jend Sudirman Kav 51, Gedung Plaza Tower Lt 14"
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 shadow-2xs"
-                />
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Objek Servis (Nama/Merek) *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">{terms.unitModelLabel} *</label>
                 <input
                   type="text"
                   required
                   value={serviceObjectName}
                   onChange={(e) => setServiceObjectName(e.target.value)}
-                  placeholder="Daikin VRV / Mesin Cuci LG / CBR 150R"
+                  placeholder={terms.unitModelPlaceholder}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 shadow-2xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">{terms.unitIdLabel}</label>
+                <input
+                  type="text"
+                  value={serviceObjectIdentifier}
+                  onChange={(e) => setServiceObjectIdentifier(e.target.value)}
+                  placeholder={terms.unitIdPlaceholder}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 shadow-2xs"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Identitas Objek (Plat Nomor/Berat/No.Seri)</label>
+            {/* Dynamic Custom Fields Section for Industry Parity */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {terms.customField1Label}
+                </label>
                 <input
                   type="text"
-                  value={serviceObjectIdentifier}
-                  onChange={(e) => setServiceObjectIdentifier(e.target.value)}
-                  placeholder="B 1234 ABC / 5 Kg / SN-99812"
+                  value={customField1}
+                  onChange={(e) => setCustomField1(e.target.value)}
+                  placeholder={terms.customField1Placeholder}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 shadow-2xs"
                 />
+                {terms.customField1Help && (
+                  <span className="text-[10px] text-slate-400 mt-1 block">{terms.customField1Help}</span>
+                )}
               </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {terms.customField2Label}
+                </label>
+                <input
+                  type="text"
+                  value={customField2}
+                  onChange={(e) => setCustomField2(e.target.value)}
+                  placeholder={terms.customField2Placeholder}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 shadow-2xs"
+                />
+                {terms.customField2Help && (
+                  <span className="text-[10px] text-slate-400 mt-1 block">{terms.customField2Help}</span>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Alamat Pelanggan / Lokasi Pengerjaan</label>
+              <input
+                type="text"
+                value={customerAddress}
+                onChange={(e) => setCustomerAddress(e.target.value)}
+                placeholder="Jl. Merdeka No. 10 (atau isi '-' jika datang ke toko)"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 shadow-2xs"
+              />
             </div>
           </div>
 
@@ -455,7 +503,9 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
 
             {/* Initial Spare Parts Entry */}
             <div className="pt-2">
-              <label className="block text-xs font-semibold text-slate-600 mb-2">Kebutuhan Suku Cadang / Material Awal (Opsional):</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-2">
+                Kebutuhan {terms.sparepartLabel} / Material Awal (Opsional):
+              </label>
               
               <div className="flex flex-wrap gap-2 mb-2.5 relative">
                 <div className="flex-1 min-w-[200px]">
@@ -545,15 +595,24 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
+              disabled={isSubmitting}
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all hover:scale-[1.01]"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl shadow-xs transition-all hover:scale-[1.01] cursor-pointer flex items-center gap-2"
             >
-              Terbitkan SPK Sekarang
+              {isSubmitting ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  <span>Menerbitkan {terms.workOrderLabel}...</span>
+                </>
+              ) : (
+                `Terbitkan ${terms.workOrderLabel} Sekarang`
+              )}
             </button>
           </div>
 

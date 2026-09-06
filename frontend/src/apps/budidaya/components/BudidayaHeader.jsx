@@ -159,7 +159,6 @@ export default function BudidayaHeader({ onMenuToggle }) {
 
       {/* Right: notif + avatar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-
         {/* Notification Bell */}
         <div style={{ position: 'relative' }} ref={dropdownRef}>
           <button
@@ -287,38 +286,6 @@ export default function BudidayaHeader({ onMenuToggle }) {
                   border: '1.5px solid #ffffff',
                 }}
               />
-            </div>
-            <div className="aq-header-user-info">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1C1A', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {user?.tenant_name || user?.business_name || user?.name || terms?.brandName || 'Budidaya'}
-                </span>
-                <span
-                  style={{
-                    fontSize: 9.5,
-                    fontWeight: 800,
-                    padding: '2px 7px',
-                    borderRadius: 9999,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    background: user?.subscription_plan === 'pro'
-                      ? 'linear-gradient(135deg, #8b5cf6, #d946ef)'
-                      : user?.subscription_plan === 'basic'
-                      ? 'linear-gradient(135deg, #10b981, #059669)'
-                      : '#475569',
-                    color: '#ffffff',
-                    lineHeight: 1,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                  }}
-                >
-                  {user?.subscription_plan === 'pro' ? 'PRO' : user?.subscription_plan === 'basic' ? 'BASIC' : 'FREE'}
-                </span>
-              </div>
-              <span style={{ fontSize: 10.5, fontWeight: 600, color: '#64748B', marginTop: 1 }}>
-                {user?.business_category || 'Budidaya'}
-              </span>
             </div>
           </div>
 

@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  BarChart3, 
+  LayoutDashboard,
   ClipboardList, 
   Users, 
   BookOpen, 
   ShieldCheck, 
   Sparkles, 
-  Plus, 
   X,
-  ChevronRight,
-  ChevronDown,
   Activity,
-  Layers,
   Wrench,
   FileText,
   Receipt,
   Package,
-  Database
+  Database,
+  CreditCard,
+  Wallet,
+  Zap
 } from 'lucide-react';
+import { useJasa } from '../contexts/JasaContext';
 
 interface SidebarProps {
   activeTab: string;
@@ -42,30 +42,84 @@ export const Sidebar: React.FC<SidebarProps> = ({
   totalOrders,
   availableTechsCount
 }) => {
+  const { terms } = useJasa();
+
   const menuItems = [
-    { id: 'overview', label: 'Beranda Utama', icon: BarChart3 },
+    { 
+      id: 'overview', 
+      label: 'Dashboard', 
+      icon: LayoutDashboard 
+    },
+    { 
+      id: 'pos', 
+      label: 'Kasir (POS)', 
+      icon: CreditCard,
+      badge: 'POS',
+      badgeType: 'pos'
+    },
     { 
       id: 'work-orders', 
-      label: 'Daftar SPK', 
+      label: terms.workOrdersLabel || 'Daftar SPK / Order', 
       icon: ClipboardList, 
       badge: urgentCount > 0 ? `${urgentCount} Darurat` : (totalOrders > 0 ? `${totalOrders}` : undefined),
       badgeType: urgentCount > 0 ? 'urgent' : 'neutral'
     },
-    { id: 'contracts', label: 'Jadwal Reservasi / Kontrak', icon: FileText },
+    { 
+      id: 'contracts', 
+      label: 'Jadwal & Kontrak Servis', 
+      icon: FileText 
+    },
     { 
       id: 'technicians', 
-      label: 'Kelola Tim / Pekerja', 
+      label: terms.techniciansLabel || 'Kelola Tim / Teknisi', 
       icon: Users,
       badge: availableTechsCount > 0 ? `${availableTechsCount} Siaga` : undefined,
       badgeType: 'success'
     },
-    { id: 'catalog', label: 'Katalog Layanan', icon: BookOpen },
-    { id: 'inventory', label: 'Gudang & Material', icon: Package },
-    { id: 'finance', label: 'Tagihan Masuk (Piutang)', icon: Receipt },
-    { id: 'expenses', label: 'Catatan Pengeluaran', icon: Receipt },
-    { id: 'analytics', label: 'Laporan & SLA', icon: ShieldCheck },
-    { id: 'backup', label: 'Backup Data Jasa', icon: Database },
-    { id: 'settings', label: 'Pengaturan Jasa', icon: Wrench }
+    { 
+      id: 'catalog', 
+      label: 'Katalog Layanan', 
+      icon: BookOpen 
+    },
+    { 
+      id: 'inventory', 
+      label: terms.sparepartsLabel || 'Gudang & Material', 
+      icon: Package 
+    },
+    { 
+      id: 'finance', 
+      label: 'Keuangan & Kas', 
+      icon: Wallet 
+    },
+    { 
+      id: 'analytics', 
+      label: 'Laporan & SLA', 
+      icon: ShieldCheck 
+    },
+    { 
+      id: 'guide', 
+      label: 'Buku Panduan & SOP', 
+      icon: BookOpen,
+      badge: 'Panduan',
+      badgeType: 'neutral'
+    },
+    { 
+      id: 'backup', 
+      label: 'Backup & Restore Data', 
+      icon: Database 
+    },
+    { 
+      id: 'subscription', 
+      label: 'Paket Langganan', 
+      icon: CreditCard,
+      badge: 'Upgrade',
+      badgeType: 'urgent'
+    },
+    { 
+      id: 'settings', 
+      label: 'Pengaturan Jasa', 
+      icon: Wrench 
+    }
   ];
 
   return (
@@ -88,57 +142,53 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }`}
       >
         {/* Top Branding Section */}
-        <div className="p-5 border-b border-slate-100">
-          <div className="flex items-center justify-between">
-            <div 
-              id="sidebar-brand"
-              className="flex items-center space-x-3 cursor-pointer group"
-              onClick={() => {
-                setActiveTab('overview');
-                onCloseMobile();
-              }}
-            >
-              <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-semibold text-xl shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-transform">
-                S
-              </div>
-              <div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="text-lg font-semibold tracking-tight text-slate-900">ServisHub</span>
-                </div>
-              </div>
+        <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between">
+          <div 
+            id="sidebar-brand"
+            className="flex items-center space-x-3 cursor-pointer group overflow-hidden"
+            onClick={() => {
+              setActiveTab('overview');
+              onCloseMobile();
+            }}
+          >
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-500/25 shrink-0 group-hover:scale-105 transition-transform">
+              <Zap className="w-5 h-5 fill-white/20 stroke-white" />
             </div>
-
-            {/* Mobile Close Button */}
-            <button
-              id="btn-close-sidebar-mobile"
-              onClick={onCloseMobile}
-              className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-              aria-label="Tutup menu navigasi"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-lg tracking-tight text-slate-900">
+                Bizora
+              </span>
+            </div>
           </div>
 
-          {/* Quick Action Button in Sidebar */}
-          <div className="mt-5 space-y-2">
+          {/* Mobile Close Button */}
+          <button
+            id="btn-close-sidebar-mobile"
+            onClick={onCloseMobile}
+            className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            aria-label="Tutup menu navigasi"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-
-            <button
-              id="btn-sidebar-ai-diagnostic"
-              onClick={() => {
-                onOpenAiAssistant();
-                onCloseMobile();
-              }}
-              className="w-full flex items-center justify-center space-x-2 py-2 px-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-200/80 font-semibold text-sm transition-colors shadow-2xs group"
-            >
-              <Sparkles className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
-              <span>AI Diagnosa & Estimasi</span>
-            </button>
-          </div>
+        {/* AI Quick Diagnostic Trigger */}
+        <div className="px-4 pt-3 pb-1">
+          <button
+            id="btn-sidebar-ai-diagnostic"
+            onClick={() => {
+              onOpenAiAssistant();
+              onCloseMobile();
+            }}
+            className="w-full flex items-center justify-center space-x-2 py-2 px-3.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-200/80 font-bold text-xs transition-colors shadow-2xs group cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
+            <span>AI Diagnosa & Estimasi</span>
+          </button>
         </div>
 
         {/* Navigation Links (Scrollable) */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5 scrollbar-none">
+        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1 scrollbar-none">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -151,31 +201,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   setActiveTab(item.id);
                   onCloseMobile();
                 }}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left transition-all group ${
+                className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-left transition-all group cursor-pointer ${
                   isActive
-                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-2xs'
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50 font-medium'
+                    ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
                 }`}
               >
                 <div className="flex items-center space-x-3 min-w-0">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                  <div className={`w-5 h-5 flex items-center justify-center flex-shrink-0 transition-colors ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-transparent text-slate-400 group-hover:text-slate-600'
+                      ? 'text-blue-600'
+                      : 'text-slate-400 group-hover:text-slate-600'
                   }`}>
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <div className={`text-sm truncate ${isActive ? 'font-semibold text-blue-900' : 'font-medium text-slate-600'}`}>
+                  <div className={`text-[13.5px] truncate ${isActive ? 'font-bold text-blue-900' : 'font-medium text-slate-700'}`}>
                     {item.label}
                   </div>
                 </div>
 
                 {item.badge && (
-                  <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold flex-shrink-0 ml-2 ${
+                  <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-extrabold flex-shrink-0 ml-2 ${
                     item.badgeType === 'urgent'
-                      ? 'bg-rose-100 text-rose-700 animate-pulse'
+                      ? 'bg-rose-100 text-rose-700 animate-pulse border border-rose-200'
                       : item.badgeType === 'success'
-                      ? 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                      : item.badgeType === 'pos'
+                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
                       : 'bg-slate-100 text-slate-600'
                   }`}>
                     {item.badge}
@@ -186,10 +238,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
 
           {/* Operational Status Bento Widget inside Sidebar */}
-          <div className="pt-4 px-1">
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+          <div className="pt-3 pb-2 px-0.5">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
                   <Activity className="w-3 h-3 text-emerald-600" /> Sistem Lapangan
                 </span>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />

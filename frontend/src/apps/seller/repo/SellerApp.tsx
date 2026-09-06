@@ -162,6 +162,43 @@ export default function App() {
     }
   }, [activeTab]);
 
+  // Dynamic Document Title for Seller Module
+  useEffect(() => {
+    const SELLER_TAB_TITLES: Record<ActiveTab, string> = {
+      'menu-utama': 'Dashboard Seller Marketplace',
+      'pesanan': 'Pesanan Masuk Marketplace',
+      'katalog': 'Katalog Produk & Stok',
+      'gudang': 'Stok Gudang Multi-Channel',
+      'penerimaan-barang': 'Penerimaan Barang Masuk',
+      'stock-opname': 'Stock Opname Fisik',
+      'toko-offline': 'Kasir POS Toko Offline',
+      'keuangan-pemasukan': 'Pemasukan Lainnya',
+      'keuangan-pengeluaran': 'Biaya Operasional',
+      'keuangan-kas': 'Buku Kas & Saldo',
+      'keuangan-laporan': 'Laporan Omzet Penjualan',
+      'master-data': 'Data Supplier & Master Data',
+      'pelanggan': 'Data Pelanggan CRM',
+      'settings-app': 'Pengaturan Aplikasi',
+      'settings-account': 'Pengaturan Akun & Toko',
+      'settings-roles': 'Hak Akses & Role',
+      'settings-users': 'Manajemen Tim & Staf',
+      'marketplace-dashboard': 'Dashboard Multi-Channel',
+      'marketplace-connected': 'Akun Marketplace Terhubung',
+      'marketplace-mapping': 'Mapping Master SKU',
+      'marketplace-sync': 'Pusat Sinkronisasi Stok',
+      'marketplace-history': 'Riwayat Sinkronisasi',
+      'shipping-dashboard': 'Dashboard Pengiriman',
+      'shipping-management': 'Manajemen Ekspedisi & Kurir',
+      'shipping-packing': 'Peningkatan Quality Packing',
+      'notification-center': 'Pusat Notifikasi Toko',
+      'panduan': 'Buku Panduan Seller',
+      'langganan': 'Paket Langganan Seller',
+      'backup': 'Backup Data Toko',
+    };
+    const title = SELLER_TAB_TITLES[activeTab] || 'Dashboard Seller';
+    document.title = `Bizora - ${title}`;
+  }, [activeTab]);
+
   // App Master Data States - initialized with rich dummy data ONLY for demo sandbox accounts
   const { user } = useAuth();
   const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
@@ -735,27 +772,8 @@ export default function App() {
           />
         )}
 
-        {/* Floating sidebar toggle — replaces the Header's hamburger while it's hidden on Kasir/POS */}
-        {activeTab === 'toko-offline' && (
-          <button
-            onClick={() => {
-              if (window.innerWidth < 768) {
-                setMobileMenuOpen(!mobileMenuOpen);
-              } else {
-                setCollapsed(!collapsed);
-              }
-            }}
-            title="Tampilkan/Sembunyikan Menu"
-            className={`fixed top-4 left-4 z-30 p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer ${
-              collapsed ? 'md:left-24' : 'md:left-[17rem]'
-            }`}
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        )}
-
         {/* Dynamic View Body */}
-        <main className={`flex-1 px-4 pb-4 md:px-6 md:pb-6 lg:px-8 lg:pb-8 w-full min-w-0 ${activeTab === 'toko-offline' ? 'pt-4 md:pt-6' : 'pt-20 md:pt-24'}`}>
+        <main className={`flex-1 w-full min-w-0 ${activeTab === 'toko-offline' ? 'p-0 h-[100dvh] overflow-hidden relative' : 'px-2.5 pb-4 sm:px-4 md:px-6 md:pb-6 lg:px-8 lg:pb-8 pt-20 md:pt-24'}`}>
           {activeTab === 'menu-utama' && (
             <MainDashboardView
               orders={orders}
@@ -821,6 +839,13 @@ export default function App() {
               orders={orders}
               onAddNewOfflineOrder={handleAddNewOfflineOrder}
               onDeductStock={handleDeductStock}
+              onMenuToggle={() => {
+                if (window.innerWidth < 768) {
+                  setMobileMenuOpen(!mobileMenuOpen);
+                } else {
+                  setCollapsed(!collapsed);
+                }
+              }}
             />
           )}
 

@@ -1,18 +1,37 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Clock, Menu } from 'lucide-react';
+import OfflineStatusBadge from './OfflineStatusBadge';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
 
-export default function ProductGrid({ products, categories, cart, cashierName, onAddItem, onMenuToggle }) {
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState(null);
+function PosClock() {
   const [time, setTime] = useState(new Date());
-
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  return (
+    <div className="flex items-center gap-1.5 text-xs font-normal text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shrink-0 select-none">
+      <Clock size={13} className="text-indigo-600" />
+      <span>{time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+    </div>
+  );
+}
+
+export default function ProductGrid({
+  products,
+  categories,
+  cart,
+  cashierName,
+  onAddItem,
+  onMenuToggle,
+  offlineBadgeProps,
+  searchRef
+}) {
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState(null);
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 300);
@@ -49,8 +68,9 @@ export default function ProductGrid({ products, categories, cart, cashierName, o
         <div className="pos-search-box">
           <Search size={16} />
           <input
+            ref={searchRef}
             type="text"
-            placeholder="Cari produk (nama/SKU)..."
+            placeholder="Cari produk (nama/SKU/barcode)... [F1]"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => {
@@ -90,10 +110,12 @@ export default function ProductGrid({ products, categories, cart, cashierName, o
 
 
 
-        <div className="flex items-center gap-1.5 text-xs font-normal text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shrink-0 select-none">
-          <Clock size={13} className="text-indigo-600" />
-          <span>{time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-        </div>
+        <PosClock />
+
+        {/* Offline / Online Status Badge */}
+        {offlineBadgeProps && (
+          <OfflineStatusBadge {...offlineBadgeProps} />
+        )}
 
         <div className="pos-cashier-info select-none">
           <div className="pos-avatar">{(cashierName || 'U').substring(0, 2).toUpperCase()}</div>
@@ -131,7 +153,11 @@ export default function ProductGrid({ products, categories, cart, cashierName, o
               aria-label={`${p.name} ${fmtRp(p.price_sell)}`}
             >
               <div className="pos-prod-icon">
-                <span className="font-extrabold text-slate-700 text-sm">{p.name.charAt(0).toUpperCase()}</span>
+                {p.image ? (
+                  <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-extrabold text-slate-700 text-sm">{p.name.charAt(0).toUpperCase()}</span>
+                )}
               </div>
               <div className="pos-prod-name" title={p.name}>{p.name}</div>
               <div className="pos-prod-price">{fmtRp(p.price_sell)}</div>
@@ -151,6 +177,33 @@ export default function ProductGrid({ products, categories, cart, cashierName, o
             Produk tidak ditemukan
           </div>
         )}
+      </div>
+
+      {/* Keyboard Shortcut Helper Bar */}
+      <div className="hidden md:flex items-center gap-3 px-5 py-2.5 bg-slate-900 text-slate-300 text-[11px] border-t border-slate-800 shrink-0 select-none overflow-x-auto">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 mr-1 flex items-center gap-1">
+          ⌨️ Shortcuts:
+        </span>
+        <div className="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-md border border-slate-700/60">
+          <kbd className="px-1.5 py-0.5 bg-slate-700 text-white rounded text-[10px] font-mono font-bold shadow-xs">F1</kbd>
+          <span className="text-slate-300">Cari Produk</span>
+        </div>
+        <div className="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-md border border-slate-700/60">
+          <kbd className="px-1.5 py-0.5 bg-indigo-600 text-white rounded text-[10px] font-mono font-bold shadow-xs">F4</kbd>
+          <span className="text-indigo-200 font-semibold">Bayar / Checkout</span>
+        </div>
+        <div className="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-md border border-slate-700/60">
+          <kbd className="px-1.5 py-0.5 bg-slate-700 text-white rounded text-[10px] font-mono font-bold shadow-xs">F8</kbd>
+          <span className="text-slate-300">Tahan Transaksi</span>
+        </div>
+        <div className="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-md border border-slate-700/60">
+          <kbd className="px-1.5 py-0.5 bg-slate-700 text-white rounded text-[10px] font-mono font-bold shadow-xs">F9</kbd>
+          <span className="text-slate-300">Daftar Tertahan</span>
+        </div>
+        <div className="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-md border border-slate-700/60">
+          <kbd className="px-1.5 py-0.5 bg-slate-700 text-white rounded text-[10px] font-mono font-bold shadow-xs">Esc</kbd>
+          <span className="text-slate-300">Batal / Tutup</span>
+        </div>
       </div>
 
     </div>

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class JasaWorkOrder extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
 
     protected $table = 'jasa_work_orders';
 

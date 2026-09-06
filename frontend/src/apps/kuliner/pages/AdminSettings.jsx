@@ -24,7 +24,11 @@ const AdminSettings = () => {
     instagram_url: '',
     whatsapp_number: '',
     logo_url: '',
-    dine_in_enabled: false
+    dine_in_enabled: false,
+    qris_image_url: '',
+    bank_name: '',
+    bank_account_no: '',
+    bank_account_name: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -257,6 +261,78 @@ const AdminSettings = () => {
                           </div>
                         </div>
                       )}
+                    </div>
+
+                    {/* METODE PEMBAYARAN TOKO (QRIS & TRANSFER) */}
+                    <div className="kd-panel">
+                      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
+                        <span className="text-xl">💳</span>
+                        <div>
+                          <h3 className="font-bold text-slate-800">Metode Pembayaran Kasir & QRIS Resto</h3>
+                          <p className="text-xs text-slate-400 mt-0.5">Pengaturan QRIS scan dan rekening transfer untuk pelanggan Anda</p>
+                        </div>
+                      </div>
+
+                      <div className="kd-form-group mb-4">
+                        <label className="kd-form-label flex items-center gap-2">
+                          <span>📱</span> URL Gambar QRIS Toko (JPG/PNG)
+                        </label>
+                        <input 
+                          type="text" 
+                          className="kd-form-input"
+                          placeholder="https://.../qris-resto.png"
+                          value={settings.qris_image_url || ''} 
+                          onChange={e => setSettings({...settings, qris_image_url: e.target.value})} 
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">Masukkan URL gambar QRIS toko Anda agar pelanggan dapat scan langsung di meja makan atau kasir.</p>
+                      </div>
+
+                      {settings.qris_image_url && (
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 mb-4 inline-block">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Preview QRIS Resto:</span>
+                          <img src={settings.qris_image_url} alt="QRIS Resto" className="w-36 h-36 object-contain rounded-lg border border-slate-100 bg-white" />
+                        </div>
+                      )}
+
+                      <div className="kd-form-row">
+                        <div className="kd-form-group">
+                          <label className="kd-form-label flex items-center gap-2">
+                            <span>🏦</span> Nama Bank
+                          </label>
+                          <input 
+                            type="text" 
+                            className="kd-form-input"
+                            placeholder="BCA / Mandiri / BRI"
+                            value={settings.bank_name || ''} 
+                            onChange={e => setSettings({...settings, bank_name: e.target.value})} 
+                          />
+                        </div>
+                        <div className="kd-form-group">
+                          <label className="kd-form-label flex items-center gap-2">
+                            <span>🔢</span> Nomor Rekening
+                          </label>
+                          <input 
+                            type="text" 
+                            className="kd-form-input"
+                            placeholder="8837..."
+                            value={settings.bank_account_no || ''} 
+                            onChange={e => setSettings({...settings, bank_account_no: e.target.value})} 
+                          />
+                        </div>
+                      </div>
+
+                      <div className="kd-form-group mt-2">
+                        <label className="kd-form-label flex items-center gap-2">
+                          <span>👤</span> Atas Nama Rekening
+                        </label>
+                        <input 
+                          type="text" 
+                          className="kd-form-input"
+                          placeholder="Nama Pemilik Resto / PT"
+                          value={settings.bank_account_name || ''} 
+                          onChange={e => setSettings({...settings, bank_account_name: e.target.value})} 
+                        />
+                      </div>
                     </div>
 
                     {/* PROMO & MARKETING */}

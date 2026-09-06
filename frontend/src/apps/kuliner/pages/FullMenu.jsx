@@ -428,8 +428,15 @@ const FullMenu = () => {
 
           {checkoutStep === 'form' && (
             <div className="kl-drawer-footer">
-              <button type="submit" form="checkout-form" className="kl-checkout-btn" disabled={submitting}>
-                {submitting ? t('storefront.reviewFormSubmitting') : (isCashierMode ? `✅ ${t('fullMenu.completeCashierTransaction')}` : t('fullMenu.confirmOrder'))}
+              <button type="submit" form="checkout-form" className="kl-checkout-btn" disabled={submitting} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                {submitting ? (
+                  <>
+                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>{t('storefront.reviewFormSubmitting')}</span>
+                  </>
+                ) : (
+                  isCashierMode ? `✅ ${t('fullMenu.completeCashierTransaction')}` : t('fullMenu.confirmOrder')
+                )}
               </button>
               <button className="kl-remove-btn" style={{width: '100%', marginTop: 12, textAlign: 'center'}} onClick={() => setCheckoutStep('cart')}>{t('fullMenu.backToCart')}</button>
             </div>

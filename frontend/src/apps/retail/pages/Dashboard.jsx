@@ -8,38 +8,8 @@ import {
 import { useCore } from '../../../hooks/useCore';
 import { useAuth } from '../../../contexts/AuthContext';
 import RetailLoading from '../components/RetailLoading';
+import KpiCard from '../../../components/KpiCard';
 
-function StatCard({ icon: Icon, label, value, sub, color = 'indigo', trend, isMoney = false }) {
-  const colors = {
-    indigo: { bg: 'bg-indigo-500/10', text: 'text-indigo-500', border: 'border-indigo-500/20' },
-    emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20' },
-    amber: { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' },
-    rose: { bg: 'bg-rose-500/10', text: 'text-rose-500', border: 'border-rose-500/20' },
-  };
-  const c = colors[color] || colors.indigo;
-
-  return (
-    <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col justify-between gap-2 shadow-sm hover:shadow-md transition-shadow duration-200 min-w-0 overflow-hidden">
-      <div className="flex items-center justify-between gap-2 min-w-0">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <div className={`p-2 rounded-xl ${c.bg} border ${c.border} shrink-0`}>
-            <Icon size={16} className={c.text} />
-          </div>
-          <span className="text-xs sm:text-sm font-medium text-slate-500 truncate">{label}</span>
-        </div>
-        {trend !== undefined && (
-          <span className={`shrink-0 text-[11px] font-normal px-2 py-0.5 rounded-full ${trend >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-            {trend >= 0 ? '+' : ''}{trend}%
-          </span>
-        )}
-      </div>
-      <div className="min-w-0">
-        <p className={`text-lg sm:text-xl xl:text-2xl text-slate-900 leading-tight truncate ${isMoney ? 'font-semibold' : 'font-normal'}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
-        {sub && <p className="text-[11px] text-slate-400 mt-0.5 truncate">{sub}</p>}
-      </div>
-    </div>
-  );
-}
 
 function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
   const colors = {
@@ -170,30 +140,29 @@ export default function RetailDashboard() {
 
       {/* Stats Grid - only for owner */}
       {isOwnerOrManager && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatCard
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <KpiCard
             icon={Receipt}
             label="Transaksi Hari Ini"
             value={data.today_transactions}
             sub="total transaksi"
             color="indigo"
           />
-          <StatCard
+          <KpiCard
             icon={TrendingUp}
             label="Omzet Hari Ini"
             value={fmtRp(data.today_income)}
             sub="total penjualan"
             color="emerald"
-            isMoney
           />
-          <StatCard
+          <KpiCard
             icon={Package}
             label="Produk Aktif"
             value={data.active_products}
             sub="produk tersedia"
             color="amber"
           />
-          <StatCard
+          <KpiCard
             icon={Users}
             label="Kasir Aktif"
             value={data.active_staff}

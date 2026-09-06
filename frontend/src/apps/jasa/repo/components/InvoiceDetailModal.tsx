@@ -232,12 +232,13 @@ export const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                     <select 
                       value={payMethod}
                       onChange={(e) => setPayMethod(e.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-emerald-500 outline-none cursor-pointer"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-emerald-500 outline-none cursor-pointer font-medium"
                     >
+                      <option value="QRIS">QRIS / E-Wallet</option>
                       <option value="Transfer Bank">Transfer Bank</option>
                       <option value="Tunai">Tunai / Cash</option>
-                      <option value="Cek / Giro">Cek / Giro</option>
                       <option value="Kartu Kredit / Debit">Kartu Kredit / Debit</option>
+                      <option value="Cek / Giro">Cek / Giro</option>
                     </select>
                   </div>
                   <div>

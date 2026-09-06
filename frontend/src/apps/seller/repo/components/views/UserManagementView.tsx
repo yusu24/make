@@ -137,36 +137,36 @@ export const UserManagementView: React.FC = () => {
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700">
+            <thead className="bg-slate-50/70 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700 uppercase tracking-wider">
               <tr>
-                <th className="px-5 py-4 font-semibold">Nama User</th>
-                <th className="px-5 py-4 font-semibold">Email</th>
-                <th className="px-5 py-4 font-semibold">Peran (Role)</th>
-                <th className="px-5 py-4 font-semibold">Status</th>
-                <th className="px-5 py-4 font-semibold text-right">Aksi</th>
+                <th className="px-5 py-3.5">Nama User</th>
+                <th className="px-5 py-3.5">Email</th>
+                <th className="px-5 py-3.5">Peran (Role)</th>
+                <th className="px-5 py-3.5">Status</th>
+                <th className="px-5 py-3.5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px] text-slate-700 dark:text-slate-200">
               {loading ? (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-400">Memuat...</td></tr>
+                <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-400 text-sm">Memuat...</td></tr>
               ) : staff.length === 0 ? (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-400">Belum ada user. Klik "Tambah User Baru" untuk membuat akun.</td></tr>
+                <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-400 text-sm">Belum ada user. Klik "Tambah User Baru" untuk membuat akun.</td></tr>
               ) : (
                 paginatedStaff.map((member) => (
-                  <tr key={member.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{member.name}</td>
-                    <td className="px-5 py-4">{member.email}</td>
-                    <td className="px-5 py-4">
-                      <span className="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 font-semibold text-[11px] border border-indigo-200 dark:border-indigo-800">
+                  <tr key={member.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
+                    <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-slate-100">{member.name}</td>
+                    <td className="px-5 py-3.5">{member.email}</td>
+                    <td className="px-5 py-3.5">
+                      <span className="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 font-semibold text-xs border border-indigo-200 dark:border-indigo-800">
                         {member.retail_role?.name || 'Tanpa Peran'}
                       </span>
                     </td>
-                    <td className="px-5 py-4">
-                      <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                    <td className="px-5 py-3.5">
+                      <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold text-xs">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> {member.status === 'active' ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-3.5 text-right">
                       <button onClick={() => openEditStaff(member)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                         <Edit2 className="w-4 h-4" />
                       </button>

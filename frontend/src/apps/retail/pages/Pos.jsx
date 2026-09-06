@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import { api } from '../../../lib/api';
@@ -9,11 +9,21 @@ import CartPanel from '../components/pos/CartPanel';
 import PaymentModal from '../components/pos/PaymentModal';
 import ReceiptModal from '../components/pos/ReceiptModal';
 import HoldBillModal from '../components/pos/HoldBillModal';
+import { useOfflinePos } from '../hooks/useOfflinePos';
+import {
+  cacheMasterData,
+  getCachedProducts,
+  getCachedCategories,
+  getCachedCustomers,
+  getCachedStaff,
+  getCachedSettings
+} from '../../../lib/offlinePosDb';
 import '../pos.css';
 
 export default function Pos() {
   const { user } = useAuth();
   const { onMenuToggle } = useOutletContext() || {};
+  const searchRef = useRef(null);
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -33,22 +43,72 @@ export default function Pos() {
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
 
+  // Hook for Offline POS engine & background sync
+  const {
+    isOnline,
+    isSyncing,
+    pendingCount,
+    pendingTransactions,
+    syncNow,
+    queueTransaction
+  } = useOfflinePos(async () => {
+    // Refresh product list when sync completes successfully
+    if (navigator.onLine) {
+      try {
+        const pRes = await api.get('/retail/products');
+        setProducts(pRes.data);
+      } catch (e) {}
+    }
+  });
+
   const fetchData = useCallback(async () => {
+    // If online, try fetching from backend and update local cache
+    if (navigator.onLine) {
+      try {
+        const [pRes, cRes, catRes, sRes, staffRes] = await Promise.all([
+          api.get('/retail/products'),
+          api.get('/retail/customers'),
+          api.get('/retail/categories'),
+          api.get('/retail/settings'),
+          api.get('/retail/staff')
+        ]);
+        setProducts(pRes.data || []);
+        setCustomers(cRes.data || []);
+        setCategories(catRes.data || []);
+        setSettings(sRes.data || { tax_rate: 0, receipt_footer: '' });
+        setStaff(staffRes.data || []);
+
+        // Cache into IndexedDB for offline resilience
+        await cacheMasterData({
+          products: pRes.data || [],
+          categories: catRes.data || [],
+          customers: cRes.data || [],
+          staff: staffRes.data || [],
+          settings: sRes.data || {}
+        });
+        setLoading(false);
+        return;
+      } catch (e) {
+        console.warn('Online fetch failed, falling back to local IndexedDB cache:', e);
+      }
+    }
+
+    // Fallback: Read from local IndexedDB cache
     try {
-      const [pRes, cRes, catRes, sRes, staffRes] = await Promise.all([
-        api.get('/retail/products'),
-        api.get('/retail/customers'),
-        api.get('/retail/categories'),
-        api.get('/retail/settings'),
-        api.get('/retail/staff')
+      const [cachedProds, cachedCusts, cachedCats, cachedSets, cachedStf] = await Promise.all([
+        getCachedProducts(),
+        getCachedCustomers(),
+        getCachedCategories(),
+        getCachedSettings(),
+        getCachedStaff()
       ]);
-      setProducts(pRes.data);
-      setCustomers(cRes.data);
-      setCategories(catRes.data);
-      setSettings(sRes.data);
-      setStaff(staffRes.data);
-    } catch (e) {
-      console.error(e);
+      setProducts(cachedProds || []);
+      setCustomers(cachedCusts || []);
+      setCategories(cachedCats || []);
+      setSettings(cachedSets || { tax_rate: 0, receipt_footer: '' });
+      setStaff(cachedStf || []);
+    } catch (dbErr) {
+      console.error('Failed to read from IndexedDB cache:', dbErr);
     } finally {
       setLoading(false);
     }
@@ -191,6 +251,10 @@ export default function Pos() {
   };
 
   const submitPayment = async (modalData) => {
+    const calculatedDiscount = discountAmount + actualPointsDiscount;
+    const paidAmount = modalData.payment_amount || total;
+    const changeAmount = Math.max(0, paidAmount - total);
+
     const payload = {
       customer_id: customerId || null,
       payment_method: modalData.payment_method,
@@ -210,14 +274,80 @@ export default function Pos() {
           unit: unitName,
           conversion: item.conversion,
           batch_no: item.batch_no || null,
-          serial_number: item.serial_number || null
+          serial_number: item.serial_number || null,
+          name: item.name,
+          price: item.price,
+          subtotal: item.qty * item.price
         };
       }),
+      subtotal: subtotal,
+      discount_amount: calculatedDiscount,
+      tax_amount: taxAmount,
+      total: total,
+      paid_amount: paidAmount,
+      change_amount: changeAmount
     };
-    const res = await api.post('/retail/transactions', payload);
-    setLastOrder(res.data);
-    setShowPayModal(false);
-    fetchData();
+
+    // Handler to process transaction offline
+    const handleOfflineOrder = async () => {
+      const offlineReceipt = {
+        invoice_no: `OFF-${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`,
+        created_at: new Date().toISOString(),
+        payment_method: modalData.payment_method || 'CASH',
+        payment_amount: paidAmount,
+        paid_amount: paidAmount,
+        subtotal: subtotal,
+        discount_amount: calculatedDiscount,
+        tax_amount: taxAmount,
+        total: total,
+        change_amount: changeAmount,
+        is_offline: true,
+        items: cart.map((item) => ({
+          product: { name: item.name },
+          unit: typeof item.product_id === 'string' && item.product_id.includes('-') ? item.product_id.split('-').slice(1).join('-') : null,
+          qty: item.qty,
+          price: item.price,
+          subtotal: item.qty * item.price
+        }))
+      };
+
+      await queueTransaction(payload, offlineReceipt);
+
+      // Decrement in-memory products stock
+      setProducts((prev) => prev.map((p) => {
+        const cartItem = cart.find((c) => c.real_product_id === p.id);
+        if (cartItem) {
+          const deduct = Number(cartItem.qty || 1) * Number(cartItem.conversion || 1);
+          return { ...p, stock: Math.max(0, (Number(p.stock) || 0) - deduct) };
+        }
+        return p;
+      }));
+
+      setLastOrder(offlineReceipt);
+      setShowPayModal(false);
+    };
+
+    if (navigator.onLine) {
+      try {
+        const res = await api.post('/retail/transactions', payload);
+        setLastOrder(res.data);
+        setShowPayModal(false);
+        fetchData();
+        return;
+      } catch (err) {
+        // If network connectivity dropped or server unreachable, fallback to offline queue
+        if (!err.response || err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+          console.warn('Network error during checkout, saving as offline transaction:', err);
+          await handleOfflineOrder();
+          return;
+        }
+        // If validation error from server (422, etc), rethrow to modal
+        throw err;
+      }
+    } else {
+      // Offline mode
+      await handleOfflineOrder();
+    }
   };
 
   const startNewTransaction = () => {
@@ -226,6 +356,50 @@ export default function Pos() {
     setRedeemPoints(0);
     setLastOrder(null);
   };
+
+  // ── Keyboard Shortcuts Listener ─────────────────────────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // F1: Focus search / barcode scanner
+      if (e.key === 'F1') {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+      }
+      // F4 or F12: Checkout / Payment Modal
+      else if (e.key === 'F4' || e.key === 'F12') {
+        e.preventDefault();
+        if (cart.length > 0 && !showPayModal) {
+          setShowPayModal(true);
+        }
+      }
+      // F8: Hold Bill
+      else if (e.key === 'F8') {
+        e.preventDefault();
+        if (cart.length > 0) {
+          handleHoldBill();
+        }
+      }
+      // F9: Open Hold Bill List
+      else if (e.key === 'F9') {
+        e.preventDefault();
+        setShowHoldModal((prev) => !prev);
+      }
+      // Escape: Close modals or blur search
+      else if (e.key === 'Escape') {
+        if (showPayModal) setShowPayModal(false);
+        else if (showHoldModal) setShowHoldModal(false);
+        else if (lastOrder) setLastOrder(null);
+        else if (mobileCartOpen) setMobileCartOpen(false);
+        else if (document.activeElement === searchRef.current) {
+          searchRef.current?.blur();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cart, showPayModal, showHoldModal, lastOrder, mobileCartOpen, handleHoldBill]);
 
   if (loading) return <div className="pos-container"><RetailLoading text="Menyiapkan kasir..." /></div>;
 
@@ -238,6 +412,14 @@ export default function Pos() {
         cashierName={user?.name}
         onAddItem={addToCart}
         onMenuToggle={onMenuToggle}
+        searchRef={searchRef}
+        offlineBadgeProps={{
+          isOnline,
+          isSyncing,
+          pendingCount,
+          pendingTransactions,
+          onSyncNow: syncNow
+        }}
       />
 
       {/* Floating cart button — hanya tampil di mobile/tablet saat drawer tertutup */}

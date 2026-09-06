@@ -80,38 +80,38 @@ export const PurchaseHistoryView: React.FC = () => {
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700">
+            <thead className="bg-slate-50/70 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700 uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3 font-semibold whitespace-nowrap">{i18n?.language === 'en' ? 'Date' : 'Tanggal'}</th>
-                <th className="px-4 py-3 font-semibold whitespace-nowrap">{i18n?.language === 'en' ? 'Supplier' : 'Supplier'}</th>
-                <th className="px-4 py-3 font-semibold whitespace-nowrap">{i18n?.language === 'en' ? 'Total Cost' : 'Total Biaya'}</th>
-                <th className="px-4 py-3 font-semibold">{i18n?.language === 'en' ? 'Notes' : 'Catatan'}</th>
-                <th className="px-4 py-3 font-semibold text-right whitespace-nowrap">{i18n?.language === 'en' ? 'Action' : 'Aksi'}</th>
+                <th className="px-4 py-3.5 whitespace-nowrap">{i18n?.language === 'en' ? 'Date' : 'Tanggal'}</th>
+                <th className="px-4 py-3.5 whitespace-nowrap">{i18n?.language === 'en' ? 'Supplier' : 'Supplier'}</th>
+                <th className="px-4 py-3.5 whitespace-nowrap">{i18n?.language === 'en' ? 'Total Cost' : 'Total Biaya'}</th>
+                <th className="px-4 py-3.5">{i18n?.language === 'en' ? 'Notes' : 'Catatan'}</th>
+                <th className="px-4 py-3.5 text-right whitespace-nowrap">{i18n?.language === 'en' ? 'Action' : 'Aksi'}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px] text-slate-700 dark:text-slate-200">
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-400">Memuat...</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-400 text-sm">Memuat...</td></tr>
               ) : purchases.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center gap-2">
                       <Package className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-                      <span className="font-semibold text-slate-600 dark:text-slate-300">Belum ada riwayat penerimaan barang</span>
-                      <span className="text-[11px]">Klik "Catat Penerimaan Baru" untuk mencatat barang masuk dari supplier.</span>
+                      <span className="font-semibold text-slate-600 dark:text-slate-300 text-sm">Belum ada riwayat penerimaan barang</span>
+                      <span className="text-xs">Klik "Catat Penerimaan Baru" untuk mencatat barang masuk dari supplier.</span>
                     </div>
                   </td>
                 </tr>
               ) : (
                 paginatedPurchases.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors align-top">
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">{p.purchase_date}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{p.supplier?.name || '-'}</td>
-                    <td className="px-4 py-3 font-semibold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                  <tr key={p.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors align-top">
+                    <td className="px-4 py-3.5 font-mono text-xs font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">{p.purchase_date}</td>
+                    <td className="px-4 py-3.5 font-semibold text-sm whitespace-nowrap">{p.supplier?.name || '-'}</td>
+                    <td className="px-4 py-3.5 font-bold text-sm text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
                       {formatIDR(Number(p.total_cost))}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 max-w-xs truncate">{p.notes || '-'}</td>
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <td className="px-4 py-3.5 text-xs text-slate-500 max-w-xs truncate">{p.notes || '-'}</td>
+                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
                       <button
                         onClick={() => setDetailPurchase(p)}
                         title="Lihat Detail Barang"

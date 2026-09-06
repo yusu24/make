@@ -4,12 +4,14 @@ import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useConfirm } from '../../../components/ConfirmDialog';
 import { useNavigate } from 'react-router-dom';
 import ClientPagination from '../components/ClientPagination';
 import './KulinerDashboard.css';
 
 const CulinaryStaff = () => {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const { impersonateUser } = useAuth();
   const navigate = useNavigate();
   const [staff, setStaff] = useState([]);
@@ -120,7 +122,7 @@ const CulinaryStaff = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Hapus staff ini?')) {
+    if (await confirm('Hapus staff ini?')) {
       try {
         await api.delete(`/kuliner/admin/staff/${id}`);
         fetchStaff();

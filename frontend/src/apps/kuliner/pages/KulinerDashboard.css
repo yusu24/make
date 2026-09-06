@@ -88,22 +88,42 @@
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 10px 24px !important;
+  padding: 0 24px !important;
   background: #ffffff !important;
   border-bottom: 1px solid #e2e8f0 !important;
   position: sticky !important;
   top: 0 !important;
   z-index: 990 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
-  min-height: 56px;
+  height: 60px !important;
+  min-height: 60px !important;
+  box-sizing: border-box !important;
 }
 
 @media (max-width: 1024px) {
   .kd-mobile-header {
-    padding: 8px 14px !important;
-    min-height: 52px;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    box-sizing: border-box !important;
+    z-index: 950 !important;
+    padding: 0 14px !important;
+    background: rgba(255, 255, 255, 0.97) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  .kd-main {
+    padding-top: 56px !important;
   }
 }
+
 
 @media (min-width: 1025px) {
   .kd-mobile-header .kd-hamburger {
@@ -172,28 +192,32 @@
 
 .kd-logo {
   padding: 0 24px;
-  border-bottom: 1px solid rgba(0,0,0,0.04);
+  border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
   background: #ffffff;
   z-index: 2;
-  height: 70px;
+  height: 60px;
+  min-height: 60px;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 1024px) {
+  .kd-logo {
+    height: 56px;
+    min-height: 56px;
+    padding: 0 18px;
+  }
 }
 
 .kd-logo h1 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #b48c36;
   letter-spacing: -0.02em;
-}
-
-.kd-logo p {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-top: 4px;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .kd-nav-section {
@@ -1275,6 +1299,7 @@
 /* ── Comprehensive Responsive & Mobile Optimizations ── */
 @media (max-width: 1024px) {
   .kd-main {
+    padding-top: 54px !important;
     min-height: 100vh !important;
     min-height: 100dvh !important;
     height: auto !important;

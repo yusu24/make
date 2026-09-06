@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { getCategoryDashboardPath } from '../routes/guards'
 import { api } from '../lib/api'
 import './Auth.css'
 import bizoraLogo from '../assets/bizora-logo.png'
@@ -57,19 +58,8 @@ export default function Login() {
       if (userData.role === 'super_admin' || userData.role === 'admin') {
         navigate('/dashboard')
       } else {
-        if (userData.business_category === 'Toko Retail') {
-          navigate('/retail/dashboard')
-        } else if (userData.business_category === 'Kuliner') {
-          navigate('/kuliner/admin')
-        } else if (userData.business_category === 'Budidaya Hewan' || userData.business_category === 'Budidaya Tanaman') {
-          navigate('/budidaya/dashboard')
-        } else if (userData.business_category === 'Seller') {
-          navigate('/seller/dashboard')
-        } else if (userData.business_category === 'Jasa') {
-          navigate('/jasa/dashboard')
-        } else {
-          navigate('/coming-soon')
-        }
+        const targetPath = getCategoryDashboardPath(userData.business_category)
+        navigate(targetPath)
       }
     } catch (err) {
       if (err.response?.data?.requires_verification) {

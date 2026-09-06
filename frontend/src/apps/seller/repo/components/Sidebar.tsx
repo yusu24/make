@@ -30,7 +30,8 @@ import {
   Bell,
   QrCode,
   CreditCard,
-  Archive
+  Archive,
+  BookOpen
 } from 'lucide-react';
 import { ActiveTab, StoreChannel } from '../types';
 import { useTranslation } from '../../../../contexts/I18nContext';
@@ -95,16 +96,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand Header */}
       <div className="h-16 px-4 flex items-center justify-between border-b border-gray-200 dark:border-slate-800">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/25 shrink-0">
             <Zap className="w-5 h-5 fill-white/20 stroke-white" />
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="font-extrabold text-xl tracking-tight text-[#101828] dark:text-white">
-                BIZORA
-              </span>
-              <span className="text-[10px] font-semibold tracking-wider text-[#667085] uppercase">
-                Omni-Channel ERP
+              <span className="font-extrabold text-lg tracking-tight text-[#101828] dark:text-white">
+                Bizora
               </span>
             </div>
           )}
@@ -112,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         
         {/* Mobile close button */}
         <button 
-          className="md:hidden p-2 text-gray-500 hover:text-gray-700"
+          className="md:hidden p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           onClick={() => setMobileMenuOpen?.(false)}
         >
            <ChevronRight className="w-5 h-5 rotate-180" />
@@ -125,9 +123,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => setActiveTab('menu-utama')}
           title={collapsed ? t('seller.dashboard') : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13.5px] transition-all duration-200 group ${
             activeTab === 'menu-utama'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
+              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
@@ -135,11 +133,62 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed && <span className="flex-1 text-left truncate">{t('seller.dashboard')}</span>}
         </button>
 
+        {/* AI Seller Advisor (Sleek Button Matching Other Modules) */}
+        <button
+          type="button"
+          onClick={openAiAdvisor}
+          title={collapsed ? 'AI Seller Advisor (PRO)' : ''}
+          className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl font-bold text-[13px] transition-all duration-200 group cursor-pointer ${
+            collapsed ? 'justify-center px-0' : ''
+          }`}
+          style={{
+            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%)',
+            border: '1px solid rgba(99, 102, 241, 0.3)',
+            color: '#4f46e5',
+            margin: '2px 0 4px 0',
+          }}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
+            </div>
+            {!collapsed && (
+              <span className="truncate text-indigo-700 dark:text-indigo-300 font-bold">
+                AI Seller Advisor
+              </span>
+            )}
+          </div>
+          {!collapsed && (
+            <span className="text-[9.5px] font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-2 py-0.5 rounded-full shadow-xs tracking-wider">
+              PRO
+            </span>
+          )}
+        </button>
+
+        {/* Kasir POS (Offline / Toko Fisik) */}
+        <button
+          onClick={() => setActiveTab('toko-offline')}
+          title={collapsed ? 'Kasir (POS)' : ''}
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13.5px] transition-all duration-200 group ${
+            activeTab === 'toko-offline'
+              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
+          }`}
+        >
+          <CreditCard className={`w-5 h-5 shrink-0 ${activeTab === 'toko-offline' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+          {!collapsed && <span className="flex-1 text-left truncate">Kasir (POS)</span>}
+          {!collapsed && (
+            <span className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+              POS
+            </span>
+          )}
+        </button>
+
         {/* Pesanan & E-Commerce */}
         <button
           onClick={() => setActiveTab('pesanan')}
           title={collapsed ? t('seller.allOrders') : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
             activeTab === 'pesanan'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -153,7 +202,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => setActiveTab('katalog')}
           title={collapsed ? t('seller.katalog') : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
             activeTab === 'katalog'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -175,7 +224,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.marketplace') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
               isMarketplaceActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -196,7 +245,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('marketplace-dashboard')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-dashboard'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -207,7 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-connected')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-connected'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -218,7 +267,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-mapping')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-mapping'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -229,7 +278,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-sync')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-sync'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -240,7 +289,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-history')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'marketplace-history'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -265,7 +314,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.gudangStok') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
               isGudangActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -287,7 +336,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('gudang')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'gudang'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -299,7 +348,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               <button
                 onClick={() => setActiveTab('penerimaan-barang')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'penerimaan-barang'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -311,7 +360,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               <button
                 onClick={() => setActiveTab('stock-opname')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'stock-opname'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -336,7 +385,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.pengiriman') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
               isShippingActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -357,7 +406,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('shipping-dashboard')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'shipping-dashboard'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -368,7 +417,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('shipping-management')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'shipping-management'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -379,7 +428,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('shipping-packing')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'shipping-packing'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -392,24 +441,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {/* Toko Offline / Kasir POS */}
-        <button
-          onClick={() => setActiveTab('toko-offline')}
-          title={collapsed ? t('seller.kasirPos') : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
-            activeTab === 'toko-offline'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
-          }`}
-        >
-          <Store className={`w-5 h-5 shrink-0 ${activeTab === 'toko-offline' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.kasirPos')}</span>}
-          {!collapsed && (
-            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-              NEW
-            </span>
-          )}
-        </button>
 
         {/* Keuangan Section (Accordion) */}
         <div>
@@ -423,7 +454,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.keuangan') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
               isKeuanganActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -445,7 +476,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('keuangan-pemasukan')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-pemasukan'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -457,7 +488,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               <button
                 onClick={() => setActiveTab('keuangan-pengeluaran')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-pengeluaran'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -469,7 +500,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               <button
                 onClick={() => setActiveTab('keuangan-kas')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-kas'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -481,7 +512,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               <button
                 onClick={() => setActiveTab('keuangan-laporan')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-laporan'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -506,7 +537,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.dataMaster') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
               isMasterActive
                 ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -528,7 +559,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('master-data')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'master-data'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -540,7 +571,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               <button
                 onClick={() => setActiveTab('pelanggan')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'pelanggan'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -557,7 +588,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => setActiveTab('notification-center')}
           title={collapsed ? t('seller.pusatNotifikasi') : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
             activeTab === 'notification-center'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -567,11 +598,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pusatNotifikasi')}</span>}
         </button>
 
+        {/* Buku Panduan & SOP */}
+        <button
+          onClick={() => setActiveTab('panduan')}
+          title={collapsed ? 'Buku Panduan & SOP' : ''}
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
+            activeTab === 'panduan'
+              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
+          }`}
+        >
+          <BookOpen className={`w-5 h-5 shrink-0 ${activeTab === 'panduan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+          {!collapsed && <span className="flex-1 text-left truncate">Buku Panduan & SOP</span>}
+        </button>
+
         {/* Paket & Langganan */}
         <button
           onClick={() => setActiveTab('langganan')}
           title={collapsed ? 'Paket & Langganan' : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
             activeTab === 'langganan'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -593,7 +638,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }}
             title={collapsed ? t('seller.pengaturanSistem') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-sm transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
               isSettingsActive
                 ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -615,7 +660,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
                 onClick={() => setActiveTab('settings-app')}
-                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 text-left ${
+                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
                   activeTab === 'settings-app'
                     ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -626,7 +671,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('settings-account')}
-                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 text-left ${
+                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
                   activeTab === 'settings-account'
                     ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -637,7 +682,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('settings-roles')}
-                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 text-left ${
+                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
                   activeTab === 'settings-roles'
                     ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -648,7 +693,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('settings-users')}
-                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 text-left ${
+                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
                   activeTab === 'settings-users'
                     ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
@@ -657,17 +702,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <Users className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
                 <span>{t('seller.manajemenUser')}</span>
               </button>
+              <button
+                onClick={() => setActiveTab('backup')}
+                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
+                  activeTab === 'backup'
+                    ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Archive className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                <span>Backup Data Toko</span>
+              </button>
             </div>
           )}
         </div>
-      </div>
 
-      {/* Backup Data */}
-      <div className="px-3 pb-1">
+        {/* Backup Data Toko (Direct Menu Item) */}
         <button
           onClick={() => setActiveTab('backup')}
           title={collapsed ? 'Backup Data Toko' : ''}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
             activeTab === 'backup'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
@@ -677,49 +731,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed && <span className="flex-1 text-left truncate">Backup Data Toko</span>}
         </button>
       </div>
-
-      {/* Panduan Aplikasi */}
-      <div className="px-3 pb-2 pt-1">
-        <button
-          onClick={() => setActiveTab('panduan')}
-          title={collapsed ? 'Panduan Aplikasi' : ''}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
-            activeTab === 'panduan'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
-          }`}
-        >
-          <ClipboardCheck className={`w-5 h-5 shrink-0 ${activeTab === 'panduan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Panduan Aplikasi</span>}
-        </button>
-      </div>
-
-      {/* AI Intelligence Assistant Banner */}
-      {!collapsed && (
-        <div className="p-3 m-3 rounded-2xl bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-950 text-white shadow-xl shadow-indigo-900/10 border border-indigo-700/30 relative overflow-hidden group">
-          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/20 rounded-full blur-xl group-hover:bg-purple-500/30 transition-all duration-500" />
-          <div className="flex items-center gap-2 mb-1.5">
-            <div className="w-6 h-6 rounded-lg bg-indigo-500/30 border border-indigo-400/40 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-300 animate-pulse" />
-            </div>
-            <span className="text-xs font-semibold text-indigo-200 tracking-wide">
-              BIZORA AI ASSISTANT
-            </span>
-          </div>
-          <p className="text-[11px] text-slate-300 leading-relaxed mb-2.5">
-            Analisis profit bersih, proyeksi stok, & optimasi iklan Shopee/TikTok.
-          </p>
-          <button
-            onClick={openAiAdvisor}
-            className="w-full py-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            Tanya AI Business Advisor
-          </button>
-        </div>
-      )}
-
-
     </aside>
   );
 };

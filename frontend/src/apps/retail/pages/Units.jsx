@@ -5,10 +5,14 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
-import { Edit3, Trash2 } from 'lucide-react';
-
+import { Edit3, Trash2, Scale } from 'lucide-react';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import EmptyTableState from '../../../components/EmptyTableState';
 
 export default function Units() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingUnit, setEditingUnit] = useState(null);
@@ -30,24 +34,29 @@ export default function Units() {
   const addUnit = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
+    const name = fd.get('name');
+    if (!name) return;
     try { 
-      await api.post('/retail/units', { name: fd.get('name') });
+      await api.post('/retail/units', { name });
+      toast.success(`Satuan "${name}" berhasil ditambahkan`);
       fetchUnits();
       e.target.reset();
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menambah satuan');
+      toast.error(e.response?.data?.message || 'Gagal menambah satuan');
     }
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
-    try {
-      await api.put(`/retail/units/${editingUnit.id}`, { name: fd.get('name') });
+    const name = fd.get('name');
+    try { 
+      await api.put(`/retail/units/${editingUnit.id}`, { name });
+      toast.success('Perubahan satuan berhasil disimpan');
       fetchUnits();
       setEditingUnit(null);
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menyimpan perubahan satuan');
+      toast.error(e.response?.data?.message || 'Gagal menyimpan perubahan satuan');
     }
   };
 
@@ -106,7 +115,14 @@ export default function Units() {
             {loading ? (
                <RetailTableLoadingRow colSpan={3} text="Menyinkronkan Satuan..." />
             ) : filteredUnits.length === 0 ? (
-               <tr><td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>Belum ada data satuan.</td></tr>
+                <EmptyTableState
+                  colSpan={3}
+                  icon={Scale}
+                  title="Belum ada data satuan"
+                  description={search ? `Tidak ada satuan yang cocok dengan pencarian "${search}".` : "Tambahkan satuan unit seperti Pcs, Box, Kg, atau Liter."}
+                  actionLabel={search ? "Reset Pencarian" : null}
+                  onAction={() => setSearch('')}
+                />
             ) : (
               paginatedData.map(u => (
                 <tr key={u.id}>
@@ -118,8 +134,29 @@ export default function Units() {
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                      <button className="btn btn-sm btn-ghost" onClick={() => setEditingUnit(u)}><Edit3 size={14} /></button>
-                      <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if(confirm('Hapus satuan ini?')) { await api.delete(`/retail/units/${u.id}`); fetchUnits(); } }}><Trash2 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost" onClick={() => setEditingUnit(u)} title="Edit Satuan"><Edit3 size={14} /></button>
+                      <button
+                        className="btn btn-sm btn-ghost retail-text-danger"
+                        title="Hapus Satuan"
+                        onClick={async () => {
+                          const ok = await confirm(`Hapus satuan "${u.name}"?`, {
+                            title: 'Hapus Satuan',
+                            confirmLabel: 'Ya, Hapus',
+                            danger: true
+                          });
+                          if (ok) {
+                            try {
+                              await api.delete(`/retail/units/${u.id}`);
+                              toast.success(`Satuan "${u.name}" berhasil dihapus`);
+                              fetchUnits();
+                            } catch (e) {
+                              toast.error(e.response?.data?.message || 'Gagal menghapus satuan');
+                            }
+                          }
+                        }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </td>
                 </tr>

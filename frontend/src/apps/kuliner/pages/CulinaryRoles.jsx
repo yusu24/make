@@ -4,9 +4,11 @@ import { api } from '../../../lib/api';
 import { Users, Plus, Edit2, Trash2, Shield } from 'lucide-react';
 import ClientPagination from '../components/ClientPagination';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useConfirm } from '../../../components/ConfirmDialog';
 
 const CulinaryRoles = () => {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -96,7 +98,8 @@ const CulinaryRoles = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus role ini?')) {
+    const ok = await confirm('Apakah Anda yakin ingin menghapus role ini?');
+    if (ok) {
       try {
         await api.delete(`/kuliner/admin/roles/${id}`);
         fetchRoles();

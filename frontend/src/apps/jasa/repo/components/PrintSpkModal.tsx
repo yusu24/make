@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Printer, Wrench, Shield, CheckCircle } from 'lucide-react';
 import { WorkOrder } from '../types';
 import { formatRupiah } from '../data/mockData';
+import { useJasa } from '../contexts/JasaContext';
 
 interface PrintSpkModalProps {
   order: WorkOrder | null;
@@ -9,6 +10,8 @@ interface PrintSpkModalProps {
 }
 
 export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) => {
+  const { terms } = useJasa();
+
   if (!order) return null;
 
   const handlePrint = () => {
@@ -27,7 +30,7 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
             </div>
             <div>
               <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Print Preview</span>
-              <h2 className="text-sm sm:text-base font-semibold text-slate-900">Pratinjau Cetak Surat Perintah Kerja (SPK)</h2>
+              <h2 className="text-sm sm:text-base font-semibold text-slate-900">Pratinjau Cetak {terms.workOrderLabel}</h2>
             </div>
           </div>
 
@@ -58,14 +61,14 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
                 <Wrench className="w-6 h-6" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold tracking-tight text-slate-900">PT PRO-SERVIS TEKNOLOGI INDONESIA</h1>
-                <p className="text-xs text-slate-600 font-medium">Divisi Layanan Rekayasa, Pemeliharaan & Servis Lapangan Terpadu</p>
-                <p className="text-[11px] text-slate-500">Gedung Graha Solusi Lt. 5, Jl. Gatot Subroto No. 88, Jakarta Selatan | Telp: (021) 555-8900</p>
+                <h1 className="text-xl font-semibold tracking-tight text-slate-900">BIZORA SERVICES & OPERATIONAL</h1>
+                <p className="text-xs text-slate-600 font-medium">Divisi Layanan {terms.categoryName}</p>
+                <p className="text-[11px] text-slate-500">Pusat Layanan Profesional & Terstandarisasi | Kontak Dispatcher: 0812-3456-7890</p>
               </div>
             </div>
 
             <div className="text-right">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">SURAT PERINTAH KERJA</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">{terms.workOrderLabel.toUpperCase()}</div>
               <div className="font-mono text-base font-semibold text-blue-700">{order.id}</div>
               <div className="text-[11px] text-slate-600">Tgl: {(order.createdAt || '').split('T')[0]}</div>
             </div>
@@ -90,7 +93,7 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
               <div className="font-semibold text-slate-900 uppercase text-[11px] border-b border-slate-200 pb-1 mb-2">
                 1. Data Pelanggan / Lokasi
               </div>
-              <div><strong>Perusahaan:</strong> {order.customerCompany}</div>
+              <div><strong>Pelanggan:</strong> {order.customerCompany}</div>
               <div><strong>PIC:</strong> {order.customerName} ({order.customerPhone})</div>
               <div><strong>Email:</strong> {order.customerEmail}</div>
               <div><strong>Alamat:</strong> {order.customerAddress}</div>
@@ -98,19 +101,25 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
 
             <div className="border border-slate-300 rounded-lg p-3 space-y-1">
               <div className="font-semibold text-slate-900 uppercase text-[11px] border-b border-slate-200 pb-1 mb-2">
-                2. Spesifikasi Objek & Teknisi
+                2. Spesifikasi {terms.unitLabel} & {terms.technicianLabel}
               </div>
-              <div><strong>Objek / Kendaraan:</strong> {order.serviceObjectName}</div>
-              <div><strong>Plat / No. Seri:</strong> {order.serviceObjectIdentifier || 'N/A'}</div>
-              <div><strong>Teknisi Ditugaskan:</strong> {order.technicianName}</div>
-              <div><strong>Jadwal Servis:</strong> {(order.scheduledDate || '').split('T')[0]} ({order.scheduledTime})</div>
+              <div><strong>{terms.unitModelLabel}:</strong> {order.serviceObjectName}</div>
+              <div><strong>{terms.unitIdLabel}:</strong> {order.serviceObjectIdentifier || 'N/A'}</div>
+              {order.customField1Value && (
+                <div><strong>{terms.customField1Label}:</strong> {order.customField1Value}</div>
+              )}
+              {order.customField2Value && (
+                <div><strong>{terms.customField2Label}:</strong> {order.customField2Value}</div>
+              )}
+              <div><strong>{terms.technicianLabel} Ditugaskan:</strong> {order.technicianName}</div>
+              <div><strong>Jadwal:</strong> {(order.scheduledDate || '').split('T')[0]} ({order.scheduledTime})</div>
             </div>
           </div>
 
           {/* Scope of Work */}
           <div className="mb-6">
             <div className="font-semibold text-slate-900 uppercase text-xs mb-1">
-              3. Ruang Lingkup & Uraian Pekerjaan:
+              3. {terms.problemLabel}:
             </div>
             <div className="p-3 bg-slate-50 border border-slate-300 rounded-lg text-xs leading-relaxed">
               {order.serviceDescription}
@@ -120,7 +129,7 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
           {/* Cost & Materials Table */}
           <div className="mb-6">
             <div className="font-semibold text-slate-900 uppercase text-xs mb-2">
-              4. Rincian Suku Cadang & Biaya Jasa:
+              4. Rincian {terms.sparepartLabel} & Biaya Jasa:
             </div>
             <table className="w-full text-xs border border-slate-300">
               <thead className="bg-slate-100 border-b border-slate-300">
@@ -141,7 +150,7 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
                   </tr>
                 ))}
                 <tr>
-                  <td className="p-2 font-medium">Jasa Layanan Teknisi ({order.estimatedHours} Jam Kerja)</td>
+                  <td className="p-2 font-medium">Jasa Layanan {terms.technicianLabel} ({order.estimatedHours} Jam Kerja)</td>
                   <td className="p-2 text-center">1 Paket</td>
                   <td className="p-2 text-right">{formatRupiah(order.laborRate)}</td>
                   <td className="p-2 text-right font-medium">{formatRupiah(order.totalLaborCost)}</td>
@@ -181,12 +190,12 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
           {/* Signature Areas */}
           <div className="grid grid-cols-3 gap-6 pt-4 text-center text-xs">
             <div>
-              <div className="font-semibold text-slate-800 mb-12">Pemberi Perintah / Dispatcher</div>
-              <div className="border-t border-slate-400 pt-1 font-semibold text-slate-900">( Staff Manajemen Jasa )</div>
+              <div className="font-semibold text-slate-800 mb-12">Pemberi Perintah / Kasir</div>
+              <div className="border-t border-slate-400 pt-1 font-semibold text-slate-900">( Staff Manajemen {terms.categoryName} )</div>
             </div>
 
             <div>
-              <div className="font-semibold text-slate-800 mb-12">Teknisi Pelaksana</div>
+              <div className="font-semibold text-slate-800 mb-12">{terms.technicianLabel} Pelaksana</div>
               <div className="border-t border-slate-400 pt-1 font-semibold text-slate-900">( {order.technicianName} )</div>
             </div>
 

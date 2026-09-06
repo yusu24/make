@@ -117,36 +117,36 @@ export const RolesPermissionsView: React.FC = () => {
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700">
+            <thead className="bg-slate-50/70 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700 uppercase tracking-wider">
               <tr>
-                <th className="px-5 py-4 font-semibold">Nama Peran</th>
-                <th className="px-5 py-4 font-semibold">Modul yang Diizinkan</th>
-                <th className="px-5 py-4 font-semibold text-right">Aksi</th>
+                <th className="px-5 py-3.5">Nama Peran</th>
+                <th className="px-5 py-3.5">Modul yang Diizinkan</th>
+                <th className="px-5 py-3.5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px] text-slate-700 dark:text-slate-200">
               {loading ? (
-                <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-400">Memuat...</td></tr>
+                <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-400 text-sm">Memuat...</td></tr>
               ) : roles.length === 0 ? (
-                <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-400">Belum ada peran. Klik "Tambah Peran" untuk membuat yang pertama.</td></tr>
+                <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-400 text-sm">Belum ada peran. Klik "Tambah Peran" untuk membuat yang pertama.</td></tr>
               ) : (
                 paginatedRoles.map((role) => (
-                  <tr key={role.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors align-top">
-                    <td className="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">{role.name}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-1 max-w-xl">
+                  <tr key={role.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors align-top">
+                    <td className="px-5 py-3.5 font-semibold text-sm text-slate-900 dark:text-slate-100 whitespace-nowrap">{role.name}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex flex-wrap gap-1.5 max-w-xl">
                         {(role.permissions || []).length === 0 ? (
-                          <span className="text-[10px] text-slate-400">Belum ada izin diatur</span>
+                          <span className="text-xs text-slate-400">Belum ada izin diatur</span>
                         ) : (
                           role.permissions.map((p) => (
-                            <span key={p} className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-semibold text-[10px] border border-slate-200 dark:border-slate-600">
+                            <span key={p} className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 font-semibold text-xs border border-slate-200 dark:border-slate-600">
                               {MODULE_PERMISSIONS.find((m) => m.id === p)?.label.split(',')[0] || p}
                             </span>
                           ))
                         )}
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-right whitespace-nowrap">
+                    <td className="px-5 py-3.5 text-right whitespace-nowrap">
                       <button onClick={() => openEditRole(role)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                         <Edit2 className="w-4 h-4" />
                       </button>

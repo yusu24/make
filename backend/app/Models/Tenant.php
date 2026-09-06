@@ -11,13 +11,15 @@ class Tenant extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'type', 'tenant_id', 'user_id', 'subscription_plan', 'status', 
+        'name', 'type', 'tenant_id', 'user_id', 'subscription_plan', 'subscription_status', 'status', 
         'business_category_id', 'business_name', 'address', 'phone', 'settings',
+        'trial_ends_at', 'subscription_expires_at',
         'kyc_status', 'kyc_document_path', 'kyc_notes', 'kyc_submitted_at', 'kyc_verified_at'
     ];
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
+        'subscription_expires_at' => 'datetime',
         'kyc_submitted_at' => 'datetime',
         'kyc_verified_at' => 'datetime',
     ];

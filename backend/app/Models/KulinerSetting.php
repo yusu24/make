@@ -11,6 +11,7 @@ class KulinerSetting extends Model
         'operational_days', 'total_tables',
         'hero_title', 'hero_subtitle', 'hero_image_url', 'promo_title', 'promo_desc', 
         'instagram_url', 'whatsapp_number', 'logo_url', 'website_url',
+        'qris_image_path', 'qris_image_url', 'bank_name', 'bank_account_no', 'bank_account_name',
         'dine_in_enabled',
         'enable_tax',
         'tax_rate',

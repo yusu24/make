@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import '../retail.css';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
+import { useConfirm } from '../../../components/ConfirmDialog';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import RetailPagination from '../components/RetailPagination';
 import usePagination from '../../../hooks/usePagination';
@@ -90,6 +91,7 @@ export const GRANULAR_PERMISSION_GROUPS = [
 export const ALL_PERMISSIONS_FLAT = GRANULAR_PERMISSION_GROUPS.flatMap(g => g.permissions);
 
 export default function Roles() {
+  const confirm = useConfirm();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -145,7 +147,8 @@ export default function Roles() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Yakin ingin menghapus jabatan ini? Pegawai dengan jabatan ini akan kehilangan hak akses kustom.')) {
+    const ok = await confirm('Yakin ingin menghapus jabatan ini? Pegawai dengan jabatan ini akan kehilangan hak akses kustom.');
+    if (ok) {
       try {
         await api.delete(`/retail/roles/${id}`);
         fetchRoles();

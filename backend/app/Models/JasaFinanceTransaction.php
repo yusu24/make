@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class JasaFinanceTransaction extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
 
     protected $table = 'jasa_finance_transactions';
 

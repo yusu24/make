@@ -128,11 +128,12 @@ export default function Profile() {
           <h4 style={{fontSize:13,fontWeight: 600,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.08em'}}>Ubah Password</h4>
           <div className="form-group">
             <label className="form-label" htmlFor="cur-pass">Password Saat Ini</label>
-            <div className="auth-input-wrap">
+            <div style={{ position: 'relative' }}>
               <input id="cur-pass" className="form-input" type={showCurPass ? 'text' : 'password'} placeholder="••••••••"
                 style={{paddingRight:40}}
                 value={form.current_password} onChange={e=>setForm({...form,current_password:e.target.value})} />
-              <button type="button" className="auth-eye" onClick={() => setShowCurPass(!showCurPass)}>
+              <button type="button" onClick={() => setShowCurPass(!showCurPass)}
+                style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', fontSize:16, lineHeight:1, color:'var(--text-muted)' }}>
                 {showCurPass ? '🙈' : '👁'}
               </button>
             </div>
@@ -140,22 +141,24 @@ export default function Profile() {
           <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:14}}>
             <div className="form-group">
               <label className="form-label" htmlFor="new-pass">Password Baru</label>
-              <div className="auth-input-wrap">
+              <div style={{ position: 'relative' }}>
                 <input id="new-pass" className="form-input" type={showNewPass ? 'text' : 'password'} placeholder="Min. 8 karakter"
                   style={{paddingRight:40}}
                   value={form.new_password} onChange={e=>setForm({...form,new_password:e.target.value})} />
-                <button type="button" className="auth-eye" onClick={() => setShowNewPass(!showNewPass)}>
+                <button type="button" onClick={() => setShowNewPass(!showNewPass)}
+                  style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', fontSize:16, lineHeight:1, color:'var(--text-muted)' }}>
                   {showNewPass ? '🙈' : '👁'}
                 </button>
               </div>
             </div>
             <div className="form-group">
               <label className="form-label" htmlFor="confirm-pass">Konfirmasi Password</label>
-              <div className="auth-input-wrap">
+              <div style={{ position: 'relative' }}>
                 <input id="confirm-pass" className="form-input" type={showConfPass ? 'text' : 'password'} placeholder="Ulangi password baru"
                   style={{paddingRight:40}}
                   value={form.new_password_confirmation} onChange={e=>setForm({...form,new_password_confirmation:e.target.value})} />
-                <button type="button" className="auth-eye" onClick={() => setShowConfPass(!showConfPass)}>
+                <button type="button" onClick={() => setShowConfPass(!showConfPass)}
+                  style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', fontSize:16, lineHeight:1, color:'var(--text-muted)' }}>
                   {showConfPass ? '🙈' : '👁'}
                 </button>
               </div>

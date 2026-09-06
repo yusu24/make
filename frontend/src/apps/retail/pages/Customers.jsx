@@ -8,9 +8,16 @@ import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import KpiCard from '../../../components/KpiCard';
+import EmptyTableState from '../../../components/EmptyTableState';
+import FormLabel from '../../../components/FormLabel';
 import '../retail.css';
 
 export default function Customers() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -43,25 +50,32 @@ export default function Customers() {
     try {
       if (editingCustomer) {
         await api.put(`/retail/customers/${editingCustomer.id}`, data);
+        toast.success('Data pelanggan berhasil diperbarui');
       } else {
         await api.post('/retail/customers', data);
+        toast.success('Pelanggan baru berhasil didaftarkan');
       }
       fetchCustomers();
       setShowModal(false);
       setEditingCustomer(null);
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menyimpan data pelanggan');
+      toast.error(e.response?.data?.message || 'Gagal menyimpan data pelanggan');
     }
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Hapus pelanggan ini?')) {
-      try {
-        await api.delete(`/retail/customers/${id}`);
-        fetchCustomers();
-      } catch (e) {
-        alert(e.response?.data?.message || 'Gagal menghapus pelanggan');
-      }
+    const ok = await confirm('Apakah Anda yakin ingin menghapus pelanggan ini dari sistem?', {
+      title: 'Hapus Pelanggan',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/retail/customers/${id}`);
+      toast.success('Data pelanggan berhasil dihapus');
+      fetchCustomers();
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Gagal menghapus data pelanggan');
     }
   };
 
@@ -92,38 +106,21 @@ export default function Customers() {
     <div className="retail-page-classic">
       {/* Page Title Handled by Navtop */}
       {/* CRM Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 24 }}>
-         {/* Total Member Card */}
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
-                  <User size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Total Member</span>
-            </div>
-            <div>
-               <p className="text-2xl text-slate-900 leading-tight font-normal">
-                  {customers.length} <span className="text-sm text-slate-400 font-medium ml-1">User</span>
-               </p>
-               <p className="text-xs text-slate-400 mt-1">Total pelanggan terdaftar dalam sistem.</p>
-            </div>
-         </div>
-
-         {/* Database Health Card */}
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
-                  <RefreshCw size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Database Health</span>
-            </div>
-            <div>
-               <p className="text-2xl text-emerald-600 leading-tight font-semibold">
-                  Active
-               </p>
-               <p className="text-xs text-slate-400 mt-1">Koneksi dan integritas database pelanggan stabil.</p>
-            </div>
-         </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <KpiCard
+          icon={User}
+          label="Total Member"
+          value={`${customers.length} User`}
+          sub="Total pelanggan terdaftar dalam sistem"
+          color="indigo"
+        />
+        <KpiCard
+          icon={RefreshCw}
+          label="Database Status"
+          value="Aktif & Sinkron"
+          sub="Integritas data pelanggan terverifikasi"
+          color="emerald"
+        />
       </div>
 
       {/* Table Section (Unified Style) */}
@@ -169,11 +166,17 @@ export default function Customers() {
             {loading ? (
               <RetailTableLoadingRow colSpan={6} text="Memuat database..." />
             ) : filtered.length === 0 ? (
-              <tr>
-                 <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
-                    Belum ada data pelanggan terdaftar.
-                 </td>
-              </tr>
+              <EmptyTableState
+                colSpan={6}
+                icon={User}
+                title="Belum ada data pelanggan"
+                description={search ? `Tidak ada pelanggan yang cocok dengan pencarian "${search}".` : "Daftarkan pelanggan baru untuk mengaktifkan riwayat transaksi dan program loyalty."}
+                actionLabel={search ? "Reset Pencarian" : "Daftarkan Pelanggan"}
+                onAction={() => {
+                  if (search) setSearch('');
+                  else { setEditingCustomer(null); setShowModal(true); }
+                }}
+              />
             ) : (
               paginatedData.map(c => (
                 <tr key={c.id}>
@@ -218,21 +221,21 @@ export default function Customers() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingCustomer(null); }} title={editingCustomer ? 'Edit Profil Pelanggan' : 'Daftarkan Pelanggan Baru'}>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
            <div className="form-group">
-              <label className="form-label">Nama Lengkap</label>
+              <FormLabel required>Nama Lengkap</FormLabel>
               <input name="name" className="form-input" placeholder="Masukkan nama pelanggan" defaultValue={editingCustomer?.name} required />
            </div>
            <div className="grid-2">
               <div className="form-group">
-                 <label className="form-label">Nomor WhatsApp/HP</label>
+                 <FormLabel required helper="WhatsApp">Nomor Kontak / HP</FormLabel>
                  <input name="contact" className="form-input" placeholder="08xxxx" defaultValue={editingCustomer?.contact} required />
               </div>
               <div className="form-group">
-                 <label className="form-label">Email (Opsional)</label>
+                 <FormLabel helper="Opsional">Email</FormLabel>
                  <input name="email" type="email" className="form-input" placeholder="user@example.com" defaultValue={editingCustomer?.email} />
               </div>
            </div>
            <div className="form-group">
-              <label className="form-label">Alamat Lengkap</label>
+              <FormLabel helper="Opsional">Alamat Lengkap</FormLabel>
               <textarea name="address" className="form-input min-h-[100px]" placeholder="Jl. Contoh No. 123..." defaultValue={editingCustomer?.address}></textarea>
            </div>
            <div className="modal__actions">

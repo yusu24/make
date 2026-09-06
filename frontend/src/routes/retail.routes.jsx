@@ -53,11 +53,13 @@ const RetailOutlets = lazy(() => import('../apps/retail/pages/Outlets'));
 const RetailStockTransfers = lazy(() => import('../apps/retail/pages/StockTransfers'));
 const RetailBatches = lazy(() => import('../apps/retail/pages/Batches'));
 const RetailSerials = lazy(() => import('../apps/retail/pages/Serials'));
+const RetailGuide = lazy(() => import('../apps/retail/pages/RetailGuide'));
 
 const retailRoutes = (
   <Route path="retail" element={<CategoryRoute allowedCategory="Toko Retail"><RetailOutlet /></CategoryRoute>}>
     <Route index element={<Navigate to="dashboard" replace />} />
     <Route path="dashboard" element={<RetailDashboard />} />
+    <Route path="guide" element={<RetailGuide />} />
     <Route path="pos" element={<RetailPos />} />
 
     {/* DATA MASTER */}

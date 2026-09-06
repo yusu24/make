@@ -18,6 +18,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
+import KpiCard from '../../../components/KpiCard';
 import { 
   RetailPrintHeader, 
   RetailPrintSectionHeader, 
@@ -341,58 +342,34 @@ export default function FinanceSummary() {
 
           {/* Key Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {/* Total Penjualan */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Penjualan Bersih</span>
-                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600">
-                  <TrendingUp size={16} />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-slate-900 mt-2">{formatRp(summary.total_sales || 0)}</p>
-              <div className="flex items-center justify-between text-xs text-slate-400 mt-1">
-                <span>Kotor: {formatRp(grossSales)}</span>
-                {Number(summary.total_discounts) > 0 && (
-                  <span className="text-rose-500 font-medium">Diskon: -{formatRp(summary.total_discounts)}</span>
-                )}
-              </div>
-            </div>
-
-            {/* Total HPP */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Beban Pokok (HPP)</span>
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
-                  <Layers size={16} />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-slate-900 mt-2">{formatRp(summary.total_cogs || 0)}</p>
-              <p className="text-xs text-slate-400 mt-1">Modal awal barang yang terjual</p>
-            </div>
-
-            {/* Laba Kotor */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Laba Kotor (Gross Profit)</span>
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600">
-                  <Percent size={16} />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-emerald-600 mt-2">{formatRp(summary.gross_profit || grossProfit)}</p>
-              <p className="text-xs text-emerald-600/80 mt-1 font-medium">Gross Margin: {grossMarginRate}%</p>
-            </div>
-
-            {/* Total Beban Operasional */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Beban Operasional</span>
-                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-600">
-                  <TrendingDown size={16} />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-rose-600 mt-2">{formatRp(summary.total_expenses || 0)}</p>
-              <p className="text-xs text-slate-400 mt-1">Pengeluaran & operasional toko</p>
-            </div>
+            <KpiCard
+              icon={TrendingUp}
+              label="Total Penjualan Bersih"
+              value={formatRp(summary.total_sales || 0)}
+              sub={`Kotor: ${formatRp(grossSales)}${Number(summary.total_discounts) > 0 ? ` · Diskon: -${formatRp(summary.total_discounts)}` : ''}`}
+              color="blue"
+            />
+            <KpiCard
+              icon={Layers}
+              label="Beban Pokok (HPP)"
+              value={formatRp(summary.total_cogs || 0)}
+              sub="Modal awal barang yang terjual"
+              color="amber"
+            />
+            <KpiCard
+              icon={Percent}
+              label="Laba Kotor (Gross)"
+              value={formatRp(summary.gross_profit || grossProfit)}
+              sub={`Gross Margin: ${grossMarginRate}%`}
+              color="emerald"
+            />
+            <KpiCard
+              icon={TrendingDown}
+              label="Beban Operasional"
+              value={formatRp(summary.total_expenses || 0)}
+              sub="Pengeluaran & operasional toko"
+              color="rose"
+            />
           </div>
 
           {/* Income Statement Table View on Screen */}

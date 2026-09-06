@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { api } from '../../../lib/api';
 import { Plus, Edit3, Trash2, Tag, Ruler, Package, CheckCircle2, XCircle, Search, Layers } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import { useConfirm } from '../../../components/ConfirmDialog';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms';
 import usePagination from '../../../hooks/usePagination';
@@ -11,6 +12,7 @@ import '../budidaya.css';
 
 export default function BudidayaMasterData() {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const terms = useBudidayaTerms();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'finance';
@@ -85,7 +87,8 @@ export default function BudidayaMasterData() {
   };
 
   const handleDeleteFinanceCat = async (cat) => {
-    if (!window.confirm(`Yakin ingin menghapus pos keuangan "${cat.name}"?`)) return;
+    const ok = await confirm(`Yakin ingin menghapus pos keuangan "${cat.name}"?`);
+    if (!ok) return;
     try {
       await api.delete(`/budidaya/finance-categories/${cat.id}`);
       fetchAllData();
@@ -120,7 +123,8 @@ export default function BudidayaMasterData() {
   };
 
   const handleDeleteUnit = async (unit) => {
-    if (!window.confirm(`Yakin ingin menghapus satuan "${unit.name}"?`)) return;
+    const ok = await confirm(`Yakin ingin menghapus satuan "${unit.name}"?`);
+    if (!ok) return;
     try {
       await api.delete(`/budidaya/units/${unit.id}`);
       fetchAllData();
@@ -150,7 +154,8 @@ export default function BudidayaMasterData() {
   };
 
   const handleDeleteFeedCat = async (cat) => {
-    if (!window.confirm(`Yakin ingin menghapus kategori pakan "${cat.name}"?`)) return;
+    const ok = await confirm(`Yakin ingin menghapus kategori pakan "${cat.name}"?`);
+    if (!ok) return;
     try {
       await api.delete(`/budidaya/feed-categories/${cat.id}`);
       fetchAllData();

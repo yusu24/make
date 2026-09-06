@@ -3,7 +3,7 @@ import { lazy } from 'react';
 import { Route, Navigate, Outlet, useOutletContext } from 'react-router-dom';
 import { CategoryRoute } from './guards';
 
-import SellerApp from '../apps/seller/repo/SellerApp';
+const SellerApp = lazy(() => import('../apps/seller/repo/SellerApp'));
 import { ProtectedRoute } from './guards';
 
 const sellerRoutes = (

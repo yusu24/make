@@ -340,7 +340,7 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="text-[10px] font-semibold text-[#667085] uppercase tracking-wider border-b border-gray-100 dark:border-slate-800">
+                  <tr className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider border-b border-gray-100 dark:border-slate-800">
                     <th className="pb-3 pr-4">{i18n?.language === 'en' ? 'ORDER' : 'PESANAN'}</th>
                     <th className="pb-3 px-4">{i18n?.language === 'en' ? 'CUSTOMER' : 'PEMBELI'}</th>
                     <th className="pb-3 px-4">{i18n?.language === 'en' ? 'ITEMS' : 'PRODUK'}</th>
@@ -348,36 +348,36 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
                     <th className="pb-3 pl-4 text-center">{i18n?.language === 'en' ? 'AWB TRACKING' : 'RESI AWB'}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-slate-800/80 text-xs">
+                <tbody className="divide-y divide-gray-100 dark:divide-slate-800/80 text-[13px]">
                   {pendingOrders.slice(0, 4).map((ord) => {
                     const badge = getPlatformBadgeColor(ord.platform);
                     return (
                       <tr key={ord.id} className="hover:bg-gray-50/80 dark:hover:bg-slate-800/50 transition-colors">
                         <td className="py-3 pr-4">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${badge.bg} ${badge.text} mb-0.5`}>
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold ${badge.bg} ${badge.text} mb-1`}>
                             {ord.platform}
                           </span>
-                          <div className="font-mono font-semibold text-[#101828] dark:text-slate-200">
+                          <div className="font-mono font-bold text-sm text-[#101828] dark:text-slate-200">
                             {ord.orderNumber}
                           </div>
                         </td>
-                        <td className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-200">
+                        <td className="py-3 px-4 font-semibold text-sm text-slate-700 dark:text-slate-200">
                           {ord.customerName}
                         </td>
-                        <td className="py-3 px-4 max-w-xs truncate">
+                        <td className="py-3 px-4 max-w-xs truncate text-xs text-slate-600 dark:text-slate-300">
                           {ord.items.map((it) => (
                             <div key={it.sku} className="truncate">
-                              <span className="font-semibold">{it.quantity}x</span> {it.productName}
+                              <span className="font-semibold text-slate-800 dark:text-slate-100">{it.quantity}x</span> {it.productName}
                             </div>
                           ))}
                         </td>
-                        <td className="py-3 px-4 font-extrabold text-[#101828] dark:text-white">
+                        <td className="py-3 px-4 font-bold text-sm text-[#101828] dark:text-white">
                           {formatIDR(ord.totalAmount)}
                         </td>
                         <td className="py-3 pl-4 text-center">
                           <button
                             onClick={() => onPrintAwb(ord)}
-                            className="px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold shadow-xs flex items-center gap-1 mx-auto cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 mx-auto cursor-pointer"
                           >
                             <Printer className="w-3.5 h-3.5" />
                             <span>{i18n?.language === 'en' ? 'Print Label' : 'Cetak Resi'}</span>

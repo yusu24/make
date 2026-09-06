@@ -34,9 +34,9 @@ class CheckSubscription
             return response()->json(['message' => 'Tenant not found.'], 403);
         }
 
-        // Cek status kedaluwarsa. Prioritaskan expires_at jika ada, lalu trial_ends_at.
+        // Cek status kedaluwarsa. Prioritaskan subscription_expires_at jika ada, lalu trial_ends_at.
         $now = now();
-        $expiresAt = $tenant->expires_at ?? $tenant->trial_ends_at;
+        $expiresAt = $tenant->subscription_expires_at ?? $tenant->trial_ends_at;
 
         if ($tenant->status === 'expired' || ($expiresAt && $now->greaterThan($expiresAt))) {
             return response()->json([

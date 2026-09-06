@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
-import { Search, Bell, User, LogOut, Shield, Calendar, Sparkles, CreditCard } from 'lucide-react'
+import { Search, Bell, User, LogOut, Shield, Calendar, CreditCard } from 'lucide-react'
 import './Header.css'
 
 const PAGE_TITLES = {
@@ -291,42 +291,6 @@ export default function Header({ onMenuToggle, collapsed }) {
                 .toUpperCase() || 'DE'}
               <span className="header__online-dot" />
             </div>
-            <div className="header__user-info" style={{ display: window.innerWidth < 640 ? 'none' : 'flex' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span className="header__user-name">
-                  {user?.tenant_name || user?.business_name || user?.name || 'Demo Store'}
-                </span>
-                <span 
-                  style={{
-                    fontSize: 9.5,
-                    fontWeight: 800,
-                    padding: '2px 7px',
-                    borderRadius: 9999,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    background: user?.role === 'super_admin' 
-                      ? '#2563eb' 
-                      : user?.subscription_plan === 'pro' 
-                      ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' 
-                      : user?.subscription_plan === 'basic' 
-                      ? 'linear-gradient(135deg, #10b981, #059669)' 
-                      : '#475569',
-                    color: '#ffffff',
-                    lineHeight: 1,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  {user?.role === 'super_admin' ? 'SUPER' : user?.subscription_plan === 'pro' ? 'PRO' : user?.subscription_plan === 'basic' ? 'BASIC' : 'FREE'}
-                </span>
-              </div>
-              <span className="header__user-role">
-                {user?.role === 'super_admin' ? 'Super Admin'
-                  : user?.role === 'admin' ? (user?.saas_role || 'Admin SaaS')
-                  : (user?.business_category ? user.business_category : 'Pengguna')}
-              </span>
-            </div>
           </div>
 
           {showProfile && (
@@ -407,11 +371,12 @@ export default function Header({ onMenuToggle, collapsed }) {
                 <button
                   onClick={() => {
                     setShowProfile(false)
-                    if (isRetail) navigate('/retail/subscription')
-                    else if (isKuliner) navigate('/kuliner/subscription')
-                    else if (user?.business_category === 'Budidaya Hewan' || user?.business_category === 'Budidaya Tanaman' || pathname.startsWith('/budidaya')) navigate('/budidaya/subscription')
-                    else if (user?.business_category === 'Seller' || pathname.startsWith('/seller')) navigate('/seller/subscription')
-                    else if (user?.business_category === 'Jasa' || pathname.startsWith('/jasa')) navigate('/jasa/subscription')
+                    const cat = String(user?.business_category || '').toLowerCase()
+                    if (isRetail || cat.includes('retail') || cat.includes('toko')) navigate('/retail/subscription')
+                    else if (isKuliner || cat.includes('kuliner') || cat.includes('resto') || cat.includes('cafe')) navigate('/kuliner/subscription')
+                    else if (cat.includes('budi') || cat.includes('ternak') || cat.includes('tani') || pathname.startsWith('/budidaya')) navigate('/budidaya/subscription')
+                    else if (cat.includes('seller') || cat.includes('online') || cat.includes('commerce') || pathname.startsWith('/seller')) navigate('/seller/subscription')
+                    else if (cat.includes('jasa') || cat.includes('repair') || cat.includes('servis') || cat.includes('bengkel') || pathname.startsWith('/jasa')) navigate('/jasa/subscription')
                     else if (user?.role === 'super_admin' || user?.role === 'admin') navigate('/subscriptions')
                     else navigate('/retail/subscription')
                   }}

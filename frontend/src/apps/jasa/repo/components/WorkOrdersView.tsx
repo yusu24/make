@@ -20,6 +20,7 @@ import { WorkOrder, ServiceStatus, PriorityLevel, ServiceCategory } from '../typ
 import { formatRupiah } from '../data/mockData';
 import usePagination from '../../../../hooks/usePagination';
 import RetailPagination from '../../../retail/components/RetailPagination';
+import { useJasa } from '../contexts/JasaContext';
 
 interface WorkOrdersViewProps {
   workOrders: WorkOrder[];
@@ -46,6 +47,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
   onPriorityFilterChange,
   onQuickUpdateStatus
 }) => {
+  const { terms } = useJasa();
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
 
   const filteredOrders = workOrders.filter(order => {
@@ -99,21 +101,21 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
   const getStatusBadge = (status: ServiceStatus) => {
     switch (status) {
       case 'Antrean':
-        return <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200">⏳ Antrean</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">● {terms.statusPending}</span>;
       case 'Pengecekan & Estimasi':
-        return <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">🔍 Cek & Estimasi</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">● {terms.statusDiagnosing}</span>;
       case 'Menunggu Persetujuan':
-        return <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">💬 Menunggu ACC</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">● Tunggu Approval</span>;
       case 'Sedang Dikerjakan':
-        return <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">⚙️ Proses Servis</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 animate-pulse">● {terms.statusWorking}</span>;
       case 'Menunggu Sparepart':
-        return <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">📦 Tunggu Sparepart</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-orange-50 text-orange-800 border border-orange-200">● {terms.statusWaitingPart}</span>;
       case 'Selesai & Siap Diambil':
-        return <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">✅ Siap Diambil</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">✓ {terms.statusDone}</span>;
       case 'Diserahkan / Lunas':
-        return <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">🤝 Diserahkan</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200">★ {terms.statusDelivered}</span>;
       case 'Dibatalkan':
-        return <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">❌ Dibatalkan</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">✕ {terms.statusCancelled}</span>;
     }
   };
 
@@ -173,7 +175,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
               className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm shadow-blue-600/25 transition-all whitespace-nowrap cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
             >
               <Plus className="w-3.5 h-3.5 stroke-[3]" />
-              <span>Terbitkan SPK Baru</span>
+              <span>{terms.newWorkOrderBtn}</span>
             </button>
           </div>
         </div>
@@ -185,10 +187,10 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
           <table className="w-full text-left text-xs border-collapse">
             <thead className="bg-slate-50/90 border-b border-slate-200/80 text-slate-500 font-semibold uppercase text-[10px] tracking-wider">
               <tr>
-                <th className="py-3 px-4">No. SPK & Jadwal</th>
-                <th className="py-3 px-4">Pekerjaan & Objek Servis</th>
-                <th className="py-3 px-4">Klien / Perusahaan</th>
-                <th className="py-3 px-4">Pekerja / Tim</th>
+                <th className="py-3 px-4">No. {terms.workOrderLabel} & Jadwal</th>
+                <th className="py-3 px-4">Pekerjaan & {terms.unitLabel}</th>
+                <th className="py-3 px-4">Klien / Pelanggan</th>
+                <th className="py-3 px-4">{terms.technicianLabel}</th>
                 <th className="py-3 px-4">Prioritas</th>
                 <th className="py-3 px-4">Status Pengerjaan</th>
                 <th className="py-3 px-4 text-right">Estimasi Biaya</th>
@@ -200,7 +202,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-400">
                     <ClipboardList className="w-9 h-9 text-slate-300 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-slate-700">Tidak ada SPK yang sesuai filter</p>
+                    <p className="text-sm font-semibold text-slate-700">Tidak ada {terms.workOrderLabel} yang sesuai filter</p>
                     <p className="text-xs text-slate-400 mt-0.5">Sesuaikan filter atau reset pencarian Anda</p>
                     <button
                       onClick={() => {
@@ -239,7 +241,10 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                         {order.title}
                       </div>
                       <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                        <span className="text-slate-400 font-medium">Objek:</span> {order.serviceObjectName}
+                        <span className="text-slate-400 font-medium">{terms.unitLabel}:</span> {order.serviceObjectName}
+                        {order.customField1Value && (
+                          <span className="text-indigo-600 font-medium ml-1">({order.customField1Value})</span>
+                        )}
                       </div>
                     </td>
 

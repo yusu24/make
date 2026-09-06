@@ -83,6 +83,9 @@ export interface WorkOrder {
   warrantyPeriod: string;
   slaDeadline: string;
   customerSatisfaction?: number; // 1-5
+  customField1Value?: string; // e.g., IMEI / KM / Alamat / No. Rak / Kursi / Ukuran
+  customField2Value?: string; // e.g., Kelengkapan / Warna / PK / Berat / Durasi / Kain
+  jasaCategory?: string;
   logs: WorkOrderLog[];
 }
 
@@ -247,3 +250,38 @@ export interface JasaSetting {
   termSpk: string;
   documentPrefix: string;
 }
+
+export type PayableStatus = 'Belum Dibayar' | 'Dibayar Sebagian' | 'Lunas' | 'Jatuh Tempo';
+
+export interface JasaPayable {
+  id: string;
+  supplierName: string;
+  invoiceNumber: string;
+  issueDate: string;
+  dueDate: string;
+  totalAmount: number;
+  paidAmount: number;
+  status: PayableStatus;
+  category: string;
+  notes?: string;
+}
+
+export interface FinancialAccount {
+  id: string;
+  name: string;
+  type: 'Kas Tunai' | 'Rekening Bank' | 'E-Wallet / QRIS';
+  accountNumber?: string;
+  balance: number;
+  color?: string;
+}
+
+export interface JournalEntry {
+  id: string;
+  date: string;
+  referenceNumber: string;
+  description: string;
+  debitAccount: string;
+  creditAccount: string;
+  amount: number;
+}
+

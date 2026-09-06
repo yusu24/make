@@ -286,22 +286,22 @@ export const ProductMappingView: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
-                <th className="py-3 px-4">PRODUK BIZORA & SKU</th>
-                <th className="py-3 px-4 text-center">SHOPEE</th>
-                <th className="py-3 px-4 text-center">TOKOPEDIA</th>
-                <th className="py-3 px-4 text-center">TIKTOK SHOP</th>
-                <th className="py-3 px-4 text-center">LAZADA</th>
-                <th className="py-3 px-4 text-center">AKSI MAPPING</th>
+              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
+                <th className="py-3.5 px-4">PRODUK BIZORA & SKU</th>
+                <th className="py-3.5 px-4 text-center">SHOPEE</th>
+                <th className="py-3.5 px-4 text-center">TOKOPEDIA</th>
+                <th className="py-3.5 px-4 text-center">TIKTOK SHOP</th>
+                <th className="py-3.5 px-4 text-center">LAZADA</th>
+                <th className="py-3.5 px-4 text-center">AKSI MAPPING</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px]">
               {paginatedItems.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertCircle className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-                      <span className="font-semibold text-slate-600 dark:text-slate-300">
+                      <span className="font-semibold text-slate-600 dark:text-slate-300 text-sm">
                         Tidak ada data mapping ditemukan
                       </span>
                     </div>
@@ -314,10 +314,10 @@ export const ProductMappingView: React.FC = () => {
                     className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors group"
                   >
                     <td className="py-3.5 px-4">
-                      <p className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                      <p className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400">
                         {row.sku}
                       </p>
-                      <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 line-clamp-1">
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-1 mt-0.5">
                         {row.name}
                       </p>
                     </td>
@@ -357,7 +357,7 @@ export const ProductMappingView: React.FC = () => {
                     <td className="py-3.5 px-4 text-center whitespace-nowrap">
                       <button
                         onClick={() => handleOpenEdit(row)}
-                        className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 font-semibold text-xs transition-colors flex items-center justify-center gap-1 mx-auto cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                         <span>Edit Mapping</span>

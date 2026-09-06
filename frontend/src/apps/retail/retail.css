@@ -383,6 +383,12 @@
   }
 }
 
+.table-wrap,
+.card.table-wrap {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
 .table-wrap:hover {
   box-shadow: var(--retail-shadow) !important;
   transform: none !important;

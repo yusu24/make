@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { getCategoryDashboardPath } from '../routes/guards'
 import { api } from '../lib/api'
 import './landing/landing-theme.css'
 import bizoraLogo from '../assets/bizora-logo.png'
@@ -130,12 +131,8 @@ export default function Landing() {
   // Redirect to dashboard instantly if user is already authenticated
   if (user) {
     if (user.role === 'super_admin' || user.role === 'admin') return <Navigate to="/dashboard" replace />
-    if (user.business_category === 'Toko Retail') return <Navigate to="/retail/dashboard" replace />
-    if (user.business_category === 'Budidaya Hewan' || user.business_category === 'Budidaya Tanaman') return <Navigate to="/budidaya/dashboard" replace />
-    if (user.business_category === 'Kuliner') return <Navigate to="/kuliner/admin" replace />
-    if (user.business_category === 'Seller') return <Navigate to="/seller/dashboard" replace />
-    if (user.business_category === 'Jasa') return <Navigate to="/jasa/dashboard" replace />
-    return <Navigate to="/coming-soon" replace />
+    const targetPath = getCategoryDashboardPath(user.business_category)
+    return <Navigate to={targetPath} replace />
   }
 
   return (

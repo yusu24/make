@@ -322,6 +322,66 @@ export default function PaymentModal({
                     </span>
                   </div>
                 )}
+
+                {/* Tampilan Visual QRIS Toko saat memilih QRIS */}
+                {paymentMethod === 'QRIS' && (
+                  <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl flex flex-col items-center justify-center text-center animate-fade-in">
+                    {settings?.qris_image_url ? (
+                      <>
+                        <span className="text-xs font-bold text-blue-800 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                          📱 Scan QRIS Toko
+                        </span>
+                        <div className="p-3 bg-white border border-blue-100 rounded-2xl shadow-sm mb-3">
+                          <img
+                            src={settings.qris_image_url}
+                            alt="QRIS Toko"
+                            className="w-48 h-48 object-contain rounded-xl"
+                          />
+                        </div>
+                        <p className="text-[11px] text-blue-600 font-medium max-w-xs">
+                          Tunjukkan QRIS di atas kepada pembeli untuk scan melalui GoPay, OVO, Dana, BCA, atau Mobile Banking.
+                        </p>
+                      </>
+                    ) : (
+                      <div className="py-4 px-2 text-center">
+                        <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-2 text-xl">
+                          📱
+                        </div>
+                        <h4 className="text-xs font-bold text-blue-900 mb-1">QRIS Toko Belum Diupload</h4>
+                        <p className="text-[11px] text-slate-500 max-w-xs">
+                          Anda dapat mengupload gambar QRIS toko Anda di menu <strong>Pengaturan Toko &rarr; Pembayaran</strong> agar otomatis tampil di sini.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Tampilan Rekening Bank saat memilih TRANSFER */}
+                {paymentMethod === 'TRANSFER' && (
+                  <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-2xl animate-fade-in">
+                    <span className="text-xs font-bold text-purple-800 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      🏦 Transfer Bank Toko
+                    </span>
+                    <div className="bg-white p-3 rounded-xl border border-purple-100 mt-2 space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Bank Tujuan:</span>
+                        <span className="font-bold text-slate-800">{settings?.bank_name || 'Bank BCA / Mandiri'}</span>
+                      </div>
+                      {settings?.bank_account_no && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">No. Rekening:</span>
+                          <span className="font-mono font-bold text-purple-700">{settings.bank_account_no}</span>
+                        </div>
+                      )}
+                      {settings?.bank_account_name && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Atas Nama:</span>
+                          <span className="font-semibold text-slate-700">{settings.bank_account_name}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -336,8 +396,17 @@ export default function PaymentModal({
             onClick={handleSubmit}
             className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold py-3.5 px-6 rounded-2xl text-xs shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-[0.99] transition-all duration-200 cursor-pointer disabled:cursor-not-allowed"
           >
-            {loading ? 'Memproses...' : 'Proses Pembayaran'}
-            {!loading && <ArrowRight size={14} />}
+            {loading ? (
+              <>
+                <span className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
+                <span>Memproses Transaksi...</span>
+              </>
+            ) : (
+              <>
+                <span>Proses Pembayaran</span>
+                <ArrowRight size={14} />
+              </>
+            )}
           </button>
         </div>
       </div>

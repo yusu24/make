@@ -14,6 +14,7 @@ import ComingSoon from './pages/ComingSoon'
 import ErrorPage from './pages/ErrorPage'
 import TenantSupportCenter from './pages/TenantSupportCenter'
 import ErrorBoundary from './components/ErrorBoundary'
+import DocumentTitleHandler from './components/DocumentTitleHandler'
 import { reportError } from './lib/errorReporting'
 
 // Benign browser noise that isn't an actual app crash — never worth
@@ -63,6 +64,7 @@ function App() {
         <ConfirmDialogProvider>
         <I18nProvider>
         <BrowserRouter>
+          <DocumentTitleHandler />
           <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
               <Routes>

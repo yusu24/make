@@ -124,34 +124,34 @@ export const CustomerView: React.FC = () => {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700">
+            <thead className="bg-slate-50/70 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700 uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3 font-semibold">Nama Pelanggan</th>
-                <th className="px-4 py-3 font-semibold">Kontak</th>
-                <th className="px-4 py-3 font-semibold">Email</th>
-                <th className="px-4 py-3 font-semibold">Alamat</th>
-                <th className="px-4 py-3 font-semibold text-right">Aksi</th>
+                <th className="px-4 py-3.5">Nama Pelanggan</th>
+                <th className="px-4 py-3.5">Kontak</th>
+                <th className="px-4 py-3.5">Email</th>
+                <th className="px-4 py-3.5">Alamat</th>
+                <th className="px-4 py-3.5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px] text-slate-700 dark:text-slate-200">
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-400">Memuat...</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-400 text-sm">Memuat...</td></tr>
               ) : filteredCustomers.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-400">
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-400 text-sm">
                   {customers.length === 0 ? 'Belum ada pelanggan. Klik "Tambah Pelanggan" untuk menambahkan.' : 'Tidak ada pelanggan yang cocok dengan pencarian.'}
                 </td></tr>
               ) : (
                 paginatedCustomers.map((cus) => (
-                  <tr key={cus.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">{cus.name}</td>
-                    <td className="px-4 py-3">{cus.contact || '-'}</td>
-                    <td className="px-4 py-3">{cus.email || '-'}</td>
-                    <td className="px-4 py-3 max-w-xs truncate">{cus.address || '-'}</td>
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                  <tr key={cus.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
+                    <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-slate-100">{cus.name}</td>
+                    <td className="px-4 py-3.5">{cus.contact || '-'}</td>
+                    <td className="px-4 py-3.5">{cus.email || '-'}</td>
+                    <td className="px-4 py-3.5 max-w-xs truncate">{cus.address || '-'}</td>
+                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
                       <button onClick={() => openEdit(cus)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(cus)} className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1">
+                      <button onClick={() => handleDelete(cus.id)} className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>

@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { formatRupiah, formatNumberInput, parseNumberInput } from '../data/mockData';
 import { PrintReceiptModal } from './PrintReceiptModal';
+import { useJasa } from '../contexts/JasaContext';
+import { Technician, WorkOrder, ServiceStatus } from '../types';
 
 // Mock data from Retail Module (POS)
 const MOCK_RETAIL_INVENTORY = [
@@ -47,6 +49,8 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
   onUpdateOrder,
   onPrintOrder
 }) => {
+  const { terms } = useJasa();
+
   if (!order) return null;
 
   const [currentOrder, setCurrentOrder] = useState<WorkOrder>({
@@ -346,12 +350,31 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
 
             <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-2">
               <h3 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest flex items-center">
-                <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-emerald-600" /> Identitas Objek & Garansi
+                <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-emerald-600" /> Identitas {terms.unitLabel} & Garansi
               </h3>
               <div>
                 <div className="font-semibold text-slate-900 text-base">{currentOrder.serviceObjectName}</div>
-                <div className="text-xs text-slate-500 font-mono">ID: {currentOrder.serviceObjectIdentifier || 'N/A (General Service)'}</div>
+                <div className="text-xs text-slate-500 font-mono">
+                  {terms.unitIdLabel}: <strong className="text-slate-800">{currentOrder.serviceObjectIdentifier || '-'}</strong>
+                </div>
               </div>
+
+              {/* Dynamic Industry Custom Fields Display */}
+              {(currentOrder.customField1Value || currentOrder.customField2Value) && (
+                <div className="bg-indigo-50/60 dark:bg-indigo-950/40 p-2.5 rounded-xl border border-indigo-100 dark:border-indigo-900/40 space-y-1 text-xs">
+                  {currentOrder.customField1Value && (
+                    <div className="text-slate-700">
+                      <span className="font-semibold text-indigo-700">{terms.customField1Label}:</span> {currentOrder.customField1Value}
+                    </div>
+                  )}
+                  {currentOrder.customField2Value && (
+                    <div className="text-slate-700">
+                      <span className="font-semibold text-indigo-700">{terms.customField2Label}:</span> {currentOrder.customField2Value}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
                 <div className="bg-white p-2.5 rounded-xl border border-slate-200/80">
                   <div className="text-slate-400 text-[10px] font-semibold">Tenggat SLA</div>
@@ -372,7 +395,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           <div className="space-y-3">
             <div>
               <h3 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">
-                Keluhan / Ruang Lingkup Permintaan Servis
+                {terms.problemLabel}
               </h3>
               <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-slate-800 text-xs sm:text-sm leading-relaxed">
                 {currentOrder.serviceDescription}
@@ -382,7 +405,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
             {currentOrder.rootCauseNotes && (
               <div>
                 <h3 className="text-[10px] font-semibold text-amber-700 uppercase tracking-widest mb-1.5 flex items-center">
-                  <AlertCircle className="w-3.5 h-3.5 mr-1 text-amber-600" /> Diagnosa Penyebab Akar (Root Cause Analysis)
+                  <AlertCircle className="w-3.5 h-3.5 mr-1 text-amber-600" /> {terms.diagnosisLabel}
                 </h3>
                 <div className="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl text-amber-900 text-xs leading-relaxed font-medium">
                   {currentOrder.rootCauseNotes}
@@ -395,14 +418,14 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           <div className="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200">
             <div className="flex items-center justify-between mb-3.5">
               <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest flex items-center">
-                <DollarSign className="w-4 h-4 mr-1 text-emerald-600" /> Rincian Biaya Suku Cadang & Jasa
+                <DollarSign className="w-4 h-4 mr-1 text-emerald-600" /> Rincian Biaya {terms.sparepartLabel} & Jasa
               </h3>
               <button
                 onClick={() => setShowAddPart(!showAddPart)}
                 className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold flex items-center space-x-1 transition-all"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                <span>Tambah Sparepart</span>
+                <span>Tambah {terms.sparepartLabel}</span>
               </button>
             </div>
 

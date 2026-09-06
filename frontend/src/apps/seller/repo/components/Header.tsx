@@ -3,20 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import {
   Menu,
   Bell,
-  Search,
-  Printer,
   Calendar,
-  Store,
-  CheckCircle2,
   Sun,
   Moon,
-  ChevronDown,
-  UserCheck,
-  ShieldCheck,
-  Sparkles,
   LogOut,
   Globe,
   CreditCard,
+  ShieldCheck,
+  Building2,
 } from 'lucide-react';
 import { StoreChannel, ActiveTab, Product } from '../types';
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -38,6 +32,38 @@ interface HeaderProps {
 }
 
 const DEMO_EMAILS = ['seller@demo.com'];
+
+const TAB_TITLES: Record<string, string> = {
+  'menu-utama': 'Dashboard Seller',
+  'pesanan': 'Manajemen Pesanan',
+  'katalog': 'Katalog Produk',
+  'gudang': 'Manajemen Gudang',
+  'penerimaan-barang': 'Penerimaan Barang',
+  'stock-opname': 'Stock Opname',
+  'toko-offline': 'Kasir POS (Offline)',
+  'keuangan-pengeluaran': 'Catatan Pengeluaran',
+  'keuangan-pemasukan': 'Pemasukan Lainnya',
+  'keuangan-kas': 'Buku Kas & Rekening',
+  'keuangan-laporan': 'Laporan Keuangan',
+  'master-data': 'Master Data',
+  'pelanggan': 'Data Pelanggan',
+  'marketplace-dashboard': 'Dashboard Marketplace',
+  'marketplace-connected': 'Toko Terhubung',
+  'marketplace-mapping': 'Mapping Produk',
+  'marketplace-sync': 'Sinkronisasi Marketplace',
+  'marketplace-history': 'Riwayat Sinkronisasi',
+  'shipping-dashboard': 'Dashboard Pengiriman',
+  'shipping-management': 'Manajemen Kurir',
+  'shipping-packing': 'Packing & Resi',
+  'notification-center': 'Pusat Notifikasi',
+  'panduan': 'Panduan Penggunaan',
+  'langganan': 'Paket Langganan',
+  'backup': 'Backup & Restore Data',
+  'settings-app': 'Pengaturan Aplikasi',
+  'settings-account': 'Pengaturan Akun',
+  'settings-roles': 'Role & Hak Akses',
+  'settings-users': 'Pengguna & Staf',
+};
 
 export const Header: React.FC<HeaderProps> = ({
   collapsed,
@@ -90,12 +116,13 @@ export const Header: React.FC<HeaderProps> = ({
 
   const selectedStore = stores.find((s) => s.id === selectedStoreId);
   const lowStockProducts = products.filter((p) => p.status === 'Stok Menipis' || p.status === 'Habis');
-  const initials = (user?.name || 'S')
+  const initials = (user?.tenant_name || user?.business_name || user?.name || 'SL')
     .split(' ')
+    .filter(Boolean)
     .map((w: string) => w[0])
     .slice(0, 2)
     .join('')
-    .toUpperCase();
+    .toUpperCase() || 'SL';
 
   const handleLogout = () => {
     setProfileMenuOpen(false);
@@ -104,15 +131,22 @@ export const Header: React.FC<HeaderProps> = ({
       window.location.href = redirectPath || '/tenants';
       return;
     }
-    const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-sandbox-') || DEMO_EMAILS.includes(user?.email) || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'));
+    const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-sandbox-') || DEMO_EMAILS.includes(user?.email || '') || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'));
     logout();
     window.location.href = isDemo ? '/' : '/login';
   };
 
+  const currentDate = new Intl.DateTimeFormat('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  }).format(new Date());
+
   return (
     <header className={`h-16 bg-white dark:bg-[#101828] border-b border-gray-200 dark:border-slate-800 fixed top-0 right-0 left-0 ${collapsed ? 'md:left-20' : 'md:left-64'} z-30 transition-all duration-300 px-3 sm:px-4 md:px-6 flex items-center justify-between shadow-xs shrink-0`}>
-      {/* Left section: Toggle & Date */}
-      <div className="flex items-center gap-3">
+      {/* Left section: Toggle, Dynamic Page Title & Date Badge */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button
           onClick={() => {
             if (window.innerWidth < 768) {
@@ -121,26 +155,27 @@ export const Header: React.FC<HeaderProps> = ({
               onToggleCollapse();
             }
           }}
-          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Toggle Sidebar"
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+          title={collapsed ? 'Perlebar Sidebar' : 'Perkecil Sidebar'}
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Today's date — informational only. This used to be a "period filter"
-            dropdown with hardcoded options that didn't actually filter
-            anything anywhere in the app; showing it as an interactive filter
-            was misleading, so it's now just an honest date display. */}
-        <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-[#344054] dark:text-slate-300 bg-[#F2F4F7] dark:bg-slate-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700">
-          <Calendar className="w-3.5 h-3.5 text-indigo-600" />
-          <span>{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center space-x-2 min-w-0">
+            <h1 className="text-[15px] sm:text-base lg:text-[17px] font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate whitespace-nowrap">
+              {TAB_TITLES[activeTab] || 'Bizora Seller'}
+            </h1>
+            <span className="hidden md:inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md shrink-0">
+              <Calendar className="w-3 h-3 text-slate-400" />
+              <span>{currentDate}</span>
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Right section: Store Selector, Export PDF button, Notifications & Profile */}
+      {/* Right section: Language, Dark Mode, Notifications & Profile */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-
-
         {/* Language Switcher Toggle */}
         <button
           onClick={toggleLanguage}
@@ -222,89 +257,73 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative shrink-0" ref={profileRef}>
           <button
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-            className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-left"
+            className="p-1 sm:p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-left flex items-center justify-center"
             title="Profil Pengguna"
+            aria-expanded={profileMenuOpen}
           >
-            <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-indigo-500/25 shrink-0 relative">
-              {(user?.tenant_name || user?.business_name || user?.name || 'SL')
-                .split(' ')
-                .filter(Boolean)
-                .map((n: string) => n[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase() || 'SL'}
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-indigo-500/25 shrink-0 relative">
+              {initials}
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
-            </div>
-            <div className="hidden sm:flex flex-col leading-tight">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 truncate max-w-[130px]">
-                  {user?.tenant_name || user?.business_name || user?.name || 'Demo Store'}
-                </span>
-                <span className="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider bg-slate-600 text-white leading-none inline-flex items-center shadow-xs">
-                  {user?.subscription_plan === 'pro' ? 'PRO' : user?.subscription_plan === 'basic' ? 'BASIC' : 'FREE'}
-                </span>
-              </div>
-              <span className="text-[10.5px] font-semibold text-slate-400 dark:text-slate-400 mt-0.5">
-                {user?.business_category || 'Seller Omni-Channel'}
-              </span>
             </div>
           </button>
 
           {profileMenuOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-3 px-4 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-700">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white font-black flex items-center justify-center text-sm">
+            <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs">
+              <div className="flex items-center gap-3 pb-3.5 border-b border-slate-100 dark:border-slate-700">
+                <div className="w-11 h-11 rounded-full bg-indigo-600 text-white font-extrabold text-sm flex items-center justify-center shadow-md shadow-indigo-500/25 shrink-0">
                   {initials}
                 </div>
-                <div className="min-w-0">
-                  <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Pengguna'}</div>
-                  <div className="text-[10px] text-slate-400 truncate">{user?.email || '-'}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">{user?.name || 'Pengguna'}</div>
+                  <div className="text-[11px] text-slate-400 truncate mt-0.5">{user?.email || '-'}</div>
                 </div>
               </div>
 
-              <div className="py-2 space-y-1">
-                <div className="flex justify-between items-center py-1 text-slate-600 dark:text-slate-300">
-                  <span>Toko:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-100 truncate max-w-[140px]">{user?.tenant_name || '-'}</span>
+              <div className="py-3 flex flex-col gap-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">Toko / Bisnis:</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100 truncate max-w-[150px] text-right">{user?.tenant_name || user?.business_name || '-'}</span>
                 </div>
-                <div className="flex justify-between items-center py-1 text-slate-600 dark:text-slate-300">
-                  <span>Status Paket:</span>
-                  <span className="font-semibold text-indigo-600 capitalize">{user?.subscription_plan || 'Free'}</span>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">Status Paket:</span>
+                  <span className="font-bold text-indigo-600 capitalize">{user?.subscription_plan || 'Free'}</span>
                 </div>
-                <div className="flex justify-between items-center py-1 text-slate-600 dark:text-slate-300">
-                  <span>Channel Terhubung:</span>
-                  <span className="font-semibold text-emerald-600">{stores.length}</span>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">Channel Terhubung:</span>
+                  <span className="font-bold text-emerald-600">{stores.length} Toko</span>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-700 space-y-1.5">
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-2">
                 <button
                   onClick={() => {
                     setProfileMenuOpen(false);
                     navigate('/seller/subscription');
                   }}
-                  className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm shadow-indigo-500/25 flex items-center justify-center gap-2 cursor-pointer transition-colors"
                 >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  Upgrade & Paket Langganan
+                  <CreditCard className="w-4 h-4" />
+                  <span>Upgrade & Paket Langganan</span>
                 </button>
                 <button
                   onClick={() => {
                     setProfileMenuOpen(false);
                     navigate('/seller/settings/account');
                   }}
-                  className="w-full py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 font-semibold hover:bg-indigo-100 transition-colors"
+                  className="w-full py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200 dark:border-indigo-800 flex items-center justify-center gap-2 cursor-pointer transition-colors"
                 >
-                  Pengaturan Akun
+                  <span>Pengaturan Akun</span>
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="w-full py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-300 font-bold text-xs border border-rose-200 dark:border-rose-800 flex items-center justify-center gap-2 cursor-pointer transition-colors"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                  {isImpersonating && isImpersonating() 
-                    ? 'Keluar dari Impersonate' 
-                    : ((user?.email?.startsWith('demo-sandbox-') || DEMO_EMAILS.includes(user?.email) || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'))) ? 'Keluar dari Akun Demo' : 'Keluar')}
+                  <LogOut className="w-4 h-4" />
+                  <span>
+                    {isImpersonating && isImpersonating() 
+                      ? 'Keluar dari Impersonate' 
+                      : ((user?.email?.startsWith('demo-sandbox-') || DEMO_EMAILS.includes(user?.email || '') || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'))) ? 'Keluar dari Akun Demo' : 'Keluar')}
+                  </span>
                 </button>
               </div>
             </div>

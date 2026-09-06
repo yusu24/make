@@ -11,9 +11,17 @@ import {
   ChevronDown,
   Building2,
   ShieldCheck,
-  CreditCard
+  CreditCard,
+  Smartphone,
+  Car,
+  Snowflake,
+  Shirt,
+  Scissors,
+  Layers,
+  Wrench
 } from 'lucide-react';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { useJasa } from '../contexts/JasaContext';
 
 interface TopBarProps {
   onOpenMobileSidebar: () => void;
@@ -28,6 +36,16 @@ interface TopBarProps {
   onOpenSubscription?: () => void;
 }
 
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  Smartphone,
+  Car,
+  Snowflake,
+  Shirt,
+  Scissors,
+  Needle: Layers,
+  Wrench
+};
+
 export const TopBar: React.FC<TopBarProps> = ({
   onOpenMobileSidebar,
   onOpenNewSpk,
@@ -41,8 +59,11 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenSubscription
 }) => {
   const { user, logout, isImpersonating, exitImpersonate } = useAuth();
+  const { terms, openPicker } = useJasa();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const CategoryIcon = CATEGORY_ICONS[terms.categoryIcon] || Wrench;
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -84,27 +105,28 @@ export const TopBar: React.FC<TopBarProps> = ({
   }).format(new Date());
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-72 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
-        <div className="flex items-center justify-between gap-4">
+    <header className="fixed top-0 right-0 left-0 lg:left-72 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs h-14 sm:h-16 flex items-center">
+      <div className="w-full px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Left: Mobile Sidebar Trigger & Current View Title */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
             <button
               id="btn-open-sidebar-mobile"
               onClick={onOpenMobileSidebar}
-              className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors shrink-0 cursor-pointer"
               aria-label="Buka menu navigasi"
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            <div>
-              <div className="flex items-center space-x-2">
-                <h1 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center space-x-2 min-w-0">
+                <h1 className="text-[15px] sm:text-base lg:text-[17px] font-bold text-slate-900 tracking-tight truncate whitespace-nowrap">
                   {activeTabTitle}
                 </h1>
-                <span className="hidden sm:inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+
+                <span className="hidden xl:inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md shrink-0">
                   <Calendar className="w-3 h-3 text-slate-400" />
                   <span>{currentDate}</span>
                 </span>
@@ -113,30 +135,31 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
 
           {/* Right: Urgent Alert & Profile */}
-          <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+          <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
             {/* Urgent Alert Badge Button */}
             {urgentCount > 0 && (
               <button
                 id="btn-topbar-urgent-alert"
                 onClick={onFilterUrgent}
-                className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition-colors animate-pulse"
+                className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition-colors animate-pulse cursor-pointer shrink-0"
                 title={`${urgentCount} SPK berprioritas darurat`}
               >
-                <ShieldAlert className="w-4 h-4 text-rose-600" />
-                <span className="hidden sm:inline">{urgentCount} Darurat</span>
+                <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+                <span className="hidden sm:inline font-bold">{urgentCount} Darurat</span>
               </button>
             )}
 
             {/* Profile Dropdown Widget in Navtop */}
-            <div className="relative pl-1" ref={profileRef}>
+            <div className="relative" ref={profileRef}>
               <button
                 id="btn-navtop-profile"
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer text-left"
+                className="p-1 sm:p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer text-left flex items-center justify-center"
                 aria-expanded={profileOpen}
                 aria-label="Menu profil pengguna"
               >
-                <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs shadow-md shadow-blue-500/25 shrink-0 relative">
+                {/* Avatar Icon (Visible on all screen sizes) */}
+                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs shadow-md shadow-blue-500/25 shrink-0 relative">
                   {(user?.tenant_name || user?.business_name || userName || 'JS')
                     .split(' ')
                     .filter(Boolean)
@@ -145,19 +168,6 @@ export const TopBar: React.FC<TopBarProps> = ({
                     .slice(0, 2)
                     .toUpperCase() || 'JS'}
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
-                </div>
-                <div className="hidden sm:flex flex-col leading-tight">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 truncate max-w-[130px]">
-                      {user?.tenant_name || user?.business_name || userName || 'ServisHub Jasa'}
-                    </span>
-                    <span className="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider bg-slate-600 text-white leading-none inline-flex items-center shadow-xs">
-                      {user?.subscription_plan === 'pro' ? 'PRO' : user?.subscription_plan === 'basic' ? 'BASIC' : 'FREE'}
-                    </span>
-                  </div>
-                  <span className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
-                    {user?.business_category || 'Jasa & Servis'}
-                  </span>
                 </div>
               </button>
 

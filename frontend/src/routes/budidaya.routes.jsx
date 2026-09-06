@@ -22,6 +22,7 @@ const BudidayaExpenses = lazy(() => import('../apps/budidaya/pages/BudidayaExpen
 const BudidayaFinanceSummary = lazy(() => import('../apps/budidaya/pages/BudidayaFinanceSummary'));
 const BudidayaMasterData = lazy(() => import('../apps/budidaya/pages/BudidayaMasterData'));
 const BudidayaBackup = lazy(() => import('../apps/budidaya/pages/BudidayaBackup'));
+const BudidayaGuide = lazy(() => import('../apps/budidaya/pages/BudidayaGuide'));
 const TenantSupportCenter = lazy(() => import('../pages/TenantSupportCenter'));
 
 // Note: We'll wrap this in ProtectedRoute in App.jsx or here
@@ -49,6 +50,7 @@ const budidayaRoutes = (
     <Route path="expenses" element={<BudidayaExpenses />} />
     <Route path="finance-summary" element={<BudidayaFinanceSummary />} />
     <Route path="master-data" element={<BudidayaMasterData />} />
+    <Route path="guide" element={<BudidayaGuide />} />
     <Route path="subscription" element={<BudidayaSubscription />} />
     <Route path="support" element={<TenantSupportCenter />} />
     <Route path="settings" element={<BudidayaSettings />} />

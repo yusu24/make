@@ -65,6 +65,7 @@ export default function BudidayaExpenses() {
   const [cycles, setCycles] = useState([]);
   const [customCategories, setCustomCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   
   // Dynamic categories with default fallback
   const incomeCategoriesList = useMemo(() => {
@@ -172,6 +173,8 @@ export default function BudidayaExpenses() {
     const payment_method = fd.get('payment_method') || 'Tunai / Kas';
     const recipient_or_buyer = fd.get('recipient_or_buyer') || '';
 
+    if (saving) return;
+    setSaving(true);
     try {
       if (modalTrxType === 'inflow') {
         const data = { date, category, amount, cycle_id, payment_method, recipient_or_buyer, notes };
@@ -194,6 +197,8 @@ export default function BudidayaExpenses() {
       setEditingTrx(null);
     } catch (err) {
       alert(err.response?.data?.message || 'Terjadi kesalahan saat menyimpan transaksi');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -738,19 +743,32 @@ export default function BudidayaExpenses() {
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
             <button
               type="button"
+              disabled={saving}
               onClick={() => { setShowModal(false); setEditingTrx(null); }}
-              style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13, color: '#475569' }}
+              style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: 13, color: '#475569', opacity: saving ? 0.6 : 1 }}
             >
               Batal
             </button>
             <button
               type="submit"
+              disabled={saving}
               style={{ 
-                padding: '9px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 13, color: '#fff',
-                background: modalTrxType === 'inflow' ? '#059669' : '#1B4332'
+                padding: '9px 20px', borderRadius: 8, border: 'none', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: 13, color: '#fff',
+                background: modalTrxType === 'inflow' ? '#059669' : '#1B4332',
+                opacity: saving ? 0.7 : 1,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8
               }}
             >
-              {editingTrx ? 'Simpan Perubahan' : `Simpan ${modalTrxType === 'inflow' ? 'Pemasukan' : 'Pengeluaran'}`}
+              {saving ? (
+                <>
+                  <span style={{ width: 14, height: 14, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 1s linear infinite' }} />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                editingTrx ? 'Simpan Perubahan' : `Simpan ${modalTrxType === 'inflow' ? 'Pemasukan' : 'Pengeluaran'}`
+              )}
             </button>
           </div>
         </form>

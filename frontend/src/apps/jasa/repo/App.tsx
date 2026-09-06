@@ -35,10 +35,16 @@ import { ExpensesView } from './components/ExpensesView';
 import { AiDiagnosticsModal } from './components/AiDiagnosticsModal';
 import { PrintSpkModal } from './components/PrintSpkModal';
 import { InvoiceDetailModal } from './components/InvoiceDetailModal';
+import { DirectPosView } from './components/DirectPosView';
 import { SettingsView } from './components/SettingsView';
 import { BackupView } from './components/BackupView';
+import { GuideView } from './components/GuideView';
+import { SubscriptionView } from './components/SubscriptionView';
 import { Toast, ToastMessage } from './components/Toast';
 import { jasaApi } from './services/jasaApi';
+import { JasaProvider, useJasa } from './contexts/JasaContext';
+import { useAuth } from '../../../contexts/AuthContext';
+import { JasaCategoryPickerModal } from './components/JasaCategoryPickerModal';
 
 import { 
   INITIAL_WORK_ORDERS, 
@@ -67,6 +73,7 @@ import {
 const TAB_TO_PATH: Record<string, string> = {
   'overview': '/jasa/dashboard',
   'work-orders': '/jasa/work-orders',
+  'pos': '/jasa/pos',
   'contracts': '/jasa/contracts',
   'technicians': '/jasa/technicians',
   'catalog': '/jasa/catalog',
@@ -74,12 +81,15 @@ const TAB_TO_PATH: Record<string, string> = {
   'finance': '/jasa/finance',
   'expenses': '/jasa/expenses',
   'analytics': '/jasa/analytics',
+  'guide': '/jasa/guide',
   'backup': '/jasa/backup',
+  'subscription': '/jasa/subscription',
   'settings': '/jasa/settings',
 };
 
 const getTabFromPath = (pathname: string): string => {
   if (pathname.includes('/jasa/work-orders') || pathname.includes('/jasa/spk')) return 'work-orders';
+  if (pathname.includes('/jasa/pos')) return 'pos';
   if (pathname.includes('/jasa/contracts')) return 'contracts';
   if (pathname.includes('/jasa/technicians')) return 'technicians';
   if (pathname.includes('/jasa/catalog')) return 'catalog';
@@ -87,14 +97,20 @@ const getTabFromPath = (pathname: string): string => {
   if (pathname.includes('/jasa/finance')) return 'finance';
   if (pathname.includes('/jasa/expenses')) return 'expenses';
   if (pathname.includes('/jasa/analytics')) return 'analytics';
+  if (pathname.includes('/jasa/guide')) return 'guide';
   if (pathname.includes('/jasa/backup')) return 'backup';
+  if (pathname.includes('/jasa/subscription')) return 'subscription';
   if (pathname.includes('/jasa/settings')) return 'settings';
   return 'overview';
 };
 
-export default function App() {
+function JasaInnerApp() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { terms } = useJasa();
+  const { user } = useAuth();
+
+  const isDemoAccount = user?.email?.startsWith('demo-') || user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-');
 
   // Navigation & View State (synced with React Router URL)
   const activeTab = getTabFromPath(location.pathname);
@@ -119,30 +135,46 @@ export default function App() {
   // Helper: Tab title lookup
   const getTabTitle = (tab: string) => {
     switch (tab) {
-      case 'overview': return 'Beranda Operasional';
-      case 'work-orders': return 'Surat Perintah Kerja (SPK)';
+      case 'overview': return 'Beranda';
+      case 'work-orders': return terms.workOrdersLabel || 'Surat Perintah Kerja (SPK)';
+      case 'pos': return 'Kasir POS Penjualan Langsung';
       case 'contracts': return 'Jadwal Reservasi / Kontrak';
-      case 'technicians': return 'Manajemen Tim & Pekerja Lapangan';
+      case 'technicians': return terms.techniciansLabel || 'Manajemen Tim & Pekerja';
       case 'catalog': return 'Katalog Layanan & Tarif Jasa';
-      case 'inventory': return 'Stok Gudang & Material';
-      case 'finance': return 'Tagihan Masuk (Piutang)';
+      case 'inventory': return terms.sparepartsLabel || 'Stok Gudang & Material';
+      case 'finance': return 'Keuangan & Kas Terpadu';
       case 'expenses': return 'Buku Kas & Pengeluaran';
-      case 'analytics': return 'Analitik Operasional & Kepatuhan SLA';
-      case 'backup': return 'Backup & Keamanan Data';
-      case 'settings': return 'Pengaturan Modul Jasa';
-      default: return 'Modul Layanan Jasa';
+      case 'analytics': return 'Laporan Layanan & Performa';
+      case 'guide': return 'Buku Panduan & SOP Operasional';
+      case 'backup': return 'Pusat Keamanan & Cadangan Data';
+      case 'subscription': return 'Upgrade & Paket Langganan';
+      case 'settings': return 'Pengaturan Aplikasi Jasa';
+      default: return 'Sistem Manajemen Jasa & Reparasi';
     }
   };
 
-  // Core Domain Entities State
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(INITIAL_WORK_ORDERS);
+  // Dynamically update browser tab title
+  useEffect(() => {
+    const title = getTabTitle(activeTab);
+    document.title = title ? `Bizora - ${title}` : 'Bizora - Sistem Manajemen Jasa & Reparasi';
+  }, [activeTab, terms]);
+
+  // Core Domain Entities State (Empty by default for fresh registered users)
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(() => isDemoAccount ? INITIAL_WORK_ORDERS : []);
   const [contracts, setContracts] = useState<JasaContract[]>([]);
-  const [technicians, setTechnicians] = useState<Technician[]>(INITIAL_TECHNICIANS);
-  const [catalog, setCatalog] = useState<ServiceCatalogItem[]>(INITIAL_SERVICE_CATALOG);
-  const [invoices, setInvoices] = useState<JasaInvoice[]>(INITIAL_INVOICES);
-  const [expenses, setExpenses] = useState<JasaExpense[]>(INITIAL_EXPENSES);
+  const [technicians, setTechnicians] = useState<Technician[]>(() => isDemoAccount ? INITIAL_TECHNICIANS : []);
+  const [catalog, setCatalog] = useState<ServiceCatalogItem[]>(() => isDemoAccount ? INITIAL_SERVICE_CATALOG : []);
+  const [invoices, setInvoices] = useState<JasaInvoice[]>(() => isDemoAccount ? INITIAL_INVOICES : []);
+  const [expenses, setExpenses] = useState<JasaExpense[]>(() => isDemoAccount ? INITIAL_EXPENSES : []);
   const [inventory, setInventory] = useState<any[]>([]);
-  const [stats, setStats] = useState(INITIAL_STATS);
+  const [stats, setStats] = useState(() => isDemoAccount ? INITIAL_STATS : {
+    activeOrders: 0,
+    completedThisMonth: 0,
+    availableTechs: 0,
+    totalRevenueMonth: 0,
+    slaComplianceRate: 100,
+    totalContracts: 0
+  });
   const [jasaSettings, setJasaSettings] = useState<any>({
     businessType: 'Bengkel / Servis',
     termTechnician: 'Teknisi',
@@ -170,46 +202,67 @@ export default function App() {
         jasaApi.getExpenses()
       ]);
 
-      if (ordersRes.status === 'fulfilled' && ordersRes.value && ordersRes.value.length > 0) {
-        setWorkOrders(ordersRes.value);
+      if (ordersRes.status === 'fulfilled' && ordersRes.value) {
+        const val = ordersRes.value;
+        if (!isDemoAccount || (Array.isArray(val) && val.length > 0)) {
+          setWorkOrders(val);
+        }
       }
-      if (contractsRes.status === 'fulfilled' && contractsRes.value && contractsRes.value.length > 0) {
-        setContracts(contractsRes.value);
+      if (contractsRes.status === 'fulfilled' && contractsRes.value) {
+        const val = contractsRes.value;
+        if (!isDemoAccount || (Array.isArray(val) && val.length > 0)) {
+          setContracts(val);
+        }
       }
-      if (techsRes.status === 'fulfilled' && techsRes.value && techsRes.value.length > 0) {
-        setTechnicians(techsRes.value);
+      if (techsRes.status === 'fulfilled' && techsRes.value) {
+        const val = techsRes.value;
+        if (!isDemoAccount || (Array.isArray(val) && val.length > 0)) {
+          setTechnicians(val);
+        }
       }
-      if (catalogRes.status === 'fulfilled' && catalogRes.value && catalogRes.value.length > 0) {
-        setCatalog(catalogRes.value);
+      if (catalogRes.status === 'fulfilled' && catalogRes.value) {
+        const val = catalogRes.value;
+        if (!isDemoAccount || (Array.isArray(val) && val.length > 0)) {
+          setCatalog(val);
+        }
       }
       if (statsRes.status === 'fulfilled' && statsRes.value) {
         setStats(prev => ({ ...prev, ...statsRes.value }));
       }
       if (inventoryRes.status === 'fulfilled' && inventoryRes.value) {
-        setInventory(inventoryRes.value);
+        const val = inventoryRes.value;
+        if (!isDemoAccount || (Array.isArray(val) && val.length > 0)) {
+          setInventory(val);
+        }
       }
       if (settingsRes.status === 'fulfilled' && settingsRes.value) {
         setJasaSettings(settingsRes.value);
       }
-      if (invoicesRes.status === 'fulfilled' && invoicesRes.value && invoicesRes.value.length > 0) {
-        setInvoices(invoicesRes.value);
+      if (invoicesRes.status === 'fulfilled' && invoicesRes.value) {
+        const val = invoicesRes.value;
+        if (!isDemoAccount || (Array.isArray(val) && val.length > 0)) {
+          setInvoices(val);
+        }
       }
-    if (expensesRes.status === 'fulfilled' && expensesRes.value && expensesRes.value.length > 0) {
-        setExpenses(expensesRes.value.map((e: any) => ({
-          id: e.expenseNumber || `EXP-${e.id}`,
-          type: e.type || 'Pengeluaran',
-          date: e.date || new Date().toISOString(),
-          category: e.category || 'Biaya Operasional',
-          description: e.description || '',
-          amount: Number(e.amount || 0),
-          referenceSpkId: e.referenceSpkId || '',
-          recordedBy: e.recordedBy || 'Admin Jasa',
-          notes: '',
-          status: e.status || 'Selesai'
-        })));
+      if (expensesRes.status === 'fulfilled' && expensesRes.value) {
+        const val = expensesRes.value;
+        if (!isDemoAccount || (Array.isArray(val) && val.length > 0)) {
+          setExpenses(val.map((e: any) => ({
+            id: e.expenseNumber || `EXP-${e.id}`,
+            type: e.type || 'Pengeluaran',
+            date: e.date || new Date().toISOString(),
+            category: e.category || 'Biaya Operasional',
+            description: e.description || '',
+            amount: Number(e.amount || 0),
+            referenceSpkId: e.referenceSpkId || '',
+            recordedBy: e.recordedBy || 'Admin Jasa',
+            notes: '',
+            status: e.status || 'Selesai'
+          })));
+        }
       }
     } catch (err) {
-      console.warn('Koneksi backend jasa: Menggunakan fallback dataset lokal.', err);
+      console.warn('Koneksi backend jasa:', err);
     } finally {
       setIsLoadingData(false);
       setIsSyncing(false);
@@ -513,26 +566,28 @@ export default function App() {
       {/* Main Content Area (offset by sidebar width on lg) */}
       <div className="flex-1 flex flex-col min-w-0 lg:pl-72">
         
-        {/* Streamlined Top Bar */}
-        <TopBar
-          onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
-          onOpenNewSpk={() => setShowNewSpkModal(true)}
-          onOpenAiAssistant={() => setShowAiModal(true)}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          urgentCount={urgentOrders.length}
-          onFilterUrgent={() => {
-            setPriorityFilter('Darurat');
-            setStatusFilter('Semua');
-            setActiveTab('work-orders');
-          }}
-          activeTabTitle={getTabTitle(activeTab)}
-          onOpenSettings={() => setActiveTab('settings')}
-          onOpenSubscription={() => setActiveTab('settings')}
-        />
+        {/* Streamlined Top Bar (hidden on full-screen POS register) */}
+        {activeTab !== 'pos' && (
+          <TopBar
+            onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+            onOpenNewSpk={() => setShowNewSpkModal(true)}
+            onOpenAiAssistant={() => setShowAiModal(true)}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            urgentCount={urgentOrders.length}
+            onFilterUrgent={() => {
+              setPriorityFilter('Darurat');
+              setStatusFilter('Semua');
+              setActiveTab('work-orders');
+            }}
+            activeTabTitle={getTabTitle(activeTab)}
+            onOpenSettings={() => setActiveTab('settings')}
+            onOpenSubscription={() => setActiveTab('subscription')}
+          />
+        )}
 
-        {/* Main View Container (with spacious padding below fixed navtop) */}
-        <main className="flex-1 w-full mx-auto px-3 sm:px-5 lg:px-6 pt-24 pb-8 sm:pt-28 sm:pb-10">
+        {/* Main View Container */}
+        <main className={`flex-1 w-full min-w-0 ${activeTab === 'pos' ? 'p-0 h-[100dvh] overflow-hidden relative' : 'mx-auto px-2.5 sm:px-5 lg:px-6 pt-18 pb-6 sm:pt-20 sm:pb-8'}`}>
           
           {/* Emergency Alert Banner */}
           {urgentOrders.length > 0 && activeTab === 'overview' && (
@@ -819,6 +874,28 @@ export default function App() {
           />
         )}
 
+        {/* View: Kasir POS Penjualan Langsung */}
+        {activeTab === 'pos' && (
+          <DirectPosView
+            inventory={inventory}
+            catalog={catalog}
+            settings={jasaSettings}
+            onMenuToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            onDeductInventory={(itemId, qty) => {
+              setInventory((prev) =>
+                prev.map((item) => {
+                  if (String(item.id) === String(itemId) || String(item.part_number) === String(itemId)) {
+                    const currentStock = item.stock_qty ?? item.quantity ?? 0;
+                    return { ...item, stock_qty: Math.max(0, currentStock - qty), quantity: Math.max(0, currentStock - qty) };
+                  }
+                  return item;
+                })
+              );
+            }}
+            onAddToast={addToast}
+          />
+        )}
+
         {/* View: Kontrak Kerja Sama & Jadwal Servis B2B */}
         {activeTab === 'contracts' && (
           <ContractsView
@@ -869,13 +946,17 @@ export default function App() {
             technicians={technicians}
             invoices={invoices}
             expenses={expenses}
+            workOrders={workOrders}
           />
         )}
 
-        {/* View 6: Keuangan & Tagihan */}
-        {activeTab === 'finance' && (
+        {/* View 6: Keuangan & Kas Terpadu */}
+        {(activeTab === 'finance' || activeTab === 'expenses') && (
           <FinanceView
             invoices={invoices}
+            expenses={expenses}
+            inventory={inventory}
+            initialTab={activeTab === 'expenses' ? 'expenses' : 'invoices'}
             onUpdateInvoiceStatus={async (id, status) => {
               setInvoices(prev => prev.map(inv => 
                 inv.id === id ? { ...inv, status, paidAmount: status === 'Lunas' ? inv.totalAmount : inv.paidAmount } : inv
@@ -891,13 +972,6 @@ export default function App() {
               addToast('success', 'Status Tagihan Diperbarui', `Tagihan ${id} telah diperbarui menjadi ${status}.`);
             }}
             onViewInvoice={(invoice) => setSelectedInvoice(invoice)}
-          />
-        )}
-
-        {/* View 7: Catatan Pengeluaran */}
-        {activeTab === 'expenses' && (
-          <ExpensesView
-            expenses={expenses}
             onAddExpense={async (expense) => {
               const tempId = `EXP-JASA-${Date.now()}`;
               const newExp: JasaExpense = {
@@ -911,11 +985,12 @@ export default function App() {
                   description: expense.description,
                   amount: expense.amount,
                   category: expense.category,
-                  transaction_date: expense.date,
-                  reference_spk_id: expense.referenceSpkId,
-                  recipient_or_payer: 'Vendor'
+                  type: expense.type,
+                  date: expense.date,
+                  notes: expense.notes,
+                  reference_spk_id: expense.referenceSpkId
                 });
-                if (created) {
+                if (created && (created.expenseNumber || created.id)) {
                   setExpenses(prev => prev.map(e => e.id === tempId ? {
                     ...e,
                     id: created.expenseNumber || String(created.id)
@@ -925,7 +1000,7 @@ export default function App() {
                 console.warn('Saved expense locally:', err);
               }
 
-              addToast('success', 'Pengeluaran Dicatat', 'Beban pengeluaran operasional berhasil disimpan ke database.');
+              addToast('success', 'Transaksi Kas Tersimpan', `${expense.type} sebesar ${formatRupiah(expense.amount)} berhasil dicatat.`);
             }}
           />
         )}
@@ -935,7 +1010,25 @@ export default function App() {
           <BackupView />
         )}
 
-        {/* View 9: Settings */}
+        {/* View 9: Buku Panduan & SOP Operasional */}
+        {activeTab === 'guide' && (
+          <GuideView 
+            onNavigateTab={setActiveTab}
+            onOpenNewSpk={() => setShowNewSpkModal(true)}
+            onOpenAiModal={() => setShowAiModal(true)}
+          />
+        )}
+
+        {/* View 10: Upgrade & Paket Langganan */}
+        {activeTab === 'subscription' && (
+          <SubscriptionView
+            workOrdersCount={workOrders.length}
+            techniciansCount={technicians.length}
+            inventoryCount={inventory.length}
+          />
+        )}
+
+        {/* View 11: Settings */}
         {activeTab === 'settings' && (
           <SettingsView
             settings={jasaSettings}
@@ -1028,9 +1121,21 @@ export default function App() {
         />
       )}
 
+      {/* Onboarding & Category Picker Modal */}
+      <JasaCategoryPickerModal />
+
       {/* Toasts */}
       <Toast toasts={toasts} onDismiss={dismissToast} />
 
     </div>
   );
 }
+
+export default function App() {
+  return (
+    <JasaProvider>
+      <JasaInnerApp />
+    </JasaProvider>
+  );
+}
+

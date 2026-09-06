@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class KulinerProduct extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
 
     protected $fillable = ['tenant_id', 'category_id', 'name', 'description', 'price', 'discount_price', 'stock', 'image_url', 'is_available'];
 

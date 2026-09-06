@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
+import { useConfirm } from '../../../components/ConfirmDialog';
 import './KulinerDashboard.css';
 
 const CulinaryPromos = () => {
+  const confirm = useConfirm();
   const [promos, setPromos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -76,7 +78,8 @@ const CulinaryPromos = () => {
   };
 
   const handleDeletePromo = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus promo ini?')) return;
+    const ok = await confirm('Yakin ingin menghapus promo ini?');
+    if (!ok) return;
     try {
       await api.delete(`/kuliner/admin/promos/${id}`);
       setPromos(promos.filter(p => p.id !== id));

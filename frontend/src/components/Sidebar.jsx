@@ -6,11 +6,12 @@ import {
   LogOut, Inbox, ClipboardList, Database, Wallet, Settings, User,
   HelpCircle, ServerCog, FileText, Zap, Shield, ChevronDown, ChevronRight,
   Receipt, Tag, Archive, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight,
-  Store, Globe, Box, Printer, ArrowRightLeft, BookOpen, BellRing
+  Store, Globe, Box, Printer, ArrowRightLeft, BookOpen, BellRing, Sparkles
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
 import Modal from './Modal'
+import RetailAiModal from '../apps/retail/components/RetailAiModal'
 import bizoraLogo from '../assets/bizora-logo.png'
 import './Sidebar.css'
 
@@ -291,6 +292,7 @@ const RETAIL_NAV_ITEMS = [
     section: 'Sistem & Paket',
     icon: <Settings size={20} />,
     items: [
+      { path: '/retail/guide',        icon: <BookOpen size={24} />,   label: 'Buku Panduan & SOP' },
       { path: '/retail/settings',     icon: <Settings size={24} />,   label: 'Pengaturan Toko' },
       { path: '/retail/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
       { path: '/retail/support',      icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
@@ -482,6 +484,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
   const [closedGroup, setClosedGroup] = useState(null)
   const [openSection, setOpenSection] = useState(null)
   const [flyoutAnchorY, setFlyoutAnchorY] = useState(60)
+  const [showRetailAi, setShowRetailAi] = useState(false)
 
   const toggleGroup = useCallback((sectionName, isCurrentlyExpanded) => {
     if (isCurrentlyExpanded) {
@@ -669,6 +672,63 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
 
         {/* ── Nav ── */}
         <nav className="sidebar__nav">
+          {/* Retail AI Advisor Button */}
+          {isRetail && !isMini && (
+            <div style={{ padding: '0 10px', marginBottom: 10 }}>
+              <button
+                type="button"
+                onClick={() => setShowRetailAi(true)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '9px 12px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  boxShadow: '0 2px 8px rgba(99, 102, 241, 0.25)',
+                  transition: 'all 0.2s',
+                }}
+                title="Buka Retail AI Advisor (Stockout, Dead-Stock, PO Suggestions)"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Sparkles size={16} />
+                  <span>Retail AI Advisor</span>
+                </div>
+                <span style={{ fontSize: 9.5, background: 'rgba(255,255,255,0.25)', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>PRO</span>
+              </button>
+            </div>
+          )}
+
+          {isRetail && isMini && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+              <button
+                type="button"
+                onClick={() => setShowRetailAi(true)}
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(99, 102, 241, 0.25)',
+                }}
+                title="Buka Retail AI Advisor"
+              >
+                <Sparkles size={18} />
+              </button>
+            </div>
+          )}
           {currentNavItems.map(section => {
             if (section.adminOnly && !isSuperAdmin() && user?.role !== 'admin') return null
 
@@ -923,6 +983,11 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
           onClose={() => setOpenSection(null)}
           pathname={pathname}
         />
+      )}
+
+      {/* ── Retail AI Advisor Modal ── */}
+      {isRetail && (
+        <RetailAiModal isOpen={showRetailAi} onClose={() => setShowRetailAi(false)} />
       )}
 
       {/* ── Paywall Modal ── */}

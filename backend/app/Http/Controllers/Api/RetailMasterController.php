@@ -34,13 +34,14 @@ class RetailMasterController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $cat = RetailCategory::findOrFail($id);
+        $cat = RetailCategory::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
         $cat->update(['name' => $request->name]);
         return response()->json($cat);
     }
 
     public function destroyCategory(Request $request, int $id) {
-        RetailCategory::findOrFail($id)->delete();
+        $cat = RetailCategory::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
+        $cat->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
@@ -63,6 +64,7 @@ class RetailMasterController extends Controller
         }
 
         $sup = RetailSupplier::create([
+            'tenant_id' => $request->user()->tenant_id,
             'name' => $request->name,
             'contact' => $request->contact,
             'address' => $request->address
@@ -76,7 +78,7 @@ class RetailMasterController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $sup = RetailSupplier::findOrFail($id);
+        $sup = RetailSupplier::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
         $sup->update([
             'name' => $request->name,
             'contact' => $request->contact,
@@ -86,7 +88,8 @@ class RetailMasterController extends Controller
     }
 
     public function destroySupplier(Request $request, int $id) {
-        RetailSupplier::findOrFail($id)->delete();
+        $sup = RetailSupplier::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
+        $sup->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
@@ -110,6 +113,7 @@ class RetailMasterController extends Controller
         }
 
         $cus = RetailCustomer::create([
+            'tenant_id' => $request->user()->tenant_id,
             'name' => $request->name,
             'contact' => $request->contact,
             'email' => $request->email,
@@ -124,7 +128,7 @@ class RetailMasterController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $cus = RetailCustomer::findOrFail($id);
+        $cus = RetailCustomer::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
         $cus->update([
             'name' => $request->name,
             'contact' => $request->contact,
@@ -135,7 +139,8 @@ class RetailMasterController extends Controller
     }
 
     public function destroyCustomer(Request $request, int $id) {
-        RetailCustomer::findOrFail($id)->delete();
+        $cus = RetailCustomer::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
+        $cus->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
@@ -150,7 +155,10 @@ class RetailMasterController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $unit = RetailUnit::create(['name' => $request->name]);
+        $unit = RetailUnit::create([
+            'tenant_id' => $request->user()->tenant_id,
+            'name' => $request->name
+        ]);
         return response()->json($unit);
     }
 
@@ -160,13 +168,14 @@ class RetailMasterController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $unit = RetailUnit::findOrFail($id);
+        $unit = RetailUnit::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
         $unit->update(['name' => $request->name]);
         return response()->json($unit);
     }
 
     public function destroyUnit(Request $request, int $id) {
-        RetailUnit::findOrFail($id)->delete();
+        $unit = RetailUnit::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
+        $unit->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
@@ -193,6 +202,7 @@ class RetailMasterController extends Controller
         }
 
         $cat = RetailFinanceCategory::create([
+            'tenant_id' => $request->user()->tenant_id,
             'name' => $request->name,
             'type' => $request->type
         ]);
@@ -208,7 +218,7 @@ class RetailMasterController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $cat = RetailFinanceCategory::findOrFail($id);
+        $cat = RetailFinanceCategory::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
         $cat->update([
             'name' => $request->name,
             'type' => $request->type
@@ -217,7 +227,8 @@ class RetailMasterController extends Controller
     }
 
     public function destroyFinanceCategory(Request $request, int $id) {
-        RetailFinanceCategory::findOrFail($id)->delete();
+        $cat = RetailFinanceCategory::where('tenant_id', $request->user()->tenant_id)->findOrFail($id);
+        $cat->delete();
         return response()->json(['message' => 'Deleted']);
     }
 

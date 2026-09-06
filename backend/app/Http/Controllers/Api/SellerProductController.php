@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class SellerProductController extends Controller
 {
-    private function getTenantId(Request $request)
+    private function getTenantId(Request $request): ?string
     {
         $user = $request->user();
-        return $user ? ($user->tenant_id ?? 'TN-DEMO') : 'TN-DEMO';
+        return $user?->tenant_id ?? $request->header('X-Tenant-Id');
     }
 
     public function index(Request $request)

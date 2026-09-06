@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Arsitektur Sistem & Diagram Modul BIZORA SaaS</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 16mm 14mm 16mm 14mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      line-height: 1.5;
+      font-size: 11pt;
+      margin: 0;
+      padding: 0;
+    }
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+    .avoid-break {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .doc-header {
+      border-bottom: 2.5px solid #0284c7;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .brand-title {
+      font-size: 24pt;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.03em;
+      margin: 0;
+      line-height: 1.1;
+    }
+    .brand-title span {
+      color: #0284c7;
+    }
+    .doc-subtitle {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .doc-meta {
+      text-align: right;
+      font-size: 9pt;
+      color: #64748b;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .doc-meta .badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    .section-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .section-icon {
+      font-size: 18pt;
+    }
+    .section-title {
+      font-size: 14pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+    .section-desc {
+      font-size: 9.5pt;
+      color: #475569;
+      margin: 0 0 14px 0;
+      line-height: 1.45;
+    }
+    .diagram-container {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 14px 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 8px;
+      min-height: 140px;
+    }
+    .diagram-container svg {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .feature-item {
+      background: #f1f5f9;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 9pt;
+      color: #334151;
+      border-left: 3px solid #0284c7;
+    }
+    .feature-item strong {
+      color: #0f172a;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 10px;
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5pt;
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="doc-header">
+    <div>
+      <h1 class="brand-title">BIZORA <span>PLATFORM</span></h1>
+      <div class="doc-subtitle">Buku Panduan Arsitektur Sistem & Diagram Alur Modul Multi-Tenant</div>
+    </div>
+    <div class="doc-meta">
+      <div class="badge">PRODUKSI v2.4</div>
+      <div>Edisi: September 2026</div>
+      <div>Format: Dokumentasi Arsitektur</div>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <p style="font-size: 10pt; color: #475569; margin-bottom: 20px;">
+    Dokumen ini menyajikan peta arsitektur teknis, alur data operasional, dan integrasi multi-tenant pada ekosistem platform BIZORA SaaS. Dirancang untuk memberikan visualisasi komprehensif bagi tim pengembang, admin sistem, dan pemangku kepentingan.
+  </p>
+
+  <!-- 1. SAAS SUPER ADMIN -->
+  <div class="section-card avoid-break">
+    <div class="section-header">
+      <div class="section-icon">👑</div>
+      <div>
+        <h2 class="section-title">1. Core SaaS & Super Admin Platform</h2>
+      </div>
+    </div>
+    <p class="section-desc">
+      Mengelola siklus hidup Tenant, penentuan Paket Langganan & Kuota, Verifikasi Dokumen KYC, Payment Gateway Otomatis (QRIS / Virtual Account), serta penegakan isolasi data (Multi-Tenant Partitioning).
+    </p>
+    <div class="diagram-container">
+      <pre class="mermaid">
+flowchart TD
+    subgraph SuperAdmin["👑 SaaS Super Admin Hub"]
+        A1[Tenant Management]
+        A2[Plans & Pricing]
+        A3[KYC Verification]
+        A4[Finance & Revenue]
+    end
+
+    subgraph CoreAuth["🔐 Auth & Multi-Tenant Engine"]
+        AUTH[AuthController / Sanctum]
+        T_SCOPE[HasTenant Trait / Global Scope]
+        SUB_MID[CheckSubscription Middleware]
+    end
+
+    subgraph Billing["💳 Billing & Payment Engine"]
+        SUB_REQ[SubscriptionRequest]
+        INV[TenantInvoice]
+        PG_SVC[PaymentGatewayService]
+        WEBHOOK[Payment Webhook Callback]
+    end
+
+    subgraph Databases["🗄️ Partitioned Database"]
+        DB_TENANTS[(tenants)]
+        DB_INVOICES[(tenant_invoices)]
+        DB_DATA[(Tenant Data Tables)]
+    end
+
+    A1 -->|Kelola Tenant| DB_TENANTS
+    AUTH -->|Auto-Seed Data Awal| DB_TENANTS
+    AUTH -->|Inject tenant_id| T_SCOPE
+    T_SCOPE -->|Filter Query Otomatis| DB_DATA
+    SUB_MID -->|Validasi Expiry Date| DB_TENANTS
+    SUB_REQ -->|Generate Invoice| PG_SVC
+    PG_SVC -->|Simpan Invoice Unpaid| INV
+    INV --> DB_INVOICES
+    WEBHOOK -->|Settlement QRIS / VA| PG_SVC
+    PG_SVC -->|Perpanjang Masa Aktif| DB_TENANTS
+      </pre>
+    </div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <strong>Multi-Tenant Isolation</strong>
+        Menggunakan `TenantScope` global otomatis pada level query database Eloquent.
+      </div>
+      <div class="feature-item">
+        <strong>Instant Settlement Engine</strong>
+        Aktivasi paket instan via webhook QRIS & 3 Virtual Account bank nasional.
+      </div>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- 2. TOKO RETAIL -->
+  <div class="section-card avoid-break">
+    <div class="section-header">
+      <div class="section-icon">🛒</div>
+      <div>
+        <h2 class="section-title">2. Modul Toko Retail (POS & Multi-Satuan)</h2>
+      </div>
+    </div>
+    <p class="section-desc">
+      Menangani Point of Sale kasir cepat, multi-satuan bertingkat (Dus -> Pak -> Pcs), pelacakan Batch/Expired Date, Serial Number elektronik, konsinyasi, dan laporan laba kotor / arus kas.
+    </p>
+    <div class="diagram-container">
+      <pre class="mermaid">
+flowchart LR
+    subgraph Master["📦 Master Data"]
+        PROD[Katalog Produk]
+        UNIT[Multi-Satuan]
+        BATCH[Batch / Expired Date]
+    end
+
+    subgraph Inventory["🏢 Logistik Stok"]
+        PO[Pembelian / PO Supplier]
+        OPNAME[Stock Opname]
+        TRANSFER[Transfer Antar Cabang]
+    end
+
+    subgraph POS["⚡ Kasir POS & Shift"]
+        CASHIER[POS Transaksi Kasir]
+        SHIFT[Buka / Tutup Shift]
+        DISC[Diskon & Member Promo]
+    end
+
+    subgraph Finance["📊 Laporan Finansial"]
+        SALES[Laporan Omzet Penjualan]
+        MARGIN[Analisis Margin Laba Kotor]
+        TAX[Pajak PPN Kasir]
+    end
+
+    PO -->|Tambah Stok| PROD
+    PROD --> UNIT
+    PROD --> BATCH
+    PROD --> CASHIER
+    SHIFT --> CASHIER
+    DISC --> CASHIER
+    CASHIER -->|Auto Potong Stok| PROD
+    CASHIER --> SALES
+    CASHIER --> MARGIN
+    CASHIER --> TAX
+      </pre>
+    </div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <strong>Multi-UOM Engine</strong>
+        Konversi otomatis harga beli per karton ke harga jual satuan eceran.
+      </div>
+      <div class="feature-item">
+        <strong>Batch & Expired Guard</strong>
+        Peringatan dini barang kedaluwarsa dan pelacakan nomor seri IMEI/SN.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. KULINER -->
+  <div class="section-card avoid-break">
+    <div class="section-header">
+      <div class="section-icon">🍳</div>
+      <div>
+        <h2 class="section-title">3. Modul Restoran & Kafe (Kuliner F&B)</h2>
+      </div>
+    </div>
+    <p class="section-desc">
+      Mengintegrasikan Meja Makan QR Order, Kasir F&B, Kitchen Display System (KDS), Resep *Bill of Materials (BOM)* untuk pemotongan bahan baku dapur, dan Food Waste Tracking.
+    </p>
+    <div class="diagram-container">
+      <pre class="mermaid">
+flowchart TD
+    subgraph FrontDesk["🍽️ Layanan Meja & Kasir"]
+        TABLES[Manajemen Meja / QR Menu]
+        ORDER[Order Kasir & Waiter]
+        MODIFIER[Varian, Level Pedas, Topping]
+    end
+
+    subgraph Kitchen["👨‍🍳 Dapur & Resep BOM"]
+        KDS[Antrian Kitchen Display System]
+        RECIPE[Resep / Bill of Materials]
+        INGREDIENT[Gudang Bahan Baku Dapur]
+        WASTE[Pencatatan Waste & Basi]
+    end
+
+    subgraph Billing["💰 Kasir & Analisis Menu"]
+        PAYMENT[Pembayaran Kasir / Bill]
+        SHIFT_K[Rekonsiliasi Shift Kasir]
+        ENG[Menu Engineering & HPP Real]
+    end
+
+    TABLES --> ORDER
+    ORDER --> MODIFIER
+    ORDER -->|Kirim Tiket Masak| KDS
+    ORDER -->|Trigger Resep Menu| RECIPE
+    RECIPE -->|Potong Stok Otomatis| INGREDIENT
+    WASTE -->|Catat Bahan Rusak| INGREDIENT
+    KDS -->|Pesanan Siap Saji| PAYMENT
+    PAYMENT --> SHIFT_K
+    RECIPE --> ENG
+    PAYMENT --> ENG
+      </pre>
+    </div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <strong>BOM Recipe Auto-Deduct</strong>
+        Stok bahan baku dapur terpotong presisi per gram/ml saat order dimasak.
+      </div>
+      <div class="feature-item">
+        <strong>Kitchen Display (KDS)</strong>
+        Layar antrian koki real-time dengan timer durasi memasak.
+      </div>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- 4. BUDIDAYA -->
+  <div class="section-card avoid-break">
+    <div class="section-header">
+      <div class="section-icon">🐟</div>
+      <div>
+        <h2 class="section-title">4. Modul Agribisnis & Peternakan (Budidaya)</h2>
+      </div>
+    </div>
+    <p class="section-desc">
+      Mencatat siklus pemeliharaan komoditas per kolam/kandang, pemberian pakan harian, sampling laju pertumbuhan harian (ADG), monitoring kesehatan, hingga kalkulasi FCR dan panen.
+    </p>
+    <div class="diagram-container">
+      <pre class="mermaid">
+flowchart TD
+    subgraph Fasilitas["🌱 Kolam / Kandang / Petak"]
+        POND[Master Kolam / Kandang]
+        SPECIES[Master Spesies / Komoditas]
+        FEED_INV[Gudang Pakan & Nutrisi]
+    end
+
+    subgraph Siklus["🔄 Siklus Pemeliharaan Harian"]
+        ENTRY[Tebar Bibit / Siklus Baru]
+        FEEDING[Pemberian Pakan Harian]
+        SAMPLING[Sampling Bobot & Panjang (ADG)]
+        MORTALITY[Log Mortalitas & Kesehatan]
+    end
+
+    subgraph Pemanenan["💰 Panen & Analisis Akuntansi"]
+        HARVEST[Pemanenan / Harvest Log]
+        FCR[Kalkulasi Rasio Pakan (FCR)]
+        SURVIVAL[Tingkat Kelangsungan Hidup (SR)]
+        FINANCE[Laba Rugi Siklus Produksi]
+    end
+
+    POND --> ENTRY
+    SPECIES --> ENTRY
+    ENTRY --> FEEDING
+    FEED_INV -->|Kurangi Stok Pakan| FEEDING
+    ENTRY --> SAMPLING
+    ENTRY --> MORTALITY
+    SAMPLING --> HARVEST
+    FEEDING --> FCR
+    MORTALITY --> SURVIVAL
+    HARVEST --> FCR
+    HARVEST --> FINANCE
+      </pre>
+    </div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <strong>FCR & SR Automatic Formula</strong>
+        Perhitungan efisiensi pakan vs tonase panen secara otomatis.
+      </div>
+      <div class="feature-item">
+        <strong>Feed Alert & Mortality Guard</strong>
+        Notifikasi stok pakan menipis dan ambang batas mortalitas abnormal.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. JASA OS -->
+  <div class="section-card avoid-break">
+    <div class="section-header">
+      <div class="section-icon">🔧</div>
+      <div>
+        <h2 class="section-title">5. Modul Bengkel & Servis (Jasa OS)</h2>
+      </div>
+    </div>
+    <p class="section-desc">
+      Dirancang untuk bengkel kendaraan, reparasi elektronik, dan kontraktor jasa: Alur Surat Perintah Kerja (SPK), alokasi teknisi, suku cadang, standar SLA pengerjaan, dan bagi hasil mekanik.
+    </p>
+    <div class="diagram-container">
+      <pre class="mermaid">
+flowchart TD
+    subgraph Penerimaan["📋 Front Desk & Estimasi"]
+        CLIENT[Pelanggan & Unit Kendaraan]
+        DIAG[Diagnosa Awal & Keluhan]
+        SPK[Terbitkan Nomor SPK Servis]
+    end
+
+    subgraph Workshop["🛠️ Pengerjaan & Suku Cadang"]
+        TEKNISI[Penugasan Teknisi / Mekanik]
+        PARTS[Penggunaan Sparepart]
+        PROGRESS[Pengerjaan & Checklist Servis]
+        QC[Quality Control & Test Run]
+    end
+
+    subgraph Penyerahan["✅ Penyerahan & Invoice"]
+        DONE[Penyelesaian SPK]
+        INVOICE[Invoice Jasa + Sparepart]
+        KOMISI[Bagi Hasil & Komisi Mekanik]
+        WARRANTY[Klaim Garansi & Catatan SLA]
+    end
+
+    CLIENT --> DIAG
+    DIAG --> SPK
+    SPK --> TEKNISI
+    TEKNISI --> PROGRESS
+    PARTS -->|Potong Stok Sparepart| PROGRESS
+    PROGRESS --> QC
+    QC --> DONE
+    DONE --> INVOICE
+    DONE --> KOMISI
+    DONE --> WARRANTY
+      </pre>
+    </div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <strong>SPK Status Lifecycle</strong>
+        Tahapan terstruktur: Menunggu -> Diagnosa -> Dikerjakan -> Selesai.
+      </div>
+      <div class="feature-item">
+        <strong>Automated Commission Split</strong>
+        Kalkulasi komisi mekanik otomatis per pekerjaan yang diselesaikan.
+      </div>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- 6. SELLER -->
+  <div class="section-card avoid-break">
+    <div class="section-header">
+      <div class="section-icon">🌐</div>
+      <div>
+        <h2 class="section-title">6. Modul E-Commerce & Omnichannel (Seller)</h2>
+      </div>
+    </div>
+    <p class="section-desc">
+      Menyinkronkan stok multi-gudang ke marketplace (Shopee, Tokopedia, TikTok Shop), mengelola pusat pesanan terpadu, proses packing gudang, dan pencetakan resi pengiriman AWB otomatis.
+    </p>
+    <div class="diagram-container">
+      <pre class="mermaid">
+flowchart LR
+    subgraph Marketplace["🛍️ Marketplace Channels"]
+        SHP[Shopee Store]
+        TKP[Tokopedia Store]
+        TTK[TikTok Shop]
+    end
+
+    subgraph OmnichannelHub["⚡ Bizora Omnichannel Engine"]
+        MAPPING[SKU & Master Mapping]
+        SYNC[Sinkronisasi Stok Multi-Channel]
+        ORDER_CENTER[Pusat Pesanan Masuk]
+    end
+
+    subgraph Fulfillment["📦 Logistik & Multi-Gudang"]
+        WAREHOUSE[Gudang Pusat / Cabang]
+        PACKING[Proses Packing & Validasi]
+        AWB_PRINT[Cetak Resi Pengiriman AWB]
+        COURIER[Pickup Kurir & Selesai]
+    end
+
+    SHP <-->|Webhook API| OmnichannelHub
+    TKP <-->|Webhook API| OmnichannelHub
+    TTK <-->|Webhook API| OmnichannelHub
+
+    MAPPING --> SYNC
+    SYNC <--> WAREHOUSE
+    ORDER_CENTER --> PACKING
+    PACKING --> AWB_PRINT
+    AWB_PRINT --> COURIER
+      </pre>
+    </div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <strong>Centralized Stock Synchronization</strong>
+        Mencegah overselling dengan mengunci alokasi stok lintas marketplace.
+      </div>
+      <div class="feature-item">
+        <strong>Thermal AWB Resi Printing</strong>
+        Mendukung cetak label resi kurir format standar dan printer thermal.
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY TABLE -->
+  <div class="section-card avoid-break">
+    <h3 style="margin-top:0; font-size:12pt; font-weight:800; color:#0f172a;">📋 Matriks Kapabilitas Platform BIZORA</h3>
+    <table style="width:100%; border-collapse: collapse; font-size: 8.5pt; margin-top: 8px;">
+      <thead>
+        <tr style="background:#f1f5f9; text-align:left;">
+          <th style="padding:6px 8px; border:1px solid #cbd5e1;">Modul</th>
+          <th style="padding:6px 8px; border:1px solid #cbd5e1;">Target Pengguna</th>
+          <th style="padding:6px 8px; border:1px solid #cbd5e1;">Fitur Utama</th>
+          <th style="padding:6px 8px; border:1px solid #cbd5e1;">Skalabilitas</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0; font-weight:700;">Toko Retail</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Minimarket, Toko Grosir, Bahan Bangunan</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">POS Kasir, Multi-Satuan, Batch/Expired, Piutang</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Multi-Cabang & Multi-Kasir</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0; font-weight:700;">Resto & Kuliner</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Restoran, Kafe, Kopi Shop, Cloud Kitchen</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Meja QR, KDS Dapur, Resep BOM, Food Waste</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Multi-Outlet & Kitchen Station</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0; font-weight:700;">Agribisnis Budidaya</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Tambak Ikan/Udang, Peternakan, Pertanian</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Siklus Tebar, Pakan Harian, Sampling ADG, FCR Panen</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Multi-Kolam & Multi-Farm</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0; font-weight:700;">Bengkel & Servis (Jasa)</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Bengkel Mobil/Motor, Reparasi Elektronik</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">SPK Servis, Sparepart, Bagi Hasil Mekanik, SLA</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Multi-Teknisi & Multi-Pos</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0; font-weight:700;">Seller Omnichannel</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Brand Online, Toko Marketplace, Reseller</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Sinkronisasi Stok Shopee/Tokopedia/TikTok, Cetak AWB</td>
+          <td style="padding:6px 8px; border:1px solid #e2e8f0;">Multi-Gudang & Multi-Store</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>BIZORA SAAS PLATFORM &copy; 2026 — PT ANTIGRAVITY GLOBAL</div>
+    <div>HALAMAN DOKUMENTASI ARSITEKTUR RESMI</div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontFamily: 'Plus Jakarta Sans, sans-serif',
+        fontSize: '11px',
+        primaryColor: '#e0f2fe',
+        primaryTextColor: '#0369a1',
+        primaryBorderColor: '#0284c7',
+        lineColor: '#64748b',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
+      },
+      flowchart: {
+        curve: 'basis',
+        padding: 15
+      }
+    });
+  </script>
+</body>
+</html>

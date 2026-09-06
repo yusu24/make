@@ -54,6 +54,10 @@ class JasaController extends Controller
             'service_categories' => 'nullable|array',
             'technician_specialties' => 'nullable|array',
             'inventory_categories' => 'nullable|array',
+            'qris_image_url' => 'nullable|string',
+            'bank_name' => 'nullable|string|max:100',
+            'bank_account_no' => 'nullable|string|max:100',
+            'bank_account_name' => 'nullable|string|max:150',
         ]);
 
         $tenantId = $request->user()->tenant_id;
@@ -65,6 +69,10 @@ class JasaController extends Controller
             'term_sparepart',
             'term_spk',
             'document_prefix',
+            'qris_image_url',
+            'bank_name',
+            'bank_account_no',
+            'bank_account_name',
             'service_categories',
             'technician_specialties',
             'inventory_categories'

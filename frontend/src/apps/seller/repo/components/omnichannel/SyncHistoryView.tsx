@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { History, Search, Filter, CheckCircle2, AlertCircle, RefreshCw, FileText, X } from 'lucide-react';
+import { History, Search, Filter, CheckCircle2, AlertCircle, AlertTriangle, XCircle, RefreshCw, FileText, X } from 'lucide-react';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
 import { useAuth } from '../../../../../contexts/AuthContext';
@@ -150,24 +150,24 @@ export const SyncHistoryView: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
-                <th className="py-3 px-4">LOG ID & TANGGAL</th>
-                <th className="py-3 px-4">MODUL</th>
-                <th className="py-3 px-4">PLATFORM & TOKO</th>
-                <th className="py-3 px-4 text-center">STATUS</th>
-                <th className="py-3 px-4 text-center">SUCCESS</th>
-                <th className="py-3 px-4 text-center">FAILED</th>
-                <th className="py-3 px-4 text-center">DURASI</th>
-                <th className="py-3 px-4 text-right">DETAIL</th>
+              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
+                <th className="py-3.5 px-4">LOG ID & TANGGAL</th>
+                <th className="py-3.5 px-4">MODUL</th>
+                <th className="py-3.5 px-4">PLATFORM & TOKO</th>
+                <th className="py-3.5 px-4 text-center">STATUS</th>
+                <th className="py-3.5 px-4 text-center">SUCCESS</th>
+                <th className="py-3.5 px-4 text-center">FAILED</th>
+                <th className="py-3.5 px-4 text-center">DURASI</th>
+                <th className="py-3.5 px-4 text-right">DETAIL</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px]">
               {paginatedItems.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertCircle className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-                      <span className="font-semibold text-slate-600 dark:text-slate-300">
+                      <span className="font-semibold text-slate-600 dark:text-slate-300 text-sm">
                         Tidak ada riwayat sync ditemukan
                       </span>
                     </div>
@@ -177,33 +177,33 @@ export const SyncHistoryView: React.FC = () => {
                 paginatedItems.map((row) => (
                   <tr key={row.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="py-3.5 px-4">
-                      <p className="font-mono font-bold text-slate-800 dark:text-slate-200">{row.id}</p>
-                      <p className="text-[11px] text-slate-400">{row.time}</p>
+                      <p className="font-mono font-bold text-sm text-slate-800 dark:text-slate-200">{row.id}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{row.time}</p>
                     </td>
 
-                    <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-300">
+                    <td className="py-3.5 px-4 font-semibold text-sm text-slate-700 dark:text-slate-300">
                       {row.type}
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <p className="font-semibold text-slate-800 dark:text-slate-100">{row.shop}</p>
-                      <p className="text-[11px] text-indigo-600 dark:text-indigo-400">{row.platform}</p>
+                      <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">{row.shop}</p>
+                      <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">{row.platform}</p>
                     </td>
 
                     <td className="py-3.5 px-4 text-center">
                       {row.status === 'Success' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
-                          <CheckCircle2 className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
                           Success
                         </span>
                       ) : row.status === 'Partial' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
-                          <AlertCircle className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
+                          <AlertTriangle className="w-3.5 h-3.5" />
                           Partial
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40">
-                          <AlertCircle className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40">
+                          <XCircle className="w-3.5 h-3.5" />
                           Failed
                         </span>
                       )}

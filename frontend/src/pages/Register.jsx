@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { getCategoryDashboardPath } from '../routes/guards'
 import { api } from '../lib/api'
 import './Auth.css'
 import bizoraLogo from '../assets/bizora-logo.png'
@@ -8,8 +9,18 @@ import {
   User, Mail, Lock, CheckCircle2, ArrowRight, ArrowLeft, 
   UserPlus, Rocket, Eye, EyeOff, Store, Utensils, 
   Fish, Sprout, Wrench, Package, Factory, Briefcase, Building,
-  KeyRound, RefreshCw, ShieldCheck
+  KeyRound, RefreshCw, ShieldCheck, Smartphone, Car, Snowflake, Shirt, Scissors, Layers
 } from 'lucide-react'
+
+const JASA_SUB_OPTIONS = [
+  { id: 'elektronik', title: 'Elektronik & Gadget', desc: 'HP, Laptop, Komputer, TV', icon: Smartphone },
+  { id: 'otomotif', title: 'Bengkel Otomotif', desc: 'Motor, Mobil, Sepeda & Variasi', icon: Car },
+  { id: 'ac_appliances', title: 'Servis AC & Home Appliances', desc: 'AC, Kulkas, Mesin Cuci', icon: Snowflake },
+  { id: 'laundry', title: 'Laundry & Cuci Sepatu', desc: 'Kiloan, Satuan, Karpet, Sepatu', icon: Shirt },
+  { id: 'salon_barbershop', title: 'Salon & Barbershop', desc: 'Potong Rambut, Spa, Treatment', icon: Scissors },
+  { id: 'tailor', title: 'Penjahit & Konveksi', desc: 'Permak, Jahit Pakaian, Seragam', icon: Layers },
+  { id: 'umum', title: 'Jasa & Servis Umum', desc: 'Maintenance, Reparasi & Proyek', icon: Wrench },
+]
 
 const CATEGORY_META_ICONS = {
   'Budidaya Tanaman':   Sprout,
@@ -42,6 +53,9 @@ export default function Register() {
   const [step, setStep] = useState(1)
   const [showPass, setShowPass] = useState(false)
   const [logoUrl, setLogoUrl] = useState(null)
+
+  const [jasaSubCategory, setJasaSubCategory] = useState('elektronik')
+  const [selectedCatName, setSelectedCatName] = useState('')
 
   useEffect(() => {
     const verifyEmailParam = searchParams.get('verify_email')
@@ -90,7 +104,10 @@ export default function Register() {
   }, [step, resendTimer])
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
-  const selectCategory = (id) => setForm({ ...form, business_category_id: id })
+  const selectCategory = (cat) => {
+    setForm({ ...form, business_category_id: cat.id })
+    setSelectedCatName(cat.name)
+  }
 
   const handleNext = (e) => {
     e.preventDefault()
@@ -127,6 +144,10 @@ export default function Register() {
     setError('')
     setLoading(true)
     try {
+      // Save Jasa subcategory choice so upon login the app adapts immediately
+      if (selectedCatName === 'Jasa' || selectedCatName === 'Jasa & Repair') {
+        localStorage.setItem('bizora_jasa_category', jasaSubCategory)
+      }
       const res = await register(form)
       setSuccess(res.message || 'Kode OTP verifikasi telah dikirim ke email Anda.')
       setStep(3)
@@ -158,18 +179,9 @@ export default function Register() {
       setTimeout(() => {
         if (userData.role === 'super_admin' || userData.role === 'admin') {
           navigate('/dashboard')
-        } else if (userData.business_category === 'Toko Retail') {
-          navigate('/retail/dashboard')
-        } else if (userData.business_category === 'Kuliner') {
-          navigate('/kuliner/admin')
-        } else if (userData.business_category === 'Budidaya Hewan' || userData.business_category === 'Budidaya Tanaman') {
-          navigate('/budidaya/dashboard')
-        } else if (userData.business_category === 'Seller') {
-          navigate('/seller/dashboard')
-        } else if (userData.business_category === 'Jasa') {
-          navigate('/jasa/dashboard')
         } else {
-          navigate('/coming-soon')
+          const targetPath = getCategoryDashboardPath(userData.business_category)
+          navigate(targetPath)
         }
       }, 1200)
     } catch (err) {
@@ -287,8 +299,8 @@ export default function Register() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         <div>
                             <div className="field-lbl">Kata Sandi</div>
-                            <div className="field-wrap" style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 10 }}>
-                                <Lock size={16} className="field-icon opacity-60 shrink-0" />
+                            <div className="field-wrap">
+                                <Lock size={16} className="field-icon opacity-60" />
                                 <input 
                                   name="password" 
                                   type={showPass ? "text" : "password"} 
@@ -296,12 +308,13 @@ export default function Register() {
                                   value={form.password} 
                                   onChange={handleChange} 
                                   required 
-                                  style={{ flex: 1 }}
+                                  style={{ paddingRight: 36 }}
                                 />
                                 <button 
                                   type="button" 
                                   onClick={() => setShowPass(!showPass)}
-                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0 }}
+                                  className="eye-btn"
+                                  title={showPass ? "Sembunyikan sandi" : "Lihat sandi"}
                                 >
                                   {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                                 </button>
@@ -309,8 +322,8 @@ export default function Register() {
                         </div>
                         <div>
                             <div className="field-lbl">Konfirmasi Sandi</div>
-                            <div className="field-wrap" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <CheckCircle2 size={16} className="field-icon opacity-60 shrink-0" />
+                            <div className="field-wrap">
+                                <CheckCircle2 size={16} className="field-icon opacity-60" />
                                 <input 
                                   name="password_confirmation" 
                                   type={showPass ? "text" : "password"} 
@@ -318,7 +331,16 @@ export default function Register() {
                                   value={form.password_confirmation} 
                                   onChange={handleChange} 
                                   required 
+                                  style={{ paddingRight: 36 }}
                                 />
+                                <button 
+                                  type="button" 
+                                  onClick={() => setShowPass(!showPass)}
+                                  className="eye-btn"
+                                  title={showPass ? "Sembunyikan sandi" : "Lihat sandi"}
+                                >
+                                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -340,7 +362,7 @@ export default function Register() {
                                 <div 
                                     key={cat.id} 
                                     className={`category-card ${form.business_category_id === cat.id ? 'category-card--selected' : ''}`}
-                                    onClick={() => selectCategory(cat.id)}
+                                    onClick={() => selectCategory(cat)}
                                 >
                                     <div className="category-card__icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         {cat.icon && (cat.icon.length <= 4 || !cat.icon.startsWith('ti-')) ? (
@@ -355,6 +377,47 @@ export default function Register() {
                         })}
                     </div>
 
+                    {(selectedCatName === 'Jasa' || selectedCatName === 'Jasa & Repair') && (
+                        <div style={{ marginBottom: '1.5rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '14px' }}>
+                            <div className="field-lbl" style={{ color: '#9fe1cb', marginBottom: 8 }}>
+                                🛠️ Spesifikasi Bidang Jasa / Servis Anda:
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxHeight: 180, overflowY: 'auto', paddingRight: 4 }}>
+                                {JASA_SUB_OPTIONS.map(sub => {
+                                    const SubIcon = sub.icon;
+                                    const isSelected = jasaSubCategory === sub.id;
+                                    return (
+                                        <div
+                                            key={sub.id}
+                                            onClick={() => setJasaSubCategory(sub.id)}
+                                            style={{
+                                                padding: '8px 10px',
+                                                borderRadius: 8,
+                                                background: isSelected ? 'rgba(29, 158, 117, 0.25)' : 'rgba(255,255,255,0.05)',
+                                                border: isSelected ? '1.5px solid #1D9E75' : '1px solid rgba(255,255,255,0.08)',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                                transition: 'all 0.15s'
+                                            }}
+                                        >
+                                            <SubIcon size={16} style={{ color: isSelected ? '#9fe1cb' : 'rgba(255,255,255,0.6)', shrink: 0 }} />
+                                            <div style={{ minWidth: 0, textAlign: 'left' }}>
+                                                <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {sub.title}
+                                                </div>
+                                                <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {sub.desc}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
                         <button type="button" className="btn-login" style={{ background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setStep(1)} title="Kembali ke Langkah 1">
                             <ArrowLeft size={18} />
@@ -368,9 +431,9 @@ export default function Register() {
 
             {step === 3 && (
                 <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', padding: '14px 16px', borderRadius: 12, fontSize: 13, color: '#334155', lineHeight: 1.5 }}>
+                    <div style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', padding: '14px 16px', borderRadius: 12, fontSize: 13, color: 'rgba(255, 255, 255, 0.85)', lineHeight: 1.5 }}>
                       Kode verifikasi 6 digit telah dikirimkan ke email: <br />
-                      <strong style={{ color: '#1e293b', fontSize: 14 }}>{form.email}</strong>
+                      <strong style={{ color: '#60a5fa', fontSize: 14 }}>{form.email}</strong>
                     </div>
 
                     <div>
@@ -416,7 +479,7 @@ export default function Register() {
                       <button 
                         type="button" 
                         onClick={() => { setStep(1); setError(''); setSuccess(''); }}
-                        style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                        style={{ background: 'none', border: 'none', color: 'rgba(255, 255, 255, 0.7)', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
                       >
                         ← Ubah Data / Email
                       </button>

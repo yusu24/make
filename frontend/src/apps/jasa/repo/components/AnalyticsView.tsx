@@ -28,10 +28,8 @@ import {
   Cell, 
   Legend 
 } from 'recharts';
-import { Technician, ServiceStats, JasaInvoice, JasaExpense } from '../types';
+import { Technician, ServiceStats, JasaInvoice, JasaExpense, WorkOrder } from '../types';
 import { 
-  REVENUE_MONTHLY_CHART_DATA, 
-  CATEGORY_DISTRIBUTION_DATA, 
   formatRupiah 
 } from '../data/mockData';
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -52,9 +50,10 @@ interface AnalyticsViewProps {
   technicians: Technician[];
   invoices: JasaInvoice[];
   expenses: JasaExpense[];
+  workOrders?: WorkOrder[];
 }
 
-export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians, invoices, expenses }) => {
+export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians, invoices, expenses, workOrders = [] }) => {
   const { user } = useAuth();
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +81,98 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
 
   const actualNetProfit = actualRevenue - actualPartsCost - actualTechCommission - actualOtherExpenses;
   const profitMargin = actualRevenue > 0 ? ((actualNetProfit / actualRevenue) * 100).toFixed(1) : '0.0';
+
+  // Generate last 6 months dynamic chart data based on real invoices and expenses
+  const monthlyChartData = React.useMemo(() => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const now = new Date();
+    const result = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const year = d.getFullYear();
+      const monthIdx = d.getMonth();
+      const monthKey = `${year}-${String(monthIdx + 1).padStart(2, '0')}`;
+      const monthLabel = monthNames[monthIdx];
+
+      const monthInvoices = invoices.filter(inv => {
+        const invDate = inv.issueDate || inv.dueDate || '';
+        return invDate.startsWith(monthKey);
+      });
+      const rev = monthInvoices.reduce((sum, inv) => sum + (inv.paidAmount || (inv.status === 'Lunas' ? inv.totalAmount : 0) || 0), 0);
+
+      const monthExpenses = expenses.filter(exp => {
+        const expDate = exp.date || '';
+        return expDate.startsWith(monthKey);
+      });
+      const labor = monthExpenses
+        .filter(e => e.description.toLowerCase().includes('komisi') || e.description.toLowerCase().includes('upah'))
+        .reduce((sum, e) => sum + (e.amount || 0), 0) || (rev > 0 ? rev * 0.3 : 0);
+
+      const completed = workOrders.filter(wo => {
+        const dStr = wo.completionDate || wo.createdAt || '';
+        return dStr.startsWith(monthKey) && (wo.status === 'Diserahkan / Lunas' || wo.status === 'Selesai & Siap Diambil');
+      }).length;
+
+      result.push({
+        month: monthLabel,
+        revenue: rev,
+        laborCost: labor,
+        completed,
+        target: 0
+      });
+    }
+
+    return result;
+  }, [invoices, expenses, workOrders]);
+
+  // Dynamic Category Distribution computed from real WorkOrders
+  const categoryDistribution = React.useMemo(() => {
+    if (!workOrders || workOrders.length === 0) {
+      return [
+        { name: 'Belum Ada SPK', value: 100, count: 0, color: '#cbd5e1' }
+      ];
+    }
+
+    const categoryColors: Record<string, string> = {
+      'Pemeliharaan Berkala (Preventive)': '#2563eb',
+      'Perbaikan & Troubleshooting (Corrective)': '#dc2626',
+      'Instalasi & Commissioning': '#16a34a',
+      'Kalibrasi & Pengujian': '#d97706',
+      'Konsultasi & Audit Teknis': '#8b5cf6',
+      'Upgrade & Modifikasi': '#06b6d4',
+      'Lainnya': '#64748b'
+    };
+
+    const counts: Record<string, number> = {};
+    workOrders.forEach(wo => {
+      const cat = wo.category || 'Lainnya';
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+
+    const total = workOrders.length;
+    const entries = Object.entries(counts).map(([name, count]) => {
+      const shortName = name.replace(/\s*\([^)]*\)/g, '');
+      return {
+        name: shortName,
+        value: Math.round((count / total) * 100),
+        count,
+        color: categoryColors[name] || '#3b82f6'
+      };
+    });
+
+    return entries.length > 0 ? entries : [{ name: 'Belum Ada SPK', value: 100, count: 0, color: '#cbd5e1' }];
+  }, [workOrders]);
+
+  // SLA & Operational Rates
+  const slaCompliance = workOrders.length > 0 ? (stats.slaComplianceRate || 100) : (stats.slaComplianceRate || 0);
+  const firstTimeFix = workOrders.length > 0 
+    ? Math.min(100, Math.round((workOrders.filter(w => w.status === 'Diserahkan / Lunas' || w.status === 'Selesai & Siap Diambil').length / Math.max(1, workOrders.length)) * 100))
+    : 0;
+  const techUtilization = stats.technicianUtilizationRate || (technicians.length > 0 && workOrders.length > 0 ? Math.min(100, Math.round((workOrders.length / (technicians.length * 4)) * 100)) : 0);
+  const targetPct = stats.totalRevenueMonth && stats.totalRevenueMonth > 0
+    ? `${((actualRevenue / stats.totalRevenueMonth) * 100).toFixed(1)}%`
+    : (actualRevenue > 0 ? '100%' : '0%');
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -158,14 +249,14 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
             </div>
             <div className="text-right">
               <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
-                Target: 109.4%
+                Target: {targetPct}
               </span>
             </div>
           </div>
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={REVENUE_MONTHLY_CHART_DATA} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <AreaChart data={monthlyChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRevenueBento" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4}/>
@@ -183,7 +274,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
                   fontSize={10} 
                   tickLine={false}
                   axisLine={{ stroke: '#cbd5e1' }}
-                  tickFormatter={(val) => `Rp${(val / 1000000).toFixed(0)}jt`}
+                  tickFormatter={(val) => val >= 1000000 ? `Rp${(val / 1000000).toFixed(0)}jt` : val === 0 ? 'Rp 0' : `Rp${(val / 1000).toFixed(0)}rb`}
                 />
                 <Tooltip
                   formatter={(val: number) => formatRupiah(val)}
@@ -200,7 +291,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
               <span className="flex items-center text-blue-600"><span className="w-2.5 h-2.5 bg-blue-600 rounded mr-1.5" /> Omset Jasa</span>
               <span className="flex items-center text-emerald-600"><span className="w-2.5 h-2.5 bg-emerald-600 rounded mr-1.5" /> Biaya Teknisi</span>
             </div>
-            <span className="text-slate-500 font-medium">Margin Kotor: <strong className="text-slate-900 font-semibold">59.8%</strong></span>
+            <span className="text-slate-500 font-medium">Margin Kotor: <strong className="text-slate-900 font-semibold">{profitMargin}%</strong></span>
           </div>
         </div>
 
@@ -218,7 +309,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={CATEGORY_DISTRIBUTION_DATA}
+                  data={categoryDistribution}
                   cx="50%"
                   cy="50%"
                   innerRadius={45}
@@ -226,7 +317,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
                   paddingAngle={4}
                   dataKey="value"
                 >
-                  {CATEGORY_DISTRIBUTION_DATA.map((entry, index) => (
+                  {categoryDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -239,13 +330,13 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
           </div>
 
           <div className="space-y-1.5 text-xs pt-2.5 border-t border-slate-100">
-            {CATEGORY_DISTRIBUTION_DATA.map(item => (
+            {categoryDistribution.map(item => (
               <div key={item.name} className="flex items-center justify-between text-slate-700">
                 <div className="flex items-center space-x-1.5">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
                   <span className="font-semibold text-[11px] text-slate-600">{item.name}</span>
                 </div>
-                <span className="font-semibold text-[11px] text-slate-900">{item.value}%</span>
+                <span className="font-semibold text-[11px] text-slate-900">{item.count !== undefined && item.count > 0 ? `${item.value}% (${item.count} SPK)` : `${item.value}%`}</span>
               </div>
             ))}
           </div>
@@ -301,35 +392,39 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="font-semibold text-slate-600 text-[11px]">Kepatuhan SLA (Target 95%)</span>
-                <span className="font-semibold text-emerald-700 text-xs">{stats.slaComplianceRate}%</span>
+                <span className="font-semibold text-emerald-700 text-xs">{slaCompliance}%</span>
               </div>
               <div className="w-full bg-slate-200 rounded-full h-1.5">
-                <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: `${stats.slaComplianceRate}%` }} />
+                <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: `${slaCompliance}%` }} />
               </div>
             </div>
 
             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="font-semibold text-slate-600 text-[11px]">First-Time Fix Rate</span>
-                <span className="font-semibold text-blue-700 text-xs">92.3%</span>
+                <span className="font-semibold text-blue-700 text-xs">{firstTimeFix}%</span>
               </div>
               <div className="w-full bg-slate-200 rounded-full h-1.5">
-                <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '92.3%' }} />
+                <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${firstTimeFix}%` }} />
               </div>
             </div>
 
             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="font-semibold text-slate-600 text-[11px]">Utilisasi Jam Kerja</span>
-                <span className="font-semibold text-indigo-700 text-xs">{stats.technicianUtilizationRate}%</span>
+                <span className="font-semibold text-indigo-700 text-xs">{techUtilization}%</span>
               </div>
               <div className="w-full bg-slate-200 rounded-full h-1.5">
-                <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${stats.technicianUtilizationRate}%` }} />
+                <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${techUtilization}%` }} />
               </div>
             </div>
 
             <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 leading-relaxed font-medium">
-              💡 <strong>Rekomendasi Operasional:</strong> Kebutuhan teknisi bersertifikasi HVAC dan Kalibrasi meningkat 25% bulan ini seiring kenaikan kontrak fasilitas gedung.
+              {workOrders.length === 0 ? (
+                <>💡 <strong>Rekomendasi Operasional:</strong> Belum ada data transaksi/SPK. Buat SPK atau invoice pertama untuk mulai melacak performa operasional & SLA tim Anda secara otomatis.</>
+              ) : (
+                <>💡 <strong>Rekomendasi Operasional:</strong> Produktivitas tim terpantau dengan {workOrders.length} SPK tercatat dan tingkat kepatuhan SLA mencapai {slaCompliance}%.</>
+              )}
             </div>
           </div>
         </div>

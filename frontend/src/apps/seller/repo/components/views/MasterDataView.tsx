@@ -108,30 +108,30 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({ stores }) => {
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden -mt-2">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700">
+            <thead className="bg-slate-50/70 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700 uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3 font-semibold">{i18n?.language === 'en' ? 'Supplier / Vendor Name' : 'Nama Supplier / Vendor'}</th>
-                <th className="px-4 py-3 font-semibold">{i18n?.language === 'en' ? 'Contact' : 'Kontak'}</th>
-                <th className="px-4 py-3 font-semibold">{i18n?.language === 'en' ? 'Address' : 'Alamat'}</th>
-                <th className="px-4 py-3 font-semibold text-right">{i18n?.language === 'en' ? 'Action' : 'Aksi'}</th>
+                <th className="px-4 py-3.5">{i18n?.language === 'en' ? 'Supplier / Vendor Name' : 'Nama Supplier / Vendor'}</th>
+                <th className="px-4 py-3.5">{i18n?.language === 'en' ? 'Contact' : 'Kontak'}</th>
+                <th className="px-4 py-3.5">{i18n?.language === 'en' ? 'Address' : 'Alamat'}</th>
+                <th className="px-4 py-3.5 text-right">{i18n?.language === 'en' ? 'Action' : 'Aksi'}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px] text-slate-700 dark:text-slate-200">
               {loading ? (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">Memuat...</td></tr>
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400 text-sm">Memuat...</td></tr>
               ) : suppliers.length === 0 ? (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">Belum ada supplier. Klik "Tambah Supplier" untuk menambahkan.</td></tr>
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400 text-sm">Belum ada supplier. Klik "Tambah Supplier" untuk menambahkan.</td></tr>
               ) : (
                 paginatedSuppliers.map((sup) => (
-                  <tr key={sup.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">{sup.name}</td>
-                    <td className="px-4 py-3">{sup.contact || '-'}</td>
-                    <td className="px-4 py-3 max-w-xs truncate">{sup.address || '-'}</td>
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                  <tr key={sup.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
+                    <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-slate-100">{sup.name}</td>
+                    <td className="px-4 py-3.5">{sup.contact || '-'}</td>
+                    <td className="px-4 py-3.5 max-w-xs truncate">{sup.address || '-'}</td>
+                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
                       <button onClick={() => openEditSupplier(sup)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDeleteSupplier(sup)} className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1">
+                      <button onClick={() => handleDeleteSupplier(sup.id)} className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>

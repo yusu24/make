@@ -348,7 +348,10 @@ body {
 
 @media (max-width: 768px) {
   .page-content {
-    padding: 16px;
+    padding: 10px 8px 24px 8px !important;
+  }
+  .page-content--retail {
+    padding: 8px 6px 20px 6px !important;
   }
   .page-header {
     flex-direction: column;
@@ -1070,13 +1073,25 @@ body {
   }
 
   /* ── Layout & Containers ── */
-  .main-content, .kd-content, .aq-main-content, .shared-page-container {
-    padding: 10px 12px 24px 12px !important;
+  .main-content {
+    padding: 0 !important;
+  }
+
+  .kd-content, .aq-main-content, .shared-page-container {
+    padding: 10px 8px 24px 8px !important;
   }
 
   .card, .kd-panel, .aq-card, .shared-card, .glass-card {
-    padding: 12px 14px !important;
+    padding: 12px 12px !important;
     border-radius: 14px !important;
+  }
+
+  /* Table cards shouldn't have inner padding around tables and toolbar */
+  .card.table-wrap,
+  .card:has(.table),
+  .card:has(.table-responsive),
+  .card:has(.retail-table-responsive) {
+    padding: 0 !important;
   }
 
   /* ── Modals & Dialogs on Mobile ── */

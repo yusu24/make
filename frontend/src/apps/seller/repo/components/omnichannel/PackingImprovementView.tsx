@@ -242,24 +242,24 @@ export const PackingImprovementView: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
-                <th className="py-3 px-4 w-10">
+              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
+                <th className="py-3.5 px-4 w-10">
                   <input type="checkbox" className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
                 </th>
-                <th className="py-3 px-4">ORDER ID</th>
-                <th className="py-3 px-4">EKSPEDISI / KURIR</th>
-                <th className="py-3 px-4">ITEM PRODUK (SKU)</th>
-                <th className="py-3 px-4 text-center">STATUS CETAK RESI</th>
-                <th className="py-3 px-4 text-right">AKSI</th>
+                <th className="py-3.5 px-4">ORDER ID</th>
+                <th className="py-3.5 px-4">EKSPEDISI / KURIR</th>
+                <th className="py-3.5 px-4">ITEM PRODUK (SKU)</th>
+                <th className="py-3.5 px-4 text-center">STATUS CETAK RESI</th>
+                <th className="py-3.5 px-4 text-right">AKSI</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px]">
               {paginatedItems.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-                      <span className="font-semibold text-slate-600 dark:text-slate-300">
+                      <span className="font-semibold text-slate-600 dark:text-slate-300 text-sm">
                         Semua antrean packing selesai!
                       </span>
                     </div>
@@ -271,16 +271,16 @@ export const PackingImprovementView: React.FC = () => {
                     <td className="py-3.5 px-4">
                       <input type="checkbox" className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">{row.orderId}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-300">{row.courier}</td>
-                    <td className="py-3.5 px-4 font-medium text-slate-600 dark:text-slate-300">{row.items}</td>
+                    <td className="py-3.5 px-4 font-bold text-sm text-slate-800 dark:text-slate-100">{row.orderId}</td>
+                    <td className="py-3.5 px-4 font-semibold text-sm text-slate-700 dark:text-slate-300">{row.courier}</td>
+                    <td className="py-3.5 px-4 font-medium text-sm text-slate-600 dark:text-slate-300">{row.items}</td>
                     <td className="py-3.5 px-4 text-center">
                       {row.printed ? (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
                           Sudah Dicetak
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
                           Belum Dicetak
                         </span>
                       )}

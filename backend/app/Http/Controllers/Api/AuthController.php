@@ -78,9 +78,16 @@ class AuthController extends Controller
                 'status'               => 'active',
                 'trial_ends_at'        => now()->addDays(3),
             ]);
-            // Auto-seed default data for Retail
-            if ($category && $category->slug === 'toko-retail') {
-                $this->seedDefaultRetailData($tenantId);
+            // Auto-seed default master data according to category
+            if ($category) {
+                match ($category->slug) {
+                    'toko-retail'                            => $this->seedDefaultRetailData($tenantId),
+                    'kuliner'                                => $this->seedDefaultKulinerData($tenantId),
+                    'budidaya-hewan', 'budidaya-tanaman'     => $this->seedDefaultBudidayaData($tenantId),
+                    'jasa'                                   => $this->seedDefaultJasaData($tenantId),
+                    'seller'                                 => $this->seedDefaultSellerData($tenantId),
+                    default                                  => null,
+                };
             }
         }
 
@@ -494,6 +501,126 @@ class AuthController extends Controller
             'name' => 'Kasir',
             'permissions' => ['pos', 'inventory'],
         ]);
+    }
+
+    private function seedDefaultKulinerData(string $tenantId)
+    {
+        // 1. Categories
+        $cats = [
+            ['name' => 'Makanan Utama', 'slug' => 'makanan-utama', 'description' => 'Menu hidangan utama'],
+            ['name' => 'Minuman Dingin', 'slug' => 'minuman-dingin', 'description' => 'Aneka es dan jus'],
+            ['name' => 'Kopi & Teh', 'slug' => 'kopi-teh', 'description' => 'Seduhan kopi dan teh spesial'],
+            ['name' => 'Cemilan & Snack', 'slug' => 'cemilan-snack', 'description' => 'Makanan ringan dan pembuka'],
+        ];
+        foreach ($cats as $c) {
+            \App\Models\KulinerCategory::create(array_merge($c, ['tenant_id' => $tenantId]));
+        }
+
+        // 2. Tables
+        for ($i = 1; $i <= 6; $i++) {
+            \App\Models\KulinerTable::create([
+                'tenant_id' => $tenantId,
+                'name' => 'Meja ' . str_pad((string)$i, 2, '0', STR_PAD_LEFT),
+                'status' => 'empty',
+                'capacity' => 4,
+                'position_x' => ($i % 3) * 120 + 20,
+                'position_y' => intdiv($i - 1, 3) * 120 + 20,
+            ]);
+        }
+
+        // 3. Settings
+        \App\Models\KulinerSetting::create([
+            'tenant_id' => $tenantId,
+            'tax_rate' => 0,
+            'service_charge' => 0,
+            'total_tables' => 10,
+            'receipt_footer' => 'Terima kasih atas kunjungan Anda!',
+        ]);
+
+        // 4. Default Roles
+        $roles = [
+            ['name' => 'Kasir', 'permissions' => ['orders', 'pos', 'shifts']],
+            ['name' => 'Dapur / Koki', 'permissions' => ['kitchen', 'recipes', 'ingredients']],
+            ['name' => 'Waiter / Pelayan', 'permissions' => ['orders', 'tables']],
+        ];
+        foreach ($roles as $r) {
+            \App\Models\KulinerRole::create([
+                'tenant_id' => $tenantId,
+                'name' => $r['name'],
+                'permissions' => $r['permissions'],
+            ]);
+        }
+    }
+
+    private function seedDefaultBudidayaData(string $tenantId)
+    {
+        // 1. Settings
+        \App\Models\BudidayaSetting::create([
+            'tenant_id' => $tenantId,
+            'farm_name' => 'Farm Budidaya Mandiri',
+            'feed_alert_days' => 7,
+            'mortality_threshold_pct' => 5,
+        ]);
+
+        // 2. Units
+        $units = [
+            ['name' => 'Kilogram', 'symbol' => 'kg', 'category' => 'weight'],
+            ['name' => 'Gram', 'symbol' => 'g', 'category' => 'weight'],
+            ['name' => 'Ekor', 'symbol' => 'ekor', 'category' => 'count'],
+            ['name' => 'Karung / Sak', 'symbol' => 'sak', 'category' => 'packaging'],
+            ['name' => 'Liter', 'symbol' => 'L', 'category' => 'volume'],
+        ];
+        foreach ($units as $u) {
+            \App\Models\BudidayaUnit::create(array_merge($u, ['tenant_id' => $tenantId]));
+        }
+
+        // 3. Roles
+        $roles = [
+            ['name' => 'Teknisi Kandang / Kolam', 'permissions' => ['sampling', 'feeding', 'health']],
+            ['name' => 'Operator Pakan & Gudang', 'permissions' => ['inventory', 'purchases']],
+        ];
+        foreach ($roles as $r) {
+            \App\Models\BudidayaRole::create([
+                'tenant_id' => $tenantId,
+                'name' => $r['name'],
+                'permissions' => $r['permissions'],
+            ]);
+        }
+    }
+
+    private function seedDefaultJasaData(string $tenantId)
+    {
+        \App\Models\JasaSetting::create([
+            'tenant_id' => $tenantId,
+            'business_type' => 'Bengkel / Servis',
+            'term_technician' => 'Teknisi',
+            'term_sparepart' => 'Sparepart',
+            'term_spk' => 'SPK',
+            'document_prefix' => 'SRV',
+            'service_categories' => ['Servis Ringan / Tune Up', 'Ganti Oli & Filter', 'Overhaul Mesin', 'Kelistrikan'],
+            'technician_specialties' => ['Mekanik Mesin', 'Kelistrikan', 'Body & Cat'],
+        ]);
+    }
+
+    private function seedDefaultSellerData(string $tenantId)
+    {
+        // 1. Default Warehouse
+        \App\Models\SellerWarehouse::create([
+            'tenant_id' => $tenantId,
+            'name' => 'Gudang Utama (Pusat)',
+            'address' => 'Gudang Sentral',
+            'is_default' => true,
+        ]);
+
+        // 2. Default Marketplace Channels
+        $channels = [
+            ['platform' => 'shopee', 'store_name' => 'Shopee Official Store', 'status' => 'active'],
+            ['platform' => 'tokopedia', 'store_name' => 'Tokopedia Official Store', 'status' => 'active'],
+            ['platform' => 'tiktok', 'store_name' => 'TikTok Shop Store', 'status' => 'active'],
+        ];
+        foreach ($channels as $ch) {
+            \App\Models\SellerChannel::create(array_merge($ch, ['tenant_id' => $tenantId]));
+        }
     }
 
     /**

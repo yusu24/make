@@ -213,6 +213,7 @@ export default function DeveloperIntegrations() {
                 value={pgConfig.provider}
                 onChange={e => setPgConfig({ ...pgConfig, provider: e.target.value })}
               >
+                <option value="doku">DOKU (Jokul Payment Gateway)</option>
                 <option value="midtrans">Midtrans (Snap &amp; Core API)</option>
                 <option value="tripay">Tripay Payment Gateway</option>
                 <option value="xendit">Xendit</option>

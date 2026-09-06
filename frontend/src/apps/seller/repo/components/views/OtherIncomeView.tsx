@@ -71,25 +71,25 @@ export const OtherIncomeView: React.FC<OtherIncomeViewProps> = ({ incomes, onAdd
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
-                <th className="py-3 px-4">{i18n?.language === 'en' ? 'DATE' : 'TANGGAL'}</th>
-                <th className="py-3 px-4">{i18n?.language === 'en' ? 'CATEGORY' : 'KATEGORI'}</th>
-                <th className="py-3 px-4">{i18n?.language === 'en' ? 'DESCRIPTION' : 'KETERANGAN'}</th>
-                <th className="py-3 px-4">{i18n?.language === 'en' ? 'AMOUNT' : 'NOMINAL'}</th>
-                <th className="py-3 px-4 text-center">{i18n?.language === 'en' ? 'ACTION' : 'AKSI'}</th>
+              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
+                <th className="py-3.5 px-4">{i18n?.language === 'en' ? 'DATE' : 'TANGGAL'}</th>
+                <th className="py-3.5 px-4">{i18n?.language === 'en' ? 'CATEGORY' : 'KATEGORI'}</th>
+                <th className="py-3.5 px-4">{i18n?.language === 'en' ? 'DESCRIPTION' : 'KETERANGAN'}</th>
+                <th className="py-3.5 px-4">{i18n?.language === 'en' ? 'AMOUNT' : 'NOMINAL'}</th>
+                <th className="py-3.5 px-4 text-center">{i18n?.language === 'en' ? 'ACTION' : 'AKSI'}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px]">
               {paginatedIncomes.map((inc) => (
                 <tr key={inc.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors group">
                   <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-200">{inc.date}</td>
                   <td className="py-3.5 px-4">
-                    <span className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
                       {inc.category}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-100">{inc.description}</td>
-                  <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400">{formatIDR(inc.amount)}</td>
+                  <td className="py-3.5 px-4 font-semibold text-sm text-slate-800 dark:text-slate-100">{inc.description}</td>
+                  <td className="py-3.5 px-4 font-bold text-sm text-emerald-600 dark:text-emerald-400">{formatIDR(inc.amount)}</td>
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     <div className="flex items-center justify-center gap-1.5 opacity-90 group-hover:opacity-100">
                       <button
@@ -97,14 +97,14 @@ export const OtherIncomeView: React.FC<OtherIncomeViewProps> = ({ incomes, onAdd
                         className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors"
                         title="Edit Pemasukan"
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
+                        <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDeleteIncome?.(inc.id)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors"
                         title="Hapus Pemasukan"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>

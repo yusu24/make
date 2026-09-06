@@ -470,7 +470,8 @@
   font-weight: 600;
   animation: fadeIn 0.3s ease;
 }
-.auth-alert--error { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+.auth-alert--error { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+.auth-alert--success { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }

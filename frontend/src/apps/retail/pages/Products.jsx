@@ -9,9 +9,16 @@ import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import KpiCard from '../../../components/KpiCard';
+import EmptyTableState from '../../../components/EmptyTableState';
+import FormLabel from '../../../components/FormLabel';
 import '../retail.css';
 
 export default function Products() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -139,13 +146,20 @@ export default function Products() {
   };
 
   const handleDelete = async (id) => {
-    if(confirm('Hapus barang ini dari katalog?')) {
-      try {
-        await api.delete(`/retail/products/${id}`);
-        fetchData();
-      } catch(e) { alert('Gagal menghapus produk'); }
+    const ok = await confirm('Apakah Anda yakin ingin menghapus produk ini dari katalog?', {
+      title: 'Hapus Produk',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/retail/products/${id}`);
+      toast.success('Produk berhasil dihapus dari katalog');
+      fetchData();
+    } catch(e) {
+      toast.error(e.response?.data?.message || 'Gagal menghapus produk');
     }
-  }
+  };
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -204,34 +218,28 @@ export default function Products() {
 
       {/* Overview Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="card p-4 animate-fade-in flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-            <Package size={24} />
-          </div>
-              <div>
-                <p className="text-sm text-slate-500 font-medium">Total Produk</p>
-                <p className="text-2xl font-bold text-slate-800">{products.length}</p>
-              </div>
-            </div>
-            <div className="card p-4 animate-fade-in flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-                <RefreshCw size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 font-medium">Kategori Tersedia</p>
-                <p className="text-2xl font-bold text-slate-800">{categories.length}</p>
-              </div>
-            </div>
-            <div className="card p-4 animate-fade-in flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
-                <AlertCircle size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 font-medium">Stok Menipis</p>
-                <p className="text-2xl font-bold text-slate-800">{products.filter(p => Number(p.stock) <= Number(p.stock_min)).length}</p>
-              </div>
-            </div>
-        </div>
+        <KpiCard
+          icon={Package}
+          label="Total Produk"
+          value={products.length}
+          sub="produk terdaftar"
+          color="indigo"
+        />
+        <KpiCard
+          icon={RefreshCw}
+          label="Kategori Tersedia"
+          value={categories.length}
+          sub="klasifikasi barang"
+          color="slate"
+        />
+        <KpiCard
+          icon={AlertCircle}
+          label="Stok Menipis"
+          value={products.filter(p => Number(p.stock) <= Number(p.stock_min)).length}
+          sub="perlu reorder segera"
+          color="rose"
+        />
+      </div>
       
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
@@ -317,11 +325,17 @@ export default function Products() {
             {loading ? (
               <RetailTableLoadingRow colSpan={7} text="Memuat katalog..." />
             ) : filteredProducts.length === 0 ? (
-              <tr>
-                 <td colSpan="7" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
-                    Belum ada data produk di katalog.
-                 </td>
-              </tr>
+              <EmptyTableState
+                colSpan={7}
+                icon={Package}
+                title="Belum ada data produk"
+                description={search ? `Tidak ada produk yang cocok dengan pencarian "${search}".` : "Mulai tambahkan produk baru ke dalam katalog toko Anda."}
+                actionLabel={search ? "Reset Pencarian" : "Tambah Produk Baru"}
+                onAction={() => {
+                  if (search) setSearch('');
+                  else setShowModal(true);
+                }}
+              />
             ) : (
               paginatedData.map(p => (
                 <tr key={p.id}>
@@ -385,19 +399,19 @@ export default function Products() {
         <form onSubmit={handleAddProduct} className="flex flex-col gap-5">
            <div className="grid-2">
               <div className="form-group">
-                 <label className="form-label">Nama Produk</label>
+                 <FormLabel required>Nama Produk</FormLabel>
                  <input name="name" className={`form-input ${errors.name ? 'retail-border-danger retail-bg-danger-subtle' : ''}`} placeholder="Contoh: Beras Premium" defaultValue={editingProduct?.name} />
                  {errors.name && <span className="text-[10px] retail-text-danger font-700 mt-1 uppercase tracking-tight">{errors.name}</span>}
               </div>
               <div className="form-group">
-                 <label className="form-label">SKU (Barcode)</label>
+                 <FormLabel required helper="Barcode">SKU (Barcode)</FormLabel>
                  <input name="sku" className={`form-input ${errors.sku ? 'retail-border-danger retail-bg-danger-subtle' : ''}`} value={formSku} onChange={e => setFormSku(e.target.value)} />
                  {errors.sku && <span className="text-[10px] retail-text-danger font-700 mt-1 uppercase tracking-tight">{errors.sku}</span>}
               </div>
            </div>
            <div className="grid-3">
               <div className="form-group">
-                 <label className="form-label">Kategori</label>
+                 <FormLabel required>Kategori</FormLabel>
                  <select name="category_id" className={`form-input ${errors.category_id ? 'retail-border-danger retail-bg-danger-subtle' : ''}`} defaultValue={editingProduct?.category_id || ''}>
                     <option value="" disabled>Pilih...</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -405,14 +419,14 @@ export default function Products() {
                  {errors.category_id && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.category_id}</span>}
               </div>
               <div className="form-group">
-                 <label className="form-label">Supplier</label>
+                 <FormLabel helper="Opsional">Supplier</FormLabel>
                  <select name="supplier_id" className="form-input" defaultValue={editingProduct?.supplier_id || ''}>
                    <option value="" disabled>Pilih...</option>
                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                  </select>
               </div>
               <div className="form-group">
-                 <label className="form-label">Satuan</label>
+                 <FormLabel required>Satuan</FormLabel>
                  <select name="unit" className={`form-input ${errors.unit ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.unit || ''}>
                    <option value="" disabled>Pilih...</option>
                    {units.map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
@@ -422,12 +436,12 @@ export default function Products() {
            </div>
             <div className="grid-2">
                <div className="form-group">
-                  <label className="form-label">Harga Modal (Rp)</label>
+                  <FormLabel required>Harga Modal (Rp)</FormLabel>
                   <CurrencyInput name="price_buy" className={`form-input ${errors.price_buy ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.price_buy} />
                   {errors.price_buy && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.price_buy}</span>}
                </div>
                <div className="form-group">
-                  <label className="form-label">Harga Jual (Rp)</label>
+                  <FormLabel required>Harga Jual (Rp)</FormLabel>
                   <CurrencyInput name="price_sell" className={`form-input ${errors.price_sell ? 'border-red-500 bg-red-50' : ''}`} defaultValue={editingProduct?.price_sell} />
                   {errors.price_sell && <span className="text-[10px] text-red-500 font-700 mt-1 uppercase tracking-tight">{errors.price_sell}</span>}
                </div>

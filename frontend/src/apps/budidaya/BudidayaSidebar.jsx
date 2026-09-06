@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useBudidayaTerms } from './hooks/useBudidayaTerms'
 import { useAuth } from '../../contexts/AuthContext'
+import { Sparkles } from 'lucide-react'
+import BudidayaAiModal from './components/BudidayaAiModal'
 import './budidaya.css'
 
 const getNavItems = (terms) => [
@@ -52,6 +54,7 @@ const getNavItems = (terms) => [
     children: [
       { label: 'Manajemen Pengguna', icon: 'group',       path: '/budidaya/users' },
       { label: 'Peran & Izin',       icon: 'verified_user', path: '/budidaya/roles' },
+      { label: 'Buku Panduan & SOP', icon: 'menu_book',   path: '/budidaya/guide' },
       { label: 'Paket Langganan',    icon: 'credit_card',   path: '/budidaya/subscription' },
       { label: 'Pengaturan Profil',  icon: 'settings',      path: '/budidaya/settings' },
       { label: 'Pusat Bantuan',      icon: 'help',          path: '/budidaya/support' },
@@ -77,6 +80,7 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
   // Track manually collapsed active group & expanded non-active group
   const [collapsedActive, setCollapsedActive] = useState(false)
   const [expandedNonActive, setExpandedNonActive] = useState(null)
+  const [showAiModal, setShowAiModal] = useState(false)
 
   // Reset manual overrides whenever route changes (active group auto-opens, others auto-close)
   useEffect(() => {
@@ -186,63 +190,117 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
               const isActive = pathname === item.path || pathname.startsWith(item.path + '/')
 
               return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    padding: '5.5px 14px 5.5px 5.5px',
-                    borderRadius: 9999,
-                    textDecoration: 'none',
-                    background: isActive ? '#E8F5ED' : 'transparent',
-                    color: isActive ? '#1B4332' : '#475569',
-                    fontSize: 13,
-                    fontWeight: isActive ? 700 : 500,
-                    transition: 'all 0.18s ease',
-                    cursor: 'pointer',
-                  }}
-                  onMouseEnter={e => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = '#F0F7F2'
-                      e.currentTarget.style.color = '#1B4332'
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = 'transparent'
-                      e.currentTarget.style.color = '#475569'
-                    }
-                  }}
-                >
-                  <div
+                <React.Fragment key={item.path}>
+                  <NavLink
+                    to={item.path}
                     style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      background: isActive ? '#1B4332' : 'transparent',
-                      color: isActive ? '#ffffff' : '#64748b',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                      boxShadow: isActive ? '0 2px 6px rgba(27, 67, 50, 0.35)' : 'none',
+                      gap: 10,
+                      padding: '5.5px 14px 5.5px 5.5px',
+                      borderRadius: 9999,
+                      textDecoration: 'none',
+                      background: isActive ? '#E8F5ED' : 'transparent',
+                      color: isActive ? '#1B4332' : '#475569',
+                      fontSize: 13,
+                      fontWeight: isActive ? 700 : 500,
                       transition: 'all 0.18s ease',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={e => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = '#F0F7F2'
+                        e.currentTarget.style.color = '#1B4332'
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.color = '#475569'
+                      }
                     }}
                   >
-                    <span
-                      className="material-symbols-outlined"
+                    <div
                       style={{
-                        fontSize: 16,
-                        lineHeight: 1,
+                        width: 28,
+                        height: 28,
+                        borderRadius: '50%',
+                        background: isActive ? '#1B4332' : 'transparent',
+                        color: isActive ? '#ffffff' : '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        boxShadow: isActive ? '0 2px 6px rgba(27, 67, 50, 0.35)' : 'none',
+                        transition: 'all 0.18s ease',
                       }}
                     >
-                      {item.icon}
-                    </span>
-                  </div>
-                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
-                </NavLink>
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: 16,
+                          lineHeight: 1,
+                        }}
+                      >
+                        {item.icon}
+                      </span>
+                    </div>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
+                  </NavLink>
+
+                  {/* Bio-AI Diagnosa Assistant Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowAiModal(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '5.5px 12px 5.5px 5.5px',
+                      borderRadius: 9999,
+                      border: '1px solid rgba(16, 185, 129, 0.35)',
+                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.12) 100%)',
+                      color: '#065F46',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      margin: '2px 0 6px 0',
+                      transition: 'all 0.18s ease',
+                      outline: 'none',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.22) 100%)'
+                      e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.6)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.12) 100%)'
+                      e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.35)'
+                    }}
+                    title="Buka Bio-AI Diagnosa Kesehatan Air, Penyakit & Panen"
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          color: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          boxShadow: '0 2px 6px rgba(16, 185, 129, 0.4)',
+                        }}
+                      >
+                        <Sparkles size={14} className="animate-spin-slow" />
+                      </div>
+                      <span style={{ whiteSpace: 'nowrap' }}>Bio-AI Diagnosa</span>
+                    </div>
+                    <span style={{ fontSize: 9.5, fontWeight: 800, background: '#10b981', color: '#fff', padding: '1.5px 6px', borderRadius: 99, letterSpacing: '0.04em' }}>PRO</span>
+                  </button>
+                </React.Fragment>
               )
             }
 
@@ -414,6 +472,9 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
           onClick={onToggle}
         />
       )}
+
+      {/* AI Diagnosa Modal */}
+      <BudidayaAiModal isOpen={showAiModal} onClose={() => setShowAiModal(false)} />
     </>
   )
 }

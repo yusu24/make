@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Printer, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Printer, RefreshCw, CheckCircle2, MessageCircle } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
@@ -18,6 +18,38 @@ export default function ReceiptModal({ isOpen, order, outletName, cashierName, r
 
   const discountAmount = Number(order.discount_amount) || 0;
   const changeAmount = Number(order.change_amount) || 0;
+
+  const handleShareWhatsApp = () => {
+    const custName = order.customer?.name || 'Pelanggan';
+    const custPhone = (order.customer?.phone || '').replace(/[^0-9]/g, '');
+    const itemsList = (order.items || [])
+      .map(i => `• ${i.product?.name || 'Item'} (${Math.round(i.qty)}x) : ${fmtRp(i.subtotal)}`)
+      .join('\n');
+
+    const msg = 
+      `*STRUK DIGITAL — ${outletName || 'TOKO'}*\n` +
+      `--------------------------------\n` +
+      `No. Invoice : #${order.invoice_no}\n` +
+      `Tanggal     : ${fmtDate(order.created_at)}\n` +
+      `Pelanggan   : ${custName}\n` +
+      `Kasir       : ${cashierName || '-'}\n` +
+      `--------------------------------\n` +
+      `*Rincian Belanja:*\n${itemsList}\n` +
+      `--------------------------------\n` +
+      `Subtotal    : ${fmtRp(order.subtotal ?? (order.total_amount + discountAmount - (order.tax_amount || 0)))}\n` +
+      (discountAmount > 0 ? `Diskon      : -${fmtRp(discountAmount)}\n` : '') +
+      ((order.tax_amount || 0) > 0 ? `Pajak       : ${fmtRp(order.tax_amount)}\n` : '') +
+      `*TOTAL      : ${fmtRp(order.total_amount)}*\n` +
+      `Bayar       : ${fmtRp(order.paid_amount)} (${order.payment_method || 'TUNAI'})\n` +
+      (changeAmount > 0 ? `Kembalian   : ${fmtRp(changeAmount)}\n` : '') +
+      `--------------------------------\n` +
+      `${receiptFooter || 'Terima kasih telah berbelanja bersama kami! 🙏'}`;
+
+    const url = custPhone 
+      ? `https://wa.me/${custPhone.startsWith('0') ? '62' + custPhone.slice(1) : custPhone}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm select-none" onClick={onClose}>
@@ -44,6 +76,11 @@ export default function ReceiptModal({ isOpen, order, outletName, cashierName, r
               <div className="flex justify-between"><span>No. Invoice:</span><span className="font-normal">{order.invoice_no}</span></div>
               <div className="flex justify-between"><span>Tanggal:</span><span>{fmtDate(order.created_at)}</span></div>
               <div className="flex justify-between"><span>Kasir:</span><span>{cashierName || '-'}</span></div>
+              {order.is_offline && (
+                <div className="text-center font-bold text-[8px] bg-amber-50 text-amber-800 py-0.5 rounded border border-amber-200 mt-1">
+                  ● TERCATAT OFFLINE (SYNC OTOMATIS)
+                </div>
+              )}
             </div>
 
             <div className="space-y-2 mb-4 border-b border-dashed border-slate-300 pb-3">
@@ -62,7 +99,7 @@ export default function ReceiptModal({ isOpen, order, outletName, cashierName, r
             </div>
 
             <div className="space-y-1 text-[9px] text-slate-700">
-              <div className="flex justify-between"><span>Subtotal:</span><span className="font-semibold">{fmtRp(order.subtotal ?? (order.total_amount + discountAmount - order.tax_amount))}</span></div>
+              <div className="flex justify-between"><span>Subtotal:</span><span className="font-semibold">{fmtRp(order.subtotal ?? (order.total_amount + discountAmount - (order.tax_amount || 0)))}</span></div>
 
               {discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-600 font-semibold">
@@ -70,7 +107,9 @@ export default function ReceiptModal({ isOpen, order, outletName, cashierName, r
                 </div>
               )}
 
-              <div className="flex justify-between"><span>Pajak:</span><span className="font-semibold">{fmtRp(order.tax_amount)}</span></div>
+              {(order.tax_amount || 0) > 0 && (
+                <div className="flex justify-between"><span>Pajak:</span><span className="font-semibold">{fmtRp(order.tax_amount)}</span></div>
+              )}
 
               <div className="flex justify-between font-semibold text-slate-900 border-t border-dashed border-slate-300 pt-2 text-xs">
                 <span>TOTAL:</span><span>{fmtRp(order.total_amount)}</span>
@@ -101,17 +140,26 @@ export default function ReceiptModal({ isOpen, order, outletName, cashierName, r
           </div>
         </div>
 
-        <div className="p-5 border-t border-slate-800 bg-slate-950/40 flex items-center gap-3 shrink-0">
-          <button
-            onClick={handlePrint}
-            className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-colors border border-slate-700 cursor-pointer"
-          >
-            <Printer size={14} />
-            Cetak Struk
-          </button>
+        <div className="p-4 border-t border-slate-800 bg-slate-950/40 flex flex-col gap-2 shrink-0">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePrint}
+              className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-3 rounded-xl text-xs transition-colors border border-slate-700 cursor-pointer"
+            >
+              <Printer size={14} />
+              Cetak Struk
+            </button>
+            <button
+              onClick={handleShareWhatsApp}
+              className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-3 rounded-xl text-xs transition-colors shadow-md shadow-emerald-600/20 cursor-pointer"
+            >
+              <MessageCircle size={14} />
+              WhatsApp
+            </button>
+          </div>
           <button
             onClick={onNewTransaction}
-            className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-4 rounded-2xl text-xs shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-[0.99] transition-all duration-200 cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl text-xs shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-[0.99] transition-all duration-200 cursor-pointer"
           >
             <RefreshCw size={14} />
             Kasir Baru

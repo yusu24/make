@@ -152,22 +152,22 @@ export const ShippingManagementView: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
-                <th className="py-3 px-4">ORDER ID & PEMBELI</th>
-                <th className="py-3 px-4">EKSPEDISI</th>
-                <th className="py-3 px-4">NO. RESI (AWB)</th>
-                <th className="py-3 px-4">JADWAL PICKUP</th>
-                <th className="py-3 px-4 text-center">STATUS</th>
-                <th className="py-3 px-4 text-right">AKSI</th>
+              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
+                <th className="py-3.5 px-4">ORDER ID & PEMBELI</th>
+                <th className="py-3.5 px-4">EKSPEDISI</th>
+                <th className="py-3.5 px-4">NO. RESI (AWB)</th>
+                <th className="py-3.5 px-4">JADWAL PICKUP</th>
+                <th className="py-3.5 px-4 text-center">STATUS</th>
+                <th className="py-3.5 px-4 text-right">AKSI</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px]">
               {paginatedItems.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertCircle className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-                      <span className="font-semibold text-slate-600 dark:text-slate-300">
+                      <span className="font-semibold text-slate-600 dark:text-slate-300 text-sm">
                         Tidak ada pengiriman ditemukan
                       </span>
                     </div>
@@ -177,14 +177,14 @@ export const ShippingManagementView: React.FC = () => {
                 paginatedItems.map((row) => (
                   <tr key={row.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="py-3.5 px-4">
-                      <p className="font-bold text-slate-800 dark:text-slate-100">{row.orderId}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{row.buyer}</p>
+                      <p className="font-bold text-sm text-slate-800 dark:text-slate-100">{row.orderId}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{row.buyer}</p>
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-300">{row.courier}</td>
+                    <td className="py-3.5 px-4 font-semibold text-sm text-slate-700 dark:text-slate-300">{row.courier}</td>
                     <td className="py-3.5 px-4 font-mono text-xs text-slate-600 dark:text-slate-300 font-bold">{row.awb}</td>
-                    <td className="py-3.5 px-4 text-slate-500">{row.schedule}</td>
+                    <td className="py-3.5 px-4 text-xs text-slate-500">{row.schedule}</td>
                     <td className="py-3.5 px-4 text-center">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${row.bg} ${row.color}`}>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${row.bg} ${row.color}`}>
                         {row.status}
                       </span>
                     </td>
@@ -193,7 +193,7 @@ export const ShippingManagementView: React.FC = () => {
                         onClick={() => setSelectedTrackingItem(row)}
                         className="text-orange-600 dark:text-orange-400 hover:underline text-xs font-semibold cursor-pointer"
                       >
-                        Lacak Paket
+                        Lacak Resi
                       </button>
                     </td>
                   </tr>

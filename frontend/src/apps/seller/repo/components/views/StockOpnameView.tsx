@@ -133,34 +133,34 @@ export const StockOpnameView: React.FC = () => {
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700">
+            <thead className="bg-slate-50/70 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700 uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3 font-semibold">Tanggal Mulai</th>
-                <th className="px-4 py-3 font-semibold">Petugas</th>
-                <th className="px-4 py-3 font-semibold text-center">Status</th>
-                <th className="px-4 py-3 font-semibold text-right">Aksi</th>
+                <th className="px-4 py-3.5">Tanggal Mulai</th>
+                <th className="px-4 py-3.5">Petugas</th>
+                <th className="px-4 py-3.5 text-center">Status</th>
+                <th className="px-4 py-3.5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px] text-slate-700 dark:text-slate-200">
               {loading ? (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">Memuat...</td></tr>
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400 text-sm">Memuat...</td></tr>
               ) : opnames.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-4 py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center gap-2">
                       <Package className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-                      <span className="font-semibold text-slate-600 dark:text-slate-300">Belum ada stock opname</span>
-                      <span className="text-[11px]">Klik "Mulai Stock Opname" untuk memulai hitung fisik gudang.</span>
+                      <span className="font-semibold text-slate-600 dark:text-slate-300 text-sm">Belum ada stock opname</span>
+                      <span className="text-xs">Klik "Mulai Stock Opname" untuk memulai hitung fisik gudang.</span>
                     </div>
                   </td>
                 </tr>
               ) : (
                 paginatedOpnames.map((o) => (
-                  <tr key={o.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-4 py-3 text-slate-500">{new Date(o.created_at).toLocaleString('id-ID')}</td>
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">{o.user?.name || '-'}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                  <tr key={o.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
+                    <td className="px-4 py-3.5 font-mono text-xs text-slate-500">{new Date(o.created_at).toLocaleString('id-ID')}</td>
+                    <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-slate-100">{o.user?.name || '-'}</td>
+                    <td className="px-4 py-3.5 text-center">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                         o.status === 'finalized'
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                           : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
@@ -168,7 +168,7 @@ export const StockOpnameView: React.FC = () => {
                         {o.status === 'finalized' ? 'Selesai' : 'Draft'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3.5 text-right">
                       <button onClick={() => openDetail(o.id)} title="Lihat Detail" className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                         <Eye className="w-4 h-4" />
                       </button>
@@ -192,39 +192,39 @@ export const StockOpnameView: React.FC = () => {
         )}
       </div>
 
-      {/* Detail Modal */}
-      {detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      {/* Modal Detail / Input Counts */}
+      {isDetailOpen && detail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95">
             <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
-              <h3 className="font-semibold text-base text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <ClipboardCheck className="w-5 h-5 text-indigo-600" />
-                Stock Opname #{detail.id}
-                <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                  detail.status === 'finalized'
-                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                }`}>
-                  {detail.status === 'finalized' ? 'Selesai' : 'Draft'}
-                </span>
-              </h3>
-              <button onClick={() => setDetail(null)} className="p-2 text-slate-400 hover:text-slate-700 cursor-pointer">
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">
+                  Detail Stock Opname #{detail.id}
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Dibuat: {new Date(detail.created_at).toLocaleString('id-ID')} • Status:{' '}
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    {detail.status === 'finalized' ? 'Selesai' : 'Draft'}
+                  </span>
+                </p>
+              </div>
+              <button onClick={() => setIsDetailOpen(false)} className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-5 overflow-y-auto text-xs">
+            <div className="p-5 overflow-y-auto text-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
+                    <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
                       <th className="py-2.5 px-3">Produk</th>
                       <th className="py-2.5 px-3 text-center">Stok Sistem</th>
                       <th className="py-2.5 px-3 text-center">Hitung Fisik</th>
                       <th className="py-2.5 px-3 text-center">Selisih</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13px]">
                     {detail.items.map((item) => {
                       const physicalVal = counts[item.product_id] ?? String(item.physical_qty);
                       const diff = (Number(physicalVal) || 0) - Number(item.system_qty);

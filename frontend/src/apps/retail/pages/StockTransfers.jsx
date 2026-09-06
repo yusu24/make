@@ -5,9 +5,11 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import { Plus, ArrowRight, Eye, Check, X, RefreshCw } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import { useConfirm } from '../../../components/ConfirmDialog';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 export default function StockTransfers() {
+  const confirm = useConfirm();
   const [transfers, setTransfers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -96,7 +98,8 @@ export default function StockTransfers() {
   };
 
   const confirmTransfer = async (id) => {
-    if (!window.confirm("Konfirmasi penerimaan stok? Stok akan ditambahkan ke Gudang Tujuan.")) return;
+    const ok = await confirm("Konfirmasi penerimaan stok? Stok akan ditambahkan ke Gudang Tujuan.", { danger: false });
+    if (!ok) return;
     try {
       await api.post(`/retail/stock-transfers/${id}/confirm`);
       fetchData();
@@ -109,7 +112,8 @@ export default function StockTransfers() {
   };
 
   const cancelTransfer = async (id) => {
-    if (!window.confirm("Batalkan transfer ini? Stok akan dikembalikan ke Gudang Asal.")) return;
+    const ok = await confirm("Batalkan transfer ini? Stok akan dikembalikan ke Gudang Asal.");
+    if (!ok) return;
     try {
       await api.post(`/retail/stock-transfers/${id}/cancel`);
       fetchData();

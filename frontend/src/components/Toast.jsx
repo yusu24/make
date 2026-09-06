@@ -44,6 +44,30 @@ export function ToastProvider({ children }) {
     dismiss,
   };
 
+  // Modern UI Bridge: Automatically route any legacy window.alert calls
+  // to Bizora's glowing toast notification instead of freezing the browser.
+  React.useEffect(() => {
+    window.__bizoraToast = toast;
+    const originalAlert = window.alert;
+    window.alert = (msg) => {
+      if (!msg) return;
+      const str = String(msg);
+      const lower = str.toLowerCase();
+      if (lower.includes('gagal') || lower.includes('error') || lower.includes('tidak bisa')) {
+        toast.error(str);
+      } else if (lower.includes('berhasil') || lower.includes('sukses')) {
+        toast.success(str);
+      } else if (lower.includes('peringatan') || lower.includes('perhatian') || lower.includes('wajib')) {
+        toast.warning(str);
+      } else {
+        toast.info(str);
+      }
+    };
+    return () => {
+      window.alert = originalAlert;
+    };
+  }, [toast]);
+
   return (
     <ToastContext.Provider value={toast}>
       {children}
