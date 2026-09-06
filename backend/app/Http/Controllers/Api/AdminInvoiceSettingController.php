@@ -22,6 +22,13 @@ class AdminInvoiceSettingController extends Controller
             'bank_name'                  => 'Bank Mandiri',
             'bank_account_number'        => '123-00-9988776-5',
             'bank_account_name'          => 'PT BIZORA TEKNOLOGI INDONESIA',
+            'bank_accounts'              => [
+                [
+                    'bank_name'           => 'Bank Mandiri',
+                    'bank_account_number' => '123-00-9988776-5',
+                    'bank_account_name'   => 'PT BIZORA TEKNOLOGI INDONESIA',
+                ]
+            ],
             'payment_notes'              => 'Mohon cantumkan ID Tenant saat melakukan konfirmasi pembayaran.',
             'invoice_terms'              => 'Terima kasih atas kepercayaan Anda menggunakan BIZORA SaaS. Faktur ini sah secara elektronik.',
             
@@ -51,6 +58,16 @@ class AdminInvoiceSettingController extends Controller
                     $merged['email_body_unpaid_template'] = $data['email_body_template'];
                 }
 
+                if (empty($merged['bank_accounts'])) {
+                    $merged['bank_accounts'] = [
+                        [
+                            'bank_name'           => $merged['bank_name'] ?? 'Bank Mandiri',
+                            'bank_account_number' => $merged['bank_account_number'] ?? '123-00-9988776-5',
+                            'bank_account_name'   => $merged['bank_account_name'] ?? 'PT BIZORA TEKNOLOGI INDONESIA',
+                        ]
+                    ];
+                }
+
                 // If logo path exists in public storage, build base64 for DomPDF & full public URL
                 if (!empty($merged['invoice_logo_path']) && Storage::disk('public')->exists($merged['invoice_logo_path'])) {
                     $merged['invoice_logo_url'] = url('storage/' . $merged['invoice_logo_path']);
@@ -66,7 +83,7 @@ class AdminInvoiceSettingController extends Controller
         return $default;
     }
 
-    public function get()
+    public function show()
     {
         $settings = self::getInvoiceSettings();
         return response()->json(['success' => true, 'data' => $settings]);
@@ -77,10 +94,20 @@ class AdminInvoiceSettingController extends Controller
         $request->validate([
             'company_name'        => 'required|string',
             'company_email'       => 'nullable|email',
-            'bank_name'           => 'required|string',
-            'bank_account_number' => 'required|string',
-            'bank_account_name'   => 'required|string',
+            'bank_name'           => 'nullable|string',
+            'bank_account_number' => 'nullable|string',
+            'bank_account_name'   => 'nullable|string',
         ]);
+
+        $bankAccounts = $request->input('bank_accounts');
+        if (!empty($bankAccounts) && is_array($bankAccounts)) {
+            $primary = $bankAccounts[0];
+            $request->merge([
+                'bank_name'           => $primary['bank_name'] ?? $request->bank_name,
+                'bank_account_number' => $primary['bank_account_number'] ?? $primary['bank_account_no'] ?? $request->bank_account_number,
+                'bank_account_name'   => $primary['bank_account_name'] ?? $request->bank_account_name,
+            ]);
+        }
 
         $settings = array_merge(self::getInvoiceSettings(), $request->only([
             'company_name',
@@ -91,6 +118,7 @@ class AdminInvoiceSettingController extends Controller
             'bank_name',
             'bank_account_number',
             'bank_account_name',
+            'bank_accounts',
             'payment_notes',
             'invoice_terms',
             'email_subject_unpaid',

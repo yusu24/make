@@ -67,20 +67,26 @@ class LandingSettingController extends Controller
     private static function defaultFaqItems(): array
     {
         return [
-            ['q' => 'Apakah saya bisa akses Bizora dari beberapa perangkat sekaligus?', 'a' => 'Bisa! Karena berbasis cloud, Anda tinggal login dari HP, tablet, atau laptop kapan saja dan datanya selalu tersinkron real-time antar perangkat — tidak perlu install aplikasi khusus, cukup buka browser. Saat ini Bizora membutuhkan koneksi internet aktif untuk mencatat transaksi.'],
-            ['q' => 'Apakah saya wajib membeli mesin kasir atau printer mahal?', 'a' => 'Tidak perlu! Bizora dapat dijalankan di HP Android, iPhone, Tablet, maupun Laptop yang sudah Anda miliki. Anda cukup menyambungkan ke printer thermal Bluetooth murah (mulai dari Rp 100 ribuan) jika ingin mencetak struk fisik.'],
-            ['q' => 'Bagaimana jika perangkat HP saya rusak atau hilang?', 'a' => 'Seluruh data transaksi dan stok Anda tersimpan aman secara terenkripsi di Cloud server Bizora. Jika HP Anda rusak, Anda tinggal login dengan akun Anda di HP baru, dan seluruh data akan langsung muncul kembali tanpa hilang.'],
-            ['q' => 'Apakah saya bisa mengimpor data barang dari file Excel lama saya?', 'a' => 'Sangat bisa! Bizora menyediakan template impor Excel sederhana. Anda bisa langsung mengunggah ribuan nama produk, harga, dan jumlah stok hanya dalam hitungan detik.'],
-            ['q' => 'Apakah saya bisa mengelola lebih dari 1 jenis bisnis (misal: Toko Retail sekaligus Kolam Ikan)?', 'a' => 'Bisa! Dengan 1 akun Bizora, Anda dapat berpindah antar sektor usaha dengan sangat mudah melalui menu ganti profil bisnis di dashboard.'],
+            ['q' => 'Apakah ada masa uji coba gratis (Free Trial)?', 'a' => 'Ya! Setiap pendaftaran baru mendapatkan masa uji coba gratis 14 hari dengan akses fitur lengkap tanpa perlu kartu kredit.'],
+            ['q' => 'Apakah bisa digunakan di tablet atau HP?', 'a' => 'Sangat bisa! Bizora didesain responsif untuk PC, laptop kasir, tablet Android/iPad, maupun smartphone.'],
+            ['q' => 'Bagaimana jika koneksi internet terputus saat kasir bertransaksi?', 'a' => 'Sistem POS Bizora dilengkapi mode offline. Transaksi tetap bisa berjalan dan akan otomatis sinkron saat koneksi internet kembali normal.'],
+            ['q' => 'Apakah data usaha saya aman?', 'a' => 'Data Anda tersimpan di server cloud berstandar keamanan tinggi dengan isolasi data antar-tenant dan backup otomatis berkala.'],
+            ['q' => 'Metode pembayaran apa saja yang didukung untuk langganan?', 'a' => 'Kami mendukung Transfer Bank otomatis (BCA, Mandiri, BRI, BNI), QRIS (GoPay, OVO, ShopeePay, Dana), dan Virtual Account.'],
         ];
     }
 
-    public function update(Request $request)
+    public function updateSettings(Request $request)
     {
         $settings = LandingSetting::first();
         if (!$settings) {
             $settings = new LandingSetting();
         }
+
+        $bankAccounts = $request->has('bank_accounts')
+            ? (is_array($request->bank_accounts) ? $request->bank_accounts : json_decode($request->bank_accounts, true))
+            : $settings->bank_accounts;
+
+        $primaryBank = (!empty($bankAccounts) && is_array($bankAccounts)) ? $bankAccounts[0] : null;
 
         $settings->fill([
             'hero_title'       => $request->hero_title ?? $settings->hero_title ?? 'Kelola Bisnis UMKM',
@@ -92,9 +98,10 @@ class LandingSettingController extends Controller
             'show_features'    => $request->has('show_features') ? filter_var($request->show_features, FILTER_VALIDATE_BOOLEAN) : $settings->show_features,
             'show_testimonials'=> $request->has('show_testimonials') ? filter_var($request->show_testimonials, FILTER_VALIDATE_BOOLEAN) : $settings->show_testimonials,
             'featured_categories'=> $request->has('featured_categories') ? $request->featured_categories : $settings->featured_categories,
-            'bank_name'        => $request->has('bank_name') ? $request->bank_name : $settings->bank_name,
-            'bank_account_no'  => $request->has('bank_account_no') ? $request->bank_account_no : $settings->bank_account_no,
-            'bank_account_name'=> $request->has('bank_account_name') ? $request->bank_account_name : $settings->bank_account_name,
+            'bank_name'        => $primaryBank['bank_name'] ?? ($request->has('bank_name') ? $request->bank_name : $settings->bank_name),
+            'bank_account_no'  => $primaryBank['bank_account_no'] ?? ($request->has('bank_account_no') ? $request->bank_account_no : $settings->bank_account_no),
+            'bank_account_name'=> $primaryBank['bank_account_name'] ?? ($request->has('bank_account_name') ? $request->bank_account_name : $settings->bank_account_name),
+            'bank_accounts'    => $bankAccounts,
             'price_basic'      => $request->has('price_basic') ? intval($request->price_basic) : $settings->price_basic,
             'price_pro'        => $request->has('price_pro') ? intval($request->price_pro) : $settings->price_pro,
             'features_platform'  => $request->has('features_platform') ? $request->features_platform : $settings->features_platform,

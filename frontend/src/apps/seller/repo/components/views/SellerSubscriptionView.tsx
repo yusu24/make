@@ -343,13 +343,40 @@ export const SellerSubscriptionView: React.FC = () => {
                </div>
             </div>
 
-            <div style={{ background: '#eef2ff', padding: '12px 16px', borderRadius: 10, border: '1px solid #c7d2fe', fontSize: 12 }}>
-               <div style={{ fontWeight: 700, color: '#4338ca', marginBottom: 4 }}>🏦 Rekening Transfer Bank Manual Alternatif:</div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#334155' }}>
-                  <span>{globalSettings?.bank_name || 'BANK BCA'}: <strong style={{ color: '#4338ca' }}>{globalSettings?.bank_account_no || '8837 001 992'}</strong></span>
-                  <span style={{ color: '#64748b' }}>a.n. {globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'}</span>
-               </div>
-            </div>
+             {(() => {
+                const accounts = (Array.isArray(globalSettings?.bank_accounts) && globalSettings.bank_accounts.length > 0)
+                  ? globalSettings.bank_accounts
+                  : [{
+                      bank_name: globalSettings?.bank_name || 'BANK BCA',
+                      bank_account_no: globalSettings?.bank_account_no || '8837 001 992',
+                      bank_account_name: globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'
+                    }];
+                return (
+                  <div style={{ background: '#eef2ff', padding: '12px 16px', borderRadius: 10, border: '1px solid #c7d2fe', fontSize: 12 }}>
+                     <div style={{ fontWeight: 700, color: '#4338ca', marginBottom: 8 }}>🏦 Rekening Transfer Bank Manual ({accounts.length} Bank Tersedia):</div>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {accounts.map((acc: any, idx: number) => (
+                           <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', padding: '6px 10px', borderRadius: 8, border: '1px solid #c7d2fe' }}>
+                              <div>
+                                 <span style={{ fontWeight: 700, color: '#4338ca' }}>{acc.bank_name}</span>: <strong style={{ color: '#334155' }}>{acc.bank_account_no || acc.bank_account_number}</strong>
+                                 <div style={{ fontSize: 10.5, color: '#64748b' }}>a.n. {acc.bank_account_name || 'PT Antigravity Global SaaS'}</div>
+                              </div>
+                              <button
+                                 type="button"
+                                 onClick={() => {
+                                    navigator.clipboard.writeText(acc.bank_account_no || acc.bank_account_number || '');
+                                    alert(`No Rekening ${acc.bank_name} disalin!`);
+                                 }}
+                                 style={{ background: '#e0e7ff', border: '1px solid #c7d2fe', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, color: '#4338ca', cursor: 'pointer' }}
+                              >
+                                 Salin
+                              </button>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+                );
+             })()}
 
             <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                <button 

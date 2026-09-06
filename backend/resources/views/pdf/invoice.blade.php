@@ -345,26 +345,47 @@
     @else
         <div class="payment-box">
             <div class="payment-title">INSTRUKSI PEMBAYARAN / TRANSFER REKENING BANK:</div>
-            <table style="font-size: 11px;">
-                <tr>
-                    <td style="width: 120px; color: #64748b;">Nama Bank:</td>
-                    <td><strong>{{ $settings['bank_name'] ?? 'Bank Mandiri' }}</strong></td>
-                </tr>
-                <tr>
-                    <td style="color: #64748b;">Nomor Rekening:</td>
-                    <td><strong style="font-size: 13px; color: #4f46e5;">{{ $settings['bank_account_number'] ?? '123-00-9988776-5' }}</strong></td>
-                </tr>
-                <tr>
-                    <td style="color: #64748b;">Atas Nama:</td>
-                    <td><strong>{{ $settings['bank_account_name'] ?? 'PT BIZORA TEKNOLOGI INDONESIA' }}</strong></td>
-                </tr>
-                @if(!empty($settings['payment_notes']))
-                <tr>
-                    <td style="color: #64748b; vertical-align: top;">Catatan:</td>
-                    <td>{{ $settings['payment_notes'] }}</td>
-                </tr>
-                @endif
-            </table>
+            @if(!empty($settings['bank_accounts']) && is_array($settings['bank_accounts']) && count($settings['bank_accounts']) > 1)
+                <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; margin-top: 6px; margin-bottom: 6px;">
+                    <thead>
+                        <tr style="background-color: #f1f5f9; text-align: left;">
+                            <th style="padding: 5px 8px; border-bottom: 1px solid #cbd5e1; color: #475569;">Bank</th>
+                            <th style="padding: 5px 8px; border-bottom: 1px solid #cbd5e1; color: #475569;">Nomor Rekening</th>
+                            <th style="padding: 5px 8px; border-bottom: 1px solid #cbd5e1; color: #475569;">Atas Nama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($settings['bank_accounts'] as $b)
+                        <tr>
+                            <td style="padding: 5px 8px; border-bottom: 1px dashed #e2e8f0;"><strong>{{ $b['bank_name'] ?? '-' }}</strong></td>
+                            <td style="padding: 5px 8px; border-bottom: 1px dashed #e2e8f0; font-family: monospace; font-size: 11.5px; font-weight: bold; color: #4f46e5;">{{ $b['bank_account_number'] ?? $b['bank_account_no'] ?? '-' }}</td>
+                            <td style="padding: 5px 8px; border-bottom: 1px dashed #e2e8f0;">{{ $b['bank_account_name'] ?? '-' }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <table style="font-size: 11px;">
+                    <tr>
+                        <td style="width: 120px; color: #64748b;">Nama Bank:</td>
+                        <td><strong>{{ $settings['bank_name'] ?? 'Bank Mandiri' }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="color: #64748b;">Nomor Rekening:</td>
+                        <td><strong style="font-size: 13px; color: #4f46e5;">{{ $settings['bank_account_number'] ?? '123-00-9988776-5' }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="color: #64748b;">Atas Nama:</td>
+                        <td><strong>{{ $settings['bank_account_name'] ?? 'PT BIZORA TEKNOLOGI INDONESIA' }}</strong></td>
+                    </tr>
+                </table>
+            @endif
+
+            @if(!empty($settings['payment_notes']))
+                <div style="font-size: 10px; color: #64748b; margin-top: 6px; border-top: 1px dashed #e2e8f0; padding-top: 4px;">
+                    <strong>Catatan:</strong> {{ $settings['payment_notes'] }}
+                </div>
+            @endif
         </div>
     @endif
 

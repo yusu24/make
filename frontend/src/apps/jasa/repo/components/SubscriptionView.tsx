@@ -721,6 +721,40 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                   ))}
                 </div>
 
+                {/* Rekening Transfer Bank Manual */}
+                {(() => {
+                  const accounts = (Array.isArray(globalSettings?.bank_accounts) && globalSettings.bank_accounts.length > 0)
+                    ? globalSettings.bank_accounts
+                    : [{
+                        bank_name: globalSettings?.bank_name || 'BCA',
+                        bank_account_no: globalSettings?.bank_account_no || '8837 001 992',
+                        bank_account_name: globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'
+                      }];
+                  return (
+                    <div className="space-y-2 pt-2 border-t border-slate-100">
+                      <p className="font-bold text-slate-800 text-xs">Rekening Transfer Bank Manual ({accounts.length} Bank Tersedia):</p>
+                      <div className="space-y-1.5">
+                        {accounts.map((acc: any, idx: number) => (
+                          <div key={idx} className="flex items-center justify-between p-2.5 bg-blue-50/50 border border-blue-100 rounded-xl">
+                            <div>
+                              <div className="font-bold text-blue-950 text-xs">{acc.bank_name}</div>
+                              <div className="font-mono text-xs text-blue-700 font-bold">{acc.bank_account_no || acc.bank_account_number}</div>
+                              <div className="text-[10px] text-slate-500">a.n. {acc.bank_account_name || 'PT Antigravity Global SaaS'}</div>
+                            </div>
+                            <button
+                              onClick={() => copyToClipboard(acc.bank_account_no || acc.bank_account_number, `No Rekening ${acc.bank_name}`)}
+                              className="px-2.5 py-1 bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                            >
+                              <Copy className="w-3 h-3" />
+                              <span>Salin</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Confirmation Footer */}
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                   <div className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">

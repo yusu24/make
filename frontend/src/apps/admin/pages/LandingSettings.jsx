@@ -1043,43 +1043,122 @@ export default function LandingSettings({ defaultTab = 'general' }) {
           {/* FORM PANEL */}
           <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
             
-            {/* Section: Rekening Bank */}
+            {/* Section: Rekening Bank (Multi-Bank) */}
             <div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🏦</span> Informasi Rekening Pembayaran (BCA)
-              </h3>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Atur rekening tujuan transfer manual yang akan ditampilkan kepada tenant saat proses upgrade.</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>🏦</span> Rekening Bank Tujuan Transfer ({((form.bank_accounts && form.bank_accounts.length > 0) ? form.bank_accounts : [1]).length} Rekening)
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = (form.bank_accounts && form.bank_accounts.length > 0)
+                      ? form.bank_accounts
+                      : [{ bank_name: form.bank_name || 'BANK BCA', bank_account_no: form.bank_account_no || '', bank_account_name: form.bank_account_name || 'PT Antigravity Global SaaS' }];
+                    setForm({
+                      ...form,
+                      bank_accounts: [
+                        ...current,
+                        { bank_name: 'BANK MANDIRI', bank_account_no: '', bank_account_name: form.bank_account_name || 'PT Antigravity Global SaaS' }
+                      ]
+                    });
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: 11, padding: '4px 10px', borderRadius: 8 }}
+                >
+                  + Tambah Rekening Lain
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Atur semua nomor rekening tujuan transfer manual yang akan ditampilkan kepada tenant saat proses upgrade.</p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>NAMA BANK</label>
-                  <input 
-                    className="form-input" 
-                    value={form.bank_name || ''}
-                    onChange={e => setForm({...form, bank_name: e.target.value})}
-                    required
-                  />
-                </div>
+                {((form.bank_accounts && form.bank_accounts.length > 0)
+                  ? form.bank_accounts
+                  : [{ bank_name: form.bank_name || 'BANK BCA', bank_account_no: form.bank_account_no || '', bank_account_name: form.bank_account_name || '' }]
+                ).map((acc, idx) => (
+                  <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: '#4338ca' }}>
+                        ● Rekening #{idx + 1} {idx === 0 ? '(Utama)' : ''}
+                      </span>
+                      {((form.bank_accounts && form.bank_accounts.length > 0) ? form.bank_accounts : [1]).length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = (form.bank_accounts || []).filter((_, i) => i !== idx);
+                            setForm({
+                              ...form,
+                              bank_accounts: list,
+                              ...(list[0] ? { bank_name: list[0].bank_name, bank_account_no: list[0].bank_account_no, bank_account_name: list[0].bank_account_name } : {})
+                            });
+                          }}
+                          style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          Hapus
+                        </button>
+                      )}
+                    </div>
 
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>NOMOR REKENING</label>
-                  <input 
-                    className="form-input" 
-                    value={form.bank_account_no || ''}
-                    onChange={e => setForm({...form, bank_account_no: e.target.value})}
-                    required
-                  />
-                </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontSize: 10.5, fontWeight: 600 }}>NAMA BANK</label>
+                        <input 
+                          className="form-input" 
+                          placeholder="BANK BCA / MANDIRI / BRI / BNI"
+                          value={acc.bank_name || ''}
+                          onChange={e => {
+                            const list = [...((form.bank_accounts && form.bank_accounts.length > 0) ? form.bank_accounts : [{ bank_name: form.bank_name, bank_account_no: form.bank_account_no, bank_account_name: form.bank_account_name }])];
+                            list[idx] = { ...list[idx], bank_name: e.target.value };
+                            setForm({
+                              ...form,
+                              bank_accounts: list,
+                              ...(idx === 0 ? { bank_name: e.target.value } : {})
+                            });
+                          }}
+                          required
+                        />
+                      </div>
 
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>ATAS NAMA (A.N.)</label>
-                  <input 
-                    className="form-input" 
-                    value={form.bank_account_name || ''}
-                    onChange={e => setForm({...form, bank_account_name: e.target.value})}
-                    required
-                  />
-                </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontSize: 10.5, fontWeight: 600 }}>NOMOR REKENING</label>
+                        <input 
+                          className="form-input" 
+                          placeholder="Nomor Rekening"
+                          value={acc.bank_account_no || acc.bank_account_number || ''}
+                          onChange={e => {
+                            const list = [...((form.bank_accounts && form.bank_accounts.length > 0) ? form.bank_accounts : [{ bank_name: form.bank_name, bank_account_no: form.bank_account_no, bank_account_name: form.bank_account_name }])];
+                            list[idx] = { ...list[idx], bank_account_no: e.target.value, bank_account_number: e.target.value };
+                            setForm({
+                              ...form,
+                              bank_accounts: list,
+                              ...(idx === 0 ? { bank_account_no: e.target.value } : {})
+                            });
+                          }}
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group" style={{ gridColumn: 'span 2', marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontSize: 10.5, fontWeight: 600 }}>ATAS NAMA (A.N.)</label>
+                        <input 
+                          className="form-input" 
+                          placeholder="Nama Pemilik Rekening"
+                          value={acc.bank_account_name || ''}
+                          onChange={e => {
+                            const list = [...((form.bank_accounts && form.bank_accounts.length > 0) ? form.bank_accounts : [{ bank_name: form.bank_name, bank_account_no: form.bank_account_no, bank_account_name: form.bank_account_name }])];
+                            list[idx] = { ...list[idx], bank_account_name: e.target.value };
+                            setForm({
+                              ...form,
+                              bank_accounts: list,
+                              ...(idx === 0 ? { bank_account_name: e.target.value } : {})
+                            });
+                          }}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

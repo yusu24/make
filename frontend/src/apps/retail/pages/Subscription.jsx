@@ -418,13 +418,40 @@ export default function Subscription() {
                   </div>
                </div>
 
-               <div style={{ background: 'var(--bg-elevated)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border-color)', fontSize: 12 }}>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>🏦 Rekening Manual Alternatif:</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                     <span>{globalSettings?.bank_name || 'BCA'}: <strong>{globalSettings?.bank_account_no || '8837 001 992'}</strong></span>
-                     <span style={{ color: 'var(--text-muted)' }}>a.n. {globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'}</span>
-                  </div>
-               </div>
+                {(() => {
+                  const accounts = (Array.isArray(globalSettings?.bank_accounts) && globalSettings.bank_accounts.length > 0)
+                    ? globalSettings.bank_accounts
+                    : [{
+                        bank_name: globalSettings?.bank_name || 'BCA',
+                        bank_account_no: globalSettings?.bank_account_no || '8837 001 992',
+                        bank_account_name: globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'
+                      }];
+                  return (
+                    <div style={{ background: 'var(--bg-elevated)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border-color)', fontSize: 12 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 8 }}>🏦 Rekening Transfer Bank Manual ({accounts.length} Bank Tersedia):</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {accounts.map((acc, idx) => (
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: 8 }}>
+                            <div>
+                              <span style={{ fontWeight: 700, color: 'var(--primary-600, #3b82f6)' }}>{acc.bank_name}</span>: <strong>{acc.bank_account_no || acc.bank_account_number}</strong>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>a.n. {acc.bank_account_name || 'PT Antigravity Global SaaS'}</div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(acc.bank_account_no || acc.bank_account_number || '');
+                                toast ? toast.success(`No Rekening ${acc.bank_name} disalin!`) : alert(`No Rekening ${acc.bank_name} disalin!`);
+                              }}
+                              style={{ padding: '4px 10px', fontSize: 11, fontWeight: 600, borderRadius: 6, border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer' }}
+                            >
+                              Salin
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                <div className="modal__actions" style={{ display: 'flex', gap: 12 }}>
                   <button className="btn btn-secondary" style={{ flex: 1 }} onClick={handleCloseModal} disabled={isSubmitting}>Batal</button>

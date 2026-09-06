@@ -264,49 +264,131 @@ export default function InvoiceSettings() {
               </div>
             </div>
 
-            {/* Section 2: Rekening Bank */}
+            {/* Section 2: Rekening Bank (Multi-Bank Support) */}
             <div className="card card-pad" style={{ padding: 20 }}>
-              <h4 style={{ margin: '0 0 14px 0', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                💳 Rekening Bank Pembayaran
-              </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  💳 Rekening Bank Pembayaran ({((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [1]).length} Rekening)
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = (invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0)
+                      ? invoiceSettings.bank_accounts
+                      : [{ bank_name: invoiceSettings.bank_name || 'Bank BCA', bank_account_number: invoiceSettings.bank_account_number || '', bank_account_name: invoiceSettings.bank_account_name || '' }];
+                    setInvoiceSettings({
+                      ...invoiceSettings,
+                      bank_accounts: [
+                        ...current,
+                        { bank_name: 'Bank Mandiri', bank_account_number: '', bank_account_name: invoiceSettings.bank_account_name || 'PT BIZORA' }
+                      ]
+                    });
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: 11, padding: '4px 10px', borderRadius: 8 }}
+                >
+                  + Tambah Rekening Lain
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0)
+                  ? invoiceSettings.bank_accounts
+                  : [{ bank_name: invoiceSettings.bank_name || 'Bank BCA', bank_account_number: invoiceSettings.bank_account_number || '', bank_account_name: invoiceSettings.bank_account_name || '' }]
+                ).map((acc, idx) => (
+                  <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#4338ca' }}>
+                        ● Rekening #{idx + 1} {idx === 0 ? '(Utama)' : ''}
+                      </span>
+                      {((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [1]).length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = invoiceSettings.bank_accounts || [];
+                            const filtered = list.filter((_, i) => i !== idx);
+                            setInvoiceSettings({
+                              ...invoiceSettings,
+                              bank_accounts: filtered,
+                              ...(filtered[0] ? { bank_name: filtered[0].bank_name, bank_account_number: filtered[0].bank_account_number, bank_account_name: filtered[0].bank_account_name } : {})
+                            });
+                          }}
+                          style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          Hapus
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                      <div>
+                        <label style={{ fontSize: 10.5, fontWeight: 600, display: 'block', marginBottom: 3, color: '#475569' }}>Nama Bank</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="BCA / Mandiri / BRI / BNI / BSI"
+                          value={acc.bank_name || ''}
+                          onChange={e => {
+                            const list = [...((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [{ bank_name: invoiceSettings.bank_name, bank_account_number: invoiceSettings.bank_account_number, bank_account_name: invoiceSettings.bank_account_name }])];
+                            list[idx] = { ...list[idx], bank_name: e.target.value };
+                            setInvoiceSettings({
+                              ...invoiceSettings,
+                              bank_accounts: list,
+                              ...(idx === 0 ? { bank_name: e.target.value } : {})
+                            });
+                          }}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 10.5, fontWeight: 600, display: 'block', marginBottom: 3, color: '#475569' }}>Nomor Rekening</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="Nomor Rekening"
+                          value={acc.bank_account_number || acc.bank_account_no || ''}
+                          onChange={e => {
+                            const list = [...((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [{ bank_name: invoiceSettings.bank_name, bank_account_number: invoiceSettings.bank_account_number, bank_account_name: invoiceSettings.bank_account_name }])];
+                            list[idx] = { ...list[idx], bank_account_number: e.target.value, bank_account_no: e.target.value };
+                            setInvoiceSettings({
+                              ...invoiceSettings,
+                              bank_accounts: list,
+                              ...(idx === 0 ? { bank_account_number: e.target.value } : {})
+                            });
+                          }}
+                          required
+                        />
+                      </div>
+                      <div style={{ gridColumn: 'span 2' }}>
+                        <label style={{ fontSize: 10.5, fontWeight: 600, display: 'block', marginBottom: 3, color: '#475569' }}>Atas Nama (A.N.)</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="Nama Pemilik Rekening"
+                          value={acc.bank_account_name || ''}
+                          onChange={e => {
+                            const list = [...((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [{ bank_name: invoiceSettings.bank_name, bank_account_number: invoiceSettings.bank_account_number, bank_account_name: invoiceSettings.bank_account_name }])];
+                            list[idx] = { ...list[idx], bank_account_name: e.target.value };
+                            setInvoiceSettings({
+                              ...invoiceSettings,
+                              bank_accounts: list,
+                              ...(idx === 0 ? { bank_account_name: e.target.value } : {})
+                            });
+                          }}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
                 <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Nama Bank</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={invoiceSettings.bank_name || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, bank_name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Nomor Rekening</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={invoiceSettings.bank_account_number || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, bank_account_number: e.target.value })}
-                    required
-                  />
-                </div>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Atas Nama Rekening</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={invoiceSettings.bank_account_name || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, bank_account_name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div style={{ gridColumn: 'span 2' }}>
                   <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Catatan Instruksi Pembayaran</label>
                   <input
                     type="text"
                     className="form-input"
                     value={invoiceSettings.payment_notes || ''}
                     onChange={e => setInvoiceSettings({ ...invoiceSettings, payment_notes: e.target.value })}
+                    placeholder="Contoh: Sertakan ID Tenant saat transfer."
                   />
                 </div>
               </div>

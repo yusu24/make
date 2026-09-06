@@ -483,19 +483,37 @@ export default function Subscription() {
 
             <div style={{ height: 1, background: '#E2E8F0', margin: '20px 0' }} />
 
-            <div style={{ background: '#F8FAFC', padding: '16px 20px', borderRadius: 16, border: '1px solid #E2E8F0' }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 4 }}>Rekening Manual Alternatif</div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: '#EA580C' }}>{globalSettings?.bank_name || 'BANK BCA'}</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-                <div style={{ fontSize: 17, fontWeight: 900, color: '#EA580C', letterSpacing: '0.03em' }}>{globalSettings?.bank_account_no || '8837 001 992'}</div>
-                <button
-                  onClick={() => copyToClipboard(globalSettings?.bank_account_no || '8837 001 992', 'Nomor Rekening')}
-                  style={{ background: '#fff', border: '1px solid #E2E8F0', padding: '4px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#EA580C', cursor: 'pointer' }}
-                >Salin</button>
-              </div>
-              <div style={{ height: 1, background: '#E2E8F0', margin: '10px 0' }} />
-              <div style={{ fontSize: 12, color: '#64748b' }}>a.n. <strong style={{ color: '#EA580C' }}>{globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'}</strong></div>
-            </div>
+            {(() => {
+              const accounts = (Array.isArray(globalSettings?.bank_accounts) && globalSettings.bank_accounts.length > 0)
+                ? globalSettings.bank_accounts
+                : [{
+                    bank_name: globalSettings?.bank_name || 'BANK BCA',
+                    bank_account_no: globalSettings?.bank_account_no || '8837 001 992',
+                    bank_account_name: globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'
+                  }];
+              return (
+                <div style={{ background: '#F8FAFC', padding: '16px 20px', borderRadius: 16, border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 8 }}>
+                    Rekening Manual Alternatif ({accounts.length} Bank)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {accounts.map((acc, idx) => (
+                      <div key={idx} style={{ background: '#fff', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: 10 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: '#EA580C' }}>{acc.bank_name}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                          <div style={{ fontSize: 15, fontWeight: 900, color: '#EA580C', letterSpacing: '0.03em' }}>{acc.bank_account_no || acc.bank_account_number}</div>
+                          <button
+                            onClick={() => copyToClipboard(acc.bank_account_no || acc.bank_account_number, `Nomor Rekening ${acc.bank_name}`)}
+                            style={{ background: '#FFF7ED', border: '1px solid #FED7AA', padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700, color: '#EA580C', cursor: 'pointer' }}
+                          >Salin</button>
+                        </div>
+                        <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>a.n. <strong style={{ color: '#EA580C' }}>{acc.bank_account_name || 'PT Antigravity Global SaaS'}</strong></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
@@ -537,13 +555,37 @@ export default function Subscription() {
                      </div>
                    </div>
                  </div>
-                 <div style={{ background: '#fff8f0', padding: '12px 16px', borderRadius: 10, border: '1px solid #ffedd5', fontSize: 12 }}>
-                   <div style={{ fontWeight: 700, color: '#ea580c', marginBottom: 4 }}>🏦 Rekening Transfer Bank Manual Alternatif:</div>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#334155' }}>
-                     <span>{globalSettings?.bank_name || 'BANK BCA'}: <strong style={{ color: '#ea580c' }}>{globalSettings?.bank_account_no || '8837 001 992'}</strong></span>
-                     <span style={{ color: '#64748b' }}>a.n. {globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'}</span>
-                   </div>
-                 </div>
+                  {(() => {
+                    const accounts = (Array.isArray(globalSettings?.bank_accounts) && globalSettings.bank_accounts.length > 0)
+                      ? globalSettings.bank_accounts
+                      : [{
+                          bank_name: globalSettings?.bank_name || 'BANK BCA',
+                          bank_account_no: globalSettings?.bank_account_no || '8837 001 992',
+                          bank_account_name: globalSettings?.bank_account_name || 'PT Antigravity Global SaaS'
+                        }];
+                    return (
+                      <div style={{ background: '#fff8f0', padding: '12px 16px', borderRadius: 10, border: '1px solid #ffedd5', fontSize: 12 }}>
+                        <div style={{ fontWeight: 700, color: '#ea580c', marginBottom: 8 }}>🏦 Rekening Transfer Bank Manual ({accounts.length} Bank Tersedia):</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {accounts.map((acc, idx) => (
+                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', padding: '6px 10px', borderRadius: 8, border: '1px solid #fed7aa' }}>
+                              <div>
+                                <span style={{ fontWeight: 700, color: '#ea580c' }}>{acc.bank_name}</span>: <strong style={{ color: '#334155' }}>{acc.bank_account_no || acc.bank_account_number}</strong>
+                                <div style={{ fontSize: 10.5, color: '#64748b' }}>a.n. {acc.bank_account_name || 'PT Antigravity Global SaaS'}</div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(acc.bank_account_no || acc.bank_account_number, `No Rekening ${acc.bank_name}`)}
+                                style={{ background: '#fff7ed', border: '1px solid #fed7aa', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, color: '#ea580c', cursor: 'pointer' }}
+                              >
+                                Salin
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                  <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                    <button onClick={handleCloseModal} disabled={isSubmitting} style={{ flex: 1, padding: '10px 16px', border: '1px solid #cbd5e1', borderRadius: 8, background: '#fff', color: '#475569', fontWeight: 700, cursor: 'pointer' }}>Batal</button>
                    <button onClick={submitUpgradeRequest} disabled={isSubmitting} style={{ flex: 2, padding: '10px 16px', border: 'none', borderRadius: 8, background: '#EA580C', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
