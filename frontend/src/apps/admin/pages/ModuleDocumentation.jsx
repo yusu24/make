@@ -3253,6 +3253,265 @@ export default function ModuleDocumentation() {
         { method: 'GET', path: '/api/jasa/technicians', name: 'Daftar Teknisi & Kesiapan', perm: 'technicians', desc: 'Mengambil data teknisi, spesialisasi, rating, dan status tugas' },
         { method: 'GET', path: '/api/jasa/services', name: 'Katalog Tarif Layanan Jasa', perm: 'catalog', desc: 'Mengambil daftar tarif dasar layanan, durasi jam, dan masa garansi' }
       ]
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // [6] MODUL PENGATURAN LANDING PAGE & PORTAL PUBLIK
+    // ─────────────────────────────────────────────────────────────────────────
+    landing: {
+      key: 'landing',
+      icon: <Globe size={18} />,
+      title: 'Modul Pengaturan Konten Landing Page & Portal Publik',
+      description: 'Pusat kendali konten visual dan informasi halaman publik Bizora: hero banner, kampanye promo berjalan, showcase sektor bisnis, fitur platform, alur onboarding, ulasan pelanggan, FAQ, simulasi ROI, informasi footer & kontak resmi, rekening multi-bank transfer, dan upload logo.',
+      version: 'v2.5.0 (9-Tab Category & Live Desktop Footer Preview)',
+      lastUpdated: '2026-09-07',
+      leadDeveloper: 'Bizora Frontend & Content Team',
+
+      domains: [
+        { id: 'all', label: 'Semua Domain', color: '#be185d' },
+        { id: 'hero', label: 'Hero & Promo Sticky', color: '#ec4899' },
+        { id: 'content', label: 'Sektor, Fitur & FAQ', color: '#0284c7' },
+        { id: 'social', label: 'Testimoni Pelanggan', color: '#f59e0b' },
+        { id: 'footer', label: 'Footer, Kontak & Legal', color: '#10b981' },
+        { id: 'billing', label: 'Harga, Rekening & Logo', color: '#6366f1' },
+      ],
+
+      techStack: {
+        backend: [
+          { name: 'Laravel 11.x', role: 'REST API Engine & Settings Storage', tag: 'Framework' },
+          { name: 'Eloquent ORM', role: 'Key-Value Landing Setting & Testimonial Model', tag: 'Database' },
+          { name: 'Multi-part Image Handler', role: 'Logo storage di public storage disk dengan URL resolver', tag: 'Storage' },
+          { name: 'Sanctum Auth Middleware', role: 'Auth proteksi route /api/admin/landing-settings/*', tag: 'Security' },
+          { name: 'Public Cache Engine', role: 'Low-latency caching untuk endpoint /api/landing-settings publik', tag: 'Performance' },
+        ],
+        frontend: [
+          { name: 'React 18.x', role: 'Component UI Library', tag: 'UI' },
+          { name: 'Live Realtime Mockup Canvas', role: 'Pratonton Desktop Desktop Frame untuk Hero & Footer secara instan', tag: 'Visual Mockup' },
+          { name: 'Lucide React Icons', role: 'Iconography konsisten di seluruh navigasi dan tab', tag: 'Icons' },
+          { name: 'Tailwind CSS + Custom CSS', role: 'Styling responsif untuk desktop, tablet, dan smartphone', tag: 'Styling' },
+          { name: 'Drag-and-Drop Image Uploader', role: 'Unggah logo instan dengan validasi tipe berkas dan ukuran 5MB', tag: 'Media' },
+        ]
+      },
+
+      features: [
+        {
+          category: 'Hero & Kampanye Promo Sticky',
+          icon: <Sparkles size={20} className="text-primary" />,
+          items: [
+            'Judul Besar Utama (Hero Title Baris 1) & Slogan Warna-Warni (Hero Subtitle Baris 2)',
+            'Deskripsi pembuka platform untuk memikat calon tenant UMKM',
+            'Banner Promo Sticky berjalan di bawah layar dengan kalimat promosi kustom',
+            'Kontrol switch visibilitas Section Sandbox, Fitur Platform, dan Testimoni',
+            'Selector multi-centang Kategori Unggulan yang muncul di Sandbox Demo Instan',
+          ]
+        },
+        {
+          category: 'Edukasi, Sektor Bisnis & Simulasi ROI',
+          icon: <Layers size={20} className="text-primary" />,
+          items: [
+            'Integrasi Tab Sektor Bisnis dinamis (Retail, Budidaya, Kuliner, Seller, Jasa)',
+            'Fitur Unggulan Platform generik dengan icon, judul, tag, dan deskripsi kustom',
+            'Langkah Cara Kerja / Onboarding bernomor urut yang mudah diatur ulang posisinya',
+            'Daftar Pertanyaan yang Sering Diajukan (FAQ Accordion)',
+            'Judul dan Deskripsi Pembuka Kalkulator Simulasi Penghematan ROI',
+          ]
+        },
+        {
+          category: 'Ulasan / Testimoni Pelanggan',
+          icon: <Star size={20} className="text-primary" />,
+          items: [
+            'CRUD Testimoni Pelanggan lengkap (Nama, Peran/Usaha, Bintang 1-5, Teks Kutipan)',
+            'Avatar otomatis dengan inisial nama dan warna latar belakang acak yang kontras',
+            'Switch cepat toggle aktif/nonaktif ulasan tanpa menghapus data',
+            'Grid tampilan testimoni interaktif di landing page publik',
+          ]
+        },
+        {
+          category: 'Footer, Kontak Resmi & Keamanan',
+          icon: <ShieldCheck size={20} className="text-primary" />,
+          items: [
+            'Deskripsi profil brand platform di footer',
+            'Alamat kantor operasional resmi lengkap dengan ikon lokasi 📍',
+            'Nomor WhatsApp Customer Service 24/7 resmi 📞',
+            'Triple Email Channels: Email Info Portal, Email Penagihan/Billing, Email Bantuan CS ✉️',
+            'Pernyataan Keamanan Data (Cloud Terenkripsi SSL 256-bit, Berizin Resmi)',
+            'Live Realtime Mockup Canvas di sisi kanan untuk melihat perubahan secara presisi',
+          ]
+        },
+        {
+          category: 'Harga Paket & Rekening Multi-Bank',
+          icon: <Wallet size={20} className="text-primary" />,
+          items: [
+            'Pengaturan harga dasar bulanan Paket Basic dan Paket Pro',
+            'Dukungan Rekening Multi-Bank (BCA, Mandiri, BRI, BNI) dengan fitur Tambah/Hapus',
+            'Visualisasi kartu instruksi transfer pembayaran yang akan dilihat tenant saat upgrade',
+            'Upload dan Reset Logo Publik serta Logo Admin SaaS (Maks 5MB)',
+          ]
+        }
+      ],
+
+      erdNodes: [
+        {
+          id: 'landing_settings',
+          domain: 'hero',
+          title: 'landing_settings',
+          badge: 'Settings Store',
+          color: '#be185d',
+          x: 40,
+          y: 40,
+          width: 260,
+          height: 380,
+          fields: [
+            { name: 'id', type: 'BIGINT', key: 'PK' },
+            { name: 'hero_title', type: 'VARCHAR(255)' },
+            { name: 'hero_subtitle', type: 'VARCHAR(255)' },
+            { name: 'hero_desc', type: 'TEXT' },
+            { name: 'campaign_text', type: 'TEXT' },
+            { name: 'campaign_active', type: 'BOOLEAN' },
+            { name: 'show_sandbox', type: 'BOOLEAN' },
+            { name: 'show_features', type: 'BOOLEAN' },
+            { name: 'show_testimonials', type: 'BOOLEAN' },
+            { name: 'featured_categories', type: 'JSON' },
+            { name: 'bank_accounts', type: 'JSON' },
+            { name: 'price_basic', type: 'DECIMAL(12,2)' },
+            { name: 'price_pro', type: 'DECIMAL(12,2)' },
+            { name: 'features_platform', type: 'JSON' },
+            { name: 'how_it_works_steps', type: 'JSON' },
+            { name: 'faq_items', type: 'JSON' },
+            { name: 'footer_brand_desc', type: 'TEXT' },
+            { name: 'footer_address', type: 'VARCHAR(255)' },
+            { name: 'footer_phone', type: 'VARCHAR(100)' },
+            { name: 'footer_email', type: 'VARCHAR(100)' },
+            { name: 'landing_logo_url', type: 'VARCHAR(255)' },
+            { name: 'admin_logo_url', type: 'VARCHAR(255)' },
+          ]
+        },
+        {
+          id: 'testimonials',
+          domain: 'social',
+          title: 'testimonials',
+          badge: 'Reviews & Social Proof',
+          color: '#f59e0b',
+          x: 340,
+          y: 40,
+          width: 240,
+          height: 250,
+          fields: [
+            { name: 'id', type: 'BIGINT', key: 'PK' },
+            { name: 'name', type: 'VARCHAR(150)' },
+            { name: 'role', type: 'VARCHAR(150)' },
+            { name: 'stars', type: 'INT' },
+            { name: 'text', type: 'TEXT' },
+            { name: 'avatar_text', type: 'VARCHAR(10)' },
+            { name: 'avatar_bg', type: 'VARCHAR(30)' },
+            { name: 'avatar_color', type: 'VARCHAR(30)' },
+            { name: 'active', type: 'BOOLEAN' },
+            { name: 'created_at', type: 'DATETIME' },
+          ]
+        },
+        {
+          id: 'categories',
+          domain: 'content',
+          title: 'categories',
+          badge: 'Business Sectors',
+          color: '#0284c7',
+          x: 340,
+          y: 320,
+          width: 240,
+          height: 250,
+          fields: [
+            { name: 'id', type: 'BIGINT', key: 'PK' },
+            { name: 'name', type: 'VARCHAR(100)' },
+            { name: 'slug', type: 'VARCHAR(100)' },
+            { name: 'icon', type: 'VARCHAR(50)' },
+            { name: 'color', type: 'VARCHAR(30)' },
+            { name: 'description', type: 'TEXT' },
+            { name: 'badge_text', type: 'VARCHAR(100)' },
+            { name: 'headline', type: 'VARCHAR(255)' },
+            { name: 'subheadline', type: 'TEXT' },
+            { name: 'active', type: 'BOOLEAN' },
+          ]
+        }
+      ],
+
+      erdEdges: [
+        { from: 'landing_settings', to: 'categories', label: '1:N', desc: 'Featured Kategori Unggulan', color: '#0284c7' },
+        { from: 'landing_settings', to: 'testimonials', label: '1:N', desc: 'Showcase Ulasan Publik', color: '#f59e0b' }
+      ],
+
+      erdMermaid: `erDiagram
+    landing_settings ||--o{ categories : "memilih kategori unggulan"
+    landing_settings ||--o{ testimonials : "menampilkan ulasan aktif"`,
+
+      erdEntities: [
+        {
+          table: 'landing_settings',
+          description: 'Penyimpanan terpusat konfigurasi visual, teks, harga paket, kontak footer, dan multi-bank',
+          keys: ['PK: id'],
+          columns: ['hero_title', 'hero_subtitle', 'hero_desc', 'campaign_text', 'campaign_active', 'show_sandbox', 'show_features', 'show_testimonials', 'featured_categories (JSON)', 'bank_accounts (JSON)', 'price_basic', 'price_pro', 'features_platform (JSON)', 'how_it_works_steps (JSON)', 'faq_items (JSON)', 'roi_title', 'roi_desc', 'footer_brand_desc', 'footer_address', 'footer_phone', 'footer_email', 'billing_email', 'support_email', 'footer_security_text', 'landing_logo_url', 'admin_logo_url'],
+          relationships: ['1 to Many: categories', '1 to Many: testimonials']
+        },
+        {
+          table: 'testimonials',
+          description: 'Data ulasan pelanggan, rating bintang, kutipan testimonial, dan status publikasi',
+          keys: ['PK: id'],
+          columns: ['name', 'role', 'stars', 'text', 'avatar_text', 'avatar_bg', 'avatar_color', 'active'],
+          relationships: ['Many to 1: landing_settings']
+        },
+        {
+          table: 'categories',
+          description: 'Kategori sektor usaha publik yang ditampilkan pada tab Sektor Bisnis dan Sandbox Instan',
+          keys: ['PK: id'],
+          columns: ['name', 'slug', 'icon', 'color', 'description', 'badge_text', 'headline', 'subheadline', 'impact_stats (JSON)', 'features (JSON)', 'active'],
+          relationships: ['Many to 1: landing_settings']
+        }
+      ],
+
+      directoryStructure: [
+        {
+          section: 'Backend Architecture (Laravel 11)',
+          tree: `backend/
+├── app/
+│   ├── Http/
+│   │   └── Controllers/Api/
+│   │       ├── LandingSettingsController.php  # Public fetch, Admin save, Logo uploader/reset
+│   │       └── TestimonialController.php      # Public & Admin CRUD testimonials
+│   ├── Models/
+│   │   ├── LandingSetting.php                 # Model Konfigurasi Landing
+│   │   └── Testimonial.php                    # Model Ulasan Pelanggan
+└── routes/api.php                             # Route /api/landing-settings & /api/testimonials`
+        },
+        {
+          section: 'Frontend Architecture (React 18 + Tailwind)',
+          tree: `frontend/src/
+├── apps/admin/pages/
+│   └── LandingSettings.jsx                    # 9-Tab Categorized Editor + Live Desktop Canvas
+├── pages/
+│   ├── Landing.jsx                            # Public Homepage Portal
+│   └── landing/
+│       ├── Footer.jsx                         # Dynamic Responsive Footer Component
+│       ├── Hero.jsx                           # Main Hero & Instant Sandbox
+│       ├── PromoBanner.jsx                    # Sticky Campaign Banner
+│       ├── BusinessSectors.jsx                # Dynamic Sector Showcase
+│       ├── PlatformFeatures.jsx               # Feature Cards Grid
+│       ├── HowItWorks.jsx                     # Access Flow Steps
+│       ├── Testimonials.jsx                   # Customer Reviews Carousel
+│       ├── RoiCalculator.jsx                  # Interactive Cost Saving Simulator
+│       └── FaqSection.jsx                     # Interactive FAQ Accordion`
+        }
+      ],
+
+      apiEndpoints: [
+        { method: 'GET', path: '/api/landing-settings', name: 'Konten Landing Page Publik', perm: 'public', desc: 'Mengambil data lengkap teks hero, visibilitas, fitur, FAQ, footer, dan rekening bank' },
+        { method: 'POST', path: '/api/admin/landing-settings', name: 'Simpan Konfigurasi Portal', perm: 'admin', desc: 'Menyimpan pembaruan konfigurasi teks, nomor kontak CS, email, harga paket, dan bank transfer' },
+        { method: 'POST', path: '/api/admin/landing-settings/upload-logo', name: 'Upload Logo Branding', perm: 'admin', desc: 'Mengunggah logo baru (Landing / Admin SaaS) format gambar maksimal 5MB' },
+        { method: 'POST', path: '/api/admin/landing-settings/reset-logo', name: 'Reset Logo ke Default', perm: 'admin', desc: 'Menghapus logo kustom dan mengembalikan logo sistem bawaan' },
+        { method: 'GET', path: '/api/testimonials/public', name: 'Daftar Testimoni Publik', perm: 'public', desc: 'Mengambil daftar ulasan pelanggan berstatus aktif untuk carousel landing' },
+        { method: 'GET', path: '/api/admin/testimonials', name: 'Kelola Testimoni (Admin)', perm: 'admin', desc: 'Mengambil semua data testimoni termasuk yang nonaktif' },
+        { method: 'POST', path: '/api/admin/testimonials', name: 'Tambah Testimoni Baru', perm: 'admin', desc: 'Menambahkan review pelanggan baru lengkap dengan rating dan peran' },
+        { method: 'PATCH', path: '/api/admin/testimonials/{id}/toggle', name: 'Toggle Aktifkan Testimoni', perm: 'admin', desc: 'Mengubah status publikasi ulasan secara instan' },
+        { method: 'DELETE', path: '/api/admin/testimonials/{id}', name: 'Hapus Testimoni', perm: 'admin', desc: 'Menghapus data ulasan pelanggan dari database' }
+      ]
     }
   };
 
