@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Clock, Menu } from 'lucide-react';
+import { Search, Clock, Menu, Sparkles } from 'lucide-react';
 import OfflineStatusBadge from './OfflineStatusBadge';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
@@ -32,6 +32,31 @@ export default function ProductGrid({
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
+  const [posAiEnabled, setPosAiEnabled] = useState(() => {
+    const saved = localStorage.getItem('bizora_pos_ai_enabled');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  useEffect(() => {
+    const handleStateChange = (e) => {
+      if (e.detail?.enabled !== undefined) {
+        setPosAiEnabled(e.detail.enabled);
+      }
+    };
+    window.addEventListener('bizora:pos-ai-state-changed', handleStateChange);
+    return () => window.removeEventListener('bizora:pos-ai-state-changed', handleStateChange);
+  }, []);
+
+  const handleToggleAi = () => {
+    const next = !posAiEnabled;
+    setPosAiEnabled(next);
+    localStorage.setItem('bizora_pos_ai_enabled', String(next));
+    window.dispatchEvent(new CustomEvent('bizora:toggle-pos-ai', { detail: { enabled: next } }));
+  };
+
+  const handleOpenAi = () => {
+    window.dispatchEvent(new CustomEvent('bizora:open-retail-ai'));
+  };
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 300);
@@ -109,6 +134,31 @@ export default function ProductGrid({
         </div>
 
 
+
+        {/* AI Advisor Button & POS Toggle */}
+        <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl p-1 shrink-0 select-none">
+          <button
+            type="button"
+            onClick={handleOpenAi}
+            className="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+            title="Buka Retail AI Advisor"
+          >
+            <Sparkles size={13} className="text-indigo-600 animate-pulse" />
+            <span className="hidden md:inline">AI Advisor</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleAi}
+            className={`px-1.5 py-1 text-[10px] font-bold rounded-lg border transition-colors ${
+              posAiEnabled
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200'
+            }`}
+            title={posAiEnabled ? 'Bubble AI aktif di kasir (Klik untuk sembunyikan)' : 'Bubble AI nonaktif di kasir (Klik untuk tampilkan)'}
+          >
+            {posAiEnabled ? 'Bubble ON' : 'Bubble OFF'}
+          </button>
+        </div>
 
         <PosClock />
 

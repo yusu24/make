@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
 import SubscriptionLock from '../components/SubscriptionLock'
 import AnnouncementModal from '../components/AnnouncementModal'
+import RetailAiFab from '../apps/retail/components/RetailAiFab'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -89,6 +90,9 @@ export default function DashboardLayout() {
           }}} />
         </main>
       </div>
+
+      {/* Floating AI Bubble for Retail */}
+      <RetailAiFab />
     </div>
   )
 }
