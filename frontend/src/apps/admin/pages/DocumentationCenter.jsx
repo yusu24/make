@@ -190,18 +190,18 @@ export default function DocumentationCenter() {
             transition={{ duration: 0.4, ease: "easeOut" }}
             className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 sm:p-6 md:p-8 md:px-10"
           >
-            {/* Top Actions & Breadcrumb */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 hide-on-print">
-              <div className="flex items-center gap-2 text-sm font-medium text-slate-500 max-w-full overflow-hidden">
-                <span className="hover:text-indigo-600 cursor-pointer transition-colors hidden sm:inline whitespace-nowrap shrink-0">Bizora Help Center</span>
-                <ChevronRight className="w-4 h-4 text-slate-300 hidden sm:inline shrink-0" />
-                <span className="text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md truncate text-xs md:text-sm">{selectedArticle.category?.name || 'Umum'}</span>
+            {/* Top Actions & Breadcrumb (1 Line, buttons on the right) */}
+            <div className="flex flex-row justify-between items-center gap-3 mb-6 hide-on-print flex-nowrap">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-500 min-w-0">
+                <span className="hover:text-indigo-600 cursor-pointer transition-colors whitespace-nowrap shrink-0">Bizora Help Center</span>
+                <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+                <span className="text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md truncate text-xs md:text-sm font-semibold">{selectedArticle.category?.name || 'Umum'}</span>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg text-xs md:text-sm font-semibold transition-colors border border-slate-200">
+              <div className="flex items-center gap-2 shrink-0 ml-auto">
+                <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg text-xs md:text-sm font-semibold transition-colors border border-slate-200 whitespace-nowrap">
                   <Printer className="w-4 h-4" /> Cetak
                 </button>
-                <button onClick={handleDownloadPdf} className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs md:text-sm font-semibold transition-all shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/40">
+                <button onClick={handleDownloadPdf} className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs md:text-sm font-semibold transition-all shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/40 whitespace-nowrap">
                   <Download className="w-4 h-4" /> Unduh PDF
                 </button>
               </div>
