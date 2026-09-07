@@ -3,6 +3,18 @@ import { Link } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import CurrencyInput from '../../../components/CurrencyInput'
 import bizoraLogo from '../../../assets/bizora-logo.png'
+
+const TABS = [
+  { id: 'general',      label: 'Hero & Banner',    icon: '🚀', desc: 'Judul, Slogan & Promo' },
+  { id: 'sectors',      label: 'Sektor Bisnis',    icon: '🏬', desc: 'Kategori Usaha' },
+  { id: 'features',     label: 'Fitur Platform',   icon: '⚡', desc: 'Keunggulan Sistem' },
+  { id: 'howitworks',   label: 'Cara Kerja',       icon: '🔄', desc: 'Langkah Onboarding' },
+  { id: 'testimonials', label: 'Testimoni',        icon: '💬', desc: 'Ulasan Pelanggan' },
+  { id: 'faq',          label: 'FAQ',              icon: '❓', desc: 'Tanya Jawab' },
+  { id: 'billing',      label: 'Harga & Rekening', icon: '💳', desc: 'Bank BCA & Paket' },
+  { id: 'logo',         label: 'Logo & Branding',  icon: '🎨', desc: 'Logo & Identitas' },
+]
+
 export default function LandingSettings({ defaultTab = 'general' }) {
   const [activeTab, setActiveTab] = useState(defaultTab)
 
@@ -213,21 +225,82 @@ export default function LandingSettings({ defaultTab = 'general' }) {
   return (
     <div className="animate-fade-in" style={{ fontFamily: 'Outfit, Inter, sans-serif' }}>
       
-      {/* Page Header */}
-      <div className="page-header">
+      {/* Page Header with Direct Preview Button */}
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
         <div>
-          <h2 className="page-title">{{
-            general: 'Pengaturan Teks & Elemen',
-            sectors: 'Sektor Bisnis',
-            features: 'Fitur Platform',
-            howitworks: 'Cara Kerja',
-            faq: 'FAQ & Pertanyaan Umum',
-            testimonials: 'Kelola Testimoni Pelanggan',
-            billing: 'Harga Paket & Rekening BCA',
-            logo: 'Logo & Branding',
-          }[activeTab] || 'Pengaturan Portal'}</h2>
-          <p className="page-sub">Konfigurasi tampilan dan konten landing page platform SaaS</p>
+          <h2 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 22, fontWeight: 700 }}>
+            <span>🎨</span> Pengaturan Konten Landing Page
+          </h2>
+          <p className="page-sub" style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
+            Sesuaikan teks, visual, sektor bisnis, dan elemen halaman depan (website utama) dengan mudah dan real-time.
+          </p>
         </div>
+
+        <a
+          href="/"
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-secondary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '9px 16px',
+            borderRadius: 12,
+            fontWeight: 600,
+            fontSize: 13,
+            background: '#ffffff',
+            border: '1px solid #cbd5e1',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+            color: '#1e293b'
+          }}
+        >
+          <span>🌐</span> Lihat Halaman Depan ↗
+        </a>
+      </div>
+
+      {/* Friendly Tab Navigation Bar */}
+      <div style={{
+        display: 'flex',
+        gap: 8,
+        overflowX: 'auto',
+        padding: '6px',
+        background: '#f1f5f9',
+        borderRadius: 16,
+        border: '1px solid #e2e8f0',
+        marginBottom: 24,
+        scrollbarWidth: 'none',
+      }}>
+        {TABS.map(tab => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 18px',
+                borderRadius: 12,
+                border: 'none',
+                background: isActive ? '#ffffff' : 'transparent',
+                color: isActive ? '#4338ca' : '#64748b',
+                fontWeight: isActive ? 700 : 500,
+                fontSize: 13,
+                cursor: 'pointer',
+                boxShadow: isActive ? '0 4px 12px rgba(67, 56, 202, 0.12), 0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                transition: 'all 0.18s ease',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: 16 }}>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {msg && (

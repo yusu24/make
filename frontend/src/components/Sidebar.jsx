@@ -84,14 +84,8 @@ const NAV_ITEMS = [
     icon: <Globe size={18} />,
     adminOnly: true,
     items: [
-      { path: '/settings',             icon: <FileText size={18} />,   label: 'Teks & Elemen Hero' },
-      { path: '/landing-sectors',      icon: <Layers size={18} />,     label: 'Sektor Bisnis' },
-      { path: '/landing-features',     icon: <Zap size={18} />,        label: 'Fitur Platform' },
-      { path: '/landing-howitworks',   icon: <Settings size={18} />,   label: 'Cara Kerja' },
-      { path: '/landing-faq',          icon: <HelpCircle size={18} />, label: 'FAQ' },
+      { path: '/settings',             icon: <Globe size={18} />,      label: 'Pengaturan Landing Page' },
       { path: '/landing-testimonials', icon: <Users size={18} />,      label: 'Testimoni Pelanggan' },
-      { path: '/landing-billing',      icon: <CreditCard size={18} />, label: 'Harga & Rekening' },
-      { path: '/landing-logo',         icon: <Receipt size={18} />,    label: 'Logo & Branding' },
     ]
   },
 
