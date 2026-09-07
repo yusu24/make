@@ -122,7 +122,7 @@ export default function TenantVerifications() {
     try {
       const res = await api.get('/admin/kyc')
       const data = res.data?.data
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         setKycs(data)
       } else {
         setKycs(FALLBACK_KYC_DUMMY)
@@ -366,7 +366,7 @@ export default function TenantVerifications() {
               </div>
             </div>
 
-            {/* Pratinjau Dokumen Mockup */}
+            {/* Pratinjau Dokumen Asli / Mockup */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -375,50 +375,70 @@ export default function TenantVerifications() {
                 <span className="badge badge-primary" style={{ fontSize: 11 }}>Status: {selected.kyc_status}</span>
               </div>
 
-              <div style={{
-                width: '100%',
-                minHeight: 220,
-                background: 'linear-gradient(135deg, #1e293b, #0f172a)',
-                borderRadius: 14,
-                padding: '24px 28px',
-                color: '#fff',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <div style={{ position: 'absolute', right: -20, bottom: -20, width: 140, height: 140, background: 'radial-gradient(circle, rgba(105,108,255,0.3) 0%, transparent 70%)', borderRadius: '50%' }}></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <div style={{ fontSize: 11, letterSpacing: '0.1em', opacity: 0.7, textTransform: 'uppercase' }}>REPUBLIK INDONESIA</div>
-                    <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: '0.05em' }}>KARTU TANDA PENDUDUK / NIB</div>
+              {selected.kyc_document_path && selected.kyc_document_path.startsWith('http') ? (
+                <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #e2e8f0', background: '#0f172a', textAlign: 'center', padding: 12 }}>
+                  <img
+                    src={selected.kyc_document_path}
+                    alt="Dokumen KYC"
+                    style={{ maxHeight: 280, maxWidth: '100%', objectFit: 'contain', margin: '0 auto', display: 'block', borderRadius: 8 }}
+                  />
+                  <div style={{ marginTop: 10 }}>
+                    <a
+                      href={selected.kyc_document_path}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontSize: 12, color: '#60a5fa', textDecoration: 'underline', fontWeight: 600 }}
+                    >
+                      Buka Dokumen Ukuran Penuh ↗
+                    </a>
                   </div>
-                  <div style={{ fontSize: 24 }}>🇮🇩</div>
                 </div>
+              ) : (
+                <div style={{
+                  width: '100%',
+                  minHeight: 220,
+                  background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                  borderRadius: 14,
+                  padding: '24px 28px',
+                  color: '#fff',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ position: 'absolute', right: -20, bottom: -20, width: 140, height: 140, background: 'radial-gradient(circle, rgba(105,108,255,0.3) 0%, transparent 70%)', borderRadius: '50%' }}></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <div style={{ fontSize: 11, letterSpacing: '0.1em', opacity: 0.7, textTransform: 'uppercase' }}>REPUBLIK INDONESIA</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: '0.05em' }}>KARTU TANDA PENDUDUK / NIB</div>
+                    </div>
+                    <div style={{ fontSize: 24 }}>🇮🇩</div>
+                  </div>
 
-                <div style={{ margin: '18px 0', fontSize: 13, lineHeight: 1.6 }}>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <span style={{ opacity: 0.7, width: 90 }}>NIK / NIB</span>
-                    <span style={{ fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.05em' }}>: {selected.nik || '3201234567890001'}</span>
+                  <div style={{ margin: '18px 0', fontSize: 13, lineHeight: 1.6 }}>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <span style={{ opacity: 0.7, width: 90 }}>NIK / NIB</span>
+                      <span style={{ fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.05em' }}>: {selected.nik || '3201234567890001'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <span style={{ opacity: 0.7, width: 90 }}>Nama</span>
+                      <span style={{ fontWeight: 700 }}>: {selected.owner_name || 'Budi Santoso'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <span style={{ opacity: 0.7, width: 90 }}>Usaha</span>
+                      <span>: {selected.name}</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <span style={{ opacity: 0.7, width: 90 }}>Nama</span>
-                    <span style={{ fontWeight: 700 }}>: {selected.owner_name || 'Budi Santoso'}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <span style={{ opacity: 0.7, width: 90 }}>Usaha</span>
-                    <span>: {selected.name}</span>
-                  </div>
-                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 10 }}>
-                  <div style={{ fontSize: 10, opacity: 0.6 }}>BIZORA IDENTITY VERIFIED SYSTEM</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#71dd37' }}>● DOKUMEN VALID</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 10 }}>
+                    <div style={{ fontSize: 10, opacity: 0.6 }}>BIZORA IDENTITY VERIFIED SYSTEM</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#71dd37' }}>● DOKUMEN DIGITAL</div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Status Alert Info */}

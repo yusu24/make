@@ -106,6 +106,8 @@ export default function Settings() {
   const [kycUploading, setKycUploading] = useState(false);
   const [previewStruk, setPreviewStruk] = useState(false);
   const [kyc, setKyc] = useState(null);
+  const [kycNik, setKycNik] = useState('');
+  const [kycDocType, setKycDocType] = useState('KTP');
   const [backupDownloading, setBackupDownloading] = useState(false);
   const [backupEmailing, setBackupEmailing] = useState(false);
   const [backupEmail, setBackupEmail] = useState('');
@@ -133,7 +135,10 @@ export default function Settings() {
   const fetchKyc = async () => {
     try {
       const res = await api.get('/settings/kyc');
-      setKyc(res.data?.data);
+      const data = res.data?.data;
+      setKyc(data);
+      if (data?.nik) setKycNik(data.nik);
+      if (data?.kyc_document_type) setKycDocType(data.kyc_document_type);
     } catch (e) {
       console.error(e);
     }
@@ -250,13 +255,15 @@ export default function Settings() {
     try {
       const form = new FormData();
       form.append('document', file);
+      if (kycNik) form.append('nik', kycNik);
+      if (kycDocType) form.append('document_type', kycDocType);
       const res = await api.post('/settings/kyc', form, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      showToast(res.data.message);
+      showToast(res.data.message || 'Dokumen KYC berhasil diunggah');
       fetchKyc();
     } catch (e) {
-      showToast('Gagal upload dokumen KYC', 'error');
+      showToast(e.response?.data?.message || 'Gagal upload dokumen KYC', 'error');
     } finally {
       setKycUploading(false);
     }
@@ -890,54 +897,150 @@ export default function Settings() {
                   <Shield size={20} color="#8b5cf6" />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--retail-text-primary)' }}>Verifikasi Usaha (KYC)</h3>
-                  <p style={{ margin: 0, fontSize: 13, color: 'var(--retail-text-secondary)' }}>Unggah dokumen identitas untuk verifikasi akun</p>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--retail-text-primary)' }}>Verifikasi Identitas & Usaha (KYC)</h3>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--retail-text-secondary)' }}>Unggah dokumen resmi (KTP / NIB / Surat Izin Usaha) untuk mengaktifkan fitur finansial dan verifikasi toko</p>
                 </div>
               </div>
 
               {!kyc ? (
                 <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Memuat status verifikasi...</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {/* Status Banner */}
                   {kyc.kyc_status === 'pending' && (
-                    <div className="alert" style={{ background: '#fef3c7', color: '#92400e', padding: 16, borderRadius: 10, fontSize: 13 }}>
-                      <strong>Menunggu Verifikasi:</strong> Dokumen Anda sedang ditinjau oleh tim kami. Harap menunggu hingga proses verifikasi selesai.
+                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '16px 20px', borderRadius: 12, fontSize: 13.5 }}>
+                      <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span>⏳</span> Menunggu Review Admin
+                      </div>
+                      <p style={{ margin: 0, lineHeight: 1.5 }}>
+                        Dokumen Anda telah diunggah pada <strong>{kyc.kyc_submitted_at ? new Date(kyc.kyc_submitted_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'hari ini'}</strong> dan sedang dalam proses peninjauan oleh tim Super Admin.
+                      </p>
                     </div>
                   )}
+
                   {kyc.kyc_status === 'verified' && (
-                    <div className="alert" style={{ background: '#dcfce7', color: '#166534', padding: 16, borderRadius: 10, fontSize: 13 }}>
-                      <strong>Terverifikasi:</strong> Akun usaha Anda telah diverifikasi. Terima kasih!
+                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', padding: '16px 20px', borderRadius: 12, fontSize: 13.5 }}>
+                      <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span>✅</span> Akun Toko Terverifikasi (Verified)
+                      </div>
+                      <p style={{ margin: 0, lineHeight: 1.5 }}>
+                        Selamat! Identitas dan legalitas usaha Anda telah terverifikasi resmi oleh Super Admin pada {kyc.kyc_verified_at ? new Date(kyc.kyc_verified_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}. Semua fitur pembayaran dan verifikasi toko telah aktif.
+                      </p>
                     </div>
                   )}
+
                   {kyc.kyc_status === 'rejected' && (
-                    <div className="alert" style={{ background: '#fee2e2', color: '#991b1b', padding: 16, borderRadius: 10, fontSize: 13 }}>
-                      <strong>Verifikasi Ditolak:</strong> {kyc.kyc_notes} <br/><br/>
-                      Silakan unggah ulang dokumen yang sesuai.
+                    <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '16px 20px', borderRadius: 12, fontSize: 13.5 }}>
+                      <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span>❌</span> Pengajuan KYC Ditolak / Perlu Revisi
+                      </div>
+                      <p style={{ margin: '0 0 8px 0', lineHeight: 1.5 }}>
+                        <strong>Catatan Admin:</strong> {kyc.kyc_notes || 'Foto dokumen buram atau tidak sesuai.'}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 12.5, opacity: 0.9 }}>
+                        Silakan perbaiki data NIK atau pilih dokumen baru lalu unggah ulang di bawah ini.
+                      </p>
                     </div>
                   )}
-                  {(kyc.kyc_status === 'unverified' || kyc.kyc_status === 'rejected') && (
-                    <div>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        ref={kycInputRef} 
-                        style={{ display: 'none' }}
-                        onChange={(e) => {
-                          if (e.target.files[0]) handleKycUpload(e.target.files[0]);
-                          e.target.value = null;
-                        }}
-                      />
-                      <button 
-                        type="button" 
-                        className="btn btn-primary"
-                        onClick={() => kycInputRef.current?.click()}
-                        disabled={kycUploading}
-                      >
-                        {kycUploading ? 'Mengunggah...' : 'Unggah Dokumen (KTP / NIB)'}
-                      </button>
-                      <p style={{ fontSize: 12, color: 'var(--retail-text-secondary)', marginTop: 8 }}>Format: JPG, PNG. Maks: 2MB.</p>
+
+                  {/* Form Upload / Detail Dokumen */}
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '20px', borderRadius: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 16 }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--retail-text-primary)', marginBottom: 6 }}>
+                          Jenis Dokumen
+                        </label>
+                        <select
+                          className="form-input"
+                          value={kycDocType}
+                          onChange={e => setKycDocType(e.target.value)}
+                          disabled={kyc.kyc_status === 'pending' || kyc.kyc_status === 'verified'}
+                        >
+                          <option value="KTP">KTP Pemilik / Direktur</option>
+                          <option value="NIB">NIB (Nomor Induk Berusaha)</option>
+                          <option value="NPWP">NPWP Badan / Pribadi</option>
+                          <option value="Surat Izin Usaha">Surat Izin Usaha / SIUP</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--retail-text-primary)', marginBottom: 6 }}>
+                          Nomor Identitas (NIK / NIB)
+                        </label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="Masukkan 16 digit NIK atau NIB..."
+                          value={kycNik}
+                          onChange={e => setKycNik(e.target.value)}
+                          disabled={kyc.kyc_status === 'pending' || kyc.kyc_status === 'verified'}
+                        />
+                      </div>
                     </div>
-                  )}
+
+                    {/* Dokumen Thumbnail if exists */}
+                    {kyc.kyc_document_path && (
+                      <div style={{ marginBottom: 16, padding: 12, background: '#ffffff', borderRadius: 10, border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <span style={{ fontSize: 24 }}>📄</span>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--retail-text-primary)' }}>
+                              Berkas Dokumen Terlampir ({kyc.kyc_document_type || kycDocType})
+                            </div>
+                            <div style={{ fontSize: 11.5, color: 'var(--retail-text-secondary)' }}>
+                              Diunggah: {kyc.kyc_submitted_at ? new Date(kyc.kyc_submitted_at).toLocaleString('id-ID') : '-'}
+                            </div>
+                          </div>
+                        </div>
+
+                        {kyc.kyc_document_path.startsWith('http') && (
+                          <a
+                            href={kyc.kyc_document_path}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn btn-secondary btn-sm"
+                            style={{ fontWeight: 600 }}
+                          >
+                            🔍 Lihat Dokumen ↗
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Upload button for unverified or rejected */}
+                    {(kyc.kyc_status === 'unverified' || kyc.kyc_status === 'rejected') && (
+                      <div>
+                        <input 
+                          type="file" 
+                          accept="image/*,application/pdf" 
+                          ref={kycInputRef} 
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            if (e.target.files[0]) handleKycUpload(e.target.files[0]);
+                            e.target.value = null;
+                          }}
+                        />
+                        <button 
+                          type="button" 
+                          className="btn btn-primary"
+                          onClick={() => {
+                            if (!kycNik.trim()) {
+                              showToast('Mohon isi Nomor Identitas (NIK/NIB) terlebih dahulu', 'error');
+                              return;
+                            }
+                            kycInputRef.current?.click();
+                          }}
+                          disabled={kycUploading}
+                          style={{ fontWeight: 700 }}
+                        >
+                          {kycUploading ? 'Mengunggah Berkas...' : '📁 Pilih & Unggah Dokumen KYC'}
+                        </button>
+                        <p style={{ fontSize: 12, color: 'var(--retail-text-secondary)', marginTop: 8, marginBottom: 0 }}>
+                          Format didukung: JPG, PNG, PDF. Maksimal ukuran berkas 5 MB.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </SectionCard>
