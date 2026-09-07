@@ -225,53 +225,139 @@ export default function LandingSettings({ defaultTab = 'general' }) {
 
   return (
     <div className="animate-fade-in" style={{ fontFamily: 'Outfit, Inter, sans-serif' }}>
+      <style>{`
+        .ls-header-wrap {
+          margin-bottom: 22px;
+        }
+        .ls-header-subrow {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 14px;
+          margin-top: 6px;
+        }
+        .ls-tabs-container {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: 6px;
+          background: #f1f5f9;
+          border-radius: 14px;
+          border: 1px solid #e2e8f0;
+          margin-bottom: 24px;
+          scrollbar-width: thin;
+        }
+        .ls-tabs-container::-webkit-scrollbar {
+          height: 4px;
+        }
+        .ls-tabs-container::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 4px;
+        }
+        .ls-tab-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 18px;
+          border-radius: 12px;
+          border: none;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.18s ease;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .ls-two-col-grid {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr;
+          gap: 28px;
+          align-items: start;
+        }
+        .ls-logo-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+          margin-top: 10px;
+        }
+        .ls-sticky-preview {
+          position: sticky;
+          top: 24px;
+        }
+        @media (max-width: 1024px) {
+          .ls-two-col-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+          .ls-sticky-preview {
+            position: static;
+          }
+        }
+        @media (max-width: 768px) {
+          .ls-logo-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+          .ls-tab-btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            gap: 6px;
+            border-radius: 10px;
+          }
+        }
+        @media (max-width: 640px) {
+          .ls-header-subrow {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+          }
+          .ls-preview-btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
       
-      {/* Page Header with Direct Preview Button */}
-      <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
-        <div>
-          <h2 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 22, fontWeight: 700 }}>
-            <span>🎨</span> Pengaturan Konten Landing Page
-          </h2>
-          <p className="page-sub" style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
+      {/* Page Header: Title on top, Subtitle + Button on row below */}
+      <div className="ls-header-wrap">
+        <h2 className="page-title" style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+          Pengaturan Konten Landing Page
+        </h2>
+        
+        <div className="ls-header-subrow">
+          <p className="page-sub" style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, maxWidth: 680, lineHeight: 1.5 }}>
             Sesuaikan teks, visual, sektor bisnis, dan elemen halaman depan (website utama) dengan mudah dan real-time.
           </p>
-        </div>
 
-        <a
-          href="/"
-          target="_blank"
-          rel="noreferrer"
-          className="btn btn-secondary"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '9px 16px',
-            borderRadius: 12,
-            fontWeight: 600,
-            fontSize: 13,
-            background: '#ffffff',
-            border: '1px solid #cbd5e1',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-            color: '#1e293b'
-          }}
-        >
-          <span>🌐</span> Lihat Halaman Depan ↗
-        </a>
+          <a
+            href="/"
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-secondary ls-preview-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 16px',
+              borderRadius: 10,
+              fontWeight: 600,
+              fontSize: 13,
+              background: '#ffffff',
+              border: '1px solid #cbd5e1',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+              color: '#1e293b',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <span>🌐</span> Lihat Halaman Depan ↗
+          </a>
+        </div>
       </div>
 
-      {/* Friendly Tab Navigation Bar */}
-      <div style={{
-        display: 'flex',
-        gap: 8,
-        overflowX: 'auto',
-        padding: '6px',
-        background: '#f1f5f9',
-        borderRadius: 16,
-        border: '1px solid #e2e8f0',
-        marginBottom: 24,
-        scrollbarWidth: 'none',
-      }}>
+      {/* Friendly Responsive Tab Navigation Bar */}
+      <div className="ls-tabs-container">
         {TABS.map(tab => {
           const isActive = activeTab === tab.id;
           return (
@@ -279,25 +365,15 @@ export default function LandingSettings({ defaultTab = 'general' }) {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
+              className="ls-tab-btn"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '10px 18px',
-                borderRadius: 12,
-                border: 'none',
                 background: isActive ? '#ffffff' : 'transparent',
                 color: isActive ? '#4338ca' : '#64748b',
                 fontWeight: isActive ? 700 : 500,
-                fontSize: 13,
-                cursor: 'pointer',
                 boxShadow: isActive ? '0 4px 12px rgba(67, 56, 202, 0.12), 0 1px 3px rgba(0,0,0,0.05)' : 'none',
-                transition: 'all 0.18s ease',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
               }}
             >
-              <span style={{ fontSize: 16 }}>{tab.icon}</span>
+              <span style={{ fontSize: 15 }}>{tab.icon}</span>
               <span>{tab.label}</span>
             </button>
           );
@@ -322,7 +398,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
 
       {/* TAB CONTENT: GENERAL TEXT & VISIBILITY CONFIG */}
       {activeTab === 'general' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 30, alignItems: 'start' }}>
+        <div className="ls-two-col-grid">
           {/* FORM PANEL */}
           <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
             
@@ -528,7 +604,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
           </form>
 
           {/* LIVE MOCKUP PREVIEW */}
-          <div style={{ position: 'sticky', top: 24 }}>
+          <div className="ls-sticky-preview">
             <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>🖥️</span> Pratonton Realtime (Desktop Mockup)
             </h3>
@@ -830,7 +906,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
 
       {/* TAB CONTENT: FOOTER & KONTAK */}
       {activeTab === 'footer' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 30, alignItems: 'start' }}>
+        <div className="ls-two-col-grid">
           {/* FORM PANEL */}
           <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
             <div>
@@ -928,7 +1004,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
           </form>
 
           {/* LIVE FOOTER PREVIEW */}
-          <div style={{ position: 'sticky', top: 24 }}>
+          <div className="ls-sticky-preview">
             <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>🖥️</span> Pratonton Realtime Footer (Desktop Mockup)
             </h3>
@@ -1275,7 +1351,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
 
       {/* TAB CONTENT: BILLING & PRICING CONFIG */}
       {activeTab === 'billing' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 30, alignItems: 'start' }}>
+        <div className="ls-two-col-grid">
           {/* FORM PANEL */}
           <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
             
@@ -1500,7 +1576,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
 
       {/* TAB CONTENT: LOGO & BRANDING */}
       {activeTab === 'logo' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 10 }}>
+        <div className="ls-logo-grid">
           {/* Uploader 1: Logo Landing Page */}
           <LogoUploaderCard
             title="Logo Landing Page (Public)"
