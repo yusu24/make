@@ -141,6 +141,100 @@ class SubscriptionRequestController extends Controller
     }
 
     /**
+     * Tenant uploads proof of payment (receipt / transfer slip)
+     */
+    public function uploadProof(Request $request)
+    {
+        $user = $request->user();
+        if ($user->role !== 'customer') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'proof_file'   => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:5120',
+            'proof'        => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:5120',
+            'bank_sender'  => 'nullable|string|max:100',
+            'sender_name'  => 'nullable|string|max:150',
+            'notes'        => 'nullable|string|max:500',
+        ]);
+
+        $file = $request->file('proof') ?: $request->file('proof_file');
+        if (!$file) {
+            return response()->json(['message' => 'File bukti transfer wajib diunggah.'], 422);
+        }
+
+        $tenantId = $user->tenant_id;
+        $tenant = Tenant::where('tenant_id', $tenantId)->firstOrFail();
+
+        // Get latest pending request or create one if plan passed
+        $subReq = SubscriptionRequest::where('tenant_id', $tenantId)
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+
+        if (!$subReq && $request->has('plan')) {
+            $planKey = strtolower($request->plan);
+            $subReq = SubscriptionRequest::create([
+                'tenant_id' => $tenantId,
+                'plan'      => $planKey,
+                'status'    => 'pending',
+                'notes'     => $request->notes,
+            ]);
+        }
+
+        if (!$subReq) {
+            return response()->json(['message' => 'Tidak ditemukan permintaan langganan pending untuk akun ini.'], 404);
+        }
+
+        // Store file in public proofs directory
+        $fileName = 'proof_' . $tenantId . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('proofs', $fileName, 'public');
+        $proofUrl = '/storage/' . $path;
+
+        $noteParts = [];
+        if ($request->bank_sender) $noteParts[] = "Bank: " . $request->bank_sender;
+        if ($request->sender_name) $noteParts[] = "Pengirim: " . $request->sender_name;
+        if ($request->notes) $noteParts[] = $request->notes;
+        $combinedNotes = implode(' | ', $noteParts);
+
+        $subReq->update([
+            'proof' => $proofUrl,
+            'notes' => !empty($combinedNotes) ? $combinedNotes : $subReq->notes,
+        ]);
+
+        // Update latest unpaid invoice if exists
+        $invoice = \App\Models\TenantInvoice::where('tenant_id', $tenantId)
+            ->where('status', 'unpaid')
+            ->latest()
+            ->first();
+
+        if ($invoice) {
+            $invoice->update([
+                'payment_method' => $request->bank_sender ? ('Transfer Bank (' . $request->bank_sender . ')') : 'Manual Transfer',
+            ]);
+        }
+
+        // Notify Super Admins
+        $admins = \App\Models\User::where('role', 'super_admin')->get();
+        foreach ($admins as $adm) {
+            \App\Models\Notification::create([
+                'user_id' => $adm->id,
+                'type'    => 'info',
+                'title'   => 'Bukti Pembayaran Baru Diunggah 📤',
+                'message' => "Tenant {$user->name} ({$tenant->business_name}) mengunggah bukti pembayaran paket " . strtoupper($subReq->plan),
+                'data'    => ['link' => '/subscriptions', 'request_id' => $subReq->id, 'proof' => $proofUrl]
+            ]);
+        }
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Bukti pembayaran berhasil diunggah! Tim Admin akan segera memverifikasi.',
+            'proof_url' => $proofUrl,
+            'request'   => $subReq,
+        ]);
+    }
+
+    /**
      * Get current pending request for the logged in tenant
      */
     public function current(Request $request)

@@ -159,6 +159,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     Route::get('subscription/current', [SubscriptionRequestController::class, 'current']);
     Route::get('subscription/invoices', [SubscriptionRequestController::class, 'invoices']);
     Route::post('subscription/request', [SubscriptionRequestController::class, 'store']);
+    Route::post('subscription/upload-proof', [SubscriptionRequestController::class, 'uploadProof']);
 
     // Core System Routes (Protected by Tenant Isolation & Subscription)
     Route::middleware(['tenant', 'subscription'])->group(function () {

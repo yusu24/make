@@ -3,6 +3,8 @@ import { CreditCard, CheckCircle2, ShieldCheck, Zap, AlertCircle } from 'lucide-
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { api } from '../../../../../lib/api';
 import Modal from '../../../../../components/Modal';
+// @ts-ignore
+import PaymentProofUpload from '../../../../../components/PaymentProofUpload';
 
 export const SellerSubscriptionView: React.FC = () => {
   const { user } = useAuth();
@@ -144,6 +146,15 @@ export const SellerSubscriptionView: React.FC = () => {
           </div>
           <span className="px-3 py-1 bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 rounded-full font-bold text-[10px] uppercase">Pending</span>
         </div>
+      )}
+
+      {pendingReq && (
+        <PaymentProofUpload
+          pendingReq={pendingReq}
+          globalSettings={globalSettings}
+          onUploadSuccess={fetchData}
+          style={{ marginBottom: 20 }}
+        />
       )}
 
       {/* Category Promo Badge */}

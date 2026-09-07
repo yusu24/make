@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
+import PaymentProofUpload from '../../../components/PaymentProofUpload'
 
 export default function Subscription() {
   const { user } = useAuth();
@@ -309,6 +310,14 @@ export default function Subscription() {
               </div>
 
             </div>
+
+            {pendingReq && (
+              <PaymentProofUpload
+                pendingReq={pendingReq}
+                globalSettings={globalSettings}
+                onUploadSuccess={fetchData}
+              />
+            )}
           </div>
 
           {/* Promo Banner */}
@@ -588,10 +597,20 @@ export default function Subscription() {
                   </div>
                 )}
 
+                <PaymentProofUpload
+                  pendingReq={pendingReq || paymentData}
+                  globalSettings={globalSettings}
+                  onUploadSuccess={() => {
+                    fetchData();
+                    handleCloseModal();
+                  }}
+                  style={{ marginTop: 10, marginBottom: 12 }}
+                />
+
                 <div style={{ background: '#F0FDF4', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#166534', lineHeight: 1.6, border: '1px solid #bbf7d0', marginBottom: 16 }}>
-                  ⚠️ Setelah pembayaran diterima, langganan akan otomatis aktif. Email konfirmasi akan dikirim ke akun Anda.
+                  ⚠️ Setelah pembayaran dan bukti transfer diunggah, Super Admin akan segera memverifikasi dan mengaktifkan paket Anda.
                 </div>
-                <button onClick={handleCloseModal} style={{ width: '100%', padding: 12, border: 'none', borderRadius: 10, background: '#1B4332', fontWeight: 700, color: '#fff', cursor: 'pointer' }}>Selesai &amp; Tutup</button>
+                <button onClick={handleCloseModal} style={{ width: '100%', padding: 10, border: '1px solid #cbd5e1', borderRadius: 10, background: '#fff', fontWeight: 700, color: '#475569', cursor: 'pointer' }}>Tutup</button>
               </>
             )}
 

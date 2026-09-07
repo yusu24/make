@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
+import PaymentProofUpload from '../../../components/PaymentProofUpload';
 import { FEATURE_LABELS } from '../../../lib/subscriptionFeatures';
 
 const PLAN_COLOR = {
@@ -192,12 +193,20 @@ export default function Subscription() {
                <div style={{ height: 8, background: 'var(--border-color)', borderRadius: 4, overflow: 'hidden' }}>
                   <div style={{ width: `${Math.min(100, staffPercentage)}%`, height: '100%', background: staffPercentage > 90 ? 'var(--danger-500)' : 'var(--primary-500)', transition: 'width 1s ease' }} />
                </div>
-               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 12 }}>
-                  {currentPlan === 'free' 
-                    ? 'Anda menggunakan paket Gratis. Batasan 4 pegawai berlaku.' 
-                    : `Anda dalam paket ${currentPlan}. Nikmati kapasitas yang lebih luas.`}
-               </p>
-            </div>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 12 }}>
+                   {currentPlan === 'free' 
+                     ? 'Anda menggunakan paket Gratis. Batasan 4 pegawai berlaku.' 
+                     : `Anda dalam paket ${currentPlan}. Nikmati kapasitas yang lebih luas.`}
+                </p>
+             </div>
+
+            {pendingReq && (
+              <PaymentProofUpload
+                pendingReq={pendingReq}
+                globalSettings={globalSettings}
+                onUploadSuccess={fetchData}
+              />
+            )}
           </div>
 
           {categoryPromo && (
@@ -518,13 +527,23 @@ export default function Subscription() {
                  </div>
                )}
 
-               <div style={{ background: 'var(--bg-elevated)', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                 ⚠️ Setelah pembayaran diterima, langganan akan otomatis aktif. Email konfirmasi akan dikirim ke akun Anda.
-               </div>
+                <PaymentProofUpload
+                  pendingReq={pendingReq || paymentData}
+                  globalSettings={globalSettings}
+                  onUploadSuccess={() => {
+                    fetchData();
+                    handleCloseModal();
+                  }}
+                  style={{ marginTop: 10 }}
+                />
 
-               <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleCloseModal}>
-                 Selesai &amp; Tutup
-               </button>
+                <div style={{ background: 'var(--bg-elevated)', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                  ⚠️ Setelah pembayaran dan bukti transfer diunggah, Super Admin akan segera memverifikasi dan mengaktifkan paket Anda.
+                </div>
+
+                <button className="btn btn-secondary" style={{ width: '100%' }} onClick={handleCloseModal}>
+                  Tutup
+                </button>
              </>
            )}
 

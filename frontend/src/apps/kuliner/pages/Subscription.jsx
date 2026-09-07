@@ -3,6 +3,7 @@ import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import KulinerAdminLayout from '../components/KulinerAdminLayout'
 import Modal from '../../../components/Modal'
+import PaymentProofUpload from '../../../components/PaymentProofUpload'
 
 export default function Subscription() {
   const { user } = useAuth();
@@ -325,6 +326,14 @@ export default function Subscription() {
               </div>
 
             </div>
+
+            {pendingReq && (
+              <PaymentProofUpload
+                pendingReq={pendingReq}
+                globalSettings={globalSettings}
+                onUploadSuccess={fetchData}
+              />
+            )}
           </div>
 
           {/* Promo Banner */}
@@ -636,10 +645,20 @@ export default function Subscription() {
                    </div>
                  </div>
                )}
-               <div style={{ background: '#fff8f0', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#64748b', lineHeight: 1.6, border: '1px solid #ffedd5' }}>
-                 ⚠️ Setelah pembayaran diterima, langganan akan otomatis aktif. Email konfirmasi akan dikirim ke akun Anda.
-               </div>
-               <button onClick={handleCloseModal} style={{ width: '100%', padding: '12px', border: 'none', borderRadius: 10, background: '#EA580C', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Selesai &amp; Tutup</button>
+                <PaymentProofUpload
+                  pendingReq={pendingReq || paymentData}
+                  globalSettings={globalSettings}
+                  onUploadSuccess={() => {
+                    fetchData();
+                    handleCloseModal();
+                  }}
+                  style={{ marginTop: 10 }}
+                />
+
+                <div style={{ background: '#fff8f0', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#64748b', lineHeight: 1.6, border: '1px solid #ffedd5' }}>
+                  ⚠️ Setelah pembayaran dan bukti transfer diunggah, Super Admin akan segera memverifikasi dan mengaktifkan paket Anda.
+                </div>
+                <button onClick={handleCloseModal} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: 10, background: '#fff', color: '#475569', fontWeight: 700, cursor: 'pointer' }}>Tutup</button>
              </>
            )}
 

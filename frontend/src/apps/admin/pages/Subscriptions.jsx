@@ -124,6 +124,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
   const [billingTenant, setBillingTenant] = useState(null)
   const [tenantInvoices, setTenantInvoices] = useState([])
   const [loadingInvoices, setLoadingInvoices] = useState(false)
+  const [selectedProof, setSelectedProof] = useState(null)
 
   const [loading, setLoading] = useState(true)
 
@@ -408,6 +409,8 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                     <th>Tenant ID</th>
                     <th>Nama Tenant</th>
                     <th>Paket Dipilih</th>
+                    <th>Bukti Transfer</th>
+                    <th>Catatan / Pengirim</th>
                     <th>Waktu Request</th>
                     <th>Status</th>
                     <th style={{ textAlign: 'right' }}>Aksi</th>
@@ -416,7 +419,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                           <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
                           <span>Memuat data permintaan...</span>
@@ -425,7 +428,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                     </tr>
                   ) : requests.length === 0 ? (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                           <span style={{ fontSize: 36 }}>📥</span>
                           <span>Belum ada permintaan langganan baru.</span>
@@ -453,6 +456,22 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                           {req.plan ? (req.plan.charAt(0).toUpperCase() + req.plan.slice(1).toLowerCase()) : 'Free'}
                         </span>
                       </td>
+                      <td>
+                        {req.proof ? (
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => setSelectedProof(req)}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 8px', fontSize: 11.5, color: '#2563eb', fontWeight: 600 }}
+                          >
+                            📷 Lihat Bukti
+                          </button>
+                        ) : (
+                          <span className="badge badge-secondary" style={{ fontSize: 11, opacity: 0.7 }}>Belum Upload</span>
+                        )}
+                      </td>
+                      <td style={{ fontSize: 12, color: 'var(--text-primary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={req.notes || '-'}>
+                        {req.notes || '-'}
+                      </td>
                       <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
                       <td>
                         <span className={`badge ${
@@ -466,7 +485,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleApprove(req.id)} title="Aktifkan">✓</button>
+                          <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)} title="Setujui &amp; Aktifkan">✓</button>
                           <button className="btn btn-secondary btn-sm" style={{ color: 'var(--danger-500)' }} onClick={() => handleReject(req.id)} title="Tolak">✗</button>
                         </div>
                       </td>
@@ -486,6 +505,67 @@ export default function Subscriptions({ defaultTab = 'list' }) {
           )}
         </div>
       </div>
+
+      {/* MODAL PREVIEW BUKTI TRANSFER PEMBAYARAN */}
+      {selectedProof && (
+        <div className="modal-overlay" onClick={() => setSelectedProof(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 540 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h3 className="modal__title" style={{ margin: 0 }}>📷 Bukti Pembayaran Langganan</h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => setSelectedProof(null)}>✕</button>
+            </div>
+            
+            <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 16, fontSize: 13 }}>
+              <div>Tenant: <strong style={{ color: '#0f172a' }}>{selectedProof.tenant?.business_name || selectedProof.tenant_id}</strong> (<code>{selectedProof.tenant_id}</code>)</div>
+              <div>Paket yang Diminta: <strong style={{ color: '#6366f1' }}>Paket {selectedProof.plan?.toUpperCase()}</strong></div>
+              <div>Detail / Catatan: <strong>{selectedProof.notes || 'Tidak ada catatan'}</strong></div>
+              <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 4 }}>Waktu Upload: {new Date(selectedProof.created_at).toLocaleString('id-ID')}</div>
+            </div>
+
+            <div style={{ textAlign: 'center', background: '#0f172a', padding: 12, borderRadius: 12, marginBottom: 16, maxHeight: '55vh', overflow: 'auto' }}>
+              {selectedProof.proof ? (
+                selectedProof.proof.endsWith('.pdf') ? (
+                  <div style={{ padding: 24, color: '#fff' }}>
+                    <div style={{ fontSize: 40, marginBottom: 8 }}>📄</div>
+                    <p style={{ margin: '0 0 12px 0' }}>Dokumen Bukti Transfer (PDF)</p>
+                    <a href={selectedProof.proof} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">
+                      Buka PDF di Tab Baru ↗
+                    </a>
+                  </div>
+                ) : (
+                  <img
+                    src={selectedProof.proof}
+                    alt="Bukti Transfer"
+                    style={{ maxWidth: '100%', maxHeight: '50vh', objectFit: 'contain', borderRadius: 6 }}
+                  />
+                )
+              ) : (
+                <div style={{ color: '#94a3b8', padding: 24 }}>Tidak ada file bukti pembayaran</div>
+              )}
+            </div>
+
+            <div className="modal__actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              {selectedProof.proof && (
+                <a href={selectedProof.proof} download target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ marginRight: 'auto' }}>
+                  📥 Unduh File
+                </a>
+              )}
+              <button type="button" className="btn btn-secondary" onClick={() => setSelectedProof(null)}>Tutup</button>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                onClick={() => {
+                  const id = selectedProof.id;
+                  setSelectedProof(null);
+                  handleApprove(id);
+                }}
+              >
+                ✓ Verifikasi &amp; Aktifkan Paket
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {billingTenant && (
         <div className="modal-overlay" onClick={() => setBillingTenant(null)}>

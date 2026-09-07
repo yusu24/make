@@ -23,6 +23,8 @@ import {
 import { useAuth } from '../../../../contexts/AuthContext';
 import { api } from '../../../../lib/api';
 import { formatRupiah } from '../data/mockData';
+// @ts-ignore
+import PaymentProofUpload from '../../../../components/PaymentProofUpload';
 
 interface SubscriptionViewProps {
   workOrdersCount?: number;
@@ -226,6 +228,15 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
             </div>
           </div>
         </div>
+
+        {pendingReq && (
+          <PaymentProofUpload
+            pendingReq={pendingReq}
+            globalSettings={globalSettings}
+            onUploadSuccess={fetchData}
+            style={{ marginBottom: 20 }}
+          />
+        )}
       </div>
 
       {/* Tabs Switcher: Pilihan Paket vs Riwayat Invoice */}
@@ -755,20 +766,23 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                   );
                 })()}
 
+                <PaymentProofUpload
+                  pendingReq={pendingReq || paymentData}
+                  globalSettings={globalSettings}
+                  onUploadSuccess={() => {
+                    fetchData();
+                    setShowOrderModal(false);
+                  }}
+                  style={{ marginTop: 10, marginBottom: 10 }}
+                />
+
                 {/* Confirmation Footer */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <div className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Konfirmasi Otomatis</span>
-                  </div>
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
                   <button
-                    onClick={() => {
-                      alert('Permintaan upgrade telah dicatat. Paket Anda akan aktif setelah pembayaran terverifikasi.');
-                      setShowOrderModal(false);
-                    }}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                    onClick={() => setShowOrderModal(false)}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl shadow-xs transition-all cursor-pointer text-xs"
                   >
-                    Saya Sudah Bayar
+                    Tutup
                   </button>
                 </div>
               </div>
