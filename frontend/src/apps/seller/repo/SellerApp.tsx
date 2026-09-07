@@ -58,6 +58,7 @@ import { AddProductModal } from './components/modals/AddProductModal';
 import { ImportProductsModal } from './components/modals/ImportProductsModal';
 import { AddStockModal } from './components/modals/AddStockModal';
 import { AiAdvisorDrawer } from './components/AiAdvisorDrawer';
+import { SellerAiFab } from './components/SellerAiFab';
 
 // Pure, one-directional URL <-> tab mapping. activeTab is derived FROM the
 // URL on every render (see below) instead of being separate React state kept
@@ -1020,6 +1021,11 @@ export default function App() {
         expenses={expenses}
         orders={orders}
         products={products}
+      />
+
+      <SellerAiFab
+        onOpen={() => setIsAiAdvisorOpen(true)}
+        isPosView={activeTab === 'toko-offline'}
       />
     </div>
   );

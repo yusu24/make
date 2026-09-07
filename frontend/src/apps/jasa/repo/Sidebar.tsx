@@ -151,18 +151,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>Buat SPK Baru</span>
             </button>
-
-            <button
-              id="btn-sidebar-ai-diagnostic"
-              onClick={() => {
-                onOpenAiAssistant();
-                onCloseMobile();
-              }}
-              className="w-full flex items-center justify-center space-x-2 py-2 px-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-200/80 font-semibold text-xs transition-colors shadow-2xs group"
-            >
-              <Sparkles className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
-              <span>AI Diagnosa & Estimasi</span>
-            </button>
           </div>
         </div>
 

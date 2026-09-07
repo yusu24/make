@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import BudidayaSidebar from './BudidayaSidebar'
 import BudidayaHeader from './components/BudidayaHeader'
+import BudidayaAiFab from './components/BudidayaAiFab'
 import SubscriptionLock from '../../components/SubscriptionLock'
 import { BudidayaProvider } from './contexts/BudidayaContext'
 
@@ -43,6 +44,7 @@ export default function BudidayaLayout() {
         </div>
 
         <SubscriptionLock status={user?.subscription_status} daysLeft={user?.trial_days_left} />
+        <BudidayaAiFab />
       </div>
     </BudidayaProvider>
   )

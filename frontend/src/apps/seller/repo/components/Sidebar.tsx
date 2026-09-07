@@ -133,38 +133,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed && <span className="flex-1 text-left truncate">{t('seller.dashboard')}</span>}
         </button>
 
-        {/* AI Seller Advisor (Sleek Button Matching Other Modules) */}
-        <button
-          type="button"
-          onClick={openAiAdvisor}
-          title={collapsed ? 'AI Seller Advisor (PRO)' : ''}
-          className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl font-bold text-[13px] transition-all duration-200 group cursor-pointer ${
-            collapsed ? 'justify-center px-0' : ''
-          }`}
-          style={{
-            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%)',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
-            color: '#4f46e5',
-            margin: '2px 0 4px 0',
-          }}
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
-            </div>
-            {!collapsed && (
-              <span className="truncate text-indigo-700 dark:text-indigo-300 font-bold">
-                AI Seller Advisor
-              </span>
-            )}
-          </div>
-          {!collapsed && (
-            <span className="text-[9.5px] font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-2 py-0.5 rounded-full shadow-xs tracking-wider">
-              PRO
-            </span>
-          )}
-        </button>
-
         {/* Kasir POS (Offline / Toko Fisik) */}
         <button
           onClick={() => setActiveTab('toko-offline')}

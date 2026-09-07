@@ -33,6 +33,7 @@ import { ContractsView } from './components/ContractsView';
 import { FinanceView } from './components/FinanceView';
 import { ExpensesView } from './components/ExpensesView';
 import { AiDiagnosticsModal } from './components/AiDiagnosticsModal';
+import { JasaAiFab } from './components/JasaAiFab';
 import { PrintSpkModal } from './components/PrintSpkModal';
 import { InvoiceDetailModal } from './components/InvoiceDetailModal';
 import { DirectPosView } from './components/DirectPosView';
@@ -1126,6 +1127,12 @@ function JasaInnerApp() {
 
       {/* Toasts */}
       <Toast toasts={toasts} onDismiss={dismissToast} />
+
+      {/* Floating AI Diagnostic Bubble */}
+      <JasaAiFab
+        onOpen={() => setShowAiModal(true)}
+        isPosView={activeTab === 'pos'}
+      />
 
     </div>
   );

@@ -4,7 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useTranslation } from '../../../contexts/I18nContext';
 import { CreditCard, LogOut, Sparkles } from 'lucide-react';
 import { api } from '../../../lib/api';
-import KulinerAiModal from './KulinerAiModal';
+import KulinerAiFab from './KulinerAiFab';
 import '../pages/KulinerDashboard.css';
 
 const KulinerAdminLayout = ({ children, title }) => {
@@ -53,7 +53,6 @@ const KulinerAdminLayout = ({ children, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showAiModal, setShowAiModal] = useState(false);
   const profileMenuRef = useRef(null);
   const notifRef = useRef(null);
 
@@ -239,37 +238,6 @@ const KulinerAdminLayout = ({ children, title }) => {
                   <span>{t('sidebar.viewStorefront')}</span>
                 </Link>
               )}
-            </div>
-
-            {/* AI Chef Assistant Button */}
-            <div style={{ padding: '0 10px', marginBottom: 12 }}>
-              <button
-                type="button"
-                onClick={() => setShowAiModal(true)}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '9px 12px',
-                  borderRadius: 12,
-                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                  color: 'white',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 12.5,
-                  fontWeight: 700,
-                  boxShadow: '0 2px 8px rgba(245, 158, 11, 0.25)',
-                  transition: 'all 0.2s',
-                }}
-                title="Buka Asisten AI Kuliner & Resep HPP"
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Sparkles size={16} />
-                  <span>AI Chef Assistant</span>
-                </div>
-                <span style={{ fontSize: 9.5, background: 'rgba(255,255,255,0.25)', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>PRO</span>
-              </button>
             </div>
 
             {/* Operasional & Kasir */}
@@ -981,7 +949,7 @@ const KulinerAdminLayout = ({ children, title }) => {
         </main>
       </div>
 
-      <KulinerAiModal isOpen={showAiModal} onClose={() => setShowAiModal(false)} />
+      <KulinerAiFab />
     </div>
   );
 };
