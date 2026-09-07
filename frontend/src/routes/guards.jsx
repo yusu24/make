@@ -25,7 +25,7 @@ export function getCategoryDashboardPath(category) {
   if (cat.includes('retail') || cat.includes('toko')) return '/retail/dashboard';
   if (cat.includes('budi') || cat.includes('ternak') || cat.includes('tani') || cat.includes('ikan') || cat.includes('agri')) return '/budidaya/dashboard';
   if (cat.includes('kuliner') || cat.includes('resto') || cat.includes('cafe') || cat.includes('kafe') || cat.includes('f&b')) return '/kuliner/admin';
-  if (cat.includes('seller') || cat.includes('online') || cat.includes('commerce') || cat.includes('omnichannel')) return '/seller/dashboard';
+  if (cat.includes('seller') || cat.includes('online') || cat.includes('commerce') || cat.includes('omnichannel') || cat.includes('marketplace')) return '/seller/dashboard';
   if (cat.includes('jasa') || cat.includes('repair') || cat.includes('servis') || cat.includes('bengkel')) return '/jasa/dashboard';
   
   return '/coming-soon';
@@ -41,7 +41,7 @@ export function isCategoryAllowed(userCategory, allowedCategories) {
     if ((target === 'retail' || target === 'toko retail') && (userCat.includes('retail') || userCat.includes('toko'))) return true;
     if ((target === 'budidaya' || target.includes('budidaya')) && (userCat.includes('budi') || userCat.includes('ternak') || userCat.includes('tani') || userCat.includes('ikan') || userCat.includes('agri'))) return true;
     if ((target === 'kuliner' || target.includes('kuliner')) && (userCat.includes('kuliner') || userCat.includes('resto') || userCat.includes('cafe') || userCat.includes('kafe') || userCat.includes('f&b'))) return true;
-    if ((target === 'seller' || target.includes('seller')) && (userCat.includes('seller') || userCat.includes('online') || userCat.includes('commerce') || userCat.includes('omnichannel'))) return true;
+    if ((target === 'seller' || target.includes('seller')) && (userCat.includes('seller') || userCat.includes('online') || userCat.includes('commerce') || userCat.includes('omnichannel') || userCat.includes('marketplace'))) return true;
     if ((target === 'jasa' || target.includes('jasa')) && (userCat.includes('jasa') || userCat.includes('repair') || userCat.includes('servis') || userCat.includes('bengkel'))) return true;
     return userCat === target;
   });
@@ -80,7 +80,7 @@ export const CategoryRoute = ({ children, allowedCategory }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'super_admin') return children;
+  if (user.role === 'super_admin' || user.role === 'admin') return children;
   
   if (!isCategoryAllowed(user.business_category, allowedCategory)) {
     return <Navigate to="/dashboard-redirect" replace />;

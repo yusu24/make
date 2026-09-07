@@ -187,40 +187,82 @@ const RETAIL_SECTIONS = [
   },
 ]
 
+import { useAuth } from '../../../contexts/AuthContext'
+
 const CAT_META = {
-  'Toko Retail':      { emoji: '🛒', color: '#3b82f6', route: '/retail/dashboard', sections: RETAIL_SECTIONS },
-  'Budidaya Hewan':    { emoji: '🐟', color: '#10b981', route: '/budidaya/dashboard', sections: [] },
-  'Budidaya Tanaman': { emoji: '🌱', color: '#84cc16', route: '/budidaya/dashboard', sections: [] },
-  'Jasa':             { emoji: '🔧', color: '#8b5cf6', route: '/jasa/dashboard', sections: [] },
-  'Seller':           { emoji: '📦', color: '#6366f1', route: '/seller/dashboard', sections: [] },
-  'Kuliner':          { emoji: '🍱', color: '#ec4899', route: '/kuliner/admin', sections: [] },
-  'Manufaktur':       { emoji: '🏭', color: '#f59e0b', route: '/coming-soon', sections: [] },
+  'Toko Retail':        { emoji: '🛒', color: '#3b82f6', slug: 'toko-retail', route: '/retail/dashboard', sections: RETAIL_SECTIONS },
+  'toko-retail':        { emoji: '🛒', color: '#3b82f6', slug: 'toko-retail', route: '/retail/dashboard', sections: RETAIL_SECTIONS },
+  'Budidaya Hewan':      { emoji: '🐟', color: '#10b981', slug: 'budidaya-hewan', route: '/budidaya/dashboard', sections: [] },
+  'budidaya-hewan':      { emoji: '🐟', color: '#10b981', slug: 'budidaya-hewan', route: '/budidaya/dashboard', sections: [] },
+  'Budidaya Tanaman':   { emoji: '🌱', color: '#84cc16', slug: 'budidaya-tanaman', route: '/budidaya/dashboard', sections: [] },
+  'budidaya-tanaman':   { emoji: '🌱', color: '#84cc16', slug: 'budidaya-tanaman', route: '/budidaya/dashboard', sections: [] },
+  'Jasa':               { emoji: '🔧', color: '#8b5cf6', slug: 'jasa', route: '/jasa/dashboard', sections: [] },
+  'jasa':               { emoji: '🔧', color: '#8b5cf6', slug: 'jasa', route: '/jasa/dashboard', sections: [] },
+  'Jasa & Repair':      { emoji: '🔧', color: '#8b5cf6', slug: 'jasa', route: '/jasa/dashboard', sections: [] },
+  'jasa-repair':        { emoji: '🔧', color: '#8b5cf6', slug: 'jasa', route: '/jasa/dashboard', sections: [] },
+  'Seller':             { emoji: '📦', color: '#6366f1', slug: 'seller', route: '/seller/dashboard', sections: [] },
+  'seller':             { emoji: '📦', color: '#6366f1', slug: 'seller', route: '/seller/dashboard', sections: [] },
+  'Seller Marketplace': { emoji: '📦', color: '#6366f1', slug: 'seller', route: '/seller/dashboard', sections: [] },
+  'seller-marketplace': { emoji: '📦', color: '#6366f1', slug: 'seller', route: '/seller/dashboard', sections: [] },
+  'Kuliner':            { emoji: '🍱', color: '#ec4899', slug: 'kuliner', route: '/kuliner/admin', sections: [] },
+  'kuliner':            { emoji: '🍱', color: '#ec4899', slug: 'kuliner', route: '/kuliner/admin', sections: [] },
+  'Manufaktur':         { emoji: '🏭', color: '#f59e0b', slug: 'manufaktur', route: '/coming-soon', sections: [] },
+}
+
+export function getCategoryMeta(name) {
+  if (!name) return { emoji: '🏢', color: '#64748b', slug: 'custom', sections: [], route: '/coming-soon' }
+  if (CAT_META[name]) return CAT_META[name]
+  const lower = name.toLowerCase()
+  if (CAT_META[lower]) return CAT_META[lower]
+  if (lower.includes('retail') || lower.includes('toko')) return CAT_META['Toko Retail']
+  if (lower.includes('budi') || lower.includes('ternak') || lower.includes('hewan') || lower.includes('ikan')) return CAT_META['Budidaya Hewan']
+  if (lower.includes('tani') || lower.includes('tanaman')) return CAT_META['Budidaya Tanaman']
+  if (lower.includes('jasa') || lower.includes('repair') || lower.includes('servis') || lower.includes('bengkel')) return CAT_META['Jasa & Repair']
+  if (lower.includes('seller') || lower.includes('commerce') || lower.includes('marketplace') || lower.includes('online')) return CAT_META['Seller Marketplace']
+  if (lower.includes('kuliner') || lower.includes('resto') || lower.includes('cafe')) return CAT_META['Kuliner']
+  return { emoji: '🏢', color: '#64748b', slug: 'custom', sections: [], route: '/coming-soon' }
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminRetailView() {
   const { categoryName } = useParams()   // URL-encoded category name
   const navigate = useNavigate()
+  const { impersonateUser, impersonateDemoSandbox } = useAuth()
   const decodedName = decodeURIComponent(categoryName || '')
-  const meta = CAT_META[decodedName] || { emoji: '🏢', color: '#64748b', sections: [] }
+  const meta = getCategoryMeta(decodedName)
 
   const [tenants, setTenants] = useState([])
   const [tenantId, setTenantId] = useState('')
+  const [loadingAction, setLoadingAction] = useState(false)
 
   useEffect(() => {
     api.get('/tenants')
       .then(res => {
         const list = (res.data?.data || res.data || []).filter(t => {
-          if (!decodedName || decodedName === 'Toko Retail') {
+          if (!decodedName || decodedName === 'Toko Retail' || decodedName === 'toko-retail') {
             return !t.business_category || t.business_category?.name === decodedName || t.business_category?.slug === 'toko-retail'
           }
-          return t.business_category?.name === decodedName || t.business_category?.slug === decodedName.toLowerCase()
+          const catLower = decodedName.toLowerCase()
+          const tName = (t.business_category?.name || '').toLowerCase()
+          const tSlug = (t.business_category?.slug || '').toLowerCase()
+          return tName === catLower || tSlug === catLower || 
+                 (catLower.includes('jasa') && (tName.includes('jasa') || tSlug.includes('jasa'))) ||
+                 (catLower.includes('seller') && (tName.includes('seller') || tSlug.includes('seller'))) ||
+                 (catLower.includes('kuliner') && (tName.includes('kuliner') || tSlug.includes('kuliner'))) ||
+                 (catLower.includes('hewan') && (tName.includes('hewan') || tSlug.includes('hewan'))) ||
+                 (catLower.includes('tanaman') && (tName.includes('tanaman') || tSlug.includes('tanaman')))
         })
         setTenants(list)
         if (list.length > 0) setTenantId(list[0].tenant_id)
       })
       .catch(() => {})
   }, [decodedName])
+
+  useEffect(() => {
+    if (meta.route && meta.sections.length === 0) {
+      navigate(meta.route, { replace: true })
+    }
+  }, [meta.route, meta.sections.length, navigate])
 
   return (
     <div className="admin-content" style={{ maxWidth: 1100 }}>
@@ -317,6 +359,26 @@ export default function AdminRetailView() {
                 style={{ padding: '10px 20px', fontWeight: 600, fontSize: 14 }}
               >
                 🚀 Buka Dashboard {decodedName} ({meta.route})
+              </button>
+            )}
+            {meta.slug && meta.slug !== 'custom' && (
+              <button
+                className="btn btn-secondary"
+                disabled={loadingAction}
+                onClick={async () => {
+                  setLoadingAction(true)
+                  try {
+                    const redirect = await impersonateDemoSandbox(meta.slug)
+                    navigate(redirect)
+                  } catch (err) {
+                    alert('Gagal membuka demo sandbox: ' + (err.response?.data?.message || err.message))
+                  } finally {
+                    setLoadingAction(false)
+                  }
+                }}
+                style={{ padding: '10px 18px', fontSize: 14 }}
+              >
+                {loadingAction ? 'Memuat Demo...' : `🧪 Masuk Akun Demo ${decodedName}`}
               </button>
             )}
             <button

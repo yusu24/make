@@ -10,19 +10,48 @@ const ICONS  = ['🛒','🐟','🔧','🏭','🍱','🏥','🏗️','📦']
 
 // Map kategori bisnis → URL sistem yang bersangkutan
 const SYSTEM_ROUTES = {
-  'Toko Retail':      '/retail/dashboard',
-  'Budidaya Hewan':    '/budidaya/dashboard',
-  'Jasa':             '/jasa/dashboard',
-  'Seller':           '/seller/dashboard',
-  'Kuliner':          '/kuliner/admin',
+  'Toko Retail':        '/retail/dashboard',
+  'toko-retail':        '/retail/dashboard',
+  'Budidaya Hewan':      '/budidaya/dashboard',
+  'budidaya-hewan':      '/budidaya/dashboard',
+  'Budidaya Tanaman':   '/budidaya/dashboard',
+  'budidaya-tanaman':   '/budidaya/dashboard',
+  'Jasa':               '/jasa/dashboard',
+  'jasa':               '/jasa/dashboard',
+  'Jasa & Repair':      '/jasa/dashboard',
+  'jasa-repair':        '/jasa/dashboard',
+  'Seller':             '/seller/dashboard',
+  'seller':             '/seller/dashboard',
+  'Seller Marketplace': '/seller/dashboard',
+  'seller-marketplace': '/seller/dashboard',
+  'Kuliner':            '/kuliner/admin',
+  'kuliner':            '/kuliner/admin',
+}
+
+export const resolveCategorySlug = (cat) => {
+  if (typeof cat === 'object' && cat !== null) {
+    if (cat.slug) return cat.slug
+    if (cat.name) return resolveCategorySlug(cat.name)
+  }
+  const name = String(cat || '').trim()
+  const lower = name.toLowerCase()
+
+  if (lower.includes('retail') || lower.includes('toko')) return 'toko-retail'
+  if (lower.includes('budi') || lower.includes('ternak') || lower.includes('hewan') || lower.includes('ikan')) return 'budidaya-hewan'
+  if (lower.includes('tani') || lower.includes('tanaman')) return 'budidaya-tanaman'
+  if (lower.includes('kuliner') || lower.includes('resto') || lower.includes('cafe')) return 'kuliner'
+  if (lower.includes('seller') || lower.includes('commerce') || lower.includes('marketplace') || lower.includes('online')) return 'seller'
+  if (lower.includes('jasa') || lower.includes('repair') || lower.includes('servis') || lower.includes('bengkel')) return 'jasa'
+
+  return null
 }
 
 const DUMMY_CATS = [
-  { id:1, name:'Toko Retail',   description:'Manajemen stok dan penjualan toko fisik',   tenant_count:142, active:true,  icon:'🛒', color:'#3b82f6' },
-  { id:2, name:'Budidaya Hewan', description:'Pemantauan kandang/kolam dan siklus panen',    tenant_count:89,  active:true,  icon:'🐟', color:'#10b981' },
-  { id:3, name:'Jasa',          description:'Manajemen booking dan layanan jasa',         tenant_count:76,  active:true,  icon:'🔧', color:'#8b5cf6' },
-  { id:4, name:'Seller',        description:'Manajemen toko online, marketplace & gudang',tenant_count:65,  active:true,  icon:'📦', color:'#6366f1' },
-  { id:5, name:'Kuliner',       description:'Manajemen restoran, cafe, dan pesanan online', tenant_count:56, active:true,  icon:'🍱', color:'#ec4899' },
+  { id:1, name:'Toko Retail',        slug:'toko-retail',     description:'Manajemen stok dan penjualan toko fisik',   tenant_count:142, active:true,  icon:'🛒', color:'#3b82f6' },
+  { id:2, name:'Budidaya Hewan',      slug:'budidaya-hewan',  description:'Pemantauan kandang/kolam dan siklus panen',    tenant_count:89,  active:true,  icon:'🐟', color:'#10b981' },
+  { id:3, name:'Jasa & Repair',      slug:'jasa',            description:'Manajemen booking dan layanan jasa',         tenant_count:76,  active:true,  icon:'🔧', color:'#8b5cf6' },
+  { id:4, name:'Seller Marketplace', slug:'seller',          description:'Manajemen toko online, marketplace & gudang',tenant_count:65,  active:true,  icon:'📦', color:'#6366f1' },
+  { id:5, name:'Kuliner',            slug:'kuliner',         description:'Manajemen restoran, cafe, dan pesanan online', tenant_count:56, active:true,  icon:'🍱', color:'#ec4899' },
 ]
 
 export default function Categories() {
@@ -30,15 +59,10 @@ export default function Categories() {
   const { impersonateDemoSandbox } = useAuth()
   const [demoLoading, setDemoLoading] = useState(false)
 
-  const handleEnterDemo = async (catName) => {
-    const slugMap = {
-      'Toko Retail': 'toko-retail',
-      'Budidaya Hewan': 'budidaya-hewan',
-      'Kuliner': 'kuliner',
-      'Seller': 'seller',
-      'Jasa': 'jasa',
-    }
-    const slug = slugMap[catName]
+  const handleEnterDemo = async (cat) => {
+    const slug = resolveCategorySlug(cat)
+    const catName = typeof cat === 'object' && cat !== null ? (cat.name || '') : String(cat || '')
+
     if (!slug) {
       navigate(SYSTEM_ROUTES[catName] || `/categories/${encodeURIComponent(catName)}`)
       return
@@ -48,7 +72,9 @@ export default function Categories() {
       const redirect = await impersonateDemoSandbox(slug)
       navigate(redirect)
     } catch (err) {
-      alert('Gagal memproses impersonate demo sandbox: ' + (err.response?.data?.message || err.message))
+      console.warn('Gagal impersonate demo sandbox, fallback ke navigasi langsung:', err)
+      const directRoute = SYSTEM_ROUTES[catName] || SYSTEM_ROUTES[slug] || (slug === 'jasa' ? '/jasa/dashboard' : slug === 'seller' ? '/seller/dashboard' : '/dashboard')
+      navigate(directRoute)
     } finally {
       setDemoLoading(false)
     }
@@ -239,7 +265,7 @@ export default function Categories() {
                 id={`btn-view-cat-${cat.id}`}
                 className="btn btn-primary btn-sm"
                 style={{ flex: 1 }}
-                onClick={() => handleEnterDemo(cat.name)}
+                onClick={() => handleEnterDemo(cat)}
                 disabled={demoLoading}
               >
                 👁 Masuk Sistem
