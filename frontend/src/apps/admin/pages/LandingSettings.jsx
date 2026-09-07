@@ -319,43 +319,35 @@ export default function LandingSettings({ defaultTab = 'general' }) {
         }
       `}</style>
       
-      {/* Page Header: Title & Subtitle on left, Button on far right */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div>
-            <h2 className="page-title" style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-              Pengaturan Konten Landing Page
-            </h2>
-            <p className="page-sub" style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0 0', maxWidth: 680, lineHeight: 1.5 }}>
-              Sesuaikan teks, visual, sektor bisnis, dan elemen halaman depan (website utama) dengan mudah dan real-time.
-            </p>
-          </div>
+      {/* Page Header (Matching standard admin page style) */}
+      <div className="page-header">
+        <h2 className="page-title">Pengaturan Konten Landing Page</h2>
+      </div>
 
-          <a
-            href="/"
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-secondary"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '9px 16px',
-              borderRadius: 10,
-              fontWeight: 600,
-              fontSize: 13,
-              background: '#ffffff',
-              border: '1px solid #cbd5e1',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-              color: '#1e293b',
-              textDecoration: 'none',
-              whiteSpace: 'nowrap',
-              marginLeft: 'auto'
-            }}
-          >
-            <span>🌐</span> Lihat Halaman Depan ↗
-          </a>
-        </div>
+      {/* Action Bar Below Title on the Right */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
+        <a
+          href="/"
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-secondary"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '8px 16px',
+            borderRadius: 8,
+            fontWeight: 600,
+            fontSize: 13,
+            background: '#ffffff',
+            border: '1px solid #cbd5e1',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            color: '#1e293b',
+            textDecoration: 'none'
+          }}
+        >
+          <span>🌐</span> Lihat Halaman Depan ↗
+        </a>
       </div>
 
       {/* Friendly Responsive Tab Navigation Bar */}
