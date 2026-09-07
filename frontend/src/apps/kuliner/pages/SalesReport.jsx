@@ -306,25 +306,25 @@ const SalesReport = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
                         {t('kulinerSales.headerOrderId') || 'Order ID'}
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
                         {t('kulinerSales.headerCustomer') || 'Pelanggan'}
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
                         Tipe Pesanan
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
                         {t('kulinerSales.headerDate') || 'Tanggal'}
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
                         Metode
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>
                         {t('kulinerSales.headerTotal') || 'Total'}
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>
                         Status
                       </th>
                     </tr>
@@ -339,29 +339,29 @@ const SalesReport = () => {
                     ) : (
                       currentSales.map(order => (
                         <tr key={order.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-                          <td style={{ padding: '12px 18px', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
                             <span style={{ fontSize: 12, color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: 6, fontFamily: 'monospace', fontWeight: 600 }}>
                               #ORD-{order.id.toString().padStart(5, '0')}
                             </span>
                           </td>
-                          <td style={{ padding: '12px 18px', color: '#0F172A', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500, whiteSpace: 'nowrap' }}>
                             {order.customer_name}
                           </td>
-                          <td style={{ padding: '12px 18px', color: '#475569', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', color: '#475569', whiteSpace: 'nowrap' }}>
                             {order.order_type === 'dine_in' ? 'Makan di Tempat' : 'Bawa Pulang'}
                           </td>
-                          <td style={{ padding: '12px 18px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>
                             {new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </td>
-                          <td style={{ padding: '12px 18px', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
                             <span style={{ fontSize: 10.5, padding: '3px 8px', background: '#F1F5F9', borderRadius: 6, textTransform: 'uppercase', color: '#475569', fontWeight: 600 }}>
                               {order.payment_method}
                             </span>
                           </td>
-                          <td style={{ padding: '12px 18px', textAlign: 'right', fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap' }}>
                             {formatRp(order.total)}
                           </td>
-                          <td style={{ padding: '12px 18px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                             <span style={{
                               display: 'inline-block',
                               padding: '2px 10px',

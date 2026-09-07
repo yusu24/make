@@ -198,25 +198,25 @@ const CulinaryTransactions = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                         {t('kulinerTransactions.tableHeaderDate') || 'Tanggal'}
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                         {t('kulinerTransactions.tableHeaderDesc') || 'Keterangan'}
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                         Ref ID
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                         {t('kulinerTransactions.tableHeaderCategory') || 'Kategori'}
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                         Tipe
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
                         {t('kulinerTransactions.tableHeaderAmount') || 'Nominal'}
                       </th>
-                      <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
                         {t('kulinerTransactions.tableHeaderAction') || 'Aksi'}
                       </th>
                     </tr>
@@ -231,23 +231,23 @@ const CulinaryTransactions = () => {
                     ) : (
                       currentTransactions.map(item => (
                         <tr key={item.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-                          <td style={{ padding: '12px 18px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>
                             {new Date(item.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })} • {new Date(item.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
                           </td>
-                          <td style={{ padding: '12px 18px', color: '#0F172A', fontWeight: 500 }}>
+                          <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
                             {item.description}
                           </td>
-                          <td style={{ padding: '12px 18px' }}>
+                          <td style={{ padding: '10px 16px' }}>
                             <span style={{ fontSize: 11.5, color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: 6, fontFamily: 'monospace', fontWeight: 600 }}>
                               {item.id}
                             </span>
                           </td>
-                          <td style={{ padding: '12px 18px' }}>
+                          <td style={{ padding: '10px 16px' }}>
                             <span style={{ fontSize: 11.5, background: '#F1F5F9', color: '#334155', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>
                               {item.category}
                             </span>
                           </td>
-                          <td style={{ padding: '12px 18px' }}>
+                          <td style={{ padding: '10px 16px' }}>
                             <span style={{
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -260,10 +260,10 @@ const CulinaryTransactions = () => {
                               {item.type === 'income' ? (t('kulinerTransactions.detailIncome') || 'Pemasukan') : (t('kulinerTransactions.detailExpense') || 'Pengeluaran')}
                             </span>
                           </td>
-                          <td style={{ padding: '12px 18px', textAlign: 'right', fontWeight: 700, color: item.type === 'income' ? '#059669' : '#DC2626' }}>
+                          <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700, color: item.type === 'income' ? '#059669' : '#DC2626' }}>
                             {item.type === 'income' ? '+' : '-'}{formatRp(item.amount)}
                           </td>
-                          <td style={{ padding: '12px 18px', textAlign: 'right' }}>
+                          <td style={{ padding: '10px 16px', textAlign: 'right' }}>
                             <button 
                               className="kd-icon-btn" 
                               title={t('kulinerTransactions.detailBtn') || 'Detail'} 

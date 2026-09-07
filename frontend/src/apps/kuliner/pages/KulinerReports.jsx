@@ -355,22 +355,22 @@ export default function KulinerReports() {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                    <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       {t('kulinerReports.tableHeaderMenu') || 'Nama Menu'}
                     </th>
-                    <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
+                    <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
                       {t('kulinerReports.tableHeaderSold') || 'Terjual (Qty)'}
                     </th>
-                    <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                    <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
                       {t('kulinerReports.tableHeaderRevenue') || 'Total Omzet'}
                     </th>
-                    <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                    <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
                       {t('kulinerReports.tableHeaderCogs') || 'Total HPP'}
                     </th>
-                    <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                    <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
                       {t('kulinerReports.tableHeaderMargin') || 'Laba Margin (Rp)'}
                     </th>
-                    <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
+                    <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
                       {t('kulinerReports.tableHeaderMarginPct') || 'Margin %'}
                     </th>
                   </tr>
@@ -384,12 +384,12 @@ export default function KulinerReports() {
                     </tr>
                   ) : paginatedMargin.map((m) => (
                     <tr key={m.product_id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-                      <td style={{ padding: '12px 18px', color: '#0F172A', fontWeight: 500 }}>{m.product_name}</td>
-                      <td style={{ padding: '12px 18px', textAlign: 'center', color: '#334155' }}>{m.qty_sold} porsi</td>
-                      <td style={{ padding: '12px 18px', textAlign: 'right', color: '#0F172A', fontWeight: 600 }}>{formatRp(m.revenue)}</td>
-                      <td style={{ padding: '12px 18px', textAlign: 'right', color: '#64748B' }}>{formatRp(m.cogs)}</td>
-                      <td style={{ padding: '12px 18px', textAlign: 'right', color: '#059669', fontWeight: 700 }}>{formatRp(m.margin)}</td>
-                      <td style={{ padding: '12px 18px', textAlign: 'center' }}>
+                      <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500 }}>{m.product_name}</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'center', color: '#334155' }}>{m.qty_sold} porsi</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'right', color: '#0F172A', fontWeight: 600 }}>{formatRp(m.revenue)}</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'right', color: '#64748B' }}>{formatRp(m.cogs)}</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'right', color: '#059669', fontWeight: 700 }}>{formatRp(m.margin)}</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'center' }}>
                         <span style={{
                           display: 'inline-block',
                           padding: '3px 9px',

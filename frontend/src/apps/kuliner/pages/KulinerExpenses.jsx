@@ -161,10 +161,10 @@ export default function KulinerExpenses() {
 
   const renderExpenseRows = (items, { withActions }) => items.map(ex => (
     <tr key={ex.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-      <td style={{ padding: '12px 18px', fontSize: 12.5, color: '#64748B', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', fontSize: 12.5, color: '#64748B', whiteSpace: 'nowrap' }}>
         {new Date(ex.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
       </td>
-      <td style={{ padding: '12px 18px', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
         <span style={{ 
             background: ex.type === 'income' ? '#DCFCE7' : '#F1F5F9', 
             color: ex.type === 'income' ? '#166534' : '#475569', 
@@ -177,17 +177,17 @@ export default function KulinerExpenses() {
             {ex.category}
         </span>
       </td>
-      <td style={{ padding: '12px 18px', color: '#0F172A', fontWeight: 500 }}>
+      <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
         {ex.description}
       </td>
-      <td style={{ padding: '12px 18px', color: '#16A34A', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', color: '#16A34A', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {ex.type === 'income' ? formatRp(ex.amount) : '-'}
       </td>
-      <td style={{ padding: '12px 18px', color: '#DC2626', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', color: '#DC2626', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {(!ex.type || ex.type === 'expense') ? formatRp(ex.amount) : '-'}
       </td>
       {withActions && (
-        <td style={{ padding: '12px 18px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+        <td style={{ padding: '10px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
             <button 
               className="kd-btn" 
@@ -403,12 +403,12 @@ export default function KulinerExpenses() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                     <thead>
                       <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Tanggal</th>
-                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Kategori</th>
-                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Keterangan</th>
-                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>Pemasukan</th>
-                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>Pengeluaran</th>
-                        <th style={{ padding: '12px 18px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', paddingRight: 24, whiteSpace: 'nowrap' }}>Aksi</th>
+                        <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Tanggal</th>
+                        <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Kategori</th>
+                        <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Keterangan</th>
+                        <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>Pemasukan</th>
+                        <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', whiteSpace: 'nowrap' }}>Pengeluaran</th>
+                        <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', paddingRight: 24, whiteSpace: 'nowrap' }}>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>

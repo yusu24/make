@@ -730,45 +730,65 @@
 
 /* TABLES */
 .kd-table-container {
+  width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #E2E8F0;
 }
 
 .kd-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12.5px;
+  text-align: left;
+  font-size: 13px !important;
+}
+
+.kd-table thead tr {
+  background: #F8FAFC !important;
+  border-bottom: 1px solid #E2E8F0 !important;
 }
 
 .kd-table thead th {
-  text-align: left;
-  font-weight: 600;
-  color: #000000;
-  padding: 0 16px 12px 0;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  background: #F8FAFC !important;
+  padding: 10px 16px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #64748B !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  white-space: nowrap;
+}
+
+.kd-table tbody tr {
+  border-bottom: 1px solid #F1F5F9 !important;
+  transition: background 0.15s ease;
+}
+
+.kd-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.kd-table tbody tr:hover {
+  background: #F8FAFC !important;
 }
 
 .kd-table tbody td {
-  padding: 12px 16px 12px 0;
-  border-bottom: 1px solid #f8fafc;
-  color: #1e293b;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  color: #0F172A !important;
+  font-weight: 500 !important;
+  line-height: 1.5;
+  vertical-align: middle !important;
 }
 
-.kd-table tbody tr:nth-child(even) td {
-  background: #fbfaf8;
-}
-
-.kd-table tbody tr:hover td {
-  background: #f8fafc;
-}
-
-/* Override all bold fonts inside kuliner tables as requested, except headers */
 .kd-table td,
-.kd-table span,
-.kd-table div {
-  font-weight: normal !important;
+.kd-table tbody td > div,
+.kd-table tbody td > span:not([class*="badge"]):not([class*="text-"]) {
+  font-size: 13px !important;
+  color: #0F172A;
+  font-weight: 500;
 }
 
 /* Match kitchen-queue empty/loading state (text-slate-400 py-10 with fontSize 13px) */
@@ -1216,60 +1236,6 @@
 .sp-select:focus {
   border-color: #b45309 !important;
   box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.1) !important;
-}
-
-/* ── Standard Kuliner Table Styles ── */
-.kd-table-container {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #E2E8F0;
-}
-
-.kd-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 13px;
-}
-
-.kd-table thead tr {
-  background: #F8FAFC !important;
-  border-bottom: 1px solid #E2E8F0 !important;
-}
-
-.kd-table thead th {
-  background: #F8FAFC !important;
-  padding: 12px 18px !important;
-  font-size: 11.5px !important;
-  font-weight: 600 !important;
-  color: #64748B !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
-  white-space: nowrap;
-}
-
-.kd-table tbody tr {
-  border-bottom: 1px solid #F1F5F9 !important;
-  transition: background 0.15s ease;
-}
-
-.kd-table tbody tr:last-child {
-  border-bottom: none !important;
-}
-
-.kd-table tbody tr:hover {
-  background: #F8FAFC !important;
-}
-
-.kd-table tbody td {
-  padding: 12px 18px !important;
-  font-size: 13px !important;
-  color: #334155 !important;
-  line-height: 1.5;
-  vertical-align: middle !important;
 }
 
 
