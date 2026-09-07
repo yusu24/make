@@ -378,23 +378,24 @@ const AdminMenu = () => {
                               {product.image_url || '🍲'}
                             </div>
                             <div>
-                                <div style={{ color: '#1e293b' }}>{product.name}</div>
-                              </div>
+                              <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>{product.name}</div>
                             </div>
-                          </td>
-                          <td className="text-xs text-slate-500 italic">
-                            <div className="max-w-[200px] line-clamp-1">{product.description || '-'}</div>
-                          </td>
-                          <td>
-                          <span className="text-xs font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded border border-slate-100">
-                            {categories.find(c => c.id === product.category_id)?.name || t('adminMenu.uncategorized')}
-                          </span>
+                          </div>
                         </td>
-                          <td style={{ color: '#1e293b' }}>{formatRp(product.price)}</td>
-                        <td>
-                          <span className={`kd-status-badge ${product.is_available ? 'kd-status-active' : 'kd-status-hidden'}`}>
-                            {product.is_available ? t('adminMenu.statusAvailable') : t('adminMenu.statusOutOfStock')}
-                          </span>
+                        <td className="text-xs text-slate-500 italic">
+                          <div className="max-w-[200px] line-clamp-1">{product.description || '-'}</div>
+                        </td>
+                        <td style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
+                          {categories.find(c => c.id === product.category_id)?.name || t('adminMenu.uncategorized')}
+                        </td>
+                        <td style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
+                          {formatRp(product.price)}
+                        </td>
+                        <td style={{ fontSize: 12.5 }}>
+                          {product.is_available 
+                            ? <span style={{ color: '#059669', fontWeight: 500 }}>{t('adminMenu.statusAvailable') || 'Tersedia'}</span> 
+                            : <span style={{ color: '#94A3B8', fontWeight: 500 }}>{t('adminMenu.statusOutOfStock') || 'Habis'}</span>
+                          }
                         </td>
                         <td className="text-right">
                           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
@@ -431,17 +432,17 @@ const AdminMenu = () => {
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <div className="text-2xl">{cat.image_url || '📂'}</div>
-                              <div style={{ color: '#1e293b' }}>{cat.name}</div>
+                            <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>{cat.name}</div>
                           </div>
                         </td>
-                          <td className="text-xs text-slate-500 italic">
-                            <div className="max-w-[300px] line-clamp-1">{cat.description || '-'}</div>
-                          </td>
-                        <td>
-                            <span style={{ color: '#1e293b' }}>
-                              {products.filter(p => p.category_id === cat.id).length}
-                            </span>
-                          <span className="text-[10px] text-slate-400 ml-1">Menu</span>
+                        <td className="text-xs text-slate-500 italic">
+                          <div className="max-w-[300px] line-clamp-1">{cat.description || '-'}</div>
+                        </td>
+                        <td style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
+                          <span>
+                            {products.filter(p => p.category_id === cat.id).length}
+                          </span>
+                          <span style={{ fontSize: 12, color: '#64748B', marginLeft: 4 }}>Menu</span>
                         </td>
                         <td className="text-right">
                           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
