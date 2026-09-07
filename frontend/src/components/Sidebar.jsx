@@ -84,8 +84,7 @@ const NAV_ITEMS = [
     icon: <Globe size={18} />,
     adminOnly: true,
     items: [
-      { path: '/settings',             icon: <Globe size={18} />,      label: 'Pengaturan Landing Page' },
-      { path: '/landing-testimonials', icon: <Users size={18} />,      label: 'Testimoni Pelanggan' },
+      { path: '/settings', icon: <Globe size={18} />, label: 'Pengaturan Landing Page' },
     ]
   },
 
