@@ -10,7 +10,8 @@ const TABS = [
   { id: 'features',     label: 'Fitur Platform',   icon: '⚡', desc: 'Keunggulan Sistem' },
   { id: 'howitworks',   label: 'Cara Kerja',       icon: '🔄', desc: 'Langkah Onboarding' },
   { id: 'testimonials', label: 'Testimoni',        icon: '💬', desc: 'Ulasan Pelanggan' },
-  { id: 'faq',          label: 'FAQ',              icon: '❓', desc: 'Tanya Jawab' },
+  { id: 'faq',          label: 'FAQ & ROI',        icon: '❓', desc: 'Tanya Jawab & Simulasi' },
+  { id: 'footer',       label: 'Footer & Kontak',  icon: '🦶', desc: 'Alamat, CS & Legalitas' },
   { id: 'billing',      label: 'Harga & Rekening', icon: '💳', desc: 'Bank BCA & Paket' },
   { id: 'logo',         label: 'Logo & Branding',  icon: '🎨', desc: 'Logo & Identitas' },
 ]
@@ -506,84 +507,6 @@ export default function LandingSettings({ defaultTab = 'general' }) {
               )}
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: 0 }} />
-
-            {/* Section: Footer */}
-            <div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🦶</span> Footer
-              </h3>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Deskripsi brand, kontak, dan teks keamanan di bagian paling bawah landing page. Kolom "Sektor Usaha" di footer otomatis mengikuti kategori bisnis aktif.</p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>DESKRIPSI BRAND</label>
-                  <textarea className="form-input" rows="2" value={form.footer_brand_desc || ''}
-                    onChange={e => setForm({...form, footer_brand_desc: e.target.value})}
-                    style={{ resize: 'vertical', lineHeight: 1.5 }} />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>ALAMAT</label>
-                    <input className="form-input" value={form.footer_address || ''}
-                      onChange={e => setForm({...form, footer_address: e.target.value})} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>NOMOR WHATSAPP CS</label>
-                    <input className="form-input" value={form.footer_phone || ''}
-                      onChange={e => setForm({...form, footer_phone: e.target.value})} />
-                  </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🌐 EMAIL INFORMASI PORTAL</label>
-                    <input className="form-input" type="email" placeholder="info@bizora.id" value={form.footer_email || ''}
-                      onChange={e => setForm({...form, footer_email: e.target.value})} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>💳 EMAIL PENAGIHAN &amp; INVOICE</label>
-                    <input className="form-input" type="email" placeholder="billing@bizora.id" value={form.billing_email || ''}
-                      onChange={e => setForm({...form, billing_email: e.target.value})} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🎧 EMAIL CS &amp; BANTUAN</label>
-                    <input className="form-input" type="email" placeholder="bantuan@bizora.id" value={form.support_email || ''}
-                      onChange={e => setForm({...form, support_email: e.target.value})} />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>TEKS KEAMANAN & LAYANAN</label>
-                  <textarea className="form-input" rows="2" value={form.footer_security_text || ''}
-                    onChange={e => setForm({...form, footer_security_text: e.target.value})}
-                    style={{ resize: 'vertical', lineHeight: 1.5 }} />
-                </div>
-              </div>
-            </div>
-
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: 0 }} />
-
-            {/* Section: ROI Calculator header */}
-            <div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🧮</span> Judul Simulasi Penghematan ROI
-              </h3>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Kalkulator ROI sendiri (slider transaksi, staf, hasil hitung) tidak bisa diubah — hanya judul dan deskripsi pembukanya.</p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>JUDUL</label>
-                  <input className="form-input" value={form.roi_title || ''}
-                    onChange={e => setForm({...form, roi_title: e.target.value})} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>DESKRIPSI</label>
-                  <textarea className="form-input" rows="3" value={form.roi_desc || ''}
-                    onChange={e => setForm({...form, roi_desc: e.target.value})}
-                    style={{ resize: 'vertical', lineHeight: 1.5 }} />
-                </div>
-              </div>
-            </div>
-
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
               <button
                 type="submit"
@@ -598,7 +521,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                 {saving ? (
                   <span className="spinner" style={{ width: 18, height: 18 }}></span>
                 ) : (
-                  '💾 Simpan Konfigurasi Portal'
+                  '💾 Simpan Hero & Banner'
                 )}
               </button>
             </div>
@@ -653,8 +576,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                   </p>
                 </div>
 
-                {/* Sandbox Mock — mirrors the real Hero's "Sandbox Instan" card,
-                    listing whichever categories are checked below (or all, if none checked) */}
+                {/* Sandbox Mock */}
                 {form.show_sandbox ? (
                   <div style={{
                     background: 'rgba(255,255,255,0.05)',
@@ -702,7 +624,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                 )}
               </div>
 
-              {/* Promo Banner Mock — sticky bar at the bottom of the page, matching PromoBanner.jsx */}
+              {/* Promo Banner Mock */}
               {form.campaign_active && (
                 <div style={{
                   background: '#062c23',
@@ -725,6 +647,13 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                   </span>
                 </div>
               )}
+            </div>
+
+            <div style={{ marginTop: 12, padding: '12px 14px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 16 }}>💡</span>
+              <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                <strong>Kelola bagian lain:</strong> Untuk mengatur Footer & Kontak, pilih tab <strong>"🦶 Footer & Kontak"</strong> di atas.
+              </p>
             </div>
           </div>
         </div>
@@ -824,39 +753,273 @@ export default function LandingSettings({ defaultTab = 'general' }) {
         </form>
       )}
 
-      {/* TAB CONTENT: FAQ */}
+      {/* TAB CONTENT: FAQ & ROI */}
       {activeTab === 'faq' && (
-        <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Section 1: ROI Calculator header */}
           <div>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Pertanyaan yang Sering Diajukan</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Daftar FAQ di bagian bawah landing page, sebelum footer.</p>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>🧮</span> Judul Simulasi Penghematan ROI
+            </h3>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+              Kalkulator ROI sendiri (slider transaksi, staf, hasil hitung) dihitung otomatis oleh sistem — di sini Anda dapat menyesuaikan judul dan deskripsi pembukanya.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="form-group">
+                <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>JUDUL SIMULASI ROI</label>
+                <input 
+                  className="form-input" 
+                  placeholder="Hitung Penghematan Bisnis Anda Bersama Bizora"
+                  value={form.roi_title || ''}
+                  onChange={e => setForm({...form, roi_title: e.target.value})} 
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>DESKRIPSI SIMULASI ROI</label>
+                <textarea 
+                  className="form-input" 
+                  rows="3" 
+                  placeholder="Lihat estimasi waktu dan biaya operasional yang dapat Anda hemat setiap bulannya..."
+                  value={form.roi_desc || ''}
+                  onChange={e => setForm({...form, roi_desc: e.target.value})}
+                  style={{ resize: 'vertical', lineHeight: 1.5 }} 
+                />
+              </div>
+            </div>
           </div>
 
-          {(form.faq_items || []).map((faq, idx) => (
-            <div key={idx} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>FAQ #{idx + 1}</span>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button type="button" className="btn btn-ghost btn-sm" disabled={idx === 0} onClick={() => moveListItem('faq_items', idx, -1)}>↑</button>
-                  <button type="button" className="btn btn-ghost btn-sm" disabled={idx === form.faq_items.length - 1} onClick={() => moveListItem('faq_items', idx, 1)}>↓</button>
-                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('faq_items', idx)}>🗑</button>
+          <hr style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: 0 }} />
+
+          {/* Section 2: FAQ Items */}
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>❓</span> Pertanyaan yang Sering Diajukan (FAQ)
+            </h3>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Daftar pertanyaan dan jawaban interaktif di bagian bawah landing page.</p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {(form.faq_items || []).map((faq, idx) => (
+                <div key={idx} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>FAQ #{idx + 1}</span>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button type="button" className="btn btn-ghost btn-sm" disabled={idx === 0} onClick={() => moveListItem('faq_items', idx, -1)}>↑</button>
+                      <button type="button" className="btn btn-ghost btn-sm" disabled={idx === form.faq_items.length - 1} onClick={() => moveListItem('faq_items', idx, 1)}>↓</button>
+                      <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('faq_items', idx)}>🗑</button>
+                    </div>
+                  </div>
+                  <input className="form-input" placeholder="Pertanyaan..." value={faq.q || ''} onChange={e => updateListItem('faq_items', idx, 'q', e.target.value)} />
+                  <textarea className="form-input" rows={3} placeholder="Jawaban..." value={faq.a || ''}
+                    onChange={e => updateListItem('faq_items', idx, 'a', e.target.value)} style={{ resize: 'vertical' }} />
                 </div>
-              </div>
-              <input className="form-input" placeholder="Pertanyaan" value={faq.q || ''} onChange={e => updateListItem('faq_items', idx, 'q', e.target.value)} />
-              <textarea className="form-input" rows={3} placeholder="Jawaban..." value={faq.a || ''}
-                onChange={e => updateListItem('faq_items', idx, 'a', e.target.value)} style={{ resize: 'vertical' }} />
+              ))}
             </div>
-          ))}
+          </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
             <button type="button" className="btn btn-secondary" onClick={() => addListItem('faq_items', { q: '', a: '' })}>
               + Tambah FAQ
             </button>
             <button type="submit" disabled={saving} className="btn btn-primary">
-              {saving ? 'Menyimpan...' : '💾 Simpan FAQ'}
+              {saving ? 'Menyimpan...' : '💾 Simpan FAQ & ROI'}
             </button>
           </div>
         </form>
+      )}
+
+      {/* TAB CONTENT: FOOTER & KONTAK */}
+      {activeTab === 'footer' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 30, alignItems: 'start' }}>
+          {/* FORM PANEL */}
+          <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>🦶</span> Informasi Footer &amp; Kontak Resmi
+              </h3>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+                Deskripsi profil platform, alamat operasional, kontak CS, email, dan teks garansi keamanan di bagian paling bawah landing page publik.
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>DESKRIPSI BRAND / PERUSAHAAN</label>
+                  <textarea 
+                    className="form-input" 
+                    rows="3" 
+                    placeholder="Platform bisnis digital #1 Indonesia untuk kelola toko retail, kuliner, serta budidaya..."
+                    value={form.footer_brand_desc || ''}
+                    onChange={e => setForm({...form, footer_brand_desc: e.target.value})}
+                    style={{ resize: 'vertical', lineHeight: 1.5 }} 
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>📍 ALAMAT KANTOR / OPERASIONAL</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="Jakarta & Bandung, Indonesia"
+                      value={form.footer_address || ''}
+                      onChange={e => setForm({...form, footer_address: e.target.value})} 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>📞 NOMOR WHATSAPP CS</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="+62 812-3456-7890"
+                      value={form.footer_phone || ''}
+                      onChange={e => setForm({...form, footer_phone: e.target.value})} 
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🌐 EMAIL INFORMASI PORTAL</label>
+                    <input className="form-input" type="email" placeholder="info@bizora.id" value={form.footer_email || ''}
+                      onChange={e => setForm({...form, footer_email: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>💳 EMAIL PENAGIHAN &amp; INVOICE</label>
+                    <input className="form-input" type="email" placeholder="billing@bizora.id" value={form.billing_email || ''}
+                      onChange={e => setForm({...form, billing_email: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🎧 EMAIL CS &amp; BANTUAN</label>
+                    <input className="form-input" type="email" placeholder="bantuan@bizora.id" value={form.support_email || ''}
+                      onChange={e => setForm({...form, support_email: e.target.value})} />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🛡️ TEKS KEAMANAN &amp; LAYANAN</label>
+                  <textarea 
+                    className="form-input" 
+                    rows="2" 
+                    placeholder="Bizora menggunakan infrastruktur cloud terenkripsi SSL 256-bit..."
+                    value={form.footer_security_text || ''}
+                    onChange={e => setForm({...form, footer_security_text: e.target.value})}
+                    style={{ resize: 'vertical', lineHeight: 1.5 }} 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+              <button
+                type="submit"
+                disabled={saving}
+                className="btn btn-primary"
+                style={{ 
+                  padding: '12px 24px', borderRadius: 10, fontSize: 13, fontWeight: 600, 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
+                }}
+              >
+                {saving ? (
+                  <span className="spinner" style={{ width: 18, height: 18 }}></span>
+                ) : (
+                  '💾 Simpan Footer & Kontak'
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* LIVE FOOTER PREVIEW */}
+          <div style={{ position: 'sticky', top: 24 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>🖥️</span> Pratonton Realtime Footer (Desktop Mockup)
+            </h3>
+            
+            <div style={{
+              background: '#02100d', 
+              borderRadius: 16,
+              border: '4px solid #1e293b',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+              overflow: 'hidden',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              fontFamily: 'Outfit, sans-serif',
+              color: '#94a3b8'
+            }}>
+              {/* Main Footer Mockup Content */}
+              <div style={{ padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 12, borderBottom: '1px solid #0e3b31', paddingBottom: 14 }}>
+                  {/* Col 1: Brand & Contact */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: 22, height: 22, background: '#fff', padding: '2px', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        <img src={form.landing_logo_url || bizoraLogo} alt="BIZORA" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      </div>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: '0.05em' }}>BIZORA</span>
+                    </div>
+
+                    <p style={{ fontSize: 8.5, color: '#cbd5e1', lineHeight: 1.4, margin: 0, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {form.footer_brand_desc || 'Platform bisnis digital #1 Indonesia untuk kelola toko retail, kuliner, budidaya, dan jasa dalam satu aplikasi terpadu.'}
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4, fontSize: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8' }}>
+                        <span style={{ color: '#34d399' }}>📍</span>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{form.footer_address || 'Jakarta & Bandung, Indonesia'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8' }}>
+                        <span style={{ color: '#34d399' }}>📞</span>
+                        <span>{form.footer_phone || '+62 812-3456-7890'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8' }}>
+                        <span style={{ color: '#34d399' }}>✉️</span>
+                        <span>{form.footer_email || form.support_email || 'bantuan@bizora.id'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Col 2: Navigation & Sektor */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Navigasi</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 4, fontSize: 7.5, color: '#94a3b8' }}>
+                        <span>• Beranda</span>
+                        <span>• Fitur Platform</span>
+                        <span>• Cara Kerja</span>
+                        <span>• Testimoni</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sektor Usaha</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 4, fontSize: 7, color: '#cbd5e1' }}>
+                        {(dbCategories || []).slice(0, 3).map(c => (
+                          <span key={c.slug}>• {c.name}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Col 3: Keamanan */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Keamanan &amp; Legal</span>
+                    <p style={{ fontSize: 7.5, color: '#94a3b8', lineHeight: 1.35, margin: 0, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {form.footer_security_text || 'Bizora menggunakan infrastruktur cloud terenkripsi SSL 256-bit dengan backup otomatis harian.'}
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 7, color: '#64748b', marginTop: 2 }}>
+                      <span>✓ Privasi Data Terjamin</span>
+                      <span>✓ Berizin &amp; Terdaftar Resmi</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Copyright Mock */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 7, color: '#64748b' }}>
+                  <span>© {new Date().getFullYear()} BIZORA Indonesia. Hak Cipta Dilindungi.</span>
+                  <span>Dibuat dengan ❤️ untuk UMKM Indonesia</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* TAB CONTENT: TESTIMONIALS CONFIG CRUD */}

@@ -83,6 +83,8 @@ const adminRoutes = (
     <Route path="admin/landing-howitworks" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="howitworks" /></ProtectedRoute>} />
     <Route path="landing-faq" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="faq" /></ProtectedRoute>} />
     <Route path="admin/landing-faq" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="faq" /></ProtectedRoute>} />
+    <Route path="landing-footer" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="footer" /></ProtectedRoute>} />
+    <Route path="admin/landing-footer" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="footer" /></ProtectedRoute>} />
     <Route path="landing-testimonials" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="testimonials" /></ProtectedRoute>} />
     <Route path="admin/landing-testimonials" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="testimonials" /></ProtectedRoute>} />
     <Route path="landing-billing" element={<ProtectedRoute adminOnly><LandingSettings defaultTab="billing" /></ProtectedRoute>} />
