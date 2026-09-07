@@ -45,8 +45,7 @@ const NAV_ITEMS = [
     adminOnly: true,
     items: [
       { path: '/packages-features',      icon: <Package size={18} />,    label: 'Paket & Fitur' },
-      { path: '/subscriptions',          icon: <CreditCard size={18} />, label: 'Pelanggan Langganan' },
-      { path: '/subscription-requests',  icon: <Inbox size={18} />,      label: 'Permintaan Langganan' },
+      { path: '/subscriptions',          icon: <CreditCard size={18} />, label: 'Manajemen Langganan' },
       { path: '/finance',                icon: <Wallet size={18} />,     label: 'Finansial & Faktur' },
       { path: '/invoice-settings',       icon: <FileText size={18} />,   label: 'Pengaturan Invoice' },
       { path: '/subscription-reminders', icon: <BellRing size={18} />,   label: 'Pengingat & Otomasi' },
