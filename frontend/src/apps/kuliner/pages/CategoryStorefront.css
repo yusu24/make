@@ -15,19 +15,26 @@
   background: var(--kl-bg);
   color: var(--kl-text);
   min-height: 100vh;
+  padding-top: 73px;
 }
 
 .kl-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 48px;
+  padding: 16px 48px;
   border-bottom: 1px solid var(--kl-border);
-  position: sticky;
+  position: fixed;
   top: 0;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  z-index: 100;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .kl-logo {
@@ -583,8 +590,11 @@
 }
 
 @media (max-width: 768px) {
+  .kl-storefront {
+    padding-top: 61px;
+  }
   .kl-nav {
-    padding: 16px 20px;
+    padding: 14px 20px;
   }
   .kl-logo { font-size: 18px; }
   .kl-nav-links {
