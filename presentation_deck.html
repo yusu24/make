@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>BIZORA SaaS UMKM - Master Presentation Deck</title>
+<style>
+  @page {
+    size: A4 landscape;
+    margin: 12mm 15mm;
+  }
+  * {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  }
+  body {
+    color: #1e293b;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .page {
+    width: 100%;
+    min-height: 175mm;
+    page-break-after: always;
+    position: relative;
+    padding: 10px 0;
+  }
+  .page:last-child {
+    page-break-after: avoid;
+  }
+  .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    color: #4338ca;
+    letter-spacing: 0.5px;
+  }
+  .page-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .slide-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 6px 0;
+  }
+  .slide-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 16px 0;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .card-primary {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+  }
+  .card-emerald {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+  }
+  .card-amber {
+    background: #fffbeb;
+    border-color: #fde68a;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-indigo { background: #e0e7ff; color: #4338ca; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-amber { background: #fef3c7; color: #b45309; }
+  .badge-purple { background: #f3e8ff; color: #7e22ce; }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+
+  table.comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+    margin-top: 8px;
+  }
+  table.comp-table th {
+    background: #1e293b;
+    color: #ffffff;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+  }
+  table.comp-table th.highlight {
+    background: #4338ca;
+  }
+  table.comp-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  table.comp-table tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+  table.comp-table td.highlight {
+    background: #eef2ff;
+    font-weight: 700;
+    color: #3730a3;
+  }
+
+  .step-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .step-num {
+    width: 24px;
+    height: 24px;
+    background: #4338ca;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-content {
+    font-size: 12px;
+  }
+  .step-content strong {
+    color: #0f172a;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 165mm;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 30px;
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: COVER -->
+<div class="page">
+  <div class="cover">
+    <div style="background: rgba(255,255,255,0.15); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 16px;">
+      ALL-IN-ONE CLOUD BUSINESS OPERATING SYSTEM
+    </div>
+    <h1 style="font-size: 42px; font-weight: 900; margin: 0 0 10px 0; letter-spacing: -0.5px;">
+      BIZORA SaaS UMKM
+    </h1>
+    <p style="font-size: 16px; max-width: 650px; color: #cbd5e1; margin: 0 0 28px 0; line-height: 1.5;">
+      Platform Manajemen Bisnis Multi-Sektor Terpadu: Kasir POS Kilat, Operasional Sektor Spesifik, Manajemen Stok Multi-Gudang, hingga Laporan Keuangan Real-Time.
+    </p>
+    <div style="display: flex; gap: 12px; font-size: 11px; color: #94a3b8;">
+      <span style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px;">🛒 Toko Retail</span>
+      <span style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px;">🍱 Kuliner &amp; Resto</span>
+      <span style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px;">🐟 Budidaya &amp; Ternak</span>
+      <span style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px;">🛠️ Jasa &amp; Bengkel</span>
+      <span style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px;">🌐 Omnichannel Seller</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: PROBLEM & SOLUTION -->
+<div class="page">
+  <div class="header-bar">
+    <div class="logo">BIZORA</div>
+    <div class="page-tag">Executive Summary</div>
+  </div>
+  <h2 class="slide-title">Latar Belakang &amp; Masalah Utama UMKM</h2>
+  <p class="slide-subtitle">Mengapa jutaan pelaku usaha di Indonesia kesulitan mengontrol bisnis dan keuangannya?</p>
+
+  <div class="grid-2">
+    <div class="card" style="border-left: 4px solid #ef4444;">
+      <h3 class="card-title" style="color: #dc2626;">❌ Permasalahan yang Dihadapi UMKM</h3>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+        <div><strong>1. Aplikasi Terpisah-pisah &amp; Data Tidak Sinkron:</strong> Kasir pakai aplikasi A, pembukuan pakai Excel/aplikasi B, stok gudang dicatat di buku tulis.</div>
+        <div><strong>2. POS Tradisional Terlalu Kaku:</strong> Kasir retail biasa tidak bisa dipakai untuk restoran (tanpa denah meja), tidak bisa untuk peternakan (tanpa FCR/pakan), dan tidak bisa untuk bengkel (tanpa SPK teknisi).</div>
+        <div><strong>3. Biaya Langganan Berlapis:</strong> UMKM harus membayar 3-4 software berbeda tiap bulan (POS + Akuntansi + Omnichannel).</div>
+        <div><strong>4. Risiko Kehilangan Data:</strong> Tidak ada pencadangan otomatis sehingga data hilang saat perangkat rusak.</div>
+      </div>
+    </div>
+
+    <div class="card card-emerald" style="border-left: 4px solid #10b981;">
+      <h3 class="card-title" style="color: #059669;">✅ Solusi Menyeluruh dari BIZORA</h3>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+        <div><strong>1. Satu Platform untuk Segala Sektor:</strong> Memiliki 5 modul industri yang otomatis beradaptasi dengan jenis bisnis pelanggan.</div>
+        <div><strong>2. Single Source of Truth:</strong> Seluruh transaksi kasir, pembelian supplier, stok multi-gudang, dan pembukuan terpusat 100% otomatis.</div>
+        <div><strong>3. Efisiensi Biaya Signifikan:</strong> Cukup 1 langganan bulanan terjangkau untuk seluruh fitur lengkap.</div>
+        <div><strong>4. Keamanan &amp; Backup Otomatis:</strong> Data tersimpan aman di cloud dan dicadangkan otomatis setiap hari langsung ke email pemilik.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: COMPETITOR COMPARISON -->
+<div class="page">
+  <div class="header-bar">
+    <div class="logo">BIZORA</div>
+    <div class="page-tag">Market Comparison</div>
+  </div>
+  <h2 class="slide-title">Matriks Perbandingan dengan Kompetitor</h2>
+  <p class="slide-subtitle">Bukti keunggulan BIZORA dibanding POS konvensional dan software akuntansi biasa.</p>
+
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>Fitur &amp; Kemampuan</th>
+        <th>POS Biasa (Moka / Pawoon)</th>
+        <th>Software Akuntansi (Jurnal/Accurate)</th>
+        <th>Omnichannel Biasa</th>
+        <th class="highlight">BIZORA All-in-One SaaS</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Kasir POS &amp; Barcode Scanner</strong></td>
+        <td>✅ Sangat Baik</td>
+        <td>❌ Terbatas / Add-on</td>
+        <td>❌ Tidak Ada</td>
+        <td class="highlight">✅ Lengkap &amp; Cepat</td>
+      </tr>
+      <tr>
+        <td><strong>Sektor Kuliner (Denah Meja &amp; Resep HPP)</strong></td>
+        <td>⚠️ Terbatas</td>
+        <td>❌ Tidak Ada</td>
+        <td>❌ Tidak Ada</td>
+        <td class="highlight">✅ Visual Meja, Dapur &amp; Resep BOM</td>
+      </tr>
+      <tr>
+        <td><strong>Sektor Budidaya &amp; Peternakan (FCR/Pakan)</strong></td>
+        <td>❌ Tidak Ada</td>
+        <td>❌ Tidak Ada</td>
+        <td>❌ Tidak Ada</td>
+        <td class="highlight">✅ Siklus, FCR, Pakan &amp; Bobot</td>
+      </tr>
+      <tr>
+        <td><strong>Sektor Jasa &amp; Bengkel (SPK Teknisi)</strong></td>
+        <td>❌ Tidak Ada</td>
+        <td>❌ Tidak Ada</td>
+        <td>❌ Tidak Ada</td>
+        <td class="highlight">✅ SPK, Teknisi &amp; Sparepart</td>
+      </tr>
+      <tr>
+        <td><strong>Integrasi Marketplace Omnichannel</strong></td>
+        <td>❌ Tidak Ada</td>
+        <td>❌ Terbatas</td>
+        <td>✅ Khusus Online Saja</td>
+        <td class="highlight">✅ Terhubung Kasir &amp; Multi-Gudang</td>
+      </tr>
+      <tr>
+        <td><strong>Laporan Arus Kas, Laba Rugi &amp; Piutang</strong></td>
+        <td>⚠️ Kasir Saja</td>
+        <td>✅ Lengkap</td>
+        <td>❌ Tidak Ada</td>
+        <td class="highlight">✅ Otomatis dari Transaksi POS</td>
+      </tr>
+      <tr>
+        <td><strong>Storefront &amp; Menu Digital QR Online</strong></td>
+        <td>⚠️ Berbayar Tambahan</td>
+        <td>❌ Tidak Ada</td>
+        <td>❌ Tidak Ada</td>
+        <td class="highlight">✅ Gratis Bawaan per Tenant</td>
+      </tr>
+      <tr>
+        <td><strong>Auto-Backup Harian Database ke Email</strong></td>
+        <td>❌ Tidak Ada</td>
+        <td>❌ Manual</td>
+        <td>❌ Manual</td>
+        <td class="highlight">✅ Otomatis Setiap Hari</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SLIDE 4: MODUL RETAIL & KULINER -->
+<div class="page">
+  <div class="header-bar">
+    <div class="logo">BIZORA</div>
+    <div class="page-tag">Module Deep Dive (Part 1)</div>
+  </div>
+  <h2 class="slide-title">Modul Retail &amp; Modul Kuliner (F&amp;B)</h2>
+  <p class="slide-subtitle">Solusi operasional spesifik untuk toko fisik dan bisnis restoran/kafe.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3 class="card-title">🛒 1. Modul Toko Retail &amp; Grosir</h3>
+        <span class="badge badge-blue">Toko / Minimarket</span>
+      </div>
+      <p style="font-size:11.5px; color:#475569; margin:0 0 10px 0;">Cocok untuk Minimarket, Toko Kelontong, Fashion, Bangunan, Gadget, &amp; Grosir.</p>
+      <div class="step-box">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>Master Produk &amp; Barcode:</strong> Input multi-satuan (Pcs, Lusin, Dus) dan pricelist pelanggan grosir/VIP.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>Kasir POS Cepat:</strong> Scan barcode kilat, multi-metode bayar (QRIS, Tunai, Tempo Piutang).</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>Restock &amp; Hutang:</strong> Input faktur supplier, stok otomatis bertambah &amp; jatuh tempo hutang terpantau.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3 class="card-title">🍱 2. Modul Kuliner &amp; F&amp;B</h3>
+        <span class="badge badge-amber">Resto / Kafe</span>
+      </div>
+      <p style="font-size:11.5px; color:#475569; margin:0 0 10px 0;">Cocok untuk Restoran Dine-in, Kafe, Coffee Shop, Bakery, &amp; Cloud Kitchen.</p>
+      <div class="step-box">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>Denah Meja Visual &amp; QR:</strong> Tata layout meja interaktif dan menu digital scan QR meja dari HP tamu.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>Kitchen Order Ticket (KOT):</strong> Pesanan langsung muncul di layar dapur/barista seketika.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>BOM Resep Bahan Baku:</strong> Jual menu makanan otomatis mengurangi stok bahan mentah dan menghitung HPP presisi.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: MODUL BUDIDAYA, JASA & SELLER -->
+<div class="page">
+  <div class="header-bar">
+    <div class="logo">BIZORA</div>
+    <div class="page-tag">Module Deep Dive (Part 2)</div>
+  </div>
+  <h2 class="slide-title">Modul Budidaya, Jasa &amp; Omnichannel Seller</h2>
+  <p class="slide-subtitle">Solusi cerdas bagi peternakan, bengkel reparasi, dan merchant marketplace.</p>
+
+  <div class="grid-3">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3 class="card-title" style="font-size:13px;">🐟 Budidaya &amp; Ternak</h3>
+        <span class="badge badge-green">Agri/Aqua</span>
+      </div>
+      <div style="font-size:11.5px; color:#475569; display:flex; flex-direction:column; gap:6px;">
+        <div><strong>• Siklus Budidaya:</strong> Pantau umur tebar (DOC/tebar benih) dan target tanggal panen.</div>
+        <div><strong>• FCR &amp; Pakan:</strong> Kalkulasi efisiensi rasio pakan terhadap kenaikan bobot daging.</div>
+        <div><strong>• Sampling &amp; Mortalitas:</strong> Grafik ADG/ABW dan catatan kematian harian.</div>
+        <div><strong>• Panen &amp; Laba:</strong> Rekap tonase penjualan timbangan langsung hitung laba siklus.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3 class="card-title" style="font-size:13px;">🛠️ Jasa &amp; Bengkel</h3>
+        <span class="badge badge-purple">Services</span>
+      </div>
+      <div style="font-size:11.5px; color:#475569; display:flex; flex-direction:column; gap:6px;">
+        <div><strong>• SPK / Work Order:</strong> Catat keluhan unit, foto kondisi awal &amp; estimasi selesai.</div>
+        <div><strong>• Penugasan Teknisi:</strong> Tracking pengerjaan teknisi dan hitung komisi otomatis.</div>
+        <div><strong>• Jasa + Sparepart:</strong> Tagihan gabungan ongkos kerja teknisi dan suku cadang.</div>
+        <div><strong>• Status Real-time:</strong> Update status pengerjaan transparan ke pelanggan.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3 class="card-title" style="font-size:13px;">🌐 Omnichannel Seller</h3>
+        <span class="badge badge-indigo">Marketplace</span>
+      </div>
+      <div style="font-size:11.5px; color:#475569; display:flex; flex-direction:column; gap:6px;">
+        <div><strong>• Multi-Gudang:</strong> Alokasi stok gudang pusat, cabang kota, dan transit.</div>
+        <div><strong>• Sinkron Stok:</strong> Order Shopee/Tokopedia masuk, stok kasir otomatis terpotong.</div>
+        <div><strong>• Product Mapping:</strong> 1 master SKU terhubung ke multi variasi listing.</div>
+        <div><strong>• Cetak Resi Massal:</strong> Cetak label pengiriman thermal cepat.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: SAAS ADMIN & SECURITY -->
+<div class="page">
+  <div class="header-bar">
+    <div class="logo">BIZORA</div>
+    <div class="page-tag">Architecture &amp; Admin Panel</div>
+  </div>
+  <h2 class="slide-title">Panel Manajemen SaaS Admin &amp; Keamanan</h2>
+  <p class="slide-subtitle">Kemudahan monitoring bagi pengelola platform &amp; jaminan keamanan data pelanggan.</p>
+
+  <div class="grid-2">
+    <div class="card card-primary">
+      <h3 class="card-title" style="color:#3730a3;">👑 Fitur SaaS Admin Control Center</h3>
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; margin-top:10px;">
+        <div><strong>• Impersonate Login (1-Klik):</strong> Admin SaaS bisa masuk ke dashboard tenant untuk membantu troubleshooting tanpa meminta password tenant.</div>
+        <div><strong>• Reset Password Cepat:</strong> Reset password akun pemilik tenant dengan generator acak dan opsi kirim notifikasi otomatis ke email.</div>
+        <div><strong>• Pengaturan Modul Ekstra:</strong> Menyalakan atau mengunci modul tertentu (misal: tambah modul POS untuk bengkel) per tenant.</div>
+        <div><strong>• Auto-Cleanup Demo Sandbox:</strong> Sistem membersihkan akun demo uji coba setiap 10 menit dan tepat pukul 00:00 malam agar database selalu bersih.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="card-title">🔒 Keamanan &amp; Pencadangan Data</h3>
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; margin-top:10px;">
+        <div><strong>• Isolasi Data Multi-Tenant:</strong> Setiap tenant memiliki pemisahan data ketat (Tenant ID Isolation) sehingga aman dan privat.</div>
+        <div><strong>• Auto-Backup Harian ke Email:</strong> Seluruh database dan transaksi dibackup terjadwal setiap hari dan dikirim ke email pemilik.</div>
+        <div><strong>• Cloud High-Availability:</strong> Akses dari mana saja (HP, Tablet, Laptop, Komputer Kasir) tanpa perlu instalasi rumit.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: PRESENTATION & CLOSING TIPS -->
+<div class="page">
+  <div class="header-bar">
+    <div class="logo">BIZORA</div>
+    <div class="page-tag">Sales &amp; Pitching Guide</div>
+  </div>
+  <h2 class="slide-title">Tips &amp; Formula Demo 15 Menit ke Calon Customer</h2>
+  <p class="slide-subtitle">Alur presentasi teruji untuk meyakinkan pemilik usaha beralih ke BIZORA.</p>
+
+  <div class="grid-4">
+    <div class="card">
+      <span class="badge badge-indigo">Menit 1 - 3</span>
+      <h4 style="margin:8px 0 4px 0; font-size:13px; color:#1e293b;">1. Pahami Kendala</h4>
+      <p style="font-size:11.5px; color:#64748b; margin:0;">Tanyakan kerepotan pencatatan stok, kasir, dan rekonsiliasi keuangan mereka saat ini.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-blue">Menit 4 - 8</span>
+      <h4 style="margin:8px 0 4px 0; font-size:13px; color:#1e293b;">2. Demo Modul Spesifik</h4>
+      <p style="font-size:11.5px; color:#64748b; margin:0;">Buka modul yang sesuai (misal: Denah Meja untuk Kafe, Barcode POS untuk Toko, SPK untuk Bengkel).</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-green">Menit 9 - 12</span>
+      <h4 style="margin:8px 0 4px 0; font-size:13px; color:#1e293b;">3. Tunjukkan Laba Bersih</h4>
+      <p style="font-size:11.5px; color:#64748b; margin:0;">Perlihatkan transaksi tadi otomatis menjadi Laporan Laba/Rugi &amp; Arus Kas tanpa rumus Excel.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-amber">Menit 13 - 15</span>
+      <h4 style="margin:8px 0 4px 0; font-size:13px; color:#1e293b;">4. Closing &amp; Paket</h4>
+      <p style="font-size:11.5px; color:#64748b; margin:0;">Tunjukkan backup otomatis, akses HP/Tablet, dan berikan paket langganan yang cocok.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:20px; text-align:center; padding:16px; background:#f1f5f9; border-radius:10px;">
+    <strong style="color:#0f172a; font-size:14px;">Siap Membantu Bisnis UMKM Berkembang Bersama BIZORA!</strong>
+    <p style="color:#64748b; font-size:12px; margin:4px 0 0 0;">Website: https://bizora.bylimolas.com &nbsp;|&nbsp; BIZORA Cloud Operating System</p>
+  </div>
+</div>
+
+</body>
+</html>

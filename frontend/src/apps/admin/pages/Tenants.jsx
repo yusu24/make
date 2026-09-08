@@ -7,9 +7,10 @@ import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import Modal from '../../../components/Modal'
 import { 
-  Store, Users, Shield, KeyRound, Eye, Edit3, Trash2, 
+  Store, Users, Shield, KeyRound, Eye, EyeOff, Edit3, Trash2, 
   RefreshCw, Plus, CheckCircle2, AlertTriangle, 
-  Sparkles, Box, CreditCard, Package, Calendar, Mail, FileText, ShoppingBag
+  Sparkles, Box, CreditCard, Package, Calendar, Mail, FileText, ShoppingBag,
+  Lock, Copy, Check, Key
 } from 'lucide-react'
 import './Shared.css'
 
@@ -30,6 +31,30 @@ export default function Tenants() {
   const [savingModules, setSavingModules] = useState(false)
   const [showDemoInfo, setShowDemoInfo] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  // Reset Password State
+  const [resetTarget, setResetTarget] = useState(null)
+  const [resetPassword, setResetPassword] = useState('')
+  const [resetNotifyEmail, setResetNotifyEmail] = useState(true)
+  const [isResetting, setIsResetting] = useState(false)
+  const [resetResult, setResetResult] = useState(null)
+  const [showPassword, setShowPassword] = useState(true)
+  const [copied, setCopied] = useState(false)
+  const [isCleaningDemo, setIsCleaningDemo] = useState(false)
+
+  const handleCleanupDemo = async () => {
+    if (!window.confirm('Bersihkan seluruh akun demo sandbox yang masa aktifnya sudah habis atau sudah tidak aktif?')) return
+    setIsCleaningDemo(true)
+    try {
+      const res = await api.post('/admin/tenants/cleanup-demo')
+      alert(res.data?.message || 'Pembersihan akun demo selesai.')
+      fetchTenants()
+    } catch (err) {
+      alert('Gagal membersihkan akun demo: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setIsCleaningDemo(false)
+    }
+  }
 
   const fetchTenants = () => {
     setLoading(true)
@@ -108,6 +133,49 @@ export default function Tenants() {
     }
   }
 
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$'
+    let pwd = ''
+    for (let i = 0; i < 10; i++) {
+      pwd += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return pwd
+  }
+
+  const handleOpenResetModal = (tenant) => {
+    setResetTarget(tenant)
+    setResetPassword(generateRandomPassword())
+    setResetNotifyEmail(true)
+    setResetResult(null)
+    setShowPassword(true)
+    setCopied(false)
+  }
+
+  const handleResetPassword = async (e) => {
+    if (e) e.preventDefault()
+    if (!resetTarget || !resetPassword) return
+    setIsResetting(true)
+    try {
+      const res = await api.post(`/admin/tenants/${resetTarget.tenant_id}/reset-password`, {
+        password: resetPassword,
+        notify_email: resetNotifyEmail
+      })
+      setResetResult(res.data)
+      alert(res.data?.message || 'Password tenant berhasil direset!')
+    } catch (err) {
+      alert('Gagal mereset password: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setIsResetting(false)
+    }
+  }
+
+  const handleCopyPassword = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    })
+  }
+
   const handleUpdateTenant = async (e) => {
     e.preventDefault()
     if (!editTenant) return
@@ -118,6 +186,9 @@ export default function Tenants() {
       category: fd.get('category'),
       subscription_plan: fd.get('subscription_plan'),
       status: fd.get('status'),
+    }
+    if (fd.get('password')) {
+      payload.password = fd.get('password')
     }
     try {
       await api.put(`/admin/tenants/${editTenant.tenant_id}`, payload)
@@ -307,6 +378,17 @@ export default function Tenants() {
               </button>
 
               <button 
+                className="btn btn-secondary"
+                onClick={handleCleanupDemo}
+                disabled={isCleaningDemo}
+                style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6, fontSize: '13px', fontWeight: 500, color: '#d97706', borderColor: '#fde68a' }}
+                title="Bersihkan Akun Demo Sandbox yang Sudah Kadaluarsa"
+              >
+                <Trash2 size={14} className={isCleaningDemo ? 'animate-spin' : ''} />
+                <span>{isCleaningDemo ? 'Membersihkan...' : 'Bersihkan Demo'}</span>
+              </button>
+
+              <button 
                 id="btn-add-tenant" 
                 className="btn btn-primary" 
                 onClick={() => setShowAddModal(true)} 
@@ -407,6 +489,15 @@ export default function Tenants() {
                         style={{ color: 'var(--primary-500)' }}
                       >
                         <KeyRound size={13} />
+                      </button>
+
+                      <button 
+                        className="btn btn-secondary btn-sm" 
+                        onClick={() => handleOpenResetModal(t)}
+                        title={`Reset Password ${t.name}`}
+                        style={{ color: '#d97706' }}
+                      >
+                        <Key size={13} />
                       </button>
 
                       <button 
@@ -598,6 +689,18 @@ export default function Tenants() {
                 <button className="btn btn-secondary text-xs" onClick={() => setViewTenant(null)}>Tutup</button>
                 <button 
                   className="btn btn-secondary text-xs flex items-center gap-1"
+                  style={{ color: '#d97706' }}
+                  onClick={() => {
+                    const t = viewTenant;
+                    setViewTenant(null);
+                    handleOpenResetModal(t);
+                  }}
+                >
+                  <Key size={13} />
+                  <span>Reset Password</span>
+                </button>
+                <button 
+                  className="btn btn-secondary text-xs flex items-center gap-1"
                   onClick={() => {
                     const t = viewTenant;
                     setViewTenant(null);
@@ -667,6 +770,18 @@ export default function Tenants() {
               </div>
             </div>
 
+            <div className="form-group">
+              <label className="form-label font-semibold text-slate-700">
+                Ganti Password Baru <span className="text-slate-400 font-normal">(Kosongkan jika tidak ingin diubah)</span>
+              </label>
+              <input 
+                name="password" 
+                type="password" 
+                className="form-input" 
+                placeholder="Masukkan password baru jika ingin mengubah..." 
+              />
+            </div>
+
             <div className="modal__actions mt-3">
               <button type="button" className="btn btn-secondary" onClick={() => setEditTenant(null)}>Batal</button>
               <button type="submit" className="btn btn-primary">Simpan Perubahan</button>
@@ -730,6 +845,107 @@ export default function Tenants() {
               </button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* ── Modal Reset Password Tenant ── */}
+      {resetTarget && (
+        <Modal 
+          isOpen={!!resetTarget} 
+          onClose={() => setResetTarget(null)} 
+          title={`🔑 Reset Password Akun: ${resetTarget.name || resetTarget.tenant_id}`} 
+          maxWidth="500px"
+        >
+          <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5">
+              <Key size={18} className="text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-amber-900 font-semibold mb-0.5">Reset Akses Tenant:</strong>
+                Tindakan ini akan langsung mereset password akun pemilik (<code>{resetTarget.email}</code>). Password baru dapat langsung disalin atau dikirimkan ke email tenant.
+              </div>
+            </div>
+
+            <div className="form-group">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="form-label font-semibold m-0 text-slate-700">Password Baru</label>
+                <button
+                  type="button"
+                  onClick={() => setResetPassword(generateRandomPassword())}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1"
+                >
+                  🎲 Buat Password Acak
+                </button>
+              </div>
+
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-input pr-10 font-mono text-sm"
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  placeholder="Masukkan atau generate password baru"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                >
+                  {showPassword ? 'Sembunyi' : 'Lihat'}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1">Minimal 6 karakter.</p>
+            </div>
+
+            <label className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+              <input
+                type="checkbox"
+                checked={resetNotifyEmail}
+                onChange={(e) => setResetNotifyEmail(e.target.checked)}
+                className="mt-0.5 rounded border-slate-300 text-indigo-600"
+              />
+              <div className="text-xs">
+                <span className="font-semibold text-slate-800 block">Kirim notifikasi ke email</span>
+                <span className="text-slate-500">Kirimkan rincian akun dan password baru secara otomatis ke <strong>{resetTarget.email}</strong></span>
+              </div>
+            </label>
+
+            {resetResult && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center justify-between gap-2">
+                <div>
+                  <span className="block font-semibold text-emerald-900">✓ Password Berhasil Diperbarui!</span>
+                  <span className="font-mono text-xs">{resetResult.new_password}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyPassword(resetResult.new_password)}
+                  className="btn btn-secondary btn-sm shrink-0 flex items-center gap-1 text-emerald-700 border-emerald-300"
+                >
+                  {copied ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                  <span>{copied ? 'Tersalin!' : 'Salin Password'}</span>
+                </button>
+              </div>
+            )}
+
+            <div className="modal__actions mt-2">
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => setResetTarget(null)}
+              >
+                {resetResult ? 'Selesai / Tutup' : 'Batal'}
+              </button>
+              <button 
+                type="submit" 
+                className="btn btn-primary flex items-center gap-1.5" 
+                disabled={isResetting || !resetPassword}
+              >
+                <Key size={14} />
+                <span>{isResetting ? 'Mereset...' : 'Simpan & Reset Password'}</span>
+              </button>
+            </div>
+          </form>
         </Modal>
       )}
 

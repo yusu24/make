@@ -171,10 +171,11 @@ class TenantController extends Controller
         }
         $tenant->save();
 
-        if ($tenant->user && ($request->filled('name') || $request->filled('email'))) {
+        if ($tenant->user && ($request->filled('name') || $request->filled('email') || $request->filled('password'))) {
             $user = $tenant->user;
-            if ($request->filled('name'))  $user->name = $request->name;
-            if ($request->filled('email')) $user->email = $request->email;
+            if ($request->filled('name'))     $user->name = $request->name;
+            if ($request->filled('email'))    $user->email = $request->email;
+            if ($request->filled('password')) $user->password = bcrypt($request->password);
             $user->save();
         }
 
@@ -332,5 +333,75 @@ class TenantController extends Controller
                 'message' => 'Gagal mengirim email invoice: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Reset password for tenant owner & customer accounts
+     */
+    public function resetPassword(Request $request, string $tenant_id)
+    {
+        $request->validate([
+            'password'     => 'nullable|string|min:6',
+            'notify_email' => 'nullable|boolean',
+        ]);
+
+        $tenant = Tenant::with('user')->where('tenant_id', $tenant_id)->orWhere('id', $tenant_id)->firstOrFail();
+        
+        $newPassword = $request->filled('password') ? $request->password : \Illuminate\Support\Str::random(10);
+        $hashedPassword = bcrypt($newPassword);
+
+        // Update primary owner user
+        if ($tenant->user) {
+            $tenant->user->password = $hashedPassword;
+            $tenant->user->save();
+        }
+
+        // Also update all customer users under this tenant ID
+        \App\Models\User::where('tenant_id', $tenant->tenant_id)
+            ->where('role', 'customer')
+            ->update(['password' => $hashedPassword]);
+
+        // Send email if notify_email is true
+        $emailSent = false;
+        $email = $tenant->user?->email;
+        if ($request->boolean('notify_email', true) && $email) {
+            try {
+                $tenantName = $tenant->user?->name ?? $tenant->business_name ?? 'Pelanggan';
+                $body = "Halo {$tenantName},\n\nPassword akun BIZORA Anda untuk Tenant {$tenant->tenant_id} telah direset oleh SaaS Administrator.\n\nBerikut adalah kredensial login baru Anda:\n--------------------------------------------------\nEmail    : {$email}\nPassword : {$newPassword}\n--------------------------------------------------\n\nSilakan login di https://bizora.bylimolas.com/login dan kami sarankan untuk segera mengganti password Anda setelah berhasil masuk.\n\nSalam hangat,\nTim BIZORA SaaS";
+
+                Mail::raw($body, function ($message) use ($email, $tenant) {
+                    $message->to($email)
+                            ->subject("Informasi Reset Password Akun BIZORA ({$tenant->tenant_id})");
+                });
+                $emailSent = true;
+            } catch (\Exception $e) {
+                \Log::warning("Gagal mengirim email reset password: " . $e->getMessage());
+            }
+        }
+
+        ActivityLog::record('reset_tenant_password', "Reset password untuk Tenant: {$tenant->tenant_id} ({$email})", 'warning');
+
+        return response()->json([
+            'success'      => true,
+            'message'      => 'Password tenant berhasil direset' . ($emailSent ? ' dan dikirim ke email pemilik.' : '.'),
+            'new_password' => $newPassword,
+            'email_sent'   => $emailSent,
+            'email'        => $email,
+        ]);
+    }
+
+    public function cleanupDemoSandboxes(Request $request)
+    {
+        $forceAll = $request->boolean('force_all', false);
+        $deleted = \App\Console\Commands\CleanupDemoSandboxes::runCleanup($forceAll);
+        ActivityLog::record('cleanup_demo_sandboxes', "Pembersihan akun demo sandbox: {$deleted} akun dibersihkan.", 'info');
+
+        return response()->json([
+            'success' => true,
+            'count'   => $deleted,
+            'message' => $deleted > 0 
+                ? "Berhasil membersihkan {$deleted} akun demo sandbox."
+                : "Database sudah bersih, tidak ada akun demo sandbox yang perlu dibersihkan."
+        ]);
     }
 }

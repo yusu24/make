@@ -769,6 +769,8 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::get('stats', [DashboardController::class, 'stats']);
         Route::post('tenants/{tenant_id}/impersonate', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonateUser']);
         Route::post('tenants/{tenant_id}/resend-invoice', [TenantController::class, 'resendInvoice']);
+        Route::post('tenants/{tenant_id}/reset-password', [TenantController::class, 'resetPassword']);
+        Route::post('tenants/cleanup-demo', [TenantController::class, 'cleanupDemoSandboxes']);
 
         // KYC Verifications
         Route::get('kyc', [\App\Http\Controllers\Api\AdminKycController::class, 'index']);
