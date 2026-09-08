@@ -24,7 +24,7 @@ const BudidayaGuide = () => {
   const [activeTab, setActiveTab] = useState('cycle');
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto pb-16">
+    <div className="aq-container pb-12" style={{ animation: 'kd-fadeIn 0.3s ease' }}>
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-teal-700 via-emerald-700 to-green-800 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-2 max-w-2xl">

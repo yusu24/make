@@ -27,7 +27,7 @@ const KulinerGuide = () => {
 
   return (
     <KulinerAdminLayout title="Buku Panduan & SOP Resto">
-      <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto pb-16">
+      <div className="kd-content space-y-6 pb-16">
         {/* Header Banner */}
         <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
           <div className="relative z-10 space-y-2 max-w-2xl">

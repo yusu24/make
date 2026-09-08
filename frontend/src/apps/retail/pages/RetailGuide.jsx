@@ -23,7 +23,7 @@ const RetailGuide = () => {
   const [activeTab, setActiveTab] = useState('pos');
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto pb-16">
+    <div className="flex flex-col gap-4 pb-12">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-2 max-w-2xl">
