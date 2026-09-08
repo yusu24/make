@@ -16,40 +16,67 @@ import {
   Truck,
   ArrowRight,
   Printer,
-  Boxes
+  Boxes,
+  Calculator,
+  Percent,
+  Wallet,
+  Calendar,
+  AlertTriangle,
+  RotateCcw,
+  FileSpreadsheet,
+  Split,
+  Tag,
+  DollarSign,
+  HelpCircle,
+  TrendingDown
 } from 'lucide-react';
 
 const RetailGuide = () => {
   const [activeTab, setActiveTab] = useState('pos');
 
+  // Interactive Calculator State
+  const [calcBuyPrice, setCalcBuyPrice] = useState(80000);
+  const [calcSellPrice, setCalcSellPrice] = useState(100000);
+  const [calcDiscountPercent, setCalcDiscountPercent] = useState(0);
+
+  // Dynamic Calculator Computations
+  const discountedSellPrice = calcSellPrice - (calcSellPrice * (calcDiscountPercent / 100));
+  const profitNominal = discountedSellPrice - calcBuyPrice;
+  const marginPercent = discountedSellPrice > 0 ? (profitNominal / discountedSellPrice) * 100 : 0;
+  const markupPercent = calcBuyPrice > 0 ? (profitNominal / calcBuyPrice) * 100 : 0;
+
+  const fmtRp = (num) => `Rp ${Math.round(num || 0).toLocaleString('id-ID')}`;
+
   return (
-    <div className="flex flex-col gap-4 pb-12">
+    <div className="flex flex-col gap-5 pb-16">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="relative z-10 space-y-2 max-w-2xl">
+        <div className="relative z-10 space-y-3 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-xs font-bold text-blue-100 border border-white/20">
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Buku Panduan & SOP Operasional Toko Retail</span>
+            <span>Buku Panduan, SOP & Kamus Rumus Operasional Retail</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Panduan Cara Penggunaan Modul Retail & POS
+            Panduan Lengkap & Rumus Modul Retail & POS
           </h1>
-          <p className="text-blue-100 text-sm leading-relaxed">
-            Panduan lengkap kasir dan inventori toko retail: Buka/Tutup Shift Kasir, transaksi barcode scanner cepat, diskon kupon & harga grosir bertingkat, pembelian barang (PO), cetak label barcode, serta audit stock opname.
+          <p className="text-blue-100 text-xs sm:text-sm leading-relaxed">
+            Pelajari alur lengkap seluruh menu di modul Retail: Transaksi kasir kilat, rekonsiliasi kas laci (Shift Z), konversi multi-satuan, pembelian barang (PO), audit stock opname, perhitungan pajak PPN, hingga kalkulasi mendalam HPP, Margin %, dan Laba Rugi Bersih.
           </p>
         </div>
 
         <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 scrollbar-none">
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 scrollbar-none">
         {[
-          { id: 'pos', label: '1. Transaksi Kasir (POS)', icon: ShoppingCart },
-          { id: 'shift', label: '2. Buka & Tutup Shift', icon: Clock },
-          { id: 'master', label: '3. Multi-Satuan & Barcode', icon: Barcode },
-          { id: 'purchasing', label: '4. Pembelian & Stok Opname', icon: Package },
-          { id: 'reports', label: '5. Laporan Penjualan & Laba', icon: TrendingUp },
+          { id: 'pos', label: '1. Kasir (POS) & Retur', icon: ShoppingCart },
+          { id: 'shift', label: '2. Shift & Uang Laci (Shift Z)', icon: Clock },
+          { id: 'master', label: '3. Multi-Satuan, Barcode & Expired', icon: Barcode },
+          { id: 'purchasing', label: '4. Pembelian PO, HPP & Stok Opname', icon: Package },
+          { id: 'finance', label: '5. Keuangan, Hutang & Piutang', icon: Wallet },
+          { id: 'reports', label: '6. Rumus Laba Rugi & Margin', icon: TrendingUp },
+          { id: 'calculator', label: '🧮 Simulator Rumus Interaktif', icon: Calculator },
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -70,40 +97,51 @@ const RetailGuide = () => {
         })}
       </div>
 
-      {/* SECTION 1: POS Kasir */}
+      {/* ========================================================================= */}
+      {/* SECTION 1: POS Kasir, Multi-Payment & Retur                               */}
+      {/* ========================================================================= */}
       {activeTab === 'pos' && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-            <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-              <ShoppingCart className="w-6 h-6 text-blue-600" />
-              <span>SOP Transaksi Kasir Cepat (Point of Sale)</span>
-            </h2>
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-blue-600" />
+                  <span>SOP Transaksi Kasir Cepat (Point of Sale) & Retur Pelanggan</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Panduan lengkap langkah demi langkah kasir toko dari input barang sampai cetak struk.</p>
+              </div>
+              <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-200">
+                Menu: /retail/pos
+              </span>
+            </div>
 
+            {/* 4 Langkah Utama POS */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
                 {
                   step: '1',
-                  title: 'Scan Barcode / Cari Barang',
-                  desc: 'Arahkan barcode scanner fisik ke produk atau ketik nama/kode barang pada kolom pencarian kasir.',
+                  title: 'Scan / Cari Produk',
+                  desc: 'Arahkan barcode scanner fisik ke barcode produk, atau ketik nama/kode SKU pada kolom pencarian (Shortcut keyboard F2).',
                 },
                 {
                   step: '2',
-                  title: 'Atur Qty, Diskon & Satuan',
-                  desc: 'Pilih satuan (Pcs/Dus/Lusin), masukkan kuantiti, atau pilih tingkatan harga grosir / member terdaftar.',
+                  title: 'Atur Qty & Harga Grosir',
+                  desc: 'Sesuaikan jumlah beli. Jika pembeli membeli kuantiti banyak (misal >= 12 pcs), sistem otomatis menerapkan harga grosir yang sudah disetting.',
                 },
                 {
                   step: '3',
-                  title: 'Pilih Metode Bayar',
-                  desc: 'Pilih Tunai (masukkan nominal uang bayar untuk hitung kembalian), QRIS Statis/Dinamis, Debit/Kredit, atau Piutang Kasbon.',
+                  title: 'Pilih Metode Pembayaran',
+                  desc: 'Pilih Tunai (masukkan uang diterima), QRIS Dinamis/Statis, Kartu Debit/Kredit EDC, Split Bayar, atau Piutang Kasbon Member.',
                 },
                 {
                   step: '4',
-                  title: 'Cetak Struk & Buka Laci',
-                  desc: 'Klik Bayar, laci kasir terbuka otomatis, dan printer thermal 58mm/80mm mencetak struk belanja pelanggan.',
+                  title: 'Cetak Struk & Kick Drawer',
+                  desc: 'Klik tombol Bayar (Shortcut F4). Printer thermal mencetak struk dan laci kasir (cash drawer) otomatis terbuka via sinyal RJ11.',
                 }
               ].map(card => (
-                <div key={card.step} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-3">
-                  <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
+                <div key={card.step} className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-3 hover:border-blue-300 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
                     {card.step}
                   </div>
                   <div className="space-y-1">
@@ -114,69 +152,230 @@ const RetailGuide = () => {
               ))}
             </div>
 
-            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-start gap-3 text-blue-900">
-              <Lightbulb className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-              <div className="text-xs space-y-1">
-                <strong className="font-bold block">Shortcut Kasir Keyboard:</strong>
-                <p>Gunakan tombol keyboard `F2` untuk fokus ke pencarian barcode, `F4` untuk bayar cepat, dan `F8` untuk menahan (hold) keranjang saat antrean sedang ramai.</p>
+            {/* Box Rumus POS */}
+            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+              <div className="flex items-center gap-2 text-amber-400">
+                <Calculator className="w-5 h-5" />
+                <h3 className="text-sm font-bold uppercase tracking-wider">Kamus Rumus Perhitungan di Kasir (POS)</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+                  <div className="text-indigo-300 font-bold font-sans text-xs">1. Rumus Uang Kembalian:</div>
+                  <div className="text-emerald-400 font-bold">Kembalian = Uang Tunai Diterima - Total Tagihan Akhir</div>
+                  <div className="text-slate-400 font-sans text-[11px]">Contoh: Belanja Rp 87.500, Uang diterima Rp 100.000 = Kembalian Rp 12.500.</div>
+                </div>
+
+                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+                  <div className="text-indigo-300 font-bold font-sans text-xs">2. Rumus Diskon Persentase (%):</div>
+                  <div className="text-emerald-400 font-bold">Potongan Rp = Harga Normal * (Diskon % / 100)</div>
+                  <div className="text-slate-400 font-sans text-[11px]">Contoh: Kemeja Rp 150.000 diskon 20% = Potongan Rp 30.000, Bayar Rp 120.000.</div>
+                </div>
+
+                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+                  <div className="text-indigo-300 font-bold font-sans text-xs">3. Rumus Pajak PPN Eksklusif (11% Di Luar Harga):</div>
+                  <div className="text-emerald-400 font-bold">Nilai PPN = Total Belanja * 11%</div>
+                  <div className="text-slate-400 font-sans text-[11px]">Harga Rp 100.000 + PPN Rp 11.000 = Total Tagihan Rp 111.000.</div>
+                </div>
+
+                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+                  <div className="text-indigo-300 font-bold font-sans text-xs">4. Rumus Pajak PPN Inklusif (11% Sudah Termasuk di Harga):</div>
+                  <div className="text-emerald-400 font-bold">DPP = Total Harga / 1.11 | Nilai PPN = DPP * 11%</div>
+                  <div className="text-slate-400 font-sans text-[11px]">Harga Rp 111.000: DPP (Dasar Pengenaan Pajak) = Rp 100.000, PPN = Rp 11.000.</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Fitur Khusus: Hold Cart & Retur Pelanggan */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 space-y-2">
+                <div className="flex items-center gap-2 text-blue-900 font-bold text-sm">
+                  <Clock className="w-4 h-4 text-blue-600" />
+                  <span>Fitur Tahan Transaksi (Hold & Recall Cart)</span>
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  Jika pembeli sedang di kasir lalu ingin mengambil barang tambahan yang tertinggal, kasir dapat menekan tombol <strong>Tahan Keranjang (Hold)</strong>. Kasir dapat melayani antrean pembeli berikutnya tanpa menghapus belanjaan pembeli pertama. Setelah pembeli kembali, klik <strong>Buka Keranjang (Recall)</strong>.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
+                <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                  <RotateCcw className="w-4 h-4 text-amber-600" />
+                  <span>SOP Retur Penjualan Pelanggan</span>
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  Buka menu <strong>Retur Pelanggan</strong>. Masukkan Nomor Struk/Invoice asli. Pilih item barang yang dikembalikan (misal rusak / salah ukuran). Stok barang akan otomatis kembali ke inventori toko dan kasir mengeluarkan dana pengembalian (Refund) yang tercatat di laporan kas.
+                </p>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* SECTION 2: Shift */}
+      {/* ========================================================================= */}
+      {/* SECTION 2: Manajemen Shift Kasir & Rekonsiliasi Kas Laci (Shift Z)        */}
+      {/* ========================================================================= */}
       {activeTab === 'shift' && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-            <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-              <Clock className="w-6 h-6 text-indigo-600" />
-              <span>SOP Buka & Tutup Shift Kasir (Audit Uang Laci Kas)</span>
-            </h2>
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-indigo-600" />
+                  <span>SOP Buka & Tutup Shift Kasir (Rekonsiliasi Laci Kas / Laporan Z)</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Prosedur wajib pertanggungjawaban uang kasir untuk mencegah kebocoran kas.</p>
+              </div>
+              <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold border border-indigo-200">
+                Menu: /retail/shifts
+              </span>
+            </div>
 
-            <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
-              <div className="p-5 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
-                <strong className="text-blue-900 font-bold block text-sm">1. Saat Buka Shift (Pagi / Masuk Kerja):</strong>
-                <p>Kasir menghitung fisik uang modal receh di laci kasir (misal Rp 200.000), lalu masukkan nominal tersebut pada modal dialog "Buka Shift" sebelum melayani transaksi penjualan pertama.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Buka Shift */}
+              <div className="p-5 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-3">
+                <div className="flex items-center gap-2 text-blue-900 font-bold text-sm">
+                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
+                  <span>SOP Buka Shift (Pagi / Pergantian Kasir)</span>
+                </div>
+                <ol className="text-xs text-slate-700 space-y-2 list-decimal list-inside leading-relaxed">
+                  <li>Kasir menerima modal uang kembalian receh dari Supervisor/Owner.</li>
+                  <li>Hitung lembaran fisik uang receh tersebut di depan saksi (misal Rp 200.000).</li>
+                  <li>Login ke sistem kasir, masukkan nominal modal awal pada prompt dialog <strong>Buka Shift</strong>.</li>
+                  <li>Sistem mencatat jam mulai shift dan nama kasir yang bertugas.</li>
+                </ol>
               </div>
 
-              <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2">
-                <strong className="text-emerald-900 font-bold block text-sm">2. Saat Tutup Shift (Selesai Jam Kerja / Closing):</strong>
-                <p>Kasir menghitung seluruh uang fisik di laci (Modal Awal + Total Penjualan Tunai - Pengeluaran Kas Kecil). Masukkan nominal fisik ke sistem. Sistem akan mendeteksi apakah ada selisih kas (Balance / Selisih Kurang / Selisih Lebih), lalu mencetak Laporan Shift Z untuk diserahkan ke Supervisor / Owner.</p>
+              {/* Tutup Shift */}
+              <div className="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
+                <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                  <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">2</span>
+                  <span>SOP Tutup Shift (Malam / Closing / Serah Terima)</span>
+                </div>
+                <ol className="text-xs text-slate-700 space-y-2 list-decimal list-inside leading-relaxed">
+                  <li>Keluarkan seluruh uang dari laci kasir dan hitung fisik uang per pecahan.</li>
+                  <li>Klik tombol <strong>Tutup Shift (Z-Report)</strong> di menu Shift Kasir.</li>
+                  <li>Masukkan total uang fisik yang dihitung.</li>
+                  <li>Sistem otomatis membandingkan uang fisik vs catatan transaksi komputer dan mencetak <strong>Struk Laporan Shift Z</strong>.</li>
+                </ol>
+              </div>
+            </div>
+
+            {/* Rumus Rekonsiliasi Kas */}
+            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+              <div className="flex items-center gap-2 text-amber-400">
+                <Calculator className="w-5 h-5" />
+                <h3 className="text-sm font-bold uppercase tracking-wider">Rumus Matematis Audit Kas Laci (Shift Z)</h3>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-800 border border-slate-700 space-y-2 font-mono text-xs">
+                <div className="text-indigo-300 font-sans font-bold">1. Rumus Ekspektasi Kas Sistem (Expected Cash):</div>
+                <div className="text-emerald-400 font-bold text-sm">
+                  Ekspektasi Kas = Modal Awal + Total Penjualan Tunai + Kas Masuk Lain - Pengeluaran Kas Kecil - Refund Tunai
+                </div>
+                <p className="text-slate-400 font-sans text-xs pt-1">
+                  *Catatan: Pembayaran QRIS, EDC Bank, dan Piutang tidak dihitung ke uang fisik laci karena langsung masuk ke rekening bank / buku piutang.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-800 border border-slate-700 space-y-2 font-mono text-xs">
+                <div className="text-indigo-300 font-sans font-bold">2. Rumus Selisih Kas (Cash Variance):</div>
+                <div className="text-emerald-400 font-bold text-sm">
+                  Selisih Kas = Total Uang Fisik Terhitung - Ekspektasi Kas Sistem
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 font-sans">
+                  <div className="p-2.5 rounded-lg bg-emerald-900/40 border border-emerald-700/60 text-emerald-200">
+                    <strong>Selisih = Rp 0 (Balance)</strong>
+                    <p className="text-[11px] mt-0.5">Uang kasir 100% pas dan akurat.</p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-blue-900/40 border border-blue-700/60 text-blue-200">
+                    <strong>Selisih {'>'} 0 (Lebih / Overage)</strong>
+                    <p className="text-[11px] mt-0.5">Uang laci berlebih (kasir salah hitung kembalian pelanggan). Dibukukan ke pendapatan lain.</p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-rose-900/40 border border-rose-700/60 text-rose-200">
+                    <strong>Selisih {'<'} 0 (Kurang / Shortage)</strong>
+                    <p className="text-[11px] mt-0.5">Uang laci kurang (kemungkinan salah kembalian atau barang tidak ter-scan). Kasir wajib mengganti.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* SECTION 3: Multi-Satuan & Barcode */}
+      {/* ========================================================================= */}
+      {/* SECTION 3: Multi-Satuan, Cetak Barcode & Expired Date                     */}
+      {/* ========================================================================= */}
       {activeTab === 'master' && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-            <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-              <Barcode className="w-6 h-6 text-purple-600" />
-              <span>SOP Multi-Satuan, Harga Grosir & Cetak Label Barcode</span>
-            </h2>
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <Barcode className="w-5 h-5 text-purple-600" />
+                  <span>SOP Setup Barang, Multi-Satuan (UOM), Expired Date & Label Barcode</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Mengelola fleksibilitas satuan grosir dan penandaan label produk rak toko.</p>
+              </div>
+              <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
+                Menu: /retail/products & /retail/print-labels
+              </span>
+            </div>
 
+            {/* Hierarki Multi-Satuan */}
+            <div className="p-5 rounded-2xl bg-purple-50/60 border border-purple-200 space-y-3">
+              <h3 className="text-sm font-bold text-purple-950 flex items-center gap-2">
+                <Boxes className="w-4 h-4 text-purple-600" />
+                <span>Konsep Rasio Multi-Satuan (Unit of Measure - UOM)</span>
+              </h3>
+              <p className="text-xs text-slate-700 leading-relaxed">
+                Di toko retail, barang sering dibeli dari supplier dalam kemasan besar (Dus/Karton) tetapi dijual ke pelanggan dalam bentuk eceran (Pcs) atau pak sedang.
+              </p>
+
+              <div className="bg-white p-4 rounded-xl border border-purple-200 space-y-2 text-xs">
+                <div className="font-bold text-slate-900">Studi Kasus Konversi Satuan Minyak Goreng:</div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono pt-1">
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <div className="text-purple-700 font-bold">1. Satuan Dasar: Pcs</div>
+                    <div className="text-slate-600">Rasio = 1</div>
+                    <div className="text-slate-900 font-bold mt-1">Harga: Rp 14.000 / Pcs</div>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <div className="text-purple-700 font-bold">2. Satuan Sedang: Renceng / Pak</div>
+                    <div className="text-slate-600">Rasio = 6 Pcs</div>
+                    <div className="text-slate-900 font-bold mt-1">Harga: Rp 80.000 / Pak</div>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <div className="text-purple-700 font-bold">3. Satuan Besar: Dus / Karton</div>
+                    <div className="text-slate-600">Rasio = 24 Pcs</div>
+                    <div className="text-slate-900 font-bold mt-1">Harga: Rp 315.000 / Dus</div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 pt-1">
+                  *Saat kasir menjual 1 Dus di POS, sistem secara cerdas langsung memotong 24 Pcs dari stok inventori utama.
+                </p>
+              </div>
+            </div>
+
+            {/* Expired Date & Barcode */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <Boxes className="w-4 h-4 text-purple-600" />
-                  <span>Konversi Multi-Satuan & Harga Grosir:</span>
+                  <Calendar className="w-4 h-4 text-amber-600" />
+                  <span>Manajemen Batch & Expired Date (FEFO)</span>
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Satu produk dapat memiliki banyak satuan. Contoh: Minyak Goreng 1 Dus = 12 Pcs.
-                  Saat Anda membeli 10 Dus, stok bertambah 120 Pcs. Anda dapat menjual eceran per Pcs atau grosir per Dus dengan harga spesial otomatis saat kuantiti terpenuhi.
+                  Sistem menerapkan prinsip <strong>FEFO (First Expired, First Out)</strong>. Saat barang masuk dicatat tanggal kadaluarsanya, sistem akan memprioritaskan barang dengan tanggal expired terdekat untuk dijual lebih dulu dan memberi notifikasi kuning saat H-30 kadaluarsa.
                 </p>
               </div>
 
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                   <Printer className="w-4 h-4 text-blue-600" />
-                  <span>Cetak Label Barcode Rak / Stiker:</span>
+                  <span>Modul Cetak Label Barcode & Price Tag</span>
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Gunakan menu <strong>Cetak Barcode</strong> untuk mencetak stiker barcode produk UMKM lokal yang belum memiliki barcode dari pabrik. Mendukung printer stiker barcode standar 3-kolom (33x15mm) atau printer thermal 58mm.
+                  Buka menu <strong>Cetak Barcode</strong>. Pilih produk yang ingin dicetak labelnya (cocok untuk barang repacking, sembako curah, atau produk UMKM tanpa barcode pabrik). Format kompatibel dengan stiker barcode 3-kolom (33x15mm) atau printer thermal label.
                 </p>
               </div>
             </div>
@@ -184,61 +383,358 @@ const RetailGuide = () => {
         </div>
       )}
 
-      {/* SECTION 4: Pembelian PO & Stok Opname */}
+      {/* ========================================================================= */}
+      {/* SECTION 4: Pembelian PO, Moving Average HPP & Stock Opname                */}
+      {/* ========================================================================= */}
       {activeTab === 'purchasing' && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-            <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-              <Package className="w-6 h-6 text-amber-600" />
-              <span>SOP Pembelian Barang (PO), Hutang Supplier & Stock Opname</span>
-            </h2>
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-amber-600" />
+                  <span>SOP Pembelian (PO), Rumus Moving Average HPP & Stock Opname</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Alur pengadaan barang dari supplier hingga audit fisik berkala toko.</p>
+              </div>
+              <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-200">
+                Menu: /retail/purchase-orders & /retail/stock-opname
+              </span>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <h3 className="text-sm font-bold text-slate-800">1. Alur Pembelian & Penerimaan Barang:</h3>
-                <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside">
-                  <li>Buat Purchase Order (PO) ke Supplier di menu <strong>Purchase Order (PO)</strong>.</li>
-                  <li>Saat barang fisik tiba, cocokkan surat jalan dan klik <strong>Terima Barang</strong> di menu Penerimaan.</li>
-                  <li>Stok toko otomatis bertambah dan status hutang / pelunasan tercatat di buku Kas.</li>
-                </ol>
+            {/* Rumus Moving Average HPP */}
+            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+              <div className="flex items-center gap-2 text-amber-400">
+                <Calculator className="w-5 h-5" />
+                <h3 className="text-sm font-bold uppercase tracking-wider">Rumus HPP Rata-Rata Tertimbang (Weighted Moving Average Costing)</h3>
               </div>
 
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <h3 className="text-sm font-bold text-slate-800">2. SOP Stock Opname Berkala:</h3>
-                <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside">
-                  <li>Buka menu <strong>Stock Opname</strong>, pilih kategori / rak yang akan diaudit.</li>
-                  <li>Gunakan barcode scanner untuk scan fisik barang yang ada di etalase dan gudang.</li>
-                  <li>Sistem menghitung selisih fisik vs sistem, serta membuat jurnal penyesuaian nilai stok hilang / rusak.</li>
-                </ol>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Harga beli dari supplier sering berubah-ubah naik/turun setiap minggu. Modul Retail Bizora secara otomatis menghitung <strong>HPP Rata-rata Tertimbang</strong> setiap kali ada Penerimaan Barang baru:
+              </p>
+
+              <div className="p-4 rounded-xl bg-slate-800 border border-slate-700 font-mono text-xs text-emerald-400 font-bold">
+                HPP Baru = [(Stok Lama * HPP Lama) + (Qty Beli Baru * Harga Beli Baru)] ÷ (Stok Lama + Qty Beli Baru)
+              </div>
+
+              <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-xs font-sans space-y-2">
+                <strong className="text-indigo-300 block font-bold">Contoh Simulasi Nyata:</strong>
+                <ul className="text-slate-300 space-y-1 list-disc list-inside">
+                  <li>Stok awal di toko: <strong>10 Pcs</strong> dengan HPP lama <strong>Rp 10.000</strong> (Nilai modal = Rp 100.000).</li>
+                  <li>Beli stok baru: <strong>20 Pcs</strong> karena harga naik menjadi <strong>Rp 13.000</strong> (Nilai modal baru = Rp 260.000).</li>
+                  <li>Total Nilai Modal Toko = Rp 100.000 + Rp 260.000 = <strong>Rp 360.000</strong>.</li>
+                  <li>Total Kuantiti = 10 + 20 = <strong>30 Pcs</strong>.</li>
+                  <li><span className="text-emerald-400 font-bold font-mono">HPP Baru yang Diterapkan Sistem = Rp 360.000 ÷ 30 = Rp 12.000 / Pcs.</span></li>
+                </ul>
+              </div>
+            </div>
+
+            {/* SOP Stock Opname & Rumus Variance */}
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>SOP Stock Opname (Audit Fisik Stok Bulanan)</span>
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
+                <div className="space-y-2">
+                  <strong className="text-slate-900 font-bold block">Langkah Pelaksanaan Audit:</strong>
+                  <ol className="space-y-1.5 list-decimal list-inside leading-relaxed">
+                    <li>Buka menu <strong>Stock Opname</strong>, buat sesi opname baru (pilih per rak atau seluruh toko).</li>
+                    <li>Gunakan barcode scanner / smartphone untuk scan fisik barang yang ada di rak dan gudang.</li>
+                    <li>Sistem langsung mencocokkan angka hitung fisik vs data sistem.</li>
+                    <li>Klik <strong>Finalisasi Opname</strong> untuk menyetujui penyesuaian stok.</li>
+                  </ol>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2 font-mono">
+                  <div className="text-blue-900 font-bold font-sans">Rumus Nilai Selisih Stock Opname:</div>
+                  <div className="text-slate-800 font-bold">Selisih Qty = Stok Fisik - Stok Sistem</div>
+                  <div className="text-emerald-600 font-bold">Nilai Kerugian/Keuntungan = Selisih Qty * HPP Satuan</div>
+                  <p className="text-[11px] text-slate-500 font-sans">
+                    Jika minus (barang hilang/rusak), sistem otomatis membukukan beban kerugian ke Laporan Laba Rugi.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* SECTION 5: Laporan */}
-      {activeTab === 'reports' && (
+      {/* ========================================================================= */}
+      {/* SECTION 5: Keuangan, Hutang Supplier & Piutang Kasbon                     */}
+      {/* ========================================================================= */}
+      {activeTab === 'finance' && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-            <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-              <TrendingUp className="w-6 h-6 text-emerald-600" />
-              <span>Laporan Laba Rugi, Margin Produk & Konsinyasi</span>
-            </h2>
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <Wallet className="w-5 h-5 text-emerald-600" />
+                  <span>SOP Keuangan Kas, Hutang Supplier & Piutang Pelanggan</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Manajemen arus kas, pelunasan jatuh tempo supplier, dan piutang kasbon pembeli.</p>
+              </div>
+              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
+                Menu: /retail/finance/*
+              </span>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <h3 className="text-sm font-bold text-slate-900">📈 Laporan Margin Produk</h3>
-                <p className="text-xs text-slate-600">Mengetahui margin persentase (%) dan nominal (Rp) keuntungan setiap item barang yang terjual setelah dipotong HPP beli.</p>
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  <span>Buku Kas & Arus Kas (Cashflow)</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Mencatat seluruh mutasi kas operasional toko di luar kasir POS: Pembayaran listrik, gaji karyawan, sewa ruko, pembelian ATK/kantong plastik, serta transfer saldo dari laci kasir ke rekening bank toko.
+                </p>
               </div>
 
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <h3 className="text-sm font-bold text-slate-900">📦 Laporan Barang Konsinyasi</h3>
-                <p className="text-xs text-slate-600">Mencatat barang titipan supplier/produsen luar, menghitung bagi hasil penjualan, dan membuat bukti setor bagi hasil.</p>
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <TrendingDown className="w-4 h-4 text-rose-600" />
+                  <span>Hutang Dagang Supplier (AP)</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Setiap pembelian barang secara tempo (TOP 14 / 30 hari) masuk ke Buku Hutang. Sistem memberi peringatan merah saat mendekati tanggal jatuh tempo faktur untuk menghindari denda / penghentian suplai.
+                </p>
               </div>
 
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <h3 className="text-sm font-bold text-slate-900">💰 Laba Rugi Komprehensif</h3>
-                <p className="text-xs text-slate-600">Menampilkan pendapatan bersih, HPP barang terjual, beban biaya operasional (listrik, gaji karyawan), dan Laba Bersih toko.</p>
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <CreditCard className="w-4 h-4 text-blue-600" />
+                  <span>Piutang Kasbon Pelanggan (AR)</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Jika toko melayani kasbon pelanggan langganan / member, transaksi di POS dicatat sebagai Piutang. Sistem melacak batas plafon kredit maksimal dan mencetak kartu riwayat pembayaran cicilan hutang.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SECTION 6: Rumus Laba Rugi, Margin % vs Markup % & Konsinyasi             */}
+      {/* ========================================================================= */}
+      {activeTab === 'reports' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-emerald-600" />
+                  <span>Kamus Lengkap Rumus Laba Rugi, Margin % vs Markup % & Konsinyasi</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Rumus finansial baku yang digunakan sistem Bizora untuk menghitung profitabilitas toko Anda.</p>
+              </div>
+              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
+                Menu: /retail/reports/* & /retail/finance/summary
+              </span>
+            </div>
+
+            {/* Perbedaan Krusial: Margin vs Markup */}
+            <div className="p-5 rounded-2xl bg-indigo-50/70 border border-indigo-200 space-y-3">
+              <div className="flex items-center gap-2 text-indigo-950 font-bold text-sm">
+                <Percent className="w-4 h-4 text-indigo-600" />
+                <span>Perbedaan Mendasar: Margin Keuntungan (%) vs Markup Harga (%)</span>
+              </div>
+              <p className="text-xs text-slate-700 leading-relaxed">
+                Banyak pemilik toko UMKM keliru menyamakan Margin dan Markup. Berikut perbedaan rumusnya:
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                <div className="bg-white p-4 rounded-xl border border-indigo-200 space-y-2">
+                  <div className="text-indigo-900 font-bold font-sans text-sm">1. Rumus Margin Keuntungan (%):</div>
+                  <div className="text-blue-700 font-bold">Margin (%) = [(Harga Jual - HPP) ÷ Harga Jual] * 100%</div>
+                  <p className="text-slate-600 font-sans text-[11.5px] leading-relaxed">
+                    Mengukur berapa persen keuntungan bersih yang didapat dari setiap rupiah harga jual yang dibayar pelanggan.
+                  </p>
+                </div>
+
+                <div className="bg-white p-4 rounded-xl border border-indigo-200 space-y-2">
+                  <div className="text-indigo-900 font-bold font-sans text-sm">2. Rumus Markup Harga (%):</div>
+                  <div className="text-purple-700 font-bold">Markup (%) = [(Harga Jual - HPP) ÷ HPP] * 100%</div>
+                  <p className="text-slate-600 font-sans text-[11.5px] leading-relaxed">
+                    Mengukur berapa persen harga dinaikkan di atas harga modal beli (HPP) supplier.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white border border-indigo-200 text-xs font-sans text-slate-800">
+                <strong>Contoh Perbandingan:</strong> Beli barang dari supplier seharga <strong>Rp 80.000 (HPP)</strong>, lalu dijual di toko seharga <strong>Rp 100.000</strong>.
+                <ul className="mt-1.5 space-y-1 list-disc list-inside text-slate-700">
+                  <li>Keuntungan Nominal = Rp 100.000 - Rp 80.000 = <strong>Rp 20.000</strong>.</li>
+                  <li><strong>Markup</strong> = (Rp 20.000 ÷ Rp 80.000) * 100% = <strong className="text-purple-700">25.0%</strong>.</li>
+                  <li><strong>Margin</strong> = (Rp 20.000 ÷ Rp 100.000) * 100% = <strong className="text-blue-700">20.0%</strong>.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Rumus Laba Rugi Komprehensif */}
+            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+              <div className="flex items-center gap-2 text-amber-400">
+                <Calculator className="w-5 h-5" />
+                <h3 className="text-sm font-bold uppercase tracking-wider">Rumus Laporan Laba Rugi Toko Retail (P&L Statement)</h3>
+              </div>
+
+              <div className="space-y-3 font-mono text-xs">
+                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
+                  <div className="text-indigo-300 font-sans font-bold">Langkah 1: Penjualan Bersih (Net Sales)</div>
+                  <div className="text-emerald-400 font-bold">Penjualan Bersih = Total Penjualan Kotor - Diskon - Retur Penjualan</div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
+                  <div className="text-indigo-300 font-sans font-bold">Langkah 2: Laba Kotor (Gross Profit)</div>
+                  <div className="text-emerald-400 font-bold">Laba Kotor = Penjualan Bersih - Total HPP Barang Terjual (COGS)</div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
+                  <div className="text-indigo-300 font-sans font-bold">Langkah 3: Laba Bersih Operasional (Operating Net Profit)</div>
+                  <div className="text-emerald-400 font-bold">Laba Bersih = Laba Kotor - Total Beban Operasional (Gaji + Listrik + Sewa + Plastik)</div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
+                  <div className="text-indigo-300 font-sans font-bold">Langkah 4: Laba Bersih Akhir (Bottom-Line Net Profit)</div>
+                  <div className="text-emerald-400 font-bold">Laba Bersih Akhir = Laba Operasional + Pendapatan Lain (Bunga Bank/Selisih Kas) - Pajak Toko</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rumus Konsinyasi */}
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Package className="w-4 h-4 text-emerald-600" />
+                <span>Rumus Bagi Hasil Barang Konsinyasi (Titip Jual)</span>
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Untuk produk titipan UMKM lokal (misal keripik / kue basah), toko tidak membeli putus di awal. Pembayaran ke supplier titipan dihitung berdasarkan barang yang laku terjual:
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                <div className="p-3 rounded-xl bg-white border border-slate-200">
+                  <div className="text-slate-900 font-bold font-sans">Hak Setor ke Supplier Titipan:</div>
+                  <div className="text-emerald-600 font-bold">Setor = Qty Terjual * Harga Kesepakatan Supplier</div>
+                </div>
+                <div className="p-3 rounded-xl bg-white border border-slate-200">
+                  <div className="text-slate-900 font-bold font-sans">Keuntungan / Komisi Toko:</div>
+                  <div className="text-blue-600 font-bold">Komisi = (Harga Jual Toko - Harga Supplier) * Qty Terjual</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SECTION 7: Simulator Rumus Interaktif                                     */}
+      {/* ========================================================================= */}
+      {activeTab === 'calculator' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <Calculator className="w-5 h-5 text-indigo-600" />
+                  <span>Simulator & Kalkulator Rumus Retail Interaktif</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Uji coba simulasi angka riil untuk melihat otomatisasi perhitungan HPP, Margin %, Markup % dan Profit Rp.</p>
+              </div>
+              <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold border border-indigo-200">
+                Fitur Alat Bantu Edukasi
+              </span>
+            </div>
+
+            {/* Input Form */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700">1. Harga Beli Modal / HPP (Rp):</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={calcBuyPrice}
+                    onChange={(e) => setCalcBuyPrice(Number(e.target.value) || 0)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="80000"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400">Harga per satuan dari supplier</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700">2. Harga Jual Normal Toko (Rp):</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={calcSellPrice}
+                    onChange={(e) => setCalcSellPrice(Number(e.target.value) || 0)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="100000"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400">Harga tag yang tertera ke pembeli</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700">3. Rencana Diskon Promosi (%):</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={calcDiscountPercent}
+                    onChange={(e) => setCalcDiscountPercent(Math.min(100, Math.max(0, Number(e.target.value) || 0)))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="0"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400">Persentase potongan promo (0-100%)</p>
+              </div>
+            </div>
+
+            {/* Output Calculation Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-1">
+                <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Harga Jual Efektif</span>
+                <div className="text-xl font-extrabold text-blue-950 font-mono">{fmtRp(discountedSellPrice)}</div>
+                <p className="text-[10.5px] text-blue-600">Setelah dipotong diskon {calcDiscountPercent}%</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
+                <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Profit Bersih / Pcs</span>
+                <div className="text-xl font-extrabold text-emerald-950 font-mono">{fmtRp(profitNominal)}</div>
+                <p className="text-[10.5px] text-emerald-600">Untung bersih per item terjual</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 space-y-1">
+                <span className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Margin Keuntungan</span>
+                <div className="text-xl font-extrabold text-indigo-950 font-mono">{marginPercent.toFixed(1)}%</div>
+                <p className="text-[10.5px] text-indigo-600">Dihitung dari harga jual akhir</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 space-y-1">
+                <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Markup Harga</span>
+                <div className="text-xl font-extrabold text-purple-950 font-mono">{markupPercent.toFixed(1)}%</div>
+                <p className="text-[10.5px] text-purple-600">Dihitung di atas harga modal beli</p>
+              </div>
+            </div>
+
+            {/* Analisa Kelayakan Bisnis */}
+            <div className={`p-4 rounded-2xl border flex items-start gap-3 ${profitNominal > 0 ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900' : 'bg-rose-50/70 border-rose-200 text-rose-900'}`}>
+              {profitNominal > 0 ? (
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              ) : (
+                <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+              )}
+              <div className="text-xs space-y-1">
+                <strong className="font-bold text-sm block">
+                  {profitNominal > 0 ? '✅ Harga Jual & Margin Sehat' : '⚠️ Perhatian: Harga Jual Berpotensi Rugi!'}
+                </strong>
+                <p className="leading-relaxed">
+                  {profitNominal > 0 
+                    ? `Dengan margin ${marginPercent.toFixed(1)}%, setiap omzet penjualan Rp 1.000.000 akan menghasilkan laba kotor sebesar ${fmtRp(1000000 * (marginPercent / 100))}. Pastikan persentase ini cukup untuk menutup biaya operasional toko (listrik, gaji kasir, sewa tempat).`
+                    : `Harga jual setelah diskon (${fmtRp(discountedSellPrice)}) berada di bawah harga beli modal (${fmtRp(calcBuyPrice)}). Segera naikkan harga jual atau turunkan diskon promosi!`
+                  }
+                </p>
               </div>
             </div>
           </div>
