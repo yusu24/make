@@ -45,6 +45,7 @@ const KulinerAdminLayout = ({ children, title }) => {
       '/kuliner/admin/settings': 'Pengaturan Toko',
       '/kuliner/admin/backup': 'Backup Data Toko',
       '/kuliner/admin/support': 'Pusat Bantuan',
+      '/kuliner/admin/guide': 'Buku Panduan & SOP',
       '/kuliner/admin/profile': 'Pengaturan Profil',
       '/kuliner/subscription': 'Paket Langganan'
     };
@@ -106,7 +107,7 @@ const KulinerAdminLayout = ({ children, title }) => {
       finance: path === '/kuliner/admin/finance-summary' || path === '/kuliner/admin/expenses',
       reports: path === '/kuliner/admin/reports' || path === '/kuliner/admin/analytics' || path === '/kuliner/admin/transactions' || path === '/kuliner/admin/reports-advanced',
       marketing: path === '/kuliner/admin/promos' || path === '/kuliner/admin/reviews',
-      settings: path === '/kuliner/admin/staff' || path === '/kuliner/admin/roles' || path === '/kuliner/admin/settings' || path === '/kuliner/admin/backup' || path === '/kuliner/admin/support'
+      settings: path === '/kuliner/admin/staff' || path === '/kuliner/admin/roles' || path === '/kuliner/admin/settings' || path === '/kuliner/admin/backup' || path === '/kuliner/admin/support' || path === '/kuliner/admin/guide'
     });
   }, [location.pathname]);
 
@@ -545,6 +546,13 @@ const KulinerAdminLayout = ({ children, title }) => {
                       <span>Backup Data Toko</span>
                     </Link>
                   )}
+                  <Link 
+                    to="/kuliner/admin/guide" 
+                    className={`kd-nav-item ${location.pathname === '/kuliner/admin/guide' ? 'active' : ''}`}
+                  >
+                    <span className="kd-nav-icon">📖</span>
+                    <span>Buku Panduan & SOP</span>
+                  </Link>
                   <Link 
                     to="/kuliner/subscription" 
                     className={`kd-nav-item ${location.pathname === '/kuliner/subscription' ? 'active' : ''}`}

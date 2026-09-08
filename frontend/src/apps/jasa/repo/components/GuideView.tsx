@@ -42,7 +42,7 @@ export const GuideView: React.FC<GuideViewProps> = ({
   const [activeSection, setActiveSection] = useState<'flow' | 'category' | 'ai' | 'pos' | 'settings'>('flow');
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-12">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto pb-16">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
