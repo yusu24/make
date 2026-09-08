@@ -18,10 +18,13 @@ class ReportController extends Controller
 {
     public function dashboardStats(Request $request)
     {
-        $totalPonds  = BudidayaPond::count();
-        $activePonds = BudidayaPond::where('status', 'aktif')->count();
+        $tenantId = $request->user()->tenant_id ?? 'TN-001';
 
-        $activeCycles = BudidayaCycle::whereNotIn('status', ['panen'])
+        $totalPonds  = BudidayaPond::where('tenant_id', $tenantId)->count();
+        $activePonds = BudidayaPond::where('tenant_id', $tenantId)->where('status', 'aktif')->count();
+
+        $activeCycles = BudidayaCycle::where('tenant_id', $tenantId)
+            ->whereNotIn('status', ['panen'])
             ->with(['pond', 'species', 'feedings'])
             ->get();
 
@@ -39,24 +42,24 @@ class ReportController extends Controller
             }
         }
 
-        // Financials (Panen + Pemasukan Kas Lainnya)
-        $harvestRevenue = (float) BudidayaHarvest::sum('total_revenue');
+        // Financials (Panen + Pemasukan Kas Lainnya) - Scoped to Tenant
+        $harvestRevenue = (float) BudidayaHarvest::whereHas('cycle', fn($q) => $q->where('tenant_id', $tenantId))->sum('total_revenue');
         $otherIncome = 0;
         try {
-            $otherIncome = (float) BudidayaIncome::sum('amount');
+            $otherIncome = (float) BudidayaIncome::where('tenant_id', $tenantId)->sum('amount');
         } catch (\Throwable $e) {}
         $totalRevenue = $harvestRevenue + $otherIncome;
 
         $totalExpenses = 0;
         try {
-            $totalExpenses = (float) BudidayaExpense::sum('amount');
+            $totalExpenses = (float) BudidayaExpense::where('tenant_id', $tenantId)->sum('amount');
         } catch (\Throwable $e) {}
         $netProfit = $totalRevenue - $totalExpenses;
 
         // Next or Recent Feeding time
         $lastFeeding = null;
         try {
-            $lastFeeding = BudidayaFeeding::latest('created_at')->first();
+            $lastFeeding = BudidayaFeeding::whereHas('cycle', fn($q) => $q->where('tenant_id', $tenantId))->latest('created_at')->first();
         } catch (\Throwable $e) {}
         $nextFeedTime = $lastFeeding ? Carbon::parse($lastFeeding->created_at)->addHours(4)->format('H:i') : '16:00';
 
@@ -71,8 +74,8 @@ class ReportController extends Controller
             $rev = 0;
             $weight = 0;
             try {
-                $rev = (float) BudidayaHarvest::whereBetween('harvest_date', [$start, $end])->sum('total_revenue');
-                $weight = (float) BudidayaHarvest::whereBetween('harvest_date', [$start, $end])->sum('total_weight_kg');
+                $rev = (float) BudidayaHarvest::whereHas('cycle', fn($q) => $q->where('tenant_id', $tenantId))->whereBetween('harvest_date', [$start, $end])->sum('total_revenue');
+                $weight = (float) BudidayaHarvest::whereHas('cycle', fn($q) => $q->where('tenant_id', $tenantId))->whereBetween('harvest_date', [$start, $end])->sum('total_weight_kg');
             } catch (\Throwable $e) {}
 
             $monthlyTrend[] = [
@@ -91,8 +94,8 @@ class ReportController extends Controller
             $rev = 0;
             $weight = 0;
             try {
-                $rev = (float) BudidayaHarvest::whereBetween('harvest_date', [$weekStart, $weekEnd])->sum('total_revenue');
-                $weight = (float) BudidayaHarvest::whereBetween('harvest_date', [$weekStart, $weekEnd])->sum('total_weight_kg');
+                $rev = (float) BudidayaHarvest::whereHas('cycle', fn($q) => $q->where('tenant_id', $tenantId))->whereBetween('harvest_date', [$weekStart, $weekEnd])->sum('total_revenue');
+                $weight = (float) BudidayaHarvest::whereHas('cycle', fn($q) => $q->where('tenant_id', $tenantId))->whereBetween('harvest_date', [$weekStart, $weekEnd])->sum('total_weight_kg');
             } catch (\Throwable $e) {}
 
             $weeklyTrend[] = [
@@ -102,10 +105,11 @@ class ReportController extends Controller
             ];
         }
 
-        // Featured Ponds (Real database ponds)
+        // Featured Ponds (Real database ponds scoped by tenant)
         $featuredPonds = [];
         try {
-            $featuredPonds = BudidayaPond::with(['activeCycle.species'])
+            $featuredPonds = BudidayaPond::where('tenant_id', $tenantId)
+                ->with(['activeCycle.species'])
                 ->orderBy('name')
                 ->take(8)
                 ->get()
@@ -132,10 +136,11 @@ class ReportController extends Controller
                 });
         } catch (\Throwable $e) {}
 
-        // Real Recent Feedings
+        // Real Recent Feedings scoped by tenant
         $recentFeedings = [];
         try {
-            $recentFeedings = BudidayaFeeding::with(['cycle.pond'])
+            $recentFeedings = BudidayaFeeding::whereHas('cycle', fn($q) => $q->where('tenant_id', $tenantId))
+                ->with(['cycle.pond'])
                 ->latest('created_at')
                 ->take(3)
                 ->get()
