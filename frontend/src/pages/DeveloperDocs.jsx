@@ -20,7 +20,9 @@ import {
   Cpu,
   Lock,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Menu,
+  X
 } from 'lucide-react';
 import bizoraLogo from '../assets/bizora-logo.png';
 
@@ -43,7 +45,7 @@ export default function DeveloperDocs() {
     setMobileMenuOpen(false);
     const el = document.getElementById(id);
     if (el) {
-      const yOffset = -90; // offset for fixed header
+      const yOffset = -80; // offset below fixed header
       const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
@@ -64,10 +66,19 @@ export default function DeveloperDocs() {
   return (
     <div className="min-h-screen bg-[#03110e] text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-slate-950 font-sans">
       
-      {/* 1. Fixed Top Navigation */}
+      {/* 1. Single Fixed Top Header (No overlapping second bar) */}
       <header className="fixed top-0 left-0 right-0 h-16 w-full z-50 bg-[#041512]/95 backdrop-blur-md border-b border-[#0f382e]/80 shadow-lg shadow-black/30">
         <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle Menu"
+              className="p-2 -ml-2 rounded-xl text-slate-300 hover:text-white hover:bg-[#06241e] lg:hidden cursor-pointer transition-colors"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
             <Link to="/" className="flex items-center gap-3 group">
               <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden group-hover:scale-105 transition-transform">
                 <img src={bizoraLogo} alt="Bizora" className="w-full h-full object-contain" />
@@ -107,44 +118,40 @@ export default function DeveloperDocs() {
         </div>
       </header>
 
-      {/* 2. Mobile Subheader / Section Selector (Only visible on < lg) */}
-      <div className="fixed top-16 left-0 right-0 z-40 bg-[#051e18] border-b border-[#0f382e] px-4 py-2.5 flex items-center justify-between lg:hidden shadow-md">
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="flex items-center gap-2 text-xs font-bold text-emerald-400 cursor-pointer"
-        >
-          <Layers className="w-4 h-4" />
-          <span>{SECTIONS.find(s => s.id === activeSection)?.title || 'Daftar Menu API'}</span>
-          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${mobileMenuOpen ? 'rotate-90' : ''}`} />
-        </button>
-        <span className="text-[11px] text-slate-400 font-mono">v1.0</span>
-      </div>
-
-      {/* Mobile Drawer Menu */}
+      {/* 2. Mobile Drawer & Backdrop (No layout shift) */}
       {mobileMenuOpen && (
-        <div className="fixed top-26 inset-x-0 bottom-0 z-40 bg-[#03110e]/95 backdrop-blur-md p-4 overflow-y-auto lg:hidden space-y-1">
-          <div className="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">
-            Pilih Modul API
-          </div>
-          {SECTIONS.map((sec) => {
-            const Icon = sec.icon;
-            const isActive = activeSection === sec.id;
-            return (
-              <button
-                key={sec.id}
-                onClick={() => scrollToSection(sec.id)}
-                className={`w-full text-left px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'text-slate-300 hover:bg-[#06241e]'
-                }`}
-              >
-                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
-                <span>{sec.title}</span>
-              </button>
-            );
-          })}
-        </div>
+        <>
+          <div 
+            onClick={() => setMobileMenuOpen(false)} 
+            className="fixed inset-0 top-16 bg-black/60 backdrop-blur-xs z-40 lg:hidden animate-in fade-in duration-200" 
+          />
+          <aside className="fixed top-16 left-0 bottom-0 w-72 bg-[#041915] border-r border-[#0f382e] shadow-2xl z-50 p-5 overflow-y-auto lg:hidden space-y-4 animate-in slide-in-from-left duration-200">
+            <div className="px-2 pt-1 text-[11px] font-bold text-emerald-400 uppercase tracking-wider font-mono flex items-center gap-2">
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Daftar Menu API</span>
+            </div>
+            <nav className="space-y-1">
+              {SECTIONS.map((sec) => {
+                const Icon = sec.icon;
+                const isActive = activeSection === sec.id;
+                return (
+                  <button
+                    key={sec.id}
+                    onClick={() => scrollToSection(sec.id)}
+                    className={`w-full text-left px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'text-slate-300 hover:bg-[#06241e]'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                    <span>{sec.title}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+        </>
       )}
 
       {/* 3. Fully Fixed Left Sidebar on Desktop */}
@@ -191,12 +198,12 @@ export default function DeveloperDocs() {
         </div>
       </aside>
 
-      {/* 4. Scrollable Main Content Area (Offset with left padding for fixed sidebar) */}
-      <div className="lg:pl-80 pt-28 lg:pt-20 px-4 sm:px-8 lg:px-12 pb-20 w-full flex-1">
+      {/* 4. Scrollable Main Content Area (Clean top spacing, no content covered) */}
+      <div className="lg:pl-80 pt-20 px-4 sm:px-8 lg:px-12 pb-24 w-full flex-1">
         <main className="max-w-4xl mx-auto space-y-16">
           
           {/* Section 1: Overview */}
-          <section id="overview" className="space-y-6 pt-4">
+          <section id="overview" className="scroll-mt-24 space-y-6 pt-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/30 text-xs font-bold font-mono">
               <Zap className="w-3.5 h-3.5 text-emerald-400" />
               <span>OVERVIEW & QUICKSTART</span>
@@ -229,7 +236,7 @@ export default function DeveloperDocs() {
           </section>
 
           {/* Section 2: Auth */}
-          <section id="auth" className="space-y-6 pt-6 border-t border-[#0f382e]/80">
+          <section id="auth" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80">
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 font-mono">
               <Key className="w-4 h-4" />
               <span>AUTENTIKASI & KEAMANAN</span>
@@ -259,7 +266,7 @@ Content-Type: application/json`}
           </section>
 
           {/* Section 3: Profile */}
-          <section id="profile" className="space-y-6 pt-6 border-t border-[#0f382e]/80">
+          <section id="profile" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80">
             <div className="flex items-center gap-2 text-xs font-bold text-sky-400 font-mono">
               <Server className="w-4 h-4" />
               <span>ENDPOINT PROFIL</span>
@@ -296,7 +303,7 @@ Content-Type: application/json`}
           </section>
 
           {/* Section 4: Products */}
-          <section id="products" className="space-y-6 pt-6 border-t border-[#0f382e]/80">
+          <section id="products" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80">
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 font-mono">
               <Layers className="w-4 h-4" />
               <span>ENDPOINT PRODUK & KATALOG</span>
@@ -336,7 +343,7 @@ Content-Type: application/json`}
           </section>
 
           {/* Section 5: Orders */}
-          <section id="orders" className="space-y-6 pt-6 border-t border-[#0f382e]/80">
+          <section id="orders" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80">
             <div className="flex items-center gap-2 text-xs font-bold text-amber-400 font-mono">
               <Code2 className="w-4 h-4" />
               <span>ENDPOINT ORDER & POTONG STOK</span>
@@ -371,8 +378,38 @@ Content-Type: application/json`}
             </div>
           </section>
 
-          {/* Section 6: Webhooks */}
-          <section id="webhooks" className="space-y-6 pt-6 border-t border-[#0f382e]/80">
+          {/* Section 6: Stock */}
+          <section id="stock" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80">
+            <div className="flex items-center gap-2 text-xs font-bold text-purple-400 font-mono">
+              <RefreshCw className="w-4 h-4" />
+              <span>ENDPOINT SINKRONISASI STOK REALTIME</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="px-2.5 py-1 bg-purple-950 text-purple-400 border border-purple-800 text-xs font-mono font-bold rounded-lg">GET</span>
+              <h2 className="text-xl font-bold text-white font-mono">/stock</h2>
+            </div>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Mengambil kuota stok terbaru untuk seluruh SKU secara cepat guna keperluan sinkronisasi berkala (polling) e-commerce eksternal.
+            </p>
+
+            <div className="rounded-2xl bg-[#020b09] border border-[#133d34] overflow-hidden">
+              <div className="px-4 py-2.5 bg-[#051814] border-b border-[#133d34] text-xs font-mono text-slate-400 font-bold">
+                Contoh Response JSON (200 OK)
+              </div>
+              <pre className="p-4 font-mono text-xs text-slate-200 overflow-x-auto leading-relaxed">
+{`{
+  "success": true,
+  "data": [
+    { "id": 104, "sku": "SKU-ARABICA-250G", "stock": 48 },
+    { "id": 105, "sku": "SKU-ROBUSTA-250G", "stock": 120 }
+  ]
+}`}
+              </pre>
+            </div>
+          </section>
+
+          {/* Section 7: Webhooks */}
+          <section id="webhooks" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80">
             <div className="flex items-center gap-2 text-xs font-bold text-teal-400 font-mono">
               <Webhook className="w-4 h-4" />
               <span>WEBHOOKS REALTIME & SIGNATURE HMAC</span>
@@ -425,8 +462,8 @@ app.post('/webhook-listener', (req, res) => {
             </div>
           </section>
 
-          {/* Section 7: Errors */}
-          <section id="errors" className="space-y-6 pt-6 border-t border-[#0f382e]/80">
+          {/* Section 8: Errors */}
+          <section id="errors" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80">
             <div className="flex items-center gap-2 text-xs font-bold text-rose-400 font-mono">
               <AlertCircle className="w-4 h-4" />
               <span>STATUS CODE & ERROR HANDLING</span>
@@ -473,8 +510,8 @@ app.post('/webhook-listener', (req, res) => {
             </div>
           </section>
 
-          {/* Section 8: Rate Limit */}
-          <section id="security" className="space-y-6 pt-6 border-t border-[#0f382e]/80 pb-16">
+          {/* Section 9: Rate Limit */}
+          <section id="security" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80 pb-16">
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 font-mono">
               <ShieldCheck className="w-4 h-4" />
               <span>RATE LIMITING & BEST PRACTICES</span>
