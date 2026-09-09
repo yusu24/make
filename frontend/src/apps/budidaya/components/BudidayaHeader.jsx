@@ -21,6 +21,7 @@ const getNavItems = (terms) => [
   { label: 'Pusat Bantuan',       path: '/budidaya/support'   },
   { label: 'Master Data & Satuan', path: '/budidaya/master-data' },
   { label: 'Pengaturan Profil',   path: '/budidaya/settings'  },
+  { label: 'Buku Panduan & SOP',  path: '/budidaya/guide'     },
   { label: 'Backup Data',         path: '/budidaya/backup'    },
   { label: 'Pakan & Logistik',    path: '/budidaya/feeds'     },
   { label: 'Data Satuan',         path: '/budidaya/feed-units' },

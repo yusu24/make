@@ -81,8 +81,11 @@ const PAGE_TITLES = {
   '/retail/supplier-returns':   { title: 'Retur ke Supplier' },
   '/retail/customer-returns':   { title: 'Retur Pelanggan' },
   '/retail/discounts':          { title: 'Kode Diskon' },
-  '/retail/pricelists':         { title: 'Pricelist' },
+  '/retail/pricelists':         { title: 'Harga Grosir & Member' },
+  '/retail/guide':              { title: 'Buku Panduan & SOP' },
   '/retail/settings':           { title: 'Pengaturan Toko' },
+  '/retail/developer-api':      { title: 'Integrasi API & Webhook' },
+  '/retail/backup':             { title: 'Backup Data Toko' },
   '/retail/support':            { title: 'Pusat Bantuan' },
 
   // Kuliner Module
