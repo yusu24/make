@@ -25,7 +25,8 @@ import {
   Split,
   FileSpreadsheet,
   Flame,
-  Award
+  Award,
+  Coins
 } from 'lucide-react';
 
 const KulinerGuide = () => {
