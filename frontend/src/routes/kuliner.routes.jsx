@@ -21,6 +21,7 @@ const KulinerProfile = lazy(() => import('../apps/kuliner/pages/CulinaryProfile'
 const KulinerSubscription = lazy(() => import('../apps/kuliner/pages/Subscription'));
 const KulinerSupport = lazy(() => import('../apps/kuliner/pages/CulinarySupport'));
 const KulinerPromos = lazy(() => import('../apps/kuliner/pages/CulinaryPromos'));
+const KulinerReviews = lazy(() => import('../apps/kuliner/pages/CulinaryReviews'));
 const KulinerGuide = lazy(() => import('../apps/kuliner/pages/KulinerGuide'));
 const KulinerDeveloperApi = lazy(() => import('../apps/kuliner/pages/KulinerDeveloperApi'));
 
