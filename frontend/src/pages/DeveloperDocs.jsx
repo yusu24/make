@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Code2,
@@ -22,7 +22,11 @@ import {
   RefreshCw,
   AlertCircle,
   Menu,
-  X
+  X,
+  Search,
+  HelpCircle,
+  FileCode,
+  Download
 } from 'lucide-react';
 import bizoraLogo from '../assets/bizora-logo.png';
 
@@ -30,6 +34,9 @@ export default function DeveloperDocs() {
   const [activeSection, setActiveSection] = useState('overview');
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [orderLang, setOrderLang] = useState('curl');
+  const [productLang, setProductLang] = useState('curl');
 
   const getOrigin = () => typeof window !== 'undefined' ? window.location.origin : 'https://bizora.id';
   const baseUrl = `${getOrigin()}/api/v1/external`;
@@ -61,12 +68,164 @@ export default function DeveloperDocs() {
     { id: 'webhooks', title: '7. Webhooks & Verifikasi HMAC', icon: Webhook },
     { id: 'errors', title: '8. Status Code & Error Handling', icon: AlertCircle },
     { id: 'security', title: '9. Rate Limit & Best Practices', icon: ShieldCheck },
+    { id: 'faq', title: '10. FAQ & Troubleshooting', icon: HelpCircle },
   ];
+
+  const filteredSections = useMemo(() => {
+    if (!searchQuery.trim()) return SECTIONS;
+    const q = searchQuery.toLowerCase();
+    return SECTIONS.filter(s => s.title.toLowerCase().includes(q) || s.id.toLowerCase().includes(q));
+  }, [searchQuery]);
+
+  const ORDER_SNIPPETS = {
+    curl: `# Buat Transaksi Pesanan Baru & Potong Stok Otomatis
+curl -X POST "${baseUrl}/orders" \\
+  -H "X-API-KEY: bzr_live_9a8f7e6d5c4b3a21..." \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "customer_name": "Budi Santoso",
+    "customer_phone": "08123456789",
+    "payment_method": "ONLINE_TRANSFER",
+    "notes": "Pengiriman kilat express",
+    "items": [
+      { "product_id": 104, "quantity": 2, "price": 65000 }
+    ]
+  }'`,
+
+    javascript: `// JavaScript (Fetch / Axios / Node.js)
+const response = await fetch('${baseUrl}/orders', {
+  method: 'POST',
+  headers: {
+    'X-API-KEY': 'bzr_live_9a8f7e6d5c4b3a21...',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    customer_name: 'Budi Santoso',
+    customer_phone: '08123456789',
+    payment_method: 'ONLINE_TRANSFER',
+    notes: 'Pengiriman kilat express',
+    items: [
+      { product_id: 104, quantity: 2, price: 65000 }
+    ]
+  })
+});
+
+const result = await response.json();
+console.log('Nomor Order:', result.data.order_number);`,
+
+    php: `<?php
+// PHP cURL Order Integration
+$apiKey = 'bzr_live_9a8f7e6d5c4b3a21...';
+$payload = json_encode([
+    'customer_name' => 'Budi Santoso',
+    'customer_phone' => '08123456789',
+    'payment_method' => 'ONLINE_TRANSFER',
+    'items' => [
+        ['product_id' => 104, 'quantity' => 2, 'price' => 65000]
+    ]
+]);
+
+$ch = curl_init('${baseUrl}/orders');
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => $payload,
+    CURLOPT_HTTPHEADER => [
+        'X-API-KEY: ' . $apiKey,
+        'Content-Type: application/json'
+    ]
+]);
+$response = curl_exec($ch);
+curl_close($ch);
+$result = json_decode($response, true);
+?>`,
+
+    python: `import requests
+
+url = "${baseUrl}/orders"
+headers = {
+    "X-API-KEY": "bzr_live_9a8f7e6d5c4b3a21...",
+    "Content-Type": "application/json"
+}
+payload = {
+    "customer_name": "Budi Santoso",
+    "customer_phone": "08123456789",
+    "payment_method": "ONLINE_TRANSFER",
+    "items": [
+        {"product_id": 104, "quantity": 2, "price": 65000}
+    ]
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print("Order Response:", response.json())`,
+
+    go: `package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	url := "${baseUrl}/orders"
+	payload := map[string]interface{}{
+		"customer_name":  "Budi Santoso",
+		"customer_phone": "08123456789",
+		"payment_method": "ONLINE_TRANSFER",
+		"items": []map[string]interface{}{
+			{"product_id": 104, "quantity": 2, "price": 65000},
+		},
+	}
+	jsonData, _ := json.Marshal(payload)
+
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("X-API-KEY", "bzr_live_9a8f7e6d5c4b3a21...")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+	defer resp.Body.Close()
+	fmt.Println("Status:", resp.Status)
+}`
+  };
+
+  const PRODUCT_SNIPPETS = {
+    curl: `# Ambil Katalog Produk & Stok Realtime
+curl -X GET "${baseUrl}/products?search=kopi&limit=20" \\
+  -H "X-API-KEY: bzr_live_9a8f7e6d5c4b3a21..."`,
+
+    javascript: `// JavaScript Fetch
+const res = await fetch('${baseUrl}/products?search=kopi', {
+  headers: { 'X-API-KEY': 'bzr_live_9a8f7e6d5c4b3a21...' }
+});
+const products = await res.json();
+console.log('Daftar Produk:', products.data);`,
+
+    php: `<?php
+$ch = curl_init('${baseUrl}/products?search=kopi');
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => ['X-API-KEY: bzr_live_9a8f7e6d5c4b3a21...']
+]);
+$data = json_decode(curl_exec($ch), true);
+curl_close($ch);
+?>`,
+
+    python: `import requests
+
+res = requests.get(
+    "${baseUrl}/products?search=kopi",
+    headers={"X-API-KEY": "bzr_live_9a8f7e6d5c4b3a21..."}
+)
+print("Products:", res.json())`
+  };
 
   return (
     <div className="min-h-screen bg-[#03110e] text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-slate-950 font-sans">
       
-      {/* 1. Single Fixed Top Header (No overlapping second bar) */}
+      {/* 1. Single Fixed Top Header */}
       <header className="fixed top-0 left-0 right-0 h-16 w-full z-50 bg-[#041512]/95 backdrop-blur-md border-b border-[#0f382e]/80 shadow-lg shadow-black/30">
         <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -118,7 +277,7 @@ export default function DeveloperDocs() {
         </div>
       </header>
 
-      {/* 2. Mobile Drawer & Backdrop (No layout shift) */}
+      {/* 2. Mobile Drawer & Backdrop */}
       {mobileMenuOpen && (
         <>
           <div 
@@ -131,7 +290,7 @@ export default function DeveloperDocs() {
               <span>Daftar Menu API</span>
             </div>
             <nav className="space-y-1">
-              {SECTIONS.map((sec) => {
+              {filteredSections.map((sec) => {
                 const Icon = sec.icon;
                 const isActive = activeSection === sec.id;
                 return (
@@ -162,8 +321,20 @@ export default function DeveloperDocs() {
             <span>Dokumentasi API & Webhooks</span>
           </div>
 
+          {/* Quick Search in Sidebar */}
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Cari endpoint / topik..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 bg-[#020b09] border border-[#0f382e] rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+          </div>
+
           <nav className="space-y-1">
-            {SECTIONS.map((sec) => {
+            {filteredSections.map((sec) => {
               const Icon = sec.icon;
               const isActive = activeSection === sec.id;
               return (
@@ -198,7 +369,7 @@ export default function DeveloperDocs() {
         </div>
       </aside>
 
-      {/* 4. Scrollable Main Content Area (Clean top spacing, no content covered) */}
+      {/* 4. Scrollable Main Content Area */}
       <div className="lg:pl-80 pt-20 px-4 sm:px-8 lg:px-12 pb-24 w-full flex-1">
         <main className="max-w-4xl mx-auto space-y-16">
           
@@ -316,6 +487,39 @@ Content-Type: application/json`}
               Mengambil katalog produk aktif, harga jual, barcode SKU, dan stok saat ini. Mendukung parameter pencarian <code className="text-emerald-400 font-mono">?search=nama_produk</code> dan paginasi <code className="text-emerald-400 font-mono">?page=1&limit=50</code>.
             </p>
 
+            {/* Language Switcher for Products */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 p-1 bg-[#020b09] rounded-xl border border-[#133d34] w-fit">
+                {['curl', 'javascript', 'php', 'python'].map(l => (
+                  <button
+                    key={l}
+                    onClick={() => setProductLang(l)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      productLang === l ? 'bg-emerald-500 text-slate-950 shadow-xs' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {l.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+
+              <div className="rounded-2xl bg-[#020b09] border border-[#133d34] overflow-hidden">
+                <div className="px-4 py-2.5 bg-[#051814] border-b border-[#133d34] flex items-center justify-between">
+                  <span className="text-xs font-mono text-slate-400 font-bold">Contoh Request ({productLang})</span>
+                  <button
+                    onClick={() => copyCode(PRODUCT_SNIPPETS[productLang], 'prod_req')}
+                    className="px-2.5 py-1 bg-[#092922] text-slate-300 hover:text-white text-xs rounded font-sans flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedIndex === 'prod_req' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>Salin</span>
+                  </button>
+                </div>
+                <pre className="p-4 font-mono text-xs text-slate-200 overflow-x-auto leading-relaxed">
+                  {PRODUCT_SNIPPETS[productLang]}
+                </pre>
+              </div>
+            </div>
+
             <div className="rounded-2xl bg-[#020b09] border border-[#133d34] overflow-hidden">
               <div className="px-4 py-2.5 bg-[#051814] border-b border-[#133d34] text-xs font-mono text-slate-400 font-bold">
                 Contoh Response JSON (200 OK)
@@ -356,23 +560,57 @@ Content-Type: application/json`}
               Mencatat transaksi penjualan baru ke sistem Bizora. Stok produk yang dipesan akan otomatis diverifikasi dan dipotong secara realtime dari inventaris toko. Jika pembayaran lunas, webhook event <code className="text-emerald-400 font-mono">order.created</code> akan otomatis terkirim.
             </p>
 
+            {/* Language Switcher for Orders */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 p-1 bg-[#020b09] rounded-xl border border-[#133d34] w-fit">
+                {['curl', 'javascript', 'php', 'python', 'go'].map(l => (
+                  <button
+                    key={l}
+                    onClick={() => setOrderLang(l)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      orderLang === l ? 'bg-amber-500 text-slate-950 shadow-xs' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {l.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+
+              <div className="rounded-2xl bg-[#020b09] border border-[#133d34] overflow-hidden">
+                <div className="px-4 py-2.5 bg-[#051814] border-b border-[#133d34] flex items-center justify-between">
+                  <span className="text-xs font-mono text-slate-400 font-bold">Contoh Request ({orderLang})</span>
+                  <button
+                    onClick={() => copyCode(ORDER_SNIPPETS[orderLang], 'ord_req')}
+                    className="px-2.5 py-1 bg-[#092922] text-slate-300 hover:text-white text-xs rounded font-sans flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedIndex === 'ord_req' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>Salin</span>
+                  </button>
+                </div>
+                <pre className="p-4 font-mono text-xs text-slate-200 overflow-x-auto leading-relaxed">
+                  {ORDER_SNIPPETS[orderLang]}
+                </pre>
+              </div>
+            </div>
+
             <div className="rounded-2xl bg-[#020b09] border border-[#133d34] overflow-hidden">
               <div className="px-4 py-2.5 bg-[#051814] border-b border-[#133d34] text-xs font-mono text-slate-400 font-bold">
-                Contoh Request Body (JSON)
+                Contoh Response JSON Sukses (201 Created)
               </div>
               <pre className="p-4 font-mono text-xs text-slate-200 overflow-x-auto leading-relaxed">
 {`{
-  "customer_name": "Budi Santoso",
-  "customer_phone": "08123456789",
-  "payment_method": "ONLINE_TRANSFER",
-  "notes": "Tolong packing rapi ya",
-  "items": [
-    {
-      "product_id": 104,
-      "quantity": 2,
-      "price": 65000
-    }
-  ]
+  "success": true,
+  "message": "Transaksi order berhasil dibuat",
+  "data": {
+    "order_id": 4892,
+    "order_number": "ORD-20260909-0012",
+    "customer_name": "Budi Santoso",
+    "total_amount": 130000,
+    "payment_method": "ONLINE_TRANSFER",
+    "status": "PAID",
+    "items_count": 1,
+    "created_at": "2026-09-09T08:30:00Z"
+  }
 }`}
               </pre>
             </div>
@@ -511,7 +749,7 @@ app.post('/webhook-listener', (req, res) => {
           </section>
 
           {/* Section 9: Rate Limit */}
-          <section id="security" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80 pb-16">
+          <section id="security" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80">
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 font-mono">
               <ShieldCheck className="w-4 h-4" />
               <span>RATE LIMITING & BEST PRACTICES</span>
@@ -520,8 +758,40 @@ app.post('/webhook-listener', (req, res) => {
             <p className="text-slate-300 text-sm leading-relaxed">
               Untuk menjaga performa dan keandalan sistem multi-tenant, Bizora menerapkan batas default <strong>60 request per menit</strong> per API Key. Jika Anda membutuhkan batas pemanggilan yang lebih tinggi untuk integrasi skala perusahaan (Enterprise), silakan hubungi tim account manager kami.
             </p>
+          </section>
 
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-950 to-teal-950 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-6">
+          {/* Section 10: FAQ & Troubleshooting */}
+          <section id="faq" className="scroll-mt-24 space-y-6 pt-8 border-t border-[#0f382e]/80 pb-16">
+            <div className="flex items-center gap-2 text-xs font-bold text-sky-400 font-mono">
+              <HelpCircle className="w-4 h-4" />
+              <span>FAQ & PEMECAHAN MASALAH</span>
+            </div>
+            <h2 className="text-2xl font-black text-white">Pertanyaan yang Sering Diajukan (FAQ)</h2>
+
+            <div className="space-y-4">
+              <div className="p-5 rounded-2xl bg-[#06241e] border border-[#114539] space-y-2">
+                <h3 className="text-sm font-bold text-emerald-300">Bagaimana jika endpoint webhook server saya sedang down?</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Bizora menerapkan mekanisme otomatis <em>exponential backoff retry</em> hingga 3 kali jika server endpoint Anda merespons dengan kode non-2xx atau mengalami timeout.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-[#06241e] border border-[#114539] space-y-2">
+                <h3 className="text-sm font-bold text-emerald-300">Bagaimana jika transaksi dibuat ketika stok produk sudah 0 atau habis?</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Server akan menolak request dengan status <code className="text-amber-400 font-mono">400 Bad Request</code> dan mengembalikan pesan error jelas: <code className="text-slate-200 font-mono">"Stok produk [Nama Produk] tidak mencukupi"</code> sehingga Anda dapat langsung memberikan notifikasi kepada pembeli.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-[#06241e] border border-[#114539] space-y-2">
+                <h3 className="text-sm font-bold text-emerald-300">Apakah saya bisa membuat lebih dari satu API Key?</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Ya, Anda dapat membuat multiple API Key di portal developer (misalnya kunci terpisah untuk Website Toko, Aplikasi Android, dan Bot WhatsApp) agar lebih mudah mengontrol dan mencabut hak akses secara independen.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-950 to-teal-950 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-6 mt-8">
               <div className="space-y-1">
                 <h3 className="text-base font-bold text-white">Siap Mengintegrasikan Aplikasi Anda?</h3>
                 <p className="text-xs text-slate-300">Dapatkan token API gratis dan mulai uji coba integrasi sekarang.</p>
