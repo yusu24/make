@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RetailStoreBackupExport;
 use App\Models\RetailCategory;
 use App\Models\RetailProduct;
+use App\Models\RetailStockMovement;
 use App\Models\RetailTransaction;
 use App\Models\RetailCustomer;
 use App\Models\RetailSupplier;
@@ -21,6 +22,15 @@ use App\Models\User;
 class RetailBackupController extends Controller
 {
     /**
+     * Resolve the current tenant identifier from request attributes, authenticated user, or headers.
+     */
+    protected function resolveTenantId(Request $request)
+    {
+        return $request->attributes->get('tenant_id')
+            ?: ($request->user()?->tenant_id ?: $request->header('X-Tenant-ID'));
+    }
+
+    /**
      * Get full structured backup dataset for a specific tenant (JSON format).
      */
     public static function getBackupDataForTenant($tenantId)
@@ -29,13 +39,14 @@ class RetailBackupController extends Controller
             'tenant_id' => $tenantId,
             'generated_at' => Carbon::now()->toIso8601String(),
             'module' => 'retail',
-            'settings' => RetailSetting::where('tenant_id', $tenantId)->first(),
-            'categories' => RetailCategory::where('tenant_id', $tenantId)->get(),
-            'outlets' => RetailOutlet::where('tenant_id', $tenantId)->get(),
-            'products' => RetailProduct::where('tenant_id', $tenantId)->with(['units', 'batches', 'serials', 'stock_movements'])->get(),
-            'customers' => RetailCustomer::where('tenant_id', $tenantId)->get(),
-            'suppliers' => RetailSupplier::where('tenant_id', $tenantId)->get(),
-            'transactions' => RetailTransaction::where('tenant_id', $tenantId)->with(['items', 'payments'])->get(),
+            'settings' => RetailSetting::withoutGlobalScopes()->where('tenant_id', $tenantId)->first(),
+            'categories' => RetailCategory::withoutGlobalScopes()->where('tenant_id', $tenantId)->get(),
+            'outlets' => RetailOutlet::withoutGlobalScopes()->where('tenant_id', $tenantId)->get(),
+            'products' => RetailProduct::withoutGlobalScopes()->where('tenant_id', $tenantId)->with(['category', 'supplier', 'multi_units', 'batches', 'serials'])->get(),
+            'stock_movements' => RetailStockMovement::withoutGlobalScopes()->where('tenant_id', $tenantId)->get(),
+            'customers' => RetailCustomer::withoutGlobalScopes()->where('tenant_id', $tenantId)->get(),
+            'suppliers' => RetailSupplier::withoutGlobalScopes()->where('tenant_id', $tenantId)->get(),
+            'transactions' => RetailTransaction::withoutGlobalScopes()->where('tenant_id', $tenantId)->with(['items', 'payments'])->get(),
         ];
     }
 
@@ -44,8 +55,8 @@ class RetailBackupController extends Controller
      */
     public function getSettings(Request $request)
     {
-        $tenantId = $request->attributes->get('tenant_id');
-        $setting = RetailSetting::firstOrCreate(
+        $tenantId = $this->resolveTenantId($request);
+        $setting = RetailSetting::withoutGlobalScopes()->firstOrCreate(
             ['tenant_id' => $tenantId],
             [
                 'auto_backup_enabled' => false,
@@ -54,7 +65,7 @@ class RetailBackupController extends Controller
             ]
         );
 
-        $defaultEmail = $request->user()->email;
+        $defaultEmail = $request->user()?->email;
 
         return response()->json([
             'success' => true,
@@ -80,14 +91,14 @@ class RetailBackupController extends Controller
             'auto_backup_email' => 'nullable|email',
         ]);
 
-        $tenantId = $request->attributes->get('tenant_id');
-        $setting = RetailSetting::firstOrCreate(['tenant_id' => $tenantId]);
+        $tenantId = $this->resolveTenantId($request);
+        $setting = RetailSetting::withoutGlobalScopes()->firstOrCreate(['tenant_id' => $tenantId]);
 
         $setting->update([
             'auto_backup_enabled' => $request->auto_backup_enabled,
             'auto_backup_frequency' => $request->auto_backup_frequency,
             'auto_backup_format' => $request->auto_backup_format,
-            'auto_backup_email' => $request->auto_backup_email ?: $request->user()->email,
+            'auto_backup_email' => $request->auto_backup_email ?: $request->user()?->email,
         ]);
 
         return response()->json([
@@ -108,7 +119,7 @@ class RetailBackupController extends Controller
      */
     public function download(Request $request)
     {
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $this->resolveTenantId($request);
         $format = $request->query('format', 'excel');
         $date = Carbon::now()->format('Ymd_His');
 
@@ -122,7 +133,7 @@ class RetailBackupController extends Controller
         $filename = "backup_retail_{$tenantId}_{$date}.json";
 
         return response()->streamDownload(function () use ($data) {
-            echo json_encode($data, JSON_PRETTY_PRINT);
+            echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         }, $filename, [
             'Content-Type' => 'application/json',
         ]);
@@ -138,7 +149,7 @@ class RetailBackupController extends Controller
             'format' => 'nullable|in:excel,json',
         ]);
 
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $this->resolveTenantId($request);
         $format = $request->input('format', 'excel');
         $date = Carbon::now()->format('Ymd_His');
         $email = $request->email;
@@ -170,7 +181,7 @@ class RetailBackupController extends Controller
             // JSON format
             $filename = "backup_retail_{$tenantId}_{$date}.json";
             $data = self::getBackupDataForTenant($tenantId);
-            $jsonContent = json_encode($data, JSON_PRETTY_PRINT);
+            $jsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
             $tempPath = 'temp/' . $filename;
             Storage::disk('local')->put($tempPath, $jsonContent);
 

@@ -55,8 +55,9 @@ class RetailBackupProductsSheet implements FromCollection, WithTitle, WithHeadin
 
     public function collection()
     {
-        return RetailProduct::where('tenant_id', $this->tenantId)
-            ->with(['category', 'units'])
+        return RetailProduct::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenantId)
+            ->with(['category', 'supplier', 'multi_units'])
             ->get();
     }
 
@@ -84,11 +85,11 @@ class RetailBackupProductsSheet implements FromCollection, WithTitle, WithHeadin
             $p->name,
             $p->category?->name ?? 'Tanpa Kategori',
             $p->unit ?? 'pcs',
-            (float)($p->cost_price ?? $p->price_buy ?? 0),
-            (float)($p->price ?? $p->price_sell ?? 0),
+            (float)($p->price_buy ?? $p->cost_price ?? 0),
+            (float)($p->price_sell ?? $p->price ?? 0),
             (float)($p->stock ?? 0),
-            (float)($p->min_stock ?? $p->stock_min ?? 0),
-            $p->is_active ? 'Aktif' : 'Nonaktif',
+            (float)($p->stock_min ?? $p->min_stock ?? 0),
+            ($p->is_active ?? true) ? 'Aktif' : 'Nonaktif',
         ];
     }
 
@@ -122,7 +123,8 @@ class RetailBackupTransactionsSheet implements FromCollection, WithTitle, WithHe
 
     public function collection()
     {
-        return RetailTransaction::where('tenant_id', $this->tenantId)
+        return RetailTransaction::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenantId)
             ->with(['customer', 'items', 'payments'])
             ->latest('id')
             ->get();
@@ -146,7 +148,7 @@ class RetailBackupTransactionsSheet implements FromCollection, WithTitle, WithHe
 
     public function map($t): array
     {
-        $methods = $t->payments ? $t->payments->pluck('payment_method')->unique()->implode(', ') : ($t->payment_method ?? 'Tunai');
+        $methods = $t->payments ? $t->payments->pluck('payment_method')->filter()->unique()->implode(', ') : ($t->payment_method ?? 'Tunai');
         return [
             $t->invoice_no ?? ('#INV-' . $t->id),
             $t->created_at ? Carbon::parse($t->created_at)->translatedFormat('d M Y H:i') : '-',
@@ -191,7 +193,9 @@ class RetailBackupCustomersSheet implements FromCollection, WithTitle, WithHeadi
 
     public function collection()
     {
-        return RetailCustomer::where('tenant_id', $this->tenantId)->get();
+        return RetailCustomer::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenantId)
+            ->get();
     }
 
     public function headings(): array
@@ -248,7 +252,9 @@ class RetailBackupSuppliersSheet implements FromCollection, WithTitle, WithHeadi
 
     public function collection()
     {
-        return RetailSupplier::where('tenant_id', $this->tenantId)->get();
+        return RetailSupplier::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenantId)
+            ->get();
     }
 
     public function headings(): array
@@ -305,8 +311,8 @@ class RetailBackupStoreInfoSheet implements FromCollection, WithTitle, WithHeadi
 
     public function collection()
     {
-        $setting = RetailSetting::where('tenant_id', $this->tenantId)->first();
-        $tenant = Tenant::where('tenant_id', $this->tenantId)->first();
+        $setting = RetailSetting::withoutGlobalScopes()->where('tenant_id', $this->tenantId)->first();
+        $tenant = Tenant::where('tenant_id', $this->tenantId)->orWhere('id', $this->tenantId)->first();
 
         $rows = [
             (object)['label' => 'ID Tenant', 'value' => $this->tenantId],

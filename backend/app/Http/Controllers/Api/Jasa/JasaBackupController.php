@@ -39,12 +39,21 @@ class JasaBackupController extends Controller
     }
 
     /**
+     * Resolve the current tenant identifier from request attributes, authenticated user, or headers.
+     */
+    protected function resolveTenantId(Request $request)
+    {
+        return $request->attributes->get('tenant_id')
+            ?: ($request->user()?->tenant_id ?: $request->header('X-Tenant-ID'));
+    }
+
+    /**
      * GET /api/jasa/settings/backup/config
      * Return current backup settings for the authenticated tenant.
      */
     public function getSettings(Request $request)
     {
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $this->resolveTenantId($request);
 
         $setting = JasaSetting::firstOrCreate(
             ['tenant_id' => $tenantId],
@@ -84,14 +93,14 @@ class JasaBackupController extends Controller
             'auto_backup_email'     => 'nullable|email',
         ]);
 
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $this->resolveTenantId($request);
         $setting  = JasaSetting::firstOrCreate(['tenant_id' => $tenantId]);
 
         $setting->update([
             'auto_backup_enabled'   => $request->auto_backup_enabled,
             'auto_backup_frequency' => $request->auto_backup_frequency,
             'auto_backup_format'    => $request->auto_backup_format,
-            'auto_backup_email'     => $request->auto_backup_email ?: $request->user()->email,
+            'auto_backup_email'     => $request->auto_backup_email ?: $request->user()?->email,
         ]);
 
         return response()->json([
@@ -115,7 +124,7 @@ class JasaBackupController extends Controller
      */
     public function download(Request $request)
     {
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $this->resolveTenantId($request);
         $format   = $request->query('format', 'excel');
         $date     = Carbon::now()->format('Ymd_His');
 
@@ -146,7 +155,7 @@ class JasaBackupController extends Controller
             'format' => 'nullable|in:excel,json',
         ]);
 
-        $tenantId = $request->attributes->get('tenant_id');
+        $tenantId = $this->resolveTenantId($request);
         $format   = $request->input('format', 'excel');
         $date     = Carbon::now()->format('Ymd_His');
         $email    = $request->email;
