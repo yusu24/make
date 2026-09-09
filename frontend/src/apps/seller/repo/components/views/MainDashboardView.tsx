@@ -50,9 +50,22 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
   const pendingOrders = orders.filter((o) => o.status === 'Perlu Diproses');
   const lowStockProducts = products.filter((p) => p.status === 'Stok Menipis' || p.status === 'Habis');
 
-  const totalOmsetToday = stores.reduce((sum, s) => sum + s.revenueToday, 0);
-  const totalOrdersToday = stores.reduce((sum, s) => sum + s.totalOrdersToday, 0);
-  const totalEscrow = stores.reduce((sum, s) => sum + s.pendingEscrow, 0);
+  const todayStr = new Date().toISOString().substring(0, 10);
+  const ordersToday = orders.filter((o) => (o.orderDate || '').substring(0, 10) === todayStr);
+
+  const totalOmsetToday = stores.length > 0 && stores.some((s) => (Number(s.revenueToday) || 0) > 0)
+    ? stores.reduce((sum, s) => sum + (Number(s.revenueToday) || 0), 0)
+    : ordersToday.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
+
+  const totalOrdersToday = stores.length > 0 && stores.some((s) => (Number(s.totalOrdersToday) || 0) > 0)
+    ? stores.reduce((sum, s) => sum + (Number(s.totalOrdersToday) || 0), 0)
+    : ordersToday.length;
+
+  const storesEscrow = stores.reduce((sum, s) => sum + (Number(s.pendingEscrow) || 0), 0);
+  const inFlightOrdersEscrow = orders
+    .filter((o) => o.status === 'Perlu Diproses' || o.status === 'Dalam Pengiriman' || o.status === 'Perlu Dikirim' || o.status === 'Dikirim')
+    .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
+  const totalEscrow = storesEscrow > 0 ? storesEscrow : inFlightOrdersEscrow;
 
   // Real 7-day revenue trend from actual orders — Retail has no marketplace
   // integration, so this is a single "Omset" series (not a per-marketplace

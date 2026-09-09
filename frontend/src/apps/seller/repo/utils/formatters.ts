@@ -1,12 +1,14 @@
 import { MarketplacePlatform } from '../types';
 
-export function formatIDR(amount: number): string {
+export function formatIDR(amount: number | string | null | undefined): string {
+  const numericAmount = typeof amount === 'number' ? amount : parseFloat(String(amount || 0));
+  const safeAmount = Number.isNaN(numericAmount) || !Number.isFinite(numericAmount) ? 0 : numericAmount;
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(safeAmount);
 }
 
 export function parseFormattedNumber(val: string | number): number {

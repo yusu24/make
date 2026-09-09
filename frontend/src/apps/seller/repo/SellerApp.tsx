@@ -374,28 +374,11 @@ export default function App() {
           setProducts(mapped);
         }
 
-        // 2. Channels
-        const rawChannels = sellerChannelRes.data?.data || [];
-        if (Array.isArray(rawChannels) && rawChannels.length > 0) {
-          const mappedChannels: StoreChannel[] = rawChannels.map((c: any) => ({
-            id: c.id?.toString(),
-            name: c.store_name,
-            platform: c.platform === 'shopee' ? 'Shopee' : c.platform === 'tokopedia' ? 'Tokopedia' : c.platform === 'tiktok' ? 'TikTok Shop' : c.platform === 'lazada' ? 'Lazada' : c.platform,
-            storeName: c.store_name,
-            accountName: c.account_id || c.store_name,
-            status: c.status === 'connected' ? 'Connected' : 'Disconnected',
-            autoSync: !!c.auto_sync,
-            lastSync: c.last_sync_at ? new Date(c.last_sync_at).toLocaleString('id-ID') : 'Belum sync',
-            revenueToday: 0,
-            totalOrdersToday: 0,
-          }));
-          setStores(mappedChannels);
-        }
-
-        // 3. Orders
+        // 2. Orders
         const rawOrders = sellerOrderRes.data?.data || [];
+        let mappedOrders: Order[] = [];
         if (Array.isArray(rawOrders) && rawOrders.length > 0) {
-          const mappedOrders: Order[] = rawOrders.map((o: any) => ({
+          mappedOrders = rawOrders.map((o: any) => ({
             id: o.id?.toString(),
             orderNumber: o.order_no || `ORD-${o.id}`,
             platform: o.platform === 'shopee' ? 'Shopee' : o.platform === 'tokopedia' ? 'Tokopedia' : o.platform === 'tiktok' ? 'TikTok Shop' : o.platform === 'lazada' ? 'Lazada' : 'Manual/Offline',
@@ -423,6 +406,39 @@ export default function App() {
             isPrintedAWB: false,
           }));
           setOrders(mappedOrders);
+        }
+
+        // 3. Channels
+        const rawChannels = sellerChannelRes.data?.data || [];
+        if (Array.isArray(rawChannels) && rawChannels.length > 0) {
+          const todayDateStr = new Date().toISOString().substring(0, 10);
+          const mappedChannels: StoreChannel[] = rawChannels.map((c: any) => {
+            const platformName = c.platform === 'shopee' ? 'Shopee' : c.platform === 'tokopedia' ? 'Tokopedia' : c.platform === 'tiktok' ? 'TikTok Shop' : c.platform === 'lazada' ? 'Lazada' : (c.platform || 'Shopee');
+            const chOrders = mappedOrders.filter((o) => o.platform?.toLowerCase() === platformName.toLowerCase());
+            const chOrdersToday = chOrders.filter((o) => (o.orderDate || '').substring(0, 10) === todayDateStr);
+            const chRevToday = chOrdersToday.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+            const chPendingEscrow = c.pending_escrow !== undefined && c.pending_escrow !== null
+              ? Number(c.pending_escrow) || 0
+              : chOrders.filter((o) => o.status === 'Perlu Diproses' || o.status === 'Dalam Pengiriman').reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+            return {
+              id: c.id?.toString(),
+              name: c.store_name,
+              platform: platformName,
+              storeName: c.store_name,
+              accountName: c.account_id || c.store_name,
+              storeCode: c.store_code || `STR-${c.id}`,
+              connected: c.status === 'connected',
+              status: c.status === 'connected' ? 'Connected' : 'Disconnected',
+              autoSync: !!c.auto_sync,
+              lastSync: c.last_sync_at ? new Date(c.last_sync_at).toLocaleString('id-ID') : 'Belum sync',
+              lastSyncAt: c.last_sync_at ? new Date(c.last_sync_at).toLocaleString('id-ID') : 'Belum sync',
+              revenueToday: chRevToday,
+              totalOrdersToday: chOrdersToday.length,
+              pendingEscrow: chPendingEscrow,
+            };
+          });
+          setStores(mappedChannels);
         }
 
         // 4. Expenses
