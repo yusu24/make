@@ -13,12 +13,6 @@ const getNavItems = (terms) => [
     path: '/budidaya/dashboard',
   },
   {
-    type: 'link',
-    label: 'Buku Panduan & SOP',
-    icon: 'menu_book',
-    path: '/budidaya/guide',
-  },
-  {
     type: 'dropdown',
     id: 'operasional',
     label: 'Operasional',
