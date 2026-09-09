@@ -27,6 +27,7 @@ import bizoraLogo from '../assets/bizora-logo.png';
 export default function DeveloperDocs() {
   const [activeSection, setActiveSection] = useState('overview');
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getOrigin = () => typeof window !== 'undefined' ? window.location.origin : 'https://bizora.id';
   const baseUrl = `${getOrigin()}/api/v1/external`;
@@ -35,6 +36,17 @@ export default function DeveloperDocs() {
     navigator.clipboard.writeText(code);
     setCopiedIndex(idx);
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const scrollToSection = (id) => {
+    setActiveSection(id);
+    setMobileMenuOpen(false);
+    const el = document.getElementById(id);
+    if (el) {
+      const yOffset = -90; // offset for fixed header
+      const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
   };
 
   const SECTIONS = [
@@ -52,12 +64,12 @@ export default function DeveloperDocs() {
   return (
     <div className="min-h-screen bg-[#03110e] text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-slate-950 font-sans">
       
-      {/* Fixed Top Navigation */}
-      <header className="fixed top-0 left-0 right-0 w-full z-50 bg-[#041512]/95 backdrop-blur-md border-b border-[#0f382e]/80 shadow-lg shadow-black/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+      {/* 1. Fixed Top Navigation */}
+      <header className="fixed top-0 left-0 right-0 h-16 w-full z-50 bg-[#041512]/95 backdrop-blur-md border-b border-[#0f382e]/80 shadow-lg shadow-black/30">
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden group-hover:scale-105 transition-transform">
+              <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden group-hover:scale-105 transition-transform">
                 <img src={bizoraLogo} alt="Bizora" className="w-full h-full object-contain" />
               </div>
               <span className="text-xl font-black text-white font-mono tracking-wider">
@@ -69,23 +81,24 @@ export default function DeveloperDocs() {
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-bold">
+          <div className="flex items-center gap-3 sm:gap-4 text-xs font-bold">
             <Link
               to="/"
               className="text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Kembali ke Beranda</span>
+              <span className="hidden sm:inline">Kembali ke Beranda</span>
+              <span className="sm:hidden">Beranda</span>
             </Link>
             <Link
               to="/login"
-              className="hidden sm:inline-block px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-[#082620] border border-[#14493e] transition-colors"
+              className="hidden md:inline-block px-3.5 py-2 rounded-xl text-slate-300 hover:text-white bg-[#082620] border border-[#14493e] transition-colors"
             >
               Masuk Dashboard
             </Link>
             <Link
               to="/register"
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold shadow-md shadow-emerald-500/20 transition-all flex items-center gap-1.5"
+              className="px-3.5 sm:px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold shadow-md shadow-emerald-500/20 transition-all flex items-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Daftar Akun</span>
@@ -94,14 +107,54 @@ export default function DeveloperDocs() {
         </div>
       </header>
 
-      {/* Main Documentation Container (offset for fixed header) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* Left Sidebar Menu */}
-        <aside className="lg:col-span-3 sticky top-24 max-h-[calc(100vh-7.5rem)] overflow-y-auto space-y-2 bg-[#041915]/90 p-4 rounded-2xl border border-[#0f382e]/80 backdrop-blur-sm scrollbar-thin scrollbar-thumb-emerald-900">
+      {/* 2. Mobile Subheader / Section Selector (Only visible on < lg) */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-[#051e18] border-b border-[#0f382e] px-4 py-2.5 flex items-center justify-between lg:hidden shadow-md">
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="flex items-center gap-2 text-xs font-bold text-emerald-400 cursor-pointer"
+        >
+          <Layers className="w-4 h-4" />
+          <span>{SECTIONS.find(s => s.id === activeSection)?.title || 'Daftar Menu API'}</span>
+          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${mobileMenuOpen ? 'rotate-90' : ''}`} />
+        </button>
+        <span className="text-[11px] text-slate-400 font-mono">v1.0</span>
+      </div>
+
+      {/* Mobile Drawer Menu */}
+      {mobileMenuOpen && (
+        <div className="fixed top-26 inset-x-0 bottom-0 z-40 bg-[#03110e]/95 backdrop-blur-md p-4 overflow-y-auto lg:hidden space-y-1">
           <div className="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">
-            Daftar Modul & API
+            Pilih Modul API
           </div>
+          {SECTIONS.map((sec) => {
+            const Icon = sec.icon;
+            const isActive = activeSection === sec.id;
+            return (
+              <button
+                key={sec.id}
+                onClick={() => scrollToSection(sec.id)}
+                className={`w-full text-left px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'text-slate-300 hover:bg-[#06241e]'
+                }`}
+              >
+                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <span>{sec.title}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 3. Fully Fixed Left Sidebar on Desktop */}
+      <aside className="fixed top-16 bottom-0 left-0 w-72 lg:w-80 overflow-y-auto bg-[#041915] border-r border-[#0f382e]/80 p-5 z-40 hidden lg:flex lg:flex-col justify-between scrollbar-thin scrollbar-thumb-emerald-950">
+        <div className="space-y-4">
+          <div className="px-2 pt-1 text-[11px] font-bold text-emerald-400 uppercase tracking-wider font-mono flex items-center gap-2">
+            <Terminal className="w-3.5 h-3.5" />
+            <span>Dokumentasi API & Webhooks</span>
+          </div>
+
           <nav className="space-y-1">
             {SECTIONS.map((sec) => {
               const Icon = sec.icon;
@@ -109,14 +162,10 @@ export default function DeveloperDocs() {
               return (
                 <button
                   key={sec.id}
-                  onClick={() => {
-                    setActiveSection(sec.id);
-                    const el = document.getElementById(sec.id);
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all cursor-pointer ${
+                  onClick={() => scrollToSection(sec.id)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-xs'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-[#06241e]'
                   }`}
                 >
@@ -126,26 +175,28 @@ export default function DeveloperDocs() {
               );
             })}
           </nav>
+        </div>
 
-          <div className="pt-4 border-t border-[#0f382e]/80 mt-4 px-2 space-y-2">
-            <div className="text-[11px] text-slate-400">
-              Butuh bantuan implementasi?
-            </div>
-            <a
-              href="mailto:support@bizora.id"
-              className="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
-            >
-              <span>Hubungi Tim Integrasi</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+        <div className="pt-4 border-t border-[#0f382e]/80 px-2 space-y-2">
+          <div className="text-[11px] text-slate-400">
+            Butuh bantuan teknis / integrasi?
           </div>
-        </aside>
+          <a
+            href="mailto:support@bizora.id"
+            className="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
+          >
+            <span>Hubungi Tim Integrasi</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      </aside>
 
-        {/* Right Content Area */}
-        <main className="lg:col-span-9 space-y-16">
+      {/* 4. Scrollable Main Content Area (Offset with left padding for fixed sidebar) */}
+      <div className="lg:pl-80 pt-28 lg:pt-20 px-4 sm:px-8 lg:px-12 pb-20 w-full flex-1">
+        <main className="max-w-4xl mx-auto space-y-16">
           
           {/* Section 1: Overview */}
-          <section id="overview" className="space-y-6 pt-2">
+          <section id="overview" className="space-y-6 pt-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/30 text-xs font-bold font-mono">
               <Zap className="w-3.5 h-3.5 text-emerald-400" />
               <span>OVERVIEW & QUICKSTART</span>
