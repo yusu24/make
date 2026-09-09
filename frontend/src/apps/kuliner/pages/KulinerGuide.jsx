@@ -406,13 +406,215 @@ const KulinerGuide = () => {
                 <div>
                   <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-emerald-600" />
-                    <span>Rumus Laba Rugi Resto & Matriks Menu Engineering</span>
+                    <span>Rumus Laba Rugi Resto, Indikator F&B & Matriks Menu Engineering</span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-1">Strategi optimasi keuntungan menu restoran berbasis profit margin dan popularitas.</p>
+                  <p className="text-xs text-slate-500 mt-1">Struktur perhitungan laba rugi standar industri F&B, Food Cost %, Prime Cost %, BEP, dan optimasi menu.</p>
                 </div>
                 <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
-                  Menu: /kuliner/admin/reports-advanced
+                  Menu: /kuliner/admin/reports-advanced & /kuliner/admin/finance
                 </span>
+              </div>
+
+              {/* Papan Rumus Laba Rugi Utama Restoran */}
+              <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <h3 className="text-sm font-extrabold text-emerald-400 flex items-center gap-2">
+                    <Coins className="w-4 h-4" />
+                    <span>Struktur Resmi Laporan Laba Rugi Restoran (P&L Resto)</span>
+                  </h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
+                    Standar Akuntansi F&B
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                  <div className="space-y-2">
+                    <div className="p-3 bg-slate-800/90 rounded-xl space-y-1">
+                      <div className="text-slate-400 font-sans font-semibold">1. Pendapatan Penjualan Bersih (Net Revenue):</div>
+                      <div className="text-emerald-300 font-bold">Net Revenue = Total Penjualan Kotor - Diskon Promo</div>
+                      <div className="text-[11px] text-slate-400 font-sans">*Pajak PB1 10% & Service Charge tidak dihitung sebagai omzet resto karena merupakan titipan kas.</div>
+                    </div>
+
+                    <div className="p-3 bg-slate-800/90 rounded-xl space-y-1">
+                      <div className="text-slate-400 font-sans font-semibold">2. Total HPP Makanan & Minuman (COGS):</div>
+                      <div className="text-rose-300 font-bold">Total HPP = Σ (Qty Menu Terjual × HPP Resep BOM) + Rugi Waste Bahan</div>
+                    </div>
+
+                    <div className="p-3 bg-slate-800/90 rounded-xl space-y-1">
+                      <div className="text-slate-400 font-sans font-semibold">3. Laba Kotor Resto (Gross Profit):</div>
+                      <div className="text-amber-300 font-bold">Laba Kotor = Net Revenue - Total HPP Bahan</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="p-3 bg-slate-800/90 rounded-xl space-y-1">
+                      <div className="text-slate-400 font-sans font-semibold">4. Beban Operasional Resto (Opex):</div>
+                      <div className="text-rose-300 font-bold">Opex = Gaji Staf + Sewa Tempat + Listrik/Air/Gas LPG + Kemasan/Takeaway + Software/Marketing</div>
+                    </div>
+
+                    <div className="p-3 bg-slate-800/90 rounded-xl space-y-1">
+                      <div className="text-slate-400 font-sans font-semibold">5. Laba Bersih Resto (Net Profit):</div>
+                      <div className="text-emerald-400 font-bold text-sm">Laba Bersih = Laba Kotor - Total Beban Operasional</div>
+                    </div>
+
+                    <div className="p-3 bg-slate-800/90 rounded-xl space-y-1">
+                      <div className="text-slate-400 font-sans font-semibold">6. Persentase Laba Bersih (Net Profit Margin %):</div>
+                      <div className="text-teal-300 font-bold">Net Margin % = (Laba Bersih ÷ Net Revenue) × 100%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Indikator Vital F&B Resto */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Percent className="w-4 h-4 text-indigo-600" />
+                  <span>3 Indikator Keuangan Kunci Restoran / Kafe yang Sehat:</span>
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-900">Food Cost %</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">Ideal: 28% - 35%</span>
+                    </div>
+                    <div className="font-mono text-xs font-bold text-emerald-800 bg-white p-2.5 rounded-lg border border-emerald-200">
+                      Food Cost % = (HPP Bahan ÷ Harga Jual) × 100%
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Jika Food Cost di atas 40%, profit resto Anda akan terancam habis oleh biaya bahan baku mentah.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-blue-900">Labor Cost %</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-200 text-blue-900">Ideal: 15% - 25%</span>
+                    </div>
+                    <div className="font-mono text-xs font-bold text-blue-800 bg-white p-2.5 rounded-lg border border-blue-200">
+                      Labor Cost % = (Total Gaji ÷ Net Revenue) × 100%
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Total pengeluaran gaji juru masak (koki), barista, kasir, dan pramusaji terhadap total omzet bulanan.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-purple-50 border border-purple-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-purple-900">Prime Cost %</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-200 text-purple-900">Wajib &lt; 60%</span>
+                    </div>
+                    <div className="font-mono text-xs font-bold text-purple-800 bg-white p-2.5 rounded-lg border border-purple-200">
+                      Prime Cost % = Food Cost % + Labor Cost %
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Total gabungan biaya bahan + gaji. Jika Prime Cost melebihi 65%, resto dipastikan rugi setelah membayar sewa & listrik.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rumus Titik Impas (BEP Resto) */}
+              <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
+                <h3 className="text-sm font-bold text-amber-950 flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-amber-700" />
+                  <span>Rumus Titik Impas Resto (Break-Even Point / BEP)</span>
+                </h3>
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  Menghitung berapa omzet minimal atau porsi yang wajib terjual per bulan agar resto tidak mengalami kerugian operasional:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                  <div className="p-3 bg-white rounded-xl border border-amber-200 space-y-1">
+                    <div className="font-sans font-bold text-amber-900">1. BEP Nominal Omzet Bulanan (Rp):</div>
+                    <div className="font-bold text-amber-800">BEP (Rp) = Biaya Tetap (Sewa + Gaji + Listrik) ÷ [1 - (Food Cost % ÷ 100)]</div>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-amber-200 space-y-1">
+                    <div className="font-sans font-bold text-amber-900">2. BEP Target Penjualan Harian (Porsi/Hari):</div>
+                    <div className="font-bold text-amber-800">Target Harian = BEP Nominal ÷ (Harga Rata-Rata Menu × 30 Hari)</div>
+                  </div>
+                </div>
+
+                <div className="text-xs text-slate-600 pt-1">
+                  <em>Contoh: Biaya Tetap bulanan Rp 25.000.000, Food Cost 30% (0.3). Maka BEP Omzet = Rp 25.000.000 / (1 - 0.3) = <strong>Rp 35.714.285 / bulan</strong> (atau ~Rp 1.190.000 / hari).</em>
+                </div>
+              </div>
+
+              {/* Tabel Studi Kasus Angka Riil */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <FileSpreadsheet className="w-4 h-4 text-teal-600" />
+                  <span>Studi Kasus: Contoh Perhitungan Laba Rugi Resto / Cafe Sebulan (Omzet Rp 100 Juta)</span>
+                </h3>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-200/80 text-slate-800 font-bold border-b border-slate-300">
+                        <th className="p-2.5">Komponen Keuangan</th>
+                        <th className="p-2.5">Nominal (Rp)</th>
+                        <th className="p-2.5">Rasio (%)</th>
+                        <th className="p-2.5">Evaluasi Kesehatan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 font-mono">
+                      <tr className="bg-white">
+                        <td className="p-2.5 font-bold font-sans">Penjualan Kotor (Gross Sales)</td>
+                        <td className="p-2.5 text-slate-900 font-bold">Rp 100.000.000</td>
+                        <td className="p-2.5 text-slate-600">100.0%</td>
+                        <td className="p-2.5 text-emerald-700 font-sans font-semibold">Baseline 100%</td>
+                      </tr>
+                      <tr className="bg-slate-50/50">
+                        <td className="p-2.5 text-rose-700 font-sans">(-) HPP Bahan Baku Makanan & Minuman</td>
+                        <td className="p-2.5 text-rose-700">- Rp 31.000.000</td>
+                        <td className="p-2.5 text-rose-700">31.0%</td>
+                        <td className="p-2.5 text-emerald-700 font-sans">Sangat Sehat (Food Cost &lt; 35%)</td>
+                      </tr>
+                      <tr className="bg-slate-50/50">
+                        <td className="p-2.5 text-rose-700 font-sans">(-) Kerugian Bahan Basi / Salah Masak (Waste)</td>
+                        <td className="p-2.5 text-rose-700">- Rp 1.500.000</td>
+                        <td className="p-2.5 text-rose-700">1.5%</td>
+                        <td className="p-2.5 text-emerald-700 font-sans">Terkendali (Waste &lt; 2%)</td>
+                      </tr>
+                      <tr className="bg-emerald-50/50 font-bold text-emerald-900">
+                        <td className="p-2.5 font-sans">(=) Laba Kotor Resto (Gross Profit)</td>
+                        <td className="p-2.5">Rp 67.500.000</td>
+                        <td className="p-2.5">67.5%</td>
+                        <td className="p-2.5 font-sans">Margin Kotor Tebal</td>
+                      </tr>
+                      <tr className="bg-white">
+                        <td className="p-2.5 text-slate-700 font-sans">(-) Gaji Karyawan Dapur & Kasir (Labor Cost)</td>
+                        <td className="p-2.5 text-rose-700">- Rp 18.000.000</td>
+                        <td className="p-2.5 text-slate-600">18.0%</td>
+                        <td className="p-2.5 text-emerald-700 font-sans">Prime Cost = 49% (Di bawah 60% ✓)</td>
+                      </tr>
+                      <tr className="bg-white">
+                        <td className="p-2.5 text-slate-700 font-sans">(-) Sewa Ruko / Tempat Bulanan</td>
+                        <td className="p-2.5 text-rose-700">- Rp 8.000.000</td>
+                        <td className="p-2.5 text-slate-600">8.0%</td>
+                        <td className="p-2.5 text-slate-600 font-sans">Standar Lokasi Strategis</td>
+                      </tr>
+                      <tr className="bg-white">
+                        <td className="p-2.5 text-slate-700 font-sans">(-) Listrik, Air, Gas LPG & Wifi</td>
+                        <td className="p-2.5 text-rose-700">- Rp 5.000.000</td>
+                        <td className="p-2.5 text-slate-600">5.0%</td>
+                        <td className="p-2.5 text-slate-600 font-sans">Utilitas Resto</td>
+                      </tr>
+                      <tr className="bg-white">
+                        <td className="p-2.5 text-slate-700 font-sans">(-) Kemasan Takeaway, Kantong & Sedotan</td>
+                        <td className="p-2.5 text-rose-700">- Rp 3.500.000</td>
+                        <td className="p-2.5 text-slate-600">3.5%</td>
+                        <td className="p-2.5 text-slate-600 font-sans">Packaging Cost</td>
+                      </tr>
+                      <tr className="bg-emerald-100/80 font-extrabold text-emerald-950 text-sm">
+                        <td className="p-3 font-sans">(=) Laba Bersih Resto (Net Profit)</td>
+                        <td className="p-3 text-emerald-800">Rp 33.000.000</td>
+                        <td className="p-3 text-emerald-800">33.0%</td>
+                        <td className="p-3 font-sans text-emerald-800">Sangat Menguntungkan (Net &gt; 20% ✓)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* 4 Kuadran Menu Engineering */}
