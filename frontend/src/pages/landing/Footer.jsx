@@ -58,6 +58,8 @@ export default function Footer({ categories, logoUrl, onScrollTo, brandDesc, add
               <li><a href="#beranda" onClick={(e) => handleNavClick(e, 'beranda')} className="hover:text-emerald-400 transition-colors">Beranda</a></li>
               <li><a href="#fitur" onClick={(e) => handleNavClick(e, 'fitur')} className="hover:text-emerald-400 transition-colors">Fitur Platform</a></li>
               <li><a href="#cara-kerja" onClick={(e) => handleNavClick(e, 'cara-kerja')} className="hover:text-emerald-400 transition-colors">Cara Kerja</a></li>
+              <li><a href="#developer" onClick={(e) => handleNavClick(e, 'developer')} className="hover:text-emerald-400 transition-colors">API &amp; Webhook</a></li>
+              <li><a href="/developers" className="text-emerald-400 hover:underline">Dokumentasi API</a></li>
               <li><a href="#testimoni" onClick={(e) => handleNavClick(e, 'testimoni')} className="hover:text-emerald-400 transition-colors">Testimoni</a></li>
             </ul>
           </div>

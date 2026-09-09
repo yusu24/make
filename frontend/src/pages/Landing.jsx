@@ -14,6 +14,7 @@ import HowItWorks from './landing/HowItWorks'
 import RoiCalculator from './landing/RoiCalculator'
 import Testimonials from './landing/Testimonials'
 import FaqSection from './landing/FaqSection'
+import DeveloperSection from './landing/DeveloperSection'
 import Footer from './landing/Footer'
 import PromoBanner from './landing/PromoBanner'
 import BudidayaSubtypeModal from './landing/BudidayaSubtypeModal'
@@ -164,6 +165,8 @@ export default function Landing() {
       )}
 
       <HowItWorks steps={settings.how_it_works_steps} />
+
+      <DeveloperSection />
 
       <RoiCalculator title={settings.roi_title} desc={settings.roi_desc} />
 

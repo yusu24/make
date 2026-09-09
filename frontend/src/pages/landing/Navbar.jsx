@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { name: 'Beranda', href: '#beranda' },
   { name: 'Fitur', href: '#fitur' },
   { name: 'Cara Kerja', href: '#cara-kerja' },
+  { name: 'API & Developer', href: '#developer' },
   { name: 'Testimoni', href: '#testimoni' },
 ]
 

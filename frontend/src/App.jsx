@@ -10,6 +10,7 @@ import DashboardLayout from './layouts/DashboardLayout'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Landing from './pages/Landing'
+import DeveloperDocs from './pages/DeveloperDocs'
 import ComingSoon from './pages/ComingSoon'
 import ErrorPage from './pages/ErrorPage'
 import TenantSupportCenter from './pages/TenantSupportCenter'
@@ -70,6 +71,8 @@ function App() {
               <Routes>
                 {/* Landing page for guests & sandbox testing */}
                 <Route path="/" element={<Landing />} />
+                <Route path="/developers" element={<DeveloperDocs />} />
+                <Route path="/docs/api" element={<DeveloperDocs />} />
 
                 {/* Error page — reached via reportError() from ErrorBoundary
                     or the global window error/unhandledrejection listeners */}
