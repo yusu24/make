@@ -137,7 +137,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-20">
       <h2 className="sr-only">BIZORA — halaman utama, login, dan fitur platform digital bisnis Indonesia</h2>
 
       <Navbar

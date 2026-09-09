@@ -52,8 +52,8 @@ export default function DeveloperDocs() {
   return (
     <div className="min-h-screen bg-[#03110e] text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-slate-950 font-sans">
       
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-50 bg-[#041512]/95 backdrop-blur-md border-b border-[#0f382e]/80">
+      {/* Fixed Top Navigation */}
+      <header className="fixed top-0 left-0 right-0 w-full z-50 bg-[#041512]/95 backdrop-blur-md border-b border-[#0f382e]/80 shadow-lg shadow-black/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-3 group">
@@ -94,11 +94,11 @@ export default function DeveloperDocs() {
         </div>
       </header>
 
-      {/* Main Documentation Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      {/* Main Documentation Container (offset for fixed header) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Sidebar Menu */}
-        <aside className="lg:col-span-3 sticky top-24 space-y-2 bg-[#041915]/80 p-4 rounded-2xl border border-[#0f382e]/80 backdrop-blur-sm">
+        <aside className="lg:col-span-3 sticky top-24 max-h-[calc(100vh-7.5rem)] overflow-y-auto space-y-2 bg-[#041915]/90 p-4 rounded-2xl border border-[#0f382e]/80 backdrop-blur-sm scrollbar-thin scrollbar-thumb-emerald-900">
           <div className="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">
             Daftar Modul & API
           </div>
