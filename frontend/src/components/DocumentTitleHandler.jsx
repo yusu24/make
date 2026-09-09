@@ -106,6 +106,8 @@ const ROUTE_TITLES = {
   '/retail/support': 'Pusat Bantuan Retail',
   '/retail/profile': 'Profil Toko Retail',
   '/retail/settings': 'Pengaturan Toko Retail',
+  '/retail/developer-api': 'Integrasi API & Webhook',
+  '/retail/backup': 'Backup Data Toko',
   '/retail/transactions': 'Riwayat Transaksi Retail',
   '/retail/shifts': 'Shift & Laci Kasir',
   '/retail/supplier-returns': 'Retur Pembelian Supplier',

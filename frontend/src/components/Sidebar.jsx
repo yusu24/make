@@ -199,7 +199,6 @@ const RETAIL_NAV_ITEMS = [
     items: [
       { path: '/retail/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' },
       { path: '/retail/pos',       icon: <CreditCard size={24} />,      label: 'Kasir (POS)' },
-      { path: '/retail/guide',     icon: <BookOpen size={24} />,        label: 'Buku Panduan & SOP' },
     ]
   },
   {
@@ -288,6 +287,7 @@ const RETAIL_NAV_ITEMS = [
       { path: '/retail/guide',         icon: <BookOpen size={24} />,   label: 'Buku Panduan & SOP' },
       { path: '/retail/settings',      icon: <Settings size={24} />,   label: 'Pengaturan Toko' },
       { path: '/retail/developer-api', icon: <Zap size={24} />,        label: 'Integrasi API & Webhook' },
+      { path: '/retail/backup',        icon: <Archive size={24} />,    label: 'Backup Data Toko' },
       { path: '/retail/subscription',  icon: <CreditCard size={24} />, label: 'Paket Langganan' },
       { path: '/retail/support',       icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
     ]
