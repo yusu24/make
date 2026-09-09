@@ -469,7 +469,7 @@ const RetailGuide = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* SECTION 5: Keuangan, Hutang Supplier & Piutang Kasbon                     */}
+      {/* SECTION 5: Keuangan, Kas Operasional, Hutang & Piutang Kasbon            */}
       {/* ========================================================================= */}
       {activeTab === 'finance' && (
         <div className="space-y-6 animate-in fade-in duration-200">
@@ -478,44 +478,137 @@ const RetailGuide = () => {
               <div>
                 <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
                   <Wallet className="w-5 h-5 text-emerald-600" />
-                  <span>SOP Keuangan Kas, Hutang Supplier & Piutang Pelanggan</span>
+                  <span>SOP Manajemen Keuangan, Buku Kas, Hutang Supplier & Piutang Pelanggan</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">Manajemen arus kas, pelunasan jatuh tempo supplier, dan piutang kasbon pembeli.</p>
+                <p className="text-xs text-slate-500 mt-1">Panduan lengkap tata kelola arus kas masuk/keluar, pelunasan tempo supplier, kasbon member, hingga perpajakan toko.</p>
               </div>
               <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
                 Menu: /retail/finance/*
               </span>
             </div>
 
+            {/* 3 Pilar Utama Modul Keuangan */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                 <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
                   <TrendingUp className="w-4 h-4 text-emerald-600" />
-                  <span>Buku Kas & Arus Kas (Cashflow)</span>
+                  <span>1. Buku Kas & Arus Kas (Cashflow)</span>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Mencatat seluruh mutasi kas operasional toko di luar kasir POS: Pembayaran listrik, gaji karyawan, sewa ruko, pembelian ATK/kantong plastik, serta transfer saldo dari laci kasir ke rekening bank toko.
+                  Mencatat seluruh mutasi kas operasional toko di luar kasir POS: Pembayaran listrik, gaji karyawan, sewa ruko, pembelian ATK/kantong plastik, serta mutasi saldo antar akun kas/bank.
                 </p>
               </div>
 
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                 <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
                   <TrendingDown className="w-4 h-4 text-rose-600" />
-                  <span>Hutang Dagang Supplier (AP)</span>
+                  <span>2. Hutang Dagang Supplier (AP)</span>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Setiap pembelian barang secara tempo (TOP 14 / 30 hari) masuk ke Buku Hutang. Sistem memberi peringatan merah saat mendekati tanggal jatuh tempo faktur untuk menghindari denda / penghentian suplai.
+                  Setiap pembelian barang dari supplier secara tempo (TOP 14 / 30 hari) otomatis masuk ke Buku Hutang. Sistem melacak sisa tagihan dan memberi peringatan saat mendekati jatuh tempo.
                 </p>
               </div>
 
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                 <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
                   <CreditCard className="w-4 h-4 text-blue-600" />
-                  <span>Piutang Kasbon Pelanggan (AR)</span>
+                  <span>3. Piutang Kasbon Pelanggan (AR)</span>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Jika toko melayani kasbon pelanggan langganan / member, transaksi di POS dicatat sebagai Piutang. Sistem melacak batas plafon kredit maksimal dan mencetak kartu riwayat pembayaran cicilan hutang.
+                  Mencatat transaksi belanja pelanggan yang belum dibayar lunas (kasbon/kredit member). Sistem melacak plafon limit kredit maksimal per pelanggan dan mencatat riwayat pelunasan cicilan.
                 </p>
+              </div>
+            </div>
+
+            {/* Alur SOP Operasional Keuangan & Buku Kas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Box 1: SOP Kas Masuk & Keluar */}
+              <div className="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
+                <div className="flex items-center gap-2 text-emerald-950 font-bold text-sm">
+                  <DollarSign className="w-4 h-4 text-emerald-600" />
+                  <span>SOP Pencatatan Beban Operasional & Kas Non-POS</span>
+                </div>
+                <ol className="text-xs text-slate-700 space-y-2 list-decimal list-inside leading-relaxed">
+                  <li><strong>Tentukan Kategori Akun:</strong> Pastikan kategori beban sudah dibuat di menu <em>Kategori Keuangan</em> (misal: Beban Listrik, Beban Gaji, Beban Perlengkapan).</li>
+                  <li><strong>Catat Pengeluaran:</strong> Buka menu <em>Catatan Kas</em> $\rightarrow$ Klik <em>+ Tambah Transaksi Kas</em> $\rightarrow$ Pilih Tipe *Keluar*.</li>
+                  <li><strong>Pilih Akun Sumber Dana:</strong> Tentukan apakah dibayar dari Kas Toko (Tunai) atau Rekening Bank BCA/Mandiri.</li>
+                  <li><strong>Simpan & Arsipkan Bukti:</strong> Masukkan nominal dan catatan nota fisik untuk lampiran audit pembukuan.</li>
+                </ol>
+              </div>
+
+              {/* Box 2: SOP Mutasi Kas / Setor Bank */}
+              <div className="p-5 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-3">
+                <div className="flex items-center gap-2 text-blue-950 font-bold text-sm">
+                  <Split className="w-4 h-4 text-blue-600" />
+                  <span>SOP Mutasi Antar Kas & Setor Kasir ke Bank</span>
+                </div>
+                <ol className="text-xs text-slate-700 space-y-2 list-decimal list-inside leading-relaxed">
+                  <li><strong>Tujuan Mutasi:</strong> Digunakan saat uang hasil penjualan laci kasir disetorkan ke rekening bank toko, atau penarikan uang dari bank untuk modal kasir.</li>
+                  <li><strong>Langkah Transfer:</strong> Buka menu <em>Mutasi Kas</em> $\rightarrow$ Klik <em>+ Transfer Dana</em>.</li>
+                  <li><strong>Tentukan Akun:</strong> Pilih <em>Akun Asal</em> (misal: Kas Tunai Toko) dan <em>Akun Tujuan</em> (misal: Bank BCA Toko).</li>
+                  <li><strong>Sistem Real-Time:</strong> Saldo kas tunai otomatis berkurang dan saldo rekening bank bertambah seketika tanpa mempengaruhi Laba Rugi toko.</li>
+                </ol>
+              </div>
+            </div>
+
+            {/* SOP Hutang Supplier & Piutang Kasbon Member */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Box 3: SOP Hutang Dagang Supplier */}
+              <div className="p-5 rounded-2xl bg-rose-50/60 border border-rose-200 space-y-3">
+                <div className="flex items-center gap-2 text-rose-950 font-bold text-sm">
+                  <TrendingDown className="w-4 h-4 text-rose-600" />
+                  <span>SOP Pembayaran & Manajemen Hutang Supplier (AP)</span>
+                </div>
+                <div className="space-y-2 text-xs text-slate-700 leading-relaxed">
+                  <p>
+                    Saat barang diterima dari Supplier dengan metode bayar <strong>Tempo / Hutang</strong>, sistem mencatat faktur pada menu <em>Hutang Supplier</em>.
+                  </p>
+                  <ul className="space-y-1.5 list-disc list-inside">
+                    <li><strong>Status Pembayaran:</strong> <em>Belum Lunas</em>, <em>Dibayar Sebagian (Cicilan)</em>, atau <em>Lunas</em>.</li>
+                    <li><strong>Pemberitahuan Jatuh Tempo:</strong> Faktur yang mendekati H-3 tanggal jatuh tempo akan bertanda kuning, dan yang terlewat akan bertanda merah (*Overdue*).</li>
+                    <li><strong>Proses Pembayaran:</strong> Klik <em>Bayar Hutang</em> pada faktur terkait $\rightarrow$ Masukkan nominal transfer $\rightarrow$ Sistem mencatat kas keluar dan mengupdate sisa hutang.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Box 4: SOP Piutang Pembeli / Kasbon */}
+              <div className="p-5 rounded-2xl bg-indigo-50/60 border border-indigo-200 space-y-3">
+                <div className="flex items-center gap-2 text-indigo-950 font-bold text-sm">
+                  <CreditCard className="w-4 h-4 text-indigo-600" />
+                  <span>SOP Pengelolaan & Penagihan Piutang Pelanggan (AR)</span>
+                </div>
+                <div className="space-y-2 text-xs text-slate-700 leading-relaxed">
+                  <p>
+                    Digunakan untuk pelanggan langganan atau instansi yang melakukan transaksi kasir dengan pembayaran tempo / kasbon.
+                  </p>
+                  <ul className="space-y-1.5 list-disc list-inside">
+                    <li><strong>Plafon Kredit:</strong> Pada data pelanggan, tetapkan batas maksimal piutang (misal: maks Rp 1.000.000) untuk mencegah kasbon macet.</li>
+                    <li><strong>Pencatatan di Kasir (POS):</strong> Di layar kasir, pilih pelanggan terdaftar $\rightarrow$ Pilih metode bayar <em>Piutang / Kasbon</em>.</li>
+                    <li><strong>Penerimaan Cicilan:</strong> Buka menu <em>Piutang Pelanggan</em> $\rightarrow$ Pilih nama pembeli $\rightarrow$ Klik <em>Terima Pembayaran</em> untuk mencatat uang masuk.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Kamus Rumus Perpajakan & Arus Kas */}
+            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+              <div className="flex items-center gap-2 text-amber-400">
+                <Calculator className="w-5 h-5" />
+                <h3 className="text-sm font-bold uppercase tracking-wider">Kamus Rumus Finansial & Pajak Toko</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+                  <div className="text-indigo-300 font-bold font-sans text-xs">1. Rumus Arus Kas Bersih (Net Cashflow):</div>
+                  <div className="text-emerald-400 font-bold">Net Cashflow = Total Kas Masuk - Total Kas Keluar</div>
+                  <div className="text-slate-400 font-sans text-[11px]">Jika positif: Arus kas toko surplus (sehat). Jika negatif: Pengeluaran melebihi uang tunai masuk.</div>
+                </div>
+
+                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+                  <div className="text-indigo-300 font-bold font-sans text-xs">2. Rumus Pajak Terutang Toko (PPN / PB1):</div>
+                  <div className="text-emerald-400 font-bold">Pajak Terutang = Pajak Keluaran (Penjualan) - Pajak Masukan (Pembelian PO)</div>
+                  <div className="text-slate-400 font-sans text-[11px]">Nilai pajak yang wajib disetorkan pemilik toko ke kas negara / kas daerah.</div>
+                </div>
               </div>
             </div>
           </div>
