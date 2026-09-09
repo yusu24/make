@@ -554,6 +554,13 @@ const KulinerAdminLayout = ({ children, title }) => {
                     <span>Buku Panduan & SOP</span>
                   </Link>
                   <Link 
+                    to="/kuliner/admin/developer-api" 
+                    className={`kd-nav-item ${location.pathname === '/kuliner/admin/developer-api' ? 'active' : ''}`}
+                  >
+                    <span className="kd-nav-icon">🔌</span>
+                    <span>Integrasi API & Webhook</span>
+                  </Link>
+                  <Link 
                     to="/kuliner/subscription" 
                     className={`kd-nav-item ${location.pathname === '/kuliner/subscription' ? 'active' : ''}`}
                   >

@@ -31,7 +31,8 @@ import {
   QrCode,
   CreditCard,
   Archive,
-  BookOpen
+  BookOpen,
+  Code2
 } from 'lucide-react';
 import { ActiveTab, StoreChannel } from '../types';
 import { useTranslation } from '../../../../contexts/I18nContext';
@@ -578,6 +579,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <BookOpen className={`w-5 h-5 shrink-0 ${activeTab === 'panduan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
           {!collapsed && <span className="flex-1 text-left truncate">Buku Panduan & SOP</span>}
+        </button>
+
+        {/* Integrasi API & Webhook */}
+        <button
+          onClick={() => setActiveTab('developer-api')}
+          title={collapsed ? 'Integrasi API & Webhook' : ''}
+          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
+            activeTab === 'developer-api'
+              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
+          }`}
+        >
+          <Code2 className={`w-5 h-5 shrink-0 ${activeTab === 'developer-api' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+          {!collapsed && <span className="flex-1 text-left truncate">Integrasi API & Webhook</span>}
         </button>
 
         {/* Paket & Langganan */}

@@ -48,6 +48,7 @@ import { NotificationCenterView } from './components/omnichannel/NotificationCen
 import { GuideView } from './components/views/GuideView';
 import { SellerSubscriptionView } from './components/views/SellerSubscriptionView';
 import { BackupView } from './components/views/BackupView';
+import { TenantDeveloperPortal } from '../../../components/TenantDeveloperPortal';
 
 import { AddExpenseModal } from './components/modals/AddExpenseModal';
 import { AddIncomeModal } from './components/modals/AddIncomeModal';
@@ -95,6 +96,7 @@ const pathToTab = (p: string): ActiveTab => {
   if (p.includes('/settings/roles')) return 'settings-roles';
   if (p.includes('/settings/users')) return 'settings-users';
   if (p.includes('/subscription') || p.includes('/langganan')) return 'langganan';
+  if (p.includes('/developer-api') || p.includes('/api')) return 'developer-api';
   if (p.includes('/guide') || p.includes('/panduan')) return 'panduan';
   if (p.includes('/backup')) return 'backup';
   return 'menu-utama';
@@ -118,7 +120,7 @@ const tabToPath = (tab: ActiveTab): string => {
     case 'settings-account': return '/seller/settings/account';
     case 'settings-roles': return '/seller/settings/roles';
     case 'settings-users': return '/seller/settings/users';
-    case 'marketplace-dashboard': return '/seller/marketplace/dashboard';
+    case 'marketplace-dashboard': return '/seller/marketplace';
     case 'marketplace-connected': return '/seller/marketplace/connected';
     case 'marketplace-mapping': return '/seller/marketplace/mapping';
     case 'marketplace-sync': return '/seller/marketplace/sync';
@@ -127,8 +129,9 @@ const tabToPath = (tab: ActiveTab): string => {
     case 'shipping-management': return '/seller/shipping/management';
     case 'shipping-packing': return '/seller/shipping/packing';
     case 'notification-center': return '/seller/notifications';
-    case 'panduan': return '/seller/guide';
     case 'langganan': return '/seller/subscription';
+    case 'developer-api': return '/seller/developer-api';
+    case 'panduan': return '/seller/guide';
     case 'backup': return '/seller/backup';
     default: return '/seller/dashboard';
   }
@@ -193,6 +196,7 @@ export default function App() {
       'shipping-packing': 'Peningkatan Quality Packing',
       'notification-center': 'Pusat Notifikasi Toko',
       'panduan': 'Buku Panduan Seller',
+      'developer-api': 'Integrasi API & Webhook',
       'langganan': 'Paket Langganan Seller',
       'backup': 'Backup Data Toko',
     };
@@ -922,6 +926,15 @@ export default function App() {
           {activeTab === 'shipping-packing' && <PackingImprovementView />}
           {activeTab === 'notification-center' && <NotificationCenterView />}
           {activeTab === 'panduan' && <GuideView />}
+          {activeTab === 'developer-api' && (
+            <div className="w-full pb-16">
+              <TenantDeveloperPortal
+                moduleName="Seller Omnichannel"
+                accentColor="teal"
+                subscriptionLink="/seller/subscription"
+              />
+            </div>
+          )}
           {activeTab === 'langganan' && <SellerSubscriptionView />}
           {activeTab === 'backup' && <BackupView />}
         </main>

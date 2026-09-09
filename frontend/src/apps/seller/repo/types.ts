@@ -26,6 +26,7 @@ export type ActiveTab =
   | 'shipping-packing'
   | 'notification-center'
   | 'panduan'
+  | 'developer-api'
   | 'langganan'
   | 'backup';
 

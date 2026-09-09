@@ -21,8 +21,8 @@ const KulinerProfile = lazy(() => import('../apps/kuliner/pages/CulinaryProfile'
 const KulinerSubscription = lazy(() => import('../apps/kuliner/pages/Subscription'));
 const KulinerSupport = lazy(() => import('../apps/kuliner/pages/CulinarySupport'));
 const KulinerPromos = lazy(() => import('../apps/kuliner/pages/CulinaryPromos'));
-const KulinerReviews = lazy(() => import('../apps/kuliner/pages/CulinaryReviews'));
 const KulinerGuide = lazy(() => import('../apps/kuliner/pages/KulinerGuide'));
+const KulinerDeveloperApi = lazy(() => import('../apps/kuliner/pages/KulinerDeveloperApi'));
 
 // Phase 1: Menu engineering (Bahan Baku, Recipe/BOM, Modifier, Add-on, Bundle)
 const KulinerBahanBaku = lazy(() => import('../apps/kuliner/pages/BahanBaku'));
@@ -73,6 +73,7 @@ const kulinerRoutes = (
       <Route path="admin/promos" element={<KulinerPromos />} />
       <Route path="admin/reviews" element={<KulinerReviews />} />
       <Route path="admin/guide" element={<KulinerGuide />} />
+      <Route path="admin/developer-api" element={<KulinerDeveloperApi />} />
 
       {/* Phase 1: Menu engineering */}
       <Route path="admin/suppliers" element={<KulinerSuppliers />} />

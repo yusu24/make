@@ -48,6 +48,7 @@ const FEATURES_BY_CATEGORY = {
     multiUser:       { label: 'Multi-User Pekerja',   icon: '👨‍💼' },
     exportExcel:     { label: 'Export Excel/PDF',     icon: '📁' },
     importData:      { label: 'Import Data Massal (Excel/CSV)', icon: '📥' },
+    apiAccess:       { label: 'Akses API Developer & Webhook', icon: '🔌' },
     prioritySupport: { label: 'Priority Support',     icon: '🎧' },
   },
   'budidaya-tanaman': {
@@ -63,6 +64,7 @@ const FEATURES_BY_CATEGORY = {
     multiUser:       { label: 'Multi-User Staf Lapangan',icon: '👨‍💼' },
     exportExcel:     { label: 'Export Excel/PDF',     icon: '📁' },
     importData:      { label: 'Import Data Massal (Excel/CSV)', icon: '📥' },
+    apiAccess:       { label: 'Akses API Developer & Webhook', icon: '🔌' },
     prioritySupport: { label: 'Priority Support',     icon: '🎧' },
   },
   'kuliner': {
@@ -85,6 +87,7 @@ const FEATURES_BY_CATEGORY = {
     exportExcel:     { label: 'Export Excel/PDF',     icon: '📁' },
     importData:      { label: 'Import Data Massal (Excel/CSV)', icon: '📥' },
     storefront:      { label: 'Online Storefront Web',icon: '🌐' },
+    apiAccess:       { label: 'Akses API Developer & Webhook', icon: '🔌' },
     prioritySupport: { label: 'Priority Support',     icon: '🎧' },
   },
   'jasa': {
@@ -101,6 +104,7 @@ const FEATURES_BY_CATEGORY = {
     multiUser:       { label: 'Multi-User Staf & Teknisi', icon: '👨‍💼' },
     exportExcel:     { label: 'Export Data Dokumen Excel & PDF', icon: '📁' },
     importData:      { label: 'Import Data Massal (Excel/CSV)', icon: '📥' },
+    apiAccess:       { label: 'Akses API Developer & Webhook', icon: '🔌' },
     prioritySupport: { label: 'Priority Support 24/7',     icon: '🎧' },
   },
   'seller': {
@@ -114,6 +118,7 @@ const FEATURES_BY_CATEGORY = {
     multiUser:       { label: 'Multi-User Admin Packing', icon: '👨‍💼' },
     exportExcel:     { label: 'Export Excel/PDF',     icon: '📁' },
     importData:      { label: 'Import Data Massal (Excel/CSV)', icon: '📥' },
+    apiAccess:       { label: 'Akses API Developer & Webhook', icon: '🔌' },
     prioritySupport: { label: 'Priority Support',     icon: '🎧' },
   },
 }

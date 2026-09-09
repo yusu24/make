@@ -928,3 +928,25 @@ Route::prefix('kuliner/public')->group(function () {
     Route::get('testimonials', [\App\Http\Controllers\Api\KulinerController::class, 'getPublicTestimonials']);
     Route::post('testimonials', [\App\Http\Controllers\Api\KulinerController::class, 'submitTestimonial']);
 });
+
+// ─── TENANT DEVELOPER PORTAL (AUTH REQUIRED) ──────────────────────────────────
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('tenant/developer/status', [\App\Http\Controllers\Api\TenantDeveloperApiController::class, 'status']);
+    Route::get('tenant/developer/api-keys', [\App\Http\Controllers\Api\TenantDeveloperApiController::class, 'indexKeys']);
+    Route::post('tenant/developer/api-keys', [\App\Http\Controllers\Api\TenantDeveloperApiController::class, 'storeKey']);
+    Route::delete('tenant/developer/api-keys/{id}', [\App\Http\Controllers\Api\TenantDeveloperApiController::class, 'destroyKey']);
+    Route::get('tenant/developer/webhooks', [\App\Http\Controllers\Api\TenantDeveloperApiController::class, 'indexWebhooks']);
+    Route::post('tenant/developer/webhooks', [\App\Http\Controllers\Api\TenantDeveloperApiController::class, 'storeWebhook']);
+    Route::patch('tenant/developer/webhooks/{id}/toggle', [\App\Http\Controllers\Api\TenantDeveloperApiController::class, 'toggleWebhook']);
+    Route::delete('tenant/developer/webhooks/{id}', [\App\Http\Controllers\Api\TenantDeveloperApiController::class, 'destroyWebhook']);
+    Route::post('tenant/developer/webhooks/{id}/test', [\App\Http\Controllers\Api\TenantDeveloperApiController::class, 'testWebhook']);
+});
+
+// ─── EXTERNAL REST API V1 FOR THIRD-PARTY CLIENTS (API-KEY AUTH) ──────────────
+Route::prefix('v1/external')->middleware(['auth.apikey'])->group(function () {
+    Route::get('profile', [\App\Http\Controllers\Api\ExternalApiController::class, 'profile']);
+    Route::get('products', [\App\Http\Controllers\Api\ExternalApiController::class, 'getProducts']);
+    Route::post('orders', [\App\Http\Controllers\Api\ExternalApiController::class, 'createOrder']);
+    Route::get('stock', [\App\Http\Controllers\Api\ExternalApiController::class, 'getStock']);
+});
+

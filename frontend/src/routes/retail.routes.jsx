@@ -54,6 +54,7 @@ const RetailStockTransfers = lazy(() => import('../apps/retail/pages/StockTransf
 const RetailBatches = lazy(() => import('../apps/retail/pages/Batches'));
 const RetailSerials = lazy(() => import('../apps/retail/pages/Serials'));
 const RetailGuide = lazy(() => import('../apps/retail/pages/RetailGuide'));
+const RetailDeveloperApi = lazy(() => import('../apps/retail/pages/RetailDeveloperApi'));
 
 const retailRoutes = (
   <Route path="retail" element={<CategoryRoute allowedCategory="Toko Retail"><RetailOutlet /></CategoryRoute>}>
@@ -86,8 +87,8 @@ const retailRoutes = (
     <Route path="roles" element={<RetailRoles />} />
     <Route path="subscription" element={<RetailSubscription />} />
     <Route path="support" element={<TenantSupportCenter />} />
-    <Route path="profile" element={<RetailProfile />} />
     <Route path="settings" element={<RetailSettings />} />
+    <Route path="developer-api" element={<RetailDeveloperApi />} />
 
     {/* TRANSAKSI & RETUR */}
     <Route path="transactions" element={<RetailTransactions />} />

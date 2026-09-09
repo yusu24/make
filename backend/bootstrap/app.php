@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'expire_on_date_change' => \App\Http\Middleware\ExpireSessionOnDateChange::class,
             'subscription'   => \App\Http\Middleware\CheckSubscription::class,
             'plan_feature'   => \App\Http\Middleware\CheckPlanFeature::class,
+            'auth.apikey'    => \App\Http\Middleware\AuthenticateApiKey::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

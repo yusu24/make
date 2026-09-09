@@ -285,10 +285,11 @@ const RETAIL_NAV_ITEMS = [
     section: 'Sistem & Paket',
     icon: <Settings size={20} />,
     items: [
-      { path: '/retail/guide',        icon: <BookOpen size={24} />,   label: 'Buku Panduan & SOP' },
-      { path: '/retail/settings',     icon: <Settings size={24} />,   label: 'Pengaturan Toko' },
-      { path: '/retail/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
-      { path: '/retail/support',      icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
+      { path: '/retail/guide',         icon: <BookOpen size={24} />,   label: 'Buku Panduan & SOP' },
+      { path: '/retail/settings',      icon: <Settings size={24} />,   label: 'Pengaturan Toko' },
+      { path: '/retail/developer-api', icon: <Zap size={24} />,        label: 'Integrasi API & Webhook' },
+      { path: '/retail/subscription',  icon: <CreditCard size={24} />, label: 'Paket Langganan' },
+      { path: '/retail/support',       icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
     ]
   }
 ]

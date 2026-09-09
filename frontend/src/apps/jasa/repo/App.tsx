@@ -47,6 +47,7 @@ import { JasaProvider, useJasa } from './contexts/JasaContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { JasaCategoryPickerModal } from './components/JasaCategoryPickerModal';
 
+import { TenantDeveloperPortal } from '../../../components/TenantDeveloperPortal';
 import { 
   INITIAL_WORK_ORDERS, 
   INITIAL_TECHNICIANS, 
@@ -83,6 +84,7 @@ const TAB_TO_PATH: Record<string, string> = {
   'expenses': '/jasa/expenses',
   'analytics': '/jasa/analytics',
   'guide': '/jasa/guide',
+  'developer-api': '/jasa/developer-api',
   'backup': '/jasa/backup',
   'subscription': '/jasa/subscription',
   'settings': '/jasa/settings',
@@ -99,6 +101,7 @@ const getTabFromPath = (pathname: string): string => {
   if (pathname.includes('/jasa/expenses')) return 'expenses';
   if (pathname.includes('/jasa/analytics')) return 'analytics';
   if (pathname.includes('/jasa/guide')) return 'guide';
+  if (pathname.includes('/jasa/developer-api') || pathname.includes('/jasa/api')) return 'developer-api';
   if (pathname.includes('/jasa/backup')) return 'backup';
   if (pathname.includes('/jasa/subscription')) return 'subscription';
   if (pathname.includes('/jasa/settings')) return 'settings';
@@ -1029,7 +1032,16 @@ function JasaInnerApp() {
           />
         )}
 
-        {/* View 11: Settings */}
+        {/* View 11: Integrasi API & Webhooks */}
+        {activeTab === 'developer-api' && (
+          <TenantDeveloperPortal
+            moduleName="Jasa & Servis"
+            accentColor="indigo"
+            subscriptionLink="/jasa/subscription"
+          />
+        )}
+
+        {/* View 12: Settings */}
         {activeTab === 'settings' && (
           <SettingsView
             settings={jasaSettings}

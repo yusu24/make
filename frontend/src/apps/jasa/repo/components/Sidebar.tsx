@@ -116,6 +116,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badgeType: 'urgent'
     },
     { 
+      id: 'developer-api', 
+      label: 'Integrasi API & Webhook', 
+      icon: Zap 
+    },
+    { 
       id: 'settings', 
       label: 'Pengaturan Jasa', 
       icon: Wrench 

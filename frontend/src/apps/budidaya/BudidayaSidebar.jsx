@@ -60,6 +60,7 @@ const getNavItems = (terms) => [
       { label: 'Manajemen Pengguna', icon: 'group',       path: '/budidaya/users' },
       { label: 'Peran & Izin',       icon: 'verified_user', path: '/budidaya/roles' },
       { label: 'Buku Panduan & SOP', icon: 'menu_book',   path: '/budidaya/guide' },
+      { label: 'Integrasi API & Webhook', icon: 'api',     path: '/budidaya/developer-api' },
       { label: 'Paket Langganan',    icon: 'credit_card',   path: '/budidaya/subscription' },
       { label: 'Pengaturan Profil',  icon: 'settings',      path: '/budidaya/settings' },
       { label: 'Pusat Bantuan',      icon: 'help',          path: '/budidaya/support' },
