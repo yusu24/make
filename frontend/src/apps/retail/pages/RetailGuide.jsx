@@ -28,7 +28,13 @@ import {
   Tag,
   DollarSign,
   HelpCircle,
-  TrendingDown
+  TrendingDown,
+  Archive,
+  Zap,
+  Store,
+  Key,
+  Server,
+  RefreshCw
 } from 'lucide-react';
 
 const RetailGuide = () => {
@@ -76,6 +82,7 @@ const RetailGuide = () => {
           { id: 'purchasing', label: '4. Pembelian PO, HPP & Stok Opname', icon: Package },
           { id: 'finance', label: '5. Keuangan, Hutang & Piutang', icon: Wallet },
           { id: 'reports', label: '6. Rumus Laba Rugi & Margin', icon: TrendingUp },
+          { id: 'api_backup', label: '7. API, Webhook & Backup Data', icon: Archive },
           { id: 'calculator', label: '🧮 Simulator Rumus Interaktif', icon: Calculator },
         ].map(tab => {
           const Icon = tab.icon;
@@ -628,7 +635,106 @@ const RetailGuide = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* SECTION 7: Simulator Rumus Interaktif                                     */}
+      {/* SECTION 7: API, Webhook, Multi-Cabang & Backup Data Cloud                 */}
+      {/* ========================================================================= */}
+      {activeTab === 'api_backup' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <Archive className="w-5 h-5 text-blue-600" />
+                  <span>SOP Integrasi Developer API, Webhook & Cadangan Data Toko</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Panduan menghubungkan toko ke sistem eksternal, otomasi webhook, serta pengamanan arsip data cloud.</p>
+              </div>
+              <div className="flex gap-2">
+                <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-200">
+                  Menu: /retail/developer-api & /retail/backup
+                </span>
+              </div>
+            </div>
+
+            {/* 3 Pilar Utama API & Backup */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Pilar 1: Developer API */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                    <Key className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900">1. REST API & Secret Key</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Gunakan API Key untuk mengintegrasikan inventaris toko dengan Website E-Commerce, Aplikasi Mobile toko, atau sistem ERP pihak ketiga.
+                  </p>
+                </div>
+                <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
+                  <div className="font-semibold text-slate-900">Header Otorisasi:</div>
+                  <code className="text-indigo-600 font-mono text-[11px] block">X-API-Key: biz_live_xxxx</code>
+                  <div className="text-[11px] text-slate-500 pt-1">Rate limit: 60 request / menit per tenant.</div>
+                </div>
+              </div>
+
+              {/* Pilar 2: Webhook Event */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900">2. Realtime Webhook Dispatcher</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Sistem otomatis mengirim payload JSON HTTP POST seketika ke URL server Anda saat terjadi aktivitas operasional kasir.
+                  </p>
+                </div>
+                <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
+                  <div className="font-semibold text-slate-900">Event Tersedia:</div>
+                  <div className="text-[11px] space-y-0.5 text-slate-600">
+                    <div>• <code className="text-purple-600 font-mono">order.created</code> (Struk baru)</div>
+                    <div>• <code className="text-amber-600 font-mono">stock.low</code> (Peringatan stok menipis)</div>
+                    <div>• <code className="text-emerald-600 font-mono">payment.received</code> (QRIS lunas)</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pilar 3: Backup & Disaster Recovery */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                    <Archive className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900">3. Pencadangan Data (Cloud Backup)</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Perlindungan data terhadap potensi kehilangan data. Mengarsipkan seluruh tabel produk, mutasi stok, transaksi kasir, hutang-piutang, dan CRM pelanggan.
+                  </p>
+                </div>
+                <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
+                  <div className="font-semibold text-slate-900">Pilihan Format Ekspor:</div>
+                  <div className="text-[11px] text-slate-600">
+                    <div>• <strong>Excel (.xlsx)</strong>: Multi-sheet untuk analisis akuntan.</div>
+                    <div>• <strong>JSON (.json)</strong>: Raw relational dump untuk migrasi database.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SOP Cadangan Berkala & Mitigasi Risiko */}
+            <div className="p-5 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-3">
+              <h3 className="text-sm font-bold text-blue-950 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-blue-600" />
+                <span>SOP Rutin Pemeliharaan & Pengamanan Data Toko</span>
+              </h3>
+              <ol className="text-xs text-slate-700 space-y-2 list-decimal list-inside leading-relaxed">
+                <li><strong>Aktifkan Jadwal Otomatis:</strong> Di menu Backup Data, aktifkan toggle backup otomatis mingguan atau harian ke email pemilik toko.</li>
+                <li><strong>Unduh Snapshot Sebelum Perubahan Masif:</strong> Sebelum melakukan Stock Opname massal akhir bulan atau impor data harga baru, selalu klik <em>Unduh Excel (.xlsx)</em> sebagai titik pulih cadangan (*restore point*).</li>
+                <li><strong>Verifikasi Integrasi API:</strong> Jaga kerahasiaan Secret Key API. Jika terjadi kebocoran kredensial pihak ketiga, segera lakukan regenerasi token di portal Developer.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SECTION 8: Simulator Rumus Interaktif                                     */}
       {/* ========================================================================= */}
       {activeTab === 'calculator' && (
         <div className="space-y-6 animate-in fade-in duration-200">
