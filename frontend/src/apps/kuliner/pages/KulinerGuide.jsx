@@ -19,27 +19,46 @@ import {
   Package,
   Trash2,
   DollarSign,
-  ArrowRight
+  ArrowRight,
+  Calculator,
+  Percent,
+  Split,
+  FileSpreadsheet,
+  Flame,
+  Award
 } from 'lucide-react';
 
 const KulinerGuide = () => {
   const [activeTab, setActiveTab] = useState('menu');
+
+  // Interactive Food Cost & Recipe Calculator State
+  const [ing1Cost, setIng1Cost] = useState(6000);   // e.g. Daging Ayam 100gr
+  const [ing2Cost, setIng2Cost] = useState(2500);   // e.g. Beras & Bumbu
+  const [ing3Cost, setIng3Cost] = useState(1500);   // e.g. Minyak & Kemasan/Paper Box
+  const [targetSellPrice, setTargetSellPrice] = useState(25000); // Harga Jual Menu
+
+  const totalHppBahan = ing1Cost + ing2Cost + ing3Cost;
+  const grossProfitPerPortion = targetSellPrice - totalHppBahan;
+  const foodCostPercent = targetSellPrice > 0 ? (totalHppBahan / targetSellPrice) * 100 : 0;
+  const grossMarginPercent = targetSellPrice > 0 ? (grossProfitPerPortion / targetSellPrice) * 100 : 0;
+
+  const fmtRp = (num) => `Rp ${Math.round(num || 0).toLocaleString('id-ID')}`;
 
   return (
     <KulinerAdminLayout title="Buku Panduan & SOP Resto">
       <div className="kd-content space-y-6 pb-16">
         {/* Header Banner */}
         <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-          <div className="relative z-10 space-y-2 max-w-2xl">
+          <div className="relative z-10 space-y-3 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-xs font-bold text-amber-100 border border-white/20">
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Buku Panduan & SOP Operasional Resto / Kafe</span>
+              <span>Buku Panduan, SOP & Kamus Rumus Resto / Kafe</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Panduan Cara Penggunaan Modul Kuliner
+              Panduan Lengkap & Rumus Operasional Kuliner
             </h1>
-            <p className="text-amber-100 text-sm leading-relaxed">
-              Panduan lengkap operasional restoran & kafe: Master Menu & Resep (BOM HPP), Manajemen Meja & QR Self-Order, Kasir POS & Antrean Dapur (KDS), Stock Opname Bahan Baku & Waste, hingga Buka/Tutup Shift Kasir.
+            <p className="text-amber-100 text-xs sm:text-sm leading-relaxed">
+              Pelajari alur lengkap operasional restoran dan kafe: Resep & Bill of Materials (BOM HPP Porsi), Manajemen Meja & QR Self-Order, Kitchen Display System (KDS), Stock Opname Bahan Baku & Waste Basi, Service Charge & PB1, Rekonsiliasi Kas Laci (Shift Z), serta Analisis Menu Engineering (Stars, Plowhorses, Puzzles, Dogs).
             </p>
           </div>
 
@@ -47,14 +66,15 @@ const KulinerGuide = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 scrollbar-none">
           {[
             { id: 'menu', label: '1. Menu, Bahan & Resep BOM', icon: Utensils },
             { id: 'table', label: '2. Meja & QR Self-Order', icon: QrCode },
-            { id: 'pos', label: '3. Kasir & Antrean Dapur (KDS)', icon: ChefHat },
-            { id: 'inventory', label: '4. Stok Bahan & Waste', icon: Package },
-            { id: 'shift', label: '5. Buka & Tutup Shift', icon: Clock },
-            { id: 'reports', label: '6. Laporan Laba & Margin', icon: TrendingUp },
+            { id: 'pos', label: '3. Kasir, KDS & Split Bill', icon: ChefHat },
+            { id: 'inventory', label: '4. Stok Bahan, Yield & Waste', icon: Package },
+            { id: 'shift', label: '5. Buka & Tutup Shift (Shift Z)', icon: Clock },
+            { id: 'reports', label: '6. Rumus Laba Rugi & Menu Matrix', icon: TrendingUp },
+            { id: 'calculator', label: '🧮 Simulator Food Cost & BOM', icon: Calculator },
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -75,39 +95,46 @@ const KulinerGuide = () => {
           })}
         </div>
 
-        {/* SECTION 1: Menu & Resep BOM */}
+        {/* ========================================================================= */}
+        {/* SECTION 1: Menu, Bahan Baku & Resep BOM                                   */}
+        {/* ========================================================================= */}
         {activeTab === 'menu' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-              <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                <Utensils className="w-6 h-6 text-amber-600" />
-                <span>SOP Setup Master Menu, Bahan Baku & Resep BOM (HPP Otomatis)</span>
-              </h2>
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+              <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <Utensils className="w-5 h-5 text-amber-600" />
+                    <span>SOP Setup Master Menu, Bahan Baku & Resep BOM (HPP Otomatis)</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">Sistem Bill of Materials memotong gramasi bahan baku saat kasir melayani transaksi penjualan.</p>
+                </div>
+                <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-200">
+                  Menu: /kuliner/admin/ingredients & /kuliner/admin/recipes
+                </span>
+              </div>
 
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Modul Kuliner menerapkan sistem <strong>Bill of Materials (BOM)</strong>. Setiap porsi menu makanan/minuman yang terjual akan otomatis memotong stok bahan baku mentah (gramasi tepung, ml sirup, butir telur) dan menghitung HPP secara presisi.
-              </p>
-
+              {/* 3 Langkah Setup Menu */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
                   {
                     step: '1',
-                    title: 'Input Bahan Baku (Raw Ingredients)',
-                    desc: 'Daftarkan bahan baku seperti Daging Ayam (kg), Kopi Biji (gr), Susu UHT (ml) beserta harga beli per satuan dasar.',
+                    title: 'Input Bahan Baku (Raw Materials)',
+                    desc: 'Daftarkan bahan mentah seperti Biji Kopi (gr), Susu UHT (ml), Daging Ayam (gr), Beras (gr) dengan harga beli per satuan terkecil.',
                   },
                   {
                     step: '2',
-                    title: 'Buat Resep / Formula (BOM)',
-                    desc: 'Hubungkan menu dengan komposisi bahan. Contoh: "Kopi Latte" = 18 gr Kopi + 150 ml Susu + 1 Paper Cup. Sistem menghitung HPP otomatis.',
+                    title: 'Rakit Resep BOM per Porsi',
+                    desc: 'Tautkan komposisi takaran bahan ke menu. Contoh: "Kopi Latte" = 18 gr Biji Kopi + 150 ml Susu + 1 Paper Cup. HPP porsi terkalkulasi otomatis.',
                   },
                   {
                     step: '3',
-                    title: 'Atur Modifier & Add-on',
-                    desc: 'Tambahkan opsi level pedas/gula, pilihan ukuran (Reguler/Large), dan topping tambahan (Extra Shot, Keju, Boba).',
+                    title: 'Setup Modifier & Add-on',
+                    desc: 'Atur varian (Less Sugar, Normal Ice, Level Pedas) dan add-on topping berbayar (Extra Shot, Keju, Telur) beserta resep tambahannya.',
                   }
                 ].map(card => (
-                  <div key={card.step} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-3">
-                    <div className="w-8 h-8 rounded-xl bg-amber-600 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
+                  <div key={card.step} className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-3 hover:border-amber-300 transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-amber-600 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
                       {card.step}
                     </div>
                     <div className="space-y-1">
@@ -118,25 +145,49 @@ const KulinerGuide = () => {
                 ))}
               </div>
 
-              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-amber-900">
-                <Lightbulb className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                <div className="text-xs space-y-1">
-                  <strong className="font-bold block">Keuntungan Resep BOM:</strong>
-                  <p>Anda langsung mengetahui margin keuntungan bersih setiap menu (Harga Jual - HPP Bahan) tanpa perlu menghitung manual di Excel.</p>
+              {/* Box Rumus BOM & Food Cost */}
+              <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+                <div className="flex items-center gap-2 text-amber-400">
+                  <Calculator className="w-5 h-5" />
+                  <h3 className="text-sm font-bold uppercase tracking-wider">Kamus Rumus HPP Resep & Food Cost Persentase Resto</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                  <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+                    <div className="text-amber-300 font-bold font-sans text-xs">1. Rumus HPP Resep BOM Porsi (Cost of Goods):</div>
+                    <div className="text-emerald-400 font-bold">HPP Menu = Total (Gramasi Bahan * Harga Beli Dasar per Satuan)</div>
+                    <div className="text-slate-400 font-sans text-[11px]">Contoh: 18 gr kopi (Rp 3.600) + 150 ml susu (Rp 2.400) + Cup (Rp 1.000) = HPP Rp 7.000.</div>
+                  </div>
+
+                  <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+                    <div className="text-amber-300 font-bold font-sans text-xs">2. Rumus Food Cost Percentage (%):</div>
+                    <div className="text-emerald-400 font-bold">Food Cost % = (HPP Bahan Baku Porsi ÷ Harga Jual Menu) * 100%</div>
+                    <div className="text-slate-400 font-sans text-[11px]">Standar Industri Resto & Kafe Sehat: <strong>28% - 35%</strong> (Maksimal 38%).</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* SECTION 2: Meja & QR Order */}
+        {/* ========================================================================= */}
+        {/* SECTION 2: Meja & QR Self-Order                                           */}
+        {/* ========================================================================= */}
         {activeTab === 'table' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-              <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                <QrCode className="w-6 h-6 text-orange-600" />
-                <span>SOP Manajemen Meja & QR Self-Order Pelanggan</span>
-              </h2>
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+              <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <QrCode className="w-5 h-5 text-orange-600" />
+                    <span>SOP Manajemen Meja & QR Self-Order Pelanggan</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">Mempercepat pesanan resto tanpa antrean panjang di kasir.</p>
+                </div>
+                <span className="px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-bold border border-orange-200">
+                  Menu: /kuliner/admin/tables
+                </span>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
@@ -144,11 +195,11 @@ const KulinerGuide = () => {
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     <span>Langkah Setup Meja Resto:</span>
                   </h3>
-                  <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside">
+                  <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside leading-relaxed">
                     <li>Buka menu <strong>Manajemen Meja</strong> di sidebar kiri.</li>
                     <li>Klik <strong>+ Tambah Meja</strong>, masukkan nomor meja (contoh: Meja 01, VIP 1) dan kapasitas kursi.</li>
-                    <li>Sistem otomatis membuat QR Code khusus untuk setiap meja.</li>
-                    <li>Klik <strong>Cetak QR Meja</strong> dan tempelkan stiker akrilik di meja makan.</li>
+                    <li>Sistem otomatis men-generate URL unik dan QR Code untuk setiap meja.</li>
+                    <li>Klik <strong>Cetak QR Meja</strong> untuk dicetak dan ditempelkan pada akrilik meja makan.</li>
                   </ol>
                 </div>
 
@@ -157,11 +208,11 @@ const KulinerGuide = () => {
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     <span>Alur Pemesanan Mandiri (QR Self-Order):</span>
                   </h3>
-                  <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside">
-                    <li>Pelanggan scan QR meja menggunakan kamera smartphone.</li>
-                    <li>Katalog menu digital terbuka tanpa perlu install aplikasi.</li>
-                    <li>Pelanggan memilih menu & add-on, lalu klik <strong>Kirim Pesanan</strong>.</li>
-                    <li>Pesanan langsung muncul di Kasir & Layar Antrean Dapur (KDS).</li>
+                  <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside leading-relaxed">
+                    <li>Tamu duduk di meja dan scan QR meja dengan kamera smartphone.</li>
+                    <li>Katalog menu digital terbuka tanpa perlu mendownload aplikasi apapun.</li>
+                    <li>Tamu memilih menu makanan, minuman, dan level pedas/topping.</li>
+                    <li>Klik <strong>Kirim Pesanan</strong>. Pesanan langsung masuk ke Kasir dan Layar Dapur (KDS).</li>
                   </ol>
                 </div>
               </div>
@@ -169,40 +220,51 @@ const KulinerGuide = () => {
           </div>
         )}
 
-        {/* SECTION 3: Kasir & Dapur (KDS) */}
+        {/* ========================================================================= */}
+        {/* SECTION 3: Kasir POS, KDS & Split Bill                                    */}
+        {/* ========================================================================= */}
         {activeTab === 'pos' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-              <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                <ChefHat className="w-6 h-6 text-amber-600" />
-                <span>SOP Kasir POS, Split Bill & Kitchen Display System (KDS)</span>
-              </h2>
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+              <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <ChefHat className="w-5 h-5 text-amber-600" />
+                    <span>SOP Kasir POS, Kitchen Display System (KDS), Split Bill & Pajak Resto (PB1)</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">Alur pemrosesan pesanan dari kasir depan sampai ke koki dapur.</p>
+                </div>
+                <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-200">
+                  Menu: /kuliner/admin/orders & /kuliner/admin/kitchen-queue
+                </span>
+              </div>
 
+              {/* 4 Langkah Kasir & Dapur */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {[
                   {
                     step: '1',
-                    title: 'Input Pesanan Kasir',
-                    desc: 'Pilih jenis Dine-in (pilih nomor meja), Take Away, atau Delivery. Pilih menu & modifier yang dipesan.',
+                    title: 'Pilih Tipe Order',
+                    desc: 'Pilih Dine-in (pilih nomor meja), Take Away, atau Delivery. Masukkan menu pesanan tamu beserta catatan koki.',
                   },
                   {
                     step: '2',
-                    title: 'Tiket Dapur (KOT / KDS)',
-                    desc: 'Klik "Kirim ke Dapur". Tiket KOT otomatis tercetak di printer dapur/bar atau tampil di layar Antrean Dapur.',
+                    title: 'Kirim ke Dapur (KOT / KDS)',
+                    desc: 'Klik tombol "Kirim ke Dapur". Tiket KOT otomatis tercetak di printer dapur/bar atau tampil di layar antrean KDS.',
                   },
                   {
                     step: '3',
-                    title: 'Split Bill & Gabung Meja',
-                    desc: 'Jika tamu ingin bayar terpisah, gunakan tombol Split Bill per item atau bagi rata nominal tagihan.',
+                    title: 'Split Bill / Gabung Meja',
+                    desc: 'Jika tamu ingin bayar terpisah, gunakan fitur Split Bill (bagi rata nominal tagihan atau bagi per item makanan).',
                   },
                   {
                     step: '4',
-                    title: 'Pembayaran & Struk',
-                    desc: 'Terima pembayaran Tunai, QRIS Dinamis, Kartu Debit/Kredit, atau Piutang Kasbon. Cetak struk kasir.',
+                    title: 'Pembayaran & Tutup Meja',
+                    desc: 'Terima pembayaran Tunai, QRIS, EDC Kartu, lalu status meja otomatis kembali kosong (Hijau/Available).',
                   }
                 ].map(card => (
-                  <div key={card.step} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-3">
-                    <div className="w-8 h-8 rounded-xl bg-amber-600 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
+                  <div key={card.step} className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-600 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
                       {card.step}
                     </div>
                     <div className="space-y-1">
@@ -212,98 +274,310 @@ const KulinerGuide = () => {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* SECTION 4: Stok Bahan & Waste */}
-        {activeTab === 'inventory' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-              <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                <Package className="w-6 h-6 text-red-600" />
-                <span>SOP Pembelian Bahan (PO), Stok Opname & Pencatatan Waste / Basi</span>
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                  <h3 className="text-sm font-bold text-slate-800">1. Pembelian Bahan Baku (PO):</h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Saat berbelanja ke pasar / supplier, catat di menu <strong>Pembelian Bahan</strong>. Stok bahan baku otomatis bertambah dan harga beli rata-rata diupdate.
-                  </p>
-                  <h3 className="text-sm font-bold text-slate-800 pt-2">2. Stock Opname Bahan Rutin:</h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Lakukan penimbangan fisik sisa bahan di chiller/gudang secara mingguan/bulanan. Masukkan ke menu <strong>Stok Opname</strong> untuk mencocokkan selisih antara stok sistem vs fisik.
-                  </p>
+              {/* Rumus Pajak Resto PB1 & Service Charge */}
+              <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+                <div className="flex items-center gap-2 text-amber-400">
+                  <Calculator className="w-5 h-5" />
+                  <h3 className="text-sm font-bold uppercase tracking-wider">Rumus Perhitungan Service Charge & Pajak Restoran (PB1 10%)</h3>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-rose-50 border border-rose-200 space-y-3">
-                  <div className="flex items-center gap-2 text-rose-900">
-                    <Trash2 className="w-5 h-5 text-rose-600" />
-                    <h3 className="text-sm font-bold">Pencatatan Waste & Makanan Basi:</h3>
+                <div className="p-4 rounded-xl bg-slate-800 border border-slate-700 space-y-2 font-mono text-xs">
+                  <div className="text-amber-300 font-sans font-bold">Rumus Perhitungan Bertingkat Tagihan Restoran:</div>
+                  <div className="text-emerald-400 font-bold">1. Subtotal = Total Harga Menu Makanan & Minuman</div>
+                  <div className="text-emerald-400 font-bold">2. Service Charge (misal 5%) = Subtotal * 5%</div>
+                  <div className="text-emerald-400 font-bold">3. Pajak Resto PB1 (10%) = (Subtotal + Service Charge) * 10%</div>
+                  <div className="text-emerald-400 font-bold text-sm pt-1">Total Bayar = Subtotal + Service Charge + PB1</div>
+                  
+                  <div className="text-slate-400 font-sans text-xs pt-2">
+                    *Contoh: Pesan makanan Rp 200.000. Service Charge 5% = Rp 10.000. Dasar PB1 = Rp 210.000. PB1 10% = Rp 21.000. Total Akhir Struk = <strong>Rp 231.000</strong>.
                   </div>
-                  <p className="text-xs text-rose-800 leading-relaxed">
-                    Bahan baku yang tumpah, basi, kadaluarsa, atau makanan salah masak yang dibuang wajib dicatat pada menu <strong>Pencatatan Waste</strong>.
-                  </p>
-                  <ul className="text-xs text-rose-700 space-y-1 list-disc list-inside">
-                    <li>Pilih nama bahan / menu yang rusak</li>
-                    <li>Masukkan jumlah gramasi / porsi yang terbuang</li>
-                    <li>Pilih alasan: Basi, Jatuh/Tumpah, Salah Masak, Uji Rasa (QC)</li>
-                    <li>Sistem otomatis membukukan nilai kerugian ke Laporan Laba Rugi</li>
-                  </ul>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* SECTION 5: Shift Kasir */}
+        {/* ========================================================================= */}
+        {/* SECTION 4: Stok Bahan, Yield % & Pencatatan Waste                         */}
+        {/* ========================================================================= */}
+        {activeTab === 'inventory' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+              <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <Package className="w-5 h-5 text-rose-600" />
+                    <span>SOP Pembelian Bahan (PO), Rumus Rendemen (Yield %) & Pencatatan Waste</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">Mengontrol susut bahan baku mentah dan membukukan kerugian makanan tumpah/basi.</p>
+                </div>
+                <span className="px-3 py-1 bg-rose-50 text-rose-700 rounded-full text-xs font-bold border border-rose-200">
+                  Menu: /kuliner/admin/waste & /kuliner/admin/stock-opname
+                </span>
+              </div>
+
+              {/* Rumus Rendemen Yield % */}
+              <div className="p-5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3">
+                <h3 className="text-sm font-bold text-amber-950 flex items-center gap-2">
+                  <Percent className="w-4 h-4 text-amber-600" />
+                  <span>Rumus Rendemen Bahan (Yield Percentage)</span>
+                </h3>
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  Banyak bahan baku segar mengalami penyusutan berat setelah dibersihkan (dikupas, dibuang tulang, dipotong lemak).
+                </p>
+
+                <div className="p-4 rounded-xl bg-white border border-amber-200 font-mono text-xs space-y-2">
+                  <div className="text-amber-900 font-bold font-sans">Rumus Yield %:</div>
+                  <div className="text-emerald-700 font-bold">Yield (%) = (Berat Bersih Siap Pakai ÷ Berat Mentah Beli) * 100%</div>
+                  <div className="text-emerald-700 font-bold">HPP Riil Bahan Bersih = Harga Beli Asli ÷ (Yield % / 100)</div>
+                  
+                  <div className="text-slate-600 font-sans text-xs pt-1">
+                    *Contoh: Beli Daging Ayam Utuh 1.000 gr seharga Rp 40.000. Setelah difillet dan dibuang tulang, tersisa 700 gr daging bersih (Yield = 70%). Maka HPP daging bersih siap masak = Rp 40.000 / 0.7 = <strong>Rp 57.142 / Kg</strong>.
+                  </div>
+                </div>
+              </div>
+
+              {/* Pencatatan Waste */}
+              <div className="p-5 rounded-2xl bg-rose-50 border border-rose-200 space-y-3">
+                <div className="flex items-center gap-2 text-rose-900 font-bold text-sm">
+                  <Trash2 className="w-5 h-5 text-rose-600" />
+                  <span>SOP Pencatatan Waste & Makanan Rusak / Basi</span>
+                </div>
+                <p className="text-xs text-rose-800 leading-relaxed">
+                  Bahan baku yang tumpah, basi, kadaluarsa, atau makanan salah masak yang dibuang wajib dicatat pada menu <strong>Pencatatan Waste</strong> agar selisih stok fisik terjelaskan dan nilai kerugian langsung tercatat di laporan laba rugi.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono pt-1">
+                  <div className="p-3 rounded-lg bg-white border border-rose-200">
+                    <div className="text-rose-900 font-bold font-sans">Rumus Kerugian Waste Bahan:</div>
+                    <div className="text-rose-700 font-bold">Rugi Waste = Gramasi Terbuang * HPP Satuan</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white border border-rose-200">
+                    <div className="text-rose-900 font-bold font-sans">Rumus Kerugian Makanan Jadi:</div>
+                    <div className="text-rose-700 font-bold">Rugi Menu = Porsi Terbuang * HPP Resep BOM</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* SECTION 5: Shift Kasir (Shift Z)                                          */}
+        {/* ========================================================================= */}
         {activeTab === 'shift' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-              <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                <Clock className="w-6 h-6 text-indigo-600" />
-                <span>SOP Buka & Tutup Shift Kasir (Rekonsiliasi Kas Laci)</span>
-              </h2>
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+              <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-indigo-600" />
+                    <span>SOP Buka & Tutup Shift Kasir Resto (Shift Z)</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">Audit kas harian resto untuk mencocokkan uang tunai laci vs transaksi sistem.</p>
+                </div>
+                <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold border border-indigo-200">
+                  Menu: /kuliner/admin/shift
+                </span>
+              </div>
 
               <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
                 <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
-                  <strong className="text-blue-900 font-bold block text-sm">1. Saat Buka Shift (Pagi / Masuk Kerja):</strong>
-                  <p>Kasir menghitung uang modal receh di laci kasir (misal Rp 300.000), lalu masukkan angka tersebut pada prompt "Buka Shift" sebelum melayani transaksi pertama.</p>
+                  <strong className="text-blue-900 font-bold block text-sm">1. Saat Buka Shift (Opening Kasir):</strong>
+                  <p>Kasir menghitung uang modal receh di laci kasir (misal Rp 300.000), lalu masukkan angka tersebut pada prompt "Buka Shift" sebelum melayani tamu pertama.</p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2">
-                  <strong className="text-emerald-900 font-bold block text-sm">2. Saat Tutup Shift (Selesai Jam Kerja / Closing):</strong>
-                  <p>Kasir menghitung seluruh uang fisik di laci (Modal + Penjualan Tunai - Pengeluaran Kas Operasional). Masukkan nominal fisik ke sistem untuk memeriksa apakah ada selisih kas (Balance / Kurang / Lebih), lalu cetak Laporan Shift Z sebagai bukti pertanggungjawaban ke Manager Resto.</p>
+                  <strong className="text-emerald-900 font-bold block text-sm">2. Saat Tutup Shift (Closing / Z-Report):</strong>
+                  <p>Kasir menghitung seluruh uang fisik di laci (Modal + Penjualan Tunai - Pengeluaran Kas Operasional seperti beli es batu/gas LPG mendadak). Masukkan nominal fisik ke sistem untuk memeriksa apakah ada selisih kas (Balance / Kurang / Lebih), lalu cetak Laporan Shift Z.</p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* SECTION 6: Laporan */}
+        {/* ========================================================================= */}
+        {/* SECTION 6: Rumus Laba Rugi & Menu Engineering Matrix                     */}
+        {/* ========================================================================= */}
         {activeTab === 'reports' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-              <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                <TrendingUp className="w-6 h-6 text-emerald-600" />
-                <span>Laporan Penjualan, Margin Menu & Laba Rugi Resto</span>
-              </h2>
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+              <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-emerald-600" />
+                    <span>Rumus Laba Rugi Resto & Matriks Menu Engineering</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">Strategi optimasi keuntungan menu restoran berbasis profit margin dan popularitas.</p>
+                </div>
+                <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
+                  Menu: /kuliner/admin/reports-advanced
+                </span>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                  <h3 className="text-sm font-bold text-slate-900">📊 Laba Rugi Resto</h3>
-                  <p className="text-xs text-slate-600">Melihat total omzet penjualan bersih dikurangi HPP bahan baku (COGS), biaya operasional resto (listrik, gas LPG, gaji, sewa), dan nilai kerugian waste.</p>
+              {/* 4 Kuadran Menu Engineering */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Award className="w-4 h-4 text-amber-600" />
+                  <span>Matriks Menu Engineering (Boston Consulting Group Resto)</span>
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-1">
+                    <div className="font-bold text-emerald-900 flex items-center gap-1.5">
+                      <span>⭐ 1. Stars (Margin Tebal & Terlaris)</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      Menu dengan margin profit tinggi dan volume penjualan tinggi. <strong>Tindakan:</strong> Pertahankan resep, konsistensi rasa, dan tempatkan di posisi utama buku menu.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 space-y-1">
+                    <div className="font-bold text-blue-900 flex items-center gap-1.5">
+                      <span>🐴 2. Plowhorses (Margin Tipis & Terlaris)</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      Menu sangat populer tapi margin tipis (HPP mahal). <strong>Tindakan:</strong> Naikkan harga jual sedikit atau cari alternatif supplier bahan baku yang lebih murah untuk mempertebal margin.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-1">
+                    <div className="font-bold text-amber-900 flex items-center gap-1.5">
+                      <span>🧩 3. Puzzles (Margin Tebal & Kurang Laris)</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      Menu sangat menguntungkan tapi jarang dipesan tamu. <strong>Tindakan:</strong> Re-branding nama menu, pasang foto menarik, atau beri insentif pramusaji untuk merekomendasikannya ke tamu.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 space-y-1">
+                    <div className="font-bold text-rose-900 flex items-center gap-1.5">
+                      <span>🐶 4. Dogs (Margin Tipis & Tidak Laku)</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      Menu yang jarang dipesan dan tidak menguntungkan. <strong>Tindakan:</strong> Hapus dari daftar menu agar tidak membebani stok bahan baku yang berisiko basi (*waste*).
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* SECTION 7: Simulator Food Cost & BOM                                      */}
+        {/* ========================================================================= */}
+        {activeTab === 'calculator' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+              <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <Calculator className="w-5 h-5 text-amber-600" />
+                    <span>Simulator Food Cost & Resep BOM Resto Interaktif</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">Uji coba simulasi biaya bahan baku per porsi untuk memvalidasi kelayakan margin menu resto Anda.</p>
+                </div>
+                <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-200">
+                  Fitur Alat Bantu Edukasi Resto
+                </span>
+              </div>
+
+              {/* Input Form */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">1. Biaya Bahan Pokok Utama (Rp):</label>
+                  <input
+                    type="number"
+                    value={ing1Cost}
+                    onChange={(e) => setIng1Cost(Number(e.target.value) || 0)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    placeholder="6000"
+                  />
+                  <p className="text-[11px] text-slate-400">Contoh: Daging Ayam / Kopi</p>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                  <h3 className="text-sm font-bold text-slate-900">🍕 Laba & Margin Menu</h3>
-                  <p className="text-xs text-slate-600">Menganalisis menu mana yang menjadi *Star* (Penjualan tinggi & Margin tebal) vs menu yang kurang diminati (*Dog*).</p>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">2. Biaya Bahan Pendukung / Bumbu (Rp):</label>
+                  <input
+                    type="number"
+                    value={ing2Cost}
+                    onChange={(e) => setIng2Cost(Number(e.target.value) || 0)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    placeholder="2500"
+                  />
+                  <p className="text-[11px] text-slate-400">Contoh: Beras, Susu, Bumbu Racik</p>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                  <h3 className="text-sm font-bold text-slate-900">💳 Rekap Metode Bayar</h3>
-                  <p className="text-xs text-slate-600">Mencocokkan penerimaan QRIS / EDC EDC bank dengan mutasi rekening koran untuk audit keuangan harian.</p>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">3. Biaya Kemasan / Garnish (Rp):</label>
+                  <input
+                    type="number"
+                    value={ing3Cost}
+                    onChange={(e) => setIng3Cost(Number(e.target.value) || 0)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    placeholder="1500"
+                  />
+                  <p className="text-[11px] text-slate-400">Contoh: Paper Cup, Dus Box</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">4. Target Harga Jual Menu (Rp):</label>
+                  <input
+                    type="number"
+                    value={targetSellPrice}
+                    onChange={(e) => setTargetSellPrice(Number(e.target.value) || 0)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    placeholder="25000"
+                  />
+                  <p className="text-[11px] text-slate-400">Harga di daftar menu tamu</p>
+                </div>
+              </div>
+
+              {/* Output Calculation Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-1">
+                  <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Total HPP Porsi (BOM)</span>
+                  <div className="text-xl font-extrabold text-amber-950 font-mono">{fmtRp(totalHppBahan)}</div>
+                  <p className="text-[10.5px] text-amber-600">Total modal bahan porsi</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
+                  <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Laba Kotor / Porsi</span>
+                  <div className="text-xl font-extrabold text-emerald-950 font-mono">{fmtRp(grossProfitPerPortion)}</div>
+                  <p className="text-[10.5px] text-emerald-600">Untung kotor per porsi terjual</p>
+                </div>
+
+                <div className={`p-4 rounded-2xl border space-y-1 ${foodCostPercent <= 35 ? 'bg-blue-50 border-blue-200' : 'bg-rose-50 border-rose-200'}`}>
+                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Food Cost %</span>
+                  <div className={`text-xl font-extrabold font-mono ${foodCostPercent <= 35 ? 'text-blue-950' : 'text-rose-950'}`}>{foodCostPercent.toFixed(1)}%</div>
+                  <p className="text-[10.5px] text-slate-600">Ideal: 28% - 35%</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 space-y-1">
+                  <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Gross Margin %</span>
+                  <div className="text-xl font-extrabold text-purple-950 font-mono">{grossMarginPercent.toFixed(1)}%</div>
+                  <p className="text-[10.5px] text-purple-600">Tingkat margin keuntungan</p>
+                </div>
+              </div>
+
+              {/* Status Evaluasi Resto */}
+              <div className={`p-4 rounded-2xl border flex items-start gap-3 ${foodCostPercent <= 35 ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900' : 'bg-rose-50/70 border-rose-200 text-rose-900'}`}>
+                {foodCostPercent <= 35 ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                )}
+                <div className="text-xs space-y-1">
+                  <strong className="font-bold text-sm block">
+                    {foodCostPercent <= 35 ? '✅ Resep & Food Cost Sangat Sehat (Ideal Resto)' : '⚠️ Perhatian: Food Cost Terlalu Tinggi!'}
+                  </strong>
+                  <p className="leading-relaxed">
+                    {foodCostPercent <= 35 
+                      ? `Food cost ${foodCostPercent.toFixed(1)}% berada dalam batas emas standar restoran (di bawah 35%). Margin ${grossMarginPercent.toFixed(1)}% sangat cukup untuk menutupi biaya operasional resto (sewa tempat, gaji koki/waitress, gas LPG, listrik chiller).`
+                      : `Food cost ${foodCostPercent.toFixed(1)}% melebihi batas aman 35%. Restoran berisiko rugi karena sisa margin terlalu tipis untuk menutup biaya operasional. Disarankan menaikkan harga jual atau menyesuaikan takaran gramasi bahan baku!`
+                    }
+                  </p>
                 </div>
               </div>
             </div>

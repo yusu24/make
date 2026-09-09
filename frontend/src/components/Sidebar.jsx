@@ -199,6 +199,7 @@ const RETAIL_NAV_ITEMS = [
     items: [
       { path: '/retail/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' },
       { path: '/retail/pos',       icon: <CreditCard size={24} />,      label: 'Kasir (POS)' },
+      { path: '/retail/guide',     icon: <BookOpen size={24} />,        label: 'Buku Panduan & SOP' },
     ]
   },
   {

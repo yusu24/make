@@ -224,7 +224,7 @@ const KulinerAdminLayout = ({ children, title }) => {
             <h1>{storeName}</h1>
           </Link>
           <nav>
-            {/* Dashboard + Storefront */}
+            {/* Dashboard + Storefront + Buku Panduan & SOP */}
             <div className="kd-nav-section" style={{ marginBottom: 10 }}>
               <Link 
                 to="/kuliner/admin" 
@@ -232,6 +232,13 @@ const KulinerAdminLayout = ({ children, title }) => {
               >
                 <span className="kd-nav-icon">📊</span>
                 <span>{t('sidebar.dashboard')}</span>
+              </Link>
+              <Link 
+                to="/kuliner/admin/guide" 
+                className={`kd-nav-item ${location.pathname === '/kuliner/admin/guide' ? 'active' : ''}`}
+              >
+                <span className="kd-nav-icon">📖</span>
+                <span>Buku Panduan & SOP</span>
               </Link>
               {hasPermission('storefront') && isFeatureAllowed('storefront') && (
                 <Link to={`/kuliner?tenant_id=${user?.tenant_id}`} target="_blank" className="kd-nav-item">
