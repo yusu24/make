@@ -690,49 +690,65 @@ const KulinerGuide = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">1. Biaya Bahan Pokok Utama (Rp):</label>
-                  <input
-                    type="number"
-                    value={ing1Cost}
-                    onChange={(e) => setIng1Cost(Number(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    placeholder="6000"
-                  />
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={ing1Cost ? ing1Cost.toLocaleString('id-ID') : ''}
+                      onChange={(e) => setIng1Cost(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                      placeholder="6.000"
+                    />
+                  </div>
                   <p className="text-[11px] text-slate-400">Contoh: Daging Ayam / Kopi</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">2. Biaya Bahan Pendukung / Bumbu (Rp):</label>
-                  <input
-                    type="number"
-                    value={ing2Cost}
-                    onChange={(e) => setIng2Cost(Number(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    placeholder="2500"
-                  />
+                  <label className="text-xs font-bold text-slate-700">2. Biaya Bahan Pendukung (Rp):</label>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={ing2Cost ? ing2Cost.toLocaleString('id-ID') : ''}
+                      onChange={(e) => setIng2Cost(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                      placeholder="2.500"
+                    />
+                  </div>
                   <p className="text-[11px] text-slate-400">Contoh: Beras, Susu, Bumbu Racik</p>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">3. Biaya Kemasan / Garnish (Rp):</label>
-                  <input
-                    type="number"
-                    value={ing3Cost}
-                    onChange={(e) => setIng3Cost(Number(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    placeholder="1500"
-                  />
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={ing3Cost ? ing3Cost.toLocaleString('id-ID') : ''}
+                      onChange={(e) => setIng3Cost(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                      placeholder="1.500"
+                    />
+                  </div>
                   <p className="text-[11px] text-slate-400">Contoh: Paper Cup, Dus Box</p>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">4. Target Harga Jual Menu (Rp):</label>
-                  <input
-                    type="number"
-                    value={targetSellPrice}
-                    onChange={(e) => setTargetSellPrice(Number(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    placeholder="25000"
-                  />
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={targetSellPrice ? targetSellPrice.toLocaleString('id-ID') : ''}
+                      onChange={(e) => setTargetSellPrice(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                      placeholder="25.000"
+                    />
+                  </div>
                   <p className="text-[11px] text-slate-400">Harga di daftar menu tamu</p>
                 </div>
               </div>

@@ -849,13 +849,15 @@ const RetailGuide = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">1. Harga Beli Modal / HPP (Rp):</label>
-                <div className="relative">
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
                   <input
-                    type="number"
-                    value={calcBuyPrice}
-                    onChange={(e) => setCalcBuyPrice(Number(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="80000"
+                    type="text"
+                    inputMode="numeric"
+                    value={calcBuyPrice ? calcBuyPrice.toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCalcBuyPrice(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                    placeholder="80.000"
                   />
                 </div>
                 <p className="text-[11px] text-slate-400">Harga per satuan dari supplier</p>
@@ -863,13 +865,15 @@ const RetailGuide = () => {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">2. Harga Jual Normal Toko (Rp):</label>
-                <div className="relative">
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
                   <input
-                    type="number"
-                    value={calcSellPrice}
-                    onChange={(e) => setCalcSellPrice(Number(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="100000"
+                    type="text"
+                    inputMode="numeric"
+                    value={calcSellPrice ? calcSellPrice.toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCalcSellPrice(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                    placeholder="100.000"
                   />
                 </div>
                 <p className="text-[11px] text-slate-400">Harga tag yang tertera ke pembeli</p>
@@ -877,14 +881,17 @@ const RetailGuide = () => {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">3. Rencana Diskon Promosi (%):</label>
-                <div className="relative">
+                <div className="relative flex items-center">
                   <input
                     type="number"
+                    min="0"
+                    max="100"
                     value={calcDiscountPercent}
                     onChange={(e) => setCalcDiscountPercent(Math.min(100, Math.max(0, Number(e.target.value) || 0)))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-3.5 pr-8 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                     placeholder="0"
                   />
+                  <span className="absolute right-3.5 text-xs font-bold text-slate-400 font-mono select-none">%</span>
                 </div>
                 <p className="text-[11px] text-slate-400">Persentase potongan promo (0-100%)</p>
               </div>

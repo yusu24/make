@@ -723,85 +723,110 @@ const BudidayaGuide = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">1. Populasi Tebar (Ekor/Bibit):</label>
-                <input
-                  type="number"
-                  value={calcStockCount}
-                  onChange={(e) => setCalcStockCount(Number(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="10000"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={calcStockCount ? calcStockCount.toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCalcStockCount(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                    placeholder="10.000"
+                  />
+                </div>
                 <p className="text-[11px] text-slate-400">Jumlah bibit awal tebar</p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">2. Harga Beli Bibit / Ekor (Rp):</label>
-                <input
-                  type="number"
-                  value={calcSeedPrice}
-                  onChange={(e) => setCalcSeedPrice(Number(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="250"
-                />
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={calcSeedPrice ? calcSeedPrice.toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCalcSeedPrice(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                    placeholder="250"
+                  />
+                </div>
                 <p className="text-[11px] text-slate-400">Harga bibit satuan dari pembenih</p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">3. Total Pakan Terpakai (Kg):</label>
-                <input
-                  type="number"
-                  value={calcTotalFeedKg}
-                  onChange={(e) => setCalcTotalFeedKg(Number(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="1200"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={calcTotalFeedKg ? calcTotalFeedKg.toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCalcTotalFeedKg(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                    placeholder="1.200"
+                  />
+                </div>
                 <p className="text-[11px] text-slate-400">Akumulasi pakan 1 siklus</p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">4. Harga Rata-rata Pakan / Kg (Rp):</label>
-                <input
-                  type="number"
-                  value={calcFeedPriceKg}
-                  onChange={(e) => setCalcFeedPriceKg(Number(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="12000"
-                />
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={calcFeedPriceKg ? calcFeedPriceKg.toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCalcFeedPriceKg(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                    placeholder="12.000"
+                  />
+                </div>
                 <p className="text-[11px] text-slate-400">Harga beli pakan per kg</p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">5. Hasil Panen Akhir (Kg):</label>
-                <input
-                  type="number"
-                  value={calcHarvestWeightKg}
-                  onChange={(e) => setCalcHarvestWeightKg(Number(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="1000"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={calcHarvestWeightKg ? calcHarvestWeightKg.toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCalcHarvestWeightKg(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                    placeholder="1.000"
+                  />
+                </div>
                 <p className="text-[11px] text-slate-400">Total timbangan hasil panen</p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">6. Harga Jual Panen / Kg (Rp):</label>
-                <input
-                  type="number"
-                  value={calcSellPriceKg}
-                  onChange={(e) => setCalcSellPriceKg(Number(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="26000"
-                />
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={calcSellPriceKg ? calcSellPriceKg.toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCalcSellPriceKg(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                    placeholder="26.000"
+                  />
+                </div>
                 <p className="text-[11px] text-slate-400">Harga jual ke pembeli/tengkulak</p>
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-slate-700">7. Biaya Operasional Lainnya (Listrik, Obat, Upah):</label>
-                <input
-                  type="number"
-                  value={calcOperCost}
-                  onChange={(e) => setCalcOperCost(Number(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="2000000"
-                />
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 text-xs font-bold text-slate-400 font-mono select-none">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={calcOperCost ? calcOperCost.toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCalcOperCost(Number(e.target.value.replace(/\D/g, '')) || 0)}
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                    placeholder="2.000.000"
+                  />
+                </div>
                 <p className="text-[11px] text-slate-400">Total biaya listrik, probiotik & upah selama siklus</p>
               </div>
             </div>
