@@ -212,31 +212,7 @@ export default function RetailBackup() {
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-          <div style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            background: 'var(--retail-primary-subtle, rgba(67, 24, 255, 0.1))',
-            color: 'var(--retail-primary, #4318FF)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <Archive size={24} />
-          </div>
-          <div>
-            <h1 className="retail-title" style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>
-              Backup & Cadangan Data Toko
-            </h1>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--retail-text-secondary, #A3AED0)' }}>
-              Amankan dan cadangkan seluruh riwayat transaksi, katalog produk, inventaris stok, serta laporan keuangan toko Anda.
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       {/* Summary KPI Cards */}
       <div style={{
