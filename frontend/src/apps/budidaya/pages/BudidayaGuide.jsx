@@ -28,13 +28,18 @@ import {
   Tag,
   ChevronRight,
   TrendingDown,
-  RotateCcw
+  RotateCcw,
+  Users,
+  Settings,
+  Database,
+  PlusCircle,
+  FileText
 } from 'lucide-react';
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms';
 
 const BudidayaGuide = () => {
   const terms = useBudidayaTerms();
-  const [activeTab, setActiveTab] = useState('roadmap');
+  const [activeTab, setActiveTab] = useState('quickstart');
 
   // Interactive Budidaya Simulator State
   const [calcStockCount, setCalcStockCount] = useState(10000); // Populasi tebar (ekor/benih)
@@ -118,13 +123,13 @@ const BudidayaGuide = () => {
         <div className="relative z-10 space-y-3 max-w-4xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/15 backdrop-blur-md rounded-full text-xs font-bold text-teal-100 border border-white/20">
             <BookOpen className="w-3.5 h-3.5 text-teal-300" />
-            <span>Pusat Buku Panduan, Standar Operasional Prosedur (SOP) & Kamus Rumus {terms.brandSub || 'Budidaya'}</span>
+            <span>Manual Pengguna & Standar Operasional Prosedur (SOP) Aplikasi Modul Budidaya</span>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">
-            Panduan Lengkap, SOP & Rumus Modul {terms.brandName || 'Budidaya'}
+            Buku Panduan & SOP Penggunaan Aplikasi {terms.brandName || 'Budidaya'}
           </h1>
           <p className="text-teal-100 text-xs sm:text-sm leading-relaxed max-w-3xl">
-            Panduan teknis dan operasional menyeluruh untuk pengelolaan siklus {terms.commodity || 'budidaya'}: persiapan wadah steril, aklimatisasi benih, manajemen pakan harian (Feeding Rate), monitoring kualitas air, sampling bobot (ABW & ADG), evaluasi efisiensi pakan (FCR), kalkulasi HPP panen modal per kg, hingga pembukuan laba bersih siklus.
+            Panduan lengkap langkah demi langkah cara mengoperasikan seluruh fitur sistem aplikasi {terms.brandName || 'Budidaya'}: pendaftaran wadah kolam, inisialisasi siklus tebar, pencatatan pakan otomatis potong stok gudang, input mortalitas & sampling bobot, proses panen & kalkulasi HPP modal/kg, hingga pembukuan buku kas dan laporan laba rugi farm.
           </p>
         </div>
 
@@ -135,13 +140,13 @@ const BudidayaGuide = () => {
       {/* Tabs Navigation */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 scrollbar-none">
         {[
-          { id: 'roadmap', label: '1. Peta Jalan & Pra-Tebar', icon: Sparkles },
-          { id: 'cycle', label: `2. ${terms.pond || 'Wadah'} & Siklus Tebar`, icon: Layers },
-          { id: 'feed', label: '3. Pakan, Air & Survival Rate', icon: Droplet },
-          { id: 'sampling', label: '4. Sampling Bobot & FCR', icon: Scale },
-          { id: 'harvest', label: '5. Panen & HPP Modal / Kg', icon: TrendingUp },
-          { id: 'inventory', label: '6. Gudang Pakan & Kas', icon: Package },
-          { id: 'calculator', label: '🧮 Simulator FCR & Laba', icon: Calculator },
+          { id: 'quickstart', label: '1. Alur Cepat Aplikasi', icon: Sparkles },
+          { id: 'ponds-cycles', label: `2. SOP ${terms.pond || 'Wadah'} & Siklus Tebar`, icon: Layers },
+          { id: 'harvest', label: '3. SOP Panen & Tutup Siklus', icon: TrendingUp },
+          { id: 'inventory', label: '4. SOP Gudang Pakan & Saprodi', icon: Package },
+          { id: 'finance', label: '5. SOP Kas & Laporan Laba Rugi', icon: Wallet },
+          { id: 'settings', label: '6. Master Data, Tim & Akses', icon: Settings },
+          { id: 'calculator', label: '🧮 Kamus Rumus & Simulator', icon: Calculator },
           { id: 'faq', label: '7. Troubleshooting & FAQ', icon: HelpCircle },
         ].map(tab => {
           const Icon = tab.icon;
@@ -164,106 +169,117 @@ const BudidayaGuide = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* SECTION 1: Peta Jalan Siklus & SOP Pra-Tebar                               */}
+      {/* SECTION 1: Alur Cepat Aplikasi (Quick Start)                              */}
       {/* ========================================================================= */}
-      {activeTab === 'roadmap' && (
+      {activeTab === 'quickstart' && (
         <div className="space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
             <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
               <div>
                 <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-teal-600" />
-                  <span>5 Tahapan Siklus Budidaya dari Awal Tebar hingga Panen</span>
+                  <span>Alur Utama Pengoperasian Aplikasi Modul Budidaya</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">Gambaran alur terintegrasi modul sistem untuk memaksimalkan survival rate dan laba farm.</p>
+                <p className="text-xs text-slate-500 mt-1">4 langkah berurutan untuk memulai operasional harian farm dari pendaftaran hingga laporan panen.</p>
               </div>
               <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-bold border border-teal-200">
-                Alur Kerja Terpadu
+                Alur Kerja 4 Langkah
               </span>
             </div>
 
-            {/* 5 Stages Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {[
-                {
-                  step: '1',
-                  title: 'Pra-Tebar & Wadah',
-                  desc: 'Sterilisasi kolam, pengapuran dolomit, pembentukan bioflok/air matang (3-7 hari).',
-                  color: 'bg-teal-50 border-teal-200 text-teal-900',
-                  badge: 'Tahap 1'
-                },
-                {
-                  step: '2',
-                  title: 'Tebar & Aklimatisasi',
-                  desc: 'Aklimatisasi suhu & pH bibit (15-30 menit) saat pagi/sore hari untuk cegah kematian stres.',
-                  color: 'bg-emerald-50 border-emerald-200 text-emerald-900',
-                  badge: 'Tahap 2'
-                },
-                {
-                  step: '3',
-                  title: 'Rawat, Pakan & Air',
-                  desc: 'Pemberian pakan terukur (FR 3-5%), tracking mortalitas harian, dan monitoring parameter DO/pH.',
-                  color: 'bg-blue-50 border-blue-200 text-blue-900',
-                  badge: 'Tahap 3'
-                },
-                {
-                  step: '4',
-                  title: 'Sampling & Evaluasi FCR',
-                  desc: 'Sampling berkala (7-14 hari) untuk ukur ABW, laju pertumbuhan ADG, dan evaluasi efisiensi pakan FCR.',
-                  color: 'bg-indigo-50 border-indigo-200 text-indigo-900',
-                  badge: 'Tahap 4'
-                },
-                {
-                  step: '5',
-                  title: 'Panen, HPP & Laba',
-                  desc: 'Panen parsial/total, pemberokan air bersih, kalkulasi HPP modal/kg, dan laporan laba bersih.',
-                  color: 'bg-purple-50 border-purple-200 text-purple-900',
-                  badge: 'Tahap 5'
-                }
-              ].map((stage, idx) => (
-                <div key={idx} className={`p-4 rounded-xl border ${stage.color} flex flex-col justify-between space-y-3`}>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold font-mono">
-                        {stage.step}
-                      </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/70">
-                        {stage.badge}
-                      </span>
-                    </div>
-                    <h3 className="text-xs font-bold text-slate-900 mt-2">{stage.title}</h3>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">{stage.desc}</p>
+            {/* 4 Steps Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="p-5 rounded-2xl bg-teal-50/70 border border-teal-200 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="w-7 h-7 rounded-lg bg-teal-700 text-white flex items-center justify-center text-xs font-extrabold font-mono">1</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-200/60 text-teal-900">Langkah 1</span>
                   </div>
+                  <h3 className="text-sm font-bold text-slate-900">Daftarkan {terms.pond || 'Wadah / Kolam'}</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Buka menu <strong>Manajemen {terms.unit || 'Wadah'}</strong> (`/budidaya/ponds`). Klik tombol <strong>+ Tambah Wadah</strong>, masukkan nomor/nama kolam, jenis (terpal/bioflok/tanah), dan kapasitas volume.
+                  </p>
                 </div>
-              ))}
-            </div>
-
-            {/* SOP Persiapan Wadah & Aklimatisasi Detail */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-teal-600" />
-                  <span>SOP Persiapan Media & Pembentukan Air Matang:</span>
-                </h3>
-                <ul className="text-xs text-slate-600 space-y-2.5 list-disc list-inside leading-relaxed">
-                  <li><strong>Pembersihan & Pengeringan:</strong> Cuci wadah terpal/beton dan keringkan di bawah sinar matahari minimal 1–2 hari untuk membunuh patogen.</li>
-                  <li><strong>Pengisian Air & Desinfeksi:</strong> Isi air setinggi 50–80 cm, endapkan atau berikan garam krosok (1–2 kg/m³) untuk menstabilkan salinitas dan mencegah parasit.</li>
-                  <li><strong>Pengapuran & Penstabil pH:</strong> Jika pH air rendah ({'<'} 6.8), berikan kapur Dolomit dosis 50–100 gr/m³.</li>
-                  <li><strong>Inokulasi Probiotik / Pembentukan Flok:</strong> Tambahkan probiotik + molase/tetes tebu (dosis 10–20 ml/m³), nyalakan aerasi/kincir selama 3–5 hari hingga air berwarna hijau matang atau cokelat muda sebelum bibit ditebar.</li>
-                </ul>
+                <div className="text-[11px] font-semibold text-teal-700 flex items-center gap-1">
+                  <span>Menu: /budidaya/ponds</span>
+                </div>
               </div>
 
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <HeartPulse className="w-4 h-4 text-emerald-600" />
-                  <span>SOP Aklimatisasi Tebar Benih (Pencegahan Mortalitas Awal):</span>
-                </h3>
-                <ul className="text-xs text-slate-600 space-y-2.5 list-disc list-inside leading-relaxed">
-                  <li><strong>Waktu Terbaik Tebar:</strong> Pagi hari (06.00 – 08.30) atau sore hari (16.30 – 18.00) saat suhu air sedang sejuk dan stabil. Hindari tebar di terik siang.</li>
-                  <li><strong>Penyesuaian Suhu (15 Menit):</strong> Apungkan kantong plastik packing benih di atas permukaan kolam selama 15–20 menit agar suhu air di dalam kantong sama dengan suhu air kolam.</li>
-                  <li><strong>Pencampuran Air Bertahap:</strong> Buka ikatan kantong, masukkan air kolam sedikit demi sedikit ke dalam kantong secara perlahan agar benih beradaptasi dengan pH dan parameter air baru.</li>
-                  <li><strong>Pelepasan Mandiri:</strong> Miringkan kantong dan biarkan benih berenang keluar sendiri ke kolam. Jangan memberi pakan pada 12–24 jam pertama pasca tebar (puasa adaptasi).</li>
-                </ul>
+              <div className="p-5 rounded-2xl bg-blue-50/70 border border-blue-200 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="w-7 h-7 rounded-lg bg-blue-700 text-white flex items-center justify-center text-xs font-extrabold font-mono">2</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-200/60 text-blue-900">Langkah 2</span>
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900">Input Stok Pakan ke Gudang</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Buka menu <strong>Gudang & Pakan</strong> (`/budidaya/inventory`). Catat nama merk pakan, jumlah stok sak/kg, dan harga beli supplier agar sistem dapat otomatis memotong stok saat dicatat di kolam.
+                  </p>
+                </div>
+                <div className="text-[11px] font-semibold text-blue-700 flex items-center gap-1">
+                  <span>Menu: /budidaya/inventory</span>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-indigo-50/70 border border-indigo-200 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="w-7 h-7 rounded-lg bg-indigo-700 text-white flex items-center justify-center text-xs font-extrabold font-mono">3</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-200/60 text-indigo-900">Langkah 3</span>
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900">Mulai Siklus Tebar Baru</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Buka menu <strong>Siklus Budidaya</strong> (`/budidaya/cycles`). Pilih kolam yang kosong, masukkan varietas benih, populasi tebar (ekor), bobot awal rata-rata (ABW), harga beli bibit, dan tanggal tebar.
+                  </p>
+                </div>
+                <div className="text-[11px] font-semibold text-indigo-700 flex items-center gap-1">
+                  <span>Menu: /budidaya/cycles</span>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-purple-50/70 border border-purple-200 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="w-7 h-7 rounded-lg bg-purple-700 text-white flex items-center justify-center text-xs font-extrabold font-mono">4</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-200/60 text-purple-900">Langkah 4</span>
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900">Catat Harian, Panen & Laporan</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Setiap hari operator mencatat pakan harian & mortalitas pada detail siklus. Saat masa panen tiba, klik tombol <strong>Panen</strong> untuk menghitung HPP modal/kg dan melihat laba bersih siklus.
+                  </p>
+                </div>
+                <div className="text-[11px] font-semibold text-purple-700 flex items-center gap-1">
+                  <span>Menu: /budidaya/finance-summary</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Role & Pembagian Tanggung Jawab Pengguna */}
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Users className="w-4 h-4 text-teal-600" />
+                <span>Pembagian Peran & Akses Pengguna Aplikasi:</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1.5">
+                  <strong className="text-slate-900 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <span>Owner / Farm Manager (Akses Penuh):</span>
+                  </strong>
+                  <p className="text-slate-600 leading-relaxed">
+                    Dapat mengelola siklus, mengatur harga pakan & bibit, mencatat beban kas operasional, melihat rekapitulasi laba rugi farm, memverifikasi hasil panen, dan mengatur akun staf.
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1.5">
+                  <strong className="text-slate-900 flex items-center gap-1.5">
+                    <Activity className="w-4 h-4 text-blue-600" />
+                    <span>Teknisi Kolam / Operator Lapangan:</span>
+                  </strong>
+                  <p className="text-slate-600 leading-relaxed">
+                    Diberikan akses khusus melalui menu <em>Pengaturan &gt; Hak Akses</em> untuk hanya mencatat pakan harian, log mortalitas ikan mati, dan hasil sampling bobot tanpa menampilkan laporan keuangan modal.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -271,307 +287,117 @@ const BudidayaGuide = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* SECTION 2: Wadah & Siklus Tebar                                           */}
+      {/* SECTION 2: SOP Wadah & Siklus Tebar                                       */}
       {/* ========================================================================= */}
-      {activeTab === 'cycle' && (
+      {activeTab === 'ponds-cycles' && (
         <div className="space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
             <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
               <div>
                 <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
                   <Layers className="w-5 h-5 text-teal-600" />
-                  <span>SOP Registrasi {terms.pond || 'Wadah'} & Memulai Siklus Tebar Baru</span>
+                  <span>SOP Pendaftaran {terms.pond || 'Wadah / Kolam'} & Pengelolaan Siklus Tebar</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">Langkah inisialisasi wadah dan perhitungan modal awal tebar bibit.</p>
+                <p className="text-xs text-slate-500 mt-1">Petunjuk operasional lengkap dari pembuatan wadah, memulai tebar, hingga pencatatan log harian.</p>
               </div>
               <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-bold border border-teal-200">
                 Menu: /budidaya/ponds & /budidaya/cycles
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="w-8 h-8 bg-teal-600 text-white rounded-lg flex items-center justify-center text-xs font-bold">1</span>
-                <h3 className="text-sm font-bold text-slate-900">Daftarkan {terms.pond || 'Kolam / Lahan'}</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Masukkan nomor/nama wadah, tipe (terpal bundar, tanah, beton, bioflok, RAS, atau greenhouse), dan kapasitas volume/luas dalam meter kubik/meter persegi.
-                </p>
-              </div>
-
-              <div className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="w-8 h-8 bg-teal-600 text-white rounded-lg flex items-center justify-center text-xs font-bold">2</span>
-                <h3 className="text-sm font-bold text-slate-900">Input Data Tebar Awal</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Catat jumlah populasi awal tebar (ekor/bibit), bobot awal rata-rata (ABW), harga bibit per satuan, dan tanggal mulai tebar.
-                </p>
-              </div>
-
-              <div className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="w-8 h-8 bg-teal-600 text-white rounded-lg flex items-center justify-center text-xs font-bold">3</span>
-                <h3 className="text-sm font-bold text-slate-900">Tracking DOC/HST Otomatis</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Sistem otomatis menghitung Hari Setelah Tebar (HST / DOC), mengkalkulasi biomassa berjalan, dan mengestimasi tanggal panen.
-                </p>
-              </div>
-            </div>
-
-            {/* Rekomendasi Padat Tebar Table */}
+            {/* SOP 1: Daftarkan Kolam */}
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Tag className="w-4 h-4 text-teal-600" />
-                <span>Rekomendasi Standar Padat Tebar per Komoditas:</span>
+                <PlusCircle className="w-4 h-4 text-teal-600" />
+                <span>A. Cara Mendaftarkan {terms.pond || 'Kolam / Lahan'} Baru:</span>
               </h3>
-              <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
-                    <tr>
-                      <th className="p-3">Komoditas Budidaya</th>
-                      <th className="p-3">Sistem Wadah</th>
-                      <th className="p-3">Padat Tebar Ideal</th>
-                      <th className="p-3">Masa Pemeliharaan</th>
-                      <th className="p-3">Target Ukuran Panen</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-600">
-                    <tr className="hover:bg-slate-50/60">
-                      <td className="p-3 font-semibold text-slate-900">Ikan Lele Sangkuriang / Mutiara</td>
-                      <td className="p-3">Bioflok Terpal D3 (7 m³)</td>
-                      <td className="p-3 font-mono text-emerald-700 font-bold">700 – 1.000 ekor / m³</td>
-                      <td className="p-3">60 – 75 Hari</td>
-                      <td className="p-3">8 – 10 ekor / kg (100–125 gr)</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/60">
-                      <td className="p-3 font-semibold text-slate-900">Ikan Nila Merah / GIFT</td>
-                      <td className="p-3">Kolam Tenang / Terpal Aerasi</td>
-                      <td className="p-3 font-mono text-emerald-700 font-bold">30 – 60 ekor / m²</td>
-                      <td className="p-3">90 – 120 Hari</td>
-                      <td className="p-3">3 – 5 ekor / kg (200–350 gr)</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/60">
-                      <td className="p-3 font-semibold text-slate-900">Ikan Nila Sistem Air Deras / RAS</td>
-                      <td className="p-3">Beton Sirkulasi / RAS</td>
-                      <td className="p-3 font-mono text-emerald-700 font-bold">100 – 150 ekor / m³</td>
-                      <td className="p-3">75 – 90 Hari</td>
-                      <td className="p-3">2 – 4 ekor / kg (250–500 gr)</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/60">
-                      <td className="p-3 font-semibold text-slate-900">Udang Vaname Intensif</td>
-                      <td className="p-3">Tambak Terpal HDPE Kincir</td>
-                      <td className="p-3 font-mono text-emerald-700 font-bold">120 – 250 ekor / m²</td>
-                      <td className="p-3">80 – 100 Hari</td>
-                      <td className="p-3">Size 40 – 50 (20–25 gr)</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/60">
-                      <td className="p-3 font-semibold text-slate-900">Ikan Gurami Pembesaran</td>
-                      <td className="p-3">Kolam Tanah / Terpal Tanah</td>
-                      <td className="p-3 font-mono text-emerald-700 font-bold">10 – 20 ekor / m²</td>
-                      <td className="p-3">6 – 8 Bulan</td>
-                      <td className="p-3">2 ekor / kg (500 gr)</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2 leading-relaxed">
+                <ol className="list-decimal list-inside space-y-1.5">
+                  <li>Buka menu <strong>Manajemen {terms.unit || 'Wadah'}</strong> di sidebar kiri.</li>
+                  <li>Klik tombol <strong>+ Tambah {terms.unit || 'Kolam'}</strong> di sudut kanan atas.</li>
+                  <li>Isi formulir pendaftaran:
+                    <ul className="list-disc list-inside pl-5 mt-1 space-y-1 text-slate-600">
+                      <li><strong>Nama / Kode Wadah:</strong> Contoh: <em>Kolam Bioflok D3-01</em> atau <em>Kolam Tanah A-1</em>.</li>
+                      <li><strong>Tipe Wadah:</strong> Pilih jenis wadah (Terpal Bundar, Bioflok, Kolam Tanah, Beton, RAS, atau Greenhouse).</li>
+                      <li><strong>Kapasitas Volume / Luas:</strong> Masukkan kapasitas dalam m³ (meter kubik) atau m² (meter persegi).</li>
+                      <li><strong>Lokasi / Catatan:</strong> Lokasi blok farm untuk mempermudah identifikasi teknisi lapangan.</li>
+                    </ul>
+                  </li>
+                  <li>Klik <strong>Simpan</strong>. Wadah baru akan langsung terdaftar dengan status <strong>Kosong (Siap Tebar)</strong>.</li>
+                </ol>
               </div>
             </div>
 
-            {/* Rumus Padat Tebar */}
-            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <Calculator className="w-5 h-5" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Kamus Rumus Padat Tebar & Modal Awal Benih</h3>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
-                  <div className="text-teal-300 font-bold font-sans text-xs">1. Rumus Padat Tebar Ideal:</div>
-                  <div className="text-emerald-400 font-bold">Padat Tebar = Populasi Tebar (Ekor) ÷ Luas/Volume Wadah (m² atau m³)</div>
-                  <div className="text-slate-400 font-sans text-[11px]">Contoh: Kolam Bioflok D3 (Volume 7 m³) ditebar 7.000 ekor = 1.000 ekor/m³.</div>
-                </div>
-
-                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
-                  <div className="text-teal-300 font-bold font-sans text-xs">2. Rumus Total Modal Bibit:</div>
-                  <div className="text-emerald-400 font-bold">Modal Bibit = Populasi Tebar * Harga Beli per Ekor/Bibit</div>
-                  <div className="text-slate-400 font-sans text-[11px]">Contoh: 10.000 ekor @ Rp 250 = Modal Awal Bibit Rp 2.500.000.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* SECTION 3: Pakan, Parameter Air & Survival Rate (SR)                      */}
-      {/* ========================================================================= */}
-      {activeTab === 'feed' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
-          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
-            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
-              <div>
-                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                  <Droplet className="w-5 h-5 text-emerald-600" />
-                  <span>SOP Pakan Harian, Feeding Rate (FR), Kualitas Air & Rumus SR %</span>
-                </h2>
-                <p className="text-xs text-slate-500 mt-1">Mengatur jadwal pakan optimal, pemeliharaan air, dan menghitung persentase populasi hidup.</p>
-              </div>
-              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
-                Menu: /budidaya/cycles/:id & /budidaya/inventory
-              </span>
-            </div>
-
-            {/* Rumus SR & Feeding Rate */}
-            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <Calculator className="w-5 h-5" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Rumus Feeding Rate (FR) & Survival Rate (SR %)</h3>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
-                  <div className="text-teal-300 font-bold font-sans text-xs">1. Rumus Dosis Pakan Harian (Feeding Rate):</div>
-                  <div className="text-emerald-400 font-bold">Pakan Harian (Kg) = Total Biomassa Kolam (Kg) * Feeding Rate %</div>
-                  <div className="text-slate-400 font-sans text-[11px]">Standar FR: Benih kecil 5% - 7%, Ikan Remaja/Dewasa 2.5% - 3.5% dari bobot total biomassa.</div>
-                </div>
-
-                <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
-                  <div className="text-teal-300 font-bold font-sans text-xs">2. Rumus Survival Rate (SR % / Tingkat Kelangsungan Hidup):</div>
-                  <div className="text-emerald-400 font-bold">SR (%) = [(Populasi Awal - Total Kematian) ÷ Populasi Awal] * 100%</div>
-                  <div className="text-slate-400 font-sans text-[11px]">Contoh: Tebar 10.000, mati 800 ekor ➔ SR = (9.200 / 10.000) * 100% = <strong>92.0%</strong>.</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Parameter Kualitas Air Ideal */}
+            {/* SOP 2: Mulai Siklus */}
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Waves className="w-4 h-4 text-blue-600" />
-                <span>Batas Parameter Kualitas Air Optimal:</span>
+                <Calendar className="w-4 h-4 text-indigo-600" />
+                <span>B. Cara Memulai Siklus Tebar Baru:</span>
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200">
-                  <div className="flex items-center gap-1.5 text-blue-800 font-bold">
-                    <Thermometer className="w-4 h-4" />
-                    <span>Suhu Air (°C)</span>
-                  </div>
-                  <div className="text-lg font-extrabold font-mono text-blue-950 mt-1">27°C – 30°C</div>
-                  <p className="text-[11px] text-blue-700 mt-1">Suhu di bawah 24°C menurunkan nafsu makan secara drastis.</p>
-                </div>
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2 leading-relaxed">
+                <ol className="list-decimal list-inside space-y-1.5">
+                  <li>Buka menu <strong>Siklus Budidaya</strong> (`/budidaya/cycles`).</li>
+                  <li>Klik tombol <strong>+ Mulai Siklus Baru</strong>.</li>
+                  <li>Pilih unit kolam kosong yang ingin ditebar pada dropdown <em>Pilih Wadah</em>.</li>
+                  <li>Isi data parameter tebar:
+                    <ul className="list-disc list-inside pl-5 mt-1 space-y-1 text-slate-600">
+                      <li><strong>Varietas / Komoditas:</strong> Contoh: <em>Lele Sangkuriang Ukuran 7-9 cm</em> atau <em>Nila Merah Super</em>.</li>
+                      <li><strong>Jumlah Populasi Tebar:</strong> Masukkan jumlah benih (misal <em>10.000 ekor</em>).</li>
+                      <li><strong>Bobot Awal Rata-rata (ABW):</strong> Masukkan bobot awal per ekor dalam gram (misal <em>10 gram</em>).</li>
+                      <li><strong>Harga Beli Bibit:</strong> Masukkan harga satuan per ekor (misal <em>Rp 250 / ekor</em>) untuk menghitung modal awal benih otomatis.</li>
+                      <li><strong>Tanggal Tebar:</strong> Tanggal benih mulai dimasukkan ke kolam.</li>
+                    </ul>
+                  </li>
+                  <li>Klik <strong>Mulai Siklus</strong>. Status kolam otomatis berubah menjadi <strong>Aktif (Siklus Berjalan)</strong> dan sistem mulai menghitung Hari Setelah Tebar (DOC/HST).</li>
+                </ol>
+              </div>
+            </div>
 
-                <div className="p-3.5 rounded-xl bg-teal-50 border border-teal-200">
-                  <div className="flex items-center gap-1.5 text-teal-800 font-bold">
-                    <Activity className="w-4 h-4" />
-                    <span>Derajat Keasaman (pH)</span>
-                  </div>
-                  <div className="text-lg font-extrabold font-mono text-teal-950 mt-1">6.8 – 8.0</div>
-                  <p className="text-[11px] text-teal-700 mt-1">pH {'<'} 6.5 memicu stres kulit/insang; pH {'>'} 8.5 meningkatkan racun amonia.</p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
-                  <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
+            {/* SOP 3: Pencatatan Log Harian */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-emerald-600" />
+                <span>C. Cara Mencatat Log Harian pada Detail Siklus (`/budidaya/cycles/:id`):</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-700 font-bold">
                     <Droplet className="w-4 h-4" />
-                    <span>Oksigen Terlarut (DO)</span>
+                    <span>1. Log Pakan Harian (+ Potong Stok):</span>
                   </div>
-                  <div className="text-lg font-extrabold font-mono text-emerald-950 mt-1">&gt; 4.0 mg/L (ppm)</div>
-                  <p className="text-[11px] text-emerald-700 mt-1">DO {'<'} 3.0 ppm menyebabkan ikan megap-megap di permukaan pada pagi hari.</p>
+                  <p className="text-slate-600 leading-relaxed">
+                    Klik tombol <strong>+ Catat Pakan</strong>. Pilih merk pakan yang digunakan dari dropdown gudang dan masukkan jumlah Kg yang diberikan (Pagi, Siang, Sore/Malam). Sistem akan otomatis <strong>mengurangi stok gudang</strong> dan menjumlahkan modal pakan siklus.
+                  </p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200">
-                  <div className="flex items-center gap-1.5 text-amber-800 font-bold">
+                <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                  <div className="flex items-center gap-2 text-rose-700 font-bold">
                     <AlertTriangle className="w-4 h-4" />
-                    <span>Amonia (NH3) & Nitrit</span>
+                    <span>2. Log Kematian (Mortalitas):</span>
                   </div>
-                  <div className="text-lg font-extrabold font-mono text-amber-950 mt-1">&lt; 0.1 mg/L</div>
-                  <p className="text-[11px] text-amber-700 mt-1">Lakukan sifon endapan dasar jika amonia terdeteksi meningkat.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* SOP Harian Petugas Farm */}
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>SOP Rutin Harian Operator Farm:</span>
-              </h3>
-              <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside leading-relaxed">
-                <li>Buka siklus aktif wadah yang bersangkutan melalui menu <strong>Siklus Budidaya</strong>.</li>
-                <li>Klik tombol <strong>+ Catat Pakan</strong>. Masukkan porsi Kg pakan yang diberikan (Pagi 08:00, Siang 12:00, Sore 16:30, Malam 21:00).</li>
-                <li>Stok pakan di inventori gudang akan <strong>otomatis terpotong secara real-time</strong> dan nilai biayanya langsung dibukukan ke biaya modal siklus.</li>
-                <li>Jika ada ikan/benih mati yang diangkat dari wadah, masukkan jumlahnya pada kolom <strong>Mortalitas</strong> agar estimasi biomassa dan Survival Rate (SR %) tetap presisi.</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* SECTION 4: Sampling Bobot, ADG & Rumus FCR                                 */}
-      {/* ========================================================================= */}
-      {activeTab === 'sampling' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
-          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
-            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
-              <div>
-                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                  <Scale className="w-5 h-5 text-blue-600" />
-                  <span>SOP Sampling Bobot, Pertumbuhan Harian (ADG) & Rumus FCR Otomatis</span>
-                </h2>
-                <p className="text-xs text-slate-500 mt-1">Tolok ukur paling krusial efisiensi modal pakan dan evaluasi kecepatan tumbuh ikan.</p>
-              </div>
-              <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-200">
-                Menu: /budidaya/cycles/:id
-              </span>
-            </div>
-
-            {/* SOP Sampling Bobot */}
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Scale className="w-4 h-4 text-teal-600" />
-                <span>Tata Cara Sampling Bobot yang Benar:</span>
-              </h3>
-              <ul className="text-xs text-slate-600 space-y-2 list-disc list-inside leading-relaxed">
-                <li>Lakukan sampling rutin setiap <strong>7 atau 14 hari sekali</strong> sebelum pemberian pakan pagi.</li>
-                <li>Ambil sampel secara acak minimal <strong>30–50 ekor</strong> dari berbagai sisi kolam (atas, tengah, dasar).</li>
-                <li>Timbang total berat sampel dalam gram menggunakan timbangan digital, lalu hitung <strong>ABW (Average Body Weight)</strong>.</li>
-                <li>Masukkan data hasil sampling ke formulir siklus. Sistem akan otomatis menghitung ADG (Average Daily Gain) dan mengoreksi dosis pakan harian berikutnya.</li>
-              </ul>
-            </div>
-
-            {/* Rumus FCR, ABW, ADG */}
-            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <Calculator className="w-5 h-5" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Kamus Rumus Sampling & FCR (Feed Conversion Ratio)</h3>
-              </div>
-
-              <div className="space-y-3 font-mono text-xs">
-                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                  <div className="text-teal-300 font-sans font-bold">1. Average Body Weight (ABW - Bobot Rata-rata Ekor):</div>
-                  <div className="text-emerald-400 font-bold">ABW (gram) = Total Timbangan Sampel (gram) ÷ Jumlah Ekor Sampel</div>
-                  <div className="text-slate-400 font-sans text-[11px]">Contoh: 50 ekor sampel ditimbang total 4.000 gram ➔ ABW = 4.000 ÷ 50 = <strong>80 gram/ekor</strong>.</div>
+                  <p className="text-slate-600 leading-relaxed">
+                    Jika ada ikan mati yang diangkat, klik tombol <strong>+ Catat Mortalitas</strong> dan masukkan jumlah ekor mati. Sistem akan otomatis memperbarui populasi hidup, biomassa berjalan, dan <strong>Survival Rate (SR %)</strong>.
+                  </p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                  <div className="text-teal-300 font-sans font-bold">2. Average Daily Gain (ADG - Laju Pertumbuhan Harian):</div>
-                  <div className="text-emerald-400 font-bold">ADG (gr/hari) = (ABW Sekarang - ABW Sampling Lalu) ÷ Selang Hari Sampling</div>
-                  <div className="text-slate-400 font-sans text-[11px]">Contoh: Dari 80 gr menjadi 110 gr dalam 10 hari ➔ ADG = (110 - 80) ÷ 10 = <strong>3.0 gram/hari</strong>.</div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                  <div className="text-teal-300 font-sans font-bold">3. Feed Conversion Ratio (FCR - Rasio Konversi Pakan):</div>
-                  <div className="text-emerald-400 font-bold text-sm">FCR = Total Pakan yang Diberikan (Kg) ÷ Pertambahan Bobot Daging Panen (Kg)</div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-2 font-sans">
-                    <div className="p-3 rounded-lg bg-emerald-900/40 border border-emerald-700 text-emerald-200">
-                      <strong>FCR 0.95 – 1.20 (Sangat Efisien)</strong>
-                      <p className="text-[11px] mt-1">Biaya pakan sangat hemat. Keuntungan panen maksimal. Umum pada sistem Bioflok & pakan berkualitas tinggi.</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-blue-900/40 border border-blue-700 text-blue-200">
-                      <strong>FCR 1.25 – 1.45 (Normal Standar)</strong>
-                      <p className="text-[11px] mt-1">Performa pertumbuhan baik sesuai standar komoditas air tenang.</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-rose-900/40 border border-rose-700 text-rose-200">
-                      <strong>FCR &gt; 1.55 (Boros Pakan / Ambyar)</strong>
-                      <p className="text-[11px] mt-1">Pakan banyak terbuang/tidak dicerna. Laba farm terancam minus. Wajib cek kualitas air, jamur pakan, atau overfeeding.</p>
-                    </div>
+                <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                  <div className="flex items-center gap-2 text-blue-700 font-bold">
+                    <Scale className="w-4 h-4" />
+                    <span>3. Log Sampling Bobot Berkala:</span>
                   </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    Saat melakukan sampling (misal 7 atau 14 hari sekali), klik <strong>+ Catat Sampling</strong>. Masukkan jumlah ekor sampel (misal 50 ekor) dan total berat timbangan (misal 4.500 gram). Sistem akan otomatis menghitung <strong>ABW (gram/ekor)</strong> dan <strong>ADG (laju pertumbuhan gr/hari)</strong>.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                  <div className="flex items-center gap-2 text-purple-700 font-bold">
+                    <DollarSign className="w-4 h-4" />
+                    <span>4. Log Biaya Khusus Kolam:</span>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    Catat pengeluaran langsung khusus wadah tersebut (seperti probiotik kolam, vitamin pakan, atau garam) dengan mengklik <strong>+ Catat Biaya</strong> agar langsung terakumulasi ke dalam HPP modal kolam.
+                  </p>
                 </div>
               </div>
             </div>
@@ -580,7 +406,7 @@ const BudidayaGuide = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* SECTION 5: Panen, HPP/Kg & Laba Bersih Siklus                             */}
+      {/* SECTION 3: SOP Panen & Penutupan Siklus                                   */}
       {/* ========================================================================= */}
       {activeTab === 'harvest' && (
         <div className="space-y-6 animate-in fade-in duration-200">
@@ -589,70 +415,76 @@ const BudidayaGuide = () => {
               <div>
                 <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-purple-600" />
-                  <span>SOP Panen, Rumus HPP Modal per Kg & Laba Bersih Siklus</span>
+                  <span>SOP Pencatatan Panen, Perhitungan HPP & Penutupan Siklus</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">Kalkulasi akhir profitabilitas siklus budidaya setelah panen total atau panen bertahap.</p>
+                <p className="text-xs text-slate-500 mt-1">Alur sistem saat pelaksanaan panen parsial (grading bertahap) maupun panen total.</p>
               </div>
               <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
-                Menu: /budidaya/cycles/:id & /budidaya/finance-summary
+                Menu: /budidaya/cycles/:id
               </span>
             </div>
 
-            {/* SOP Panen & Pasca Panen */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-purple-600" />
-                  <span>Panen Total vs Panen Parsial (Grading Ukuran):</span>
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  <strong>Panen Parsial:</strong> Mengambil 30–50% ikan yang sudah mencapai bobot konsumsi terlebih dahulu. Bertujuan mengurangi kepadatan wadah sehingga sisa ikan kecil dapat bertumbuh lebih cepat.
-                </p>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  <strong>Panen Total:</strong> Mengeringkan air kolam dan memanen seluruh populasi sekaligus saat akhir masa siklus tercapai.
-                </p>
-              </div>
+            {/* Langkah Input Panen */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-purple-600" />
+                <span>Langkah-Langkah Input Panen di Aplikasi:</span>
+              </h3>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <Droplet className="w-4 h-4 text-teal-600" />
-                  <span>SOP Pemberokan (Penghilang Bau Lumpur):</span>
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Puaskan ikan selama 24 jam sebelum dipanen. Pindahkan hasil panen ke kolam penampungan air mengalir jernih selama 1–2 hari. Proses ini membersihkan sisa kotoran di perut ikan sehingga daging tidak berbau lumpur/tanah dan harga jual meningkat.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <span className="px-2.5 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold font-mono">Tipe 1</span>
+                  <h4 className="font-bold text-slate-900 text-sm">Panen Parsial (Bertahap / Grading)</h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    Gunakan opsi ini jika Anda hanya memanen sebagian ikan yang sudah mencapai bobot konsumsi terlebih dahulu tanpa mengakhiri siklus.
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-slate-700 pt-1">
+                    <li>Buka halaman detail siklus kolam.</li>
+                    <li>Klik tombol <strong>+ Input Panen</strong>.</li>
+                    <li>Pilih jenis <strong>Panen Parsial</strong>.</li>
+                    <li>Masukkan tonase berat panen (Kg) dan harga jual per Kg ke pembeli/pasar.</li>
+                    <li>Simpan. Pendapatan akan langsung tercatat, dan sisa ikan di kolam tetap aktif berjalan.</li>
+                  </ol>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <span className="px-2.5 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold font-mono">Tipe 2</span>
+                  <h4 className="font-bold text-slate-900 text-sm">Panen Total & Tutup Siklus (Final)</h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    Gunakan opsi ini saat seluruh isi kolam dipanen habis dan siklus pemeliharaan selesai.
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-slate-700 pt-1">
+                    <li>Buka halaman detail siklus kolam.</li>
+                    <li>Klik tombol <strong>+ Input Panen</strong> dan pilih <strong>Panen Total</strong>.</li>
+                    <li>Masukkan total timbangan hasil panen akhir (Kg) dan harga jual per Kg.</li>
+                    <li>Centang opsi <strong>Tutup Siklus Budidaya Ini</strong>.</li>
+                    <li>Sistem otomatis mengkalkulasi <strong>FCR akhir, HPP modal per Kg, dan Laba Bersih Siklus</strong>, lalu mengembalikan status kolam menjadi <strong>Kosong</strong>.</li>
+                  </ol>
+                </div>
               </div>
             </div>
 
-            {/* Rumus Laba Bersih Siklus & HPP */}
-            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+            {/* Rekapitulasi Otomatis HPP & Laba */}
+            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-3 text-xs">
               <div className="flex items-center gap-2 text-emerald-400">
                 <Calculator className="w-5 h-5" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Rumus Lengkap HPP Modal per Kg & Laba Bersih Siklus</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider">Bagaimana Sistem Menghitung HPP & Laba Bersih Panen?</h3>
               </div>
-
-              <div className="space-y-3 font-mono text-xs">
-                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                  <div className="text-teal-300 font-sans font-bold">1. Total Modal Biaya Siklus (Cost of Production):</div>
-                  <div className="text-emerald-400 font-bold">Total Biaya = Modal Benih + Total Biaya Pakan + Biaya Obat/Saprodi + Listrik/Genset + Upah Tenaga Kerja</div>
+              <p className="text-slate-300 leading-relaxed">
+                Saat siklus ditutup, sistem secara otomatis mengagregasikan seluruh data transaksi yang telah tercatat:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1 font-mono">
+                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700">
+                  <span className="text-teal-400 font-sans font-bold">1. Total Biaya Modal:</span>
+                  <div className="text-white mt-1 text-[11px] font-sans">Biaya Benih + Seluruh Log Pakan Terpakai + Biaya Obat/Listrik yang tercatat di siklus.</div>
                 </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                  <div className="text-teal-300 font-sans font-bold">2. Rumus HPP Panen Modal per Kg:</div>
-                  <div className="text-emerald-400 font-bold">HPP per Kg = Total Seluruh Biaya Siklus (Rp) ÷ Total Tonase Panen (Kg)</div>
-                  <div className="text-slate-400 font-sans text-[11px]">Contoh: Total Biaya Rp 18.000.000 ÷ Panen 1.000 Kg = <strong>HPP Rp 18.000 / Kg</strong>.</div>
+                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700">
+                  <span className="text-blue-400 font-sans font-bold">2. HPP Modal / Kg:</span>
+                  <div className="text-white mt-1 text-[11px] font-sans">Total Biaya Modal (Rp) ÷ Total Akumulasi Hasil Panen (Kg).</div>
                 </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                  <div className="text-teal-300 font-sans font-bold">3. Rumus Laba Bersih Siklus:</div>
-                  <div className="text-emerald-400 font-bold text-sm">Laba Bersih = Total Pendapatan Panen (Tonase Kg * Harga Jual/Kg) - Total Seluruh Biaya Siklus</div>
-                  <div className="text-slate-400 font-sans text-[11px]">Contoh: Panen 1.000 Kg @ Rp 26.000 = Omzet Rp 26.000.000 - Modal Rp 18.000.000 = <strong>Laba Bersih Rp 8.000.000</strong>.</div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                  <div className="text-teal-300 font-sans font-bold">4. Break Even Point (BEP Harga Jual Minimum):</div>
-                  <div className="text-emerald-400 font-bold">BEP Harga (Rp/Kg) = Total Biaya Siklus (Rp) ÷ Total Hasil Panen (Kg)</div>
-                  <div className="text-slate-400 font-sans text-[11px]">Harga jual ke tengkulak/pasar WAJIB di atas angka BEP ini agar farm tidak mengalami kerugian.</div>
+                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700">
+                  <span className="text-emerald-400 font-sans font-bold">3. Laba Bersih:</span>
+                  <div className="text-white mt-1 text-[11px] font-sans">Total Omzet Penjualan Panen (Rp) - Total Biaya Modal (Rp).</div>
                 </div>
               </div>
             </div>
@@ -661,7 +493,7 @@ const BudidayaGuide = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* SECTION 6: Gudang Pakan, Saprodi & Kas                                    */}
+      {/* SECTION 4: SOP Gudang Pakan & Saprodi                                     */}
       {/* ========================================================================= */}
       {activeTab === 'inventory' && (
         <div className="space-y-6 animate-in fade-in duration-200">
@@ -670,46 +502,106 @@ const BudidayaGuide = () => {
               <div>
                 <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
                   <Package className="w-5 h-5 text-amber-600" />
-                  <span>Manajemen Gudang Pakan, Saprodi & Buku Kas Pengeluaran</span>
+                  <span>SOP Pengelolaan Gudang Pakan, Saprodi & Otomasi Pemotongan Stok</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">Mengontrol sisa stok karungan di gudang farm dan pencatatan biaya operasional rutin.</p>
+                <p className="text-xs text-slate-500 mt-1">Mengatur inventori pakan, restock barang masuk, dan sinkronisasi otomatis dengan log kolam.</p>
               </div>
               <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-200">
-                Menu: /budidaya/inventory & /budidaya/expenses
+                Menu: /budidaya/inventory & /budidaya/feeds
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Boxes className="w-4 h-4 text-amber-600" />
-                  <span>📦 Gudang Pakan, Probiotik & Saprodi:</span>
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Catat pembelian pakan karungan (misal 50 sak @ 30kg) beserta harga beli supplier di menu <strong>Gudang & Pakan</strong>.
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <span className="w-6 h-6 rounded-md bg-amber-600 text-white flex items-center justify-center font-bold font-mono">1</span>
+                <h4 className="font-bold text-slate-900 text-sm">Input Master Pakan & Saprodi</h4>
+                <p className="text-slate-600 leading-relaxed">
+                  Buka menu <strong>Gudang & Pakan</strong> (`/budidaya/inventory`). Klik <strong>+ Tambah Item</strong> untuk mendaftarkan merk pakan (misal <em>Pakan Apung Starter LP-1</em>), tipe ukuran butiran, dan satuan (Sak / Kg).
                 </p>
-                <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
-                  <strong>Otomasi Pemotongan Stok:</strong>
-                  <p className="text-[11px] text-slate-500">
-                    Setiap kali operator mencatat pemberian pakan di siklus kolam, stok gudang otomatis berkurang dan modal pakan tercatat di laporan keuangan tanpa perlu input manual ganda.
-                  </p>
-                </div>
               </div>
 
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <span className="w-6 h-6 rounded-md bg-amber-600 text-white flex items-center justify-center font-bold font-mono">2</span>
+                <h4 className="font-bold text-slate-900 text-sm">Restock Pembelian Masuk</h4>
+                <p className="text-slate-600 leading-relaxed">
+                  Saat membeli pakan baru dari supplier/distributor, klik tombol <strong>+ Tambah Stok Masuk</strong> pada item terkait. Masukkan jumlah karung/kg dan harga beli per satuan untuk memperbarui stok dan HPP rata-rata.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <span className="w-6 h-6 rounded-md bg-amber-600 text-white flex items-center justify-center font-bold font-mono">3</span>
+                <h4 className="font-bold text-slate-900 text-sm">Otomasi Potong Stok Harian</h4>
+                <p className="text-slate-600 leading-relaxed">
+                  Setiap kali teknisi mencatat pakan di menu Siklus Kolam, saldo stok di gudang akan <strong>otomatis berkurang seketika</strong> tanpa perlu petugas gudang melakukan pemotongan manual ganda.
+                </p>
+              </div>
+            </div>
+
+            {/* Peringatan Stok Menipis */}
+            <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 flex items-start gap-3 text-xs text-amber-900">
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <strong className="font-bold text-sm block">Fitur Notifikasi Stok Minimum (Safety Stock):</strong>
+                <p className="leading-relaxed">
+                  Anda dapat menyetel batas minimum stok (misal 10 sak). Ketika sisa pakan di gudang berada di bawah batas ini, sistem akan otomatis menampilkan lencana peringatan warna kuning/merah di dashboard farm agar Anda tidak kehabisan pakan di tengah siklus.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SECTION 5: SOP Kas & Laporan Laba Rugi                                    */}
+      {/* ========================================================================= */}
+      {activeTab === 'finance' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <Wallet className="w-5 h-5 text-emerald-600" />
+                  <span>SOP Buku Kas Operasional & Laporan Laba Rugi Farm</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Pencatatan beban biaya umum dan cara membaca laporan analisa keuangan farm.</p>
+              </div>
+              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
+                Menu: /budidaya/expenses & /budidaya/finance-summary
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+              {/* Buku Kas Transaksi */}
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-teal-600" />
-                  <span>💳 Buku Kas & Beban Operasional Farm:</span>
+                  <DollarSign className="w-4 h-4 text-emerald-600" />
+                  <span>1. Pencatatan Beban di Menu Buku Kas (`/budidaya/expenses`):</span>
                 </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Catat seluruh biaya non-pakan secara teratur pada menu <strong>Buku Kas & Transaksi</strong> agar perhitungan laba rugi farm 100% akurat:
+                <p className="text-slate-600 leading-relaxed">
+                  Gunakan menu ini untuk mencatat seluruh pengeluaran rutin non-pakan farm agar pembukuan tidak ada yang tercecer:
                 </p>
-                <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
-                  <li>Tagihan listrik PLN kincir air & aerator</li>
-                  <li>Bahan bakar solar/bensin genset darurat</li>
-                  <li>Pembelian garam krosok, molase, kapur dolomit</li>
-                  <li>Upah tenaga kerja harian / borongan panen</li>
-                  <li>Perawatan pompa & pipa air</li>
+                <ul className="space-y-1.5 list-disc list-inside text-slate-700">
+                  <li><strong>Tagihan Listrik PLN:</strong> Biaya operasional kincir air, aerator & lampu.</li>
+                  <li><strong>BBM Solar / Bensin:</strong> Penggunaan genset dan pompa hisap air.</li>
+                  <li><strong>Upah & Tenaga Kerja:</strong> Gaji teknisi harian atau borongan saat panen.</li>
+                  <li><strong>Perawatan & Alat:</strong> Pembelian selang aerasi, jaring serok, atau servis pompa.</li>
+                </ul>
+              </div>
+
+              {/* Laporan Laba Rugi */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-teal-600" />
+                  <span>2. Membaca Laporan di Menu Laba Rugi (`/budidaya/finance-summary`):</span>
+                </h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Menu ini menyajikan rekapitulasi keuangan secara real-time:
+                </p>
+                <ul className="space-y-1.5 list-disc list-inside text-slate-700">
+                  <li><strong>Total Omzet Panen:</strong> Akumulasi seluruh pendapatan penjualan hasil panen.</li>
+                  <li><strong>Total HPP & Pakan:</strong> Nilai seluruh pakan dan bibit yang sudah terpakai.</li>
+                  <li><strong>Laba Bersih Farm:</strong> Pendapatan bersih setelah dikurangi HPP dan seluruh biaya operasional kas.</li>
+                  <li><strong>Tombol Ekspor / Cetak:</strong> Anda dapat mencetak laporan laba rugi ke format PDF resmi kapan saja.</li>
                 </ul>
               </div>
             </div>
@@ -718,7 +610,61 @@ const BudidayaGuide = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* SECTION 7: Simulator FCR & Laba Siklus                                    */}
+      {/* SECTION 6: Master Data, Tim & Pengaturan                                  */}
+      {/* ========================================================================= */}
+      {activeTab === 'settings' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-teal-600" />
+                  <span>Master Data, Manajemen Pengguna & Pengaturan Sistem</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Konfigurasi kategori, hak akses staf lapangan, serta backup keamanan data.</p>
+              </div>
+              <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-bold border border-teal-200">
+                Menu: /budidaya/master-data & /budidaya/users
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <Database className="w-4 h-4 text-teal-600" />
+                  <span>Master Data</span>
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Atur daftar <strong>Kategori Keuangan</strong> (pemasukan/pengeluaran), <strong>Satuan Dasar</strong> (Kg, Sak, Ekor, Gram), dan <strong>Kategori Pakan</strong> di menu <em>Master Data</em> (`/budidaya/master-data`).
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <Users className="w-4 h-4 text-blue-600" />
+                  <span>Staf & Peran (Role)</span>
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Tambah akun pengguna untuk teknisi farm di menu <strong>Manajemen Pengguna</strong>. Atur izin akses di menu <strong>Peran & Izin</strong> agar operator hanya bisa menginput data lapangan tanpa membuka data laba rugi owner.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                  <ShieldCheck className="w-4 h-4 text-purple-600" />
+                  <span>Backup Data Farm</span>
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Lakukan pencadangan database berkala di menu <strong>Backup Data</strong> (`/budidaya/backup`). Anda dapat mengunduh arsip JSON/SQL cadangan kapan saja untuk memastikan seluruh riwayat siklus tetap aman.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SECTION 7: Kamus Rumus & Simulator Sistem                                 */}
       {/* ========================================================================= */}
       {activeTab === 'calculator' && (
         <div className="space-y-6 animate-in fade-in duration-200">
@@ -727,14 +673,14 @@ const BudidayaGuide = () => {
               <div>
                 <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-teal-600" />
-                  <span>Simulator Budidaya, Kalkulator FCR & Laba Siklus Interaktif</span>
+                  <span>Kamus Rumus Aplikasi & Simulator Hasil Siklus Interaktif</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">Uji coba simulasi angka riil farm Anda untuk memvalidasi FCR, HPP per Kg, dan Laba Bersih panen.</p>
+                <p className="text-xs text-slate-500 mt-1">Penjelasan rumus yang digunakan sistem dan alat simulasi angka untuk menguji proyeksi hasil panen.</p>
               </div>
               
               {/* Quick Presets */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-bold text-slate-500 mr-1">Preset:</span>
+                <span className="text-[11px] font-bold text-slate-500 mr-1">Preset Komoditas:</span>
                 <button onClick={() => applyPreset('lele')} className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 cursor-pointer">Lele Bioflok</button>
                 <button onClick={() => applyPreset('nila')} className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer">Nila Kolam</button>
                 <button onClick={() => applyPreset('vaname')} className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 cursor-pointer">Udang Vaname</button>
@@ -743,7 +689,37 @@ const BudidayaGuide = () => {
               </div>
             </div>
 
-            {/* Input Form */}
+            {/* Kamus Rumus Sistem */}
+            <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4">
+              <div className="flex items-center gap-2 text-emerald-400">
+                <Calculator className="w-5 h-5" />
+                <h3 className="text-sm font-bold uppercase tracking-wider">Kamus Rumus Otomatis di Dalam Sistem Aplikasi:</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
+                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 space-y-1">
+                  <div className="text-teal-300 font-sans font-bold">1. Survival Rate (SR % / Tingkat Kelangsungan Hidup):</div>
+                  <div className="text-emerald-400 font-bold">SR (%) = [(Populasi Tebar - Total Mortalitas) ÷ Populasi Tebar] * 100%</div>
+                </div>
+
+                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 space-y-1">
+                  <div className="text-teal-300 font-sans font-bold">2. Feed Conversion Ratio (FCR / Rasio Pakan):</div>
+                  <div className="text-emerald-400 font-bold">FCR = Total Pakan Terpakai (Kg) ÷ Total Tonase Panen (Kg)</div>
+                </div>
+
+                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 space-y-1">
+                  <div className="text-teal-300 font-sans font-bold">3. HPP Modal Panen per Kg:</div>
+                  <div className="text-emerald-400 font-bold">HPP/Kg = Total Biaya Siklus (Rp) ÷ Total Hasil Panen (Kg)</div>
+                </div>
+
+                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 space-y-1">
+                  <div className="text-teal-300 font-sans font-bold">4. Laba Bersih Siklus:</div>
+                  <div className="text-emerald-400 font-bold">Laba Bersih = Total Omzet Panen (Rp) - Total Biaya Modal (Rp)</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Input Form Simulator */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">1. Populasi Tebar (Ekor/Bibit):</label>
@@ -758,7 +734,7 @@ const BudidayaGuide = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">2. Harga Bibit per Ekor (Rp):</label>
+                <label className="text-xs font-bold text-slate-700">2. Harga Beli Bibit / Ekor (Rp):</label>
                 <input
                   type="number"
                   value={calcSeedPrice}
@@ -766,7 +742,7 @@ const BudidayaGuide = () => {
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                   placeholder="250"
                 />
-                <p className="text-[11px] text-slate-400">Harga beli bibit satuan</p>
+                <p className="text-[11px] text-slate-400">Harga bibit satuan dari pembenih</p>
               </div>
 
               <div className="space-y-1.5">
@@ -782,7 +758,7 @@ const BudidayaGuide = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">4. Harga Pakan per Kg (Rp):</label>
+                <label className="text-xs font-bold text-slate-700">4. Harga Rata-rata Pakan / Kg (Rp):</label>
                 <input
                   type="number"
                   value={calcFeedPriceKg}
@@ -790,11 +766,11 @@ const BudidayaGuide = () => {
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                   placeholder="12000"
                 />
-                <p className="text-[11px] text-slate-400">Rata-rata harga pakan</p>
+                <p className="text-[11px] text-slate-400">Harga beli pakan per kg</p>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">5. Hasil Tonase Panen (Kg):</label>
+                <label className="text-xs font-bold text-slate-700">5. Hasil Panen Akhir (Kg):</label>
                 <input
                   type="number"
                   value={calcHarvestWeightKg}
@@ -802,7 +778,7 @@ const BudidayaGuide = () => {
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                   placeholder="1000"
                 />
-                <p className="text-[11px] text-slate-400">Total timbangan akhir panen</p>
+                <p className="text-[11px] text-slate-400">Total timbangan hasil panen</p>
               </div>
 
               <div className="space-y-1.5">
@@ -814,11 +790,11 @@ const BudidayaGuide = () => {
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                   placeholder="26000"
                 />
-                <p className="text-[11px] text-slate-400">Harga jual ke tengkulak/pasar</p>
+                <p className="text-[11px] text-slate-400">Harga jual ke pembeli/tengkulak</p>
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-slate-700">7. Biaya Listrik, Obat & Upah (Rp):</label>
+                <label className="text-xs font-bold text-slate-700">7. Biaya Operasional Lainnya (Listrik, Obat, Upah):</label>
                 <input
                   type="number"
                   value={calcOperCost}
@@ -826,7 +802,7 @@ const BudidayaGuide = () => {
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                   placeholder="2000000"
                 />
-                <p className="text-[11px] text-slate-400">Total biaya operasional lain selama siklus</p>
+                <p className="text-[11px] text-slate-400">Total biaya listrik, probiotik & upah selama siklus</p>
               </div>
             </div>
 
@@ -866,12 +842,12 @@ const BudidayaGuide = () => {
               )}
               <div className="text-xs space-y-1">
                 <strong className="font-bold text-sm block">
-                  {netProfit > 0 ? '✅ Siklus Budidaya Sangat Menguntungkan!' : '⚠️ Perhatian: Biaya Modal Melebihi Hasil Panen!'}
+                  {netProfit > 0 ? '✅ Hasil Simulasi: Siklus Menguntungkan!' : '⚠️ Perhatian: Biaya Modal Melebihi Nilai Panen!'}
                 </strong>
                 <p className="leading-relaxed">
                   {netProfit > 0 
-                    ? `Dengan FCR ${fcrRatio.toFixed(2)} dan HPP ${fmtRp(hppPerKg)}/Kg, Anda menghasilkan keuntungan bersih sebesar ${fmtRp(netProfit)} dari siklus ini (Margin bersih ${profitMarginPercent.toFixed(1)}%, Return on Investment ${roiPercent.toFixed(1)}%). Pertahankan teknik manajemen pakan dan kualitas air untuk siklus berikutnya.`
-                    : `HPP modal per kg (${fmtRp(hppPerKg)}) lebih tinggi daripada harga jual pasar (${fmtRp(calcSellPriceKg)}). Evaluasi kembali efisiensi pakan (FCR), kurangi mortalitas, atau negosiasikan harga jual panen Anda!`
+                    ? `Dengan FCR ${fcrRatio.toFixed(2)} dan HPP ${fmtRp(hppPerKg)}/Kg, Anda menghasilkan keuntungan bersih sebesar ${fmtRp(netProfit)} dari siklus ini (Margin bersih ${profitMarginPercent.toFixed(1)}%, Return on Investment ${roiPercent.toFixed(1)}%). Angka ini menunjukkan alokasi modal pakan sangat efisien.`
+                    : `HPP modal per kg (${fmtRp(hppPerKg)}) lebih tinggi daripada harga jual pasar (${fmtRp(calcSellPriceKg)}). Periksa kembali efisiensi pakan (FCR), kurangi angka kematian, atau tingkatkan harga jual panen Anda!`
                   }
                 </p>
               </div>
@@ -881,7 +857,7 @@ const BudidayaGuide = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* SECTION 8: Troubleshooting Penyakit & FAQ                                  */}
+      {/* SECTION 8: Troubleshooting Aplikasi & FAQ                                 */}
       {/* ========================================================================= */}
       {activeTab === 'faq' && (
         <div className="space-y-6 animate-in fade-in duration-200">
@@ -890,12 +866,12 @@ const BudidayaGuide = () => {
               <div>
                 <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
                   <HelpCircle className="w-5 h-5 text-teal-600" />
-                  <span>Troubleshooting Masalah Lapangan & Pertanyaan Umum (FAQ)</span>
+                  <span>Troubleshooting Penggunaan Aplikasi & Pertanyaan Umum (FAQ)</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">Panduan penanganan cepat kendala teknis budidaya di lapangan.</p>
+                <p className="text-xs text-slate-500 mt-1">Panduan solusi cepat untuk kendala teknis saat mengoperasikan aplikasi Budidaya.</p>
               </div>
               <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-bold border border-teal-200">
-                Solusi Cepat Lapangan
+                FAQ & Bantuan Aplikasi
               </span>
             </div>
 
@@ -903,44 +879,40 @@ const BudidayaGuide = () => {
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  <span>1. Mengapa ikan menggantung di permukaan air pada pagi hari?</span>
+                  <span>1. Mengapa stok pakan di gudang tidak berkurang saat saya mencatat pakan harian?</span>
                 </h3>
                 <p className="text-slate-600 leading-relaxed pl-6">
-                  <strong>Penyebab:</strong> Oksigen terlarut (Dissolved Oxygen / DO) drop di bawah 3.0 ppm akibat respirasi plankton dan pembusukan sisa pakan di dasar kolam sepanjang malam.<br />
-                  <strong>Solusi:</strong> Nyalakan aerator / kincir air lebih awal, kurangi pemberian pakan pada malam hari, dan lakukan penyedotan (sifon) kotoran dasar kolam.
+                  <strong>Penyebab & Solusi:</strong> Pastikan saat mengisi form <em>+ Catat Pakan</em>, Anda memilih jenis pakan dari dropdown yang terdaftar di menu <strong>Gudang & Pakan</strong> (`/budidaya/inventory`), bukan mengetik teks manual baru. Sistem hanya memotong stok jika pakan terhubung dengan database inventori.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <Scale className="w-4 h-4 text-rose-600" />
-                  <span>2. Mengapa nilai FCR membengkak di atas 1.50 (boros modal)?</span>
+                  <RotateCcw className="w-4 h-4 text-blue-600" />
+                  <span>2. Bagaimana jika operator salah memasukkan angka kg pakan atau ekor mortalitas?</span>
                 </h3>
                 <p className="text-slate-600 leading-relaxed pl-6">
-                  <strong>Penyebab:</strong> 1) Pemberian pakan berlebih (overfeeding) sehingga pakan tenggelam dan membusuk; 2) Kandungan protein pakan tidak sesuai umur ikan; 3) Suhu air terlalu dingin ({'<'} 25°C) sehingga metabolisme ikan lambat.<br />
-                  <strong>Solusi:</strong> Gunakan tray/anco untuk memantau pakan habis dalam 15–20 menit. Kurangi porsi pakan jika cuaca mendung/hujan.
+                  <strong>Penyebab & Solusi:</strong> Buka halaman detail siklus kolam bersangkutan. Di bagian bawah terdapat tabel <strong>Riwayat Log Aktivitas</strong>. Klik ikon <em>Edit</em> atau <em>Hapus</em> pada baris log yang salah. Sistem akan otomatis mengembalikan stok pakan ke gudang dan mengoreksi kembali nilai FCR/biomassa.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-teal-600" />
-                  <span>3. Kapan waktu yang tepat untuk melakukan grading (seleksi ukuran)?</span>
+                  <span>3. Bagaimana cara membatasi staf agar tidak bisa melihat laporan laba rugi dan keuangan?</span>
                 </h3>
                 <p className="text-slate-600 leading-relaxed pl-6">
-                  <strong>Penyebab:</strong> Pada komoditas karnivora/omnivora agresif seperti lele, perbedaan ukuran {'>'} 30% akan memicu sifat kanibalisme di mana ikan besar memakan ikan kecil.<br />
-                  <strong>Solusi:</strong> Lakukan grading pertama pada DOC 15–20 hari, dan grading kedua pada DOC 35–40 hari. Pisahkan ikan berdasarkan ayakan ukuran seragam.
+                  <strong>Penyebab & Solusi:</strong> Masuk ke menu <strong>Pengaturan &gt; Peran & Izin</strong> (`/budidaya/roles`). Buat role baru (misal: <em>Operator Lapangan</em>) dan hanya aktifkan izin untuk `feeding`, `sampling`, dan `health`. Lalu tetapkan role tersebut ke akun staf di menu <strong>Manajemen Pengguna</strong>.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <Waves className="w-4 h-4 text-blue-600" />
-                  <span>4. Air kolam berbusa dan berbau menyengat, apa yang harus dilakukan?</span>
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                  <span>4. Apakah riwayat siklus yang sudah dipanen dan selesai tetap bisa dilihat kembali?</span>
                 </h3>
                 <p className="text-slate-600 leading-relaxed pl-6">
-                  <strong>Penyebab:</strong> Akumulasi bahan organik tinggi dan ledakan bakteri anaerob penghasil gas amonia / asam sulfida (H2S).<br />
-                  <strong>Solusi:</strong> Buang 20–30% air dasar kolam (sifon), tambahkan air baru yang sudah diendapkan, lalu berikan probiotik dan molase untuk memulihkan bakteri pengurai aerobik.
+                  <strong>Penyebab & Solusi:</strong> Ya. Seluruh siklus yang sudah ditutup tersimpan permanen pada tab <strong>Riwayat Siklus Selesai</strong> di menu `/budidaya/cycles` serta terangkum dalam laporan keuangan laba rugi di `/budidaya/finance-summary`.
                 </p>
               </div>
             </div>
