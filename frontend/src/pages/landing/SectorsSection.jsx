@@ -1,5 +1,11 @@
-import { useState } from 'react'
-import { CheckCircle2, TrendingUp, BarChart3, ShieldCheck, ArrowRight } from 'lucide-react'
+import {
+  useState } from 'react'
+import { CheckCircle2,
+  TrendingUp,
+  BarChart2,
+  ShieldCheck,
+  ArrowRight
+} from '@/constants/icons'
 
 // Used only when a category hasn't had its headline/badge/features/stats
 // filled in yet from the admin "Kategori Bisnis" page.
@@ -23,7 +29,7 @@ export default function SectorsSection({ categories, categoriesLoading, onOpenSa
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold mb-4">
-              <BarChart3 className="w-4 h-4 text-emerald-600" />
+              <BarChart2 className="w-4 h-4 text-emerald-600" />
               <span>Spesialisasi Sektor Bisnis</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -62,7 +68,7 @@ export default function SectorsSection({ categories, categoriesLoading, onOpenSa
 
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold mb-4">
-            <BarChart3 className="w-4 h-4 text-emerald-600" />
+            <BarChart2 className="w-4 h-4 text-emerald-600" />
             <span>Spesialisasi Sektor Bisnis</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">

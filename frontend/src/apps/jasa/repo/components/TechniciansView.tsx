@@ -1,26 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  Users, 
-  Star, 
-  Phone, 
-  Mail, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  Award, 
-  Wrench,
-  Search,
-  ExternalLink,
-  Shield,
-  Plus,
-  Edit2,
-  Trash2
-} from 'lucide-react';
+import { Users, Star, Phone, Mail, CheckCircle2, Clock, AlertCircle, Award, Wrench, Search, ExternalLink, Shield, Plus, Pencil, Trash2, Key } from '@/constants/icons';
 import { Technician, TechnicianStatus, WorkOrder } from '../types';
 import usePagination from '../../../../hooks/usePagination';
 import RetailPagination from '../../../retail/components/RetailPagination';
 import { TechnicianFormModal } from './TechnicianFormModal';
 import { jasaApi } from '../services/jasaApi';
+import '../../../retail/retail.css';
 
 interface TechniciansViewProps {
   technicians: Technician[];
@@ -136,33 +121,26 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
         ))}
       </div>
 
-      {/* Action & Filter Bar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 flex-1 min-w-[260px]">
-            <button
-              onClick={handleAdd}
-              className="flex items-center justify-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-blue-600/20 whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Pegawai</span>
-            </button>
-            <div className="relative flex-1 sm:max-w-xs">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Cari nama atau keahlian pekerja..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-2.5 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-xs"
-              />
-            </div>
+      {/* Action & Filter Bar (Universal Height 38px) */}
+      <div className="flex flex-wrap gap-3 justify-between items-center bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs mb-4">
+        <div className="flex flex-1 w-full sm:w-auto items-center gap-3 flex-wrap">
+          <div className="relative flex-1 sm:max-w-xs h-[38px] flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 shadow-xs">
+            <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
+            <input
+              type="text"
+              placeholder="Cari nama atau keahlian teknisi..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full text-xs text-slate-800 outline-none bg-transparent placeholder:text-slate-400 font-normal"
+            />
+          </div>
 
+          <div className="relative h-[38px]">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               aria-label="Filter status kesiapan pekerja"
-              className="bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer"
+              className="h-full px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 outline-none cursor-pointer shadow-xs"
             >
               <option value="Semua">Semua Kesiapan</option>
               <option value="Tersedia">🟢 Siap Tugas</option>
@@ -172,24 +150,34 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
             </select>
           </div>
         </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleAdd}
+            className="h-[38px] flex items-center gap-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tambah Pegawai</span>
+          </button>
+        </div>
       </div>
 
       {/* Technicians Table Container */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-50/90 border-b border-slate-200/80 text-slate-500 font-semibold uppercase text-[10px] tracking-wider">
+      <div className="card table-wrap animate-fade-in">
+        <div className="retail-table-responsive">
+          <table className="table">
+            <thead>
               <tr>
-                <th className="py-3 px-4">Teknisi & Spesialisasi</th>
-                <th className="py-3 px-4">Rating & Kinerja</th>
-                <th className="py-3 px-4">Keahlian Tambahan</th>
-                <th className="py-3 px-4">Penugasan Aktif</th>
-                <th className="py-3 px-4">Kontak</th>
-                <th className="py-3 px-4 text-center">Ubah Status</th>
-                <th className="py-3 px-4 text-center">Aksi</th>
+                <th className="pl-6 retail-table-header whitespace-nowrap">Teknisi & Spesialisasi</th>
+                <th className="retail-table-header whitespace-nowrap">Rating & Kinerja</th>
+                <th className="retail-table-header whitespace-nowrap">Keahlian Tambahan</th>
+                <th className="retail-table-header whitespace-nowrap">Penugasan Aktif</th>
+                <th className="retail-table-header whitespace-nowrap">Kontak</th>
+                <th className="retail-table-header text-center whitespace-nowrap">Ubah Status</th>
+                <th className="pr-6 retail-table-header text-center whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody>
               {filteredTechs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400">
@@ -212,8 +200,8 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
                   const activeOrder = tech.activeWorkOrderId ? workOrders.find(wo => wo.id === tech.activeWorkOrderId) : null;
                   
                   return (
-                    <tr key={tech.id} className="hover:bg-blue-50/30 transition-colors group">
-                      <td className="py-4 px-4 align-top">
+                    <tr key={tech.id}>
+                      <td className="pl-6 align-top">
                         <div className="flex items-start gap-3">
                           <img 
                             src={tech.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.name)}&background=random`} 
@@ -228,6 +216,24 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
                             <div className="text-[11.5px] text-slate-500 font-medium mt-0.5 flex items-center gap-1">
                               <Wrench className="w-3 h-3" />
                               {tech.specialty}
+                            </div>
+                            <div className="mt-1.5 flex items-center gap-1">
+                              {tech.user_id || tech.user ? (
+                                <span 
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  title={`Akun login aktif: ${tech.user?.email || tech.email || ''}`}
+                                >
+                                  <Key className="w-2.5 h-2.5" />
+                                  <span>{tech.user?.jasaRole?.name || 'Akun Login Aktif'}</span>
+                                </span>
+                              ) : (
+                                <span 
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-500 border border-slate-200"
+                                  title="Teknisi ini belum memiliki akun login aplikasi. Klik Edit untuk membuat akun."
+                                >
+                                  Belum ada akun login
+                                </span>
+                              )}
                             </div>
                             <div className="mt-2 block sm:hidden">
                               {getStatusBadge(tech.currentStatus)}
@@ -331,21 +337,21 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
                           <div className="mt-1.5 text-[9px] text-slate-400 leading-tight">Status terkunci otomatis<br/>oleh Sistem SPK.</div>
                         )}
                       </td>
-                      <td className="py-4 px-4 align-top text-center">
-                        <div className="flex items-center justify-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <td className="pr-6 align-top text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button 
                             onClick={() => handleEdit(tech)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
-                            title="Edit Pegawai"
+                            className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                            title="Edit Data Pegawai"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            <Pencil size={14} />
                           </button>
                           <button 
                             onClick={() => handleDelete(tech)}
-                            className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer"
-                            title="Hapus Pegawai"
+                            className="w-7 h-7 rounded-lg hover:bg-rose-50 flex items-center justify-center text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                            title="Hapus Data Pegawai"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       </td>
@@ -359,18 +365,16 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
 
         {/* Pagination */}
         {filteredTechs.length > 0 && (
-          <div className="border-t border-slate-100">
-            <RetailPagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              totalPages={totalPages}
-              totalItems={filteredTechs.length}
-              startIndex={startIndex}
-              endIndex={endIndex}
-            />
-          </div>
+          <RetailPagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            totalPages={totalPages}
+            totalItems={filteredTechs.length}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
         )}
       </div>
 

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Store, Upload, Save, Building, Trash2, QrCode } from 'lucide-react';
+import { Store, Upload, Save, Building, Trash2, QrCode } from '@/constants/icons';
 import api from '../../../../../services/api';
+import { useAuth } from '../../../../../contexts/AuthContext';
+import bizoraLogo from '../../../../../assets/bizora-logo.png';
 
 export const AppSettingsView: React.FC = () => {
-  const [storeName, setStoreName] = useState('');
+  const { user, updateUser } = useAuth();
+  const [storeName, setStoreName] = useState(user?.tenant_name || '');
   const [receiptHeader, setReceiptHeader] = useState('');
   const [storeAddress, setStoreAddress] = useState('');
   const [storePhone, setStorePhone] = useState('');
-  const [iconUrl, setIconUrl] = useState<string | null>(null);
+  const [iconUrl, setIconUrl] = useState<string | null>(user?.store_icon_url || null);
   const [qrisUrl, setQrisUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -20,11 +23,11 @@ export const AppSettingsView: React.FC = () => {
     api.get('/retail/settings')
       .then((res) => {
         const s = res.data || {};
-        setStoreName(s.store_name || '');
+        if (s.store_name) setStoreName(s.store_name);
         setReceiptHeader(s.receipt_header || '');
         setStoreAddress(s.store_address || '');
         setStorePhone(s.store_phone || '');
-        setIconUrl(s.store_icon_url || null);
+        setIconUrl(s.store_icon_url || user?.store_icon_url || null);
         setQrisUrl(s.qris_image_url || null);
       })
       .catch((err) => console.error('Failed to fetch settings', err))
@@ -43,6 +46,7 @@ export const AppSettingsView: React.FC = () => {
         store_address: storeAddress,
         store_phone: storePhone,
       });
+      updateUser({ tenant_name: storeName });
       setMsg('Pengaturan berhasil disimpan.');
       setTimeout(() => setMsg(''), 4000);
     } catch (err) {
@@ -69,7 +73,9 @@ export const AppSettingsView: React.FC = () => {
       const res = await api.post('/retail/settings/store-icon', formData, {
         headers: { 'Content-Type': undefined },
       });
-      setIconUrl(res.data?.store_icon_url || null);
+      const newUrl = res.data?.store_icon_url || null;
+      setIconUrl(newUrl);
+      updateUser({ store_icon_url: newUrl });
     } catch (err: any) {
       console.error('Failed to upload logo', err);
       const apiMsg = err.response?.data?.errors?.store_icon?.[0];
@@ -81,10 +87,11 @@ export const AppSettingsView: React.FC = () => {
   };
 
   const handleRemoveLogo = async () => {
-    if (!confirm('Hapus logo toko?')) return;
+    if (!confirm('Hapus logo toko dan gunakan logo default?')) return;
     try {
       await api.delete('/retail/settings/store-icon');
       setIconUrl(null);
+      updateUser({ store_icon_url: null });
     } catch (err) {
       console.error('Failed to remove logo', err);
     }
@@ -123,18 +130,8 @@ export const AppSettingsView: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Store className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">Pengaturan Aplikasi</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Atur informasi dasar toko Anda, logo, dan alamat.
-          </p>
-        </div>
-
+      {/* Top Action Bar */}
+      <div className="flex items-center justify-end gap-3 shrink-0">
         {msg && (
           <span className={`text-xs font-semibold ${msg.includes('Gagal') ? 'text-rose-600' : 'text-emerald-600'}`}>{msg}</span>
         )}
@@ -142,7 +139,7 @@ export const AppSettingsView: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={saving || loading}
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          className="shrink-0 px-4 h-[38px] rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
           <span className="hidden sm:inline">{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
@@ -157,12 +154,8 @@ export const AppSettingsView: React.FC = () => {
           <div>
             <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Logo Toko</label>
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-700 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden">
-                {iconUrl ? (
-                  <img src={iconUrl} alt="Logo toko" className="w-full h-full object-cover" />
-                ) : (
-                  <Building className="w-8 h-8 text-slate-400" />
-                )}
+              <div className="w-20 h-20 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-2 flex items-center justify-center overflow-hidden shadow-xs">
+                <img src={iconUrl || bizoraLogo} alt="Logo toko" className="w-full h-full object-contain" />
               </div>
               <div>
                 <label className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors flex items-center gap-2 cursor-pointer w-fit">

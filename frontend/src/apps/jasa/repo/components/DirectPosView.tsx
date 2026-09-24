@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from '@/constants/icons';
 import { ServiceCatalogItem } from '../types';
 import { api } from '../../../../lib/api';
+import { jasaApi } from '../services/jasaApi';
 import { useAuth } from '../../../../contexts/AuthContext';
 import ProductGrid from '../../../retail/components/pos/ProductGrid';
 import CartPanel from '../../../retail/components/pos/CartPanel';
@@ -130,27 +131,27 @@ export const DirectPosView: React.FC<DirectPosViewProps> = ({
   const fetchData = useCallback(async () => {
     if (navigator.onLine) {
       try {
-        const [cRes, sRes, staffRes] = await Promise.all([
-          api.get('/jasa/customers').catch(() => api.get('/retail/customers')).catch(() => ({ data: [] })),
-          api.get('/jasa/settings').catch(() => api.get('/retail/settings')).catch(() => ({ data: {} })),
-          api.get('/jasa/technicians').catch(() => api.get('/retail/staff')).catch(() => ({ data: [] }))
+        const [cData, sData, techData] = await Promise.all([
+          jasaApi.getCustomers().catch(() => []),
+          jasaApi.getSettings().catch(() => ({})),
+          jasaApi.getTechnicians().catch(() => [])
         ]);
-        setCustomers(cRes.data || []);
-        if (sRes.data && Object.keys(sRes.data).length > 0) {
+        setCustomers(cData || []);
+        if (sData && Object.keys(sData).length > 0) {
           setPosSettings({
-            tax_rate: Number(sRes.data.tax_rate || 0),
-            receipt_footer: sRes.data.receipt_footer || 'Terima kasih atas kepercayaan servis Anda!',
-            point_value_rupiah: Number(sRes.data.point_value_rupiah || 1)
+            tax_rate: 0,
+            receipt_footer: 'Terima kasih atas kepercayaan servis Anda!',
+            point_value_rupiah: 1
           });
         }
-        setStaff(staffRes.data || []);
+        setStaff(techData || []);
 
         await cacheMasterData({
           products: normalizedProducts,
           categories: categories,
-          customers: cRes.data || [],
-          staff: staffRes.data || [],
-          settings: sRes.data || {}
+          customers: cData || [],
+          staff: techData || [],
+          settings: sData || {}
         });
         return;
       } catch (e) {
@@ -346,9 +347,35 @@ export const DirectPosView: React.FC<DirectPosViewProps> = ({
     const calculatedDiscount = discountAmount + actualPointsDiscount;
     const paidAmount = modalData.payment_amount || total;
     const changeAmount = Math.max(0, paidAmount - total);
-    const invoiceNo = `SRV-POS-${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
+    let invoiceNo = `SRV-POS-${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // Deduct stock for spare parts
+    // If online, send to backend Jasa POS Checkout
+    if (navigator.onLine) {
+      try {
+        const checkoutRes = await jasaApi.posCheckout({
+          items: cart.map(item => ({
+            id: item.real_product_id,
+            name: item.name,
+            price: item.price,
+            quantity: item.qty,
+            type: item.item_type
+          })),
+          customerName: selectedCustomer?.name || 'Pelanggan POS Umum',
+          customerPhone: selectedCustomer?.phone || '',
+          customerAddress: selectedCustomer?.address || '',
+          paymentMethod: modalData.payment_method || 'Kas / Tunai',
+          amountPaid: paidAmount,
+          total: total
+        });
+        if (checkoutRes?.data?.invoiceNumber) {
+          invoiceNo = checkoutRes.data.invoiceNumber;
+        }
+      } catch (err) {
+        console.warn('Backend POS checkout fallback to local:', err);
+      }
+    }
+
+    // Deduct stock for spare parts locally
     cart.forEach((item) => {
       if (item.item_type === 'sparepart' && onDeductInventory) {
         onDeductInventory(item.real_product_id, item.qty);

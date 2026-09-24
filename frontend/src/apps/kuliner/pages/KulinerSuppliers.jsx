@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit3, Trash2, Phone, MapPin, X, Truck } from 'lucide-react';
+import { Plus, Pencil, Trash2, Phone, MapPin, X, Truck } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import KulinerLoading from '../components/KulinerLoading';
 import ClientPagination from '../components/ClientPagination';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
@@ -109,97 +110,108 @@ export default function KulinerSuppliers() {
       </div>
       
       <div className="kd-content">
-        <div className="kd-page-actions" style={{ flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
-          <input
-            className="kd-form-input"
-            style={{ maxWidth: 260, height: 38, fontSize: 13, border: '1px solid #CBD5E1', borderRadius: 8, padding: '0 12px' }}
-            placeholder="Cari nama supplier..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
-          <div style={{ flex: 1 }}></div>
-          <button 
-            onClick={openAdd} 
-            className="kd-btn kd-btn-primary"
-            style={{ height: 38, padding: '0 16px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, background: '#B45309', color: '#fff', border: 'none', cursor: 'pointer' }}
-          >
-            <Plus size={18} />
-            <span>Tambah Supplier</span>
-          </button>
-        </div>
+        {loading ? (
+          <KulinerLoading message="Memuat data supplier..." />
+        ) : (
+          <>
+            <div className="kd-page-actions" style={{ flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+              <input
+                className="kd-form-input"
+                style={{ maxWidth: 260, height: 38, fontSize: 13, border: '1px solid #CBD5E1', borderRadius: 8, padding: '0 12px' }}
+                placeholder="Cari nama supplier..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+              <div style={{ flex: 1 }}></div>
+              <button 
+                onClick={openAdd} 
+                className="kd-btn kd-btn-primary"
+                style={{ height: 38, padding: '0 16px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, background: '#B45309', color: '#fff', border: 'none', cursor: 'pointer' }}
+              >
+                <Plus size={18} />
+                <span>Tambah Supplier</span>
+              </button>
+            </div>
 
-        <div className="kd-panel" style={{ background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', padding: 0 }}>
-          <div className="kd-table-container" style={{ overflowX: 'auto', marginBottom: 0, border: 'none', borderRadius: 0 }}>
-            <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Nama Supplier</th>
-                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Kontak</th>
-                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Alamat</th>
-                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: '#94A3B8' }}>Memuat data supplier...</td></tr>
-                ) : filtered.length === 0 ? (
-                  <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: '#94A3B8' }}>Belum ada data supplier.</td></tr>
-                ) : (
-                  paginatedSuppliers.map((s) => (
-                    <tr key={s.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                      <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500 }}>{s.name}</td>
-                      <td style={{ padding: '10px 16px', fontSize: 12.5 }}>
-                        {s.contact ? (
-                          <div style={{ display: 'flex', alignItems: 'center', color: '#475569', gap: 6 }}>
-                            <Phone size={14} color="#64748B" />
-                            {s.contact}
-                          </div>
-                        ) : <span style={{ color: '#94A3B8' }}>-</span>}
-                      </td>
-                      <td style={{ padding: '10px 16px', fontSize: 12.5 }}>
-                        {s.address ? (
-                          <div style={{ display: 'flex', alignItems: 'center', color: '#475569', gap: 6 }} title={s.address}>
-                            <MapPin size={14} color="#64748B" style={{ flexShrink: 0 }} />
-                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 260 }}>{s.address}</span>
-                          </div>
-                        ) : <span style={{ color: '#94A3B8' }}>-</span>}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '10px 16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
-                          <button 
-                            onClick={() => openEdit(s)} 
-                            title="Edit"
-                            style={{ background: '#F1F5F9', border: 'none', borderRadius: 6, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4F46E5', cursor: 'pointer' }}
-                          >
-                            <Edit3 size={15} />
-                          </button>
-                          <button 
-                            onClick={() => handleDelete(s)} 
-                            title="Hapus"
-                            style={{ background: '#FEE2E2', border: 'none', borderRadius: 6, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#DC2626', cursor: 'pointer' }}
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </td>
+            <div className="kd-panel" style={{ background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', padding: 0 }}>
+              <div className="kd-table-container" style={{ overflowX: 'auto', marginBottom: 0, border: 'none', borderRadius: 0 }}>
+                <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Nama Supplier</th>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Kontak</th>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Alamat</th>
+                      <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Aksi</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          <ClientPagination
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
-            itemsPerPage={itemsPerPage}
-            setItemsPerPage={setItemsPerPage}
-            totalItems={filtered.length}
-          />
-        </div>
+                  </thead>
+                  <tbody>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" style={{ textAlign: 'center', padding: '40px 20px', color: '#94A3B8' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                            <Truck size={36} color="#CBD5E1" />
+                            <span style={{ fontSize: 12, fontWeight: 400 }}>{search ? 'Tidak ada supplier yang sesuai pencarian.' : 'Belum ada data supplier.'}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedSuppliers.map((s) => (
+                        <tr key={s.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#0F172A', fontWeight: 400 }}>{s.name}</td>
+                          <td style={{ padding: '10px 16px', fontSize: 12, fontWeight: 400 }}>
+                            {s.contact ? (
+                              <div style={{ display: 'flex', alignItems: 'center', color: '#475569', gap: 6 }}>
+                                <Phone size={14} color="#64748B" />
+                                <span>{s.contact}</span>
+                              </div>
+                            ) : <span style={{ color: '#94A3B8' }}>-</span>}
+                          </td>
+                          <td style={{ padding: '10px 16px', fontSize: 12, fontWeight: 400 }}>
+                            {s.address ? (
+                              <div style={{ display: 'flex', alignItems: 'center', color: '#475569', gap: 6 }} title={s.address}>
+                                <MapPin size={14} color="#64748B" style={{ flexShrink: 0 }} />
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 260 }}>{s.address}</span>
+                              </div>
+                            ) : <span style={{ color: '#94A3B8' }}>-</span>}
+                          </td>
+                          <td style={{ textAlign: 'right', padding: '10px 16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
+                              <button 
+                                onClick={() => openEdit(s)} 
+                                title="Edit"
+                                style={{ background: '#F1F5F9', border: 'none', borderRadius: 6, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4F46E5', cursor: 'pointer' }}
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(s)} 
+                                title="Hapus"
+                                style={{ background: '#FEE2E2', border: 'none', borderRadius: 6, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#DC2626', cursor: 'pointer' }}
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <ClientPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                itemsPerPage={itemsPerPage}
+                setItemsPerPage={setItemsPerPage}
+                totalItems={filtered.length}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* MODAL TAMBAH / EDIT SUPPLIER */}

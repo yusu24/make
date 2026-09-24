@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { User, Mail, Phone, Lock, Save, Camera } from 'lucide-react'
+import { User, Mail, Phone, Lock, Save, Camera } from '@/constants/icons'
 import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../lib/api'
 import '../retail.css'

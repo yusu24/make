@@ -195,7 +195,7 @@ const CulinaryTransactions = () => {
               </div>
 
               <div style={{ width: '100%', overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+                <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                       <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
@@ -231,19 +231,19 @@ const CulinaryTransactions = () => {
                     ) : (
                       currentTransactions.map(item => (
                         <tr key={item.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap', fontWeight: 400 }}>
                             {new Date(item.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })} • {new Date(item.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
                           </td>
-                          <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
+                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#0F172A', fontWeight: 400 }}>
                             {item.description}
                           </td>
                           <td style={{ padding: '10px 16px' }}>
-                            <span style={{ fontSize: 11.5, color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: 6, fontFamily: 'monospace', fontWeight: 600 }}>
+                            <span style={{ fontSize: 12, color: '#64748B', background: '#F1F5F9', padding: '3px 8px', borderRadius: 6, fontFamily: 'monospace', fontWeight: 400 }}>
                               {item.id}
                             </span>
                           </td>
                           <td style={{ padding: '10px 16px' }}>
-                            <span style={{ fontSize: 11.5, background: '#F1F5F9', color: '#334155', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>
+                            <span style={{ fontSize: 12, background: '#F1F5F9', color: '#334155', padding: '3px 10px', borderRadius: 20, fontWeight: 400 }}>
                               {item.category}
                             </span>
                           </td>
@@ -253,14 +253,14 @@ const CulinaryTransactions = () => {
                               alignItems: 'center',
                               gap: 5,
                               fontSize: 12,
-                              fontWeight: 600,
+                              fontWeight: 400,
                               color: item.type === 'income' ? '#059669' : '#DC2626'
                             }}>
                               <span style={{ width: 6, height: 6, borderRadius: '50%', background: item.type === 'income' ? '#059669' : '#DC2626' }} />
                               {item.type === 'income' ? (t('kulinerTransactions.detailIncome') || 'Pemasukan') : (t('kulinerTransactions.detailExpense') || 'Pengeluaran')}
                             </span>
                           </td>
-                          <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700, color: item.type === 'income' ? '#059669' : '#DC2626' }}>
+                          <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 600, fontSize: 12, color: item.type === 'income' ? '#059669' : '#DC2626' }}>
                             {item.type === 'income' ? '+' : '-'}{formatRp(item.amount)}
                           </td>
                           <td style={{ padding: '10px 16px', textAlign: 'right' }}>

@@ -35,7 +35,7 @@ import {
   Tag,
   CheckCircle2,
   FileSpreadsheet
-} from 'lucide-react';
+} from '@/constants/icons';
 
 export const GuideView: React.FC = () => {
   const navigate = useNavigate();

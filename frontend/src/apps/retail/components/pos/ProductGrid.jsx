@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Clock, Menu, Sparkles } from 'lucide-react';
+import { Search, Clock, Menu, Sparkles } from '@/constants/icons';
 import OfflineStatusBadge from './OfflineStatusBadge';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
@@ -12,7 +12,7 @@ function PosClock() {
   }, []);
 
   return (
-    <div className="flex items-center gap-1.5 text-xs font-normal text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shrink-0 select-none">
+    <div className="hidden sm:flex items-center gap-1.5 text-xs font-normal text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shrink-0 select-none">
       <Clock size={13} className="text-indigo-600" />
       <span>{time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
     </div>
@@ -32,28 +32,6 @@ export default function ProductGrid({
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
-  const [posAiEnabled, setPosAiEnabled] = useState(() => {
-    const saved = localStorage.getItem('bizora_pos_ai_enabled');
-    return saved !== null ? saved === 'true' : true;
-  });
-
-  useEffect(() => {
-    const handleStateChange = (e) => {
-      if (e.detail?.enabled !== undefined) {
-        setPosAiEnabled(e.detail.enabled);
-      }
-    };
-    window.addEventListener('bizora:pos-ai-state-changed', handleStateChange);
-    return () => window.removeEventListener('bizora:pos-ai-state-changed', handleStateChange);
-  }, []);
-
-  const handleToggleAi = () => {
-    const next = !posAiEnabled;
-    setPosAiEnabled(next);
-    localStorage.setItem('bizora_pos_ai_enabled', String(next));
-    window.dispatchEvent(new CustomEvent('bizora:toggle-pos-ai', { detail: { enabled: next } }));
-  };
-
   const handleOpenAi = () => {
     window.dispatchEvent(new CustomEvent('bizora:open-retail-ai'));
   };
@@ -135,30 +113,16 @@ export default function ProductGrid({
 
 
 
-        {/* AI Advisor Button & POS Toggle */}
-        <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl p-1 shrink-0 select-none">
-          <button
-            type="button"
-            onClick={handleOpenAi}
-            className="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
-            title="Buka Retail AI Advisor"
-          >
-            <Sparkles size={13} className="text-indigo-600 animate-pulse" />
-            <span className="hidden md:inline">AI Advisor</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleToggleAi}
-            className={`px-1.5 py-1 text-[10px] font-bold rounded-lg border transition-colors ${
-              posAiEnabled
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200'
-            }`}
-            title={posAiEnabled ? 'Bubble AI aktif di kasir (Klik untuk sembunyikan)' : 'Bubble AI nonaktif di kasir (Klik untuk tampilkan)'}
-          >
-            {posAiEnabled ? 'Bubble ON' : 'Bubble OFF'}
-          </button>
-        </div>
+        {/* Quick AI Advisor Trigger (Desktop) */}
+        <button
+          type="button"
+          onClick={handleOpenAi}
+          className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors border border-indigo-100 shrink-0 select-none"
+          title="Buka Retail AI Advisor"
+        >
+          <Sparkles size={13} className="text-indigo-600 animate-pulse" />
+          <span>AI Advisor</span>
+        </button>
 
         <PosClock />
 
@@ -167,7 +131,7 @@ export default function ProductGrid({
           <OfflineStatusBadge {...offlineBadgeProps} />
         )}
 
-        <div className="pos-cashier-info select-none">
+        <div className="pos-cashier-info select-none shrink-0">
           <div className="pos-avatar">{(cashierName || 'U').substring(0, 2).toUpperCase()}</div>
           <span className="hidden sm:inline">{(cashierName || 'User').split(' ')[0]}</span>
         </div>

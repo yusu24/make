@@ -1,19 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Package,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  AlertCircle,
-  Tag,
-  Layers,
-  ArrowUpDown,
-  PackagePlus,
-  FileSpreadsheet,
-  Download,
-  Upload,
-} from 'lucide-react';
+import { Package, Plus, Search, Pencil, Trash2, AlertCircle, Tag, Layers, ArrowUpDown, PackagePlus, FileSpreadsheet, Download, Upload } from '@/constants/icons';
 import { Product, MarketplacePlatform } from '../../types';
 import { formatIDR } from '../../utils/formatters';
 import { usePagination } from '../../hooks/usePagination';
@@ -82,74 +68,63 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Package className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">{t('seller.katalog')}</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full truncate">
-            {t('seller.katalogSubtitle')}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={onOpenImportModal}
-            className="px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
-            title="Import Produk Awal via Excel/CSV"
-          >
-            <Upload className="w-4 h-4" />
-            <span className="hidden md:inline">{t('seller.importExcel')}</span>
-          </button>
-
-          <button
-            onClick={handleExportExcel}
-            className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
-            title="Export Katalog ke Excel/CSV"
-          >
-            <Download className="w-4 h-4 text-emerald-600" />
-            <span className="hidden md:inline">{t('seller.exportExcel')}</span>
-          </button>
-
-          <button
-            onClick={onAddProductClick}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('seller.addProduct')}</span>
-            <span className="sm:hidden">Tambah</span>
-          </button>
-        </div>
-      </div>
-
       {/* Main Catalog Card */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
-        {/* Search & Filter Bar */}
-        <div className="p-4 border-b border-slate-200/80 dark:border-slate-700 flex flex-row flex-nowrap whitespace-nowrap items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/50 w-full overflow-x-auto">
-          <div className="w-full sm:w-80 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={t('seller.searchProduct')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none"
-            />
+        {/* Search, Filter & Actions Toolbar */}
+        <div className="p-3 sm:p-4 border-b border-slate-200/80 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/50 w-full">
+          <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-1">
+            <div className="w-full sm:w-72 relative h-[38px] flex items-center bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl px-3 shadow-xs">
+              <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
+              <input
+                type="text"
+                placeholder={t('seller.searchProduct')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full text-xs text-slate-800 dark:text-slate-100 outline-none bg-transparent placeholder:text-slate-400 font-normal"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 h-[38px]">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="h-full px-3.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer shadow-xs"
+              >
+                <option value="all">{t('seller.allCategories')}</option>
+                <option value="Beauty & Skincare">Beauty & Skincare</option>
+                <option value="Electronics & Gadget">Electronics & Gadget</option>
+                <option value="Fashion & Apparel">Fashion & Apparel</option>
+              </select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+          <div className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end">
+            <button
+              onClick={onOpenImportModal}
+              className="h-[38px] px-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Import Produk Awal via Excel/CSV"
             >
-              <option value="all">{t('seller.allCategories')}</option>
-              <option value="Beauty & Skincare">Beauty & Skincare</option>
-              <option value="Electronics & Gadget">Electronics & Gadget</option>
-              <option value="Fashion & Apparel">Fashion & Apparel</option>
-            </select>
+              <Upload className="w-4 h-4" />
+              <span className="hidden md:inline">{t('seller.importExcel')}</span>
+            </button>
+
+            <button
+              onClick={handleExportExcel}
+              className="h-[38px] px-3.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Export Katalog ke Excel/CSV"
+            >
+              <Download className="w-4 h-4 text-emerald-600" />
+              <span className="hidden md:inline">{t('seller.exportExcel')}</span>
+            </button>
+
+            <button
+              onClick={onAddProductClick}
+              className="h-[38px] px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">{t('seller.addProduct')}</span>
+              <span className="sm:hidden">Tambah</span>
+            </button>
           </div>
         </div>
 
@@ -157,13 +132,13 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-100/60 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
-                <th className="py-3.5 px-4">{t('seller.sku')}</th>
-                <th className="py-3.5 px-4">{t('seller.costPrice')}</th>
-                <th className="py-3.5 px-4">HARGA MARKETPLACE</th>
-                <th className="py-3.5 px-4">{t('seller.totalStock')}</th>
-                <th className="py-3.5 px-4">{t('seller.status')}</th>
-                <th className="py-3.5 px-4 text-center">{t('seller.action')}</th>
+              <tr className="bg-slate-50/90 dark:bg-slate-800/80 text-[11.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200/80 dark:border-slate-700">
+                <th className="py-3 px-6">{t('seller.sku')}</th>
+                <th className="py-3 px-4">{t('seller.costPrice')}</th>
+                <th className="py-3 px-4">HARGA MARKETPLACE</th>
+                <th className="py-3 px-4">{t('seller.totalStock')}</th>
+                <th className="py-3 px-4">{t('seller.status')}</th>
+                <th className="py-3 px-6 text-right">{t('seller.action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px]">
@@ -209,39 +184,39 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                   </td>
 
                   <td className="py-3.5 px-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                       prod.status === 'Aktif'
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                         : prod.status === 'Stok Menipis'
-                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                        : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                        ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+                        : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
                     }`}>
                       {prod.status === 'Aktif' ? (i18n?.language === 'en' ? 'Active' : 'Stok Aman') : prod.status === 'Stok Menipis' ? t('seller.statusStockLow') : t('seller.statusStockOut')}
                     </span>
                   </td>
 
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center justify-center gap-1">
+                  <td className="py-3.5 px-4 text-right pr-6">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => onRestockClick(prod)}
                         title="Tambah Stok"
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                        className="w-7 h-7 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 flex items-center justify-center transition-colors cursor-pointer"
                       >
-                        <PackagePlus className="w-4 h-4" />
+                        <PackagePlus className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => onEditProduct(prod)}
                         title="Edit Produk"
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer"
+                        className="w-7 h-7 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition-colors cursor-pointer"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => onDeleteProduct(prod)}
                         title="Hapus Produk"
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                        className="w-7 h-7 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </td>

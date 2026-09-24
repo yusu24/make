@@ -52,19 +52,67 @@ class TenantController extends Controller
                       str_contains(strtolower($t->user?->email ?? ''), 'demo') || 
                       str_contains(strtolower($t->tenant_id ?? ''), 'sandbox');
 
+            $lastActivity = $t->updated_at ?? $t->created_at;
+            if ($t->user && $t->user->updated_at && $t->user->updated_at->gt($lastActivity)) {
+                $lastActivity = $t->user->updated_at;
+            }
+
+            $diffDays = $lastActivity ? now()->diffInDays($lastActivity) : 999;
+            if ($t->status === 'inactive' || $diffDays > 14) {
+                $healthStatus = 'at_risk';
+                $healthScore = 25;
+                $healthLabel = 'Berisiko Churn';
+            } elseif ($diffDays >= 4) {
+                $healthStatus = 'warning';
+                $healthScore = 65;
+                $healthLabel = 'Perhatian';
+            } else {
+                $healthStatus = 'healthy';
+                $healthScore = 95;
+                $healthLabel = 'Aktif & Sehat';
+            }
+
+            $expiresAt = $t->subscription_expires_at ?? $t->trial_ends_at;
+            $daysLeft = null;
+            $lifecycle = 'active';
+
+            if ($expiresAt) {
+                $daysLeft = (int) ceil(now()->diffInDays($expiresAt, false));
+                if ($daysLeft < 0) {
+                    $lifecycle = 'overdue';
+                } elseif ($daysLeft <= 3) {
+                    $lifecycle = 'grace_period';
+                } elseif ($daysLeft <= 7) {
+                    $lifecycle = 'expiring_soon';
+                } else {
+                    $lifecycle = 'active';
+                }
+            }
+
             return [
-                'id'          => $t->id,
-                'tenant_id'   => $t->tenant_id,
-                'name'        => $t->business_name ?: ($t->user?->name ?? $t->tenant_id),
-                'email'       => $t->user?->email,
-                'category'    => $t->businessCategory?->name ?? 'Toko Retail',
-                'plan'        => $t->subscription_plan,
-                'status'      => $t->status,
-                'is_demo'     => $isDemo,
-                'joined'      => $t->created_at->format('Y-m-d'),
-                'created_at'  => $t->created_at->toISOString(),
+                'id'                  => $t->id,
+                'tenant_id'           => $t->tenant_id,
+                'name'                => $t->business_name ?: ($t->user?->name ?? $t->tenant_id),
+                'email'               => $t->user?->email,
+                'category'            => $t->businessCategory?->name ?? 'Toko Retail',
+                'plan'                => $t->subscription_plan,
+                'status'              => $t->status,
+                'health_status'       => $healthStatus,
+                'health_score'        => $healthScore,
+                'health_label'        => $healthLabel,
+                'last_activity_human' => $lastActivity ? $lastActivity->diffForHumans() : 'Belum ada aktivitas',
+                'is_demo'             => $isDemo,
+                'expires_at'          => $expiresAt ? $expiresAt->format('Y-m-d') : null,
+                'days_left'           => $daysLeft,
+                'lifecycle_status'    => $lifecycle,
+                'joined'              => $t->created_at->format('Y-m-d'),
+                'created_at'          => $t->created_at->toISOString(),
             ];
         });
+
+        if ($request->health_status && in_array($request->health_status, ['healthy', 'warning', 'at_risk'])) {
+            $data = $data->filter(fn($item) => $item['health_status'] === $request->health_status)->values();
+        }
 
         return response()->json(['success' => true, 'data' => $data, 'meta' => [
             'total'        => $tenants->total(),
@@ -400,8 +448,33 @@ class TenantController extends Controller
             'success' => true,
             'count'   => $deleted,
             'message' => $deleted > 0 
-                ? "Berhasil membersihkan {$deleted} akun demo sandbox."
-                : "Database sudah bersih, tidak ada akun demo sandbox yang perlu dibersihkan."
+                ? "Berhasil membersihkan {$deleted} akun demo sandbox." 
+                : "Tidak ada akun demo sandbox kadaluarsa yang perlu dibersihkan."
+        ]);
+    }
+
+    public function extendSubscription(Request $request, string $id)
+    {
+        $tenant = Tenant::where('tenant_id', $id)->orWhere('id', $id)->firstOrFail();
+        $days = (int) $request->input('days', 30);
+        $baseDate = $tenant->subscription_expires_at && $tenant->subscription_expires_at->gt(now()) 
+            ? $tenant->subscription_expires_at 
+            : now();
+        
+        $newExpiry = $baseDate->copy()->addDays($days);
+        $tenant->update([
+            'subscription_expires_at' => $newExpiry,
+            'subscription_status'     => 'active',
+            'status'                  => 'active',
+        ]);
+
+        ActivityLog::record('extend_subscription', "Perpanjangan langganan Tenant {$tenant->tenant_id} +{$days} hari s/d " . $newExpiry->format('Y-m-d'), 'success');
+
+        return response()->json([
+            'success'    => true,
+            'message'    => "Masa aktif langganan berhasil diperpanjang hingga {$newExpiry->format('d M Y')}.",
+            'expires_at' => $newExpiry->format('Y-m-d'),
+            'days_left'  => (int) ceil(now()->diffInDays($newExpiry, false)),
         ]);
     }
 }

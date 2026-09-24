@@ -46,7 +46,9 @@ class RetailFullDummySeeder extends Seeder
         })->get();
 
         if ($tenants->isEmpty()) {
-            echo "No retail tenant found.\n";
+            if (app()->runningInConsole()) {
+                echo "No retail tenant found.\n";
+            }
             return;
         }
 
@@ -108,7 +110,9 @@ class RetailFullDummySeeder extends Seeder
             $products = RetailProduct::where('tenant_id', $tenantId)->get();
 
             if ($products->count() === 0) {
-                echo "No products found. Run RetailTestingSeeder first.\n";
+                if (app()->runningInConsole()) {
+                    echo "No products found. Run RetailTestingSeeder first.\n";
+                }
                 return;
             }
 

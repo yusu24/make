@@ -1,14 +1,35 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
+import {
+  useParams,
+  useNavigate,
+  useOutletContext } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import { 
-  ArrowLeft, Droplets, Activity, 
-  TrendingUp, AlertTriangle, CheckCircle2,
-  Calendar, Info, Plus, ChevronRight,
-  ShoppingCart, Heart, Scale, Trash2,
-  Play, CheckSquare, BarChart3, Clock, DollarSign,
-  CloudRain, Wind, Thermometer, Waves, Sprout
-} from 'lucide-react'
+  ArrowLeft,
+  Droplets,
+  Activity,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
+  Calendar,
+  Info,
+  Plus,
+  ChevronRight,
+  ShoppingCart,
+  Heart,
+  Scale,
+  Trash2,
+  Play,
+  CheckSquare,
+  BarChart2,
+  Clock,
+  DollarSign,
+  CloudRain,
+  Wind,
+  Thermometer,
+  Waves,
+  Sprout
+} from '@/constants/icons'
 import Modal from '../../../components/Modal'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
@@ -18,9 +39,10 @@ import BudidayaPagination from '../components/BudidayaPagination'
 // Helper for card styles to match high-fidelity UI
 const cardStyle = {
   background: '#fff',
-  borderRadius: '24px',
-  border: '1px solid #E9F0EC',
-  padding: '24px',
+  borderRadius: '16px',
+  border: '1px solid #E2E8F0',
+  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)',
+  padding: '20px',
 }
 
 const inputStyle = {
@@ -578,7 +600,7 @@ export default function PondDetail() {
             onClick={() => navigate('/budidaya/reports')}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '14px', fontWeight: 600, color: '#1A1C1A', cursor: 'pointer' }}
           >
-            <BarChart3 size={18} /> Lihat Laporan Akhir
+            <BarChart2 size={18} /> Lihat Laporan Akhir
           </button>
           {cycle && !isCycleDone && (
             <button 
@@ -930,7 +952,7 @@ export default function PondDetail() {
               </div>
               <div style={{ ...cardStyle }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                  <div style={{ color: '#1B4332' }}><BarChart3 size={18} /></div>
+                  <div style={{ color: '#1B4332' }}><BarChart2 size={18} /></div>
                   <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1A1C1A' }}>Target Panen</h4>
                 </div>
                 <div style={{ marginBottom: 16 }}>

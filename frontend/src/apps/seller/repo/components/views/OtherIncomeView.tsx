@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, Plus, Search, Calendar, DollarSign, Edit2, Trash2 } from 'lucide-react';
+import { TrendingUp, Plus, Search, Calendar, DollarSign, Pencil, Trash2 } from '@/constants/icons';
 import { Income } from '../../types';
 import { formatIDR } from '../../utils/formatters';
 import { usePagination } from '../../hooks/usePagination';
@@ -30,30 +30,9 @@ export const OtherIncomeView: React.FC<OtherIncomeViewProps> = ({ incomes, onAdd
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span className="truncate">{i18n?.language === 'en' ? 'Other Income & Claims' : 'Pemasukan Lain (Outside Sales & Marketplace Claims)'}</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            {i18n?.language === 'en' ? 'Record lost package insurance claims, TikTok/Shopee affiliate commissions, & cashback bonuses.' : 'Catat klaim ganti rugi paket hilang, komisi affiliate TikTok/Shopee, dan cashback campaign.'}
-          </p>
-        </div>
-
-        <button
-          onClick={onAddIncomeClick}
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">{i18n?.language === 'en' ? 'Add Other Income' : 'Tambah Pemasukan Lain'}</span>
-          <span className="sm:hidden">{i18n?.language === 'en' ? 'Add' : 'Tambah'}</span>
-        </button>
-      </div>
-
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
-        <div className="p-4 bg-slate-50/60 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700 flex items-center justify-between">
-          <div className="w-80 relative">
+        <div className="p-4 bg-slate-50/60 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="w-full sm:w-80 relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -63,8 +42,20 @@ export const OtherIncomeView: React.FC<OtherIncomeViewProps> = ({ incomes, onAdd
               className="w-full pl-10 pr-4 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none"
             />
           </div>
-          <div className="text-xs font-extrabold text-emerald-600">
-            {i18n?.language === 'en' ? 'Total Amount:' : 'Total Bayar:'} {formatIDR(totalIncome)}
+
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="text-xs font-extrabold text-emerald-600 whitespace-nowrap">
+              {i18n?.language === 'en' ? 'Total:' : 'Total:'} {formatIDR(totalIncome)}
+            </div>
+
+            <button
+              onClick={onAddIncomeClick}
+              className="shrink-0 px-4 h-[38px] rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">{i18n?.language === 'en' ? 'Add Other Income' : 'Tambah Pemasukan Lain'}</span>
+              <span className="sm:hidden">{i18n?.language === 'en' ? 'Add' : 'Tambah'}</span>
+            </button>
           </div>
         </div>
 
@@ -97,7 +88,7 @@ export const OtherIncomeView: React.FC<OtherIncomeViewProps> = ({ incomes, onAdd
                         className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors"
                         title="Edit Pemasukan"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDeleteIncome?.(inc.id)}

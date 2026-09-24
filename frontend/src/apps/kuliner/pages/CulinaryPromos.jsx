@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Plus, Pencil, Trash2, Lightbulb, X, Search, Tag, Check, Ban } from '@/constants/icons';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
+import ClientPagination from '../components/ClientPagination';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import './KulinerDashboard.css';
 
@@ -12,6 +14,13 @@ const CulinaryPromos = () => {
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // all, active, inactive
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const [promoForm, setPromoForm] = useState({
     name: '',
     code: '',
@@ -30,7 +39,7 @@ const CulinaryPromos = () => {
   const fetchPromos = async () => {
     try {
       const response = await api.get('/kuliner/admin/promos');
-      setPromos(response.data);
+      setPromos(response.data || []);
     } catch (error) {
       console.error('Failed to fetch promos:', error);
     } finally {
@@ -98,6 +107,22 @@ const CulinaryPromos = () => {
     }
   };
 
+  // Filtered promos
+  const filteredPromos = useMemo(() => {
+    return promos.filter(promo => {
+      const matchSearch = (promo.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (promo.code || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (promo.description || '').toLowerCase().includes(searchTerm.toLowerCase());
+      const matchStatus = statusFilter === 'all' || promo.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [promos, searchTerm, statusFilter]);
+
+  const totalPages = Math.ceil(filteredPromos.length / itemsPerPage) || 1;
+  const paginatedPromos = useMemo(() => {
+    return filteredPromos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  }, [filteredPromos, currentPage, itemsPerPage]);
+
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
@@ -105,96 +130,183 @@ const CulinaryPromos = () => {
       </div>
 
       <div className="kd-content">
-        {loading ? (
-          <KulinerLoading message="Memuat Data Promo..." />
-        ) : (
-          <>
-            <div className="kd-page-actions">
-              <button className="kd-btn kd-btn-primary" onClick={() => handleOpenModal()}>+ Buat Promo Baru</button>
+        <div className="kd-page-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', minWidth: 240 }}>
+              <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <input
+                type="text"
+                className="kd-form-input"
+                style={{ paddingLeft: 34, height: 36, fontSize: 12 }}
+                placeholder="Cari nama atau kode promo..."
+                value={searchTerm}
+                onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+              />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
-            {promos.map(promo => (
-              <div key={promo.id} className="kd-panel" style={{ 
-                position: 'relative', 
-                overflow: 'hidden', 
-                border: '1px solid #f1f5f9',
-                opacity: promo.status === 'inactive' ? 0.6 : 1
-              }}>
-                <div style={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  left: 0, 
-                  width: 6, 
-                  height: '100%', 
-                  background: promo.status === 'active' ? 'linear-gradient(to bottom, #b48c36, #d97706)' : '#cbd5e1' 
-                }} />
-                
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-black text-slate-800 text-lg leading-tight">{promo.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kode:</span>
-                      <code className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-bold">{promo.code}</code>
-                    </div>
-                  </div>
-                  <span className={`kd-status-badge ${promo.status === 'active' ? 'kd-status-active' : 'kd-status-hidden'}`}>
-                    {promo.status === 'active' ? 'Aktif' : 'Nonaktif'}
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-500 mb-4 italic leading-relaxed">
-                  {promo.description || 'Gunakan kode promo ini saat checkout.'}
-                </p>
-
-                <div className="py-4 border-y border-dashed border-slate-100 my-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Keuntungan</span>
-                    <span className="text-xl font-black text-[#b48c36]">{promo.value}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-slate-400 font-bold uppercase tracking-wider">Kuota</span>
-                    <span className="text-slate-600 font-bold">{promo.quota === 0 ? 'Tak Terbatas' : `${promo.used_count} / ${promo.quota} Terpakai`}</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center mb-4">
-                  <div className="text-[10px] text-slate-400">
-                    Berakhir: <span className="font-bold text-slate-600">{promo.expired_at ? new Date(promo.expired_at).toLocaleDateString('id-ID') : 'Selamanya'}</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-2 border-t border-slate-50">
-                  <button onClick={() => handleOpenModal(promo)} className="kd-btn kd-btn-secondary flex-1" style={{ fontSize: 11 }}>Edit</button>
-                  <button 
-                    onClick={() => toggleStatus(promo)}
-                    className={`kd-btn flex-1 ${promo.status === 'active' ? 'kd-btn-secondary text-red-500' : 'kd-btn-primary'}`} 
-                    style={{ fontSize: 11 }}
-                  >
-                    {promo.status === 'active' ? 'Matikan' : 'Aktifkan'}
-                  </button>
-                  <button onClick={() => handleDeletePromo(promo.id)} className="kd-btn kd-btn-secondary text-red-400" style={{ padding: '8px' }}>🗑️</button>
-                </div>
-              </div>
-            ))}
-
-            <div 
-              onClick={() => handleOpenModal()}
-              className="kd-panel flex flex-col items-center justify-center border-dashed border-2 border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors cursor-pointer" 
-              style={{ minHeight: '200px' }}
+            <select
+              className="kd-form-select"
+              style={{ width: 'auto', height: 36, fontSize: 12, padding: '0 10px' }}
+              value={statusFilter}
+              onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
             >
-              <div className="text-3xl text-slate-300 mb-2">+</div>
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tambah Promo Baru</div>
-            </div>
+              <option value="all">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Nonaktif</option>
+            </select>
           </div>
-        </>
-      )}
 
-        <div style={{ marginTop: 40, padding: 24, background: '#fffbeb', borderRadius: 24, border: '1px solid #fef3c7' }}>
-          <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-            <div style={{ fontSize: 32 }}>💡</div>
+          <button className="kd-btn kd-btn-primary flex items-center gap-1.5" onClick={() => handleOpenModal()}>
+            <Plus size={15} /> Buat Promo Baru
+          </button>
+        </div>
+
+        <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+          <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table className="kd-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 44, textAlign: 'center' }}>#</th>
+                  <th>Kode Promo</th>
+                  <th>Nama Promo</th>
+                  <th>Tipe & Nilai</th>
+                  <th>Kuota</th>
+                  <th>Masa Berlaku</th>
+                  <th style={{ textAlign: 'center' }}>Status</th>
+                  <th style={{ textAlign: 'right' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan="8" className="text-center py-10">
+                      <div className="spinner" style={{ margin: '0 auto 10px' }} />
+                      <span className="text-slate-400 text-xs">Memuat data promo...</span>
+                    </td>
+                  </tr>
+                ) : paginatedPromos.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="text-center py-12 text-slate-400 text-xs italic">
+                      {searchTerm || statusFilter !== 'all' 
+                        ? 'Tidak ada promo yang sesuai dengan filter pencarian.' 
+                        : 'Belum ada promo atau kupon dibuat. Klik "+ Buat Promo Baru" untuk menambahkan.'}
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedPromos.map((promo, index) => {
+                    const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
+                    const isExpired = promo.expired_at && new Date(promo.expired_at) < new Date();
+
+                    return (
+                      <tr key={promo.id} style={{ opacity: promo.status === 'inactive' ? 0.65 : 1 }}>
+                        {/* No */}
+                        <td style={{ textAlign: 'center', fontSize: 12, color: '#94a3b8', fontWeight: 400 }}>
+                          {globalIndex}
+                        </td>
+
+                        {/* Kode Promo */}
+                        <td className="whitespace-nowrap">
+                          <code className="text-[12px] font-mono font-normal bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded">
+                            {promo.code}
+                          </code>
+                        </td>
+
+                        {/* Nama Promo */}
+                        <td>
+                          <span className="font-normal text-slate-800 text-[12px]">{promo.name}</span>
+                        </td>
+
+                        {/* Tipe & Nilai */}
+                        <td className="whitespace-nowrap">
+                          <span className="font-semibold text-amber-700 text-[12px]">{promo.value}</span>
+                          <span className="text-[12px] text-slate-400 ml-1.5 font-normal">
+                            ({promo.type === 'discount' ? 'Diskon %' : promo.type === 'nominal' ? 'Nominal' : 'Bundling'})
+                          </span>
+                        </td>
+
+                        {/* Kuota */}
+                        <td className="whitespace-nowrap text-[12px] text-slate-700 font-normal">
+                          {promo.quota === 0 ? (
+                            <span className="text-slate-500 font-normal">Tak Terbatas</span>
+                          ) : (
+                            <span><span className="font-semibold">{promo.used_count || 0} / {promo.quota}</span> <span className="text-[12px] text-slate-400 font-normal">terpakai</span></span>
+                          )}
+                        </td>
+
+                        {/* Masa Berlaku */}
+                        <td className="whitespace-nowrap text-[12px] font-normal">
+                          {promo.expired_at ? (
+                            <span className={isExpired ? 'text-rose-600 font-normal' : 'text-slate-700 font-normal'}>
+                              {new Date(promo.expired_at).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                              {isExpired && (
+                                <span className="ml-1.5 px-1.5 py-0.5 bg-rose-50 text-rose-600 rounded text-[12px] font-normal border border-rose-200">
+                                  Kedaluwarsa
+                                </span>
+                              )}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 font-normal text-[12px]">Selamanya</span>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td style={{ textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => toggleStatus(promo)}
+                            className={`kd-status-badge cursor-pointer hover:opacity-80 transition-opacity ${promo.status === 'active' ? 'kd-status-active' : 'kd-status-hidden'}`}
+                            title="Klik untuk mengubah status"
+                          >
+                            {promo.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                          </button>
+                        </td>
+
+                        {/* Aksi */}
+                        <td style={{ textAlign: 'right' }}>
+                          <div className="flex justify-end gap-1.5">
+                            <button
+                              className="kd-icon-btn"
+                              title="Edit Promo"
+                              onClick={() => handleOpenModal(promo)}
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              className="kd-icon-btn text-red-500"
+                              title="Hapus Promo"
+                              onClick={() => handleDeletePromo(promo.id)}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <ClientPagination
+            setItemsPerPage={setItemsPerPage}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={filteredPromos.length}
+          />
+        </div>
+
+        <div style={{ marginTop: 24, padding: '16px 20px', background: '#fffbeb', borderRadius: 16, border: '1px solid #fef3c7' }}>
+          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+            <Lightbulb size={24} className="text-amber-500 flex-shrink-0" />
             <div>
-              <h5 className="font-bold text-amber-800 mb-1">Tips Marketing</h5>
-              <p className="text-xs text-amber-700/80 leading-relaxed">Gunakan fitur **Kuota** untuk membuat promo eksklusif. Pelanggan akan lebih cepat memesan jika mereka tahu jumlah promo sangat terbatas!</p>
+              <h5 className="font-bold text-amber-800 text-xs mb-0.5">Tips Marketing Restoran</h5>
+              <p className="text-[11px] text-amber-700/80 leading-relaxed m-0">Gunakan fitur <strong>Kuota</strong> untuk membuat promo eksklusif. Pelanggan akan lebih cepat memesan jika mereka tahu jumlah promo sangat terbatas!</p>
             </div>
           </div>
         </div>
@@ -206,7 +318,7 @@ const CulinaryPromos = () => {
           <div className="kd-modal" style={{ maxWidth: '500px' }}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{editingItem ? 'Edit' : 'Buat'} Promo Baru</h2>
-              <button className="kd-modal-close" onClick={() => setShowModal(false)}>×</button>
+              <button className="kd-modal-close" onClick={() => setShowModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={handleSavePromo} className="kd-modal-body">
               <div className="kd-form-group">

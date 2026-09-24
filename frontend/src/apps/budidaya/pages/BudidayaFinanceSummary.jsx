@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../../lib/api';
-import { TrendingUp, TrendingDown, Wallet, Calendar, Printer } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Calendar, Printer } from '@/constants/icons';
 import { useReactToPrint } from 'react-to-print';
 import usePagination from '../../../hooks/usePagination';
 import BudidayaPagination from '../components/BudidayaPagination';
@@ -101,21 +101,21 @@ export default function BudidayaFinanceSummary() {
     .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
 
   const renderLedgerRows = (items) => items.map((item, idx) => (
-    <tr key={item.id} style={{ borderBottom: idx === items.length - 1 ? 'none' : '1px solid #E9F0EC' }}>
-      <td style={{ padding: '10px 16px', fontSize: 12.5, color: '#64748b' }}>
+    <tr key={item.id} className="hover:bg-slate-50/70 transition-colors" style={{ borderBottom: idx === items.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+      <td style={{ padding: '12px 16px', paddingLeft: 24, fontSize: 13, color: '#1e293b', whiteSpace: 'nowrap' }}>
         {new Date(item.date).toLocaleDateString('id-ID')}
       </td>
-      <td style={{ padding: '10px 16px', fontSize: 12.5, color: '#0f172a', textTransform: 'capitalize' }}>
+      <td style={{ padding: '12px 16px', fontSize: 13, color: '#1e293b', textTransform: 'capitalize' }}>
         {formatTitleCase(item.category)}
       </td>
-      <td style={{ padding: '10px 16px', fontSize: 12.5, color: '#475569' }}>
+      <td style={{ padding: '12px 16px', fontSize: 13, color: '#475569' }}>
         {formatSentenceCase(item.description)}
       </td>
-      <td style={{ padding: '10px 16px', fontSize: 12.5, color: '#059669', textAlign: 'right' }}>
-        {item.type === 'income' ? formatRp(item.amount) : '-'}
+      <td style={{ padding: '12px 16px', fontSize: 13, color: '#059669', fontWeight: 500, textAlign: 'right', whiteSpace: 'nowrap' }}>
+        {item.type === 'income' ? `+${formatRp(item.amount)}` : '-'}
       </td>
-      <td style={{ padding: '10px 16px', fontSize: 12.5, color: '#DC2626', textAlign: 'right' }}>
-        {item.type === 'expense' ? formatRp(item.amount) : '-'}
+      <td style={{ padding: '12px 16px', paddingRight: 24, fontSize: 13, color: '#DC2626', fontWeight: 500, textAlign: 'right', whiteSpace: 'nowrap' }}>
+        {item.type === 'expense' ? `-${formatRp(item.amount)}` : '-'}
       </td>
     </tr>
   ));
@@ -153,10 +153,10 @@ export default function BudidayaFinanceSummary() {
   };
 
   return (
-    <div style={{ padding: '18px 24px', background: '#F8FAFC', minHeight: '100vh', fontFamily: "'Inter', sans-serif", animation: 'kd-fadeIn 0.3s ease' }}>
+    <div className="aq-container" style={{ animation: 'kd-fadeIn 0.3s ease' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginBottom: 14 }}>
         <button 
-          style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1B4332', color: 'white', border: 'none', padding: '9px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }} 
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1B4332', color: 'white', border: 'none', height: 38, padding: '0 16px', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13 }} 
           onClick={handlePrint} 
           disabled={loading}
         >
@@ -164,7 +164,7 @@ export default function BudidayaFinanceSummary() {
         </button>
 
         <button 
-          style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', padding: '9px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }} 
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', height: 38, padding: '0 16px', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13 }} 
           onClick={handleExportExcel} 
           disabled={loading}
         >
@@ -182,7 +182,7 @@ export default function BudidayaFinanceSummary() {
           <Calendar size={18} color="#64748b" />
           <span style={{ fontWeight: 600, fontSize: 13, color: '#475569' }}>Periode:</span>
         </div>
-        <select style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #cbd5e1', outline: 'none' }} value={dateFilter} onChange={handleFilterChange}>
+        <select style={{ height: 38, padding: '0 12px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13, outline: 'none' }} value={dateFilter} onChange={handleFilterChange}>
           <option value="today">Hari Ini</option>
           <option value="month">Bulan Ini</option>
           <option value="custom">Pilih Rentang Tanggal...</option>
@@ -190,9 +190,9 @@ export default function BudidayaFinanceSummary() {
 
         {dateFilter === 'custom' && (
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input type="date" style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #cbd5e1', outline: 'none' }} value={startDate} onChange={e => setStartDate(e.target.value)} />
+            <input type="date" style={{ height: 38, padding: '0 12px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13, outline: 'none' }} value={startDate} onChange={e => setStartDate(e.target.value)} />
             <span style={{ color: '#64748b' }}>-</span>
-            <input type="date" style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #cbd5e1', outline: 'none' }} value={endDate} onChange={e => setEndDate(e.target.value)} />
+            <input type="date" style={{ height: 38, padding: '0 12px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13, outline: 'none' }} value={endDate} onChange={e => setEndDate(e.target.value)} />
           </div>
         )}
       </div>
@@ -200,67 +200,66 @@ export default function BudidayaFinanceSummary() {
       {/* Screen Interactive View */}
       <div className="no-print">
         {/* Summary Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 24 }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
           
-          <div style={{ background: '#fff', borderRadius: 16, padding: 20, border: '1px solid #E9F0EC', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#E8F5ED', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <TrendingUp size={18} />
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <TrendingUp size={22} />
               </div>
-              <span style={{ fontSize: 14.5, fontWeight: 700, color: '#334155' }}>Total Pendapatan Panen</span>
+              <div>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total Pendapatan Panen</span>
+              </div>
             </div>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: '#0f172a' }}>
+              <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
                 {loading ? '...' : formatRp(summary.total_sales)}
               </div>
-              <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>Akumulasi omzet penjualan hasil panen.</div>
+              <div className="text-xs text-slate-400 mt-1 font-['Inter']">Akumulasi omzet penjualan hasil panen.</div>
             </div>
           </div>
 
-          <div style={{ background: '#fff', borderRadius: 16, padding: 20, border: '1px solid #E9F0EC', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <TrendingDown size={18} />
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <TrendingDown size={22} />
               </div>
-              <span style={{ fontSize: 14.5, fontWeight: 700, color: '#334155' }}>Total Pengeluaran Siklus</span>
+              <div>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total Pengeluaran Siklus</span>
+              </div>
             </div>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: '#0f172a' }}>
+              <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
                 {loading ? '...' : formatRp(summary.total_expenses)}
               </div>
-              <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>Total beban operasional dan biaya siklus.</div>
+              <div className="text-xs text-slate-400 mt-1 font-['Inter']">Total beban operasional dan biaya siklus.</div>
             </div>
           </div>
 
-          <div style={{ background: '#fff', borderRadius: 16, padding: 20, border: '1px solid #E9F0EC', borderLeft: `4px solid ${isProfit ? '#059669' : '#DC2626'}`, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 12, background: isProfit ? '#ECFDF5' : '#FEF2F2', color: isProfit ? '#059669' : '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Wallet size={18} />
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-xl ${isProfit ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'} flex items-center justify-center shrink-0`}>
+                  <Wallet size={22} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 14.5, fontWeight: 700, color: isProfit ? '#059669' : '#DC2626' }}>
+                  <div className={`text-xs font-semibold uppercase tracking-wider font-['Inter'] ${isProfit ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {isProfit ? 'Laba Bersih (Untung)' : 'Rugi Bersih (Defisit)'}
                   </div>
-                  <span style={{ fontSize: 11, color: '#64748b' }}>Hasil Perhitungan Finansial</span>
+                  <span className="text-[11px] text-slate-400 font-['Inter']">Hasil Finansial</span>
                 </div>
               </div>
 
-              <span style={{
-                fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 6,
-                background: isProfit ? '#ECFDF5' : '#FEF2F2',
-                color: isProfit ? '#059669' : '#DC2626',
-                border: `1px solid ${isProfit ? '#A7F3D0' : '#FECACA'}`
-              }}>
+              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider font-['Inter'] ${isProfit ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
                 {isProfit ? 'UNTUNG' : 'RUGI'}
               </span>
             </div>
 
             <div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: isProfit ? '#059669' : '#DC2626' }}>
+              <div className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${isProfit ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {loading ? '...' : (summary.profit >= 0 ? `+${formatRp(summary.profit)}` : `-${formatRp(Math.abs(summary.profit))}`)}
               </div>
-              <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 4 }}>
+              <div className="text-xs text-slate-400 mt-1 font-['Inter']">
                 {isProfit 
                   ? 'Status: Untung / Pendapatan melampaui seluruh beban biaya.' 
                   : 'Status: Rugi / Total biaya pengeluaran melebihi pendapatan.'}
@@ -270,20 +269,20 @@ export default function BudidayaFinanceSummary() {
         </div>
 
         {/* Ledger Table (Screen) */}
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid #E9F0EC' }}>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#1B4332' }}>Rincian Transaksi Keuangan</h3>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+          <div className="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="m-0 font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900">Rincian Transaksi Keuangan</h3>
           </div>
           
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12.5 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
               <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E9F0EC' }}>
-                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tanggal</th>
-                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Kategori</th>
-                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Keterangan</th>
-                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Kas Masuk / Inflow</th>
-                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Kas Keluar / Outflow</th>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th style={{ padding: '12px 16px', paddingLeft: 24, fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tanggal</th>
+                  <th style={{ padding: '12px 16px', fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kategori</th>
+                  <th style={{ padding: '12px 16px', fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Keterangan</th>
+                  <th style={{ padding: '12px 16px', fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Kas Masuk / Inflow</th>
+                  <th style={{ padding: '12px 16px', paddingRight: 24, fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Kas Keluar / Outflow</th>
                 </tr>
               </thead>
               <tbody>

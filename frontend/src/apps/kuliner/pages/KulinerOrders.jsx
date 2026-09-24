@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Receipt } from 'lucide-react';
+import {
+  Eye,
+  Receipt,
+  Banknote,
+  Smartphone,
+  CheckCircle2,
+  Printer,
+  ChefHat,
+  X,
+  RefreshCw
+} from '@/constants/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
@@ -282,101 +292,121 @@ const KulinerOrders = () => {
           <KulinerLoading message={t('kulinerOrders.loadingOrders') || 'Memuat Pesanan...'} />
         ) : (
           <>
-            <div className="kd-page-actions">
-              <button className="kd-btn kd-btn-primary" onClick={() => navigate(`/kuliner/menu?mode=cashier&tenant_id=${user?.tenant_id}`)}>
-                + Buat Pesanan Manual
+            <div className="kd-page-actions" style={{ marginBottom: 16 }}>
+              <button 
+                className="h-[38px] px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                onClick={() => navigate(`/kuliner/menu?mode=cashier&tenant_id=${user?.tenant_id}`)}
+              >
+                <span>+ Buat Pesanan Manual</span>
               </button>
             </div>
             <div className="kd-panel">
-              <div className="kd-panel-header">
-                <div style={{ display: 'flex', gap: 12 }}>
+              <div className="kd-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button
-                    className={`kd-btn ${filterStatus === 'all' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
+                    className={`h-[38px] px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${filterStatus === 'all' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
                     onClick={() => { setFilterStatus('all'); setCurrentPage(1); }}
                   >
                     {t('kulinerOrders.tabAll')}
                   </button>
                   <button
-                    className={`kd-btn ${filterStatus === 'pending' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
+                    className={`h-[38px] px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${filterStatus === 'pending' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
                     onClick={() => { setFilterStatus('pending'); setCurrentPage(1); }}
                   >
                     {t('kulinerOrders.tabNew') || 'Baru / Menunggu'}
                   </button>
                   <button
-                    className={`kd-btn ${filterStatus === 'processing' ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
+                    className={`h-[38px] px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${filterStatus === 'processing' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
                     onClick={() => { setFilterStatus('processing'); setCurrentPage(1); }}
                   >
                     {t('kulinerOrders.tabProcess') || 'Dalam Proses'}
                   </button>
                 </div>
-                <button className="kd-panel-action" onClick={() => fetchOrders(false)}>Refresh Data ↻</button>
+                <button 
+                  className="h-[38px] px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer" 
+                  onClick={() => fetchOrders(false)}
+                >
+                  <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> 
+                  <span>{t('kulinerOrders.refreshData') || 'Refresh Data'}</span>
+                </button>
               </div>
 
-              <div className="kd-table-container">
+              <div className="kd-table-container" style={{ overflowX: 'auto' }}>
                 <table className="kd-table">
                   <thead>
                     <tr>
-                      <th>{t('kulinerOrders.headerId') || 'Order ID'}</th>
+                      <th className="pl-6">{t('kulinerOrders.headerId') || 'Order ID'}</th>
                       <th>{t('kulinerOrders.headerDate') || 'Tanggal'}</th>
                       <th>{t('kulinerOrders.headerCustomer') || 'Pelanggan'}</th>
                       <th>No HP</th>
                       <th>Tipe</th>
-                      <th>{t('kulinerOrders.headerTotal') || 'Total Tagihan'}</th>
+                      <th className="text-right">{t('kulinerOrders.headerTotal') || 'Total Tagihan'}</th>
                       <th>{t('kulinerOrders.headerStatus') || 'Status'}</th>
                       <th>{t('kulinerCommon.paymentMethod') || 'Metode Bayar'}</th>
-                      <th className="text-right">{t('kulinerOrders.headerAction') || 'Aksi'}</th>
+                      <th className="pr-6 text-right">{t('kulinerOrders.headerAction') || 'Aksi'}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentOrders.length === 0 ? (
                       <tr><td colSpan="9" className="text-center py-10 text-slate-400">{t('kulinerOrders.emptyOrders') || 'Belum ada pesanan.'}</td></tr>
                     ) : currentOrders.map(order => (
-                      <tr key={order.id}>
-                        <td style={{ color: '#1e293b' }}>
-                          {order.order_number || `#ORD-${order.id}`}
+                      <tr key={order.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="pl-6">
+                          <code className="text-slate-800 font-mono text-[12px] font-normal">
+                            {order.order_number || `#ORD-${order.id}`}
+                          </code>
                         </td>
                         <td>
-                          <span className="text-[11px] text-slate-500">
+                          <span className="text-[12px] text-slate-500 font-normal">
                             {new Date(order.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'})}
                           </span>
                         </td>
                         <td>
-                          <div style={{ color: '#1e293b' }}>{order.customer_name}</div>
+                          <div className="font-normal text-[12px] text-slate-900">{order.customer_name}</div>
                         </td>
                         <td>
-                          <div className="text-[11px] text-slate-500">{order.customer_phone || '-'}</div>
+                          <div className="text-[12px] text-slate-500 font-mono font-normal">{order.customer_phone || '-'}</div>
                         </td>
                         <td>
-                          <span className="text-[11px] font-bold tracking-wider text-slate-500">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-normal bg-slate-100 text-slate-600 border border-slate-200">
                             {order.order_type === 'dine_in' ? `Meja ${order.table_number || '-'}` : 'Bawa Pulang'}
                           </span>
                         </td>
-                        <td className="font-bold text-slate-700">{formatRp(order.total)}</td>
+                        <td className="text-right font-semibold text-[12px] text-slate-900">{formatRp(order.total)}</td>
                         <td>
-                          <span className={`kd-status-badge ${getStatusBadgeClass(order.status)}`}>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-normal border ${
+                            order.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                            order.status === 'processing' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            order.status === 'cancelled' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                            'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}>
                             {order.status}
                           </span>
                         </td>
                         <td>
-                          <span className="text-[11px] text-slate-500">
-                            {order.payment_method === 'cash_cashier' ? t('kulinerCommon.cashPayment') || '💵 Tunai Kasir' : t('kulinerCommon.qrisPayment') || '📱 QRIS Kasir'}
+                          <span className="text-[12px] text-slate-500 flex items-center gap-1.5 font-normal">
+                            {order.payment_method === 'cash_cashier' ? (
+                              <><Banknote size={13} className="text-emerald-600" /> {t('kulinerCommon.cashPayment') || 'Tunai Kasir'}</>
+                            ) : (
+                              <><Smartphone size={13} className="text-blue-600" /> {t('kulinerCommon.qrisPayment') || 'QRIS Kasir'}</>
+                            )}
                           </span>
                         </td>
-                        <td className="text-right">
-                          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                        <td className="pr-6 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
                             <button
-                              className="kd-icon-btn"
+                              className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                               title={t('kulinerOrders.viewBtn') || 'Detail / Proses'}
                               onClick={() => { setSelectedOrder(order); setIsModalOpen(true); setIsPaymentMode(false); setCashReceived(''); }}
                             >
-                              <Eye size={16} />
+                              <Eye size={14} />
                             </button>
                             <button
-                              className="kd-icon-btn"
+                              className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                               title="Struk"
                               onClick={() => setReceiptOrder(order)}
                             >
-                              <Receipt size={16} />
+                              <Receipt size={14} />
                             </button>
                           </div>
                         </td>
@@ -400,7 +430,7 @@ const KulinerOrders = () => {
                 <div className="kd-modal" onClick={e => e.stopPropagation()}>
                   <div className="kd-modal-header">
                     <h2 className="kd-modal-title">Pesanan {selectedOrder.order_number || `#ORD-${selectedOrder.id}`}</h2>
-                    <button className="kd-close-btn" onClick={() => { setIsModalOpen(false); setIsPaymentMode(false); setCashReceived(''); }}>✕</button>
+                    <button className="kd-close-btn" onClick={() => { setIsModalOpen(false); setIsPaymentMode(false); setCashReceived(''); }}><X size={18} /></button>
                   </div>
                   <div className="kd-modal-body">
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
@@ -502,7 +532,7 @@ const KulinerOrders = () => {
                     <div className="kd-modal-footer" style={{ gap: 8 }}>
                       {selectedOrder.status === 'pending' && (
                         <button
-                          className="kd-btn kd-btn-primary"
+                          className="kd-btn kd-btn-primary flex items-center justify-center gap-2"
                           style={{ flex: 1 }}
                           onClick={() => {
                             if (selectedOrder.payment_method === 'cash_cashier') {
@@ -512,24 +542,24 @@ const KulinerOrders = () => {
                             }
                           }}
                         >
-                          💵 Verifikasi & Terima Pembayaran
+                          <Banknote size={16} /> Verifikasi & Terima Pembayaran
                         </button>
                       )}
                       {selectedOrder.status === 'processing' && (
                         <button
-                          className="kd-btn kd-btn-primary"
+                          className="kd-btn kd-btn-primary flex items-center justify-center gap-2"
                           style={{ flex: 1, background: '#10b981' }}
                           onClick={() => updateOrderStatus(selectedOrder.id, 'completed')}
                         >
-                          ✅ Tandai Selesai (Sajikan)
+                          <CheckCircle2 size={16} /> Tandai Selesai (Sajikan)
                         </button>
                       )}
                       <div style={{ display: 'flex', gap: 8, flex: 1 }}>
-                        <button className="kd-btn kd-btn-secondary" style={{ flex: 1, padding: '8px 4px', fontSize: '13px' }} onClick={handlePrintReceipt}>
-                          🖨️ Struk
+                        <button className="kd-btn kd-btn-secondary flex items-center justify-center gap-1.5" style={{ flex: 1, padding: '8px 4px', fontSize: '13px' }} onClick={handlePrintReceipt}>
+                          <Printer size={15} /> Struk
                         </button>
-                        <button className="kd-btn kd-btn-secondary" style={{ flex: 1, padding: '8px 4px', fontSize: '13px' }} onClick={handlePrintKitchenReceipt}>
-                          🧑‍🍳 Dapur
+                        <button className="kd-btn kd-btn-secondary flex items-center justify-center gap-1.5" style={{ flex: 1, padding: '8px 4px', fontSize: '13px' }} onClick={handlePrintKitchenReceipt}>
+                          <ChefHat size={15} /> Dapur
                         </button>
                       </div>
                     </div>

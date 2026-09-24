@@ -17,7 +17,7 @@ import {
   ShieldAlert,
   ArrowUpRight,
   ArrowDownRight
-} from 'lucide-react';
+} from '@/constants/icons';
 import KpiCard from '../../../components/KpiCard';
 import { 
   RetailPrintHeader, 
@@ -298,7 +298,7 @@ export default function FinanceSummary() {
         {/* ========================================================= */}
         <div className="no-print">
           {/* Period Filter Card */}
-          <div className="card card-pad" style={{ marginBottom: 24, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm mb-6 flex gap-3 items-center flex-wrap">
             <div className="retail-filter-group">
               <Calendar size={15} className="retail-text-secondary" style={{ flexShrink: 0 }} />
               <select className="retail-filter-select" value={dateFilter} onChange={handleFilterChange}>
@@ -318,24 +318,24 @@ export default function FinanceSummary() {
           </div>
 
           {/* Net Profit Banner */}
-          <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 rounded-3xl shadow-xl border border-emerald-700/40 relative overflow-hidden mb-6 mt-4">
+          <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 sm:p-7 rounded-2xl shadow-xl border border-emerald-700/40 relative overflow-hidden mb-6">
             <div className="flex flex-row items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="bg-emerald-500/20 text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-semibold border border-emerald-500/30">
+                  <span className="bg-emerald-500/20 text-emerald-300 text-xs px-2.5 py-0.5 rounded-full font-semibold border border-emerald-500/30 font-['Inter']">
                     Net Profit
                   </span>
-                  <span className="text-xs text-slate-400">Periode: {formatDateIndo(startDate)} - {formatDateIndo(endDate)}</span>
+                  <span className="text-xs text-slate-300 font-['Inter']">Periode: {formatDateIndo(startDate)} - {formatDateIndo(endDate)}</span>
                 </div>
-                <h2 className="text-3xl font-extrabold tracking-tight text-white mt-1">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mt-1 font-['Plus_Jakarta_Sans']">
                   {formatRp(summary.profit || 0)}
                 </h2>
-                <p className="text-xs text-slate-300 mt-1">
+                <p className="text-xs text-slate-300 mt-1 font-['Inter']">
                   Margin Keuntungan Bersih: <strong className="text-emerald-400 font-bold">{netMarginRate}%</strong> dari total penjualan
                 </p>
               </div>
-              <div className="p-4 bg-emerald-500/20 rounded-2xl border border-emerald-500/30 text-emerald-400 shrink-0">
-                <DollarSign size={32} />
+              <div className="w-14 h-14 bg-emerald-500/20 rounded-2xl border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                <DollarSign size={28} />
               </div>
             </div>
           </div>
@@ -373,11 +373,11 @@ export default function FinanceSummary() {
           </div>
 
           {/* Income Statement Table View on Screen */}
-          <div className="card table-wrap" style={{ padding: '24px' }}>
+          <div className="table-wrap bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all overflow-hidden">
             <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <FileText className="text-indigo-600" size={18} />
-                <h3 className="font-bold text-slate-800 text-base">Rincian Laporan Laba Rugi Komprehensif</h3>
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-base">Rincian Laporan Laba Rugi Komprehensif</h3>
               </div>
             </div>
 
@@ -461,15 +461,18 @@ export default function FinanceSummary() {
 
                   {/* Net Profit */}
                   <tr className="net-profit-row font-extrabold text-base" style={{ background: '#0f172a' }}>
-                    <td className="net-profit-cell py-4 pl-4 font-bold" style={{ background: '#0f172a' }}>
+                    <td className="net-profit-cell py-4 pl-4 font-bold" style={{ background: '#0f172a', color: '#ffffff' }}>
                       LABA BERSIH (NET PROFIT)
                     </td>
-                    <td className="net-profit-sub py-4 text-center text-xs font-semibold" style={{ background: '#0f172a' }}>
+                    <td className="net-profit-sub py-4 text-center text-xs font-semibold" style={{ background: '#0f172a', color: '#cbd5e1' }}>
                       Net Margin: {netMarginRate}%
                     </td>
                     <td 
                       className={`py-4 pr-4 text-right font-black text-lg ${Number(summary.profit || 0) >= 0 ? 'net-profit-positive' : 'net-profit-negative'}`}
-                      style={{ background: '#0f172a' }}
+                      style={{ 
+                        background: '#0f172a', 
+                        color: Number(summary.profit || 0) >= 0 ? '#34d399' : '#f87171' 
+                      }}
                     >
                       {formatRp(summary.profit || 0)}
                     </td>

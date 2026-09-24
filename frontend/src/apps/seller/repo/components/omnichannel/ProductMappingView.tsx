@@ -1,19 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Layers,
-  Search,
-  Filter,
-  AlertCircle,
-  CheckCircle2,
-  ChevronRight,
-  Link2,
-  Link2Off,
-  RefreshCw,
-  X,
-  Check,
-  Edit2,
-  Plus
-} from 'lucide-react';
+import { Layers, Search, Filter, AlertCircle, CheckCircle2, ChevronRight, Link2, Link2Off, RefreshCw, X, Check, Pencil, Plus } from '@/constants/icons';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
 import { useAuth } from '../../../../../contexts/AuthContext';
@@ -167,33 +153,22 @@ export const ProductMappingView: React.FC = () => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-purple-600 shrink-0" />
-            <span className="truncate">Product Mapping</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Hubungkan produk lokal Bizora dengan produk di marketplace.
-          </p>
-        </div>
-        <div className="shrink-0 flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={handleAutoMap}
-            className="flex items-center gap-2 px-3.5 py-2 bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300 font-semibold rounded-xl border border-purple-200/60 dark:border-purple-800/50 hover:bg-purple-100 dark:hover:bg-purple-900/50 shadow-xs transition-all text-xs cursor-pointer"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Auto Map (By SKU)</span>
-          </button>
-          <button
-            onClick={() => handleOpenEdit(items[0])}
-            className="flex items-center gap-2 px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-purple-500 hover:to-indigo-500 shadow-md shadow-purple-500/20 transition-all text-xs cursor-pointer"
-          >
-            <Link2 className="w-3.5 h-3.5" />
-            <span>Mapping Manual</span>
-          </button>
-        </div>
+      {/* Top Action Bar */}
+      <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
+        <button
+          onClick={handleAutoMap}
+          className="flex items-center gap-2 px-3.5 h-[38px] bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300 font-semibold rounded-xl border border-purple-200/60 dark:border-purple-800/50 hover:bg-purple-100 dark:hover:bg-purple-900/50 shadow-xs transition-all text-xs cursor-pointer"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span>Auto Map (By SKU)</span>
+        </button>
+        <button
+          onClick={() => handleOpenEdit(items[0])}
+          className="flex items-center gap-2 px-3.5 h-[38px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-purple-500 hover:to-indigo-500 shadow-xs transition-all text-xs cursor-pointer"
+        >
+          <Link2 className="w-3.5 h-3.5" />
+          <span>Mapping Manual</span>
+        </button>
       </div>
 
       {/* Analytics Summary */}
@@ -359,7 +334,7 @@ export const ProductMappingView: React.FC = () => {
                         onClick={() => handleOpenEdit(row)}
                         className="px-3.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
+                        <Pencil className="w-3.5 h-3.5" />
                         <span>Edit Mapping</span>
                       </button>
                     </td>

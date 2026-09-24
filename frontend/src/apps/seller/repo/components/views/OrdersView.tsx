@@ -5,7 +5,7 @@ import {
   Filter,
   Printer,
   Truck,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
   Clock,
   ExternalLink,
@@ -14,7 +14,7 @@ import {
   Check,
   Package,
   Download
-} from 'lucide-react';
+} from '@/constants/icons';
 import { Order, OrderStatus, MarketplacePlatform } from '../../types';
 import { formatIDR, getPlatformBadgeColor } from '../../utils/formatters';
 import { usePagination } from '../../hooks/usePagination';
@@ -111,106 +111,78 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Banner */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">{t('seller.allOrders')}</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            {t('seller.ordersSubtitle')}
-          </p>
-        </div>
-
-        <div className="shrink-0 flex items-center gap-2">
-          <button
-            onClick={handlePrint}
-            className="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
-            title="Cetak Laporan Register Pesanan PDF"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Cetak / Export PDF</span>
-          </button>
-          <button
-            onClick={handleExportExcel}
-            className="px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-            title="Export Daftar Pesanan ke Excel/CSV"
-          >
-            <Download className="w-4 h-4" />
-            <span>{t('seller.exportExcel')}</span>
-          </button>
-          <span className="text-xs font-semibold text-slate-500 bg-slate-100 dark:bg-slate-700/60 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 whitespace-nowrap">
-            Total {orders.length} Pesanan Sync
-          </span>
-        </div>
-      </div>
-
       {/* Main Orders Card */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
-        {/* Status Tabs Header */}
-        <div className="border-b border-slate-200/80 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 px-4 pt-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setActiveStatusTab('Semua')}
-            className={`px-4 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeStatusTab === 'Semua'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-            }`}
-          >
-            {i18n?.language === 'en' ? 'All' : 'Semua'} ({orders.length})
-          </button>
+        {/* Filters Bar: Search, Status Dropdown, Marketplace, & Action Buttons */}
+        <div className="p-4 border-b border-slate-200/80 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-800">
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto flex-1">
+            <div className="w-full sm:w-64 relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder={t('seller.searchOrder')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-[38px] pl-10 pr-4 rounded-xl text-xs bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all"
+              />
+            </div>
 
-          {statusOptions.map((st) => {
-            const count = orders.filter((o) => o.status === st).length;
-            const displayStatus = st === 'Perlu Diproses' ? (i18n?.language === 'en' ? 'Needs Process' : 'Perlu Diproses') : st === 'Dikirim' ? (i18n?.language === 'en' ? 'Shipped' : 'Dikirim') : st === 'Selesai' ? (i18n?.language === 'en' ? 'Completed' : 'Selesai') : st === 'Dibatalkan' ? (i18n?.language === 'en' ? 'Canceled' : 'Dibatalkan') : st;
-            return (
-              <button
-                key={st}
-                onClick={() => setActiveStatusTab(st)}
-                className={`px-4 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                  activeStatusTab === st
-                    ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 shadow-xs'
-                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
+            {/* Status Dropdown Filter */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <select
+                value={activeStatusTab}
+                onChange={(e) => setActiveStatusTab(e.target.value)}
+                className="h-[38px] px-3.5 rounded-xl text-xs font-semibold bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
               >
-                <span>{displayStatus}</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                  st === 'Perlu Diproses' ? 'bg-amber-100 text-amber-800 font-extrabold' : 'bg-slate-200/70 text-slate-700'
-                }`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                <option value="Semua">
+                  {i18n?.language === 'en' ? 'All Status' : 'Semua Status'} ({orders.length})
+                </option>
+                {statusOptions.map((st) => {
+                  const count = orders.filter((o) => o.status === st).length;
+                  const displayStatus = st === 'Perlu Diproses' ? (i18n?.language === 'en' ? 'Needs Process' : 'Perlu Diproses') : st === 'Dalam Pengiriman' ? (i18n?.language === 'en' ? 'In Delivery' : 'Dalam Pengiriman') : st === 'Selesai' ? (i18n?.language === 'en' ? 'Completed' : 'Selesai') : st === 'Dibatalkan/Retur' ? (i18n?.language === 'en' ? 'Canceled/Return' : 'Dibatalkan/Retur') : st;
+                  return (
+                    <option key={st} value={st}>
+                      {displayStatus} ({count})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
 
-        {/* Filters Bar: Search & Marketplace */}
-        <div className="p-4 border-b border-slate-200/80 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-800">
-          <div className="w-full sm:w-80 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={t('seller.searchOrder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl text-xs bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-            />
+            {/* Platform Dropdown Filter */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="w-4 h-4 text-slate-400" />
+              <select
+                value={selectedPlatform}
+                onChange={(e) => setSelectedPlatform(e.target.value)}
+                className="h-[38px] px-3 rounded-xl text-xs font-semibold bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+              >
+                <option value="all">{i18n?.language === 'en' ? 'All E-Commerce Platforms' : 'Semua Platform E-Commerce'}</option>
+                <option value="Shopee">Shopee</option>
+                <option value="Tokopedia">Tokopedia</option>
+                <option value="TikTok Shop">TikTok Shop</option>
+                <option value="Lazada">Lazada</option>
+              </select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-slate-400" />
-            <select
-              value={selectedPlatform}
-              onChange={(e) => setSelectedPlatform(e.target.value)}
-              className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+          <div className="shrink-0 flex items-center gap-2 w-full md:w-auto justify-end">
+            <button
+              onClick={handlePrint}
+              className="px-3.5 h-[38px] rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              title="Cetak Laporan Register Pesanan PDF"
             >
-              <option value="all">{i18n?.language === 'en' ? 'All E-Commerce Platforms' : 'Semua Platform E-Commerce'}</option>
-              <option value="Shopee">Shopee</option>
-              <option value="Tokopedia">Tokopedia</option>
-              <option value="TikTok Shop">TikTok Shop</option>
-              <option value="Lazada">Lazada</option>
-            </select>
+              <Printer className="w-4 h-4" />
+              <span>Cetak / Export PDF</span>
+            </button>
+            <button
+              onClick={handleExportExcel}
+              className="px-3.5 h-[38px] rounded-xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              title="Export Daftar Pesanan ke Excel/CSV"
+            >
+              <Download className="w-4 h-4" />
+              <span>{t('seller.exportExcel')}</span>
+            </button>
           </div>
         </div>
 
@@ -218,13 +190,13 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         <div className="overflow-x-auto pb-2">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-slate-50/80 dark:bg-slate-800/80 border-y border-slate-200/80 dark:border-slate-700/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <th className="px-4 py-3.5">{i18n?.language === 'en' ? 'ORDER & TIME' : 'PESANAN & WAKTU'}</th>
-                <th className="px-4 py-3.5">{i18n?.language === 'en' ? 'CUSTOMER & ADDRESS' : 'PEMBELI & ALAMAT'}</th>
-                <th className="px-4 py-3.5">{i18n?.language === 'en' ? 'PRODUCTS' : 'PRODUK'}</th>
-                <th className="px-4 py-3.5">{i18n?.language === 'en' ? 'SHIPPING' : 'PENGIRIMAN'}</th>
-                <th className="px-4 py-3.5">{i18n?.language === 'en' ? 'STATUS' : 'STATUS'}</th>
-                <th className="px-4 py-3.5 text-center">{i18n?.language === 'en' ? 'ACTION' : 'AKSI'}</th>
+              <tr className="bg-slate-50/80 dark:bg-slate-800/80 border-y border-slate-200/80 dark:border-slate-700/80 text-[11.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <th className="py-3 px-4 pl-6">{i18n?.language === 'en' ? 'ORDER & TIME' : 'PESANAN & WAKTU'}</th>
+                <th className="py-3 px-4">{i18n?.language === 'en' ? 'CUSTOMER & ADDRESS' : 'PEMBELI & ALAMAT'}</th>
+                <th className="py-3 px-4">{i18n?.language === 'en' ? 'PRODUCTS' : 'PRODUK'}</th>
+                <th className="py-3 px-4">{i18n?.language === 'en' ? 'SHIPPING' : 'PENGIRIMAN'}</th>
+                <th className="py-3 px-4">{i18n?.language === 'en' ? 'STATUS' : 'STATUS'}</th>
+                <th className="py-3 px-4 pr-6 text-center">{i18n?.language === 'en' ? 'ACTION' : 'AKSI'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px]">
@@ -245,13 +217,13 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                   return (
                     <tr key={ord.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-700/20 transition-colors">
                       {/* Pesanan & Waktu */}
-                      <td className="px-4 py-4 align-top">
+                      <td className="py-3.5 px-4 pl-6 align-top">
                         <div className="flex flex-col gap-1.5">
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold w-fit ${badge.bg} ${badge.text}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                             {ord.platform}
                           </span>
-                          <span className="font-mono font-bold text-[13.5px] text-slate-800 dark:text-slate-100">
+                          <span className="font-mono font-bold text-[13px] text-slate-800 dark:text-slate-100">
                             {ord.orderNumber}
                           </span>
                           <span className="text-xs text-slate-400 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {ord.orderDate}</span>
@@ -259,7 +231,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                       </td>
 
                       {/* Pembeli */}
-                      <td className="px-4 py-4 align-top whitespace-normal min-w-[180px] max-w-[220px]">
+                      <td className="py-3.5 px-4 align-top whitespace-normal min-w-[180px] max-w-[220px]">
                         <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">
                           {ord.customerName}
                         </div>
@@ -272,7 +244,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                       </td>
 
                       {/* Produk */}
-                      <td className="px-4 py-4 align-top whitespace-normal min-w-[220px]">
+                      <td className="py-3.5 px-4 align-top whitespace-normal min-w-[220px]">
                         <div className="space-y-2">
                           {ord.items.map((it, idx) => (
                             <div key={idx} className="flex items-start gap-2">
@@ -297,7 +269,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                       </td>
 
                       {/* Pengiriman */}
-                      <td className="px-4 py-4 align-top">
+                      <td className="py-3.5 px-4 align-top">
                         <div className="text-[13px] text-slate-700 dark:text-slate-200 font-semibold">
                           {ord.courier}
                         </div>
@@ -316,15 +288,15 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                       </td>
 
                       {/* Status */}
-                      <td className="px-4 py-4 align-top">
-                        <span className={`px-2.5 py-1 rounded-full text-[11.5px] font-semibold flex w-fit ${
+                      <td className="py-3.5 px-4 align-top">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                           ord.status === 'Perlu Diproses'
-                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
                             : ord.status === 'Dalam Pengiriman'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
                             : ord.status === 'Selesai'
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                            : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                            : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
                         }`}>
                           {ord.status === 'Perlu Diproses' ? (i18n?.language === 'en' ? 'Needs Process' : 'Perlu Diproses') : ord.status === 'Dalam Pengiriman' ? (i18n?.language === 'en' ? 'Shipped' : 'Dalam Pengiriman') : ord.status === 'Selesai' ? (i18n?.language === 'en' ? 'Completed' : 'Selesai') : ord.status}
                         </span>
@@ -337,10 +309,10 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                       </td>
 
                       {/* Aksi */}
-                      <td className="px-4 py-4 align-top text-center">
+                      <td className="py-3.5 px-4 pr-6 align-top text-center">
                         <button
                           onClick={() => onPrintAwb(ord)}
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-xs transition-all cursor-pointer w-full whitespace-nowrap"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 h-[32px] rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-xs transition-colors cursor-pointer w-full whitespace-nowrap"
                         >
                           <Printer className="w-3.5 h-3.5" />
                           <span>{i18n?.language === 'en' ? 'Print Label' : 'Cetak Resi'}</span>

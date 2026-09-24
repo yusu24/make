@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { ClipboardCheck, CheckCircle2, Eye } from 'lucide-react';
+import { ClipboardCheck, CheckCircle2, Eye, RefreshCw } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
@@ -81,7 +81,7 @@ export default function StockOpname() {
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button title="Mulai Stock Opname"
             className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
             onClick={startOpname}
           >
             <ClipboardCheck size={15} className="mr-2 mobile-no-margin" />
@@ -94,6 +94,9 @@ export default function StockOpname() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
+          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+          </button>
         </div>
         <div className="retail-table-responsive"><table className="table">
           <thead>

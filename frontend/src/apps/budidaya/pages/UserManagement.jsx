@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
+import { UserPlus, Trash2, Search, Filter, Download } from '@/constants/icons'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
@@ -87,8 +88,12 @@ export default function UserManagement() {
         <div>
 
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>person_add</span>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowModal(true)}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', height: '38px', padding: '0 16px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
+        >
+          <UserPlus size={16} />
           Tambah Pengguna Baru
         </button>
       </div>
@@ -117,22 +122,22 @@ export default function UserManagement() {
 
       {/* Table */}
       <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #E9F0EC', flexWrap: 'wrap', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #E9F0EC', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ position: 'relative', width: '320px' }}>
-            <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '9px', color: '#64748B', fontSize: '18px' }}>search</span>
+            <Search size={16} style={{ position: 'absolute', left: '12px', top: '11px', color: '#64748B' }} />
             <input
               placeholder="Cari berdasarkan nama, email atau peran..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
-              style={{ width: '100%', padding: '8px 12px 8px 36px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+              style={{ width: '100%', height: '38px', padding: '0 14px 0 36px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', fontSize: '13px', outline: 'none' }}
             />
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '36px', padding: '0 12px', fontSize: '13px' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>filter_list</span>Filter
+            <button className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '38px', padding: '0 14px', borderRadius: '12px', fontSize: '13px' }}>
+              <Filter size={15} />Filter
             </button>
-            <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '36px', padding: '0 12px', fontSize: '13px' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>upload</span>Ekspor
+            <button className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '38px', padding: '0 14px', borderRadius: '12px', fontSize: '13px' }}>
+              <Download size={15} />Ekspor
             </button>
           </div>
         </div>
@@ -146,8 +151,8 @@ export default function UserManagement() {
           <Table>
             <TableHeader>
               <TableRow isHoverable={false}>
-                {['Nama Staf', 'Email', 'Peran', 'Status', 'Posisi', 'Aksi'].map(h => (
-                  <TableHeaderCell key={h}>{h}</TableHeaderCell>
+                {['Nama Staf', 'Email', 'Peran', 'Status', 'Posisi', 'Aksi'].map((h, idx) => (
+                  <TableHeaderCell key={h} style={idx === 0 ? { paddingLeft: '24px' } : idx === 5 ? { paddingRight: '24px', textAlign: 'right' } : {}}>{h}</TableHeaderCell>
                 ))}
               </TableRow>
             </TableHeader>
@@ -155,13 +160,15 @@ export default function UserManagement() {
               {staff.length === 0 ? (
                 <TableRow><TableCell colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>Belum ada staf terdaftar</TableCell></TableRow>
               ) : staff.map((u, i) => (
-                <TableRow key={u.id}>
-                  <TableCell>
-                    <span style={{ color: '#0f172a', fontSize: '13px' }}>{u.name}</span>
+                <TableRow key={u.id} className="hover:bg-slate-50/70 transition-colors">
+                  <TableCell style={{ paddingLeft: '24px' }}>
+                    <span style={{ color: '#0f172a', fontSize: '13px', fontWeight: 500 }}>{u.name}</span>
                   </TableCell>
                   <TableCell isSecondary>{u.email ?? '-'}</TableCell>
                   <TableCell>
-                    <span className="badge-pill badge-pill-success">{u.role?.name ?? getRoleLabel(u.budidaya_role_id) ?? 'Pekerja'}</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {u.role?.name ?? getRoleLabel(u.budidaya_role_id) ?? 'Pekerja'}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -172,10 +179,14 @@ export default function UserManagement() {
                     </div>
                   </TableCell>
                   <TableCell isSecondary>{u.position ?? '-'}</TableCell>
-                  <TableCell style={{ textAlign: 'right' }}>
-                    <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
-                      <button className="btn-table-action" onClick={() => handleDelete(u.id)} title="Hapus Staf" style={{ color: '#ef4444' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                  <TableCell style={{ textAlign: 'right', paddingRight: '24px' }}>
+                    <div className="flex items-center justify-end">
+                      <button
+                        className="w-7 h-7 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 flex items-center justify-center text-rose-500 hover:text-rose-700 transition-colors cursor-pointer"
+                        onClick={() => handleDelete(u.id)}
+                        title="Hapus Staf"
+                      >
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </TableCell>

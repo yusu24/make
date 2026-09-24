@@ -17,11 +17,15 @@ import {
   ShieldAlert, 
   ExternalLink, 
   Plus, 
-  RefreshCw 
-} from 'lucide-react';
-import { Sidebar } from './components/Sidebar';
+  RefreshCw,
+  Search,
+  Eye,
+  Printer 
+} from '@/constants/icons';
+import { Sidebar, hasJasaPermission } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { KpiCards } from './components/KpiCards';
+import { OverviewDashboard } from './components/OverviewDashboard';
 import { WorkOrdersView } from './components/WorkOrdersView';
 import { WorkOrderDetailModal } from './components/WorkOrderDetailModal';
 import { NewWorkOrderModal } from './components/NewWorkOrderModal';
@@ -34,10 +38,16 @@ import { FinanceView } from './components/FinanceView';
 import { ExpensesView } from './components/ExpensesView';
 import { AiDiagnosticsModal } from './components/AiDiagnosticsModal';
 import { JasaAiFab } from './components/JasaAiFab';
+import { JasaMobileBottomNav } from './components/JasaMobileBottomNav';
+import { JasaMobileBottomSheet } from './components/JasaMobileBottomSheet';
 import { PrintSpkModal } from './components/PrintSpkModal';
 import { InvoiceDetailModal } from './components/InvoiceDetailModal';
 import { DirectPosView } from './components/DirectPosView';
+import '../jasa.css';
 import { SettingsView } from './components/SettingsView';
+import { JasaRolesView } from './components/JasaRolesView';
+import { JasaStaffView } from './components/JasaStaffView';
+import { JasaProfileView } from './components/JasaProfileView';
 import { BackupView } from './components/BackupView';
 import { GuideView } from './components/GuideView';
 import { SubscriptionView } from './components/SubscriptionView';
@@ -80,32 +90,66 @@ const TAB_TO_PATH: Record<string, string> = {
   'technicians': '/jasa/technicians',
   'catalog': '/jasa/catalog',
   'inventory': '/jasa/inventory',
-  'finance': '/jasa/finance',
-  'expenses': '/jasa/expenses',
+  'finance-summary': '/jasa/finance-summary',
+  'finance-expenses': '/jasa/expenses',
+  'finance-invoices': '/jasa/invoices',
+  'finance-payables': '/jasa/payables',
+  'finance-accounts': '/jasa/accounts',
   'analytics': '/jasa/analytics',
   'guide': '/jasa/guide',
   'developer-api': '/jasa/developer-api',
   'backup': '/jasa/backup',
   'subscription': '/jasa/subscription',
   'settings': '/jasa/settings',
+  'roles': '/jasa/roles',
+  'staff': '/jasa/staff',
+  'profile': '/jasa/profile',
 };
 
 const getTabFromPath = (pathname: string): string => {
+  if (pathname.includes('/jasa/profile')) return 'profile';
   if (pathname.includes('/jasa/work-orders') || pathname.includes('/jasa/spk')) return 'work-orders';
   if (pathname.includes('/jasa/pos')) return 'pos';
   if (pathname.includes('/jasa/contracts')) return 'contracts';
   if (pathname.includes('/jasa/technicians')) return 'technicians';
   if (pathname.includes('/jasa/catalog')) return 'catalog';
   if (pathname.includes('/jasa/inventory')) return 'inventory';
-  if (pathname.includes('/jasa/finance')) return 'finance';
-  if (pathname.includes('/jasa/expenses')) return 'expenses';
+  if (pathname.includes('/jasa/finance-summary') || pathname === '/jasa/finance') return 'finance-summary';
+  if (pathname.includes('/jasa/expenses')) return 'finance-expenses';
+  if (pathname.includes('/jasa/invoices')) return 'finance-invoices';
+  if (pathname.includes('/jasa/payables')) return 'finance-payables';
+  if (pathname.includes('/jasa/accounts')) return 'finance-accounts';
   if (pathname.includes('/jasa/analytics')) return 'analytics';
   if (pathname.includes('/jasa/guide')) return 'guide';
   if (pathname.includes('/jasa/developer-api') || pathname.includes('/jasa/api')) return 'developer-api';
   if (pathname.includes('/jasa/backup')) return 'backup';
   if (pathname.includes('/jasa/subscription')) return 'subscription';
+  if (pathname.includes('/jasa/roles')) return 'roles';
+  if (pathname.includes('/jasa/staff')) return 'staff';
   if (pathname.includes('/jasa/settings')) return 'settings';
   return 'overview';
+};
+
+const TAB_PERMISSIONS: Record<string, string | string[]> = {
+  pos: 'pos_checkout',
+  contracts: 'contracts_manage',
+  technicians: 'technicians_manage',
+  catalog: 'catalog_manage',
+  inventory: ['inventory_view', 'inventory_manage'],
+  'finance-summary': 'finance_view',
+  'finance-expenses': 'finance_expenses',
+  'finance-invoices': 'pos_invoices',
+  'finance-payables': 'finance_expenses',
+  'finance-accounts': 'finance_accounts',
+  finance: 'finance_view',
+  expenses: 'finance_expenses',
+  analytics: 'finance_view',
+  settings: 'staff_manage',
+  roles: 'staff_manage',
+  staff: 'staff_manage',
+  backup: 'staff_manage',
+  'developer-api': 'staff_manage',
+  subscription: 'staff_manage',
 };
 
 function JasaInnerApp() {
@@ -135,25 +179,38 @@ function JasaInnerApp() {
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState<boolean>(false);
 
-  // Helper: Tab title lookup
+  useEffect(() => {
+    setIsBottomSheetOpen(false);
+    setIsMobileSidebarOpen(false);
+  }, [location.pathname]);
+
+  // Helper: Tab title lookup (strictly aligned with Sidebar.tsx labels)
   const getTabTitle = (tab: string) => {
     switch (tab) {
-      case 'overview': return 'Beranda';
-      case 'work-orders': return terms.workOrdersLabel || 'Surat Perintah Kerja (SPK)';
-      case 'pos': return 'Kasir POS Penjualan Langsung';
-      case 'contracts': return 'Jadwal Reservasi / Kontrak';
-      case 'technicians': return terms.techniciansLabel || 'Manajemen Tim & Pekerja';
-      case 'catalog': return 'Katalog Layanan & Tarif Jasa';
-      case 'inventory': return terms.sparepartsLabel || 'Stok Gudang & Material';
-      case 'finance': return 'Keuangan & Kas Terpadu';
-      case 'expenses': return 'Buku Kas & Pengeluaran';
-      case 'analytics': return 'Laporan Layanan & Performa';
-      case 'guide': return 'Buku Panduan & SOP Operasional';
-      case 'backup': return 'Pusat Keamanan & Cadangan Data';
-      case 'subscription': return 'Upgrade & Paket Langganan';
-      case 'settings': return 'Pengaturan Aplikasi Jasa';
-      default: return 'Sistem Manajemen Jasa & Reparasi';
+      case 'overview': return 'Dashboard';
+      case 'pos': return 'Kasir (POS)';
+      case 'work-orders': return terms.workOrdersLabel || 'Daftar SPK';
+      case 'contracts': return 'Jadwal & Kontrak';
+      case 'technicians': return terms.techniciansLabel || 'Tim & Teknisi';
+      case 'catalog': return 'Katalog Layanan';
+      case 'inventory': return terms.sparepartsLabel || 'Stok & Material';
+      case 'finance-summary': return 'Laba Rugi';
+      case 'finance-expenses': return 'Buku Kas';
+      case 'finance-invoices': return 'Tagihan & Piutang';
+      case 'finance-payables': return 'Hutang Vendor';
+      case 'finance-accounts': return 'Rekening & Bank';
+      case 'analytics': return 'Laporan & SLA';
+      case 'settings': return 'Pengaturan Jasa';
+      case 'roles': return 'Role & Hak Akses';
+      case 'staff': return 'Staf & Operator';
+      case 'backup': return 'Backup Data';
+      case 'developer-api': return 'Integrasi API';
+      case 'profile': return 'Profil Pengguna';
+      case 'guide': return 'Buku Panduan';
+      case 'subscription': return 'Paket Langganan';
+      default: return 'Dashboard';
     }
   };
 
@@ -548,16 +605,19 @@ function JasaInnerApp() {
   }) => {
     setShowAiModal(false);
     setShowNewSpkModal(true);
-    addToast('success', 'Diagnosa AI Diterapkan', 'Formulir SPK telah diisi dengan rekomendasi AI.');
   };
 
+  const [collapsed, setCollapsed] = useState(window.innerWidth < 1200);
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans selection:bg-blue-600 selection:text-white antialiased">
+    <div className="jasa-scope min-h-screen bg-slate-50 text-slate-900 flex font-sans selection:bg-blue-600 selection:text-white antialiased">
       
       {/* Dedicated Left Sidebar */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed(!collapsed)}
         onOpenNewSpk={() => setShowNewSpkModal(true)}
         onOpenAiAssistant={() => setShowAiModal(true)}
         urgentCount={urgentOrders.length}
@@ -568,12 +628,14 @@ function JasaInnerApp() {
       />
 
       {/* Main Content Area (offset by sidebar width on lg) */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-72">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${collapsed ? 'lg:pl-[68px]' : 'lg:pl-72'}`}>
         
         {/* Streamlined Top Bar (hidden on full-screen POS register) */}
         {activeTab !== 'pos' && (
           <TopBar
-            onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+            collapsed={collapsed}
+            onToggleCollapse={() => setCollapsed(!collapsed)}
+            onOpenMobileSidebar={() => setIsBottomSheetOpen(true)}
             onOpenNewSpk={() => setShowNewSpkModal(true)}
             onOpenAiAssistant={() => setShowAiModal(true)}
             searchQuery={searchQuery}
@@ -585,16 +647,38 @@ function JasaInnerApp() {
               setActiveTab('work-orders');
             }}
             activeTabTitle={getTabTitle(activeTab)}
+            activeTab={activeTab}
+            onNavigate={(tab) => setActiveTab(tab)}
             onOpenSettings={() => setActiveTab('settings')}
             onOpenSubscription={() => setActiveTab('subscription')}
+            workOrders={workOrders}
+            contracts={contracts}
+            onSelectWorkOrder={(order) => setSelectedOrder(order)}
           />
         )}
 
         {/* Main View Container */}
-        <main className={`flex-1 w-full min-w-0 ${activeTab === 'pos' ? 'p-0 h-[100dvh] overflow-hidden relative' : 'mx-auto px-2.5 sm:px-5 lg:px-6 pt-18 pb-6 sm:pt-20 sm:pb-8'}`}>
-          
-          {/* Emergency Alert Banner */}
-          {urgentOrders.length > 0 && activeTab === 'overview' && (
+        <main className={`flex-1 w-full min-w-0 ${activeTab === 'pos' ? 'p-0 h-[100dvh] overflow-hidden relative' : 'mx-auto px-3 sm:px-6 lg:px-8 pt-20 pb-8 sm:pt-24 sm:pb-10'}`}>
+          {TAB_PERMISSIONS[activeTab] && !hasJasaPermission(user, TAB_PERMISSIONS[activeTab]) ? (
+            <div className="p-8 max-w-lg mx-auto my-12 bg-white rounded-3xl border border-slate-200 shadow-sm text-center">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                <ShieldAlert className="w-7 h-7" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900 mb-1">Akses Dibatasi</h2>
+              <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+                Akun Anda ({user?.role || 'Operator'}) tidak memiliki izin untuk mengakses halaman ini. Silakan hubungi pemilik usaha jika memerlukan hak akses ini.
+              </p>
+              <button
+                onClick={() => setActiveTab('work-orders')}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-colors"
+              >
+                Kembali ke Daftar SPK
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Emergency Alert Banner */}
+              {urgentOrders.length > 0 && activeTab === 'overview' && (
             <div className="mb-4 p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-rose-50/90 via-white to-rose-50/90 border border-rose-200 shadow-xs flex items-center justify-between gap-4">
               <div className="flex items-center space-x-3 min-w-0 flex-1">
                 <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-md shadow-rose-600/30 shrink-0">
@@ -633,239 +717,30 @@ function JasaInnerApp() {
 
         {/* Dynamic Views */}
         {activeTab === 'overview' && (
-          <div className="space-y-4">
-            
-            {/* Top Bento KPI Metric Cards */}
-            <KpiCards
-              stats={stats}
-              onFilterUrgent={() => {
-                setPriorityFilter('Darurat');
-                setActiveTab('work-orders');
-              }}
-              onFilterActive={() => {
-                setStatusFilter('Sedang Dikerjakan');
-                setActiveTab('work-orders');
-              }}
-            />
-
-            {/* Bento Grid Layout Section (as in Bento Design HTML) */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-              
-              {/* Bento Card 1: Distribusi Layanan (Large 2 Cols) */}
-              <div className="lg:col-span-2 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Analitik Aktivitas</span>
-                    <h3 className="font-semibold text-slate-900 text-base tracking-tight mt-0.5">Distribusi Beban Servis</h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1 text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Minggu Ini
-                    </span>
-                  </div>
-                </div>
-
-                {/* Simulated Weekly Bento Bars */}
-                <div className="h-36 flex items-end justify-between gap-2.5 sm:gap-3 pt-2 pb-1">
-                  {[
-                    { day: 'Sen', pct: 80, count: 14 },
-                    { day: 'Sel', pct: 60, count: 11 },
-                    { day: 'Rab', pct: 95, count: 18 },
-                    { day: 'Kam', pct: 45, count: 8 },
-                    { day: 'Jum', pct: 88, count: 16 },
-                    { day: 'Sab', pct: 55, count: 10 },
-                    { day: 'Min', pct: 30, count: 5 }
-                  ].map((bar, idx) => (
-                    <div key={bar.day} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                      <div className="text-[9px] font-semibold text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {bar.count} SPK
-                      </div>
-                      <div className="w-full bg-slate-100 rounded-xl h-full relative overflow-hidden flex items-end">
-                        <div 
-                          className="w-full bg-blue-600 group-hover:bg-blue-500 rounded-xl transition-all duration-500" 
-                          style={{ height: `${bar.pct}%` }}
-                        />
-                      </div>
-                      <span className="text-[9px] font-semibold text-slate-500 uppercase">{bar.day}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                  <span>Rata-rata: <strong className="text-slate-800 font-semibold">12.4 SPK / hari</strong></span>
-                  <button
-                    onClick={() => setActiveTab('analytics')}
-                    className="text-blue-600 font-semibold hover:underline flex items-center gap-1"
-                  >
-                    Laporan Lengkap →
-                  </button>
-                </div>
-              </div>
-
-              {/* Bento Card 2: Pemesanan & SPK Terkini (2 Cols) */}
-              <div className="lg:col-span-2 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div className="flex justify-between items-center mb-3 shrink-0">
-                  <div>
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Pekerjaan Berjalan</span>
-                    <h3 className="font-semibold text-slate-900 text-base tracking-tight mt-0.5">Pemesanan Terkini</h3>
-                  </div>
-                  <button 
-                    onClick={() => setActiveTab('work-orders')}
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg transition-colors"
-                  >
-                    Lihat Semua ({workOrders.length})
-                  </button>
-                </div>
-
-                <div className="space-y-2.5 flex-1 overflow-hidden">
-                  {workOrders
-                    .filter(o => o.status !== 'Dibatalkan')
-                    .slice(0, 3)
-                    .map((order) => {
-                      const initial = order.category.includes('Preventive') ? 'PM' : 
-                                      order.category.includes('Corrective') ? 'CR' : 
-                                      order.category.includes('Instalasi') ? 'IN' : 'SV';
-                      
-                      const badgeColor = order.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                         order.status === 'Sedang Dikerjakan' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                         order.status === 'Menunggu Sparepart' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                         'bg-slate-100 text-slate-700 border-slate-200';
-
-                      return (
-                        <div
-                          key={order.id}
-                          onClick={() => setSelectedOrder(order)}
-                          className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 hover:bg-blue-50/50 rounded-xl border border-slate-100 hover:border-blue-200 transition-all cursor-pointer group"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-9 h-9 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-blue-600 font-semibold text-xs shadow-2xs group-hover:bg-blue-600 group-hover:text-white transition-colors flex-shrink-0">
-                              {initial}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold text-slate-900 truncate group-hover:text-blue-700 transition-colors">
-                                {order.title}
-                              </p>
-                              <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">
-                                {order.customerCompany} • {order.technicianName}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="text-right flex-shrink-0 ml-2">
-                            <span className={`px-2 py-0.5 text-[9px] font-semibold rounded border uppercase tracking-wider ${badgeColor}`}>
-                              {order.status === 'Sedang Dikerjakan' ? 'PROSES' : 
-                               order.status === 'Selesai' ? 'SELESAI' : 
-                               order.status === 'Menunggu Sparepart' ? 'SPAREPART' : 'ANTREAN'}
-                            </span>
-                            <div className="text-[10.5px] font-semibold text-slate-700 mt-0.5">
-                              {formatRupiah(order.grandTotal)}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {/* Bento Card 3: Tim Teknisi & Kapasitas Lapangan (Full 2 Cols Dark Bento) */}
-              <div className="lg:col-span-2 bg-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-md flex flex-col justify-between group overflow-hidden relative">
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Manajemen Personel</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30">
-                      {technicians.filter(t => t.currentStatus === 'Bertugas').length} Teknisi Lapangan Aktif
-                    </span>
-                  </div>
-
-                  <h3 className="text-white font-semibold text-lg tracking-tight">Kesiapan Tim Teknisi</h3>
-                  <p className="text-slate-400 text-xs mt-0.5">
-                    {technicians.length} Teknisi bersertifikasi siap tugas menyebar di wilayah operasional.
-                  </p>
-                </div>
-
-                <div className="relative z-10 my-3">
-                  <div className="flex justify-between items-end mb-1 text-xs">
-                    <span className="font-semibold text-slate-300 text-[11px]">Kapasitas Pemanfaatan Tim</span>
-                    <span className="font-semibold text-white text-sm">84% <span className="text-[10px] text-slate-400 font-normal">(12/15 Sibuk)</span></span>
-                  </div>
-                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-[84%] rounded-full"></div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between relative z-10 pt-2.5 border-t border-slate-800">
-                  <div className="flex -space-x-2">
-                    {technicians.slice(0, 4).map((t, idx) => (
-                      <img
-                        key={t.id}
-                        src={t.avatar}
-                        alt={t.name}
-                        referrerPolicy="no-referrer"
-                        className="w-8 h-8 rounded-full border-2 border-slate-900 object-cover"
-                      />
-                    ))}
-                    <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-blue-600 flex items-center justify-center text-[10px] text-white font-semibold">
-                      +{technicians.length - 4}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setActiveTab('technicians')}
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition-all border border-slate-700"
-                  >
-                    Kelola Jadwal →
-                  </button>
-                </div>
-
-                {/* Subtle visual glow */}
-                <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
-              </div>
-
-              {/* Bento Card 4: AI & Quick Action Hub (2 Cols) */}
-              <div className="lg:col-span-2 bg-gradient-to-br from-amber-500/10 via-white to-blue-500/10 border border-slate-200 p-4 sm:p-5 rounded-2xl shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded">
-                      AI Diagnostic Engine
-                    </span>
-                    <Sparkles className="w-4 h-4 text-amber-600" />
-                  </div>
-
-                  <h3 className="text-base font-semibold text-slate-900 tracking-tight">
-                    Estimasi Kerusakan & Suku Cadang Cepat
-                  </h3>
-                  <p className="text-slate-600 text-xs mt-0.5 leading-relaxed">
-                    Gunakan kecerdasan buatan untuk menganalisis keluhan mesin, mengkalkulasi durasi jam kerja teknisi, serta merumuskan kebutuhan suku cadang.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5 mt-4">
-                  <button
-                    onClick={() => setShowAiModal(true)}
-                    className="p-3.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    <Sparkles className="w-4 h-4 text-slate-950" />
-                    <span>Mulai Diagnosa AI</span>
-                  </button>
-
-                  <button
-                    onClick={() => setShowNewSpkModal(true)}
-                    className="p-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    <Plus className="w-4 h-4 stroke-[3]" />
-                    <span>Terbitkan SPK</span>
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          </div>
+          <OverviewDashboard
+            stats={stats}
+            workOrders={workOrders}
+            technicians={technicians}
+            onOpenNewSpk={() => setShowNewSpkModal(true)}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+            onSelectWorkOrder={(order) => setSelectedOrder(order)}
+            onPrintWorkOrder={(order) => setPrintingOrder(order)}
+            onFilterUrgent={() => {
+              setPriorityFilter('Darurat');
+              setActiveTab('work-orders');
+            }}
+            onFilterActive={() => {
+              setStatusFilter('Sedang Dikerjakan');
+              setActiveTab('work-orders');
+            }}
+          />
         )}
 
         {/* View 2: SPK & Perintah Kerja */}
         {activeTab === 'work-orders' && (
           <WorkOrdersView
             workOrders={workOrders}
+            technicians={technicians}
             onSelectWorkOrder={(order) => setSelectedOrder(order)}
             onPrintWorkOrder={(order) => setPrintingOrder(order)}
             onOpenNewSpk={() => setShowNewSpkModal(true)}
@@ -884,7 +759,13 @@ function JasaInnerApp() {
             inventory={inventory}
             catalog={catalog}
             settings={jasaSettings}
-            onMenuToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            onMenuToggle={() => {
+              if (window.innerWidth < 768) {
+                setIsBottomSheetOpen(prev => !prev);
+              } else {
+                setIsMobileSidebarOpen(!isMobileSidebarOpen);
+              }
+            }}
             onDeductInventory={(itemId, qty) => {
               setInventory((prev) =>
                 prev.map((item) => {
@@ -954,13 +835,20 @@ function JasaInnerApp() {
           />
         )}
 
-        {/* View 6: Keuangan & Kas Terpadu */}
-        {(activeTab === 'finance' || activeTab === 'expenses') && (
+        {/* View 6: Keuangan & Kas Sub-views */}
+        {(activeTab === 'finance-summary' || activeTab === 'finance-expenses' || activeTab === 'finance-invoices' || activeTab === 'finance-payables' || activeTab === 'finance-accounts' || activeTab === 'finance' || activeTab === 'expenses') && (
           <FinanceView
             invoices={invoices}
             expenses={expenses}
             inventory={inventory}
-            initialTab={activeTab === 'expenses' ? 'expenses' : 'invoices'}
+            initialTab={
+              activeTab === 'finance-summary' ? 'summary' :
+              activeTab === 'finance-expenses' || activeTab === 'expenses' ? 'expenses' :
+              activeTab === 'finance-invoices' ? 'invoices' :
+              activeTab === 'finance-payables' ? 'payables' :
+              activeTab === 'finance-accounts' ? 'accounts' :
+              'summary'
+            }
             onUpdateInvoiceStatus={async (id, status) => {
               setInvoices(prev => prev.map(inv => 
                 inv.id === id ? { ...inv, status, paidAmount: status === 'Lunas' ? inv.totalAmount : inv.paidAmount } : inv
@@ -1041,7 +929,22 @@ function JasaInnerApp() {
           />
         )}
 
-        {/* View 12: Settings */}
+        {/* View 12: Roles & Permissions */}
+        {activeTab === 'roles' && (
+          <JasaRolesView
+            onRefresh={() => loadAllDataFromDatabase(true)}
+          />
+        )}
+
+        {/* View 13: Staff & Operator Accounts */}
+        {activeTab === 'staff' && (
+          <JasaStaffView
+            technicians={technicians}
+            onRefresh={() => loadAllDataFromDatabase(true)}
+          />
+        )}
+
+        {/* View 14: Settings */}
         {activeTab === 'settings' && (
           <SettingsView
             settings={jasaSettings}
@@ -1050,6 +953,26 @@ function JasaInnerApp() {
           />
         )}
 
+        {/* View 15: Profile & Password */}
+        {activeTab === 'profile' && (
+          <JasaProfileView />
+        )}
+             </>
+          )}
+
+          {/* Mobile Bottom Clearance Spacer so bottom-most content is never covered by bottom nav */}
+          {activeTab !== 'pos' && (
+            <div
+              className="md:hidden"
+              style={{
+                height: 'calc(110px + env(safe-area-inset-bottom, 16px))',
+                width: '100%',
+                pointerEvents: 'none',
+                flexShrink: 0
+              }}
+              aria-hidden="true"
+            />
+          )}
       </main>
 
       </div>
@@ -1145,6 +1068,24 @@ function JasaInnerApp() {
         onOpen={() => setShowAiModal(true)}
         isPosView={activeTab === 'pos'}
       />
+
+      {/* Mobile Bottom Navigation & Slide-up Sheet */}
+      <>
+        {activeTab !== 'pos' && (
+          <JasaMobileBottomNav
+            activeTab={activeTab}
+            onSelectTab={(tab) => setActiveTab(tab)}
+            onToggleMore={() => setIsBottomSheetOpen(prev => !prev)}
+            isSheetOpen={isBottomSheetOpen}
+          />
+        )}
+        <JasaMobileBottomSheet
+          isOpen={isBottomSheetOpen}
+          onClose={() => setIsBottomSheetOpen(false)}
+          activeTab={activeTab}
+          onSelectTab={(tab) => setActiveTab(tab)}
+        />
+      </>
 
     </div>
   );

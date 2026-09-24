@@ -11,7 +11,7 @@ import {
   X, 
   Sparkles,
   ArrowRight
-} from 'lucide-react';
+} from '@/constants/icons';
 import { useJasa } from '../contexts/JasaContext';
 import { JasaCategoryType, JASA_CATEGORIES_LIST } from '../hooks/useJasaTerms';
 

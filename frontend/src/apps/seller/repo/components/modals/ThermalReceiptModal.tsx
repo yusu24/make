@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Printer, CheckCircle2, Share2, Sparkles, Store } from 'lucide-react';
+import { X, Printer, CheckCircle2, Share2, Sparkles, Store } from '@/constants/icons';
 import { Order } from '../../types';
 import { formatIDR } from '../../utils/formatters';
 
@@ -36,10 +36,12 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
         {/* Header bar */}
-        <div className="p-4 bg-indigo-600 text-white flex items-center justify-between">
+        <div className="p-4 bg-indigo-600 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-300" />
             <span className="font-extrabold text-sm tracking-tight">Transaksi Offline Berhasil</span>
@@ -163,7 +165,10 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-2">
+        <div 
+          className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-2 shrink-0"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
           <button
             onClick={handlePrint}
             className="w-full sm:flex-1 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"

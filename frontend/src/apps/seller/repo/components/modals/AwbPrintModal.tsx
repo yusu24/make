@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Printer, Package, CheckCircle2 } from 'lucide-react';
+import { X, Printer, Package, CheckCircle2 } from '@/constants/icons';
 import { Order } from '../../types';
 import { getPlatformBadgeColor, formatIDR } from '../../utils/formatters';
 
@@ -23,10 +23,12 @@ export const AwbPrintModal: React.FC<AwbPrintModalProps> = ({
   const badge = getPlatformBadgeColor(order.platform);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg overflow-hidden">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/70 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
         {/* Header */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800 shrink-0">
           <div className="flex items-center gap-2">
             <Printer className="w-5 h-5 text-indigo-600" />
             <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100">
@@ -36,7 +38,7 @@ export const AwbPrintModal: React.FC<AwbPrintModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="hidden sm:flex px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Printer className="w-4 h-4" />
               <span>Cetak Label Thermal</span>
@@ -51,7 +53,7 @@ export const AwbPrintModal: React.FC<AwbPrintModalProps> = ({
         </div>
 
         {/* Thermal Label Preview */}
-        <div className="p-6 bg-slate-100 dark:bg-slate-900 flex justify-center">
+        <div className="p-4 sm:p-6 bg-slate-100 dark:bg-slate-900 flex justify-center overflow-y-auto flex-1">
           <div className="w-[320px] bg-white text-black p-4 rounded border-2 border-dashed border-slate-300 font-mono text-[11px] shadow-md">
             {/* Courier Header */}
             <div className="flex items-center justify-between pb-2 border-b-2 border-black mb-2">
@@ -101,6 +103,26 @@ export const AwbPrintModal: React.FC<AwbPrintModalProps> = ({
               </ul>
             </div>
           </div>
+        </div>
+
+        {/* Mobile Action Footer */}
+        <div 
+          className="p-3.5 sm:p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2 shrink-0 sm:hidden"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs cursor-pointer"
+          >
+            Tutup
+          </button>
+          <button
+            onClick={handlePrint}
+            className="flex-1 justify-center py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Cetak Label Thermal</span>
+          </button>
         </div>
       </div>
     </div>

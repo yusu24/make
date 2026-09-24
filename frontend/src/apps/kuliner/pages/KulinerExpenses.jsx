@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../../lib/api';
-import { Edit3, Trash2, Plus, Printer, Calendar } from 'lucide-react';
+import { Pencil, Trash2, Plus, Printer, Calendar, Search, X } from '@/constants/icons';
 import { useReactToPrint } from 'react-to-print';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import Modal from '../../../components/Modal';
@@ -161,7 +161,7 @@ export default function KulinerExpenses() {
 
   const renderExpenseRows = (items, { withActions }) => items.map(ex => (
     <tr key={ex.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-      <td style={{ padding: '10px 16px', fontSize: 12.5, color: '#64748B', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap', fontWeight: 400 }}>
         {new Date(ex.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
       </td>
       <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
@@ -170,20 +170,20 @@ export default function KulinerExpenses() {
             color: ex.type === 'income' ? '#166534' : '#475569', 
             padding: '3px 10px', 
             borderRadius: 20, 
-            fontSize: 11.5, 
-            fontWeight: 600, 
+            fontSize: 12, 
+            fontWeight: 400, 
             display: 'inline-block'
         }}>
             {ex.category}
         </span>
       </td>
-      <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
+      <td style={{ padding: '10px 16px', fontSize: 12, color: '#0F172A', fontWeight: 400 }}>
         {ex.description}
       </td>
-      <td style={{ padding: '10px 16px', color: '#16A34A', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', color: '#16A34A', fontWeight: 600, fontSize: 12, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {ex.type === 'income' ? formatRp(ex.amount) : '-'}
       </td>
-      <td style={{ padding: '10px 16px', color: '#DC2626', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', color: '#DC2626', fontWeight: 600, fontSize: 12, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {(!ex.type || ex.type === 'expense') ? formatRp(ex.amount) : '-'}
       </td>
       {withActions && (
@@ -195,7 +195,7 @@ export default function KulinerExpenses() {
               onClick={() => openEdit(ex)} 
               title="Edit"
             >
-              <Edit3 size={14} />
+              <Pencil size={14} />
             </button>
             <button 
               className="kd-btn" 
@@ -267,12 +267,13 @@ export default function KulinerExpenses() {
 
               {/* Right: Search + Type Filter + Date Filter + Print Button */}
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, flex: '1 1 auto', justifyContent: 'flex-end' }}>
-                <div style={{ minWidth: 160, flex: '1 1 180px', maxWidth: 260 }}>
+                <div style={{ minWidth: 160, flex: '1 1 180px', maxWidth: 260, position: 'relative' }}>
+                  <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
                   <input
                     style={{ 
                       width: '100%', 
                       height: 38, 
-                      padding: '0 12px', 
+                      padding: '0 12px 0 32px', 
                       background: '#FFFFFF',
                       border: '1px solid #CBD5E1', 
                       borderRadius: 10, 
@@ -280,7 +281,7 @@ export default function KulinerExpenses() {
                       outline: 'none',
                       boxSizing: 'border-box'
                     }}
-                    placeholder="🔍 Cari transaksi..."
+                    placeholder="Cari transaksi..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                   />
@@ -323,10 +324,10 @@ export default function KulinerExpenses() {
                   value={dateFilter} 
                   onChange={handleDateFilterChange}
                 >
-                  <option value="all">📅 Semua Waktu</option>
-                  <option value="today">📅 Hari Ini</option>
-                  <option value="month">📅 Bulan Ini</option>
-                  <option value="custom">📅 Custom</option>
+                  <option value="all">Semua Waktu</option>
+                  <option value="today">Hari Ini</option>
+                  <option value="month">Bulan Ini</option>
+                  <option value="custom">Custom</option>
                 </select>
 
                 {dateFilter === 'custom' && (
@@ -400,7 +401,7 @@ export default function KulinerExpenses() {
             <div ref={printRef}>
               <div className="no-print" style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', marginBottom: 24 }}>
                 <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+                  <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                     <thead>
                       <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                         <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Tanggal</th>
@@ -604,7 +605,7 @@ export default function KulinerExpenses() {
             <div className="kd-modal max-w-md" onClick={e => e.stopPropagation()}>
               <div className="kd-modal-header">
                 <h2 className="kd-modal-title">{editingExpense ? 'Edit Pencatatan Kas' : 'Catat Kas Baru'}</h2>
-                <button className="kd-close-btn" onClick={handleClose}>✕</button>
+                <button className="kd-close-btn" onClick={handleClose}><X size={18} /></button>
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="kd-modal-body">

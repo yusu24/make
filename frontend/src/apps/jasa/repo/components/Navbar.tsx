@@ -1,16 +1,16 @@
 import React from 'react';
-import { 
-  Wrench, 
-  ClipboardList, 
-  Users, 
-  BookOpen, 
-  BarChart3, 
-  Sparkles, 
-  Plus, 
+import {
+  Wrench,
+  ClipboardList,
+  Users,
+  BookOpen,
+  BarChart2,
+  Sparkles,
+  Plus,
   Search,
   ShieldCheck,
   Zap
-} from 'lucide-react';
+} from '@/constants/icons';
 
 interface NavbarProps {
   activeTab: string;
@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setSearchQuery
 }) => {
   const tabs = [
-    { id: 'overview', label: 'Beranda Utama', icon: BarChart3 },
+    { id: 'overview', label: 'Beranda Utama', icon: BarChart2 },
     { id: 'work-orders', label: 'Daftar SPK', icon: ClipboardList, badge: urgentCount > 0 ? urgentCount : undefined },
     { id: 'technicians', label: 'Kelola Teknisi', icon: Users },
     { id: 'catalog', label: 'Katalog Layanan', icon: BookOpen },

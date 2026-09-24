@@ -3,6 +3,7 @@ import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
+import { Sparkles, Users, CreditCard, Star, Lightbulb, UtensilsCrossed, Clock, Target, Check, X } from '@/constants/icons';
 import './KulinerDashboard.css';
 
 const CulinaryAnalytics = () => {
@@ -92,8 +93,8 @@ const CulinaryAnalytics = () => {
           <>
             <div className="kd-page-actions">
               <div className="text-xs font-medium text-slate-400">{t('kulinerAnalytics.lastUpdated') || 'Data terakhir diperbarui: Baru saja'}</div>
-              <button className="kd-btn kd-btn-primary" onClick={handleGenerateAi}>
-                {t('kulinerAnalytics.generateAiBtn') || '⚡ Generate Insight AI'}
+              <button className="kd-btn kd-btn-primary flex items-center gap-1.5" onClick={handleGenerateAi}>
+                <Sparkles size={15} /> {t('kulinerAnalytics.generateAiBtn') || 'Generate Insight AI'}
               </button>
             </div>
             <div className="kd-settings-layout">
@@ -171,21 +172,27 @@ const CulinaryAnalytics = () => {
 
             </div>
 
-            <div className="kd-ledger-grid" style={{ marginTop: 24 }}>
-              <div className="kd-panel text-center p-8">
-                <div className="text-3xl mb-2">👥</div>
-                <div className="text-xl font-black text-slate-800">{stats.loyaltyRate}%</div>
-                <div className="text-[10px] text-slate-400 font-bold tracking-widest">{t('kulinerAnalytics.statLoyaltySub') || 'Pelanggan Setia'}</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center">
+                <div className="w-12 h-12 mb-3 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <Users size={22} />
+                </div>
+                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">{t('kulinerAnalytics.statLoyaltySub') || 'Pelanggan Setia'}</div>
+                <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{stats.loyaltyRate}%</div>
               </div>
-              <div className="kd-panel text-center p-8">
-                <div className="text-3xl mb-2">💳</div>
-                <div className="text-xl font-black text-slate-800">{stats.favoriteMethod}</div>
-                <div className="text-[10px] text-slate-400 font-bold tracking-widest">{t('kulinerAnalytics.statFavoriteMethod') || 'Metode Terfavorit'}</div>
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center">
+                <div className="w-12 h-12 mb-3 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                  <CreditCard size={22} />
+                </div>
+                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">{t('kulinerAnalytics.statFavoriteMethod') || 'Metode Terfavorit'}</div>
+                <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight truncate max-w-full">{stats.favoriteMethod}</div>
               </div>
-              <div className="kd-panel text-center p-8">
-                <div className="text-3xl mb-2">⭐</div>
-                <div className="text-xl font-black text-slate-800">{stats.serviceRating > 0 ? stats.serviceRating + '/5.0' : '-'}</div>
-                <div className="text-[10px] text-slate-400 font-bold tracking-widest">{t('kulinerAnalytics.statServiceRating') || 'Rating Layanan'}</div>
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center">
+                <div className="w-12 h-12 mb-3 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+                  <Star size={22} />
+                </div>
+                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">{t('kulinerAnalytics.statServiceRating') || 'Rating Layanan'}</div>
+                <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{stats.serviceRating > 0 ? stats.serviceRating + '/5.0' : '-'}</div>
               </div>
             </div>
           </>
@@ -198,10 +205,10 @@ const CulinaryAnalytics = () => {
           <div className="kd-modal max-w-2xl" onClick={e => e.stopPropagation()} style={{ border: '1px solid rgba(99, 102, 241, 0.2)', boxShadow: '0 20px 40px -15px rgba(99, 102, 241, 0.3)' }}>
             <div className="kd-modal-header" style={{ background: 'linear-gradient(to right, #e0e7ff, #f3e8ff)', borderBottom: '1px solid #e2e8f0' }}>
               <h2 className="kd-modal-title" style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#4f46e5' }}>
-                <span>⚡</span> {t('kulinerAnalytics.aiModalTitle') || 'Bizora Business Intelligence AI'}
+                <Sparkles size={18} className="text-indigo-600" /> {t('kulinerAnalytics.aiModalTitle') || 'Bizora Business Intelligence AI'}
               </h2>
               {!aiLoading && (
-                <button className="kd-close-btn" onClick={() => setShowAiModal(false)}>✕</button>
+                <button className="kd-close-btn" onClick={() => setShowAiModal(false)}><X size={18} /></button>
               )}
             </div>
 
@@ -210,7 +217,7 @@ const CulinaryAnalytics = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: 16 }}>
                   <div className="relative flex items-center justify-center">
                     <div style={{ width: 64, height: 64, border: '4px solid #e0e7ff', borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                    <span style={{ position: 'absolute', fontSize: 24 }}>⚡</span>
+                    <Sparkles size={24} className="text-indigo-600 absolute" />
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>{t('kulinerAnalytics.aiModalGenerating') || 'Sedang Menganalisis Bisnis Anda'}</div>
@@ -223,7 +230,7 @@ const CulinaryAnalytics = () => {
                 <div>
                   <div style={{ background: 'linear-gradient(135deg, #e0e7ff 0%, #e0f2fe 100%)', padding: '16px 20px', borderRadius: 12, border: '1px solid #c7d2fe', marginBottom: 20 }}>
                     <div style={{ fontWeight: 800, fontSize: 13, color: '#312e81', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span>💡</span> Ringkasan Eksekutif
+                      <Lightbulb size={16} className="text-indigo-600" /> Ringkasan Eksekutif
                     </div>
                     <p style={{ fontSize: 12, color: '#1e1b4b', lineHeight: 1.6, margin: 0 }}>
                       {aiData.summary}
@@ -234,32 +241,32 @@ const CulinaryAnalytics = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
                       {aiData.details.product_insight && (
                         <div style={{ background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-                          <div style={{ fontWeight: 700, fontSize: 11, color: '#64748b', textTransform: 'uppercase', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <span>🍔</span> Analisis Menu
+                          <div style={{ fontWeight: 700, fontSize: 11, color: '#64748b', textTransform: 'uppercase', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <UtensilsCrossed size={14} className="text-slate-500" /> Analisis Menu
                           </div>
                           <p style={{ fontSize: 11, color: '#334155', lineHeight: 1.5, margin: 0 }} dangerouslySetInnerHTML={{ __html: aiData.details.product_insight }} />
                         </div>
                       )}
                       {aiData.details.time_insight && (
                         <div style={{ background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-                          <div style={{ fontWeight: 700, fontSize: 11, color: '#64748b', textTransform: 'uppercase', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <span>⏰</span> Jam Kunjungan
+                          <div style={{ fontWeight: 700, fontSize: 11, color: '#64748b', textTransform: 'uppercase', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Clock size={14} className="text-slate-500" /> Jam Kunjungan
                           </div>
                           <p style={{ fontSize: 11, color: '#334155', lineHeight: 1.5, margin: 0 }} dangerouslySetInnerHTML={{ __html: aiData.details.time_insight }} />
                         </div>
                       )}
                       {aiData.details.loyalty_insight && (
                         <div style={{ background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-                          <div style={{ fontWeight: 700, fontSize: 11, color: '#64748b', textTransform: 'uppercase', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <span>👥</span> Loyalitas Pelanggan
+                          <div style={{ fontWeight: 700, fontSize: 11, color: '#64748b', textTransform: 'uppercase', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Users size={14} className="text-slate-500" /> Loyalitas Pelanggan
                           </div>
                           <p style={{ fontSize: 11, color: '#334155', lineHeight: 1.5, margin: 0 }} dangerouslySetInnerHTML={{ __html: aiData.details.loyalty_insight }} />
                         </div>
                       )}
                       {aiData.details.payment_insight && (
                         <div style={{ background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-                          <div style={{ fontWeight: 700, fontSize: 11, color: '#64748b', textTransform: 'uppercase', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <span>💳</span> Preferensi Transaksi
+                          <div style={{ fontWeight: 700, fontSize: 11, color: '#64748b', textTransform: 'uppercase', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <CreditCard size={14} className="text-slate-500" /> Preferensi Transaksi
                           </div>
                           <p style={{ fontSize: 11, color: '#334155', lineHeight: 1.5, margin: 0 }} dangerouslySetInnerHTML={{ __html: aiData.details.payment_insight }} />
                         </div>
@@ -270,12 +277,12 @@ const CulinaryAnalytics = () => {
                   {aiData.recommendations && (
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 12, color: '#475569', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span>🎯</span> {t('kulinerAnalytics.aiInsightRecommendation') || 'Rekomendasi Taktis & Strategis'}
+                        <Target size={15} className="text-slate-700" /> {t('kulinerAnalytics.aiInsightRecommendation') || 'Rekomendasi Taktis & Strategis'}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {aiData.recommendations.map((rec, i) => (
                           <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: '#f0fdf4', padding: '10px 14px', borderRadius: 8, border: '1px solid #bbf7d0' }}>
-                            <span style={{ color: '#16a34a', fontWeight: 800, fontSize: 14 }}>✓</span>
+                            <Check size={16} className="text-emerald-600 shrink-0 mt-0.5" />
                             <span style={{ fontSize: 11, color: '#166534', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: rec }} />
                           </div>
                         ))}

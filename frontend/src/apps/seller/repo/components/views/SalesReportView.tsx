@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { FileSpreadsheet, TrendingUp, DollarSign, Calculator, ArrowUpRight, Percent, CalendarRange, RotateCcw, Download, Printer } from 'lucide-react';
+import { FileSpreadsheet, TrendingUp, DollarSign, Calculator, ArrowUpRight, Percent, CalendarRange, RotateCcw, Download, Printer } from '@/constants/icons';
 import { Expense, Order, Product } from '../../types';
 import { formatIDR } from '../../utils/formatters';
 import { exportToCsv } from '../../utils/excelExport';
@@ -105,38 +105,10 @@ export const SalesReportView: React.FC<SalesReportViewProps> = ({ orders, expens
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5 text-indigo-600" />
-              {t('seller.cashSummary')}
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {t('seller.salesSubtitle')}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handlePrint}
-              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Cetak / Export PDF</span>
-            </button>
-            <button
-              onClick={handleExportExcel}
-              className="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0"
-            >
-              <Download className="w-4 h-4" />
-              <span>{t('seller.exportExcel')}</span>
-            </button>
-          </div>
-        </div>
-
+      {/* Filters & Actions Bar */}
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Date Range Filter */}
-        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mr-1">
             <CalendarRange className="w-3.5 h-3.5" />
             <span>Rentang Tanggal:</span>
@@ -185,25 +157,110 @@ export const SalesReportView: React.FC<SalesReportViewProps> = ({ orders, expens
             )}
           </div>
         </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handlePrint}
+            className="px-3.5 h-[36px] rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs transition-colors"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Cetak / Export PDF</span>
+          </button>
+          <button
+            onClick={handleExportExcel}
+            className="px-3.5 h-[36px] rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0"
+          >
+            <Download className="w-4 h-4" />
+            <span>{t('seller.exportExcel')}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Net Profit Banner */}
-      <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 rounded-3xl shadow-xl border border-emerald-700/40 relative overflow-hidden">
-        <div className="flex flex-row items-center justify-between gap-4">
+      {/* 4 Modular KPI Cards (Standardized with Design System) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Omset Kotor */}
+        <div className="bg-white dark:bg-[#101828] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <span className="text-xs font-semibold text-emerald-300 uppercase tracking-widest bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-400/30">
-              {i18n?.language === 'en' ? 'ESTIMATED NET PROFIT' : 'ESTIMASI PROFIT BERSIH (NET PROFIT)'}
-            </span>
-            <div className="text-2xl sm:text-4xl font-black mt-3 tracking-tight">{formatIDR(netProfit)}</div>
-            <p className="text-xs text-emerald-100/80 mt-1">
-              {i18n?.language === 'en' ? 'Deducted product COGS, platform commissions, & operational expenses.' : 'Sudah dipotong seluruh HPP barang, komisi platform, & pengeluaran terdaftar.'}
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Gross Revenue' : 'Total Omset Penjualan'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {formatIDR(totalGrossRevenue)}
+            </div>
           </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 font-['Inter']">
+            {orders_.length} pesanan terfilter
+          </div>
+        </div>
 
-          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center shrink-0">
-            <span className="text-xs text-emerald-200 font-semibold uppercase block">NET MARGIN RATE</span>
-            <div className="text-3xl font-black text-emerald-300 mt-1">{netMarginPercent}%</div>
-            <span className="text-[10px] text-white/80">{i18n?.language === 'en' ? 'Healthy Business' : 'Kategori Bisnis Sehat'}</span>
+        {/* Card 2: Total HPP & Beban */}
+        <div className="bg-white dark:bg-[#101828] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'COGS & Expenses' : 'Total HPP & Beban Kas'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <DollarSign className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {formatIDR(totalHPP + totalPlatformFees + totalExpenses)}
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 font-['Inter']">
+            HPP + Komisi + Operasional
+          </div>
+        </div>
+
+        {/* Card 3: Estimasi Laba Bersih */}
+        <div className="bg-white dark:bg-[#101828] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Net Profit' : 'Estimasi Laba Bersih'}
+              </span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-['Inter'] ${
+                netProfit >= 0
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                  : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+              }`}>
+                {netProfit >= 0 ? (i18n?.language === 'en' ? 'Profitable' : 'Profit Sehat') : (i18n?.language === 'en' ? 'Deficit' : 'Defisit')}
+              </span>
+            </div>
+            <div className={`text-2xl md:text-3xl font-extrabold mt-1 font-['Plus_Jakarta_Sans'] tracking-tight ${
+              netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+            }`}>
+              {formatIDR(netProfit)}
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 font-['Inter']">
+            {i18n?.language === 'en' ? 'After COGS, admin & expenses' : 'Setelah seluruh potongan HPP & beban'}
+          </div>
+        </div>
+
+        {/* Card 4: Net Margin Rate */}
+        <div className="bg-white dark:bg-[#101828] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Net Margin Rate' : 'Net Profit Margin'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <Percent className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {netMarginPercent}%
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 font-['Inter']">
+            {Number(netMarginPercent) >= 15 ? 'Kategori Bisnis Sehat (>15%)' : 'Perlu Optimasi Efisiensi'}
           </div>
         </div>
       </div>

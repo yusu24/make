@@ -5,7 +5,7 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
-import { Edit3, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from '@/constants/icons';
 
 
 export default function FinanceCategories() {
@@ -136,7 +136,7 @@ export default function FinanceCategories() {
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                      <button className="btn btn-sm btn-ghost" onClick={() => setEditingCategory(c)}><Edit3 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost" onClick={() => setEditingCategory(c)}><Pencil size={14} /></button>
                       <button className="btn btn-sm btn-ghost" style={{ color: 'var(--danger-600)' }} onClick={async () => { if(confirm('Hapus kategori ini? Data lama tidak akan kehilangan label teksnya.')) { await api.delete(`/retail/finance-categories/${c.id}`); fetchCategories(); } }}><Trash2 size={14} /></button>
                     </div>
                   </td>

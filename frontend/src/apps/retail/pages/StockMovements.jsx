@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { History, ArrowUpCircle, ArrowDownCircle, RefreshCw } from 'lucide-react';
+import { History, ArrowUpCircle, ArrowDownCircle, RefreshCw } from '@/constants/icons';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
 const TYPE_LABELS = {
@@ -108,7 +108,7 @@ export default function StockMovements() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <select className="form-input" style={{ width: 140, height: 42, flexShrink: 0 }} value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+          <select className="form-input" style={{ width: 140, height: 38, flexShrink: 0 }} value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
             <option value="">Semua Tipe</option>
             {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
@@ -129,8 +129,8 @@ export default function StockMovements() {
               style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
             />
           </div>
-          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }}>
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
 

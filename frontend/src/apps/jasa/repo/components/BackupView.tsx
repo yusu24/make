@@ -17,7 +17,7 @@ import {
   FileText,
   DollarSign,
   Wrench
-} from 'lucide-react';
+} from '@/constants/icons';
 import api from '../../../../services/api';
 
 interface AutoBackupSettings {

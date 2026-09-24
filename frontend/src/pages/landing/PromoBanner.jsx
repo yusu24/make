@@ -1,4 +1,4 @@
-import { Gift, ArrowUpRight } from 'lucide-react'
+import { Gift, ArrowUpRight } from '@/constants/icons'
 
 export default function PromoBanner({ active, loading, text, onClick }) {
   if (loading || !active) return null

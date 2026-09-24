@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import { 
-  User, RefreshCw, 
-  Edit3, Trash2, RotateCcw
-} from 'lucide-react';
+import { User, RefreshCw, Pencil, Trash2 } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import usePagination from '../../../hooks/usePagination';
@@ -128,7 +125,7 @@ export default function Customers() {
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button title="Tambah pelanggan"
             className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
             onClick={() => { setEditingCustomer(null); setShowModal(true); }}
           >
             <User size={15} className="mr-2 mobile-no-margin" />
@@ -144,10 +141,10 @@ export default function Customers() {
           <button 
             onClick={() => { setSearch(''); fetchCustomers(); }} 
             className="btn-reset-sync"
-            style={{ width: 42, height: 42, flexShrink: 0 }}
+            style={{ width: 38, height: 38, flexShrink: 0 }}
             title="Segarkan Data"
           >
-            <RotateCcw size={18} strokeWidth={3} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
 
@@ -197,7 +194,7 @@ export default function Customers() {
                   </td>
                   <td className="pr-6 text-right">
                      <div className="flex justify-end gap-2">
-                        <button className="btn btn-sm btn-ghost" onClick={() => openEdit(c)} title="Edit Data"><Edit3 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => openEdit(c)} title="Edit Data"><Pencil size={14} /></button>
                         <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(c.id)} title="Hapus Data"><Trash2 size={14} /></button>
                      </div>
                   </td>

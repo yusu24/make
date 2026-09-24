@@ -15,15 +15,18 @@ import {
   CheckCircle2, 
   XCircle,
   Plus
-} from 'lucide-react';
+} from '@/constants/icons';
 import { WorkOrder, ServiceStatus, PriorityLevel, ServiceCategory } from '../types';
 import { formatRupiah } from '../data/mockData';
 import usePagination from '../../../../hooks/usePagination';
 import RetailPagination from '../../../retail/components/RetailPagination';
+import { useAuth } from '../../../../contexts/AuthContext';
 import { useJasa } from '../contexts/JasaContext';
+import { hasJasaPermission } from './Sidebar';
 
 interface WorkOrdersViewProps {
   workOrders: WorkOrder[];
+  technicians?: any[];
   onSelectWorkOrder: (order: WorkOrder) => void;
   onPrintWorkOrder: (order: WorkOrder) => void;
   onOpenNewSpk: () => void;
@@ -37,6 +40,7 @@ interface WorkOrdersViewProps {
 
 export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
   workOrders,
+  technicians = [],
   onSelectWorkOrder,
   onPrintWorkOrder,
   onOpenNewSpk,
@@ -47,10 +51,25 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
   onPriorityFilterChange,
   onQuickUpdateStatus
 }) => {
+  const { user } = useAuth();
   const { terms } = useJasa();
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
 
+  // Check if current user is linked to a master technician
+  const myTechnician = technicians.find(t => 
+    (t.user_id && user?.id && String(t.user_id) === String(user.id)) ||
+    (t.email && user?.email && t.email.toLowerCase() === user.email.toLowerCase())
+  );
+  const isOperatorOnly = myTechnician && !hasJasaPermission(user, 'spk_view_all');
+
   const filteredOrders = workOrders.filter(order => {
+    // If operator mode: only see SPKs assigned to this technician
+    if (isOperatorOnly && myTechnician) {
+      const matchTech = String(order.technicianId) === String(myTechnician.id) ||
+        (order.technicianName && myTechnician.name && order.technicianName.toLowerCase() === myTechnician.name.toLowerCase());
+      if (!matchTech) return false;
+    }
+
     // Search matching
     const query = searchQuery.toLowerCase();
     const matchesSearch = 
@@ -133,7 +152,21 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Action & Filter Bar (Page title is already in Navtop) */}
+      {/* Operator Mode Banner */}
+      {isOperatorOnly && myTechnician && (
+        <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-2xl flex items-center justify-between gap-3 text-xs text-blue-900 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+              <UserCheck size={15} />
+            </div>
+            <span>
+              <strong>Mode Operator Lapangan Aktif:</strong> Akun ini tertaut dengan teknisi <strong>{myTechnician.name}</strong>. Menampilkan pekerjaan yang ditugaskan kepada Anda ({filteredOrders.length} SPK).
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Action & Filter Bar (Universal Height 38px) */}
       <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2.5">
@@ -145,7 +178,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                 value={selectedStatusFilter}
                 onChange={(e) => onStatusFilterChange(e.target.value as any)}
                 aria-label="Filter berdasarkan status pengerjaan SPK"
-                className="bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer"
+                className="h-[38px] bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 rounded-xl px-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer"
               >
                 {statusOptions.map((st) => (
                   <option key={st} value={st}>
@@ -159,7 +192,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
               value={selectedPriorityFilter}
               onChange={(e) => onPriorityFilterChange(e.target.value as any)}
               aria-label="Filter berdasarkan prioritas SPK"
-              className="bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer"
+              className="h-[38px] bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 rounded-xl px-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer"
             >
               <option value="Semua">Semua Prioritas</option>
               <option value="Darurat">🚨 Prioritas Darurat</option>
@@ -170,13 +203,15 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
           </div>
 
           <div className="flex items-center space-x-3 shrink-0">
-            <button
-              onClick={onOpenNewSpk}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm shadow-blue-600/25 transition-all whitespace-nowrap cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
-            >
-              <Plus className="w-3.5 h-3.5 stroke-[3]" />
-              <span>{terms.newWorkOrderBtn}</span>
-            </button>
+            {hasJasaPermission(user, 'spk_create') && (
+              <button
+                onClick={onOpenNewSpk}
+                className="h-[38px] flex items-center space-x-1.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all whitespace-nowrap cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>{terms.newWorkOrderBtn}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -185,16 +220,16 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
       <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-50/90 border-b border-slate-200/80 text-slate-500 font-semibold uppercase text-[10px] tracking-wider">
+            <thead className="bg-slate-50/90 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11.5px] tracking-wider">
               <tr>
-                <th className="py-3 px-4">No. {terms.workOrderLabel} & Jadwal</th>
-                <th className="py-3 px-4">Pekerjaan & {terms.unitLabel}</th>
+                <th className="py-3 px-6">No. {terms.workOrderLabel} &amp; Jadwal</th>
+                <th className="py-3 px-4">Pekerjaan &amp; {terms.unitLabel}</th>
                 <th className="py-3 px-4">Klien / Pelanggan</th>
                 <th className="py-3 px-4">{terms.technicianLabel}</th>
                 <th className="py-3 px-4">Prioritas</th>
                 <th className="py-3 px-4">Status Pengerjaan</th>
                 <th className="py-3 px-4 text-right">Estimasi Biaya</th>
-                <th className="py-3 px-4 text-center">Aksi</th>
+                <th className="py-3 px-6 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -224,7 +259,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                     onClick={() => onSelectWorkOrder(order)}
                   >
                     {/* No SPK & Jadwal */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                    <td className="py-3 px-6 whitespace-nowrap">
                       <div className="font-mono text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200/80 inline-block mb-1">
                         {order.id}
                       </div>
@@ -236,7 +271,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                     </td>
 
                     {/* Pekerjaan & Objek Servis */}
-                    <td className="py-3.5 px-4 max-w-[240px]">
+                    <td className="py-3 px-4 max-w-[240px]">
                       <div className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
                         {order.title}
                       </div>
@@ -249,7 +284,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                     </td>
 
                     {/* Klien / Perusahaan */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       <div className="font-semibold text-slate-800 flex items-center gap-1.5">
                         <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>{order.customerCompany}</span>
@@ -260,7 +295,7 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                     </td>
 
                     {/* Teknisi */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
                         <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-[10px]">
                           {order.technicianName.split(' ').map(w => w[0]).slice(0, 2).join('')}
@@ -270,17 +305,17 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                     </td>
 
                     {/* Prioritas */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       {getPriorityBadge(order.priority)}
                     </td>
 
                     {/* Status */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       {getStatusBadge(order.status)}
                     </td>
 
                     {/* Biaya & Pembayaran */}
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
                       <div className="font-semibold text-slate-900">
                         {formatRupiah(order.grandTotal)}
                       </div>
@@ -291,21 +326,21 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
                     </td>
 
                     {/* Aksi */}
-                    <td className="py-3.5 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center space-x-1.5">
+                    <td className="py-3 px-6 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end space-x-1">
                         <button
                           onClick={() => onPrintWorkOrder(order)}
                           title="Cetak SPK"
-                          className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 transition-colors shadow-2xs cursor-pointer"
+                          className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                         >
-                          <Printer className="w-3.5 h-3.5" />
+                          <Printer size={14} />
                         </button>
                         <button
                           onClick={() => onSelectWorkOrder(order)}
-                          className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors cursor-pointer"
+                          title="Lihat Rincian"
+                          className="w-7 h-7 rounded-lg hover:bg-blue-50 flex items-center justify-center text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Rincian</span>
+                          <Eye size={14} />
                         </button>
                       </div>
                     </td>

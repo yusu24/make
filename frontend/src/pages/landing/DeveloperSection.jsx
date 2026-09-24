@@ -13,7 +13,7 @@ import {
   Layers,
   Sparkles,
   ExternalLink
-} from 'lucide-react';
+} from '@/constants/icons';
 
 export default function DeveloperSection() {
   const [activeLang, setActiveLang] = useState('curl');

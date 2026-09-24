@@ -1,4 +1,6 @@
-import { Building2, Phone, Mail, MapPin, Heart } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Building2, Phone, Mail, MapPin, Heart } from '@/constants/icons'
+import bizoraLogo from '../../assets/bizora-logo.png'
 
 const DEFAULTS = {
   brandDesc: 'Platform bisnis digital #1 Indonesia untuk kelola toko retail, kuliner, serta budidaya hewan dan tanaman dalam satu aplikasi terpadu.',
@@ -22,14 +24,10 @@ export default function Footer({ categories, logoUrl, onScrollTo, brandDesc, add
 
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center overflow-hidden">
-                {logoUrl ? (
-                  <img src={logoUrl} alt="BIZORA Logo" className="w-full h-full object-contain" />
-                ) : (
-                  <Building2 className="w-5 h-5 text-[#041512]" />
-                )}
+              <div className="w-[38px] h-[38px] rounded-[10px] overflow-hidden flex items-center justify-center flex-shrink-0">
+                <img src={logoUrl || bizoraLogo} alt="BIZORA" className="w-full h-full object-contain rounded-[10px]" />
               </div>
-              <span className="text-xl font-black text-white font-mono tracking-wider">BIZORA</span>
+              <span className="text-2xl font-extrabold text-white tracking-[0.06em]" style={{ fontFamily: "'Plus Jakarta Sans', 'Outfit', sans-serif" }}>BIZORA</span>
             </div>
 
             <p className="text-slate-300 leading-relaxed max-w-sm">
@@ -58,8 +56,7 @@ export default function Footer({ categories, logoUrl, onScrollTo, brandDesc, add
               <li><a href="#beranda" onClick={(e) => handleNavClick(e, 'beranda')} className="hover:text-emerald-400 transition-colors">Beranda</a></li>
               <li><a href="#fitur" onClick={(e) => handleNavClick(e, 'fitur')} className="hover:text-emerald-400 transition-colors">Fitur Platform</a></li>
               <li><a href="#cara-kerja" onClick={(e) => handleNavClick(e, 'cara-kerja')} className="hover:text-emerald-400 transition-colors">Cara Kerja</a></li>
-              <li><a href="#developer" onClick={(e) => handleNavClick(e, 'developer')} className="hover:text-emerald-400 transition-colors">API &amp; Webhook</a></li>
-              <li><a href="/developers" className="text-emerald-400 hover:underline">Dokumentasi API</a></li>
+              <li><Link to="/developers" className="hover:text-emerald-400 transition-colors">API &amp; Developer</Link></li>
               <li><a href="#testimoni" onClick={(e) => handleNavClick(e, 'testimoni')} className="hover:text-emerald-400 transition-colors">Testimoni</a></li>
             </ul>
           </div>

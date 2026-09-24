@@ -99,6 +99,7 @@
   gap: 10px;
   font-size: 13px;
   color: var(--pos-text-muted);
+  flex-shrink: 0;
 }
 
 .pos-avatar {
@@ -522,7 +523,7 @@
   }
 
   .pos-top-bar { padding: 10px 14px; gap: 10px; }
-  .pos-top-bar .pos-search-box input { padding: 8px 12px 8px 34px; font-size: 12px; }
+  .pos-top-bar .pos-search-box input { padding: 8px 12px 8px 34px; font-size: 16px; }
   .pos-top-bar .pos-search-box svg { left: 10px; }
 
   .pos-products-grid {

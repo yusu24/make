@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { QrCode, Search, Printer, Package, CheckCircle2, AlertCircle, Scan, Check, X, PackageCheck } from 'lucide-react';
+import { QrCode, Search, Printer, Package, CheckCircle2, AlertCircle, Scan, Check, X, PackageCheck } from '@/constants/icons';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
 
@@ -99,26 +99,15 @@ export const PackingImprovementView: React.FC = () => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">Packing Improvement</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Optimalkan proses picking dan packing menggunakan scan barcode resi.
-          </p>
-        </div>
-        <div className="shrink-0 flex items-center gap-3">
-          <button
-            onClick={handleBulkPrint}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-xs border border-slate-200 dark:border-slate-700 cursor-pointer"
-          >
-            <Printer className="w-4 h-4 text-indigo-600" />
-            <span>Cetak Label Massal</span>
-          </button>
-        </div>
+      {/* Top Action Bar */}
+      <div className="flex items-center justify-end gap-2 shrink-0">
+        <button
+          onClick={handleBulkPrint}
+          className="flex items-center gap-2 px-4 h-[38px] bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 shadow-xs transition-colors text-xs border border-slate-200 dark:border-slate-700 cursor-pointer"
+        >
+          <Printer className="w-4 h-4 text-indigo-600" />
+          <span>Cetak Label Massal</span>
+        </button>
       </div>
 
       {/* Barcode Scanner Section */}

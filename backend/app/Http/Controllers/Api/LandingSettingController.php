@@ -128,8 +128,8 @@ class LandingSettingController extends Controller
     public function uploadLogo(Request $request)
     {
         $request->validate([
-            'type' => 'required|in:admin,landing',
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'type' => 'required|in:admin,landing,favicon',
+            'file' => 'required|mimes:jpeg,png,jpg,gif,svg,ico,webp|max:5120',
         ]);
 
         $settings = LandingSetting::first();
@@ -147,23 +147,31 @@ class LandingSettingController extends Controller
         // Store in storage/app/public/logos
         $path = $file->store('logos', 'public');
 
+        if ($type === 'favicon') {
+            $fullPath = storage_path('app/public/' . $path);
+            $this->processFaviconImage($fullPath);
+        }
+
         // Delete old file if exists
         if ($type === 'admin' && $settings->admin_logo_path) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($settings->admin_logo_path);
         } elseif ($type === 'landing' && $settings->landing_logo_path) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($settings->landing_logo_path);
+        } elseif ($type === 'favicon' && $settings->favicon_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($settings->favicon_path);
         }
 
         // Update database
+        $column = $type === 'favicon' ? 'favicon_path' : ($type . '_logo_path');
         $settings->update([
-            $type . '_logo_path' => $path
+            $column => $path
         ]);
 
-        ActivityLog::record('upload_logo', 'Logo portal (' . $type . ') diperbarui', 'info');
+        ActivityLog::record('upload_logo', 'Branding/Logo portal (' . $type . ') diperbarui', 'info');
 
         return response()->json([
             'success' => true,
-            'message' => 'Logo berhasil diunggah',
+            'message' => ($type === 'favicon' ? 'Favicon' : 'Logo') . ' berhasil diunggah',
             'data' => [
                 'path' => $path,
                 'url' => url('storage/' . $path)
@@ -174,7 +182,7 @@ class LandingSettingController extends Controller
     public function resetLogo(Request $request)
     {
         $request->validate([
-            'type' => 'required|in:admin,landing',
+            'type' => 'required|in:admin,landing,favicon',
         ]);
 
         $settings = LandingSetting::first();
@@ -186,15 +194,83 @@ class LandingSettingController extends Controller
             } elseif ($type === 'landing' && $settings->landing_logo_path) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($settings->landing_logo_path);
                 $settings->update(['landing_logo_path' => null]);
+            } elseif ($type === 'favicon' && $settings->favicon_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($settings->favicon_path);
+                $settings->update(['favicon_path' => null]);
             }
         }
 
-        ActivityLog::record('reset_logo', 'Logo portal (' . $request->type . ') dikembalikan ke default', 'info');
+        ActivityLog::record('reset_logo', 'Branding/Logo portal (' . $request->type . ') dikembalikan ke default', 'info');
 
         return response()->json([
             'success' => true,
-            'message' => 'Logo berhasil dikembalikan ke default',
+            'message' => ($request->type === 'favicon' ? 'Favicon' : 'Logo') . ' berhasil dikembalikan ke default',
             'data' => $settings
         ]);
+    }
+
+    private function processFaviconImage(string $fullPath): void
+    {
+        if (!extension_loaded('gd')) return;
+
+        $info = @getimagesize($fullPath);
+        if (!$info) return;
+
+        $mime = $info['mime'] ?? '';
+        $src = null;
+        if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+            $src = @imagecreatefromjpeg($fullPath);
+        } elseif ($mime === 'image/png') {
+            $src = @imagecreatefrompng($fullPath);
+        } elseif ($mime === 'image/webp') {
+            $src = @imagecreatefromwebp($fullPath);
+        }
+
+        if (!$src) return;
+
+        $w = imagesx($src);
+        $h = imagesy($src);
+        $size = 512;
+        $radius = 128; // 25% smooth rounded squircle
+
+        $dest = imagecreatetruecolor($size, $size);
+        imagealphablending($dest, false);
+        imagesavealpha($dest, true);
+        $transparent = imagecolorallocatealpha($dest, 0, 0, 0, 127);
+        imagefilledrectangle($dest, 0, 0, $size, $size, $transparent);
+
+        // 4x supersampled mask for crisp antialiased rounded corners
+        $ssSize = $size * 4;
+        $ssRadius = $radius * 4;
+        $ss = imagecreatetruecolor($ssSize, $ssSize);
+        imagealphablending($ss, false);
+        imagesavealpha($ss, true);
+        $ssTrans = imagecolorallocatealpha($ss, 0, 0, 0, 127);
+        imagefilledrectangle($ss, 0, 0, $ssSize, $ssSize, $ssTrans);
+
+        $white = imagecolorallocate($ss, 255, 255, 255);
+        imagefilledrectangle($ss, $ssRadius, 0, $ssSize - $ssRadius, $ssSize, $white);
+        imagefilledrectangle($ss, 0, $ssRadius, $ssSize, $ssSize - $ssRadius, $white);
+        imagefilledellipse($ss, $ssRadius, $ssRadius, $ssRadius * 2, $ssRadius * 2, $white);
+        imagefilledellipse($ss, $ssSize - $ssRadius, $ssRadius, $ssRadius * 2, $ssRadius * 2, $white);
+        imagefilledellipse($ss, $ssRadius, $ssSize - $ssRadius, $ssRadius * 2, $ssRadius * 2, $white);
+        imagefilledellipse($ss, $ssSize - $ssRadius, $ssSize - $ssRadius, $ssRadius * 2, $ssRadius * 2, $white);
+
+        imagecopyresampled($dest, $ss, 0, 0, 0, 0, $size, $size, $ssSize, $ssSize);
+        imagedestroy($ss);
+
+        $minDim = min($w, $h);
+        $srcX = (int)(($w - $minDim) / 2);
+        $srcY = (int)(($h - $minDim) / 2);
+
+        $pad = 56;
+        $inner = $size - ($pad * 2);
+
+        imagealphablending($dest, true);
+        imagecopyresampled($dest, $src, $pad, $pad, $srcX, $srcY, $inner, $inner, $minDim, $minDim);
+
+        imagepng($dest, $fullPath, 9);
+        imagedestroy($dest);
+        imagedestroy($src);
     }
 }

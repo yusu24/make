@@ -31,10 +31,19 @@ class FinanceController extends Controller
         }
     }
 
+    private function getTenantId(Request $request): string
+    {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403));
+        }
+        return $tenantId;
+    }
+
     // List all expenses
     public function index(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $cycleId = $request->query('cycle_id');
 
         $query = BudidayaExpense::where('tenant_id', $tenantId)->orderBy('date', 'desc');
@@ -49,7 +58,7 @@ class FinanceController extends Controller
     // Add an expense 
     public function store(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $request->validate([
             'category' => 'required|string',
             'amount' => 'required|numeric|min:0',
@@ -77,7 +86,7 @@ class FinanceController extends Controller
     // Delete an expense
     public function destroy(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $expense = BudidayaExpense::where('tenant_id', $tenantId)->findOrFail($id);
         
         $expense->delete();
@@ -86,7 +95,7 @@ class FinanceController extends Controller
 
     public function update(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $expense = BudidayaExpense::where('tenant_id', $tenantId)->findOrFail($id);
 
         $request->validate([
@@ -117,7 +126,7 @@ class FinanceController extends Controller
     public function indexIncomes(Request $request)
     {
         $this->ensureIncomesTableExists();
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $cycleId = $request->query('cycle_id');
 
         $incomeQuery = BudidayaIncome::where('tenant_id', $tenantId)->with(['cycle.pond'])->orderBy('date', 'desc');
@@ -172,7 +181,7 @@ class FinanceController extends Controller
     public function storeIncome(Request $request)
     {
         $this->ensureIncomesTableExists();
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $request->validate([
             'category' => 'required|string',
             'amount' => 'required|numeric|min:0',
@@ -204,7 +213,7 @@ class FinanceController extends Controller
     public function updateIncome(Request $request, $id)
     {
         $this->ensureIncomesTableExists();
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
 
         if (str_starts_with((string)$id, 'har_')) {
             return response()->json(['message' => 'Catatan panen otomatis disinkronkan dari data panen siklus.'], 400);
@@ -236,7 +245,7 @@ class FinanceController extends Controller
     public function destroyIncome(Request $request, $id)
     {
         $this->ensureIncomesTableExists();
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
 
         if (str_starts_with((string)$id, 'har_')) {
             $harvestId = str_replace('har_', '', $id);
@@ -258,7 +267,7 @@ class FinanceController extends Controller
     public function getSummary(Request $request)
     {
         $this->ensureIncomesTableExists();
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $startDate = $request->query('startDate');
         $endDate = $request->query('endDate');
 
@@ -292,7 +301,7 @@ class FinanceController extends Controller
     public function getLedger(Request $request)
     {
         $this->ensureIncomesTableExists();
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $startDate = $request->query('startDate');
         $endDate = $request->query('endDate');
 

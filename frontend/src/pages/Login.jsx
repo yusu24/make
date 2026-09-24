@@ -58,7 +58,7 @@ export default function Login() {
       if (userData.role === 'super_admin' || userData.role === 'admin') {
         navigate('/dashboard')
       } else {
-        const targetPath = getCategoryDashboardPath(userData.business_category)
+        const targetPath = getCategoryDashboardPath(userData.business_category, userData.role)
         navigate(targetPath)
       }
     } catch (err) {
@@ -114,7 +114,7 @@ export default function Login() {
             <img src={logoUrl || bizoraLogo} alt="BIZORA Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} />
           </div>
           <div>
-            <div style={{ color: '#fff', fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em' }}>BIZORA</div>
+            <div style={{ color: '#fff', fontSize: 18, fontWeight: 800, letterSpacing: '0.04em', fontFamily: "'Plus Jakarta Sans', 'Outfit', sans-serif" }}>BIZORA</div>
             <div style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: 11 }}>Platform Digital Terpadu</div>
           </div>
         </div>

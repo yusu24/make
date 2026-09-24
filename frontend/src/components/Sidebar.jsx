@@ -6,8 +6,8 @@ import {
   LogOut, Inbox, ClipboardList, Database, Wallet, Settings, User,
   HelpCircle, ServerCog, FileText, Zap, Shield, ChevronDown, ChevronRight,
   Receipt, Tag, Archive, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight,
-  Store, Globe, Box, Printer, ArrowRightLeft, BookOpen, BellRing, Sparkles
-} from 'lucide-react'
+  Store, Globe, Box, Printer, ArrowRightLeft, BookOpen, BellRing, Sparkles, Sliders, Type
+} from '@/constants/icons'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
 import Modal from './Modal'
@@ -16,12 +16,24 @@ import './Sidebar.css'
 
 // ─── Admin nav items ──────────────────────────────────────────────────────────
 const NAV_ITEMS = [
-  // ── 1. Overview ──────────────────────────────────────────────────────────────
+  // ── 1. Dashboard Utama (Direct standalone menu) ──────────────────────────────
   {
-    section: 'Overview',
+    section: 'Dashboard',
     icon: <LayoutDashboard size={18} />,
     items: [
       { path: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
+    ]
+  },
+
+  // ── 2. Laporan & Analitik ───────────────────────────────────────────────────
+  {
+    section: 'Laporan & Analitik',
+    icon: <BarChart2 size={18} />,
+    items: [
+      { path: '/reports-analytics', icon: <BarChart2 size={18} />,       label: 'Laporan Overview' },
+      { path: '/reports-revenue',   icon: <TrendingUp size={18} />,      label: 'Laporan Pendapatan' },
+      { path: '/reports-tenants',   icon: <Store size={18} />,           label: 'Analitik Tenant' },
+      { path: '/logs',              icon: <ClipboardList size={18} />,   label: 'Log Aktivitas & Audit' },
     ]
   },
 
@@ -31,16 +43,16 @@ const NAV_ITEMS = [
     icon: <Store size={18} />,
     adminOnly: true,
     items: [
-      { path: '/tenants', icon: <Store size={18} />,   label: 'Daftar Tenant' },
-      { path: '/kyc',     icon: <Shield size={18} />,  label: 'Verifikasi KYC Tenant' },
-      { path: '/users',   icon: <Users size={18} />,   label: 'Pengguna Platform' },
-      { path: '/categories', icon: <Layers size={18} />, label: 'Kategori Bisnis' },
+      { path: '/tenants',    icon: <Store size={18} />,   label: 'Daftar Tenant' },
+      { path: '/kyc',        icon: <Shield size={18} />,  label: 'Verifikasi KYC Tenant' },
+      { path: '/users',      icon: <Users size={18} />,   label: 'Pengguna Platform' },
+      { path: '/categories', icon: <Layers size={18} />,  label: 'Kategori Bisnis' },
     ]
   },
 
-  // ── 3. Langganan & Finansial ──────────────────────────────────────────────────
+  // ── 3. Paket & Langganan ──────────────────────────────────────────────────────
   {
-    section: 'Langganan & Finansial',
+    section: 'Paket & Langganan',
     icon: <CreditCard size={18} />,
     adminOnly: true,
     items: [
@@ -52,72 +64,46 @@ const NAV_ITEMS = [
     ]
   },
 
-  // ── 4. Laporan & Analitik ─────────────────────────────────────────────────────
+  // ── 4. Layanan & Pengumuman ───────────────────────────────────────────────────
   {
-    section: 'Laporan & Analitik',
-    icon: <BarChart2 size={18} />,
-    adminOnly: true,
-    items: [
-      { path: '/reports-analytics', icon: <BarChart2 size={18} />,     label: 'Laporan Overview' },
-      { path: '/reports-revenue',   icon: <TrendingUp size={18} />,    label: 'Laporan Pendapatan' },
-      { path: '/reports-tenants',   icon: <Store size={18} />,         label: 'Analitik Tenant' },
-      { path: '/logs',              icon: <ClipboardList size={18} />, label: 'Log Audit & Aktivitas' },
-    ]
-  },
-
-  // ── 5. Operasional & Layanan ──────────────────────────────────────────────────
-  {
-    section: 'Operasional & Layanan',
-    icon: <ServerCog size={18} />,
+    section: 'Layanan & Pengumuman',
+    icon: <FileText size={18} />,
     adminOnly: true,
     items: [
       { path: '/content-announcement', icon: <FileText size={18} />,   label: 'Pengumuman & Konten' },
-      { path: '/support-center',       icon: <HelpCircle size={18} />, label: 'Pusat Bantuan' },
-      { path: '/system-monitoring',    icon: <ServerCog size={18} />,  label: 'Monitoring Sistem' },
+      { path: '/support-center',       icon: <HelpCircle size={18} />, label: 'Pusat Bantuan (Tiket)' },
     ]
   },
 
-  // ── 6. Konten Landing Page ────────────────────────────────────────────────────
+  // ── 5. Konten & Dokumentasi ───────────────────────────────────────────────────
   {
-    section: 'Konten Landing Page',
-    icon: <Globe size={18} />,
-    adminOnly: true,
-    items: [
-      { path: '/settings', icon: <Globe size={18} />, label: 'Pengaturan Landing Page' },
-    ]
-  },
-
-  // ── 7. Pusat Dokumentasi ──────────────────────────────────────────────────────
-  {
-    section: 'Pusat Dokumentasi',
+    section: 'Konten & Dokumentasi',
     icon: <BookOpen size={18} />,
     adminOnly: true,
     items: [
-      { path: '/doc-dashboard', icon: <BookOpen size={18} />,  label: 'Kelola Dokumentasi' },
-      { path: '/doc-center',    icon: <BookOpen size={18} />,  label: 'Baca Dokumentasi' },
-      { path: '/module-docs',   icon: <Layers size={18} />,    label: 'Arsitektur Modul' },
+      { path: '/settings',              icon: <Globe size={18} />,    label: 'Pengaturan Landing Page' },
+      { path: '/doc-center',            icon: <BookOpen size={18} />, label: 'Pusat Dokumentasi' },
+      { path: '/doc-dashboard',         icon: <BookOpen size={18} />, label: 'Kelola Dokumentasi' },
+      { path: '/module-docs',           icon: <Layers size={18} />,   label: 'Arsitektur Modul' },
+      { path: '/admin/icon-dictionary', icon: <Sparkles size={18} />, label: 'Kamus Icon UI' },
+      { path: '/admin/card-dictionary', icon: <LayoutDashboard size={18} />, label: 'Kamus Card UI' },
+      { path: '/admin/font-dictionary', icon: <Type size={18} />, label: 'Kamus Font & Tipografi' },
+      { path: '/admin/retail-standards', icon: <Store size={18} />, label: 'Standar Desain Ritel' },
     ]
   },
 
-  // ── 8. Pengaturan Platform ────────────────────────────────────────────────────
+  // ── 6. Pengaturan & Keamanan ──────────────────────────────────────────────────
   {
-    section: 'Pengaturan Platform',
+    section: 'Pengaturan & Keamanan',
     icon: <Settings size={18} />,
     adminOnly: true,
     items: [
       { path: '/admins',                 icon: <UserCheck size={18} />, label: 'Kelola Admin' },
       { path: '/saas-roles',             icon: <Shield size={18} />,    label: 'Role & Hak Akses' },
-      { path: '/developer-integrations', icon: <Zap size={18} />,       label: 'Integrasi & Developer' },
-      { path: '/backups',                icon: <Archive size={18} />,   label: 'Cadangan Data' },
-    ]
-  },
-
-  // ── 9. Akun ───────────────────────────────────────────────────────────────────
-  {
-    section: 'Akun',
-    icon: <User size={18} />,
-    items: [
-      { path: '/profile', icon: <User size={18} />, label: 'Profil Saya' },
+      { path: '/system-monitoring',      icon: <ServerCog size={18} />, label: 'Monitoring Sistem' },
+      { path: '/developer-integrations', icon: <Zap size={18} />,       label: 'Integrasi & Webhook' },
+      { path: '/backups',                icon: <Archive size={18} />,   label: 'Cadangan Data (Backup)' },
+      { path: '/profile',                icon: <User size={18} />,      label: 'Profil Saya' },
     ]
   }
 ]
@@ -127,11 +113,16 @@ const NAV_ITEMS = [
 // are always visible (dashboard, subscription, support, profile).
 const RETAIL_PATH_PERMISSIONS = {
   '/retail/products': 'catalog',
+  '/retail/categories': 'master',
+  '/retail/units': 'master',
   '/retail/batches': 'catalog',
   '/retail/serials': 'catalog',
+  '/retail/print-labels': 'master',
+  '/retail/discounts': 'discounts',
+  '/retail/pricelists': 'discounts',
+  '/retail/inventory': 'inventory',
   '/retail/purchase-orders': 'purchasing',
   '/retail/stock': 'purchasing',
-  '/retail/inventory': 'inventory',
   '/retail/stock-movements': 'inventory',
   '/retail/stock-transfers': 'inventory',
   '/retail/stock-opname': 'inventory',
@@ -139,17 +130,19 @@ const RETAIL_PATH_PERMISSIONS = {
   '/retail/transactions': 'pos',
   '/retail/shifts': 'pos',
   '/retail/customer-returns': 'pos',
-  '/retail/discounts': 'discounts',
-  '/retail/pricelists': 'discounts',
-  '/retail/print-labels': 'master',
-  '/retail/categories': 'master',
-  '/retail/units': 'master',
-  '/retail/suppliers': 'master',
   '/retail/customers': 'master',
+  '/retail/suppliers': 'master',
   '/retail/outlets': 'master',
-  '/retail/settings': 'master',
-  '/retail/staff': 'staff',
-  '/retail/roles': 'roles',
+  '/retail/finance/summary': 'finance',
+  '/retail/finance/cash': 'finance',
+  '/retail/finance/incomes': 'finance',
+  '/retail/finance/expenses': 'finance',
+  '/retail/finance/payables': 'finance',
+  '/retail/finance/receivables': 'finance',
+  '/retail/finance/transfers': 'finance',
+  '/retail/finance/cash-flow': 'finance',
+  '/retail/finance/tax-report': 'finance',
+  '/retail/finance-categories': 'master',
   '/retail/reports/sales': 'reports',
   '/retail/reports/products': 'reports',
   '/retail/reports/margins': 'reports',
@@ -157,15 +150,9 @@ const RETAIL_PATH_PERMISSIONS = {
   '/retail/reports/consignment': 'reports',
   '/retail/reports/shifts': 'reports',
   '/retail/reports/payments': 'reports',
-  '/retail/finance/summary': 'finance',
-  '/retail/finance/incomes': 'finance',
-  '/retail/finance/expenses': 'finance',
-  '/retail/finance/payables': 'finance',
-  '/retail/finance/receivables': 'finance',
-  '/retail/finance-categories': 'master',
-  '/retail/finance/transfers': 'finance',
-  '/retail/finance/cash-flow': 'finance',
-  '/retail/finance/tax-report': 'finance',
+  '/retail/staff': 'staff',
+  '/retail/roles': 'roles',
+  '/retail/settings': 'master',
 }
 
 function filterNavByPermission(sections, user) {
@@ -193,6 +180,7 @@ const CATEGORY_COLORS = {
 
 // ─── Retail nav items ─────────────────────────────────────────────────────────
 const RETAIL_NAV_ITEMS = [
+  // ── 1. Menu Utama ──
   {
     section: 'Menu Utama',
     icon: <LayoutDashboard size={20} />,
@@ -201,95 +189,119 @@ const RETAIL_NAV_ITEMS = [
       { path: '/retail/pos',       icon: <CreditCard size={24} />,      label: 'Kasir (POS)' },
     ]
   },
+
+  // ── 2. Katalog & Harga ──
   {
-    section: 'Logistik & Stok',
+    section: 'Katalog & Harga',
+    icon: <Package size={20} />,
+    items: [
+      { path: '/retail/products',     icon: <Package size={24} />, label: 'Daftar Produk' },
+      { path: '/retail/categories',   icon: <Layers size={24} />,  label: 'Kategori Produk' },
+      { path: '/retail/units',        icon: <Tag size={24} />,     label: 'Satuan Barang' },
+      { path: '/retail/batches',      icon: <Archive size={24} />, label: 'Batch & Kadaluwarsa' },
+      { path: '/retail/print-labels', icon: <Printer size={24} />, label: 'Cetak Barcode' },
+      { path: '/retail/discounts',    icon: <Tag size={24} />,     label: 'Kode Diskon & Promo' },
+      { path: '/retail/pricelists',   icon: <Layers size={24} />,  label: 'Harga Grosir & Member' },
+    ]
+  },
+
+  // ── 3. Inventori & Stok ──
+  {
+    section: 'Inventori & Stok',
     icon: <Truck size={20} />,
     items: [
-      { path: '/retail/purchase-orders', icon: <ShoppingCart size={24} />, label: 'Purchase Order (PO)' },
-      { path: '/retail/stock',           icon: <Inbox size={24} />,          label: 'Penerimaan Barang' },
-      { path: '/retail/inventory',       icon: <ClipboardList size={24} />, label: 'Stok Barang' },
-      { path: '/retail/stock-movements', icon: <RefreshCw size={24} />,      label: 'Riwayat Stok' },
-      { path: '/retail/stock-transfers', icon: <ArrowRightLeft size={24} />, label: 'Transfer Stok' },
-      { path: '/retail/stock-opname',    icon: <UserCheck size={24} />,      label: 'Stock Opname' },
+      { path: '/retail/inventory',        icon: <ClipboardList size={24} />, label: 'Stok Barang' },
+      { path: '/retail/purchase-orders',  icon: <ShoppingCart size={24} />,  label: 'Purchase Order (PO)' },
+      { path: '/retail/stock',            icon: <Inbox size={24} />,         label: 'Penerimaan Barang' },
+      { path: '/retail/stock-movements',  icon: <RefreshCw size={24} />,     label: 'Riwayat Mutasi Stok' },
+      { path: '/retail/stock-transfers',  icon: <ArrowRightLeft size={24} />,label: 'Transfer Antar Cabang' },
+      { path: '/retail/stock-opname',     icon: <UserCheck size={24} />,     label: 'Stock Opname' },
       { path: '/retail/supplier-returns', icon: <Truck size={24} />,         label: 'Retur ke Supplier' },
     ]
   },
+
+  // ── 4. Penjualan & Transaksi ──
   {
-    section: 'Penjualan',
+    section: 'Penjualan & Transaksi',
     icon: <Receipt size={20} />,
     items: [
       { path: '/retail/transactions',     icon: <ClipboardList size={24} />, label: 'Riwayat Transaksi' },
       { path: '/retail/shifts',           icon: <Wallet size={24} />,        label: 'Shift & Laci Kasir' },
       { path: '/retail/customer-returns', icon: <RefreshCw size={24} />,     label: 'Retur Pelanggan' },
-      { path: '/retail/discounts',        icon: <Tag size={24} />,           label: 'Kode Diskon' },
-      { path: '/retail/pricelists',       icon: <Layers size={24} />,        label: 'Harga Grosir & Member' },
     ]
   },
+
+  // ── 5. Pelanggan & Partner ──
   {
-    section: 'Data Master',
-    icon: <Database size={20} />,
+    section: 'Pelanggan & Partner',
+    icon: <Users size={20} />,
     items: [
-      { path: '/retail/products',           icon: <Package size={24} />, label: 'Daftar Barang' },
-      { path: '/retail/batches',            icon: <Archive size={24} />, label: 'Batch & Expired Date' },
-      { path: '/retail/print-labels',       icon: <Printer size={24} />, label: 'Cetak Barcode' },
+      { path: '/retail/customers', icon: <Users size={24} />, label: 'Data Pelanggan' },
+      { path: '/retail/suppliers', icon: <Truck size={24} />, label: 'Data Supplier' },
+      { path: '/retail/outlets',   icon: <Store size={24} />, label: 'Daftar Cabang' },
     ]
   },
+
+  // ── 6. Keuangan ──
   {
-    section: 'Setup Master Data',
-    icon: <Settings size={20} />,
+    section: 'Keuangan',
+    icon: <Wallet size={20} />,
     items: [
-      { path: '/retail/categories',         icon: <Layers size={24} />, label: 'Kategori Produk' },
-      { path: '/retail/finance-categories', icon: <Tag size={24} />,    label: 'Kategori Keuangan' },
-      { path: '/retail/units',              icon: <Tag size={24} />,    label: 'Satuan Dasar' },
-      { path: '/retail/customers',          icon: <Users size={24} />,  label: 'Data Pelanggan' },
-      { path: '/retail/suppliers',          icon: <Truck size={24} />,  label: 'Data Supplier' },
-      { path: '/retail/outlets',            icon: <Store size={24} />,  label: 'Daftar Cabang' },
+      { path: '/retail/finance/summary',     icon: <BarChart2 size={24} />,     label: 'Laba Rugi' },
+      { path: '/retail/finance/cash',        icon: <TrendingUp size={24} />,    label: 'Catatan Kas' },
+      { path: '/retail/finance/payables',    icon: <ArrowDownLeft size={24} />, label: 'Hutang Supplier' },
+      { path: '/retail/finance/receivables', icon: <ArrowUpRight size={24} />,  label: 'Piutang Pelanggan' },
+      { path: '/retail/finance/transfers',   icon: <ArrowRightLeft size={24} />,label: 'Mutasi Kas' },
+      { path: '/retail/finance/cash-flow',   icon: <RefreshCw size={24} />,     label: 'Arus Kas' },
+      { path: '/retail/finance/tax-report',  icon: <FileText size={24} />,      label: 'Laporan Pajak' },
+      { path: '/retail/finance-categories',  icon: <Tag size={24} />,           label: 'Kategori Keuangan' },
     ]
   },
+
+  // ── 7. Laporan Bisnis ──
+  {
+    section: 'Laporan Bisnis',
+    icon: <BarChart2 size={20} />,
+    items: [
+      { path: '/retail/reports/sales',       icon: <BarChart2 size={24} />,    label: 'Laporan Penjualan' },
+      { path: '/retail/reports/products',    icon: <ShoppingCart size={24} />, label: 'Laporan Produk Terlaris' },
+      { path: '/retail/reports/margins',     icon: <TrendingUp size={24} />,   label: 'Laporan Margin Keuntungan' },
+      { path: '/retail/reports/customers',   icon: <UserCheck size={24} />,    label: 'Laporan Pelanggan' },
+      { path: '/retail/reports/consignment', icon: <Package size={24} />,     label: 'Laporan Konsinyasi' },
+      { path: '/retail/reports/shifts',      icon: <Users size={24} />,        label: 'Laporan Kasir & Shift' },
+      { path: '/retail/reports/payments',    icon: <CreditCard size={24} />,   label: 'Laporan Pembayaran & Pajak' },
+    ]
+  },
+
+  // ── 8. Karyawan & Akses ──
   {
     section: 'Karyawan & Akses',
     icon: <Users size={20} />,
     items: [
       { path: '/retail/staff', icon: <Users size={24} />,     label: 'Data Pegawai' },
-      { path: '/retail/roles', icon: <UserCheck size={24} />, label: 'Jabatan & Akses' },
+      { path: '/retail/roles', icon: <UserCheck size={24} />, label: 'Jabatan & Hak Akses' },
     ]
   },
+
+  // ── 9. Pengaturan & Sistem ──
   {
-    section: 'Laporan',
-    icon: <BarChart2 size={20} />,
-    items: [
-      { path: '/retail/reports/sales',     icon: <BarChart2 size={24} />,    label: 'Laporan Penjualan' },
-      { path: '/retail/reports/products',  icon: <ShoppingCart size={24} />, label: 'Laporan Produk' },
-      { path: '/retail/reports/margins',   icon: <TrendingUp size={24} />,   label: 'Laporan Margin Produk' },
-      { path: '/retail/reports/customers', icon: <UserCheck size={24} />,    label: 'Laporan Pelanggan' },
-      { path: '/retail/reports/consignment', icon: <Package size={24} />,    label: 'Laporan Konsinyasi' },
-      { path: '/retail/reports/shifts',    icon: <Users size={24} />,        label: 'Laporan Kasir & Shift' },
-      { path: '/retail/reports/payments',  icon: <CreditCard size={24} />,   label: 'Laporan Metode & Pajak' },
-    ]
-  },
-  {
-    section: 'Keuangan',
-    icon: <Wallet size={20} />,
-    items: [
-      { path: '/retail/finance/summary',     icon: <BarChart2 size={24} />, label: 'Laba Rugi' },
-      { path: '/retail/finance/cash',        icon: <TrendingUp size={24} />,    label: 'Catatan Kas' },
-      { path: '/retail/finance/payables',    icon: <ArrowDownLeft size={24} />,    label: 'Hutang Supplier' },
-      { path: '/retail/finance/receivables', icon: <ArrowUpRight size={24} />,    label: 'Piutang Pelanggan' },
-      { path: '/retail/finance/transfers',   icon: <ArrowRightLeft size={24} />,label: 'Mutasi Kas' },
-      { path: '/retail/finance/cash-flow',   icon: <RefreshCw size={24} />,     label: 'Arus Kas' },
-      { path: '/retail/finance/tax-report',  icon: <FileText size={24} />,      label: 'Laporan Pajak' },
-    ]
-  },
-  {
-    section: 'Sistem & Paket',
+    section: 'Pengaturan & Sistem',
     icon: <Settings size={20} />,
     items: [
-      { path: '/retail/guide',         icon: <BookOpen size={24} />,   label: 'Buku Panduan & SOP' },
-      { path: '/retail/settings',      icon: <Settings size={24} />,   label: 'Pengaturan Toko' },
-      { path: '/retail/developer-api', icon: <Zap size={24} />,        label: 'Integrasi API & Webhook' },
-      { path: '/retail/backup',        icon: <Archive size={24} />,    label: 'Backup Data Toko' },
-      { path: '/retail/subscription',  icon: <CreditCard size={24} />, label: 'Paket Langganan' },
-      { path: '/retail/support',       icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
+      { path: '/retail/settings',      icon: <Settings size={24} />, label: 'Pengaturan Toko' },
+      { path: '/retail/backup',        icon: <Archive size={24} />,  label: 'Cadangan Data (Backup)' },
+      { path: '/retail/developer-api', icon: <Zap size={24} />,      label: 'Integrasi API & Webhook' },
+    ]
+  },
+
+  // ── 10. Bantuan & Langganan ──
+  {
+    section: 'Bantuan & Langganan',
+    icon: <HelpCircle size={20} />,
+    items: [
+      { path: '/retail/guide',        icon: <BookOpen size={24} />,   label: 'Panduan & SOP Toko' },
+      { path: '/retail/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
+      { path: '/retail/support',      icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
     ]
   }
 ]
@@ -651,16 +663,16 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
         <div
           className="sidebar__logo"
           style={{
-            padding: isMini ? '16px 0' : '16px 16px',
-            justifyContent: isMini ? 'center' : 'flex-start',
+            padding: '16px 0',
+            justifyContent: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
           }}
         >
-          <div className="sidebar__logo-icon" style={{ overflow: 'hidden' }}><img src={storeIconUrl || logoUrl || bizoraLogo} alt="BIZORA" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 14 }} /></div>
-          {!isMini && (
-            <div className="sidebar__logo-text">
-              <div className="sidebar__logo-brand">BIZORA</div>
-            </div>
-          )}
+          <div className="sidebar__logo-icon">
+            <img src={user?.store_icon_url || storeIconUrl || logoUrl || bizoraLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
         </div>
 
         {/* ── Nav ── */}
@@ -851,12 +863,13 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
             return (
               <div key={section.section} className="sidebar__section" style={{ margin: 0 }}>
                 {isMini ? (
-                  /* Collapsed admin: show group icon with tooltip */
+                  /* Collapsed admin: show group icon with click-to-open flyout */
                   <div
                     role="button"
-                    className={`sidebar__item ${hasActive ? 'sidebar__item--active' : ''}`}
+                    className={`sidebar__item ${openSection === section.section || hasActive ? 'sidebar__item--active' : ''}`}
+                    onClick={(e) => handleGroupIconClick(section.section, e)}
                     title={section.section}
-                    style={{ cursor: 'default', paddingLeft: 0, justifyContent: 'center' }}
+                    style={{ cursor: 'pointer', paddingLeft: 0, justifyContent: 'center' }}
                   >
                     <span className="sidebar__item-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {section.icon || <Database size={18} />}
@@ -909,8 +922,8 @@ export default function Sidebar({ collapsed, mobileOpen, onToggle }) {
 
       </aside>
 
-      {/* ── Collapsed-rail flyout (retail only, click-triggered, hidden by default) ── */}
-      {isRetail && isMini && openSection && (
+      {/* ── Collapsed-rail flyout (click-triggered, hidden by default) ── */}
+      {isMini && openSection && (
         <CollapsedGroupFlyout
           key={openSection}
           section={currentNavItems.find(s => s.section === openSection)}

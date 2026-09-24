@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Package, 
-  Search, 
-  AlertTriangle,
-  Plus,
-  Edit2,
-  Trash2,
-  AlertCircle
-} from 'lucide-react';
+import { Package, Search, AlertTriangle, Plus, Pencil, Trash2, AlertCircle } from '@/constants/icons';
 import { formatRupiah } from '../data/mockData';
 import usePagination from '../../../../hooks/usePagination';
 import RetailPagination from '../../../retail/components/RetailPagination';
@@ -102,24 +94,24 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ inventory, setting
         ))}
       </div>
 
-      {/* Inventory Controls */}
-      <div className="flex flex-row justify-between gap-3 items-center bg-white p-3 rounded-2xl border border-slate-200 shadow-xs w-full overflow-x-auto scrollbar-none">
-        <div className="relative flex-1 max-w-md min-w-[200px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      {/* Inventory Controls (Universal Height 38px) */}
+      <div className="flex flex-row justify-between gap-3 items-center bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs w-full overflow-x-auto scrollbar-none">
+        <div className="relative flex-1 max-w-md min-w-[200px] h-[38px] flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 shadow-xs">
+          <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
           <input
             type="text"
             placeholder="Cari nama barang, kode, kategori..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all outline-none"
+            className="w-full text-xs text-slate-800 outline-none bg-transparent placeholder:text-slate-400 font-normal"
           />
         </div>
 
         <button
           onClick={handleAdd}
-          className="flex shrink-0 items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold transition-all shadow-sm shadow-blue-600/20 whitespace-nowrap"
+          className="h-[38px] flex shrink-0 items-center justify-center gap-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs whitespace-nowrap cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 stroke-[3]" />
           <span>Tambah Sparepart</span>
         </button>
       </div>
@@ -128,14 +120,14 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ inventory, setting
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-50/90 border-b border-slate-200/80 text-slate-500 font-semibold uppercase text-[10px] tracking-wider">
+            <thead className="bg-slate-50/90 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11.5px] tracking-wider">
               <tr>
-                <th className="py-3 px-4">Info Barang</th>
+                <th className="py-3 px-6">Info Barang</th>
                 <th className="py-3 px-4">Kategori</th>
                 <th className="py-3 px-4 text-right">Harga Satuan</th>
                 <th className="py-3 px-4 text-center">Stok Tersedia</th>
                 <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-center">Aksi</th>
+                <th className="py-3 px-6 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -174,21 +166,21 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ inventory, setting
                       </span>
                     )}
                   </td>
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center justify-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <td className="py-3 px-6 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
                       <button 
                         onClick={() => handleEdit(item)}
-                        className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                        className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                         title="Edit Barang"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Pencil size={14} />
                       </button>
                       <button 
                         onClick={() => handleDelete(item)}
-                        className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors"
+                        className="w-7 h-7 rounded-lg hover:bg-rose-50 flex items-center justify-center text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                         title="Hapus Barang"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>

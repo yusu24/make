@@ -8,8 +8,8 @@ import {
   Truck, ZoomIn, ZoomOut, Maximize2, Minimize2, Eye, Network, GitCommit,
   Download, Filter, HelpCircle, Info, Utensils, Coffee, QrCode, Flame,
   Clock, Trash2, Sliders, Star, Activity, Scale, Trees, Globe, ShoppingBag,
-  Wrench, ClipboardList
-} from 'lucide-react';
+  Wrench, ClipboardList, Pencil, Type, AlertCircle, LayoutDashboard, Shield, CreditCard
+} from '@/constants/icons';
 import './Shared.css';
 
 export default function ModuleDocumentation() {
@@ -3512,6 +3512,251 @@ export default function ModuleDocumentation() {
         { method: 'PATCH', path: '/api/admin/testimonials/{id}/toggle', name: 'Toggle Aktifkan Testimoni', perm: 'admin', desc: 'Mengubah status publikasi ulasan secara instan' },
         { method: 'DELETE', path: '/api/admin/testimonials/{id}', name: 'Hapus Testimoni', perm: 'admin', desc: 'Menghapus data ulasan pelanggan dari database' }
       ]
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // [7] MODUL SAAS CORE & SUPER ADMIN PLATFORM
+    // ─────────────────────────────────────────────────────────────────────────
+    admin: {
+      key: 'admin',
+      icon: <Shield size={18} />,
+      title: 'Modul SaaS Core & Super Admin Platform',
+      description: 'Pusat tata kelola multi-tenant Bizora: manajemen tenant UMKM, verifikasi legalitas KYC, katalog paket & fitur, billing & invoice otomatis, audit log keamanan, monitoring performa sistem, kamus design system UI terpusat, dan cadangan database fisik.',
+      version: 'v2.5.0 (Centralized Design System, 225-Icon Catalog & Role-Based KYC)',
+      lastUpdated: '2026-09-20',
+      leadDeveloper: 'Bizora Platform & Security Engineering Team',
+
+      domains: [
+        { id: 'all', label: 'Semua Domain (Full ERD)', color: '#4f46e5' },
+        { id: 'core', label: 'Core & Multi-Tenant', color: '#6366f1' },
+        { id: 'kyc', label: 'Verifikasi KYC', color: '#10b981' },
+        { id: 'billing', label: 'Paket, Langganan & Faktur', color: '#d97706' },
+        { id: 'security', label: 'Security & Audit Logs', color: '#dc2626' },
+        { id: 'cms', label: 'Dokumentasi & Design System', color: '#8b5cf6' },
+      ],
+
+      techStack: {
+        backend: [
+          { name: 'Laravel 12.x', role: 'Backend REST API Engine & Multi-tenant Scopes', tag: 'Framework' },
+          { name: 'PHP 8.2+', role: 'Server-side Execution Runtime & Strict Types', tag: 'Runtime' },
+          { name: 'Laravel Sanctum', role: 'Stateful SPA Token Authentication & Role Guards', tag: 'Auth' },
+          { name: 'Eloquent Multi-Tenant ORM', role: 'Global Tenant Scope Isolation & Audit Trails', tag: 'ORM' },
+          { name: 'Automated Cron Scheduler', role: 'Otomasi Pengingat Tagihan H-7/H-3/H-1 dan Daily DB Backup (02:00 WIB)', tag: 'Scheduler' },
+          { name: 'DomPDF Engine', role: 'Server-side Invoice PDF & Article Guide Exporter', tag: 'PDF' },
+        ],
+        frontend: [
+          { name: 'React 18.x (SPA)', role: 'Single Page Architecture dengan Lazy Loading Routes', tag: 'UI Library' },
+          { name: 'Vite 5.x + Fast HMR', role: 'Modern Frontend Bundler dengan Path Alias @/constants/icons', tag: 'Bundler' },
+          { name: 'Centralized Icon Catalog', role: '225 Aset Visual Lucide Icons terstandar tanpa external dependency leakage', tag: 'Icons' },
+          { name: 'Tailwind CSS + Scoped Variables', role: 'Design Tokens untuk Card Dictionary & Font Dictionary', tag: 'Styling' },
+          { name: 'Axios Interceptors', role: 'Global Error Handling, Token Injection & Session Expiry Detection', tag: 'Networking' },
+          { name: 'Recharts 2.x', role: 'Visualisasi Analitik Pendapatan, Distribusi Tenant & Top 10 Produk', tag: 'Analytics' },
+        ],
+        database: [
+          { name: 'MySQL 8.0+ / MariaDB', role: 'Relational Database Utama dengan ACID Transaction', tag: 'Primary DB' },
+          { name: 'Composite Indexes', role: 'Indeks performa pada [tenant_id, status, created_at]', tag: 'Optimization' },
+          { name: 'Soft Deletes Integrity', role: 'Penghapusan aman tenant, user, dan transaksi untuk audit trail', tag: 'Audit' },
+        ]
+      },
+
+      features: [
+        {
+          category: 'Manajemen Tenant & Verifikasi KYC',
+          icon: <Store size={20} className="text-primary" />,
+          items: [
+            'Daftar Tenant UMKM lengkap dengan filter kategori bisnis, status paket, dan tanggal kadaluarsa',
+            'Impersonate Tenant (Login sebagai tenant secara aman untuk troubleshooting bantuan teknis)',
+            'Portal Verifikasi KYC dengan preview berkas e-KTP, NIB/SKU izin usaha, dan foto tempat bisnis fisik',
+            'Alur persetujuan KYC dengan pencatatan alasan penolakan spesifik dan SLA 1x24 jam kerja',
+            'Katalog Kategori Bisnis dinamis (Retail, Kuliner, Budidaya, Jasa, Seller Hub)'
+          ]
+        },
+        {
+          category: 'Paket, Langganan & Faktur Keuangan',
+          icon: <CreditCard size={20} className="text-primary" />,
+          items: [
+            'Manajemen Paket Berlangganan (Basic, Pro, Enterprise) dengan kuota limit kasir dan outlet',
+            'Verifikasi Pembayaran Manual & Konfirmasi Bukti Transfer di Permintaan Langganan',
+            'Penerbitan Faktur Pajak PPN (11%) otomatis dengan nomor invoice unik (INV-YYYYMM-XXXX)',
+            'Pengaturan Identitas Faktur: Nama badan usaha, NPWP, rekening bank penerima, dan tanda tangan digital',
+            'Otomasi Pengingat Jatuh Tempo (H-7, H-3, H-1, H+3) via dashboard alert dan email'
+          ]
+        },
+        {
+          category: 'Keamanan, Audit Trail & Cadangan Data',
+          icon: <ShieldCheck size={20} className="text-primary" />,
+          items: [
+            'Log Aktivitas Sistem: Merekam aksi sensitif, alamat IP pengakses, user agent, dan timestamp',
+            'Role & Hak Akses Administrator (RBAC) dengan pemisahan peran Super Admin vs Support Staff',
+            'Monitoring Kesehatan Server: Latensi database, kapasitas disk penyimpanan, dan status worker',
+            'Cadangan Data (Backup): Eksekusi dump SQL manual atau terjadwal otomatis pada pukul 02:00 WIB'
+          ]
+        },
+        {
+          category: 'Pusat Dokumentasi & Design System Terpusat',
+          icon: <Sparkles size={20} className="text-primary" />,
+          items: [
+            'Pusat Dokumentasi Publik & Panduan Tenant dengan pencarian artikel instan dan ekspor PDF resmi',
+            'CMS Dokumentasi (Kelola Dokumentasi) untuk membuat artikel panduan dan SOP baru',
+            'Kamus Icon UI Terpusat: 225 aset visual Lucide dengan aturan harmonisasi nama resmi',
+            'Kamus Card UI: Standarisasi kartu KPI, container tabel, formulir, dan token desain',
+            'Kamus Font & Tipografi: Hierarki teks resmi Plus Jakarta Sans, skala ukuran, dan kontras warna'
+          ]
+        }
+      ],
+
+      erdNodes: [
+        { id: 'tenants', label: 'tenants', x: 260, y: 150, domain: 'core' },
+        { id: 'users', label: 'users', x: 60, y: 150, domain: 'core' },
+        { id: 'business_categories', label: 'business_categories', x: 260, y: 30, domain: 'core' },
+        { id: 'tenant_verifications', label: 'tenant_verifications', x: 480, y: 150, domain: 'kyc' },
+        { id: 'subscription_plans', label: 'subscription_plans', x: 260, y: 320, domain: 'billing' },
+        { id: 'subscription_requests', label: 'subscription_requests', x: 480, y: 320, domain: 'billing' },
+        { id: 'invoices', label: 'invoices', x: 480, y: 450, domain: 'billing' },
+        { id: 'activity_logs', label: 'activity_logs', x: 60, y: 320, domain: 'security' },
+        { id: 'saas_roles', label: 'saas_roles', x: 60, y: 30, domain: 'security' },
+        { id: 'documentation_categories', label: 'documentation_categories', x: 700, y: 150, domain: 'cms' },
+        { id: 'documentation_articles', label: 'documentation_articles', x: 700, y: 320, domain: 'cms' },
+        { id: 'backup_logs', label: 'backup_logs', x: 60, y: 450, domain: 'security' },
+      ],
+
+      erdEdges: [
+        { from: 'users', to: 'tenants', type: '1:N', label: 'owns / belongs' },
+        { from: 'business_categories', to: 'tenants', type: '1:N', label: 'categorizes' },
+        { from: 'tenants', to: 'tenant_verifications', type: '1:1', label: 'submits KYC' },
+        { from: 'subscription_plans', to: 'tenants', type: '1:N', label: 'subscribes' },
+        { from: 'tenants', to: 'subscription_requests', type: '1:N', label: 'requests plan' },
+        { from: 'tenants', to: 'invoices', type: '1:N', label: 'billed to' },
+        { from: 'users', to: 'activity_logs', type: '1:N', label: 'logs action' },
+        { from: 'documentation_categories', to: 'documentation_articles', type: '1:N', label: 'groups' },
+      ],
+
+      erdEntities: [
+        {
+          table: 'tenants',
+          description: 'Penyimpan data ruang kerja entitas bisnis UMKM dengan isolasi data terpusat dan status langganan',
+          keys: ['PK: id', 'UK: tenant_id', 'FK: user_id', 'FK: business_category_id'],
+          columns: ['id', 'tenant_id (VARCHAR)', 'user_id (BIGINT)', 'business_category_id (BIGINT)', 'business_name', 'subscription_plan', 'status', 'trial_ends_at', 'created_at', 'updated_at', 'deleted_at'],
+          relationships: ['N to 1: users', 'N to 1: business_categories', '1 to 1: tenant_verifications', '1 to N: invoices']
+        },
+        {
+          table: 'users',
+          description: 'Tabel akun otentikasi pengguna platform (Super Admin, Owner Tenant, dan Kasir)',
+          keys: ['PK: id', 'UK: email', 'FK: tenant_id'],
+          columns: ['id', 'name', 'email', 'password', 'role (admin|tenant_owner|staff)', 'tenant_id (VARCHAR)', 'phone', 'is_active (BOOLEAN)', 'created_at'],
+          relationships: ['1 to N: tenants', '1 to N: activity_logs']
+        },
+        {
+          table: 'business_categories',
+          description: 'Master kategori bidang industri bisnis yang menentukan modul UI yang dimuat tenant',
+          keys: ['PK: id', 'UK: slug'],
+          columns: ['id', 'name', 'slug', 'icon', 'description', 'is_active', 'created_at'],
+          relationships: ['1 to N: tenants']
+        },
+        {
+          table: 'tenant_verifications',
+          description: 'Data pengajuan identitas legalitas KYC tenant beserta lampiran berkas dan status verifikasi admin',
+          keys: ['PK: id', 'FK: tenant_id'],
+          columns: ['id', 'tenant_id (VARCHAR)', 'id_card_number', 'id_card_photo', 'business_license_photo', 'business_photo', 'status (pending|approved|rejected)', 'rejection_reason', 'verified_at', 'verified_by'],
+          relationships: ['1 to 1: tenants']
+        },
+        {
+          table: 'subscription_plans',
+          description: 'Master paket langganan Bizora (Starter, Pro, Enterprise) beserta kuota transaksi dan fitur',
+          keys: ['PK: id', 'UK: slug'],
+          columns: ['id', 'name', 'slug', 'price_monthly', 'price_annually', 'max_users', 'max_outlets', 'features (JSON)', 'is_active'],
+          relationships: ['1 to N: subscription_requests', '1 to N: tenants']
+        },
+        {
+          table: 'subscription_requests',
+          description: 'Antrean pengajuan upgrade atau perpanjangan paket dengan bukti bayar transfer manual',
+          keys: ['PK: id', 'FK: tenant_id', 'FK: plan_id'],
+          columns: ['id', 'tenant_id', 'plan_id', 'billing_cycle (monthly|annually)', 'amount', 'payment_proof', 'status (pending|approved|rejected)', 'verified_at', 'created_at'],
+          relationships: ['N to 1: tenants', 'N to 1: subscription_plans']
+        },
+        {
+          table: 'invoices',
+          description: 'Faktur penagihan langganan resmi ber-PPN dengan nomor seri faktur dan status pelunasan',
+          keys: ['PK: id', 'UK: invoice_number', 'FK: tenant_id'],
+          columns: ['id', 'invoice_number', 'tenant_id', 'amount', 'tax_amount', 'total_amount', 'status (unpaid|paid|cancelled)', 'due_date', 'paid_at', 'created_at'],
+          relationships: ['N to 1: tenants']
+        },
+        {
+          table: 'activity_logs',
+          description: 'Audit trail rekaman aktivitas pengguna platform untuk forensik keamanan dan akuntabilitas',
+          keys: ['PK: id', 'FK: user_id'],
+          columns: ['id', 'user_id', 'tenant_id', 'action', 'description', 'ip_address', 'user_agent', 'payload (JSON)', 'created_at'],
+          relationships: ['N to 1: users']
+        },
+        {
+          table: 'documentation_articles',
+          description: 'Pusat artikel panduan pengguna dan SOP operasional sistem yang dapat dicari dan diekspor ke PDF',
+          keys: ['PK: id', 'UK: slug', 'FK: category_id'],
+          columns: ['id', 'category_id', 'title', 'slug', 'short_description', 'content (LONGTEXT)', 'module', 'status', 'version', 'published_at'],
+          relationships: ['N to 1: documentation_categories']
+        }
+      ],
+
+      directoryStructure: [
+        {
+          section: 'Backend SaaS Architecture (Laravel 12)',
+          tree: `backend/
+├── app/
+│   ├── Http/Controllers/Api/
+│   │   ├── AdminDashboardController.php        # Ringkasan KPI Tenant, Omzet & Chart
+│   │   ├── TenantController.php                # CRUD Tenant, Status & Impersonation
+│   │   ├── TenantVerificationController.php    # Verifikasi KYC & Approval SLA
+│   │   ├── SubscriptionController.php          # Approval Bukti Transfer & Paket
+│   │   ├── InvoiceSettingsController.php       # Templat Faktur & Rekening Bank
+│   │   ├── SubscriptionReminderController.php  # Otomasi Pengingat Tagihan H-7 s/d H+3
+│   │   ├── ActivityLogController.php           # Audit Trail & Log Keamanan
+│   │   ├── BackupController.php                # Database Dump & Download File SQL
+│   │   └── DocumentationReaderController.php   # API Panduan & Ekspor PDF
+│   └── Models/
+│       ├── Tenant.php                          # Model Tenant dengan Scopes
+│       ├── TenantVerification.php              # Model Dokumen KYC
+│       ├── SubscriptionPlan.php                # Model Paket Langganan
+│       └── ActivityLog.php                     # Model Audit Log
+└── routes/api.php                              # Group prefix('admin')->middleware('role:admin')`
+        },
+        {
+          section: 'Frontend SaaS Admin Architecture (React 18)',
+          tree: `frontend/src/
+├── apps/admin/
+│   ├── pages/
+│   │   ├── Dashboard.jsx                       # KPI Platform, Distribusi Paket & Omzet
+│   │   ├── Tenants.jsx                         # Manajemen Tenant & Filter Kategori
+│   │   ├── TenantVerifications.jsx             # Verifikasi KYC & Pratinjau KTP/NIB
+│   │   ├── Subscriptions.jsx                   # Pelanggan Aktif & Permintaan Upgrade
+│   │   ├── Finance.jsx & InvoiceSettings.jsx   # Faktur Keuangan & Pengaturan Invoice
+│   │   ├── ActivityLogs.jsx                    # Security & Audit Log Table
+│   │   ├── Backups.jsx                         # Pembuatan & Pengunduhan Dump DB
+│   │   ├── IconDictionary.jsx                  # Kamus 225 Icon & Harmonisasi Aset
+│   │   ├── CardDictionary.jsx                  # Kamus Standarisasi Kartu UI & KPI
+│   │   ├── FontDictionary.jsx                  # Kamus Tipografi & Skala Font
+│   │   ├── DocumentationCenter.jsx             # Pusat Dokumentasi Interaktif & PDF
+│   │   └── ModuleDocumentation.jsx             # Arsitektur Modul & Visual ERD Schema
+├── constants/
+│   └── icons.js                                # Centralized Icon Registry (@/constants/icons)
+└── components/
+    ├── Header.jsx                              # Navtop Header dengan PAGE_TITLES Mapping
+    └── DocumentTitleHandler.jsx                # Browser Tab Synchronizer`
+        }
+      ],
+
+      apiEndpoints: [
+        { method: 'GET', path: '/api/admin/dashboard', name: 'Statistik KPI Platform', perm: 'admin', desc: 'Mengambil ringkasan total tenant, omzet, MRR, dan distribusi paket' },
+        { method: 'GET', path: '/api/admin/tenants', name: 'Daftar Tenant UMKM', perm: 'admin', desc: 'Mengambil seluruh daftar tenant dengan filter kategori dan status' },
+        { method: 'POST', path: '/api/admin/tenants/impersonate', name: 'Impersonate Tenant', perm: 'admin', desc: 'Membuat token autentikasi sementara untuk login sebagai tenant' },
+        { method: 'GET', path: '/api/admin/kyc', name: 'Daftar Pengajuan KYC', perm: 'admin', desc: 'Mengambil antrean verifikasi berkas KTP dan NIB tenant' },
+        { method: 'POST', path: '/api/admin/kyc/{id}/approve', name: 'Setujui KYC Tenant', perm: 'admin', desc: 'Menyetujui verifikasi legalitas dan memberikan badge terverifikasi' },
+        { method: 'POST', path: '/api/admin/kyc/{id}/reject', name: 'Tolak KYC Tenant', perm: 'admin', desc: 'Menolak verifikasi dengan menyertakan alasan spesifik' },
+        { method: 'GET', path: '/api/admin/subscriptions', name: 'Daftar Langganan Tenant', perm: 'admin', desc: 'Mengambil status masa aktif dan paket seluruh tenant' },
+        { method: 'POST', path: '/api/admin/subscriptions/{id}/activate', name: 'Aktivasi Paket Manual', perm: 'admin', desc: 'Mengonfirmasi transfer bukti bayar dan memperpanjang masa aktif' },
+        { method: 'GET', path: '/api/admin/logs', name: 'Audit Trail Sistem', perm: 'admin', desc: 'Mengambil riwayat log aktivitas keamanan dan aksi sensitif' },
+        { method: 'GET', path: '/api/admin/backups', name: 'Daftar File Cadangan DB', perm: 'admin', desc: 'Mengambil riwayat dump database SQL yang tersedia di server' },
+        { method: 'POST', path: '/api/admin/backups', name: 'Trigger Backup Database', perm: 'admin', desc: 'Menjalankan eksekusi mysqldump untuk pencadangan database manual' }
+      ]
     }
   };
 
@@ -3529,6 +3774,26 @@ export default function ModuleDocumentation() {
   );
 
   const getNodeById = (id) => currentDoc.erdNodes.find(n => n.id === id);
+
+  const currentModuleColor = {
+    admin: '#4338ca',
+    retail: '#4f46e5',
+    kuliner: '#ea580c',
+    budidaya: '#1B4332',
+    seller: '#0284c7',
+    jasa: '#6d28d9',
+    landing: '#ec4899',
+  }[selectedModule] || '#4f46e5';
+
+  const currentModuleGradient = {
+    admin: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%)',
+    retail: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+    kuliner: 'linear-gradient(135deg, #ea580c 0%, #d97706 100%)',
+    budidaya: 'linear-gradient(135deg, #1B4332 0%, #059669 100%)',
+    seller: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
+    jasa: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)',
+    landing: 'linear-gradient(135deg, #be185d 0%, #f472b6 100%)',
+  }[selectedModule] || 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)';
 
   return (
     <div className="animate-fade-in">
@@ -3549,24 +3814,22 @@ export default function ModuleDocumentation() {
         </div>
 
         {/* Module Selector Dropdown */}
-        <div style={{ minWidth: 260 }}>
+        <div style={{ minWidth: 240 }}>
           <select
+            id="select-documentation-module"
+            className="form-input"
             value={selectedModule}
             onChange={(e) => handleModuleChange(e.target.value)}
             style={{
               width: '100%',
-              padding: '10px 16px',
-              borderRadius: '10px',
-              border: '1px solid #cbd5e1',
-              backgroundColor: '#fff',
-              fontSize: '14px',
-              fontWeight: 600,
-              color: '#334155',
+              height: 38,
+              padding: '0 32px 0 12px',
+              fontSize: 13,
               cursor: 'pointer',
-              outline: 'none',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+              outline: 'none'
             }}
           >
+            <option value="admin">🛡️ SaaS Core &amp; Super Admin</option>
             <option value="retail">🏪 Modul Retail</option>
             <option value="kuliner">🍽️ Modul Kuliner (F&amp;B)</option>
             <option value="budidaya">🐔 Modul Budidaya &amp; Peternakan</option>
@@ -3579,15 +3842,7 @@ export default function ModuleDocumentation() {
 
       {/* Module Highlight Banner */}
       <div className="module-hero-banner" style={{
-        background: selectedModule === 'kuliner'
-          ? 'linear-gradient(135deg, #ea580c 0%, #d97706 100%)'
-          : (selectedModule === 'budidaya'
-            ? 'linear-gradient(135deg, #1B4332 0%, #059669 100%)'
-            : (selectedModule === 'seller'
-              ? 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)'
-              : (selectedModule === 'jasa'
-                ? 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)'
-                : (selectedModule === 'landing' ? 'linear-gradient(135deg, #be185d 0%, #f472b6 100%)' : 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)')))),
+        background: currentModuleGradient,
         color: '#ffffff',
         padding: '20px 24px',
         borderRadius: 16,
@@ -3645,11 +3900,12 @@ export default function ModuleDocumentation() {
         paddingBottom: 2
       }}>
         {[
-          { id: 'erd', label: '🖼️ Database & ERD Schema', icon: <Database size={17} /> },
-          { id: 'overview', label: '⚙️ Tech Stack & Framework', icon: <Cpu size={17} /> },
-          { id: 'features', label: '⚡ Daftar Fitur Lengkap', icon: <Layers size={17} /> },
-          { id: 'directory', label: '🧩 Struktur Folder & Kode', icon: <FolderTree size={17} /> },
-          { id: 'endpoints', label: '🔌 API Reference', icon: <Terminal size={17} /> },
+          { id: 'erd', label: 'Database & ERD Schema', icon: <Database size={16} /> },
+          { id: 'overview', label: 'Tech Stack & Framework', icon: <Cpu size={16} /> },
+          { id: 'features', label: 'Daftar Fitur Lengkap', icon: <Layers size={16} /> },
+          { id: 'directory', label: 'Struktur Folder & Kode', icon: <FolderTree size={16} /> },
+          { id: 'endpoints', label: 'API Reference', icon: <Terminal size={16} /> },
+          { id: 'design-system', label: 'Standar Desain & SOP', icon: <Sparkles size={16} /> },
         ].map(tab => (
           <button
             key={tab.id}
@@ -3664,18 +3920,15 @@ export default function ModuleDocumentation() {
               background: 'transparent',
               fontSize: 14,
               fontWeight: activeTab === tab.id ? 700 : 500,
-              color: activeTab === tab.id
-                ? (selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#1B4332' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : (selectedModule === 'landing' ? '#ec4899' : '#4f46e5')))))
-                : 'var(--text-secondary)',
-              borderBottom: activeTab === tab.id
-                ? `3px solid ${selectedModule === 'kuliner' ? '#ea580c' : (selectedModule === 'budidaya' ? '#1B4332' : (selectedModule === 'seller' ? '#0284c7' : (selectedModule === 'jasa' ? '#6d28d9' : (selectedModule === 'landing' ? '#ec4899' : '#4f46e5'))))}`
-                : '3px solid transparent',
+              color: activeTab === tab.id ? currentModuleColor : 'var(--text-secondary)',
+              borderBottom: activeTab === tab.id ? `3px solid ${currentModuleColor}` : '3px solid transparent',
               cursor: 'pointer',
               transition: 'all 0.2s',
               whiteSpace: 'nowrap'
             }}
           >
-            {tab.label}
+            {tab.icon}
+            <span>{tab.label}</span>
           </button>
         ))}
       </div>
@@ -4437,6 +4690,212 @@ export default function ModuleDocumentation() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* TAB: DESIGN SYSTEM & OPERATIONAL SOP */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'design-system' && (
+        <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Header Banner */}
+          <div style={{
+            background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)',
+            borderRadius: 18,
+            padding: '24px 28px',
+            color: '#fff',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 16
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+                  Bizora UI & SOP v2.5
+                </span>
+                <span style={{ fontSize: 12, opacity: 0.8 }}>Design System & Standard Operating Procedures</span>
+              </div>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>Standar Desain UI & SOP Operasional</h2>
+              <p style={{ margin: '8px 0 0 0', fontSize: 13.5, opacity: 0.9, maxWidth: 650, lineHeight: 1.6 }}>
+                Fondasi arsitektur antarmuka terpusat (Icon, Card, Tipografi, Header) dan tata kelola operasional SaaS Admin untuk menjaga kualitas, konsistensi, dan keandalan sistem.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <a href="/admin/icon-dictionary" className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(8px)' }}>
+                <Sparkles size={14} /> Kamus Icon
+              </a>
+              <a href="/admin/card-dictionary" className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(8px)' }}>
+                <LayoutDashboard size={14} /> Kamus Card
+              </a>
+              <a href="/admin/font-dictionary" className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(8px)' }}>
+                <Type size={14} /> Kamus Font
+              </a>
+              <a href="/doc-center" className="btn btn-sm" style={{ background: '#fff', color: '#312e81', fontWeight: 700 }}>
+                <BookOpen size={14} /> Pusat Dokumentasi
+              </a>
+            </div>
+          </div>
+
+          {/* 4 Pilar Design System Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+            {/* Pilar 1: Kamus Icon */}
+            <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, border: '1px solid var(--border-color, #e2e8f0)', padding: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>1. Kamus Icon Terpusat</h4>
+                  <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>225 Aset Visual Terdaftar</span>
+                </div>
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12 }}>
+                Semua icon wajib diimpor dari <code>@/constants/icons</code>. Dilarang mengimpor langsung dari <code>lucide-react</code>.
+              </p>
+              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 8, fontSize: 11.5, color: '#334155' }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Harmonisasi Icon Resmi:</div>
+                <div>• Edit: <code>Pencil</code> (bukan <code>Edit/Edit3</code>)</div>
+                <div>• Sukses: <code>CheckCircle2</code> (bukan <code>CheckCircle</code>)</div>
+                <div>• Grafik: <code>BarChart2</code> (bukan <code>BarChart3</code>)</div>
+                <div>• Alert: <code>AlertCircle</code> (bukan <code>CircleAlert</code>)</div>
+              </div>
+            </div>
+
+            {/* Pilar 2: Kamus Card */}
+            <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, border: '1px solid var(--border-color, #e2e8f0)', padding: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#f0fdf4', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <LayoutDashboard size={20} />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>2. Kamus Card UI</h4>
+                  <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>Standar Container & KPI</span>
+                </div>
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12 }}>
+                Kartu dibagi menjadi 4 varian baku: Kartu KPI Stat, Kontainer Tabel Data, Formulir Konfigurasi, dan Callout SOP.
+              </p>
+              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 8, fontSize: 11.5, color: '#334155' }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Token Baku Kartu:</div>
+                <div>• Radius: <code>rounded-2xl</code> (16px)</div>
+                <div>• Border: <code>border-slate-200</code> (Light) / <code>slate-800</code></div>
+                <div>• Padding: <code>p-4 sm:p-6</code></div>
+                <div>• Shadow: <code>shadow-xs</code> / <code>shadow-sm</code></div>
+              </div>
+            </div>
+
+            {/* Pilar 3: Kamus Font */}
+            <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, border: '1px solid var(--border-color, #e2e8f0)', padding: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#fdf2f8', color: '#db2777', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Type size={20} />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>3. Kamus Font & Tipografi</h4>
+                  <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>Hierarki Teks Terukur</span>
+                </div>
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12 }}>
+                Font primer: <b>Plus Jakarta Sans</b>. Monospace: <b>JetBrains Mono</b> untuk kode, NIK, dan SKU.
+              </p>
+              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 8, fontSize: 11.5, color: '#334155' }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Skala Ukuran Teks:</div>
+                <div>• H1 Page Title: <code>24px / Bold (700)</code></div>
+                <div>• H2 Section Title: <code>18-20px / Semibold</code></div>
+                <div>• Body Text: <code>13-14px / Regular (400)</code></div>
+                <div>• Caption / Meta: <code>11-12px / Medium (500)</code></div>
+              </div>
+            </div>
+
+            {/* Pilar 4: Konvensi Navtop & Judul */}
+            <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, border: '1px solid var(--border-color, #e2e8f0)', padding: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#faf5ff', color: '#9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Globe size={20} />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>4. Konvensi Judul Navtop</h4>
+                  <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>Sinkronisasi 3 Arah</span>
+                </div>
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12 }}>
+                Judul di <code>Header.jsx</code> wajib selaras 100% dengan teks menu di <code>Sidebar.jsx</code> dan tab di <code>DocumentTitleHandler.jsx</code>.
+              </p>
+              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 8, fontSize: 11.5, color: '#334155' }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Aturan Bebas Fallback:</div>
+                <div>• Dilarang jatuh ke default <i>"Bizora SaaS"</i></div>
+                <div>• Wajib mapping di <code>PAGE_TITLES</code></div>
+                <div>• Fallback dinamis untuk <code>/categories/:id</code></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Ringkasan SOP Operasional SaaS Admin */}
+          <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, border: '1px solid var(--border-color, #e2e8f0)', padding: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ClipboardList size={20} color="#4f46e5" /> Ringkasan SOP Operasional SaaS Admin
+                </h3>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Prosedur baku pengelolaan tenant, langganan, dan keamanan platform</span>
+              </div>
+              <a href="/doc-dashboard" className="btn btn-sm btn-outline">
+                <FileText size={14} /> Kelola SOP di CMS
+              </a>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+              {/* SOP 1 */}
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <ShieldCheck size={18} color="#4f46e5" />
+                  <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>SOP Verifikasi KYC Tenant</h4>
+                </div>
+                <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+                  Pemeriksaan dokumen identitas KTP pemilik, izin usaha NIB/SKU, dan foto fisik lokasi usaha. SLA verifikasi maksimal <b>1 x 24 jam kerja</b>. Setiap penolakan wajib menyertakan alasan spesifik.
+                </p>
+                <div style={{ marginTop: 10, fontSize: 12, fontWeight: 600 }}>
+                  <a href="/kyc" style={{ color: '#4f46e5', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    Buka Verifikasi KYC <ArrowRight size={13} />
+                  </a>
+                </div>
+              </div>
+
+              {/* SOP 2 */}
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <Wallet size={18} color="#16a34a" />
+                  <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>SOP Langganan & Faktur</h4>
+                </div>
+                <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+                  Tata kelola siklus langganan: Trial (14 hari) → Active → Grace Period (H+1 s/d H+3) → Suspended (H+4). Verifikasi manual mutasi rekening bank dan penerbitan faktur ber-PPN otomatis.
+                </p>
+                <div style={{ marginTop: 10, fontSize: 12, fontWeight: 600 }}>
+                  <a href="/subscription-requests" style={{ color: '#16a34a', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    Buka Permintaan Langganan <ArrowRight size={13} />
+                  </a>
+                </div>
+              </div>
+
+              {/* SOP 3 */}
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <Lock size={18} color="#d97706" />
+                  <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>SOP Keamanan & Backup Data</h4>
+                </div>
+                <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+                  Audit mingguan log aktivitas sensitif di <code>/logs</code>, rotasi password admin 90 hari, larangan shared credentials, dan backup otomatis harian pukul 02:00 WIB dengan uji pemulihan kuartalan.
+                </p>
+                <div style={{ marginTop: 10, fontSize: 12, fontWeight: 600 }}>
+                  <a href="/backups" style={{ color: '#d97706', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    Buka Cadangan Data <ArrowRight size={13} />
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { AlertTriangle, HelpCircle, CheckCircle2, X } from 'lucide-react';
+import { AlertTriangle, HelpCircle, CheckCircle2, X } from '@/constants/icons';
 
 const ConfirmContext = createContext(null);
 

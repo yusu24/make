@@ -123,7 +123,7 @@ export default function Inventory() {
   }
 
   return (
-    <div className="aq-container" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+    <div className="aq-container">
       
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
@@ -132,7 +132,7 @@ export default function Inventory() {
           <button 
             className="btn btn-secondary"
             onClick={() => { setSelectedItem(null); setStockData({ type: 'in', quantity: '', note: terms.stockReceiveNote, total_cost: 0 }); setShowReceiveModal(true) }}
-            style={{ height: '38px', padding: '0 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: 6 }}
+            style={{ height: '38px', padding: '0 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span>
             <span>Penerimaan Barang</span>
@@ -140,7 +140,7 @@ export default function Inventory() {
           <button 
             className="btn btn-primary"
             onClick={() => { setSelectedItem(null); setFormData({ name: '', category: defaultCat, stock: 0, unit: 'kg', min_stock: 0, price_per_unit: 0, description: '' }); setShowModal(true) }}
-            style={{ height: '38px', padding: '0 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: 6 }}
+            style={{ height: '38px', padding: '0 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: 6, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
             <span>Tambah Barang</span>
@@ -156,15 +156,15 @@ export default function Inventory() {
           { label: 'Stok Habis', val: items.filter(i => i.stock <= 0).length, icon: 'error', bg: '#FEE2E2', color: '#EF4444' },
           { label: 'Nilai Aset', val: `Rp ${(items.reduce((acc, i) => acc + (i.stock * i.price_per_unit), 0)).toLocaleString()}`, icon: 'payments', bg: '#E0E7FF', color: '#4F46E5' },
         ].map((s, i) => (
-          <div key={i} style={{ ...cardStyle, padding: '16px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, shrink: 0 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{s.icon}</span>
+          <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">{s.label}</span>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{s.icon}</span>
               </div>
-              <div>
-                <p className="aq-kpi-label">{s.label}</p>
-                <h2 className="aq-kpi-value">{s.val}</h2>
-              </div>
+            </div>
+            <div>
+              <h2 className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight m-0">{s.val}</h2>
             </div>
           </div>
         ))}
@@ -172,7 +172,7 @@ export default function Inventory() {
 
       {/* Filter & Content */}
       <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ position: 'relative', minWidth: '200px' }}>
               <span className="material-symbols-outlined" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748B', fontSize: '18px', pointerEvents: 'none' }}>category</span>
@@ -181,10 +181,11 @@ export default function Inventory() {
                 onChange={e => setCategory(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '8px 30px 8px 34px',
+                  height: '38px',
+                  padding: '0 30px 0 34px',
                   background: '#ffffff',
                   border: '1px solid #CBD5E1',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   fontSize: '13px',
                   fontWeight: '500',
                   color: '#0f172a',
@@ -209,7 +210,7 @@ export default function Inventory() {
               placeholder="Cari barang..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '8px 12px 8px 34px', background: '#ffffff', border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+              style={{ width: '100%', height: '38px', padding: '0 12px 0 34px', background: '#ffffff', border: '1px solid #CBD5E1', borderRadius: '12px', fontSize: '13px', outline: 'none' }}
             />
           </div>
         </div>
@@ -234,8 +235,8 @@ export default function Inventory() {
                 <TableHeaderCell>Kategori</TableHeaderCell>
                 <TableHeaderCell>Stok</TableHeaderCell>
                 <TableHeaderCell>Satuan</TableHeaderCell>
-                <TableHeaderCell>Harga Satuan</TableHeaderCell>
-                <TableHeaderCell>Total Nilai</TableHeaderCell>
+                <TableHeaderCell style={{ textAlign: 'right' }}>Harga Satuan</TableHeaderCell>
+                <TableHeaderCell style={{ textAlign: 'right' }}>Total Nilai</TableHeaderCell>
                 <TableHeaderCell>Status</TableHeaderCell>
                 <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
               </TableRow>
@@ -246,24 +247,24 @@ export default function Inventory() {
                   return (
                     <TableRow key={item.id}>
                       <TableCell>
-                        <div style={{ fontSize: '13px', color: '#0f172a' }}>{item.name}</div>
+                        <div style={{ fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>{item.name}</div>
                       </TableCell>
                       <TableCell>
                         <span style={{ fontSize: '12px', textTransform: 'capitalize', color: '#64748B' }}>{item.category}</span>
                       </TableCell>
                       <TableCell>
-                        <span style={{ fontSize: '13px', color: '#0f172a' }}>{parseFloat(item.stock).toLocaleString()}</span>
+                        <span style={{ fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>{parseFloat(item.stock).toLocaleString()}</span>
                       </TableCell>
                       <TableCell>
                         <span style={{ fontSize: '12px', textTransform: 'capitalize', color: '#64748B' }}>{item.unit}</span>
                       </TableCell>
-                      <TableCell>
-                        <span style={{ color: '#334155', fontSize: '12.5px' }}>
+                      <TableCell style={{ textAlign: 'right' }}>
+                        <span style={{ color: '#334155', fontSize: '13px' }}>
                           Rp {parseFloat(item.price_per_unit).toLocaleString()}
                         </span>
                       </TableCell>
-                      <TableCell>
-                        <span style={{ color: '#1B4332', fontSize: '12.5px' }}>
+                      <TableCell style={{ textAlign: 'right' }}>
+                        <span style={{ color: '#1B4332', fontSize: '13px', fontWeight: 500 }}>
                           Rp {(parseFloat(item.stock) * parseFloat(item.price_per_unit || 0)).toLocaleString()}
                         </span>
                       </TableCell>

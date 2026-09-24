@@ -16,7 +16,7 @@ const FullMenu = () => {
                           new URLSearchParams(location.search).get('tenant') ||
                           (user?.tenant_id);
   
-  const { t, language, toggleLanguage } = useTranslation();
+  const { t } = useTranslation();
   const [activeCat, setActiveCat] = useState('semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState('default');
@@ -457,16 +457,6 @@ const FullMenu = () => {
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h1 className="kl-page-title" style={{ margin: 0 }}>{settings?.store_name || 'Toko Kuliner'} <em>Menu</em></h1>
-          <button
-            onClick={toggleLanguage}
-            style={{
-              padding: '4px 10px', borderRadius: 8, background: '#fff',
-              border: '1px solid #e2e8f0', color: '#1e293b', fontSize: 12,
-              fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-            }}
-          >
-            {language === 'id' ? 'ID' : 'EN'}
-          </button>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingBag, X } from 'lucide-react';
+import { ShoppingBag, X } from '@/constants/icons';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
 

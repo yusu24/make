@@ -1,5 +1,11 @@
 import React from 'react';
-import { X, Printer, Wrench, Shield, CheckCircle } from 'lucide-react';
+import {
+  X,
+  Printer,
+  Wrench,
+  Shield,
+  CheckCircle2
+} from '@/constants/icons';
 import { WorkOrder } from '../types';
 import { formatRupiah } from '../data/mockData';
 import { useJasa } from '../contexts/JasaContext';
@@ -19,8 +25,11 @@ export const PrintSpkModal: React.FC<PrintSpkModalProps> = ({ order, onClose }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-5">
-      <div className="bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[95vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[2000] overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-5">
+      <div className="bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[92dvh] sm:max-h-[95vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150">
+        
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 sm:hidden shrink-0 print:hidden" />
         
         {/* Modal Controls (Hidden in Print) */}
         <div className="p-4 sm:p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between print:hidden">

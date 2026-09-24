@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Printer, FileText } from 'lucide-react';
+import { X, Printer, FileText } from '@/constants/icons';
 import { Expense, Order } from '../../types';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import '../../../seller-print.css';
@@ -40,10 +40,12 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/70 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-3xl max-h-[92dvh] sm:max-h-[92vh] flex flex-col overflow-hidden">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto my-2.5 sm:hidden shrink-0 print:hidden" />
         {/* Header (Screen Modal) */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800 print:hidden">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800 print:hidden shrink-0">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-indigo-600" />
             <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100">
@@ -53,7 +55,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="hidden sm:flex px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Printer className="w-4 h-4" />
               <span>Cetak / Simpan PDF</span>
@@ -216,6 +218,26 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
             </div>
 
           </div>
+        </div>
+
+        {/* Mobile Action Footer */}
+        <div 
+          className="p-3.5 sm:p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2 shrink-0 sm:hidden print:hidden"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs cursor-pointer"
+          >
+            Tutup
+          </button>
+          <button
+            onClick={handlePrint}
+            className="flex-1 justify-center py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Cetak / Simpan PDF</span>
+          </button>
         </div>
       </div>
     </div>

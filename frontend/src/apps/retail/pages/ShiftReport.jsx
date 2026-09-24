@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Users, RefreshCw, Printer, Clock, ArrowDownRight, ArrowUpRight, Calendar } from 'lucide-react';
+import { Users, RefreshCw, Printer, Clock, ArrowDownRight, ArrowUpRight, Calendar } from '@/constants/icons';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import RetailLoading from '../components/RetailLoading';
@@ -75,7 +75,7 @@ export default function ShiftReport() {
            </div>
 
            <button className="btn btn-secondary flex items-center gap-2" onClick={loadData}>
-              <RefreshCw size={16} /> Segarkan
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Segarkan
            </button>
            <button className="btn btn-primary flex items-center gap-2" onClick={() => window.print()}>
               <Printer size={16} /> Cetak laporan
@@ -84,58 +84,54 @@ export default function ShiftReport() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" style={{ marginBottom: 24 }}>
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 shrink-0">
-                  <Clock size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Total Shift Terselesaikan</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+               <Clock size={20} />
             </div>
-            <div>
-               <p className="text-2xl text-slate-900 leading-tight font-semibold">{data.total_shifts}</p>
+            <div className="flex-1 min-w-0">
+               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Shift Selesai</span>
+               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{data.total_shifts}</p>
+               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total sesi ditutup</p>
             </div>
          </div>
 
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
-                  <ArrowUpRight size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Pemasukan Sistem (Expected)</span>
+         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+               <ArrowUpRight size={20} />
             </div>
-            <div>
-               <p className="text-2xl text-slate-900 leading-tight font-semibold">
+            <div className="flex-1 min-w-0">
+               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Pemasukan Sistem</span>
+               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
                   Rp {Math.round(data.total_expected).toLocaleString('id-ID')}
                </p>
+               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total omzet sistem</p>
             </div>
          </div>
 
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
-                  <Users size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Total Setoran Kasir (Actual)</span>
+         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+               <Users size={20} />
             </div>
-            <div>
-               <p className="text-2xl text-slate-900 leading-tight font-semibold">
+            <div className="flex-1 min-w-0">
+               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Setoran Kasir</span>
+               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
                   Rp {Math.round(data.total_actual).toLocaleString('id-ID')}
                </p>
+               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Uang kas diserahkan</p>
             </div>
          </div>
 
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm">
-            <div className="flex items-center gap-3">
-               <div className={`p-2.5 rounded-xl border shrink-0 ${data.total_variance < 0 ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-slate-500/10 border-slate-500/20 text-slate-500'}`}>
-                  <ArrowDownRight size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Total Selisih (Variance)</span>
+         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${data.total_variance < 0 ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-600'}`}>
+               <ArrowDownRight size={20} />
             </div>
-            <div>
-               <p className={`text-2xl leading-tight font-semibold ${data.total_variance < 0 ? 'text-red-500' : 'text-slate-900'}`}>
+            <div className="flex-1 min-w-0">
+               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Selisih</span>
+               <p className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${data.total_variance < 0 ? 'text-rose-600' : 'text-slate-900'}`}>
                   Rp {Math.round(data.total_variance).toLocaleString('id-ID')}
                </p>
+               <p className="text-xs text-slate-400 mt-1 font-['Inter']">{data.total_variance === 0 ? 'Seimbang (Pas)' : data.total_variance < 0 ? 'Minus' : 'Surplus'}</p>
             </div>
          </div>
       </div>

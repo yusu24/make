@@ -1,22 +1,9 @@
 import React from 'react';
-import { Truck, Package, Clock, ShieldAlert, ArrowLeftRight, ChevronRight } from 'lucide-react';
+import { Truck, Package, Clock, ShieldAlert, ArrowLeftRight, ChevronRight } from '@/constants/icons';
 
 export const ShippingDashboardView: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Truck className="w-5 h-5 text-teal-600 shrink-0" />
-            <span className="truncate">Fulfillment Dashboard</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Pantau status pemrosesan dan pengiriman pesanan secara real-time.
-          </p>
-        </div>
-      </div>
-
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 flex flex-col justify-between group cursor-pointer hover:border-blue-300 dark:hover:border-blue-500/50 transition-colors">

@@ -236,6 +236,10 @@
 .table-wrap table td .retail-badge-secondary { color: #8a99ad !important; }
 
 /* Override untuk baris berlatar belakang gelap / highlight seperti Laba Bersih */
+tr.net-profit-row td,
+tr.bg-slate-900 td,
+tr[style*="#0f172a"] td,
+td.net-profit-cell,
 .table-wrap table tr.net-profit-row td,
 .table-wrap table tr.bg-slate-900 td,
 .table-wrap table td.net-profit-cell {
@@ -243,18 +247,24 @@
   font-weight: 800 !important;
 }
 
+tr.net-profit-row td.net-profit-sub,
+td.net-profit-sub,
 .table-wrap table tr.net-profit-row td.net-profit-sub,
 .table-wrap table td.net-profit-sub {
   color: #cbd5e1 !important;
   font-weight: 700 !important;
 }
 
+tr.net-profit-row td.net-profit-positive,
+td.net-profit-positive,
 .table-wrap table tr.net-profit-row td.net-profit-positive,
 .table-wrap table td.net-profit-positive {
   color: #34d399 !important;
   font-weight: 900 !important;
 }
 
+tr.net-profit-row td.net-profit-negative,
+td.net-profit-negative,
 .table-wrap table tr.net-profit-row td.net-profit-negative,
 .table-wrap table td.net-profit-negative {
   color: #f87171 !important;
@@ -324,10 +334,11 @@
 }
 
 .toolbar-no-stack .btn-reset-sync {
-  width: 40px !important;
-  height: 40px !important;
+  width: 38px !important;
+  height: 38px !important;
   flex-shrink: 0 !important;
   padding: 0 !important;
+  border-radius: 10px !important;
 }
 
 @media (max-width: 768px) {
@@ -416,9 +427,9 @@
   display: flex;
   align-items: center;
   background: var(--retail-bg);
-  border-radius: 14px;
-  padding: 0 16px;
-  height: 42px;
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 38px;
   border: 1px solid transparent;
   transition: all 0.2s ease;
   width: 100%;
@@ -464,9 +475,11 @@
 
 
 .btn-reset-sync {
+  width: 38px;
+  height: 38px;
   background: var(--retail-bg);
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--retail-text-primary);
   display: flex;
   align-items: center;
@@ -474,6 +487,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .btn-reset-sync:hover {
@@ -752,8 +766,8 @@
 }
 
 .retail-filter-select {
-  height: 40px !important;
-  line-height: 38px !important;
+  height: 38px !important;
+  line-height: 36px !important;
   padding: 0 32px 0 12px !important;
   font-size: 13px !important;
   font-weight: 500 !important;
@@ -787,8 +801,8 @@
 }
 
 .retail-filter-date-input {
-  height: 40px !important;
-  line-height: 38px !important;
+  height: 38px !important;
+  line-height: 36px !important;
   padding: 0 10px !important;
   font-size: 13px !important;
   font-weight: 500 !important;

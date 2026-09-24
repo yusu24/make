@@ -5,7 +5,7 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
-import { Edit3, Trash2, Scale } from 'lucide-react';
+import { Pencil, Trash2, Scale, RefreshCw } from '@/constants/icons';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import EmptyTableState from '../../../components/EmptyTableState';
@@ -82,12 +82,17 @@ export default function Units() {
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="p-6 flex justify-between items-center gap-3 flex-wrap">
-          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
-            <input
-              placeholder="Cari satuan..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+          <div className="flex items-center gap-3">
+            <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
+              <input
+                placeholder="Cari satuan..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <button onClick={fetchUnits} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+              <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+            </button>
           </div>
           <form onSubmit={addUnit} className="flex items-center gap-3">
              <div className="airy-input-wrapper" style={{ width: 280, margin: 0 }}>
@@ -134,7 +139,7 @@ export default function Units() {
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                      <button className="btn btn-sm btn-ghost" onClick={() => setEditingUnit(u)} title="Edit Satuan"><Edit3 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost" onClick={() => setEditingUnit(u)} title="Edit Satuan"><Pencil size={14} /></button>
                       <button
                         className="btn btn-sm btn-ghost retail-text-danger"
                         title="Hapus Satuan"

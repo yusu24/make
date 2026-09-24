@@ -33,6 +33,17 @@ export interface Technician {
   activeWorkOrderId?: string;
   skills: string[];
   certifications: string[];
+  user_id?: number | null;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    role?: string;
+    jasaRole?: {
+      id: number;
+      name: string;
+    };
+  } | null;
 }
 
 export interface ServiceItemRequirement {
@@ -284,4 +295,89 @@ export interface JournalEntry {
   creditAccount: string;
   amount: number;
 }
+
+export interface JasaRole {
+  id: number;
+  name: string;
+  description?: string;
+  permissions: Record<string, boolean>;
+  users_count?: number;
+  created_at?: string;
+}
+
+export const DEFAULT_JASA_ROLES: JasaRole[] = [
+  {
+    id: 1,
+    name: 'Owner / Manajer',
+    description: 'Akses penuh ke seluruh operasional, keuangan, dan pengaturan jasa.',
+    permissions: {
+      spk_view_all: true, spk_view_assigned: true, spk_create: true, spk_edit: true,
+      spk_update_status: true, spk_delete: true, spk_print: true,
+      pos_checkout: true, pos_invoices: true, pos_discount: true,
+      inventory_view: true, inventory_use_parts: true, inventory_manage: true,
+      technicians_manage: true, contracts_manage: true, catalog_manage: true,
+      finance_view: true, finance_expenses: true, finance_accounts: true,
+      staff_manage: true
+    },
+    users_count: 1
+  },
+  {
+    id: 2,
+    name: 'Admin / Kasir Toko',
+    description: 'Membuat SPK, kasir POS, menerima pembayaran faktur, dan cetak nota.',
+    permissions: {
+      spk_view_all: true, spk_view_assigned: true, spk_create: true, spk_edit: true,
+      spk_update_status: true, spk_delete: false, spk_print: true,
+      pos_checkout: true, pos_invoices: true, pos_discount: true,
+      inventory_view: true, inventory_use_parts: true, inventory_manage: false,
+      technicians_manage: false, contracts_manage: true, catalog_manage: true,
+      finance_view: false, finance_expenses: true, finance_accounts: false,
+      staff_manage: false
+    },
+    users_count: 0
+  },
+  {
+    id: 3,
+    name: 'Teknisi / Operator Lapangan',
+    description: 'Melihat SPK penugasan sendiri, update status servis di lapangan, dan pemakaian sparepart.',
+    permissions: {
+      spk_view_all: false, spk_view_assigned: true, spk_create: false, spk_edit: false,
+      spk_update_status: true, spk_delete: false, spk_print: true,
+      pos_checkout: false, pos_invoices: false, pos_discount: false,
+      inventory_view: true, inventory_use_parts: true, inventory_manage: false,
+      technicians_manage: false, contracts_manage: false, catalog_manage: false,
+      finance_view: false, finance_expenses: false, finance_accounts: false,
+      staff_manage: false
+    },
+    users_count: 0
+  },
+  {
+    id: 4,
+    name: 'Staf Gudang & Sparepart',
+    description: 'Kelola persediaan suku cadang, material, dan stok barang masuk.',
+    permissions: {
+      spk_view_all: true, spk_view_assigned: false, spk_create: false, spk_edit: false,
+      spk_update_status: false, spk_delete: false, spk_print: true,
+      pos_checkout: false, pos_invoices: false, pos_discount: false,
+      inventory_view: true, inventory_use_parts: true, inventory_manage: true,
+      technicians_manage: false, contracts_manage: false, catalog_manage: false,
+      finance_view: false, finance_expenses: false, finance_accounts: false,
+      staff_manage: false
+    },
+    users_count: 0
+  }
+];
+
+export interface JasaStaff {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  role?: string;
+  status: 'active' | 'inactive';
+  jasa_role_id?: number;
+  jasa_role?: JasaRole;
+  technician?: Technician;
+}
+
 

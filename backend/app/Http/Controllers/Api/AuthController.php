@@ -291,9 +291,9 @@ class AuthController extends Controller
                     'password' => Hash::make($devPassword),
                 ]);
             }
-            $user->load(['businessCategory', 'tenant', 'retailRole', 'kulinerRole']);
+            $user->load(['businessCategory', 'tenant.businessCategory', 'retailRole', 'kulinerRole', 'jasaRole']);
         } else {
-            $user = User::with(['businessCategory', 'tenant', 'retailRole', 'kulinerRole'])
+            $user = User::with(['businessCategory', 'tenant.businessCategory', 'retailRole', 'kulinerRole', 'jasaRole'])
                 ->whereRaw('LOWER(email) = ?', [strtolower($inputEmail)])
                 ->first();
 
@@ -377,7 +377,7 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        $user = $request->user()->load('businessCategory', 'tenant', 'retailRole', 'kulinerRole');
+        $user = $request->user()->load('businessCategory', 'tenant.businessCategory', 'retailRole', 'kulinerRole', 'jasaRole');
         return response()->json(['success' => true, 'data' => $this->formatUser($user)]);
     }
 
@@ -446,6 +446,22 @@ class AuthController extends Controller
             }
         }
 
+        $tenantSettings = is_array($tenant?->settings) ? $tenant->settings : (json_decode($tenant?->settings ?? '[]', true) ?: []);
+        $storeIconPath = $tenantSettings['store_icon_path'] ?? $tenantSettings['logo_path'] ?? null;
+        if (!$storeIconPath && $tenant) {
+            $retailSetting = \App\Models\RetailSetting::where('tenant_id', $tenant->tenant_id)->first();
+            if ($retailSetting && $retailSetting->store_icon_path) {
+                $storeIconPath = $retailSetting->store_icon_path;
+            }
+        }
+        $storeIconUrl = $storeIconPath ? asset('storage/' . $storeIconPath) : null;
+
+        // Resolve business_category: prefer user's own, fallback to tenant's category
+        $businessCategory = $user->businessCategory;
+        if (!$businessCategory && $tenant) {
+            $businessCategory = $tenant->businessCategory;
+        }
+
         return [
             'id'                => $user->id,
             'name'              => $user->name,
@@ -453,18 +469,20 @@ class AuthController extends Controller
             'role'              => $user->role,
             'tenant_id'         => $user->tenant_id,
             'tenant_name'       => $tenant?->business_name ?? $tenant?->name,
+            'store_icon_path'   => $storeIconPath,
+            'store_icon_url'    => $storeIconUrl,
             'status'            => $user->status,
             'phone'             => $user->phone,
-            'business_category' => $user->businessCategory?->name,
-            'business_category_id' => $user->business_category_id,
+            'business_category' => $businessCategory?->name,
+            'business_category_id' => $user->business_category_id ?? $businessCategory?->id,
             'subscription_plan' => $plan,
             'subscription_status' => $status,
             'subscription_days_left' => $daysLeft,
             'plan_features'     => $tenant ? (\App\Models\SubscriptionPlan::forTenant($tenant)?->features ?? []) : [],
             'active_modules'    => $tenant ? $tenant->modules()->where('is_active', true)->pluck('name')->toArray() : [],
-            'permissions'       => ($user->role === 'customer' || $user->role === 'super_admin') 
+            'permissions'       => ($user->role === 'customer' || $user->role === 'super_admin' || $user->role === 'owner') 
                                     ? 'all' 
-                                    : ($user->retailRole ? $user->retailRole->permissions : ($user->kulinerRole ? $user->kulinerRole->permissions : [])),
+                                    : ($user->retailRole ? $user->retailRole->permissions : ($user->kulinerRole ? $user->kulinerRole->permissions : ($user->jasaRole ? $user->jasaRole->permissions : []))),
         ];
     }
 
@@ -687,6 +705,13 @@ class AuthController extends Controller
                 'subscription_plan'    => 'free',
                 'status'               => 'active',
             ]);
+
+            // Establish trusted tenant context for seeders and Eloquent models
+            $request->attributes->set('tenant_id', $tenantId);
+            $request->attributes->set('tenant', $tenant);
+            $request->setUserResolver(fn () => $user);
+            auth()->setUser($user);
+            auth('sanctum')->setUser($user);
 
             // Attach all system modules as active for maximum demo exposure
             if (\Illuminate\Support\Facades\Schema::hasTable('modules') && \Illuminate\Support\Facades\Schema::hasTable('business_modules')) {

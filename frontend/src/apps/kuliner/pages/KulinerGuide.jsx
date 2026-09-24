@@ -27,7 +27,7 @@ import {
   Flame,
   Award,
   Coins
-} from 'lucide-react';
+} from '@/constants/icons';
 
 const KulinerGuide = () => {
   const [activeTab, setActiveTab] = useState('menu');

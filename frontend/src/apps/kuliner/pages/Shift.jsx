@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { X } from '@/constants/icons';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
@@ -162,7 +163,9 @@ export default function Shift() {
           <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{t('kulinerShift.openModalTitle') || 'Buka Shift'}</h2>
-              <button className="kd-close-btn" onClick={() => setShowOpenModal(false)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setShowOpenModal(false)}>
+                <X size={18} />
+              </button>
             </div>
             <form onSubmit={handleOpen}>
               <div className="kd-modal-body">
@@ -185,7 +188,9 @@ export default function Shift() {
           <div className="kd-modal max-w-lg" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{t('kulinerShift.closeModalTitle') || 'Tutup Shift'}</h2>
-              <button className="kd-close-btn" onClick={() => setShowCloseModal(false)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setShowCloseModal(false)}>
+                <X size={18} />
+              </button>
             </div>
             <form onSubmit={handleClose}>
               <div className="kd-modal-body">

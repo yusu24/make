@@ -28,6 +28,11 @@ const AdminDocumentationDashboard = lazy(() => import('../apps/admin/pages/Admin
 const DocumentationCenter = lazy(() => import('../apps/admin/pages/DocumentationCenter'));
 const InvoiceSettings = lazy(() => import('../apps/admin/pages/InvoiceSettings'));
 const SubscriptionReminders = lazy(() => import('../apps/admin/pages/SubscriptionReminders'));
+const IconDictionary = lazy(() => import('../apps/admin/pages/IconDictionary'));
+const CardDictionary = lazy(() => import('../apps/admin/pages/CardDictionary'));
+const FontDictionary = lazy(() => import('../apps/admin/pages/FontDictionary'));
+const UiConsistencyReport = lazy(() => import('../apps/admin/pages/UiConsistencyReport'));
+const RetailStandardsDictionary = lazy(() => import('../apps/admin/pages/RetailStandardsDictionary'));
 
 const adminRoutes = (
   <>
@@ -41,6 +46,7 @@ const adminRoutes = (
     <Route path="tenants" element={<ProtectedRoute adminOnly><Tenants /></ProtectedRoute>} />
     <Route path="admin/tenants" element={<ProtectedRoute adminOnly><Tenants /></ProtectedRoute>} />
     <Route path="kyc" element={<ProtectedRoute adminOnly><TenantVerifications /></ProtectedRoute>} />
+    <Route path="admin/kyc" element={<ProtectedRoute adminOnly><TenantVerifications /></ProtectedRoute>} />
     <Route path="subscriptions" element={<ProtectedRoute adminOnly><Subscriptions defaultTab="list" /></ProtectedRoute>} />
     <Route path="admin/subscriptions" element={<ProtectedRoute adminOnly><Subscriptions defaultTab="list" /></ProtectedRoute>} />
     <Route path="subscription-requests" element={<ProtectedRoute adminOnly><Subscriptions defaultTab="requests" /></ProtectedRoute>} />
@@ -101,6 +107,18 @@ const adminRoutes = (
     <Route path="admin/doc-dashboard" element={<ProtectedRoute adminOnly><AdminDocumentationDashboard /></ProtectedRoute>} />
     <Route path="doc-center" element={<ProtectedRoute adminOnly><DocumentationCenter /></ProtectedRoute>} />
     <Route path="admin/doc-center" element={<ProtectedRoute adminOnly><DocumentationCenter /></ProtectedRoute>} />
+    <Route path="icon-dictionary" element={<ProtectedRoute adminOnly><IconDictionary /></ProtectedRoute>} />
+    <Route path="admin/icon-dictionary" element={<ProtectedRoute adminOnly><IconDictionary /></ProtectedRoute>} />
+    <Route path="card-dictionary" element={<ProtectedRoute adminOnly><CardDictionary /></ProtectedRoute>} />
+    <Route path="admin/card-dictionary" element={<ProtectedRoute adminOnly><CardDictionary /></ProtectedRoute>} />
+    <Route path="font-dictionary" element={<ProtectedRoute adminOnly><FontDictionary /></ProtectedRoute>} />
+    <Route path="admin/font-dictionary" element={<ProtectedRoute adminOnly><FontDictionary /></ProtectedRoute>} />
+    <Route path="ui-consistency" element={<ProtectedRoute adminOnly><UiConsistencyReport /></ProtectedRoute>} />
+    <Route path="admin/ui-consistency" element={<ProtectedRoute adminOnly><UiConsistencyReport /></ProtectedRoute>} />
+    <Route path="retail-standards" element={<ProtectedRoute adminOnly><RetailStandardsDictionary /></ProtectedRoute>} />
+    <Route path="admin/retail-standards" element={<ProtectedRoute adminOnly><RetailStandardsDictionary /></ProtectedRoute>} />
+    <Route path="customer-onboarding" element={<ProtectedRoute adminOnly><CustomerOnboardingGuide /></ProtectedRoute>} />
+    <Route path="admin/customer-onboarding" element={<ProtectedRoute adminOnly><CustomerOnboardingGuide /></ProtectedRoute>} />
     <Route path="profile" element={<Profile />} />
     <Route path="admin/profile" element={<Profile />} />
   </>

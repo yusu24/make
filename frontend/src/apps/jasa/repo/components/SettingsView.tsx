@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Save, 
   AlertCircle, 
@@ -14,12 +14,17 @@ import {
   Shirt, 
   Scissors, 
   Wrench,
-  Check
-} from 'lucide-react';
+  Check,
+  Upload,
+  Trash2,
+  Image as ImageIcon
+} from '@/constants/icons';
 import { jasaApi } from '../services/jasaApi';
 import { useJasa } from '../contexts/JasaContext';
 import { JasaCategoryType, getJasaTerms } from '../hooks/useJasaTerms';
 import { useAuth } from '../../../../contexts/AuthContext';
+import api from '../../../../services/api';
+import bizoraLogo from '../../../../assets/bizora-logo.png';
 
 interface SettingsViewProps {
   settings: any;
@@ -96,7 +101,7 @@ export const CATEGORY_DEFAULTS: Record<JasaCategoryType, {
 };
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefresh, onLoadDummyData }) => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const isDemoAccount = user?.email?.startsWith('demo-') || user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.role === 'superadmin';
   const { category, terms, setCategory, openPicker, categoriesList } = useJasa();
 
@@ -104,7 +109,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefresh,
 
   const [formData, setFormData] = useState({
     businessType: terms.categoryName || currentDefaults.businessType,
-    businessName: 'Bizora Service Center',
+    businessName: user?.tenant_name || 'Bizora Service Center',
     businessPhone: '0812-3456-7890',
     businessAddress: 'Jl. Utama No. 88, Kota Niaga',
     businessSlogan: 'Layanan Cepat, Profesional & Bergaransi',
@@ -122,7 +127,48 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefresh,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
   const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = async (file: File) => {
+    if (!file) return;
+    setLogoUploading(true);
+    setToast(null);
+    try {
+      const fd = new FormData();
+      fd.append('store_icon', file);
+      const res = await api.post('/tenant/branding/logo', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const newUrl = res.data?.data?.store_icon_url;
+      updateUser({ store_icon_url: newUrl });
+      setToast({ type: 'success', message: 'Logo usaha berhasil diperbarui!' });
+      setTimeout(() => setToast(null), 3000);
+    } catch (err: any) {
+      console.error('Failed to upload logo:', err);
+      setToast({ type: 'error', message: err.response?.data?.message || 'Gagal mengunggah logo.' });
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const handleLogoDelete = async () => {
+    if (!window.confirm('Hapus logo usaha dan gunakan logo default Bizora?')) return;
+    setLogoUploading(true);
+    setToast(null);
+    try {
+      await api.delete('/tenant/branding/logo');
+      updateUser({ store_icon_url: null });
+      setToast({ type: 'success', message: 'Logo usaha dikembalikan ke default.' });
+      setTimeout(() => setToast(null), 3000);
+    } catch (err: any) {
+      console.error('Failed to delete logo:', err);
+      setToast({ type: 'error', message: 'Gagal menghapus logo.' });
+    } finally {
+      setLogoUploading(false);
+    }
+  };
 
   // Sync formData when category changes
   const handleSelectCategory = (catId: JasaCategoryType) => {
@@ -201,6 +247,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefresh,
         inventory_categories: formData.inventoryCategories.split(',').map(s => s.trim()).filter(Boolean),
       };
       await jasaApi.updateSettings(payload);
+      updateUser({ tenant_name: formData.businessName });
       setToast({ type: 'success', message: 'Pengaturan modul jasa berhasil disimpan!' });
       onRefresh();
       setTimeout(() => setToast(null), 3000);
@@ -376,6 +423,57 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefresh,
             </div>
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-slate-500" />
+                Logo & Ikon Usaha Jasa
+              </label>
+              <p className="text-xs text-slate-500">Logo ini akan tampil di sidebar modul jasa, header SPK/invoice, dan struk kasir.</p>
+              
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                style={{ display: 'none' }}
+                onChange={e => {
+                  if (e.target.files?.[0]) handleLogoUpload(e.target.files[0]);
+                  e.target.value = '';
+                }}
+              />
+
+              <div className="flex items-center gap-4 pt-1">
+                <div className="w-16 h-16 rounded-xl border border-slate-200 bg-white p-2 flex items-center justify-center shadow-xs overflow-hidden shrink-0">
+                  <img 
+                    src={user?.store_icon_url || bizoraLogo} 
+                    alt="Logo Usaha" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={logoUploading}
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>{logoUploading ? 'Mengunggah...' : (user?.store_icon_url ? 'Ganti Logo' : 'Unggah Logo')}</span>
+                  </button>
+                  {user?.store_icon_url && (
+                    <button
+                      type="button"
+                      onClick={handleLogoDelete}
+                      disabled={logoUploading}
+                      className="px-3 py-2 rounded-xl text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>Hapus</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-700">Nama Usaha / Workshop / Toko</label>
               <input

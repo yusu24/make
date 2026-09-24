@@ -1,0 +1,30 @@
+/* ═══════════════════════════════════════════════
+   Bizora Jasa — Service & Workshop Design System
+   ═══════════════════════════════════════════════ */
+
+/* ── Google Fonts (Inter + Plus Jakarta Sans Design Tokens) ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ── Typography System (Unified with Design System Dictionary) ── */
+.jasa-scope {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.jasa-scope h1,
+.jasa-scope h2,
+.jasa-scope h3,
+.jasa-scope h4,
+.jasa-scope h5,
+.jasa-scope h6,
+.jasa-scope .font-headline {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 600 !important;
+}
+
+.jasa-scope table,
+.jasa-scope input,
+.jasa-scope select,
+.jasa-scope textarea,
+.jasa-scope button {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}

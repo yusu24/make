@@ -10,9 +10,18 @@ use Illuminate\Support\Carbon;
 
 class StaffController extends Controller
 {
+    private function getTenantId(Request $request): string
+    {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403));
+        }
+        return $tenantId;
+    }
+
     public function index(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $search   = $request->query('search');
         $status   = $request->query('status');
 
@@ -53,7 +62,7 @@ class StaffController extends Controller
 
     public function store(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
 
         $request->validate([
             'name'             => 'required|string|max:255',
@@ -77,7 +86,7 @@ class StaffController extends Controller
 
     public function update(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $staff    = BudidayaStaff::where('tenant_id', $tenantId)->findOrFail($id);
 
         $request->validate([
@@ -99,7 +108,7 @@ class StaffController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $staff    = BudidayaStaff::where('tenant_id', $tenantId)->findOrFail($id);
         $staff->delete();
 

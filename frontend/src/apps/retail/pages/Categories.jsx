@@ -5,7 +5,7 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
-import { Edit3, Trash2, Plus, Search, Tag, RefreshCw } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search, Tag, RefreshCw } from '@/constants/icons';
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -83,7 +83,7 @@ export default function Categories() {
           {/* Add button */}
           <button title="Tambah Kategori"
             className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
             onClick={() => setShowAddModal(true)}
           >
             <Plus size={15} className="mr-2 mobile-no-margin" />
@@ -103,7 +103,7 @@ export default function Categories() {
           <button
             onClick={fetchCategories}
             className="btn-reset-sync"
-            style={{ width: 42, height: 42, flexShrink: 0 }}
+            style={{ width: 38, height: 38, flexShrink: 0 }}
             title="Segarkan Data"
           >
             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
@@ -152,7 +152,7 @@ export default function Categories() {
                           title="Edit"
                           onClick={() => setEditingCategory(c)}
                         >
-                          <Edit3 size={14} />
+                          <Pencil size={14} />
                         </button>
                         <button
                           className="btn btn-sm btn-ghost"

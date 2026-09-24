@@ -3,7 +3,7 @@ import '../retail.css';
 import { api } from '../../../lib/api';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from '@/constants/icons';
 
 export default function CustomerReport() {
   const [data, setData] = useState({ top_customers: [], monthly_spending: [], yearly_spending: [] });

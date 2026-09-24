@@ -4,7 +4,7 @@ import '../retail-print.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Edit3, Trash2, Plus, Printer, Calendar } from 'lucide-react';
+import { Pencil, Trash2, Plus, Printer, Calendar, RefreshCw } from '@/constants/icons';
 import { useReactToPrint } from 'react-to-print';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
@@ -66,6 +66,11 @@ export default function CashTransactions() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchData = () => {
+    fetchCategories();
+    fetchTransactions(startDate, endDate);
   };
 
   useEffect(() => { fetchCategories(); }, []);
@@ -166,7 +171,7 @@ export default function CashTransactions() {
       {withActions && (
         <td style={{ textAlign: 'right' }} className="pr-6">
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <button title="Edit catatan" className="btn btn-sm btn-ghost" onClick={() => openEdit(tx)}><Edit3 size={15} /></button>
+            <button title="Edit catatan" className="btn btn-sm btn-ghost" onClick={() => openEdit(tx)}><Pencil size={15} /></button>
             <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { 
                 if (confirm('Hapus pencatatan kas ini?')) { 
                     const endpoint = tx.tx_type === 'income' ? '/retail/finance/incomes' : '/retail/finance/expenses';
@@ -404,7 +409,7 @@ export default function CashTransactions() {
           <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
             <button
               className="btn btn-primary"
-              style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+              style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
               onClick={openCreate}
             >
               <Plus size={15} className="mr-2 mobile-no-margin" />
@@ -434,6 +439,10 @@ export default function CashTransactions() {
                 <input type="date" className="retail-filter-date-input" value={endDate} onChange={e => setEndDate(e.target.value)} />
               </div>
             )}
+
+            <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+              <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+            </button>
           </div>
 
           <div className="retail-table-responsive"><table className="table">

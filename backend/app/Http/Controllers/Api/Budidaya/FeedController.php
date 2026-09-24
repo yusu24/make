@@ -10,10 +10,19 @@ use Illuminate\Support\Facades\DB;
 
 class FeedController extends Controller
 {
+    private function getTenantId(Request $request): string
+    {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403));
+        }
+        return $tenantId;
+    }
+
     // List feed inventory
     public function index(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $feeds = BudidayaFeedStock::where('tenant_id', $tenantId)->get();
         return response()->json(['data' => $feeds]);
     }
@@ -21,7 +30,7 @@ class FeedController extends Controller
     // Add or update feed stock inventory
     public function store(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $request->validate([
             'name' => 'required|string',
             'stock_kg' => 'required|numeric'
@@ -39,7 +48,7 @@ class FeedController extends Controller
     // Add stock to existing feed
     public function addStock(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $feed = BudidayaFeedStock::where('tenant_id', $tenantId)->findOrFail($id);
         
         $request->validate(['amount_kg' => 'required|numeric|min:0.1']);
@@ -52,7 +61,7 @@ class FeedController extends Controller
     // Log a daily feeding
     public function logFeeding(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $request->validate([
             'cycle_id' => 'required|exists:budidaya_cycles,id',
             'feed_stock_id' => 'required|exists:budidaya_feed_stocks,id',

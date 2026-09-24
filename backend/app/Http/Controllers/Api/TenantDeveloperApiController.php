@@ -33,6 +33,11 @@ class TenantDeveloperApiController extends Controller
             return true;
         }
 
+        // Local development environment bypass (localhost testing)
+        if (app()->environment('local')) {
+            return true;
+        }
+
         $tenant = Tenant::where('tenant_id', $tenantId)->first();
         if (!$tenant) return false;
 
@@ -74,6 +79,7 @@ class TenantDeveloperApiController extends Controller
         return response()->json([
             'success' => true,
             'has_access' => $hasAccess,
+            'is_local' => app()->environment('local'),
             'tenant_id' => $user->tenant_id,
             'subscription_plan' => $tenant->subscription_plan ?? 'free',
             'subscription_status' => $tenant->subscription_status ?? 'active',

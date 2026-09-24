@@ -425,5 +425,294 @@ class DocumentationSeeder extends Seeder
             'published_at' => now(),
             'version' => '1.0'
         ]);
+
+        // ==========================================
+        // 8. SOP & OPERASIONAL SAAS ADMIN
+        // ==========================================
+        $catSopAdmin = DocumentationCategory::create([
+            'name' => 'SOP & Operasional SaaS Admin',
+            'slug' => 'sop-operasional-saas-admin',
+            'module' => 'admin',
+            'order' => 8,
+            'is_active' => true
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catSopAdmin->id,
+            'title' => 'SOP Verifikasi Identitas & Dokumen Legalitas Tenant (KYC)',
+            'slug' => 'sop-verifikasi-kyc-tenant',
+            'short_description' => 'Standar operasional prosedur pemeriksaan kelengkapan identitas KTP, izin usaha NIB, dan persetujuan akun tenant.',
+            'content' => '
+                <p>Verifikasi <i>Know Your Customer</i> (KYC) wajib dilakukan oleh tim Administrator Bizora untuk memastikan bahwa setiap tenant yang menggunakan platform merupakan entitas bisnis nyata dan terhindar dari penyalahgunaan akun atau transaksi ilegal.</p>
+
+                <h2>1. Dokumen yang Wajib Diverifikasi</h2>
+                <p>Setiap calon tenant yang mendaftar dan mengajukan aktivasi wajib melampirkan berkas berikut melalui portal onboarding:</p>
+                <ul>
+                    <li><b>Identitas Pemilik/Penanggung Jawab:</b> Foto KTP/Paspor asli yang masih berlaku, tidak buram, NIK terbaca jelas, dan nama sesuai data profil akun.</li>
+                    <li><b>Legalitas Usaha:</b> NIB (Nomor Induk Berusaha), SKU (Surat Keterangan Usaha) kelurahan, atau NPWP usaha/pribadi.</li>
+                    <li><b>Dokumentasi Fisik Bisnis:</b> Foto plang nama toko/usaha, foto etalase/dapur/bengkel/lahan budidaya nyata yang menunjukkan aktivitas operasional.</li>
+                </ul>
+
+                <h2>2. Alur Pemeriksaan Tim Admin</h2>
+                <ol>
+                    <li>Buka menu <b>Verifikasi KYC Tenant</b> (<code>/kyc</code> atau <code>/admin/kyc</code>).</li>
+                    <li>Pilih pengajuan berstatus <b>PENDING</b>.</li>
+                    <li>Cek silang kesesuaian antara nama pemilik di formulir pendaftaran dengan KTP.</li>
+                    <li>Pastikan masa berlaku dokumen legalitas masih aktif.</li>
+                    <li>Lakukan validasi nomor telepon WhatsApp tenant untuk memastikan kontak dapat dihubungi.</li>
+                </ol>
+
+                <h2>3. Standar Pengambilan Keputusan</h2>
+                <ul>
+                    <li><b>Disetujui (Approved):</b> Berikan status verifikasi valid. Akun tenant otomatis memperoleh badge "Terverifikasi" dan seluruh limit pembatasan operasional dihilangkan.</li>
+                    <li><b>Ditolak (Rejected):</b> Administrator <b>wajib</b> menuliskan catatan alasan penolakan secara spesifik (contoh: <i>"Foto KTP silau dan NIK tidak terbaca. Harap unggah ulang foto KTP dengan pencahayaan jelas."</i>). Notifikasi akan otomatis terkirim ke email tenant.</li>
+                </ul>
+
+                <h2>4. Service Level Agreement (SLA)</h2>
+                <p>Waktu maksimal verifikasi dokumen KYC adalah <b>1 x 24 jam kerja</b> sejak berkas disubmit oleh tenant.</p>
+            ',
+            'status' => 'published',
+            'module' => 'admin',
+            'published_at' => now(),
+            'version' => '1.0'
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catSopAdmin->id,
+            'title' => 'SOP Manajemen Langganan, Faktur & Otomasi Pengingat Tagihan',
+            'slug' => 'sop-manajemen-langganan-faktur-dan-otomasi',
+            'short_description' => 'Prosedur validasi bukti pembayaran transfer manual, aktivasi paket, penerbitan invoice, dan jadwal otomasi pengingat.',
+            'content' => '
+                <p>Panduan tata kelola penagihan langganan (Subscription Lifecycle) untuk menjamin akurasi arus kas dan kelangsungan operasional bisnis tenant.</p>
+
+                <h2>1. Siklus Status Langganan Tenant</h2>
+                <ul>
+                    <li><b>TRIAL (Uji Coba 14 Hari):</b> Diberikan otomatis saat tenant baru selesai mendaftar untuk eksplorasi fitur penuh.</li>
+                    <li><b>ACTIVE (Berlangganan Aktif):</b> Langganan resmi berbayar bulanan atau tahunan. Akses terbuka penuh.</li>
+                    <li><b>GRACE PERIOD (Masa Tenggang H+1 s/d H+3):</b> Masa toleransi setelah tanggal jatuh tempo. Fitur tetap aktif namun muncul banner pengingat tagihan pada dashboard tenant.</li>
+                    <li><b>SUSPENDED (Tangguh / Kunci):</b> Berlaku pada H+4 jika tagihan belum diselesaikan. Tenant diarahkan ke halaman invoice dan tidak dapat memproses transaksi baru.</li>
+                </ul>
+
+                <h2>2. Prosedur Verifikasi Pembayaran Manual</h2>
+                <ol>
+                    <li>Buka menu <b>Permintaan Langganan</b> (<code>/subscription-requests</code>).</li>
+                    <li>Periksa nomor invoice, nama tenant, dan jumlah transfer yang tercantum di bukti mutasi rekening bank Bizora.</li>
+                    <li>Cocokkan nominal hingga 3 digit kode unik (jika menggunakan metode transfer manual).</li>
+                    <li>Klik tombol <b>Aktivasi Paket</b>. Sistem secara otomatis memperpanjang masa berlaku tenant dan menandai invoice sebagai LUNAS.</li>
+                </ol>
+
+                <h2>3. Jadwal Otomasi Pengingat (Subscription Reminders)</h2>
+                <p>Sistem pengingat otomatis di menu <b>Pengingat & Otomasi</b> berjalan setiap hari pada pukul 08:00 WIB:</p>
+                <ul>
+                    <li><b>H-7 Sebelum Jatuh Tempo:</b> Pengingat awal berisi rincian tagihan paket dan tautan pembayaran.</li>
+                    <li><b>H-3 Sebelum Jatuh Tempo:</b> Notifikasi urgensi perpanjangan agar operasional kasir tidak terganggu.</li>
+                    <li><b>H-1 Sebelum Jatuh Tempo:</b> Peringatan jatuh tempo besok hari.</li>
+                    <li><b>H+3 Setelah Jatuh Tempo:</b> Peringatan batas akhir masa tenggang sebelum pembekuan akun.</li>
+                </ul>
+            ',
+            'status' => 'published',
+            'module' => 'admin',
+            'published_at' => now(),
+            'version' => '1.0'
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catSopAdmin->id,
+            'title' => 'SOP Audit Keamanan Sistem, Log Aktivitas & Cadangan Data (Backup)',
+            'slug' => 'sop-keamanan-audit-dan-backup',
+            'short_description' => 'Prosedur pengawasan log aktivitas sensitif, rotasi kredensial administrator, dan kebijakan pencadangan database berkala.',
+            'content' => '
+                <p>Standar perlindungan data platform Bizora SaaS untuk mencegah kebocoran informasi dan menjamin pemulihan cepat saat terjadi gangguan.</p>
+
+                <h2>1. Pengawasan Log Aktivitas & Audit (Audit Trail)</h2>
+                <p>Menu <b>Log Aktivitas & Audit</b> (<code>/logs</code>) merekam seluruh interaksi krusial sistem:</p>
+                <ul>
+                    <li>Percobaan login gagal berulang kali (indikasi <i>brute-force</i>).</li>
+                    <li>Penghapusan data tenant atau reset database.</li>
+                    <li>Perubahan hak akses peran administrator (SaaS Roles).</li>
+                    <li>Ekspor data sensitif pelanggan dalam format spreadsheet/Excel.</li>
+                </ul>
+                <p>Tim keamanan sistem wajib melakukan tinjauan berkala minimal <b>1 kali setiap pekan</b>.</p>
+
+                <h2>2. Kebijakan Akun & Kredensial Administrator</h2>
+                <ul>
+                    <li>Setiap administrator wajib menggunakan akun personal dengan email korporat resmi. Dilarang berbagi akun (*shared credentials*).</li>
+                    <li>Kata sandi wajib minimal 12 karakter kombinasi huruf besar, huruf kecil, angka, dan simbol.</li>
+                    <li>Wajib melakukan rotasi password berkala setiap 90 hari.</li>
+                </ul>
+
+                <h2>3. Prosedur Cadangan Data (Backup)</h2>
+                <p>Akses menu <b>Cadangan Data (Backup)</b> (<code>/backups</code>) untuk mengelola data cadangan:</p>
+                <ul>
+                    <li><b>Jadwal Otomatis:</b> Backup database penuh dieksekusi otomatis setiap hari pada pukul 02:00 WIB (dini hari saat beban traffic terendah).</li>
+                    <li><b>Penyimpanan Terpisah:</b> Berkas dump database disimpan terenkripsi pada server penyimpanan off-site yang berbeda dari server aplikasi utama.</li>
+                    <li><b>Uji Pemulihan (Drill Recovery):</b> Uji coba restorasi database cadangan ke server staging wajib dilakukan minimal 1 kali per kuartal untuk memastikan file dump valid dan tidak korup.</li>
+                </ul>
+            ',
+            'status' => 'published',
+            'module' => 'admin',
+            'published_at' => now(),
+            'version' => '1.0'
+        ]);
+
+        // ==========================================
+        // 9. STANDAR DESAIN & KONSISTENSI UI (DESIGN SYSTEM SOP)
+        // ==========================================
+        $catDesignSystem = DocumentationCategory::create([
+            'name' => 'Standar Desain & Konsistensi UI',
+            'slug' => 'standar-desain-sistem-ui',
+            'module' => 'admin',
+            'order' => 9,
+            'is_active' => true
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catDesignSystem->id,
+            'title' => 'SOP Kamus Icon Terpusat (@/constants/icons)',
+            'slug' => 'sop-kamus-icon-terpusat',
+            'short_description' => 'Aturan resmi penggunaan kamus icon 225 aset visual, path alias terpusat, dan pedoman harmonisasi nama icon.',
+            'content' => '
+                <p>Untuk menjaga konsistensi visual, efisiensi ukuran bundle aplikasi, dan menghindari perbedaan versi icon antar-modul, seluruh pengembang Bizora wajib mematuhi SOP Kamus Icon.</p>
+
+                <h2>1. Aturan Mutlak Import Icon</h2>
+                <p><b>DILARANG</b> mengimpor icon secara langsung dari package eksternal <code>lucide-react</code> di dalam file komponen halaman!</p>
+                <blockquote>
+                    <b>SALAH:</b> <code>import { Search, Plus } from "lucide-react";</code><br>
+                    <b>BENAR:</b> <code>import { Search, Plus } from "@/constants/icons";</code>
+                </blockquote>
+
+                <h2>2. Standar Harmonisasi Nama Icon (Resmi Bizora)</h2>
+                <p>Untuk menghindari pemakaian icon yang berbeda fungsi untuk aksi yang sama, gunakan pedoman baku berikut:</p>
+                <ul>
+                    <li><b>Aksi Ubah / Edit:</b> Wajib menggunakan <code>Pencil</code> (dilarang menggunakan <code>Edit</code> atau <code>Edit3</code>).</li>
+                    <li><b>Indikator Sukses / Centang:</b> Wajib menggunakan <code>CheckCircle2</code> (dilarang menggunakan <code>CheckCircle</code>).</li>
+                    <li><b>Statistik / Grafik Batang:</b> Wajib menggunakan <code>BarChart2</code> (dilarang menggunakan <code>BarChart3</code>).</li>
+                    <li><b>Peringatan / Alert:</b> Wajib menggunakan <code>AlertCircle</code> (dilarang menggunakan <code>CircleAlert</code>).</li>
+                    <li><b>Penyaringan Data / Filter:</b> Wajib menggunakan <code>Filter</code> (dilarang menggunakan <code>ListFilter</code>).</li>
+                </ul>
+
+                <h2>3. Standar Ukuran (Size) & Garis (Stroke)</h2>
+                <ul>
+                    <li><b>Stroke Width:</b> Selalu gunakan default <code>strokeWidth={2}</code> untuk konsistensi ketebalan garis icon.</li>
+                    <li><b>Ukuran 14px - 16px:</b> Digunakan pada tombol kompak (button icon), tag badge, dan inline text link.</li>
+                    <li><b>Ukuran 18px - 20px:</b> Digunakan pada navigasi sidebar, menu tab, dan toolbar aksi tabel.</li>
+                    <li><b>Ukuran 24px+:</b> Digunakan pada kartu statistik metrik (KPI Card) dan header banner modul.</li>
+                </ul>
+
+                <h2>4. Cara Mendaftarkan Icon Baru</h2>
+                <p>Jika fitur Anda memerlukan icon baru yang belum tersedia:</p>
+                <ol>
+                    <li>Buka file <code>frontend/src/constants/icons.js</code>.</li>
+                    <li>Tambahkan ekspor icon tersebut dari <code>lucide-react</code>.</li>
+                    <li>Daftarkan nama, kategori, dan kata kunci pencariannya ke dalam <code>ICON_CATALOG</code> agar muncul pada menu <b>Kamus Icon UI</b> (<code>/admin/icon-dictionary</code>).</li>
+                </ol>
+            ',
+            'status' => 'published',
+            'module' => 'admin',
+            'published_at' => now(),
+            'version' => '1.0'
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catDesignSystem->id,
+            'title' => 'SOP Standarisasi Kartu UI & Metrik KPI (Card Dictionary)',
+            'slug' => 'sop-standarisasi-kartu-ui-kpi',
+            'short_description' => 'Pedoman baku desain kartu metrik KPI, kontainer tabel data, form konfigurasi, dan token visual yang konsisten.',
+            'content' => '
+                <p>Kartu (Card) adalah fondasi tata letak antarmuka Bizora. Modul <b>Kamus Card UI</b> (<code>/admin/card-dictionary</code>) menyediakan cetak biru standar yang wajib diikuti.</p>
+
+                <h2>1. Klasifikasi Jenis Kartu Standar</h2>
+                <ul>
+                    <li><b>Kartu Metrik KPI Stat:</b> Digunakan di baris teratas dashboard untuk menampilkan angka utama (Total Tenant, Omzet, Transaksi). Wajib memuat nilai metrik berukuran besar, label deskripsi, icon aksen latar bulat/persegi tumpul, serta indikator badge tren persentase kenaikan/penurunan.</li>
+                    <li><b>Kartu Kontainer Tabel Data:</b> Membungkus tabel data utama. Wajib memiliki header yang terpisah rapi dengan judul tabel, deskripsi singkat, bilah pencarian, filter, dan tombol aksi (Tambah Data / Ekspor).</li>
+                    <li><b>Kartu Formulir & Konfigurasi:</b> Mengelompokkan input pengaturan ke dalam blok-blok logis dengan judul seksi yang jelas dan tombol simpan di footer kartu.</li>
+                    <li><b>Kartu Panduan & Info (Callout Card):</b> Berlatar aksen lembut (misal: Indigo-50 atau Emerald-50) dengan border kiri tebal untuk menonjolkan tips atau SOP penting.</li>
+                </ul>
+
+                <h2>2. Standar Token Desain Kartu</h2>
+                <ul>
+                    <li><b>Latar Belakang:</b> <code>bg-white</code> (Light Mode) / <code>dark:bg-slate-900</code> (Dark Mode).</li>
+                    <li><b>Garis Tepi (Border):</b> <code>border border-slate-200</code> (Light Mode) / <code>dark:border-slate-800</code>. Hindari garis border gelap pekat.</li>
+                    <li><b>Radius Sudut:</b> Standar utama adalah <code>rounded-2xl</code> (16px) untuk kartu kontainer dan KPI, serta <code>rounded-xl</code> (12px) untuk kartu sub-komponen.</li>
+                    <li><b>Padding:</b> Gunakan padding proporsional <code>p-4 sm:p-6</code> agar tampilan tetap lega di layar mobile maupun desktop.</li>
+                    <li><b>Bayangan (Shadow):</b> Gunakan <code>shadow-xs</code> atau <code>shadow-sm</code> yang halus. Dilarang menggunakan <code>shadow-2xl</code> pekat pada kartu kontainer statis.</li>
+                </ul>
+            ',
+            'status' => 'published',
+            'module' => 'admin',
+            'published_at' => now(),
+            'version' => '1.0'
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catDesignSystem->id,
+            'title' => 'SOP Tipografi, Skala Font & Heading (Font Dictionary)',
+            'slug' => 'sop-tipografi-skala-font-heading',
+            'short_description' => 'Hierarki teks, skala ukuran font, bobot tulisan, dan panduan kontras warna teks di seluruh modul aplikasi.',
+            'content' => '
+                <p>Tipografi yang rapi menjamin keterbacaan data bisnis yang padat. Modul <b>Kamus Font & Tipografi</b> (<code>/admin/font-dictionary</code>) mengatur hierarki resmi tipografi Bizora.</p>
+
+                <h2>1. Font Family Standar</h2>
+                <p>Sistem menggunakan jenis font modern berkarakter ramah namun profesional:</p>
+                <ul>
+                    <li><b>Primer:</b> <code>Plus Jakarta Sans</code> (Font utama UI sistem).</li>
+                    <li><b>Sekunder / Monospace:</b> <code>JetBrains Mono</code> atau font monospace sistem untuk kode SKU, NIK, Tenant ID, dan blok JSON.</li>
+                </ul>
+
+                <h2>2. Skala Hierarki Ukuran Font</h2>
+                <ul>
+                    <li><b>H1 Page Title (Judul Halaman):</b> Ukuran <code>22px - 24px</code>, Font Weight <code>700 (Bold)</code>, line-height 1.25.</li>
+                    <li><b>H2 Section Title (Judul Seksi):</b> Ukuran <code>18px - 20px</code>, Font Weight <code>600 (Semibold)</code>.</li>
+                    <li><b>H3 Card / Modal Title:</b> Ukuran <code>15px - 16px</code>, Font Weight <code>600 (Semibold)</code>.</li>
+                    <li><b>Body Regular (Teks Umum):</b> Ukuran <code>13px - 14px</code>, Font Weight <code>400 (Regular)</code>, line-height 1.5.</li>
+                    <li><b>Meta / Caption / Badge:</b> Ukuran <code>11px - 12px</code>, Font Weight <code>500 (Medium)</code> atau <code>600</code>.</li>
+                </ul>
+
+                <h2>3. Aturan Kontras Warna Teks</h2>
+                <ul>
+                    <li><b>Teks Utama (High Contrast):</b> <code>text-slate-900</code> (Light) / <code>dark:text-white</code>. Digunakan untuk heading dan nilai angka metrik.</li>
+                    <li><b>Teks Sekunder (Medium Contrast):</b> <code>text-slate-600</code> (Light) / <code>dark:text-slate-300</code>. Digunakan untuk paragraf penjelasan dan isi tabel.</li>
+                    <li><b>Teks Pudar / Muted:</b> <code>text-slate-400</code> (Light) / <code>dark:text-slate-500</code>. Digunakan untuk timestamp, placeholder, dan caption minor.</li>
+                </ul>
+            ',
+            'status' => 'published',
+            'module' => 'admin',
+            'published_at' => now(),
+            'version' => '1.0'
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catDesignSystem->id,
+            'title' => 'SOP Konvensi Navtop Header & Judul Halaman',
+            'slug' => 'sop-konvensi-navtop-header-judul-halaman',
+            'short_description' => 'Aturan sinkronisasi 100% judul halaman pada navtop header, sidebar menu, dan judul tab browser.',
+            'content' => '
+                <p>Pengguna mengandalkan judul pada bilah atas (navtop header) untuk mengetahui konteks modul yang sedang dibuka. SOP ini mengatur standarisasi judul halaman di SaaS Admin.</p>
+
+                <h2>1. Aturan Sinkronisasi Judul Tiga Arah</h2>
+                <p>Judul halaman harus selalu konsisten antara 3 elemen antarmuka:</p>
+                <ol>
+                    <li><b>Sidebar Menu (<code>Sidebar.jsx</code>):</b> Label menu yang diklik pengguna.</li>
+                    <li><b>Navtop Header (<code>Header.jsx</code>):</b> Judul utama yang tampil di bilah atas aplikasi.</li>
+                    <li><b>Tab Browser (<code>DocumentTitleHandler.jsx</code>):</b> Judul pada tab browser pengguna.</li>
+                </ol>
+
+                <h2>2. Larangan Fallback Default "Bizora SaaS"</h2>
+                <p>Ketika menambahkan halaman baru di SaaS Admin, pengembang <b>wajib</b> mendaftarkan rute tersebut ke dalam <code>PAGE_TITLES</code> pada <code>Header.jsx</code> dan <code>ROUTE_TITLES</code> pada <code>DocumentTitleHandler.jsx</code>.</p>
+                <blockquote>
+                    <b>PERINGATAN:</b> Jangan biarkan rute tanpa entri mapping! Rute yang tidak terdaftar akan menampilkan judul fallback umum <i>"Bizora SaaS"</i> yang membingungkan pengguna (contoh kasus: halaman Kelola Dokumentasi).
+                </blockquote>
+
+                <h2>3. Standar Bahasa & Penamaan</h2>
+                <ul>
+                    <li>Gunakan Bahasa Indonesia baku yang ringkas dan jelas (contoh: gunakan <i>"Log Aktivitas & Audit"</i> daripada <i>"Security & Audit"</i>, gunakan <i>"Pengguna Platform"</i> daripada <i>"Users"</i>).</li>
+                    <li>Sertakan teks deskripsi pendukung (<code>sub</code>) pada setiap entri <code>PAGE_TITLES</code> untuk melengkapi informasi fungsi halaman tersebut.</li>
+                </ul>
+            ',
+            'status' => 'published',
+            'module' => 'admin',
+            'published_at' => now(),
+            'version' => '1.0'
+        ]);
     }
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from '@/constants/icons';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import RetailLoading from '../components/RetailLoading';

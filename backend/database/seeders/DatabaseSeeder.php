@@ -766,13 +766,20 @@ class DatabaseSeeder extends Seeder
     private function generateReturnNumber(string $modelClass, string $prefix): string
     {
         $date = now()->format('Ymd');
-        $last = $modelClass::where('return_number', 'like', "{$prefix}-{$date}-%")
+        $last = $modelClass::withoutGlobalScopes()
+            ->where('return_number', 'like', "{$prefix}-{$date}-%")
             ->orderByDesc('id')
             ->first();
 
         $seq = $last ? ((int) substr($last->return_number, -5)) + 1 : 1;
+        $candidate = sprintf('%s-%s-%05d', $prefix, $date, $seq);
 
-        return sprintf('%s-%s-%05d', $prefix, $date, $seq);
+        while ($modelClass::withoutGlobalScopes()->where('return_number', $candidate)->exists()) {
+            $seq++;
+            $candidate = sprintf('%s-%s-%05d', $prefix, $date, $seq);
+        }
+
+        return $candidate;
     }
 
     public function seedBudidayaData(string $tenantId, string $subtype = 'ikan')

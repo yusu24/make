@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Search, Download, CheckCircle2, AlertCircle, Truck, MapPin, Calendar, Clock, X } from 'lucide-react';
+import { Box, Search, Download, CheckCircle2, AlertCircle, Truck, MapPin, Calendar, Clock, X } from '@/constants/icons';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
 
@@ -84,67 +84,57 @@ export const ShippingManagementView: React.FC = () => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Box className="w-5 h-5 text-orange-600 shrink-0" />
-            <span className="truncate">Manajemen Ekspedisi</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Atur kurir, jadwal pickup, dan lacak status pengiriman.
-          </p>
-        </div>
-        <div className="shrink-0">
-          <button
-            onClick={handleExportResi}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm transition-colors text-xs cursor-pointer"
-          >
-            <Download className="w-4 h-4 text-orange-500" />
-            <span>Export Resi Massal</span>
-          </button>
-        </div>
-      </div>
-
       {/* Main Table Area */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 overflow-hidden flex flex-col">
         {/* Table Toolbar */}
-        <div className="p-4 border-b border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-3 overflow-x-auto">
-          <div className="relative flex-1 min-w-[200px] max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari no. resi, order ID, atau nama pembeli..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-orange-500 dark:text-white"
-            />
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <select
-              value={selectedCourier}
-              onChange={(e) => setSelectedCourier(e.target.value)}
-              className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
-            >
-              <option value="all">Semua Ekspedisi/Kurir</option>
-              <option value="jnt">J&T Express</option>
-              <option value="jne">JNE</option>
-              <option value="sicepat">SiCepat</option>
-              <option value="gosend">GoSend</option>
-              <option value="ninja">Ninja Xpress</option>
-            </select>
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700/60 flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-1">
+            <div className="relative flex-1 min-w-[200px] max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari no. resi, order ID, atau nama pembeli..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 h-[38px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-orange-500 dark:text-white"
+              />
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <select
+                value={selectedCourier}
+                onChange={(e) => setSelectedCourier(e.target.value)}
+                className="h-[38px] px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+              >
+                <option value="all">Semua Ekspedisi/Kurir</option>
+                <option value="jnt">J&T Express</option>
+                <option value="jne">JNE</option>
+                <option value="sicepat">SiCepat</option>
+                <option value="gosend">GoSend</option>
+                <option value="ninja">Ninja Xpress</option>
+              </select>
 
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="h-[38px] px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+              >
+                <option value="all">Semua Status</option>
+                <option value="pickup">Ready Pickup</option>
+                <option value="shipping">Sedang Dikirim</option>
+                <option value="delivered">Terkirim</option>
+                <option value="returned">Retur</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="shrink-0 w-full md:w-auto flex justify-end">
+            <button
+              onClick={handleExportResi}
+              className="flex items-center gap-2 px-4 h-[38px] bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-xs transition-colors text-xs cursor-pointer"
             >
-              <option value="all">Semua Status Pengiriman</option>
-              <option value="pickup">Ready Pickup</option>
-              <option value="shipping">Sedang Dikirim</option>
-              <option value="delivered">Terkirim</option>
-              <option value="returned">Retur</option>
-            </select>
+              <Download className="w-4 h-4 text-orange-500" />
+              <span>Export Resi Massal</span>
+            </button>
           </div>
         </div>
 

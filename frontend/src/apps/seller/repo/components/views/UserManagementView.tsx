@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, X } from '@/constants/icons';
 import api from '../../../../../services/api';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
@@ -107,21 +107,12 @@ export const UserManagementView: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Users className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">Manajemen User</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Buat akun untuk staf Anda dan tetapkan peran aksesnya. Atur daftar peran di menu Peran & Hak Akses.
-          </p>
-        </div>
+      <div className="flex items-center justify-end gap-2 shrink-0">
         <button
           onClick={openAddStaff}
           disabled={roles.length === 0}
           title={roles.length === 0 ? 'Buat peran terlebih dahulu di menu Peran & Hak Akses' : ''}
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="shrink-0 px-4 h-[38px] rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Plus className="w-4 h-4" />
           <span>Tambah User Baru</span>
@@ -168,7 +159,7 @@ export const UserManagementView: React.FC = () => {
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <button onClick={() => openEditStaff(member)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                        <Edit2 className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDeleteStaff(member)} className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1">
                         <Trash2 className="w-4 h-4" />

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   BookOpen, 
   ShoppingCart, 
@@ -34,11 +35,109 @@ import {
   Store,
   Key,
   Server,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw,
+  Search
+} from '@/constants/icons';
+
+const RETAIL_MENU_GROUPS = [
+  {
+    group: '1. Dashboard & Panduan',
+    badge: '2 Menu',
+    items: [
+      { path: '/retail/dashboard', name: 'Dashboard Utama', tag: 'Ringkasan Eksekutif', desc: 'Ringkasan KPI omset harian & bulanan, laba kotor, grafik penjualan, 5 produk terlaris, dan peringatan stok kritis.' },
+      { path: '/retail/guide', name: 'Buku Panduan & SOP', tag: 'Edukasi & Manual', desc: 'Buku petunjuk operasional lengkap, SOP harian toko, kamus rumus akuntansi, dan simulator kalkulator margin interaktif.' },
+    ]
+  },
+  {
+    group: '2. Kasir (Point of Sale) & Sesi',
+    badge: '3 Menu',
+    items: [
+      { path: '/retail/pos', name: 'Kasir Kilat (POS)', tag: 'Garis Depan Penjualan', desc: 'Layar kasir barcode kilat (F2 cari produk, F4 bayar), hold & recall antrean, split bayar, kembalian, cetak struk thermal, dan kick drawer.' },
+      { path: '/retail/shifts', name: 'Buka & Tutup Shift (Shift Z)', tag: 'Audit Kas Laci', desc: 'Rekonsiliasi modal receh awal laci, hitung fisik uang kertas/koin saat closing, cetak laporan Z, dan deteksi selisih overage/shortage.' },
+      { path: '/retail/transactions', name: 'Riwayat Transaksi Kasir', tag: 'Arsip Nota', desc: 'Pencarian seluruh faktur/struk belanja, rincian item, cetak ulang nota pembeli, dan otorisasi void pembatalan transaksi.' },
+    ]
+  },
+  {
+    group: '3. Data Master Toko & Produk',
+    badge: '8 Menu',
+    items: [
+      { path: '/retail/products', name: 'Katalog Produk & Barang', tag: 'Master Barang', desc: 'Database seluruh barang dagangan, barcode/SKU, nama, HPP modal, harga jual eceran, batas stok minimum, dan impor massal Excel.' },
+      { path: '/retail/categories', name: 'Kategori Produk', tag: 'Klasifikasi Rak', desc: 'Pengelompokan divisi barang dagangan toko (sembako, makanan ringan, minuman, sabun/perlengkapan mandi, obat, dll).' },
+      { path: '/retail/units', name: 'Satuan Multi-UOM', tag: 'Fleksibilitas Satuan', desc: 'Satuan eceran & kemasan grosir (Pcs, Bks, Renceng, Dus, Lusin, Karton) dengan rasio pengali otomatis saat kasir menjual kemasan besar.' },
+      { path: '/retail/customers', name: 'Pelanggan & Member', tag: 'CRM & Kasbon', desc: 'Data member pembeli setia, nomor WhatsApp, poin belanja loyalitas, dan penetapan batas plafon kredit maksimal piutang kasbon.' },
+      { path: '/retail/suppliers', name: 'Pemasok / Supplier', tag: 'Distributor Kulakan', desc: 'Kontak distributor kulakan barang, sales pabrik, alamat gudang, dan termin pembayaran tempo (TOP 14 / 30 hari).' },
+      { path: '/retail/outlets', name: 'Cabang / Outlet', tag: 'Multi-Store', desc: 'Pengelolaan multi-outlet fisik atau gudang satelit dalam satu akun tenant pemilik toko.' },
+      { path: '/retail/batches', name: 'Batch & Expired Date', tag: 'Manajemen Kedaluwarsa', desc: 'Pelacakan nomor batch dan tanggal expired dengan sistem prioritas FEFO (First Expired First Out) serta notifikasi H-30.' },
+      { path: '/retail/serials', name: 'Serial Number / IMEI', tag: 'Garansi Elektronik', desc: 'Pencatatan nomor seri / IMEI unik per unit barang untuk toko gadget, handphone, laptop, dan perkakas listrik.' },
+    ]
+  },
+  {
+    group: '4. Logistik, Gudang & Inventori',
+    badge: '7 Menu',
+    items: [
+      { path: '/retail/purchase-orders', name: 'Pembelian / Kulakan (PO)', tag: 'Pengadaan Barang', desc: 'Pemesanan kulakan ke supplier, approval PO, penerimaan fisik gudang, dan kalkulasi otomatis Moving Average HPP.' },
+      { path: '/retail/stock', name: 'Penerimaan Stok Cepat', tag: 'Quick Stock-In', desc: 'Input stok masuk kilat untuk barang kulakan pasar curah tanpa melalui proses Purchase Order formal.' },
+      { path: '/retail/inventory', name: 'Nilai Aset Inventori', tag: 'Valuasi Modal Stok', desc: 'Pemantauan saldo stok fisik dan total nilai aset modal uang yang tertahan di rak toko (Total Stok * HPP Satuan).' },
+      { path: '/retail/stock-movements', name: 'Kartu Stok Elektronik', tag: 'Jejak Audit Stok', desc: 'Audit kronologis mutasi keluar-masuk per produk (penjualan kasir, pembelian PO, retur, stock opname, pemindahan).' },
+      { path: '/retail/stock-transfers', name: 'Transfer Stok Cabang', tag: 'Logistik Antar-Cabang', desc: 'Pengiriman dan penerimaan mutasi barang antar-outlet cabang toko yang disertai dokumen surat jalan internal.' },
+      { path: '/retail/stock-opname', name: 'Audit Fisik (Stock Opname)', tag: 'Pencocokan Stok Rak', desc: 'Pencocokan stok fisik rak vs sistem komputer, kalkulasi selisih variance, dan pembukuan beban kerugian barang hilang/rusak.' },
+      { path: '/retail/print-labels', name: 'Cetak Label Barcode', tag: 'Labeling & Price Tag', desc: 'Cetak stiker barcode produk repacking dan shelf talker label harga rak toko (kompatibel kertas 3-kolom & printer thermal).' },
+    ]
+  },
+  {
+    group: '5. Promosi, Harga & Retur',
+    badge: '4 Menu',
+    items: [
+      { path: '/retail/discounts', name: 'Promo & Aturan Diskon', tag: 'Strategi Penjualan', desc: 'Aturan diskon persen (%), potongan nominal (Rp), promo beli 2 gratis 1, voucher kupon belanja, dan jadwal tanggal promo.' },
+      { path: '/retail/pricelists', name: 'Daftar Harga Bertingkat', tag: 'Tiering Grosir', desc: 'Pengaturan level harga eceran umum, harga grosir tier 1 (>=12 pcs), harga reseller langganan, dan harga partai besar.' },
+      { path: '/retail/supplier-returns', name: 'Retur Barang ke Supplier', tag: 'Klaim Distributor', desc: 'Pengembalian barang cacat pabrik, bocor, atau mendekati kedaluwarsa ke pemasok disertai pemotongan tagihan hutang.' },
+      { path: '/retail/customer-returns', name: 'Retur dari Pelanggan', tag: 'Layanan Komplain', desc: 'Penerimaan klaim retur barang pembeli berdasarkan invoice struk POS asli, pengembalian stok ke rak, dan pengeluaran refund kasir.' },
+    ]
+  },
+  {
+    group: '6. Keuangan & Akuntansi Toko',
+    badge: '8 Menu',
+    items: [
+      { path: '/retail/finance/summary', name: 'Laba Rugi (P&L)', tag: 'Kesehatan Finansial', desc: 'Laporan laba bersih 4-tahap komprehensif (Penjualan Bersih - HPP COGS = Laba Kotor - Beban Operasional = Laba Bersih Akhir).' },
+      { path: '/retail/finance/cash', name: 'Buku Kas Operasional', tag: 'Mutasi Kas Non-POS', desc: 'Pencatatan uang kas masuk & keluar di luar kasir (bayar gaji, listrik, sewa ruko, pembelian kantong plastik/ATK toko).' },
+      { path: '/retail/finance/payables', name: 'Hutang Dagang (AP)', tag: 'Kewajiban Tempo', desc: 'Buku jatuh tempo faktur tempo supplier, peringatan H-3 dan overdue, serta pencatatan bukti transfer cicilan pelunasan.' },
+      { path: '/retail/finance/receivables', name: 'Piutang Kasbon (AR)', tag: 'Kredit Pelanggan', desc: 'Buku piutang kasbon member, pelacakan limit kredit per pembeli, dan pencatatan penerimaan uang setoran cicilan kasbon.' },
+      { path: '/retail/finance/transfers', name: 'Mutasi Kas / Setor Bank', tag: 'Pemindahan Saldo', desc: 'Pemindahan uang fisik hasil penjualan kasir POS ke rekening Bank BCA/Mandiri toko secara seimbang (double-entry).' },
+      { path: '/retail/finance/cash-flow', name: 'Laporan Arus Kas', tag: 'Likuiditas Kas Toko', desc: 'Laporan pergerakan likuiditas uang tunai yang dibagi menjadi Arus Operasional, Arus Investasi, dan Arus Pendanaan.' },
+      { path: '/retail/finance/tax-report', name: 'Rekap Pajak PPN / PB1', tag: 'Kompensasi Pajak', desc: 'Rekapitulasi Pajak Keluaran dari penjualan kasir vs Pajak Masukan dari faktur PO kulakan untuk pelaporan pajak toko PKP.' },
+      { path: '/retail/finance-categories', name: 'Bagan Akun Keuangan', tag: 'Kategori Anggaran', desc: 'Master pos kategori pengeluaran dan pemasukan operasional untuk standarisasi pencatatan pembukuan toko.' },
+    ]
+  },
+  {
+    group: '7. Laporan & Analitik Bisnis',
+    badge: '7 Menu',
+    items: [
+      { path: '/retail/reports/sales', name: 'Laporan Penjualan Lengkap', tag: 'Audit Omset', desc: 'Laporan penjualan komprehensif per tanggal, kasir, outlet cabang, instrumen bayar, dan rekap omset kotor vs bersih.' },
+      { path: '/retail/reports/products', name: 'Laporan Performa Produk', tag: 'Perputaran Barang', desc: 'Analisis produk terlaris (Top 10 Fast-Moving) vs barang mati tak laku (Dead Stock) untuk pertimbangan pengadaan.' },
+      { path: '/retail/reports/margins', name: 'Laporan Margin Keuntungan', tag: 'Profitabilitas Produk', desc: 'Tabel analisis margin keuntungan per produk (% margin dan margin rupiah) untuk memetakan produk penyumbang profit terbesar.' },
+      { path: '/retail/reports/customers', name: 'Laporan Loyalitas Pelanggan', tag: 'Analitik Pembeli', desc: 'Peringkat pembeli dengan nominal belanja terbesar (Top Spender), frekuensi belanja, dan akumulasi poin member.' },
+      { path: '/retail/reports/consignment', name: 'Laporan Barang Konsinyasi', tag: 'Bagi Hasil UMKM', desc: 'Rekapitulasi produk titip jual UMKM lokal, kuantiti terjual, nilai hak setor ke pemasok titipan, dan komisi keuntungan toko.' },
+      { path: '/retail/reports/shifts', name: 'Laporan Riwayat Shift', tag: 'Audit Kasir Harian', desc: 'Arsip penutupan seluruh shift kasir, jam operasional, modal awal, penjualan tunai, dan riwayat selisih kas laci kasir.' },
+      { path: '/retail/reports/payments', name: 'Laporan Saluran Pembayaran', tag: 'Rekonsiliasi Bank', desc: 'Persentase dan nominal omset berdasarkan instrumen bayar (Tunai, QRIS BCA, QRIS Mandiri, Kartu Debit/Kredit, Piutang).' },
+    ]
+  },
+  {
+    group: '8. Pengaturan, Akses, API & Keamanan',
+    badge: '6 Menu',
+    items: [
+      { path: '/retail/staff', name: 'Manajemen Staf & User', tag: 'Akun Karyawan', desc: 'Pendaftaran akun login untuk kasir, supervisor toko, dan admin gudang beserta penugasan outlet cabang toko.' },
+      { path: '/retail/roles', name: 'Hak Akses Role (RBAC)', tag: 'Keamanan Otorisasi', desc: 'Kontrol izin akses per peran jabatan (hak melihat HPP, hak void nota, hak ubah harga, hak ekspor file Excel).' },
+      { path: '/retail/settings', name: 'Pengaturan Umum Toko', tag: 'Konfigurasi Struk', desc: 'Pengaturan nama toko, logo, alamat kop struk kasir, catatan kaki nota, batas toleransi selisih uang kasir, dan default PPN.' },
+      { path: '/retail/developer-api', name: 'Developer REST API & Webhook', tag: 'Integrasi Sistem', desc: 'Kredensial API Key (X-API-Key) dan webhook event otomatis (order.created, stock.low) untuk integrasi website e-commerce.' },
+      { path: '/retail/backup', name: 'Cadangan Data Cloud', tag: 'Disaster Recovery', desc: 'Ekspor arsip seluruh database toko ke format spreadsheet Excel (.xlsx) multi-sheet dan dump relational JSON.' },
+      { path: '/retail/subscription', name: 'Status Langganan SaaS', tag: 'Paket Software', desc: 'Informasi masa aktif paket software Bizora, kuota transaksi bulanan, kuota cabang outlet, dan perpanjangan langganan.' },
+    ]
+  }
+];
 
 const RetailGuide = () => {
-  const [activeTab, setActiveTab] = useState('pos');
+  const [activeTab, setActiveTab] = useState('all_menus');
+  const [menuSearch, setMenuSearch] = useState('');
 
   // Interactive Calculator State
   const [calcBuyPrice, setCalcBuyPrice] = useState(80000);
@@ -76,6 +175,7 @@ const RetailGuide = () => {
       {/* Navigation Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 scrollbar-none">
         {[
+          { id: 'all_menus', label: '🗺️ Peta Seluruh 37 Menu & Fungsi', icon: Store },
           { id: 'pos', label: '1. Kasir (POS) & Retur', icon: ShoppingCart },
           { id: 'shift', label: '2. Shift & Uang Laci (Shift Z)', icon: Clock },
           { id: 'master', label: '3. Multi-Satuan, Barcode & Expired', icon: Barcode },
@@ -103,6 +203,119 @@ const RetailGuide = () => {
           );
         })}
       </div>
+
+      {/* ========================================================================= */}
+      {/* SECTION 0: Peta Seluruh 37 Menu & Fungsi Retail Terintegrasi             */}
+      {/* ========================================================================= */}
+      {activeTab === 'all_menus' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <Store className="w-5 h-5 text-blue-600" />
+                  <span>Kamus & Direktori Lengkap 37 Menu Operasional Retail</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Seluruh alur hulu ke hilir: Kasir kilat, inventori multi-satuan, pengadaan PO, buku kas, hutang supplier, piutang kasbon, hingga laporan laba rugi.
+                </p>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={menuSearch}
+                  onChange={(e) => setMenuSearch(e.target.value)}
+                  placeholder="Cari menu, rute, fungsi..."
+                  className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 focus:bg-white"
+                />
+                {menuSearch && (
+                  <button onClick={() => setMenuSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600">✕</button>
+                )}
+              </div>
+            </div>
+
+            {/* Banner Buku Manual Resmi */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-indigo-700/50 shadow-md">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-400/30">
+                  <BookOpen className="w-3 h-3" />
+                  <span>DOKUMEN RESMI TERSINKRONISASI</span>
+                </div>
+                <h3 className="text-sm font-extrabold">Buku Panduan & Skema ERD Lengkap Proyek</h3>
+                <p className="text-xs text-blue-100/80">
+                  Tersedia file panduan komprehensif berformat Markdown di repositori: <code className="text-amber-300 font-mono text-[11px]">docs/DOKUMENTASI_LENGKAP_MODUL_RETAIL.md</code>
+                </p>
+              </div>
+              <div className="px-3.5 py-2 rounded-xl bg-white/10 text-white font-bold text-xs border border-white/20 shrink-0">
+                Total 37 Menu Terdaftar
+              </div>
+            </div>
+
+            {/* List Menu Groups */}
+            <div className="space-y-6">
+              {RETAIL_MENU_GROUPS.map((group) => {
+                const filteredItems = group.items.filter(item => 
+                  !menuSearch || 
+                  item.name.toLowerCase().includes(menuSearch.toLowerCase()) || 
+                  item.desc.toLowerCase().includes(menuSearch.toLowerCase()) || 
+                  item.path.toLowerCase().includes(menuSearch.toLowerCase()) ||
+                  item.tag.toLowerCase().includes(menuSearch.toLowerCase())
+                );
+
+                if (filteredItems.length === 0) return null;
+
+                return (
+                  <div key={group.group} className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                        <span>{group.group}</span>
+                      </h3>
+                      <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                        {filteredItems.length} menu
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                      {filteredItems.map(item => (
+                        <div key={item.path} className="p-4 rounded-xl bg-slate-50 hover:bg-white border border-slate-200/80 hover:border-blue-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-3">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <h4 className="text-xs font-extrabold text-slate-900">{item.name}</h4>
+                              <span className="px-2 py-0.5 bg-blue-100/60 text-blue-700 text-[10px] font-bold rounded">
+                                {item.tag}
+                              </span>
+                            </div>
+                            <p className="text-[11.5px] text-slate-600 leading-relaxed">
+                              {item.desc}
+                            </p>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                            <code className="text-[10.5px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                              {item.path}
+                            </code>
+                            <Link
+                              to={item.path}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              <span>Buka Menu</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* SECTION 1: POS Kasir, Multi-Payment & Retur                               */}

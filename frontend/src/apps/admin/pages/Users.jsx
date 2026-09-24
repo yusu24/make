@@ -1,56 +1,91 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
-import { useNavigate } from 'react-router-dom'
 import { getAvatarStyle, getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
+import {
+  Users as UsersIcon,
+  Search,
+  RefreshCw,
+  Plus,
+  KeyRound,
+  Pencil,
+  Trash2,
+  Store,
+  ShieldCheck,
+  Package,
+  Layers,
+  Phone,
+  Mail,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
+  Inbox
+} from '@/constants/icons'
 import './Shared.css'
 
-const DUMMY = [
-  { id: 1, name: 'Ahmad Suharto',  email: 'ahmad@retail.com',  role: 'customer', category: 'Toko Retail',   status: 'active',  joined: '2026-04-09' },
-  { id: 2, name: 'Siti Rahayu',    email: 'siti@ikan.com',    role: 'customer', category: 'Budidaya Hewan', status: 'active',  joined: '2026-04-08' },
-  { id: 3, name: 'Budi Santoso',   email: 'budi@jasa.com',    role: 'customer', category: 'Jasa',          status: 'pending', joined: '2026-04-08' },
-  { id: 4, name: 'Dewi Lestari',   email: 'dewi@mftr.com',    role: 'customer', category: 'Manufaktur',    status: 'active',  joined: '2026-04-07' },
-  { id: 5, name: 'Rizka Admin',    email: 'rizka@saas.com',   role: 'admin',    category: '-',             status: 'active',  joined: '2026-04-05' },
-  { id: 6, name: 'Teguh Prasetyo', email: 'teguh@retail.com', role: 'customer', category: 'Toko Retail',   status: 'active',  joined: '2026-04-04' },
-  { id: 7, name: 'Nurul Hidayah',  email: 'nurul@ikan.com',   role: 'customer', category: 'Budidaya Hewan', status: 'inactive',joined: '2026-04-03' },
-  { id: 8, name: 'Hendra Wijaya',  email: 'hendra@jasa.com',  role: 'customer', category: 'Jasa',          status: 'active',  joined: '2026-04-01' },
-]
+const STATUS_BADGE = {
+  active: 'badge-green',
+  pending: 'badge-yellow',
+  inactive: 'badge-gray',
+}
 
-const STATUS_BADGE = { active: 'badge-green', pending: 'badge-yellow', inactive: 'badge-gray' }
-const ROLE_BADGE   = { admin: 'badge-violet', super_admin: 'badge-red', customer: 'badge-blue' }
+const ROLE_CONFIG = {
+  customer: { label: 'Owner / Pelanggan', badge: 'badge-blue' },
+  admin: { label: 'Admin SaaS', badge: 'badge-violet' },
+  super_admin: { label: 'Super Admin', badge: 'badge-red' },
+  retail_cashier: { label: 'Kasir Retail', badge: 'badge-teal' },
+  retail_warehouse: { label: 'Gudang Retail', badge: 'badge-yellow' },
+  culinary_waiter: { label: 'Staff Kuliner', badge: 'badge-teal' },
+  budidaya_operator: { label: 'Operator Farm', badge: 'badge-teal' },
+}
 
 export default function Users() {
-  const { impersonateUser } = useAuth()
+  const { impersonate, impersonateUser } = useAuth()
   const navigate = useNavigate()
-  const [users, setUsers]       = useState([])
-  const [search, setSearch]     = useState('')
-  const [filter, setFilter]     = useState('all')
-  const [loading, setLoading]   = useState(false)
-  const [showModal, setShowModal] = useState(false)
-  const [delId, setDelId]       = useState(null)
-  const [impersonating, setImpersonating] = useState(null)
+  
+  const [users, setUsers] = useState([])
   const [categories, setCategories] = useState([])
+  const [search, setSearch] = useState('')
+  const [roleFilter, setRoleFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [loading, setLoading] = useState(false)
+  
+  // Modals
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [editUser, setEditUser] = useState(null)
+  const [delUser, setDelUser] = useState(null)
+  const [impersonating, setImpersonating] = useState(null)
   const [formError, setFormError] = useState('')
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
+  const fetchUsers = () => {
     setLoading(true)
-    api.get('/users')
+    api.get('/users?role=all')
       .then(r => setUsers(r.data?.data || []))
-      .catch(() => {})
+      .catch(err => console.error('Failed to fetch users:', err))
       .finally(() => setLoading(false))
+  }
+
+  const fetchCategories = () => {
     api.get('/categories/public')
       .then(r => setCategories(r.data?.data || []))
       .catch(() => {})
+  }
+
+  useEffect(() => {
+    fetchUsers()
+    fetchCategories()
   }, [])
 
-  const handleImpersonate = async (id) => {
-    setImpersonating(id)
+  const handleImpersonate = async (user) => {
+    setImpersonating(user.id)
     try {
-      const redirect = await impersonateUser(id)
-      navigate(redirect)
+      const redirect = await impersonateUser(user.id)
+      navigate(redirect || '/dashboard')
     } catch (err) {
       alert('Gagal impersonate: ' + (err.response?.data?.message || err.message))
     } finally {
@@ -58,11 +93,117 @@ export default function Users() {
     }
   }
 
+  const handleToggleStatus = async (user) => {
+    const next = user.status === 'active' ? 'inactive' : 'active'
+    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: next } : u))
+    try {
+      await api.patch(`/users/${user.id}/status`, { status: next })
+    } catch (err) {
+      alert('Gagal mengubah status: ' + (err.response?.data?.message || err.message))
+      fetchUsers()
+    }
+  }
+
+  const handleAddUser = async (e) => {
+    e.preventDefault()
+    setFormError('')
+    const fd = new FormData(e.target)
+    
+    const payload = {
+      name: fd.get('name'),
+      email: fd.get('email'),
+      password: fd.get('password'),
+      role: fd.get('role') || 'customer',
+      business_name: fd.get('business_name'),
+      business_category_id: fd.get('business_category_id') || null,
+      plan: fd.get('plan') || 'free',
+      phone: fd.get('phone') || null,
+    }
+
+    setSaving(true)
+    try {
+      await api.post('/users', payload)
+      setShowAddModal(false)
+      fetchUsers()
+      alert('Pengguna & Tenant berhasil dibuat dan disinkronkan!')
+    } catch (err) {
+      setFormError(
+        err.response?.data?.errors
+          ? Object.values(err.response.data.errors).flat().join(', ')
+          : (err.response?.data?.message || 'Gagal membuat pengguna')
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault()
+    if (!editUser) return
+    setFormError('')
+    const fd = new FormData(e.target)
+    
+    const payload = {
+      name: fd.get('name'),
+      email: fd.get('email'),
+      role: fd.get('role'),
+      status: fd.get('status'),
+      business_name: fd.get('business_name'),
+      business_category_id: fd.get('business_category_id') || null,
+      plan: fd.get('plan'),
+      phone: fd.get('phone') || null,
+    }
+
+    if (fd.get('password')) {
+      payload.password = fd.get('password')
+    }
+
+    setSaving(true)
+    try {
+      await api.put(`/users/${editUser.id}`, payload)
+      setEditUser(null)
+      fetchUsers()
+      alert('Data pengguna dan tenant berhasil diperbarui!')
+    } catch (err) {
+      setFormError(
+        err.response?.data?.errors
+          ? Object.values(err.response.data.errors).flat().join(', ')
+          : (err.response?.data?.message || 'Gagal memperbarui pengguna')
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteUser = async () => {
+    if (!delUser) return
+    try {
+      await api.delete(`/users/${delUser.id}`)
+      setDelUser(null)
+      fetchUsers()
+      alert('Pengguna dan data terkait berhasil dihapus.')
+    } catch (err) {
+      alert('Gagal menghapus pengguna: ' + (err.response?.data?.message || err.message))
+    }
+  }
+
+  // Filtered List
   const filtered = users.filter(u => {
-    const q = search.toLowerCase()
-    const matchSearch = u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
-    const matchFilter = filter === 'all' || u.role === filter || u.status === filter
-    return matchSearch && matchFilter
+    const q = search.toLowerCase().trim()
+    const matchSearch = !q ||
+      (u.name && u.name.toLowerCase().includes(q)) ||
+      (u.email && u.email.toLowerCase().includes(q)) ||
+      (u.tenant_id && u.tenant_id.toLowerCase().includes(q)) ||
+      (u.tenant_name && u.tenant_name.toLowerCase().includes(q)) ||
+      (u.phone && u.phone.toLowerCase().includes(q))
+
+    const matchRole = roleFilter === 'all' || u.role === roleFilter
+    const matchStatus = statusFilter === 'all' || u.status === statusFilter
+    const matchCategory = categoryFilter === 'all' || 
+      (u.category && u.category.toLowerCase() === categoryFilter.toLowerCase()) ||
+      String(u.business_category_id) === String(categoryFilter)
+
+    return matchSearch && matchRole && matchStatus && matchCategory
   })
 
   const {
@@ -75,227 +216,487 @@ export default function Users() {
     paginatedData,
     startIndex,
     endIndex,
-  } = usePagination(filtered)
-
-  const handleDelete = async (id) => {
-    try {
-      await api.delete(`/users/${id}`)
-      setUsers(v => v.filter(u => u.id !== id))
-    } catch {
-      setUsers(v => v.filter(u => u.id !== id)) // optimistic fallback
-    }
-    setDelId(null)
-  }
-
-  const handleToggleStatus = async (id, cur) => {
-    const next = cur === 'active' ? 'inactive' : 'active'
-    setUsers(v => v.map(u => u.id === id ? { ...u, status: next } : u))
-    try { await api.patch(`/users/${id}/status`, { status: next }) } catch {}
-  }
-
-  const handleAddUser = async (e) => {
-    e.preventDefault()
-    setFormError('')
-    const fd = new FormData(e.target)
-    const payload = {
-      name: fd.get('name'),
-      email: fd.get('email'),
-      password: fd.get('password'),
-      role: 'customer',
-      business_category_id: fd.get('business_category_id') || null,
-    }
-    setSaving(true)
-    try {
-      const res = await api.post('/users', payload)
-      const created = res.data?.data
-      const category = categories.find(c => String(c.id) === String(payload.business_category_id))
-      setUsers(v => [...v, {
-        id: created?.id ?? Date.now(),
-        name: payload.name,
-        email: payload.email,
-        role: 'customer',
-        category: category?.name || '-',
-        status: 'active',
-        joined: new Date().toISOString().slice(0, 10),
-      }])
-      setShowModal(false)
-      e.target.reset()
-    } catch (err) {
-      setFormError(err.response?.data?.errors ? Object.values(err.response.data.errors).flat().join(', ') : (err.response?.data?.message || 'Gagal membuat pengguna'))
-    } finally {
-      setSaving(false)
-    }
-  }
+  } = usePagination(filtered, 20)
 
   return (
-    <>
-      <div className="animate-fade-in">
-        {/* Page header */}
-        <div className="page-header">
-          <h2 className="page-title">Manajemen Pengguna</h2>
-        </div>
+    <div className="animate-fade-in" style={{ paddingBottom: 40 }}>
+      {/* ── Page Header ── */}
+      <div className="page-header mb-2">
+        <h2 className="page-title">Manajemen Pengguna</h2>
+      </div>
 
-        {/* Table Card */}
-        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
-          <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1 }}>
-                <span className="search-icon">🔍</span>
-                <input
-                  id="input-search-users"
-                  className="form-input search-input"
-                  placeholder="Cari nama atau email..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ minWidth: 150 }}>
-                  <select
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="form-input"
-                    style={{
-                      padding: '8px 12px',
-                      fontSize: '13px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      outline: 'none',
-                    }}
-                  >
-                    <option value="all">Semua Status</option>
-                    <option value="active">Active</option>
-                    <option value="pending">Pending</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-                <button id="btn-add-user" className="btn btn-primary" onClick={() => setShowModal(true)} style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  + Tambah Pengguna
-                </button>
-              </div>
-            </div>
+      {/* ── Action Bar below title ── */}
+      <div className="flex justify-end gap-2.5 mb-4">
+        <button
+          className="btn btn-secondary flex items-center gap-1.5"
+          onClick={fetchUsers}
+          disabled={loading}
+          title="Muat ulang data"
+        >
+          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          <span>Muat Ulang</span>
+        </button>
+        <button
+          className="btn btn-primary flex items-center gap-1.5"
+          onClick={() => { setFormError(''); setShowAddModal(true) }}
+        >
+          <Plus size={16} />
+          <span>Tambah Pengguna</span>
+        </button>
+      </div>
+
+      {/* ── Search & Filter Bar ── */}
+      <div className="card card-pad" style={{ marginBottom: 16, padding: '16px 20px', borderRadius: 12 }}>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Search Box */}
+          <div className="search-wrap" style={{ minWidth: 240, flex: '1 1 260px' }}>
+            <Search size={15} className="search-icon" />
+            <input
+              type="text"
+              className="form-input search-input"
+              placeholder="Cari nama, email, Tenant ID, usaha..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ paddingLeft: 36, height: 38 }}
+            />
           </div>
 
-          <div className="table-responsive">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Nama</th>
-                  <th>Email</th>
-                  <th>Kategori Bisnis</th>
-                  <th>Status</th>
-                  <th>Bergabung</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                        <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                        <span>Memuat data pengguna...</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : paginatedData.map((u, i) => (
-                  <tr key={u.id}>
-                    <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={getAvatarStyle(u.name || u.email, 32)}>
-                          {getInitials(u.name)}
-                        </div>
-                        <span style={{ color: 'var(--text-primary)', fontSize: 13 }}>{u.name}</span>
-                      </div>
-                    </td>
-                    <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{u.email}</td>
-                    <td style={{ fontSize: 13 }}>{u.category}</td>
-                    <td>
-                      <button
-                        className={`badge ${STATUS_BADGE[u.status] || 'badge-gray'}`}
-                        style={{ cursor: 'pointer', border: 'none', background: undefined }}
-                        onClick={() => handleToggleStatus(u.id, u.status)}
-                        title="Klik untuk ubah status"
-                      >
-                        {u.status}
-                      </button>
-                    </td>
-                    <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{u.joined}</td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button 
-                          className="btn btn-secondary btn-sm" 
-                          title="Impersonate (Login sebagai User)"
-                          onClick={() => handleImpersonate(u.id)}
-                          disabled={impersonating === u.id}
-                          style={{ color: 'var(--primary-500)' }}
-                        >
-                          {impersonating === u.id ? '⏳' : '🔑'}
-                        </button>
-                        <button id={`btn-edit-user-${u.id}`} className="btn btn-secondary btn-sm" title="Edit">✏</button>
-                        <button
-                          id={`btn-del-user-${u.id}`}
-                          className="btn btn-secondary btn-sm"
-                          style={{ color: 'var(--danger-400)' }}
-                          onClick={() => setDelId(u.id)}
-                          title="Hapus"
-                        >🗑</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {!loading && filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
-                      Tidak ada pengguna ditemukan
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-            {!loading && filtered.length > 0 && (
-              <SaasPagination
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-                pageSize={pageSize}
-                setPageSize={setPageSize}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                startIndex={startIndex}
-                endIndex={endIndex}
-              />
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <select
+              className="form-input"
+              value={roleFilter}
+              onChange={e => setRoleFilter(e.target.value)}
+              style={{ width: 'auto', minWidth: 140, height: 38, padding: '0 32px 0 12px', fontSize: 13, flex: '1 1 auto' }}
+            >
+              <option value="all">Semua Peran</option>
+              <option value="customer">Owner / Pelanggan</option>
+              <option value="admin">Admin SaaS</option>
+              <option value="super_admin">Super Admin</option>
+              <option value="retail_cashier">Kasir / Staff</option>
+            </select>
+
+            <select
+              className="form-input"
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+              style={{ width: 'auto', minWidth: 130, height: 38, padding: '0 32px 0 12px', fontSize: 13, flex: '1 1 auto' }}
+            >
+              <option value="all">Semua Status</option>
+              <option value="active">🟢 Active</option>
+              <option value="pending">🟡 Pending</option>
+              <option value="inactive">⚪ Inactive</option>
+            </select>
+
+            <select
+              className="form-input"
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+              style={{ width: 'auto', minWidth: 140, height: 38, padding: '0 32px 0 12px', fontSize: 13, flex: '1 1 auto' }}
+            >
+              <option value="all">Semua Kategori</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
+            </select>
+
+            {(search || roleFilter !== 'all' || statusFilter !== 'all' || categoryFilter !== 'all') && (
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); setCategoryFilter('all') }}
+                style={{ color: 'var(--primary-600)', fontSize: 12, height: 38, padding: '0 12px', whiteSpace: 'nowrap' }}
+              >
+                Reset
+              </button>
             )}
           </div>
         </div>
       </div>
 
-      {showModal && (
-        <div className="modal-overlay" onClick={() => !saving && setShowModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3 className="modal__title">Tambah Pengguna Baru</h3>
-            <form onSubmit={handleAddUser} style={{ display:'flex', flexDirection:'column', gap:16, marginTop:16 }}>
+      {/* ── Table Card ── */}
+      <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none' }}>
+        <div className="table-responsive">
+          <table className="table">
+            <thead>
+              <tr>
+                <th style={{ width: 48, textAlign: 'center' }}>#</th>
+                <th>Pengguna &amp; Kontak</th>
+                <th>Tenant / Usaha Terkait</th>
+                <th>Kategori Sektor</th>
+                <th>Peran / Role</th>
+                <th style={{ textAlign: 'center' }}>Status</th>
+                <th>Bergabung</th>
+                <th style={{ textAlign: 'right' }}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '50px 0', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                      <RefreshCw size={24} className="animate-spin text-indigo-600" />
+                      <span>Memuat data pengguna &amp; sinkronisasi tenant...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedData.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '50px 0', color: 'var(--text-muted)' }}>
+                    <Inbox size={36} className="text-slate-400 mx-auto mb-2" />
+                    <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Tidak ada pengguna ditemukan</p>
+                    <p style={{ fontSize: 13, marginBottom: 12 }}>Coba ubah kata kunci pencarian atau reset filter.</p>
+                    {(search || roleFilter !== 'all' || statusFilter !== 'all' || categoryFilter !== 'all') && (
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); setCategoryFilter('all') }}
+                      >
+                        Reset Filter
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ) : (
+                paginatedData.map((u, i) => {
+                  const roleMeta = ROLE_CONFIG[u.role] || { label: u.role, badge: 'badge-gray' }
+                  const isCustomer = u.role === 'customer'
+
+                  return (
+                    <tr key={u.id}>
+                      <td style={{ textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, fontSize: 13 }}>
+                        {startIndex + i + 1}
+                      </td>
+
+                      {/* User & Contact */}
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={getAvatarStyle(u.name || u.email, 36)}>
+                            {getInitials(u.name || u.email)}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13.5 }}>
+                              {u.name}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <Mail size={12} /> {u.email}
+                              </span>
+                              {u.phone && (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                  <Phone size={12} /> {u.phone}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Connected Tenant */}
+                      <td>
+                        {u.tenant_id ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span
+                                className="font-mono"
+                                style={{
+                                  fontSize: 11,
+                                  padding: '2px 7px',
+                                  background: 'rgba(99, 102, 241, 0.1)',
+                                  color: 'var(--primary-700)',
+                                  borderRadius: 5,
+                                  fontWeight: 600,
+                                  letterSpacing: '0.02em'
+                                }}
+                              >
+                                {u.tenant_id}
+                              </span>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                                {u.tenant_name || u.name}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--text-muted)' }}>
+                              <span style={{ textTransform: 'capitalize' }}>Paket: <strong>{u.plan}</strong></span>
+                              <button
+                                onClick={() => navigate(`/admin/tenants?search=${encodeURIComponent(u.tenant_id)}`)}
+                                className="text-indigo-600 hover:text-indigo-800"
+                                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11 }}
+                                title="Lihat di Manajemen Tenant"
+                              >
+                                <span>Kelola Tenant</span>
+                                <ExternalLink size={10} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                            {u.role === 'super_admin' || u.role === 'admin' ? 'Akun Sistem SaaS' : 'Belum terhubung tenant'}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Category */}
+                      <td>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>
+                          {u.category || '-'}
+                        </span>
+                      </td>
+
+                      {/* Role */}
+                      <td>
+                        <span className={`badge ${roleMeta.badge}`} style={{ fontSize: 11.5, fontWeight: 600 }}>
+                          {roleMeta.label}
+                        </span>
+                      </td>
+
+                      {/* Status */}
+                      <td style={{ textAlign: 'center' }}>
+                        <button
+                          className={`badge ${STATUS_BADGE[u.status] || 'badge-gray'}`}
+                          style={{ cursor: 'pointer', border: 'none', fontWeight: 600, fontSize: 11.5 }}
+                          onClick={() => handleToggleStatus(u)}
+                          title="Klik untuk ubah status aktif/nonaktif"
+                        >
+                          {u.status === 'active' ? 'Aktif' : u.status === 'pending' ? 'Pending' : 'Nonaktif'}
+                        </button>
+                      </td>
+
+                      {/* Joined */}
+                      <td style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>
+                        {u.joined}
+                      </td>
+
+                      {/* Actions */}
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            title="Impersonate (Masuk sebagai Pengguna / Tenant ini)"
+                            onClick={() => handleImpersonate(u)}
+                            disabled={impersonating === u.id}
+                            style={{ color: 'var(--primary-600)', height: 32, padding: '0 8px' }}
+                          >
+                            {impersonating === u.id ? <RefreshCw size={13} className="animate-spin" /> : <KeyRound size={13} />}
+                          </button>
+
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            title="Edit Pengguna &amp; Data Bisnis"
+                            onClick={() => { setFormError(''); setEditUser(u) }}
+                            style={{ height: 32, padding: '0 8px' }}
+                          >
+                            <Pencil size={13} />
+                          </button>
+
+                          {u.role !== 'super_admin' && (
+                            <button
+                              className="btn btn-secondary btn-sm"
+                              title="Hapus Pengguna &amp; Tenant"
+                              onClick={() => setDelUser(u)}
+                              style={{ color: 'var(--danger-500)', height: 32, padding: '0 8px' }}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {!loading && filtered.length > 0 && (
+          <SaasPagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
+        )}
+      </div>
+
+      {/* ── Modal Tambah Pengguna Baru ── */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => !saving && setShowAddModal(false)}>
+          <div className="modal" style={{ maxWidth: 560, borderRadius: 16 }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <span style={{ display: 'inline-flex', padding: 8, borderRadius: 10, background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary-600)' }}>
+                <Plus size={20} />
+              </span>
+              <div>
+                <h3 className="modal__title" style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Tambah Pengguna Baru</h3>
+                <p style={{ margin: '2px 0 0', fontSize: 12.5, color: 'var(--text-muted)' }}>
+                  Akun pengguna dan entitas tenant bisnis akan dibuat dan terhubung secara otomatis.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {formError && (
-                <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', color: '#ef4444', fontSize: 13 }}>
-                  {formError}
+                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', color: '#dc2626', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <AlertCircle size={16} />
+                  <span>{formError}</span>
                 </div>
               )}
-              <div className="form-group">
-                <label className="form-label">Nama Lengkap</label>
-                <input name="name" className="form-input" required placeholder="Nama Pengguna" />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Nama Lengkap *</label>
+                  <input name="name" className="form-input" required placeholder="Contoh: Budi Pratama" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Email Akun *</label>
+                  <input name="email" className="form-input" required type="email" placeholder="budi@usaha.com" />
+                </div>
               </div>
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <input name="email" className="form-input" required type="email" placeholder="email@contoh.com" />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Password *</label>
+                  <input name="password" className="form-input" required type="password" minLength={8} placeholder="Min. 8 karakter" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>No. WhatsApp / HP</label>
+                  <input name="phone" className="form-input" placeholder="08123456789" />
+                </div>
               </div>
-              <div className="form-group">
-                <label className="form-label">Password</label>
-                <input name="password" className="form-input" required type="password" minLength={8} placeholder="Minimal 8 karakter" />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Peran / Role</label>
+                  <select name="role" className="form-input" defaultValue="customer">
+                    <option value="customer">Owner / Pelanggan Tenant</option>
+                    <option value="admin">Admin SaaS</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Paket Langganan</label>
+                  <select name="plan" className="form-input" defaultValue="free">
+                    <option value="free">Free Trial (3 Hari)</option>
+                    <option value="basic">Basic</option>
+                    <option value="pro">Pro (Semua Fitur)</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
               </div>
+
               <div className="form-group">
-                <label className="form-label">Kategori Bisnis</label>
-                <select name="business_category_id" className="form-input">
+                <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Nama Toko / Bisnis (Tenant)</label>
+                <input name="business_name" className="form-input" placeholder="Nama Bisnis (Opsional, default sama dengan Nama)" />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Kategori Sektor Bisnis</label>
+                <select name="business_category_id" className="form-input" defaultValue="">
+                  <option value="">— Pilih Kategori Bisnis —</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="modal__actions" style={{ marginTop: 10, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)} disabled={saving}>
+                  Batal
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={saving}>
+                  {saving ? 'Menyimpan & Menghubungkan...' : 'Simpan & Hubungkan Tenant'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Edit Pengguna ── */}
+      {editUser && (
+        <div className="modal-overlay" onClick={() => !saving && setEditUser(null)}>
+          <div className="modal" style={{ maxWidth: 560, borderRadius: 16 }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <span style={{ display: 'inline-flex', padding: 8, borderRadius: 10, background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary-600)' }}>
+                <Pencil size={20} />
+              </span>
+              <div>
+                <h3 className="modal__title" style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Edit Data Pengguna &amp; Tenant</h3>
+                <p style={{ margin: '2px 0 0', fontSize: 12.5, color: 'var(--text-muted)' }}>
+                  Perubahan akan disinkronkan langsung ke akun login dan entitas tenant.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleUpdateUser} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {formError && (
+                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', color: '#dc2626', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <AlertCircle size={16} />
+                  <span>{formError}</span>
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Nama Lengkap *</label>
+                  <input name="name" defaultValue={editUser.name} className="form-input" required />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Email Akun *</label>
+                  <input name="email" defaultValue={editUser.email} className="form-input" required type="email" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Ganti Password (Opsional)</label>
+                  <input name="password" className="form-input" type="password" minLength={8} placeholder="Kosongkan jika tidak diubah" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>No. WhatsApp / HP</label>
+                  <input name="phone" defaultValue={editUser.phone || ''} className="form-input" placeholder="08123456789" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Peran / Role</label>
+                  <select name="role" className="form-input" defaultValue={editUser.role}>
+                    <option value="customer">Owner / Pelanggan Tenant</option>
+                    <option value="admin">Admin SaaS</option>
+                    <option value="super_admin">Super Admin</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Status Akun</label>
+                  <select name="status" className="form-input" defaultValue={editUser.status}>
+                    <option value="active">Active (Aktif)</option>
+                    <option value="pending">Pending (Menunggu)</option>
+                    <option value="inactive">Inactive (Nonaktif)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Nama Bisnis (Tenant)</label>
+                  <input name="business_name" defaultValue={editUser.tenant_name || editUser.name} className="form-input" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Paket Langganan</label>
+                  <select name="plan" className="form-input" defaultValue={editUser.plan !== '-' ? editUser.plan : 'free'}>
+                    <option value="free">Free</option>
+                    <option value="basic">Basic</option>
+                    <option value="pro">Pro</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" style={{ fontWeight: 600, fontSize: 12.5 }}>Kategori Sektor Bisnis</label>
+                <select name="business_category_id" className="form-input" defaultValue={editUser.business_category_id || ''}>
                   <option value="">— Tidak ada / belum ditentukan —</option>
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -303,29 +704,49 @@ export default function Users() {
                 </select>
               </div>
 
-              <div className="modal__actions mt-4">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)} disabled={saving}>Batal</button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+              <div className="modal__actions" style={{ marginTop: 10, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setEditUser(null)} disabled={saving}>
+                  Batal
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={saving}>
+                  {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Confirm delete modal */}
-      {delId && (
-        <div className="modal-overlay" onClick={() => setDelId(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3 className="modal__title">Hapus Pengguna?</h3>
-            <p className="modal__body">Aksi ini tidak dapat dibatalkan. Pengguna akan dihapus permanen.</p>
-            <div className="modal__actions">
-              <button id="btn-cancel-del" className="btn btn-secondary" onClick={() => setDelId(null)}>Batal</button>
-              <button id="btn-confirm-del" className="btn btn-danger" onClick={() => handleDelete(delId)}>Ya, Hapus</button>
+      {/* ── Modal Konfirmasi Hapus Pengguna ── */}
+      {delUser && (
+        <div className="modal-overlay" onClick={() => setDelUser(null)}>
+          <div className="modal" style={{ maxWidth: 440, borderRadius: 16 }} onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', padding: '10px 0 16px' }}>
+              <span style={{ display: 'inline-flex', padding: 12, borderRadius: '50%', background: '#fee2e2', color: '#ef4444', marginBottom: 12 }}>
+                <Trash2 size={28} />
+              </span>
+              <h3 className="modal__title" style={{ fontSize: 18, fontWeight: 700, margin: '0 0 8px' }}>Hapus Pengguna &amp; Tenant?</h3>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                Anda akan menghapus akun <strong>{delUser.name}</strong> ({delUser.email}).
+                {delUser.tenant_id && (
+                  <span style={{ display: 'block', marginTop: 8, color: '#dc2626', fontSize: 12.5, fontWeight: 500 }}>
+                    ⚠️ Tenant terkait (<strong>{delUser.tenant_id}</strong>) beserta seluruh data transaksinya juga akan dihapus.
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <div className="modal__actions" style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button className="btn btn-secondary" onClick={() => setDelUser(null)} style={{ flex: 1 }}>
+                Batal
+              </button>
+              <button className="btn btn-danger" onClick={handleDeleteUser} style={{ flex: 1 }}>
+                Ya, Hapus Permanen
+              </button>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
-

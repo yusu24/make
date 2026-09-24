@@ -17,9 +17,25 @@ class TenantScope implements Scope
      */
     public function apply(Builder $builder, Model $model)
     {
-        $user = auth('sanctum')->user() ?: auth()->user();
-        if ($user && !empty($user->tenant_id)) {
-            $builder->where($model->getTable() . '.tenant_id', $user->tenant_id);
+        $tenantId = null;
+
+        if (request()) {
+            $tenantId = request()->attributes->get('tenant_id') ?? request()->user()?->tenant_id;
+        }
+
+        if (!$tenantId) {
+            $user = auth('sanctum')->user() ?: auth()->user();
+            $tenantId = $user?->tenant_id;
+        }
+
+        if (!empty($tenantId)) {
+            $builder->where($model->getTable() . '.tenant_id', $tenantId);
+        } elseif (request() && !app()->runningInConsole()) {
+            // Fail-closed for HTTP requests without tenant context unless super_admin or admin
+            $user = request()->user();
+            if (!$user || ($user->role !== 'super_admin' && $user->role !== 'admin')) {
+                $builder->whereRaw('1 = 0');
+            }
         }
     }
 }

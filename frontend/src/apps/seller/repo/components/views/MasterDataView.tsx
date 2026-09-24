@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, Plus, Edit2, Trash2, X, Truck } from 'lucide-react';
+import { Database, Plus, Pencil, Trash2, X, Truck } from '@/constants/icons';
 import api from '../../../../../services/api';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
@@ -88,24 +88,17 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({ stores }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Supplier Section */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Truck className="w-4 h-4 text-indigo-600 shrink-0" />
-            <span>{i18n?.language === 'en' ? 'Supplier Database & Factory Vendors' : 'Database Supplier & Pabrik Vendor'}</span>
-          </h2>
-        </div>
+      <div className="flex items-center justify-end gap-2 shrink-0">
         <button
           onClick={openAddSupplier}
-          className="shrink-0 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          className="px-4 h-[38px] rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4" />
           <span>{i18n?.language === 'en' ? 'Add Supplier' : 'Tambah Supplier'}</span>
         </button>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden -mt-2">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50/70 dark:bg-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-700 uppercase tracking-wider">
@@ -129,7 +122,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({ stores }) => {
                     <td className="px-4 py-3.5 max-w-xs truncate">{sup.address || '-'}</td>
                     <td className="px-4 py-3.5 text-right whitespace-nowrap">
                       <button onClick={() => openEditSupplier(sup)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                        <Edit2 className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDeleteSupplier(sup.id)} className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1">
                         <Trash2 className="w-4 h-4" />

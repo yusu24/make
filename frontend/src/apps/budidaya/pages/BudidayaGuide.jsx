@@ -34,7 +34,7 @@ import {
   Database,
   PlusCircle,
   FileText
-} from 'lucide-react';
+} from '@/constants/icons';
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms';
 
 const BudidayaGuide = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { CreditCard, RefreshCw, Printer, Percent, Calendar } from 'lucide-react';
+import { CreditCard, RefreshCw, Printer, Percent, Calendar } from '@/constants/icons';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import RetailLoading from '../components/RetailLoading';
@@ -75,7 +75,7 @@ export default function PaymentReport() {
            </div>
 
            <button className="btn btn-secondary flex items-center gap-2" onClick={loadData}>
-              <RefreshCw size={16} /> Segarkan
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Segarkan
            </button>
            <button className="btn btn-primary flex items-center gap-2" onClick={() => window.print()}>
               <Printer size={16} /> Cetak laporan
@@ -84,42 +84,38 @@ export default function PaymentReport() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 24 }}>
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 shrink-0">
-                  <CreditCard size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Total Pendapatan Terbayar</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+               <CreditCard size={22} />
             </div>
-            <div>
-               <p className="text-2xl text-slate-900 leading-tight font-semibold">
+            <div className="flex-1 min-w-0">
+               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Pendapatan Terbayar</span>
+               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
                   Rp {Math.round(data.total_payments).toLocaleString('id-ID')}
                </p>
-               <p className="text-xs text-slate-400 mt-1">Akumulasi penerimaan kas kotor bulan ini.</p>
+               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Akumulasi penerimaan kas kotor bulan ini</p>
             </div>
          </div>
 
-         <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
-                  <Percent size={18} />
-               </div>
-               <span className="text-sm font-medium text-slate-500">Total Pajak Terpungut (PPN)</span>
+         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+               <Percent size={22} />
             </div>
-            <div>
-               <p className="text-2xl text-slate-900 leading-tight font-semibold">
+            <div className="flex-1 min-w-0">
+               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Pajak Terpungut (PPN)</span>
+               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
                   Rp {Math.round(data.total_tax).toLocaleString('id-ID')}
                </p>
-               <p className="text-xs text-slate-400 mt-1">Estimasi PPN Keluaran yang harus dilaporkan.</p>
+               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Estimasi PPN Keluaran yang harus dilaporkan</p>
             </div>
          </div>
       </div>
 
       {/* Chart Section */}
-      <div className="card card-pad mb-12 animate-fade-in">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all mb-12">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-slate-800">Komposisi Metode Pembayaran</h3>
+          <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900">Komposisi Metode Pembayaran</h3>
         </div>
         <div style={{ height: 350, width: '100%' }}>
            <ResponsiveContainer width="100%" height="100%">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../../../lib/api';
-import { Plus, Edit3, Trash2, Tag, Ruler, Package, CheckCircle2, XCircle, Search, Layers } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, Ruler, Package, CheckCircle2, XCircle, Search, Layers } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -196,7 +196,7 @@ export default function BudidayaMasterData() {
   const paginationFeedCats = usePagination(filteredFeedCategories, 10);
 
   return (
-    <div style={{ padding: '18px 24px', background: '#F8FAFC', minHeight: '100vh', fontFamily: "'Inter', sans-serif", animation: 'kd-fadeIn 0.3s ease' }}>
+    <div className="aq-container" style={{ animation: 'kd-fadeIn 0.3s ease' }}>
       
       {/* ─── Top Header Action Row (Title is in Navtop Header) ─── */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
@@ -205,7 +205,7 @@ export default function BudidayaMasterData() {
           {activeTab === 'finance' && (
             <button
               onClick={() => { setEditingFinanceCat(null); setShowFinanceModal(true); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1B4332', color: '#fff', border: 'none', padding: '9px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#1B4332', color: '#fff', border: 'none', height: 38, padding: '0 16px', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
             >
               <Plus size={16} />
               <span>Tambah Kategori Keuangan</span>
@@ -215,7 +215,7 @@ export default function BudidayaMasterData() {
           {activeTab === 'units' && (
             <button
               onClick={() => { setEditingUnit(null); setShowUnitModal(true); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1B4332', color: '#fff', border: 'none', padding: '9px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#1B4332', color: '#fff', border: 'none', height: 38, padding: '0 16px', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
             >
               <Plus size={16} />
               <span>Tambah Satuan Dasar</span>
@@ -225,7 +225,7 @@ export default function BudidayaMasterData() {
           {activeTab === 'feeds' && (
             <button
               onClick={() => { setEditingFeedCat(null); setShowFeedCatModal(true); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1B4332', color: '#fff', border: 'none', padding: '9px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#1B4332', color: '#fff', border: 'none', height: 38, padding: '0 16px', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
             >
               <Plus size={16} />
               <span>Tambah Kategori Pakan</span>
@@ -235,17 +235,17 @@ export default function BudidayaMasterData() {
       </div>
 
       {/* ─── Search & Sub-Filter Bar ─── */}
-      <div style={{ background: '#fff', borderRadius: 12, padding: '12px 16px', marginBottom: 16, border: '1px solid #E9F0EC', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ background: '#fff', borderRadius: 16, padding: '12px 16px', marginBottom: 16, border: '1px solid #E9F0EC', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         
         {/* Left Sub-filter based on active tab */}
         <div>
           {activeTab === 'finance' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12.5, fontWeight: 500, color: '#475569' }}>Filter Tipe:</span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#475569' }}>Filter Tipe:</span>
               <select
                 value={financeTypeFilter}
                 onChange={e => setFinanceTypeFilter(e.target.value)}
-                style={{ height: 36, padding: '0 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5, outline: 'none', background: '#fff' }}
+                style={{ height: 38, padding: '0 32px 0 12px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}
               >
                 <option value="all">Semua Tipe Kategori ({financeCategories.length})</option>
                 <option value="income">Pemasukan</option>
@@ -256,11 +256,11 @@ export default function BudidayaMasterData() {
 
           {activeTab === 'units' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12.5, fontWeight: 500, color: '#475569' }}>Kategori Satuan:</span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#475569' }}>Kategori Satuan:</span>
               <select
                 value={unitCategoryFilter}
                 onChange={e => setUnitCategoryFilter(e.target.value)}
-                style={{ height: 36, padding: '0 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5, outline: 'none', background: '#fff' }}
+                style={{ height: 38, padding: '0 32px 0 12px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}
               >
                 <option value="all">Semua Kategori ({units.length})</option>
                 <option value="berat">Berat (Kg, Gram, Ton)</option>
@@ -273,22 +273,22 @@ export default function BudidayaMasterData() {
           )}
 
           {activeTab === 'feeds' && (
-            <span style={{ fontSize: 12.5, color: '#64748b' }}>
+            <span style={{ fontSize: 13, color: '#64748b' }}>
               Daftar klasifikasi jenis pakan & suplemen
             </span>
           )}
         </div>
 
         {/* Search Bar */}
-        <div style={{ position: 'relative', minWidth: 240 }}>
+        <div style={{ position: 'relative', minWidth: 260 }}>
           <input
             type="text"
             placeholder="Cari data master..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', height: 36, padding: '0 12px 0 34px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5, outline: 'none' }}
+            style={{ width: '100%', height: 38, padding: '0 14px 0 36px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13, outline: 'none' }}
           />
-          <Search size={15} style={{ position: 'absolute', left: 11, top: 10, color: '#94A3B8' }} />
+          <Search size={15} style={{ position: 'absolute', left: 12, top: 12, color: '#94A3B8' }} />
         </div>
       </div>
 
@@ -296,15 +296,15 @@ export default function BudidayaMasterData() {
       {activeTab === 'finance' && (
         <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12.5 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E9F0EC' }}>
-                  <th style={{ padding: '12px 14px', width: 45, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>No</th>
-                  <th style={{ padding: '12px 14px', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Nama Kategori</th>
-                  <th style={{ padding: '12px 14px', width: 140, color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Tipe Kategori</th>
-                  <th style={{ padding: '12px 14px', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Keterangan</th>
-                  <th style={{ padding: '12px 14px', width: 110, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Status</th>
-                  <th style={{ padding: '12px 14px', width: 85, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Aksi</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ padding: '12px 16px', paddingLeft: 24, width: 60, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>No</th>
+                  <th style={{ padding: '12px 16px', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nama Kategori</th>
+                  <th style={{ padding: '12px 16px', width: 140, color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tipe Kategori</th>
+                  <th style={{ padding: '12px 16px', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Keterangan</th>
+                  <th style={{ padding: '12px 16px', width: 120, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                  <th style={{ padding: '12px 16px', paddingRight: 24, width: 90, textAlign: 'right', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -314,40 +314,45 @@ export default function BudidayaMasterData() {
                   <tr><td colSpan={6} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>Belum ada kategori keuangan terdaftar.</td></tr>
                 ) : (
                   paginationFinance.paginatedData.map((cat, idx) => (
-                    <tr key={cat.id} style={{ borderBottom: idx === paginationFinance.paginatedData.length - 1 ? 'none' : '1px solid #E9F0EC' }}>
-                      <td style={{ padding: '11px 14px', textAlign: 'center', color: '#64748b' }}>{paginationFinance.startIndex + idx + 1}</td>
-                      <td style={{ padding: '11px 14px', color: '#0F172A', fontWeight: 500 }}>{cat.name}</td>
-                      <td style={{ padding: '11px 14px' }}>
+                    <tr key={cat.id} className="hover:bg-slate-50/70 transition-colors" style={{ borderBottom: idx === paginationFinance.paginatedData.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '12px 16px', paddingLeft: 24, textAlign: 'center', color: '#64748b' }}>{paginationFinance.startIndex + idx + 1}</td>
+                      <td style={{ padding: '12px 16px', color: '#1e293b', fontWeight: 500 }}>{cat.name}</td>
+                      <td style={{ padding: '12px 16px' }}>
                         <span style={{
-                          display: 'inline-block', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 500,
+                          display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 9999, fontSize: 11.5, fontWeight: 500,
                           background: cat.type === 'income' ? '#ECFDF5' : '#FEF2F2',
-                          color: cat.type === 'income' ? '#059669' : '#DC2626',
-                          border: `1px solid ${cat.type === 'income' ? '#A7F3D0' : '#FECACA'}`
+                          color: cat.type === 'income' ? '#047857' : '#B91C1C',
+                          border: cat.type === 'income' ? '1px solid #A7F3D0' : '1px solid #FECACA'
                         }}>
                           {cat.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}
                         </span>
                       </td>
-                      <td style={{ padding: '11px 14px', color: '#475569' }}>{cat.description || '-'}</td>
-                      <td style={{ padding: '11px 14px', textAlign: 'center' }}>
-                        <span style={{ fontSize: 11, color: cat.is_active !== false ? '#059669' : '#94A3B8' }}>
+                      <td style={{ padding: '12px 16px', color: '#475569' }}>{cat.description || '-'}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 9999, fontSize: 11.5, fontWeight: 500,
+                          background: cat.is_active !== false ? '#ECFDF5' : '#F1F5F9',
+                          color: cat.is_active !== false ? '#047857' : '#64748B',
+                          border: cat.is_active !== false ? '1px solid #A7F3D0' : '1px solid #CBD5E1'
+                        }}>
                           {cat.is_active !== false ? '● Aktif' : '○ Nonaktif'}
                         </span>
                       </td>
-                      <td style={{ padding: '11px 14px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                      <td style={{ padding: '12px 16px', paddingRight: 24, textAlign: 'right' }}>
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => { setEditingFinanceCat(cat); setShowFinanceModal(true); }}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}
+                            className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                             title="Edit"
                           >
-                            <Edit3 size={15} />
+                            <Pencil size={13} />
                           </button>
                           <button
                             onClick={() => handleDeleteFinanceCat(cat)}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#DC2626', padding: 4 }}
+                            className="w-7 h-7 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 flex items-center justify-center text-rose-500 hover:text-rose-700 transition-colors cursor-pointer"
                             title="Hapus"
                           >
-                            <Trash2 size={15} />
+                            <Trash2 size={13} />
                           </button>
                         </div>
                       </td>
@@ -377,15 +382,15 @@ export default function BudidayaMasterData() {
       {activeTab === 'units' && (
         <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12.5 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E9F0EC' }}>
-                  <th style={{ padding: '12px 14px', width: 45, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>No</th>
-                  <th style={{ padding: '12px 14px', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Nama Satuan</th>
-                  <th style={{ padding: '12px 14px', width: 100, color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Simbol</th>
-                  <th style={{ padding: '12px 14px', width: 130, color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Kategori</th>
-                  <th style={{ padding: '12px 14px', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Keterangan Penggunaan</th>
-                  <th style={{ padding: '12px 14px', width: 85, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Aksi</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ padding: '12px 16px', paddingLeft: 24, width: 60, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>No</th>
+                  <th style={{ padding: '12px 16px', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nama Satuan</th>
+                  <th style={{ padding: '12px 16px', width: 110, color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Simbol</th>
+                  <th style={{ padding: '12px 16px', width: 140, color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kategori</th>
+                  <th style={{ padding: '12px 16px', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Keterangan Penggunaan</th>
+                  <th style={{ padding: '12px 16px', paddingRight: 24, width: 90, textAlign: 'right', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -395,31 +400,31 @@ export default function BudidayaMasterData() {
                   <tr><td colSpan={6} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>Belum ada satuan dasar terdaftar.</td></tr>
                 ) : (
                   paginationUnits.paginatedData.map((unit, idx) => (
-                    <tr key={unit.id} style={{ borderBottom: idx === paginationUnits.paginatedData.length - 1 ? 'none' : '1px solid #E9F0EC' }}>
-                      <td style={{ padding: '11px 14px', textAlign: 'center', color: '#64748b' }}>{paginationUnits.startIndex + idx + 1}</td>
-                      <td style={{ padding: '11px 14px', color: '#0F172A' }}>{unit.name}</td>
-                      <td style={{ padding: '11px 14px' }}>
-                        <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 6, background: '#F1F5F9', color: '#1B4332', fontSize: 12, fontWeight: 600, border: '1px solid #CBD5E1' }}>
+                    <tr key={unit.id} className="hover:bg-slate-50/70 transition-colors" style={{ borderBottom: idx === paginationUnits.paginatedData.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '12px 16px', paddingLeft: 24, textAlign: 'center', color: '#64748b' }}>{paginationUnits.startIndex + idx + 1}</td>
+                      <td style={{ padding: '12px 16px', color: '#1e293b', fontWeight: 500 }}>{unit.name}</td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <code className="font-mono text-xs font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
                           {unit.symbol}
-                        </span>
+                        </code>
                       </td>
-                      <td style={{ padding: '11px 14px', color: '#475569', textTransform: 'capitalize' }}>{unit.category || 'Jumlah'}</td>
-                      <td style={{ padding: '11px 14px', color: '#64748b' }}>{unit.description || '-'}</td>
-                      <td style={{ padding: '11px 14px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                      <td style={{ padding: '12px 16px', color: '#475569', textTransform: 'capitalize' }}>{unit.category || 'Jumlah'}</td>
+                      <td style={{ padding: '12px 16px', color: '#64748b' }}>{unit.description || '-'}</td>
+                      <td style={{ padding: '12px 16px', paddingRight: 24, textAlign: 'right' }}>
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => { setEditingUnit(unit); setShowUnitModal(true); }}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}
+                            className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                             title="Edit"
                           >
-                            <Edit3 size={15} />
+                            <Pencil size={13} />
                           </button>
                           <button
                             onClick={() => handleDeleteUnit(unit)}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#DC2626', padding: 4 }}
+                            className="w-7 h-7 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 flex items-center justify-center text-rose-500 hover:text-rose-700 transition-colors cursor-pointer"
                             title="Hapus"
                           >
-                            <Trash2 size={15} />
+                            <Trash2 size={13} />
                           </button>
                         </div>
                       </td>
@@ -449,12 +454,12 @@ export default function BudidayaMasterData() {
       {activeTab === 'feeds' && (
         <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12.5 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E9F0EC' }}>
-                  <th style={{ padding: '12px 14px', width: 45, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>No</th>
-                  <th style={{ padding: '12px 14px', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Nama Kategori Pakan</th>
-                  <th style={{ padding: '12px 14px', width: 85, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Aksi</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ padding: '12px 16px', paddingLeft: 24, width: 60, textAlign: 'center', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>No</th>
+                  <th style={{ padding: '12px 16px', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nama Kategori Pakan</th>
+                  <th style={{ padding: '12px 16px', paddingRight: 24, width: 90, textAlign: 'right', color: '#64748b', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -464,24 +469,24 @@ export default function BudidayaMasterData() {
                   <tr><td colSpan={3} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>Belum ada kategori pakan terdaftar.</td></tr>
                 ) : (
                   paginationFeedCats.paginatedData.map((cat, idx) => (
-                    <tr key={cat.id} style={{ borderBottom: idx === paginationFeedCats.paginatedData.length - 1 ? 'none' : '1px solid #E9F0EC' }}>
-                      <td style={{ padding: '11px 14px', textAlign: 'center', color: '#64748b' }}>{paginationFeedCats.startIndex + idx + 1}</td>
-                      <td style={{ padding: '11px 14px', color: '#0F172A' }}>{cat.name}</td>
-                      <td style={{ padding: '11px 14px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                    <tr key={cat.id} className="hover:bg-slate-50/70 transition-colors" style={{ borderBottom: idx === paginationFeedCats.paginatedData.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '12px 16px', paddingLeft: 24, textAlign: 'center', color: '#64748b' }}>{paginationFeedCats.startIndex + idx + 1}</td>
+                      <td style={{ padding: '12px 16px', color: '#1e293b', fontWeight: 500 }}>{cat.name}</td>
+                      <td style={{ padding: '12px 16px', paddingRight: 24, textAlign: 'right' }}>
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => { setEditingFeedCat(cat); setShowFeedCatModal(true); }}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}
+                            className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                             title="Edit"
                           >
-                            <Edit3 size={15} />
+                            <Pencil size={13} />
                           </button>
                           <button
                             onClick={() => handleDeleteFeedCat(cat)}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#DC2626', padding: 4 }}
+                            className="w-7 h-7 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 flex items-center justify-center text-rose-500 hover:text-rose-700 transition-colors cursor-pointer"
                             title="Hapus"
                           >
-                            <Trash2 size={15} />
+                            <Trash2 size={13} />
                           </button>
                         </div>
                       </td>

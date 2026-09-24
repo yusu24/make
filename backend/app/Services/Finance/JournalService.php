@@ -70,7 +70,8 @@ class JournalService
         $parsedDate = \Carbon\Carbon::parse($date);
         $periodName = $parsedDate->format('Y-m');
 
-        $period = FinancialPeriod::where('tenant_id', auth()->user()->tenant_id ?? request()->header('X-Tenant'))
+        $tenantId = request()?->attributes->get('tenant_id') ?? auth()->user()?->tenant_id;
+        $period = FinancialPeriod::where('tenant_id', $tenantId)
             ->where('period_name', $periodName)
             ->first();
 

@@ -77,11 +77,11 @@ export default function FeedCategories() {
               placeholder="Misal: Pakan Protein Tinggi, Herbal..." 
               required 
               style={{
-                flex: 1, padding: '8px 12px', background: '#ffffff',
-                border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '13px', outline: 'none'
+                flex: 1, height: '38px', padding: '0 12px', background: '#ffffff',
+                border: '1px solid #CBD5E1', borderRadius: '12px', fontSize: '13px', outline: 'none'
               }}
             />
-            <button type="submit" className="btn btn-primary" style={{ height: '38px', padding: '0 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button type="submit" className="btn btn-primary" style={{ height: '38px', padding: '0 16px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
               Tambah Kategori
             </button>

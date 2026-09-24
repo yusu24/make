@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
-import { Bell, Sparkles, AlertTriangle, ShieldCheck, Tag, X, Check } from 'lucide-react';
+import { Bell, Sparkles, AlertTriangle, ShieldCheck, Tag, X, Check, ExternalLink, ArrowRight } from '@/constants/icons';
 
 export default function AnnouncementModal() {
+  const navigate = useNavigate();
   const [announcement, setAnnouncement] = useState(null);
   const [visible, setVisible] = useState(false);
 
@@ -35,6 +37,17 @@ export default function AnnouncementModal() {
     setVisible(false);
   };
 
+  const handleAction = () => {
+    if (announcement.action_url) {
+      if (announcement.action_url.startsWith('http')) {
+        window.open(announcement.action_url, '_blank', 'noopener,noreferrer');
+      } else {
+        navigate(announcement.action_url);
+      }
+    }
+    handleDismiss();
+  };
+
   const getTheme = (type) => {
     switch (type) {
       case 'promo':
@@ -54,9 +67,10 @@ export default function AnnouncementModal() {
           border: '#fde68a',
         };
       case 'security':
+      case 'urgent':
         return {
           icon: <ShieldCheck size={24} color="#dc2626" />,
-          badge: '🛡️ Keamanan & Privasi',
+          badge: '🚨 Keamanan & Informasi Penting',
           gradient: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
           bg: '#fef2f2',
           border: '#fecaca',
@@ -74,6 +88,90 @@ export default function AnnouncementModal() {
 
   const theme = getTheme(announcement.type);
 
+  // If display_type is banner
+  if (announcement.display_type === 'banner') {
+    return createPortal(
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 99999,
+        background: theme.gradient,
+        color: '#ffffff',
+        padding: '10px 20px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 16,
+        fontSize: 13,
+        animation: 'slideDown 0.3s ease-out',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+          <span style={{
+            background: 'rgba(255,255,255,0.2)',
+            padding: '2px 8px',
+            borderRadius: 6,
+            fontSize: 11,
+            fontWeight: 700,
+            whiteSpace: 'nowrap'
+          }}>
+            {theme.badge}
+          </span>
+          <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{announcement.title}:</span>
+          <span style={{ opacity: 0.95, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {announcement.content}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          {announcement.action_url && (
+            <button
+              onClick={handleAction}
+              style={{
+                background: '#ffffff',
+                color: '#1e293b',
+                border: 'none',
+                borderRadius: 6,
+                padding: '4px 12px',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4
+              }}
+            >
+              <span>{announcement.action_text || 'Buka'}</span>
+              <ArrowRight size={12} />
+            </button>
+          )}
+          <button
+            onClick={handleDismiss}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              borderRadius: '50%',
+              width: 24,
+              height: 24,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              cursor: 'pointer'
+            }}
+            title="Tutup"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  // Default Modal Popup
   return createPortal(
     <div style={{
       position: 'fixed',
@@ -170,10 +268,11 @@ export default function AnnouncementModal() {
             {announcement.content}
           </div>
 
-          {/* Footer Action */}
+          {/* Footer Actions */}
           <div style={{
             display: 'flex',
             justifyContent: 'flex-end',
+            alignItems: 'center',
             gap: 10,
             marginTop: 24,
             paddingTop: 16,
@@ -181,23 +280,55 @@ export default function AnnouncementModal() {
           }}>
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn btn-secondary"
               onClick={handleDismiss}
-              style={{
-                background: theme.gradient,
-                border: 'none',
-                padding: '10px 22px',
-                borderRadius: 10,
-                fontSize: 13.5,
-                fontWeight: 700,
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
+              style={{ padding: '9px 18px', fontSize: 13 }}
             >
-              <Check size={16} /> Mengerti &amp; Tutup
+              Tutup
             </button>
+
+            {announcement.action_url ? (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleAction}
+                style={{
+                  background: theme.gradient,
+                  border: 'none',
+                  padding: '9px 20px',
+                  borderRadius: 10,
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <span>{announcement.action_text || 'Pelajari Selengkapnya'}</span>
+                <ExternalLink size={15} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleDismiss}
+                style={{
+                  background: theme.gradient,
+                  border: 'none',
+                  padding: '9px 20px',
+                  borderRadius: 10,
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <Check size={16} /> Mengerti
+              </button>
+            )}
           </div>
         </div>
       </div>

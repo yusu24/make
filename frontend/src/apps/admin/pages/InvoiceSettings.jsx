@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { api } from '../../../lib/api'
+import { RefreshCw } from '@/constants/icons'
 import './Shared.css'
 
 export default function InvoiceSettings() {
@@ -26,6 +27,14 @@ export default function InvoiceSettings() {
       setLogoPreview(data.invoice_logo_url || null)
     } catch (e) {
       console.error(e)
+      setInvoiceSettings({
+        company_name: 'BIZORA SaaS',
+        company_tagline: 'Sistem Manajemen Usaha & Kasir Terintegrasi',
+        company_address: 'Jl. Jendral Sudirman No. 123, Jakarta Selatan',
+        company_phone: '0812-3456-7890',
+        company_email: 'billing@bizora.id',
+        bank_accounts: [{ bank_name: 'Bank Mandiri', bank_account_number: '123-00-9988776-5', bank_account_name: 'PT BIZORA TEKNOLOGI INDONESIA' }]
+      })
     } finally {
       setLoading(false)
     }
@@ -127,18 +136,18 @@ export default function InvoiceSettings() {
 
       {loading || !invoiceSettings ? (
         <div className="card card-pad" style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <span className="spinner" style={{ width: 32, height: 32, borderWidth: 3 }} />
-            <span>Memuat pengaturan invoice...</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+            <RefreshCw size={28} className="animate-spin text-indigo-600" />
+            <span style={{ fontSize: 13.5, fontWeight: 500 }}>Memuat pengaturan invoice &amp; template email...</span>
           </div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.15fr) minmax(360px, 0.85fr)', gap: 24, alignItems: 'start' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           {/* ═══════════════════════════════════════════════════════════════
               LEFT COLUMN: Form Settings
              ═══════════════════════════════════════════════════════════════ */}
-          <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <form onSubmit={handleSaveSettings} className="lg:col-span-7 flex flex-col gap-5">
             
             {/* Section 0: Upload Logo */}
             <div className="card card-pad" style={{ padding: 20 }}>
@@ -214,7 +223,7 @@ export default function InvoiceSettings() {
               <h4 style={{ margin: '0 0 14px 0', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
                 🏢 Identitas Perusahaan / Penerbit Faktur
               </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Nama Perusahaan</label>
                   <input
@@ -252,7 +261,7 @@ export default function InvoiceSettings() {
                     onChange={e => setInvoiceSettings({ ...invoiceSettings, company_phone: e.target.value })}
                   />
                 </div>
-                <div style={{ gridColumn: 'span 2' }}>
+                <div className="sm:col-span-2">
                   <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Alamat Kantor Perusahaan</label>
                   <input
                     type="text"
@@ -319,7 +328,7 @@ export default function InvoiceSettings() {
                         </button>
                       )}
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label style={{ fontSize: 10.5, fontWeight: 600, display: 'block', marginBottom: 3, color: '#475569' }}>Nama Bank</label>
                         <input
@@ -358,7 +367,7 @@ export default function InvoiceSettings() {
                           required
                         />
                       </div>
-                      <div style={{ gridColumn: 'span 2' }}>
+                      <div className="sm:col-span-2">
                         <label style={{ fontSize: 10.5, fontWeight: 600, display: 'block', marginBottom: 3, color: '#475569' }}>Atas Nama (A.N.)</label>
                         <input
                           type="text"
@@ -516,7 +525,7 @@ export default function InvoiceSettings() {
           {/* ═══════════════════════════════════════════════════════════════
               RIGHT COLUMN: Realtime Live PDF POV Preview (Unpaid vs Paid)
              ═══════════════════════════════════════════════════════════════ */}
-          <div style={{ position: 'sticky', top: 20 }}>
+          <div className="lg:col-span-5 lg:sticky lg:top-6">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
               <div>
                 <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>

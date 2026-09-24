@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Menu } from '@/constants/icons';
 import { ActiveTab, Expense, Income, Order, Product, Warehouse, StockMovement, CashSummaryItem, StoreChannel } from './types';
+import '../seller.css';
 import { useAuth } from '../../../contexts/AuthContext';
 import {
   INITIAL_WAREHOUSES,
@@ -60,6 +61,8 @@ import { ImportProductsModal } from './components/modals/ImportProductsModal';
 import { AddStockModal } from './components/modals/AddStockModal';
 import { AiAdvisorDrawer } from './components/AiAdvisorDrawer';
 import { SellerAiFab } from './components/SellerAiFab';
+import { SellerMobileBottomNav } from './components/SellerMobileBottomNav';
+import { SellerMobileBottomSheet } from './components/SellerMobileBottomSheet';
 
 // Pure, one-directional URL <-> tab mapping. activeTab is derived FROM the
 // URL on every render (see below) instead of being separate React state kept
@@ -151,8 +154,14 @@ export default function App() {
   };
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [selectedStoreId, setSelectedStoreId] = useState('all');
   const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    setIsBottomSheetOpen(false);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   // Kasir/POS is meant to be an immersive full-screen register: collapse the
   // sidebar to icons-only the moment the tab is entered so the cart has more
@@ -745,7 +754,7 @@ export default function App() {
 
   // Handler for Sync Marketplace
   return (
-    <div className="min-h-screen max-w-full overflow-x-hidden bg-[#F2F4F7] dark:bg-[#0B0F19] text-[#101828] dark:text-slate-100 font-sans antialiased flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="seller-scope min-h-screen max-w-full overflow-x-hidden bg-[#F2F4F7] dark:bg-[#0B0F19] text-[#101828] dark:text-slate-100 antialiased flex flex-col selection:bg-indigo-500 selection:text-white">
       {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
@@ -772,7 +781,7 @@ export default function App() {
       {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden transition-all duration-300 ${
-          collapsed ? 'md:pl-20' : 'md:pl-64'
+          collapsed ? 'md:pl-[68px]' : 'md:pl-64'
         } pl-0`}
       >
         {/* Top Header — hidden on Kasir/POS so the register gets full-height, immersive space */}
@@ -788,8 +797,8 @@ export default function App() {
             activeTab={activeTab}
             darkMode={darkMode}
             setDarkMode={setDarkMode}
-            mobileMenuOpen={mobileMenuOpen}
-            setMobileMenuOpen={setMobileMenuOpen}
+            mobileMenuOpen={isBottomSheetOpen}
+            setMobileMenuOpen={() => setIsBottomSheetOpen(prev => !prev)}
           />
         )}
 
@@ -862,9 +871,9 @@ export default function App() {
               onDeductStock={handleDeductStock}
               onMenuToggle={() => {
                 if (window.innerWidth < 768) {
-                  setMobileMenuOpen(!mobileMenuOpen);
+                  setIsBottomSheetOpen(prev => !prev);
                 } else {
-                  setCollapsed(!collapsed);
+                  setCollapsed(prev => !prev);
                 }
               }}
             />
@@ -953,6 +962,20 @@ export default function App() {
           )}
           {activeTab === 'langganan' && <SellerSubscriptionView />}
           {activeTab === 'backup' && <BackupView />}
+
+          {/* Mobile Bottom Clearance Spacer so bottom-most content is never covered by bottom nav */}
+          {activeTab !== 'toko-offline' && (
+            <div
+              className="md:hidden"
+              style={{
+                height: 'calc(110px + env(safe-area-inset-bottom, 16px))',
+                width: '100%',
+                pointerEvents: 'none',
+                flexShrink: 0
+              }}
+              aria-hidden="true"
+            />
+          )}
         </main>
       </div>
 
@@ -1056,6 +1079,24 @@ export default function App() {
         onOpen={() => setIsAiAdvisorOpen(true)}
         isPosView={activeTab === 'toko-offline'}
       />
+
+      {/* Mobile Bottom Navigation & Slide-up Sheet */}
+      <>
+        {activeTab !== 'toko-offline' && (
+          <SellerMobileBottomNav
+            activeTab={activeTab}
+            onSelectTab={(tab) => setActiveTab(tab)}
+            onToggleMore={() => setIsBottomSheetOpen(prev => !prev)}
+            isSheetOpen={isBottomSheetOpen}
+          />
+        )}
+        <SellerMobileBottomSheet
+          isOpen={isBottomSheetOpen}
+          onClose={() => setIsBottomSheetOpen(false)}
+          activeTab={activeTab}
+          onSelectTab={(tab) => setActiveTab(tab)}
+        />
+      </>
     </div>
   );
 }

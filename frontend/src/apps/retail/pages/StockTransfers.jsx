@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Plus, ArrowRight, Eye, Check, X, RefreshCw } from 'lucide-react';
+import { Plus, ArrowRight, Eye, Check, X, RefreshCw } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
@@ -140,7 +140,7 @@ export default function StockTransfers() {
     <div className="retail-page-classic">
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)} style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}>
+          <button className="btn btn-primary" onClick={() => setShowModal(true)} style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}>
             <Plus size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Buat Transfer</span>
           </button>
@@ -148,8 +148,8 @@ export default function StockTransfers() {
             {/* Search can be added later if needed */}
             <input type="text" placeholder="Cari..." disabled />
           </div>
-          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
-            <RefreshCw size={18} />
+          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
 

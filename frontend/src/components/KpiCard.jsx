@@ -57,20 +57,20 @@ export default function KpiCard({
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-sm transition-all duration-150 ${
+      className={`bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all ${
         themeColors.hoverBorder
-      } ${onClick ? 'cursor-pointer hover:shadow-md' : ''} ${className}`}
+      } ${onClick ? 'cursor-pointer' : ''} ${className}`}
       style={style}
     >
       {/* Top Header: Icon + Title side-by-side */}
       <div className="flex items-center justify-between gap-3 mb-2">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           {Icon && (
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${themeColors.iconBg}`}>
-              <Icon size={18} />
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${themeColors.iconBg}`}>
+              <Icon size={20} />
             </div>
           )}
-          <span className="text-[14.5px] font-bold text-slate-700 truncate tracking-tight">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
             {cardTitle}
           </span>
         </div>
@@ -81,9 +81,9 @@ export default function KpiCard({
       {/* Main Value Metric */}
       <div className="mt-1">
         {loading ? (
-          <div className="h-7 w-28 bg-slate-100 rounded-lg animate-pulse" />
+          <div className="h-8 w-28 bg-slate-100 rounded-lg animate-pulse" />
         ) : (
-          <div className="text-[22px] font-bold text-slate-900 tracking-tight leading-tight">
+          <div className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
             {value}
           </div>
         )}
@@ -91,7 +91,7 @@ export default function KpiCard({
 
       {/* Subtext / Trend */}
       {cardSub && (
-        <div className="text-xs text-slate-400 font-medium mt-1">
+        <div className="text-xs text-slate-400 font-medium mt-1 font-['Inter']">
           {cardSub}
         </div>
       )}

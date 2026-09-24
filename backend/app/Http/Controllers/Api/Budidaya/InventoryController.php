@@ -78,7 +78,10 @@ class InventoryController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            return response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403);
+        }
         $item = BudidayaInventory::create(array_merge($validated, ['tenant_id' => $tenantId]));
 
         // Log initial stock

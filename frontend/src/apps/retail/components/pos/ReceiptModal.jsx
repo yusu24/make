@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Printer, RefreshCw, CheckCircle2, MessageCircle } from 'lucide-react';
+import { Printer, RefreshCw, CheckCircle2, MessageCircle } from '@/constants/icons';
 import { useReactToPrint } from 'react-to-print';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
@@ -52,8 +52,10 @@ export default function ReceiptModal({ isOpen, order, outletName, cashierName, r
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm select-none" onClick={onClose}>
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-950/85 backdrop-blur-sm select-none" onClick={onClose}>
+      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-700 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
         <div className="p-5 bg-emerald-500/10 border-b border-emerald-500/20 text-center shrink-0 flex flex-col items-center">
           <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 mb-2">
             <CheckCircle2 size={22} />
@@ -140,7 +142,10 @@ export default function ReceiptModal({ isOpen, order, outletName, cashierName, r
           </div>
         </div>
 
-        <div className="p-4 border-t border-slate-800 bg-slate-950/40 flex flex-col gap-2 shrink-0">
+        <div 
+          className="p-4 border-t border-slate-800 bg-slate-950/40 flex flex-col gap-2 shrink-0"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}

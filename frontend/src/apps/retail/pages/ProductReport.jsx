@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../retail.css';
 import { api } from '../../../lib/api';
-import { Calendar, TrendingUp, AlertCircle } from 'lucide-react';
+import { Calendar, TrendingUp, AlertCircle } from '@/constants/icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function ProductReport() {

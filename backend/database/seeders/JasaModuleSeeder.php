@@ -53,6 +53,17 @@ class JasaModuleSeeder extends Seeder
 
         foreach ($services as $svc) {
             JasaService::updateOrCreate(['tenant_id' => $tenantId, 'code' => $svc['code']], $svc);
+            \App\Models\JasaServiceCatalog::updateOrCreate(['tenant_id' => $tenantId, 'code' => $svc['code']], [
+                'tenant_id' => $tenantId,
+                'code' => $svc['code'],
+                'name' => $svc['name'],
+                'category' => $svc['category'],
+                'description' => $svc['description'],
+                'base_price' => $svc['base_price'],
+                'estimated_duration_hours' => $svc['estimated_duration_hours'],
+                'warranty_days' => $svc['warranty_days'],
+                'required_skill_level' => $svc['required_skill_level'],
+            ]);
         }
 
         // 2. Seed Jasa Technicians

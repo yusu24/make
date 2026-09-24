@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, X } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import KulinerLoading from '../components/KulinerLoading';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import ClientPagination from '../components/ClientPagination';
@@ -78,58 +79,69 @@ export default function Waste() {
         <h1 className="kd-page-title">{t('kulinerInventory.wasteTitle')}</h1>
       </div>
       <div className="kd-content">
-        <div className="kd-panel" style={{ padding: 20, marginBottom: 16 }}>
-          <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 700 }}>Total Kerugian (halaman ini)</span>
-          <div style={{ fontSize: 24, fontWeight: 800, color: '#ef4444' }}>{formatRp(totalLoss)}</div>
-        </div>
+        {loading ? (
+          <KulinerLoading message={t('kulinerInventory.loadingWaste') || 'Memuat catatan waste...'} />
+        ) : (
+          <>
+            <div className="kd-panel" style={{ padding: 20, marginBottom: 16 }}>
+              <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 600 }}>Total Kerugian (halaman ini)</span>
+              <div style={{ fontSize: 24, fontWeight: 700, color: '#ef4444' }}>{formatRp(totalLoss)}</div>
+            </div>
 
-        <div className="kd-page-actions">
-          <button className="kd-btn kd-btn-primary" onClick={openCreate}>{t('kulinerInventory.addWasteBtn')}</button>
-        </div>
+            <div className="kd-page-actions">
+              <button className="kd-btn kd-btn-primary" onClick={openCreate}>{t('kulinerInventory.addWasteBtn')}</button>
+            </div>
 
-        <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-          <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-            <table className="kd-table">
-              <thead>
-                <tr>
-                  <th>{t('kulinerInventory.headerWasteDate')}</th>
-                  <th>{t('kulinerInventory.headerWasteItem')}</th>
-                  <th>{t('kulinerInventory.headerWasteQty')}</th>
-                  <th>{t('kulinerInventory.headerWasteReason')}</th>
-                  <th>{t('kulinerInventory.headerWasteCost')}</th>
-                  <th className="text-right">{t('kulinerInventory.headerAction')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan="6" className="text-center py-10 text-slate-400">{t('kulinerInventory.loadingWaste')}</td></tr>
-                ) : wastes.length === 0 ? (
-                  <tr><td colSpan="6" className="text-center py-10 text-slate-400">{t('kulinerInventory.emptyWaste')}</td></tr>
-                ) : (
-                  currentWastes.map((w) => (
-                    <tr key={w.id}>
-                      <td>{new Date(w.waste_date).toLocaleDateString('id-ID')}</td>
-                      <td><div style={{ color: '#1e293b' }}>{w.ingredient?.name}</div></td>
-                      <td>{w.quantity} {w.ingredient?.unit}</td>
-                      <td>{REASON_LABEL[w.reason] || w.reason}</td>
-                      <td style={{ color: '#000', fontWeight: 700 }}>{formatRp(w.value_lost)}</td>
-                      <td className="text-right">
-                        <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(w)}><Trash2 size={16} /></button>
-                      </td>
+            <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+              <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table className="kd-table">
+                  <thead>
+                    <tr>
+                      <th>{t('kulinerInventory.headerWasteDate')}</th>
+                      <th>{t('kulinerInventory.headerWasteItem')}</th>
+                      <th>{t('kulinerInventory.headerWasteQty')}</th>
+                      <th>{t('kulinerInventory.headerWasteReason')}</th>
+                      <th>{t('kulinerInventory.headerWasteCost')}</th>
+                      <th className="text-right">{t('kulinerInventory.headerAction')}</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          <ClientPagination setItemsPerPage={setItemsPerPage} 
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
-            itemsPerPage={itemsPerPage}
-            totalItems={wastes.length}
-          />
-        </div>
+                  </thead>
+                  <tbody>
+                    {wastes.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-center py-12 text-slate-400">
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                            <Trash2 size={36} color="#CBD5E1" />
+                            <span style={{ fontSize: 13, fontWeight: 400 }}>{t('kulinerInventory.emptyWaste')}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      currentWastes.map((w) => (
+                        <tr key={w.id}>
+                          <td style={{ fontWeight: 400, fontSize: 12 }}>{new Date(w.waste_date).toLocaleDateString('id-ID')}</td>
+                          <td style={{ fontWeight: 400, fontSize: 12 }}><div style={{ color: '#1e293b' }}>{w.ingredient?.name}</div></td>
+                          <td style={{ fontWeight: 600, fontSize: 12 }}>{w.quantity} {w.ingredient?.unit}</td>
+                          <td style={{ fontWeight: 400, fontSize: 12 }}>{REASON_LABEL[w.reason] || w.reason}</td>
+                          <td style={{ color: '#000', fontWeight: 600, fontSize: 12 }}>{formatRp(w.value_lost)}</td>
+                          <td className="text-right">
+                            <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(w)}><Trash2 size={16} /></button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <ClientPagination setItemsPerPage={setItemsPerPage} 
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                itemsPerPage={itemsPerPage}
+                totalItems={wastes.length}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {showModal && (
@@ -137,7 +149,7 @@ export default function Waste() {
           <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{t('kulinerInventory.addWasteModalTitle')}</h2>
-              <button className="kd-close-btn" onClick={() => setShowModal(false)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setShowModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={handleSave}>
               <div className="kd-modal-body">

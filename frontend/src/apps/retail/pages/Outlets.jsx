@@ -5,7 +5,7 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
-import { Edit3, Trash2, Store, MapPin, Phone, Star } from 'lucide-react';
+import { Pencil, Trash2, Store, MapPin, Phone, Star, RefreshCw } from '@/constants/icons';
 
 export default function Outlets() {
   const [outlets, setOutlets] = useState([]);
@@ -99,25 +99,29 @@ export default function Outlets() {
   return (
     <div className="retail-page-classic">
       <div className="card table-wrap animate-fade-in">
-        <div className="p-6 flex justify-between items-center gap-3 flex-wrap">
-          <div className="airy-search-wrapper" style={{ width: 320, margin: 0 }}>
-            <input
-              placeholder="Cari cabang/outlet..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button 
             type="button" 
-            className="btn btn-primary h-[42px] px-6 whitespace-nowrap flex items-center gap-2"
+            className="btn btn-primary"
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
             onClick={() => {
               setEditingOutlet(null);
               setErrors({});
               setShowModal(true);
             }}
           >
-            <Store size={16} />
-            Tambah Cabang Baru
+            <Store size={15} className="mr-2 mobile-no-margin" />
+            <span className="btn-text-mobile-hide">Tambah Cabang Baru</span>
+          </button>
+          <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
+            <input
+              placeholder="Cari cabang/outlet..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <button onClick={fetchOutlets} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
 
@@ -180,7 +184,7 @@ export default function Outlets() {
                     </td>
                     <td style={{ textAlign: 'right' }} className="pr-6">
                       <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                        <button className="btn btn-sm btn-ghost" onClick={() => openEdit(o)} title="Edit Cabang"><Edit3 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => openEdit(o)} title="Edit Cabang"><Pencil size={14} /></button>
                         <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(o.id)} title="Hapus Cabang"><Trash2 size={14} /></button>
                       </div>
                     </td>

@@ -104,7 +104,7 @@ export default function Ponds() {
   } = usePagination(filtered)
 
   const renderTableView = () => (
-    <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
       <Table>
         <TableHeader>
           <TableRow isHoverable={false}>
@@ -179,7 +179,7 @@ export default function Ponds() {
     <div className="aq-container">
 
       {/* ── Page Actions ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
         {/* Search bar */}
         <div style={{ position: 'relative', width: '320px' }}>
           <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748B', fontSize: '18px' }}>search</span>
@@ -187,7 +187,7 @@ export default function Ponds() {
             placeholder={`Cari kode atau nama ${terms.unitLower}...`}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', padding: '9px 12px 9px 38px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+            style={{ width: '100%', height: '38px', padding: '0 14px 0 38px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', fontSize: '13px', outline: 'none' }}
           />
         </div>
 
@@ -195,9 +195,9 @@ export default function Ponds() {
           className="btn btn-primary" 
           onClick={() => setModalOpen(true)}
           style={{
-            display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px',
-            borderRadius: '8px', background: '#1B4332', color: '#fff', border: 'none',
-            fontWeight: 600, fontSize: '13px', cursor: 'pointer'
+            display: 'inline-flex', alignItems: 'center', gap: 8, height: '38px', padding: '0 16px',
+            borderRadius: '12px', background: '#1B4332', color: '#fff', border: 'none',
+            fontWeight: 600, fontSize: '13px', cursor: 'pointer', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import { PackageOpen, Calendar, Search } from 'lucide-react';
+import { PackageOpen, Calendar, Search, RefreshCw } from '@/constants/icons';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import '../retail.css';
 
@@ -46,8 +46,6 @@ export default function Consignment() {
 
   return (
     <div className="retail-page-classic">
-      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
-      </div>
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)', flexWrap: 'wrap' }}>
            <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
@@ -74,6 +72,9 @@ export default function Consignment() {
                  onChange={e => setEndDate(e.target.value)} 
               />
            </div>
+           <button onClick={fetchConsignment} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+           </button>
         </div>
 
         <div className="retail-table-responsive">

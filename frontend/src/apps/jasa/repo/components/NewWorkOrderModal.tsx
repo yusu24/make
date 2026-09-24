@@ -11,7 +11,7 @@ import {
   Calendar, 
   DollarSign, 
   Sparkles 
-} from 'lucide-react';
+} from '@/constants/icons';
 import { 
   WorkOrder, 
   Technician, 
@@ -179,28 +179,31 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-5 z-[60]">
-      <div className="bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[95vh] sm:max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[2000] overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-5">
+      <div className="bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[92dvh] sm:max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150">
         
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
+
         {/* Header */}
-        <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center">
+        <div className="p-4 sm:p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0">
               <ClipboardCheck className="w-5 h-5" />
             </div>
-            <div>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Order Creation &bull; {terms.badgeName}</span>
-              <h2 className="text-lg sm:text-xl font-semibold text-slate-900">{terms.newWorkOrderBtn} ({terms.workOrderLabel})</h2>
-              <p className="text-xs text-slate-500">Isi data permintaan {terms.categoryName.toLowerCase()}, objek {terms.unitLabel.toLowerCase()}, dan alokasi {terms.technicianLabel.toLowerCase()}</p>
+            <div className="min-w-0">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 block truncate">Order Creation &bull; {terms.badgeName}</span>
+              <h2 className="text-base sm:text-xl font-semibold text-slate-900 truncate">{terms.newWorkOrderBtn} ({terms.workOrderLabel})</h2>
+              <p className="text-xs text-slate-500 hidden sm:block">Isi data permintaan {terms.categoryName.toLowerCase()}, objek {terms.unitLabel.toLowerCase()}, dan alokasi {terms.technicianLabel.toLowerCase()}</p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 shrink-0">
             {onOpenAiAssistant && (
               <button
                 type="button"
                 onClick={onOpenAiAssistant}
-                className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold hover:bg-amber-100 transition-colors shadow-2xs"
+                className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold hover:bg-amber-100 transition-colors shadow-2xs cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 <span>Bantu Estimasi AI</span>
@@ -208,15 +211,17 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
             )}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-700 border border-slate-200 transition-colors shadow-2xs"
+              className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-700 border border-slate-200 transition-colors shadow-2xs cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs sm:text-sm text-slate-700">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          {/* Scrollable Form Body */}
+          <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs sm:text-sm text-slate-700">
           
           {/* Section 1: Ringkasan Tugas SPK */}
           <div className="space-y-3.5 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80">
@@ -590,20 +595,25 @@ export const NewWorkOrderModal: React.FC<NewWorkOrderModalProps> = ({
             </div>
           </div>
 
-          {/* Form Actions */}
-          <div className="pt-2 flex items-center justify-end space-x-3">
+          </div>
+          
+          {/* Modal Sticky Form Actions Footer */}
+          <div 
+            className="p-3.5 sm:p-5 bg-slate-50 border-t border-slate-200 flex items-center justify-end space-x-3 shrink-0"
+            style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+          >
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+              className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-50 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl shadow-xs transition-all hover:scale-[1.01] cursor-pointer flex items-center gap-2"
+              className="flex-1 sm:flex-none justify-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl shadow-xs transition-all hover:scale-[1.01] cursor-pointer flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

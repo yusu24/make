@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Truck, Plus, Trash2, Package, Eye, X } from 'lucide-react';
+import { Truck, Plus, Trash2, Package, Eye, X } from '@/constants/icons';
 import api from '../../../../../services/api';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
@@ -57,19 +57,10 @@ export const PurchaseHistoryView: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Truck className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">{i18n?.language === 'en' ? 'Goods Receiving from Supplier' : 'Penerimaan Barang dari Supplier'}</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            {i18n?.language === 'en' ? 'History of inventory items received with purchase costs. Automatically updates stock balance.' : 'Riwayat barang masuk ke gudang beserta biaya belinya. Setiap penerimaan otomatis menambah stok & tercatat di riwayat mutasi.'}
-          </p>
-        </div>
+      <div className="flex items-center justify-end gap-2 shrink-0">
         <button
           onClick={() => setIsAddOpen(true)}
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          className="px-4 h-[38px] rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{i18n?.language === 'en' ? 'Record New Receiving' : 'Catat Penerimaan Baru'}</span>

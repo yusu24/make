@@ -12,15 +12,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('seller_warehouses', function (Blueprint $table) {
-            $table->dropForeign(['tenant_id']);
-        });
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('seller_warehouses', function (Blueprint $table) {
+                $table->dropForeign(['tenant_id']);
+            });
 
-        DB::statement('ALTER TABLE seller_warehouses MODIFY tenant_id VARCHAR(255) NOT NULL');
+            DB::statement('ALTER TABLE seller_warehouses MODIFY tenant_id VARCHAR(255) NOT NULL');
 
-        Schema::table('seller_warehouses', function (Blueprint $table) {
-            $table->index('tenant_id');
-        });
+            Schema::table('seller_warehouses', function (Blueprint $table) {
+                $table->index('tenant_id');
+            });
+        }
     }
 
     /**

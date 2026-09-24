@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Eye } from 'lucide-react';
+import {
+  useNavigate,
+  Link
+} from 'react-router-dom';
+import { 
+  DollarSign,
+  ShoppingBag,
+  Award,
+  AlertTriangle,
+  Plus,
+  Tag,
+  Sparkles,
+  BarChart2,
+  Utensils,
+  Eye
+} from '@/constants/icons';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
@@ -80,10 +94,15 @@ const KulinerDashboard = () => {
     return `${Math.round(diffHour / 24)} ${t('kulinerDashboard.daysAgo')}`;
   };
 
+  const now = new Date();
+  const hour = now.getHours();
+  const timeGreeting = hour < 12 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 18 ? 'Selamat sore' : 'Selamat malam';
+  const roleLabel = user?.role === 'super_admin' ? 'Super Admin' : (user?.role === 'admin' ? 'Admin Resto' : 'Owner');
+
   return (
     <KulinerAdminLayout>
       <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerDashboard.dashboardOverview')}</h1>
+        <h1 className="kd-page-title font-['Plus_Jakarta_Sans'] font-semibold text-slate-900">{t('kulinerDashboard.dashboardOverview')}</h1>
         <div className="kd-topbar-actions" />
       </div>
 
@@ -92,11 +111,55 @@ const KulinerDashboard = () => {
           <KulinerLoading message={t('kulinerDashboard.preparingKitchen')} />
         ) : (
           <>
+            {/* Welcome Banner - Warm Deep Amber/Coffee Theme */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#23150d] via-[#1a0f09] to-[#120a06] p-5 sm:p-6 text-white shadow-lg border border-amber-500/15 mb-6">
+              {/* Soft Ambient Light Accents */}
+              <div className="absolute top-0 right-0 w-96 h-full bg-gradient-to-l from-amber-500/15 via-orange-500/5 to-transparent pointer-events-none" />
+              <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-amber-600/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute top-0 right-1/3 w-72 h-32 bg-yellow-500/5 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                {/* Left Column: Greeting, Subtitle, Badges */}
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl sm:text-2xl tracking-tight text-white leading-tight font-['Plus_Jakarta_Sans']" style={{ fontWeight: 800 }}>
+                    {timeGreeting}, {user?.name || 'Chef / Owner'}
+                  </h2>
+                  <p className="text-amber-100/80 text-xs sm:text-sm mt-1 font-normal font-['Inter']">
+                    Pusat operasional resto {user?.tenant_name || 'BIZORA Kuliner'}.
+                  </p>
+
+                  {/* Badges / Status Pills */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3 font-['Inter']">
+                    <span className="px-2.5 py-0.5 rounded-lg bg-amber-950/70 border border-amber-500/20 text-[11px] font-semibold text-amber-200">
+                      {roleLabel}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-lg bg-amber-950/70 border border-amber-500/20 text-[11px] font-semibold text-amber-100/80">
+                      {now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right Column: Actions & Frosted Glass Icon Card */}
+                <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
+                  <Link
+                    to="/kuliner/admin/orders"
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all shadow-md shadow-amber-900/30 font-['Plus_Jakarta_Sans']"
+                  >
+                    <ShoppingBag size={15} />
+                    Kasir & Pesanan
+                  </Link>
+                  <div className="w-12 h-14 sm:w-14 sm:h-16 rounded-2xl bg-white/[0.07] backdrop-blur-md border border-amber-400/20 flex items-center justify-center shadow-lg text-amber-300">
+                    <Utensils size={24} className="text-amber-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* STATS */}
             <div className="kd-stats-grid">
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-revenue">💰</div>
+                  <div className="kd-stat-icon kd-icon-revenue"><DollarSign size={20} /></div>
                   <span className="kd-stat-label">{t('kulinerDashboard.todaysRevenue')}</span>
                 </div>
                 <div className="kd-stat-value">{formatRp(stats?.revenue_today)}</div>
@@ -105,26 +168,25 @@ const KulinerDashboard = () => {
 
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-orders">📦</div>
+                  <div className="kd-stat-icon kd-icon-orders"><ShoppingBag size={20} /></div>
                   <span className="kd-stat-label">{t('kulinerDashboard.todaysOrders')}</span>
                 </div>
                 <div className="kd-stat-value">{stats?.orders_today || 0}</div>
                 <div className="kd-stat-change kd-change-up">↑ {stats?.orders_today || 0} {t('kulinerDashboard.newOrders')}</div>
               </div>
 
-              {/* REPLACED CARDS HERE */}
               <div className="kd-stat-card">
                 <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-menu">🏆</div>
+                  <div className="kd-stat-icon kd-icon-menu"><Award size={20} /></div>
                   <span className="kd-stat-label">{t('kulinerDashboard.bestSellingMenu')}</span>
                 </div>
-                <div className="kd-stat-value" style={{ fontSize: 18, marginTop: 4 }}>{stats?.top_menu || '-'}</div>
+                <div className="kd-stat-value" style={{ fontSize: 20 }}>{stats?.top_menu || '-'}</div>
                 <div className="kd-stat-change kd-change-up">{t('kulinerDashboard.positiveTrend')}</div>
               </div>
 
               <div className="kd-stat-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/kuliner/admin/ingredients')}>
                 <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-users">⚠️</div>
+                  <div className="kd-stat-icon kd-icon-users"><AlertTriangle size={20} /></div>
                   <span className="kd-stat-label">{t('kulinerDashboard.lowStockIngredients')}</span>
                 </div>
                 <div className="kd-stat-value">{stats?.low_stock_ingredients?.length || 0}</div>
@@ -138,7 +200,7 @@ const KulinerDashboard = () => {
             <div className="kd-panels" style={{ gridTemplateColumns: '1fr', marginTop: 16 }}>
               <div className="kd-panel">
                 <div className="kd-panel-header" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 className="kd-panel-title">
+                  <h3 className="kd-panel-title font-['Plus_Jakarta_Sans'] font-semibold text-slate-900">
                     {t('kulinerDashboard.revenueTrend')} 
                   </h3>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -184,38 +246,41 @@ const KulinerDashboard = () => {
             </div>
 
             {/* QUICK ACTIONS */}
-            <div className="kd-quick-actions">
-              <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/categories')}>
-                <div className="kd-action-icon kd-ai-add">➕</div>
-                <div className="kd-action-text">
-                  <h4>{t('kulinerDashboard.addNewMenu')}</h4>
-                  <p>{t('kulinerDashboard.uploadMenuDesc')}</p>
-                </div>
-              </button>
+            <div>
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 font-['Inter']">Akses Cepat</h3>
+              <div className="kd-quick-actions">
+                <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/categories')}>
+                  <div className="kd-action-icon kd-ai-add"><Plus size={18} /></div>
+                  <div className="kd-action-text">
+                    <h4>{t('kulinerDashboard.addNewMenu')}</h4>
+                    <p>{t('kulinerDashboard.uploadMenuDesc')}</p>
+                  </div>
+                </button>
 
-              <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/categories')}>
-                <div className="kd-action-icon kd-ai-edit">🏷️</div>
-                <div className="kd-action-text">
-                  <h4>{t('kulinerDashboard.manageCategories')}</h4>
-                  <p>{t('kulinerDashboard.manageCategoriesDesc')}</p>
-                </div>
-              </button>
+                <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/categories')}>
+                  <div className="kd-action-icon kd-ai-edit"><Tag size={18} /></div>
+                  <div className="kd-action-text">
+                    <h4>{t('kulinerDashboard.manageCategories')}</h4>
+                    <p>{t('kulinerDashboard.manageCategoriesDesc')}</p>
+                  </div>
+                </button>
 
-              <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/promos')}>
-                <div className="kd-action-icon kd-ai-design">🎨</div>
-                <div className="kd-action-text">
-                  <h4>{t('kulinerDashboard.managePromos')}</h4>
-                  <p>{t('kulinerDashboard.managePromosDesc')}</p>
-                </div>
-              </button>
+                <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/promos')}>
+                  <div className="kd-action-icon kd-ai-design"><Sparkles size={18} /></div>
+                  <div className="kd-action-text">
+                    <h4>{t('kulinerDashboard.managePromos')}</h4>
+                    <p>{t('kulinerDashboard.managePromosDesc')}</p>
+                  </div>
+                </button>
 
-              <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/reports')}>
-                <div className="kd-action-icon kd-ai-finance">📊</div>
-                <div className="kd-action-text">
-                  <h4>{t('kulinerDashboard.financialReports')}</h4>
-                  <p>{t('kulinerDashboard.financialReportsDesc')}</p>
-                </div>
-              </button>
+                <button className="kd-action-btn" onClick={() => navigate('/kuliner/admin/reports')}>
+                  <div className="kd-action-icon kd-ai-finance"><BarChart2 size={18} /></div>
+                  <div className="kd-action-text">
+                    <h4>{t('kulinerDashboard.financialReports')}</h4>
+                    <p>{t('kulinerDashboard.financialReportsDesc')}</p>
+                  </div>
+                </button>
+              </div>
             </div>
 
             <div className="kd-panels">
@@ -240,16 +305,16 @@ const KulinerDashboard = () => {
                     <tbody>
                       {stats?.recent_orders?.map((order) => (
                         <tr key={order.id}>
-                            <td><span className="font-medium text-[#b48c36]">{order.order_number}</span></td>
+                            <td><span className="font-mono font-normal text-slate-700 text-[12px]">#{order.order_number}</span></td>
                             <td>
-                              <div className="kd-menu-name" style={{ marginBottom: 0 }}>{order.customer_name}</div>
+                              <span className="text-slate-800 font-normal font-['Inter'] text-[12px]">{order.customer_name}</span>
                             </td>
                             <td>
-                              <div className="text-xs text-slate-500">{order.customer_phone || '-'}</div>
+                              <span className="text-[12px] text-slate-500 font-mono font-normal">{order.customer_phone || '-'}</span>
                             </td>
-                            <td>{formatRp(order.total_amount)}</td>
+                            <td><span className="font-['Inter'] font-semibold text-slate-900 text-[12px]">{formatRp(order.total_amount)}</span></td>
                           <td><span className={`kd-status-badge ${getOrderStatusBadgeClass(order.status)}`}>{order.status}</span></td>
-                          <td className="kd-col-waktu">{new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
+                          <td className="kd-col-waktu font-['Inter'] text-[12px] font-normal text-slate-600">{new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
                           <td className="text-right">
                             <button className="kd-icon-btn" title="Lihat Detail" onClick={() => navigate('/kuliner/admin/orders')}>
                               <Eye size={16} />
@@ -259,7 +324,7 @@ const KulinerDashboard = () => {
                       ))}
                       {(!stats?.recent_orders || stats.recent_orders.length === 0) && (
                         <tr>
-                          <td colSpan="6" className="text-center py-10 text-slate-400">Belum ada pesanan masuk.</td>
+                          <td colSpan="7" className="text-center py-10 text-slate-400 font-['Inter']">Belum ada pesanan masuk.</td>
                         </tr>
                       )}
                     </tbody>
@@ -271,31 +336,31 @@ const KulinerDashboard = () => {
                 <div className="kd-panel-header">
                   <h3 className="kd-panel-title">Aktivitas Terkini</h3>
                 </div>
-                <div className="kd-activity-list">
+                <div className="kd-activity-list font-['Inter']">
                   {(stats?.recent_orders || []).slice(0, 3).map((order) => (
                     <div className="kd-activity-item" key={order.id}>
-                      <div className="kd-activity-icon kd-act-order">📦</div>
+                      <div className="kd-activity-icon kd-act-order"><ShoppingBag size={16} /></div>
                       <div className="kd-activity-content">
-                        <h4>Pesanan dari {order.customer_name}</h4>
-                        <p>{formatRp(order.total_amount)} · {timeAgo(order.created_at)}</p>
+                        <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-800">Pesanan dari {order.customer_name}</h4>
+                        <p className="text-xs text-slate-500">{formatRp(order.total_amount)} · {timeAgo(order.created_at)}</p>
                       </div>
                     </div>
                   ))}
                   {stats?.top_menu && (
                     <div className="kd-activity-item">
-                      <div className="kd-activity-icon kd-act-menu">🍛</div>
+                      <div className="kd-activity-icon kd-act-menu"><Utensils size={16} /></div>
                       <div className="kd-activity-content">
-                        <h4>Menu Terlaris</h4>
-                        <p>{stats.top_menu} (30 hari terakhir)</p>
+                        <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-800">Menu Terlaris</h4>
+                        <p className="text-xs text-slate-500">{stats.top_menu} (30 hari terakhir)</p>
                       </div>
                     </div>
                   )}
                   {(stats?.low_stock_ingredients || []).length > 0 && (
                     <div className="kd-activity-item">
-                      <div className="kd-activity-icon kd-act-review">⚠️</div>
+                      <div className="kd-activity-icon kd-act-review"><AlertTriangle size={16} /></div>
                       <div className="kd-activity-content">
-                        <h4>Bahan Baku Menipis</h4>
-                        <p>{stats.low_stock_ingredients.slice(0, 3).map((i) => i.name).join(', ')}</p>
+                        <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-800">Bahan Baku Menipis</h4>
+                        <p className="text-xs text-slate-500">{stats.low_stock_ingredients.slice(0, 3).map((i) => i.name).join(', ')}</p>
                       </div>
                     </div>
                   )}

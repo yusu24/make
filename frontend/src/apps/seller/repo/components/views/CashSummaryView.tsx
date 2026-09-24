@@ -1,5 +1,13 @@
 import React, { useRef } from 'react';
-import { Coins, ArrowDownRight, CreditCard, Building, RefreshCw, CheckCircle, Printer } from 'lucide-react';
+import {
+  Coins,
+  ArrowDownRight,
+  CreditCard,
+  Building,
+  RefreshCw,
+  CheckCircle2,
+  Printer
+} from '@/constants/icons';
 import { CashSummaryItem } from '../../types';
 import { formatIDR, getPlatformBadgeColor } from '../../utils/formatters';
 import { useTranslation } from '../../../../../contexts/I18nContext';
@@ -48,26 +56,66 @@ export const CashSummaryView: React.FC<CashSummaryViewProps> = ({ cashSummaries 
         </button>
       </div>
 
-      {/* Top Banner */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-gradient-to-br from-indigo-900 to-indigo-800 text-white p-6 rounded-2xl shadow-md border border-indigo-700/50">
-          <span className="text-xs font-semibold text-indigo-200 uppercase tracking-wider">
-            {i18n?.language === 'en' ? 'TOTAL READY BALANCE' : 'TOTAL SALDO SIAP CAIR (READY BALANCE)'}
-          </span>
-          <div className="text-3xl font-black mt-2">{formatIDR(totalReadyBalance)}</div>
-          <p className="text-xs text-indigo-100/80 mt-1">
-            {i18n?.language === 'en' ? 'Ready for payout directly to primary BCA/Mandiri Bank Account.' : 'Siap ditarik langsung ke Rekening Bank Utama BCA/Mandiri.'}
-          </p>
+      {/* Top 3 Modular KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Card 1: Saldo Siap Cair */}
+        <div className="bg-white dark:bg-[#101828] p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Ready Balance' : 'Saldo Siap Cair (Ready)'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <Coins className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {formatIDR(totalReadyBalance)}
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 font-['Inter']">
+            {i18n?.language === 'en' ? 'Direct payout to bank account' : 'Siap ditarik ke rekening bank utama'}
+          </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-900 to-slate-900 text-white p-6 rounded-2xl shadow-md border border-purple-700/50">
-          <span className="text-xs font-semibold text-purple-200 uppercase tracking-wider">
-            {i18n?.language === 'en' ? 'TOTAL ESCROW BALANCE' : 'TOTAL SALDO TERTAHAN (ESCROW MARKETPLACE)'}
-          </span>
-          <div className="text-3xl font-black mt-2">{formatIDR(totalPendingEscrow)}</div>
-          <p className="text-xs text-purple-100/80 mt-1">
-            {i18n?.language === 'en' ? 'Will be released automatically after buyer confirms order receipt.' : 'Akan cair otomatis setelah pembeli melakukan konfirmasi pesanan diterima.'}
-          </p>
+        {/* Card 2: Saldo Tertahan Escrow */}
+        <div className="bg-white dark:bg-[#101828] p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Escrow Balance' : 'Saldo Tertahan (Escrow)'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <CreditCard className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {formatIDR(totalPendingEscrow)}
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 font-['Inter']">
+            {i18n?.language === 'en' ? 'Auto release on order completion' : 'Cair otomatis setelah pesanan selesai'}
+          </div>
+        </div>
+
+        {/* Card 3: Total Likuiditas Kas */}
+        <div className="bg-white dark:bg-[#101828] p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Total Cash Liquidity' : 'Total Likuiditas Kas'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <Building className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {formatIDR(totalLiquidity)}
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 font-['Inter']">
+            {i18n?.language === 'en' ? 'Ready balance + pending escrow' : 'Akumulasi dana siap cair + escrow'}
+          </div>
         </div>
       </div>
 
@@ -91,12 +139,12 @@ export const CashSummaryView: React.FC<CashSummaryViewProps> = ({ cashSummaries 
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl">
-                  <span className="text-[10px] text-slate-400 font-semibold uppercase">{i18n?.language === 'en' ? 'READY BALANCE' : 'SALDO SIAP TARIK'}</span>
-                  <div className="text-lg font-black text-slate-900 dark:text-slate-100 mt-0.5">{formatIDR(cs.readyBalance)}</div>
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase font-['Inter']">{i18n?.language === 'en' ? 'READY BALANCE' : 'SALDO SIAP TARIK'}</span>
+                  <div className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5 font-['Plus_Jakarta_Sans']">{formatIDR(cs.readyBalance)}</div>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl">
-                  <span className="text-[10px] text-slate-400 font-semibold uppercase">{i18n?.language === 'en' ? 'PENDING ESCROW' : 'PENDING ESCROW'}</span>
-                  <div className="text-lg font-black text-amber-600 dark:text-amber-400 mt-0.5">{formatIDR(cs.pendingEscrow)}</div>
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase font-['Inter']">{i18n?.language === 'en' ? 'PENDING ESCROW' : 'PENDING ESCROW'}</span>
+                  <div className="text-lg font-bold text-amber-600 dark:text-amber-400 mt-0.5 font-['Plus_Jakarta_Sans']">{formatIDR(cs.pendingEscrow)}</div>
                 </div>
               </div>
 

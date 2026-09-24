@@ -89,6 +89,16 @@ class AdminInvoiceSettingController extends Controller
         return response()->json(['success' => true, 'data' => $settings]);
     }
 
+    public function get()
+    {
+        return $this->show();
+    }
+
+    public function index()
+    {
+        return $this->show();
+    }
+
     public function update(Request $request)
     {
         $request->validate([

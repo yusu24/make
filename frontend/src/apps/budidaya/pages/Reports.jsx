@@ -4,7 +4,7 @@ import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useReactToPrint } from 'react-to-print'
-import { Printer } from 'lucide-react'
+import { Printer } from '@/constants/icons'
 import '../budidaya.css'
 import '../budidaya-print.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
@@ -76,8 +76,9 @@ export default function Reports() {
   } = usePagination(harvestData)
 
   const cardStyle = {
-    background: '#fff', borderRadius: '20px', padding: '20px',
-    border: '1px solid #E9F0EC',
+    background: '#fff', borderRadius: '16px', padding: '20px',
+    border: '1px solid #E2E8F0',
+    boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)',
     boxSizing: 'border-box', width: '100%', minWidth: 0,
   }
 
@@ -145,7 +146,7 @@ export default function Reports() {
       {/* Top Action Bar with Print Button */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
         <button 
-          style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1B4332', color: 'white', border: 'none', padding: '9px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }} 
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1B4332', color: 'white', border: 'none', height: 38, padding: '0 16px', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13 }} 
           onClick={handlePrint} 
           disabled={loading}
         >
@@ -156,15 +157,17 @@ export default function Reports() {
       {/* KPI Cards */}
       <div className="aq-grid-4">
         {kpiCards.map((card, i) => (
-          <div key={i} style={{ ...cardStyle, padding: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: card.color }}>{card.icon}</span>
+          <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">{card.label}</span>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 22, color: card.color }}>{card.icon}</span>
               </div>
-              <p className="aq-kpi-label">{card.label}</p>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#1A1C1A', lineHeight: 1.2 }}>{card.value}</div>
-            <p style={{ fontSize: 11, color: '#64748B', marginTop: 6, fontWeight: 500 }}>{card.sub}</p>
+            <div>
+              <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{card.value}</div>
+              <p className="text-xs text-slate-400 mt-1.5 font-['Inter']">{card.sub}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -228,8 +231,8 @@ export default function Reports() {
         )}
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #E9F0EC', flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ ...cardStyle, overflow: 'hidden', padding: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #E2E8F0', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <h3 style={{ fontSize: 15, fontWeight: 600, color: '#1B4332', margin: 0 }}>Riwayat Panen</h3>
             <p className="aq-kpi-label" style={{ marginTop: 4 }}>Semua siklus yang telah selesai dipanen</p>
@@ -253,10 +256,10 @@ export default function Reports() {
                 <TableHeaderCell>{terms.unit}</TableHeaderCell>
                 <TableHeaderCell>{terms.isTanaman ? 'Jenis Tanaman' : `Jenis ${terms.populationUnit || 'Komoditas'}`}</TableHeaderCell>
                 <TableHeaderCell>Tgl. Panen</TableHeaderCell>
-                <TableHeaderCell>Berat (KG)</TableHeaderCell>
-                <TableHeaderCell>Harga/KG</TableHeaderCell>
-                <TableHeaderCell>Pendapatan</TableHeaderCell>
-                <TableHeaderCell>Keuntungan</TableHeaderCell>
+                <TableHeaderCell style={{ textAlign: 'right' }}>Berat (KG)</TableHeaderCell>
+                <TableHeaderCell style={{ textAlign: 'right' }}>Harga/KG</TableHeaderCell>
+                <TableHeaderCell style={{ textAlign: 'right' }}>Pendapatan</TableHeaderCell>
+                <TableHeaderCell style={{ textAlign: 'right' }}>Keuntungan</TableHeaderCell>
                 <TableHeaderCell>FCR</TableHeaderCell>
                 <TableHeaderCell>Survival</TableHeaderCell>
                 <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
@@ -270,12 +273,12 @@ export default function Reports() {
                     <TableCell style={{ color: '#0f172a', fontWeight: 500 }}>{row.pond_name}</TableCell>
                     <TableCell style={{ color: '#0f172a', textTransform: 'capitalize' }}>{row.fish_type}</TableCell>
                     <TableCell style={{ color: '#0f172a' }}>{row.harvest_date ? new Date(row.harvest_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</TableCell>
-                    <TableCell>{fmtNum(row.weight_kg, 1)}</TableCell>
-                    <TableCell style={{ color: '#0f172a' }}>Rp {(row.price_per_kg || 0).toLocaleString('id-ID')}</TableCell>
-                    <TableCell style={{ color: '#1B4332', fontWeight: 500 }}>
+                    <TableCell style={{ textAlign: 'right' }}>{fmtNum(row.weight_kg, 1)}</TableCell>
+                    <TableCell style={{ textAlign: 'right', color: '#0f172a' }}>Rp {(row.price_per_kg || 0).toLocaleString('id-ID')}</TableCell>
+                    <TableCell style={{ textAlign: 'right', color: '#1B4332', fontWeight: 500 }}>
                       {fmt(row.total_revenue)}
                     </TableCell>
-                    <TableCell style={{ color: isProfit ? '#059669' : '#EF4444', fontWeight: 500 }}>
+                    <TableCell style={{ textAlign: 'right', color: isProfit ? '#059669' : '#EF4444', fontWeight: 500 }}>
                       {isProfit ? '+' : ''}{fmt(row.net_profit)}
                     </TableCell>
                     <TableCell>

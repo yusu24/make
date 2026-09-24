@@ -22,6 +22,7 @@ class Tenant extends Model
         'subscription_expires_at' => 'datetime',
         'kyc_submitted_at' => 'datetime',
         'kyc_verified_at' => 'datetime',
+        'settings' => 'array',
     ];
 
     public function user()

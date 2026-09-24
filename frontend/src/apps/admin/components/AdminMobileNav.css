@@ -1,0 +1,285 @@
+/* ==========================================================================
+   ADMIN SAAS MOBILE NAVIGATION & BOTTOM SHEET
+   ========================================================================== */
+
+/* ── Bottom Navigation Bar ── */
+.admin-mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(62px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 40;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+@media (min-width: 768px) {
+  .admin-mobile-bottom-nav {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .page-content--admin,
+  .page-content--retail {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+.admin-nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.admin-nav-tab:active {
+  transform: scale(0.94);
+}
+
+.admin-nav-tab--active {
+  color: #2563eb !important;
+}
+
+.admin-nav-tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+}
+
+.admin-nav-tab-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+/* ── Bottom Sheet Backdrop ── */
+.admin-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 1050;
+  transition: opacity 0.25s ease;
+}
+
+/* ── Bottom Sheet Container ── */
+.admin-sheet-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 85vh;
+  background: #ffffff;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.18);
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  animation: adminSheetSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  padding-bottom: env(safe-area-inset-bottom, 12px);
+}
+
+@keyframes adminSheetSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Handle bar at the top */
+.admin-sheet-drag-handle {
+  width: 42px;
+  height: 4px;
+  background: #cbd5e1;
+  border-radius: 9999px;
+  margin: 10px auto 4px;
+  flex-shrink: 0;
+}
+
+/* Sheet Header */
+.admin-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.admin-sheet-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.admin-sheet-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.admin-sheet-close-btn:hover {
+  background: #e2e8f0;
+}
+
+/* Sheet Quick Search */
+.admin-sheet-search-wrap {
+  padding: 10px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.admin-sheet-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.admin-sheet-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.admin-sheet-search-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Sheet Content Scrollable */
+.admin-sheet-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px 20px;
+  flex: 1;
+}
+
+/* Group section */
+.admin-sheet-group {
+  margin-bottom: 18px;
+}
+
+.admin-sheet-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  padding: 6px 8px 8px;
+  margin: 0;
+}
+
+/* Item row */
+.admin-sheet-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #1e293b;
+  transition: background 0.12s ease;
+  margin-bottom: 2px;
+}
+
+.admin-sheet-item:hover,
+.admin-sheet-item:active {
+  background: #f1f5f9;
+}
+
+.admin-sheet-item--active {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+.admin-sheet-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-sheet-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.admin-sheet-item--active .admin-sheet-item-icon {
+  color: #2563eb;
+}
+
+.admin-sheet-item-label {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-sheet-item--active .admin-sheet-item-label {
+  font-weight: 600;
+}
+
+.admin-sheet-item-code {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.admin-sheet-item--active .admin-sheet-item-code {
+  color: #2563eb;
+  background: #dbeafe;
+}

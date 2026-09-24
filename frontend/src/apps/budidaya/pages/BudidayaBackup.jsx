@@ -4,7 +4,7 @@ import {
   CheckCircle2, AlertCircle, FileSpreadsheet, FileCode,
   Fish, Layers, BarChart2, ShieldCheck,
   Archive, FlaskConical, HeartPulse, CreditCard
-} from 'lucide-react'
+} from '@/constants/icons'
 import { api } from '../../../lib/api'
 import '../budidaya.css'
 
@@ -197,7 +197,7 @@ export default function BudidayaBackup() {
   }
 
   return (
-    <div className="aq-container" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+    <div className="aq-container">
 
       {/* ── TOAST ── */}
       {toast && (

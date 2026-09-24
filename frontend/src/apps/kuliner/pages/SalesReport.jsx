@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useTranslation } from '../../../contexts/I18nContext';
+import {
+  useTranslation } from '../../../contexts/I18nContext';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import api from '../../../services/api';
 import ClientPagination from '../components/ClientPagination';
@@ -7,9 +8,24 @@ import KulinerLoading from '../components/KulinerLoading';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useReactToPrint } from 'react-to-print';
 import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell
 } from 'recharts';
+import { Printer,
+  RefreshCw,
+  BarChart2,
+  TrendingUp,
+  ShoppingBag,
+  DollarSign
+} from '@/constants/icons';
 import './KulinerDashboard.css';
 import '../kuliner-print.css';
 import {
@@ -203,43 +219,64 @@ const SalesReport = () => {
               </div>
               
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="kd-btn kd-btn-secondary" onClick={fetchSalesReport}>↻ Segarkan Data</button>
-                <button className="kd-btn kd-btn-primary" onClick={handlePrint}>💾 Cetak Laporan</button>
+                <button className="kd-btn kd-btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={fetchSalesReport}>
+                  <RefreshCw size={14} /> {t('kulinerSales.refreshData') || 'Segarkan Data'}
+                </button>
+                <button className="kd-btn kd-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={handlePrint}>
+                  <Printer size={14} /> {t('kulinerSales.printReport') || 'Cetak Laporan'}
+                </button>
               </div>
             </div>
 
             <div ref={printRef}>
 
             {/* SUMMARY CARDS */}
-            <div className="kd-ledger-grid no-print" style={{ marginBottom: 24 }}>
-              <div className="kd-panel" style={{ borderLeft: '4px solid #b48c36' }}>
-                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerSales.summaryTotalSales') || 'Total Pendapatan'}</div>
-                <div className="text-2xl font-black text-slate-800">{formatRp(summary.totalSales)}</div>
-                <div className="text-[10px] text-slate-400 mt-2">Performa periode ini</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 no-print mb-6">
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">{t('kulinerSales.summaryTotalSales') || 'Total Pendapatan'}</div>
+                  <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{formatRp(summary.totalSales)}</div>
+                  <div className="text-xs text-slate-400 mt-1 font-['Inter']">Performa periode ini</div>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <TrendingUp size={22} />
+                </div>
               </div>
-              <div className="kd-panel" style={{ borderLeft: '4px solid #3b82f6' }}>
-                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerSales.summaryTotalOrders') || 'Total Pesanan'}</div>
-                <div className="text-2xl font-black text-slate-800">{summary.totalOrders} <span className="text-sm font-normal text-slate-400">Pesanan</span></div>
-                <div className="text-[10px] text-slate-400 mt-2">Terhitung dari semua channel</div>
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">{t('kulinerSales.summaryTotalOrders') || 'Total Pesanan'}</div>
+                  <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{summary.totalOrders} <span className="text-sm font-medium text-slate-400">Pesanan</span></div>
+                  <div className="text-xs text-slate-400 mt-1 font-['Inter']">Terhitung dari semua channel</div>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <ShoppingBag size={22} />
+                </div>
               </div>
-              <div className="kd-panel" style={{ borderLeft: '4px solid #10b981' }}>
-                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerSales.summaryAvgOrder') || 'Rata-rata Per Pesanan'}</div>
-                <div className="text-2xl font-black text-slate-800">{formatRp(summary.avgOrderValue)}</div>
-                <div className="text-[10px] text-slate-400 mt-2">Efisiensi penjualan per transaksi</div>
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">{t('kulinerSales.summaryAvgOrder') || 'Rata-rata Per Pesanan'}</div>
+                  <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{formatRp(summary.avgOrderValue)}</div>
+                  <div className="text-xs text-slate-400 mt-1 font-['Inter']">Efisiensi penjualan per transaksi</div>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <DollarSign size={22} />
+                </div>
               </div>
             </div>
 
             {/* CHARTS CONTAINER */}
-            <div className="no-print" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 20, marginBottom: 24 }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6 no-print">
               
               {/* Daily Chart (Day of Week Traffic) */}
-              <div className="kd-panel" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all flex flex-col gap-4 min-w-0">
                 <div>
-                  <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>📊 {t('kulinerSales.chartDailyTitle') || 'Trafik Penjualan Harian'}</h3>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>{t('kulinerSales.chartDailySub') || 'Analisis hari teramai dalam satu minggu.'}</p>
+                  <h3 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-slate-900 m-0 mb-1 flex items-center gap-2">
+                    <BarChart2 size={16} className="text-amber-600" /> {t('kulinerSales.chartDailyTitle') || 'Trafik Penjualan Harian'}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-['Inter'] m-0">{t('kulinerSales.chartDailySub') || 'Analisis hari teramai dalam satu minggu.'}</p>
                 </div>
                 
-                <div style={{ width: '100%', height: 220 }}>
+                <div style={{ width: '100%', height: 220, minWidth: 0, overflow: 'hidden' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={dailyChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <defs>
@@ -249,30 +286,32 @@ const SalesReport = () => {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
-                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-                      <YAxis width={70} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000000 ? `${v/1000000}jt` : v >= 1000 ? `${v/1000}rb` : v} />
-                      <Tooltip formatter={(value) => [formatRp(value), 'Pendapatan']} labelStyle={{ fontWeight: 'bold' }} contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: 12 }} />
-                      <Area type="monotone" dataKey="total" stroke="#b48c36" strokeWidth={2} fillOpacity={1} fill="url(#colorDaily)" />
+                      <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                      <YAxis width={60} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000000 ? `${v/1000000}jt` : v >= 1000 ? `${v/1000}rb` : v} />
+                      <Tooltip formatter={(value) => [formatRp(value), 'Penjualan']} labelStyle={{ fontWeight: 'bold' }} contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: 12 }} />
+                      <Area type="monotone" dataKey="amount" stroke="#b48c36" strokeWidth={2.5} fillOpacity={1} fill="url(#colorDaily)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-elevated)', padding: '10px 14px', borderRadius: 10, fontSize: 12 }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>{t('kulinerSales.busiestDay') || 'Hari Teramai:'}</span>
-                  <span style={{ fontWeight: 800, color: 'var(--primary-600)' }}>
+                <div className="flex justify-between items-center bg-slate-50 border border-slate-100 p-3 rounded-xl text-xs font-['Inter']">
+                  <span className="text-slate-500">{t('kulinerSales.busiestDay') || 'Hari Teramai:'}</span>
+                  <span className="font-bold text-amber-700">
                     {busiestDay.amount > 0 ? `${busiestDay.day} (${formatRp(busiestDay.amount)})` : 'Tidak ada data'}
                   </span>
                 </div>
               </div>
 
               {/* Monthly Chart (Yearly Context) */}
-              <div className="kd-panel" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all flex flex-col gap-4 min-w-0">
                 <div>
-                  <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>📈 {t('kulinerSales.chartMonthlyTitle') || 'Perbandingan Penjualan Bulanan'}</h3>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>{t('kulinerSales.chartMonthlySub') || 'Tren pendapatan kumulatif dari bulan ke bulan.'}</p>
+                  <h3 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-slate-900 m-0 mb-1 flex items-center gap-2">
+                    <TrendingUp size={16} className="text-amber-600" /> {t('kulinerSales.chartMonthlyTitle') || 'Perbandingan Penjualan Bulanan'}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-['Inter'] m-0">{t('kulinerSales.chartMonthlySub') || 'Tren pendapatan kumulatif dari bulan ke bulan.'}</p>
                 </div>
                 
-                <div style={{ width: '100%', height: 220 }}>
+                <div style={{ width: '100%', height: 220, minWidth: 0, overflow: 'hidden' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={monthlyChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
@@ -291,9 +330,9 @@ const SalesReport = () => {
                   </ResponsiveContainer>
                 </div>
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-elevated)', padding: '10px 14px', borderRadius: 10, fontSize: 12 }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>{t('kulinerSales.busiestMonth') || 'Bulan Teramai:'}</span>
-                  <span style={{ fontWeight: 800, color: 'var(--primary-600)' }}>
+                <div className="flex justify-between items-center bg-slate-50 border border-slate-100 p-3 rounded-xl text-xs font-['Inter']">
+                  <span className="text-slate-500">{t('kulinerSales.busiestMonth') || 'Bulan Teramai:'}</span>
+                  <span className="font-bold text-amber-700">
                     {busiestMonth.amount > 0 ? `${busiestMonth.month} (${formatRp(busiestMonth.amount)})` : t('kulinerSales.noData') || 'Tidak ada data'}
                   </span>
                 </div>
@@ -301,9 +340,9 @@ const SalesReport = () => {
             </div>
 
             {/* TRANSACTIONS TABLE */}
-            <div className="no-print" style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', marginTop: 20 }}>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-6 no-print">
               <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+                <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                       <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
@@ -340,25 +379,25 @@ const SalesReport = () => {
                       currentSales.map(order => (
                         <tr key={order.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
                           <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
-                            <span style={{ fontSize: 12, color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: 6, fontFamily: 'monospace', fontWeight: 600 }}>
+                            <span style={{ fontSize: 12, color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: 6, fontFamily: 'monospace', fontWeight: 400 }}>
                               #ORD-{order.id.toString().padStart(5, '0')}
                             </span>
                           </td>
-                          <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#0F172A', fontWeight: 400, whiteSpace: 'nowrap' }}>
                             {order.customer_name}
                           </td>
-                          <td style={{ padding: '10px 16px', color: '#475569', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#475569', fontWeight: 400, whiteSpace: 'nowrap' }}>
                             {order.order_type === 'dine_in' ? 'Makan di Tempat' : 'Bawa Pulang'}
                           </td>
-                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', fontWeight: 400, whiteSpace: 'nowrap' }}>
                             {new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </td>
                           <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
-                            <span style={{ fontSize: 10.5, padding: '3px 8px', background: '#F1F5F9', borderRadius: 6, textTransform: 'uppercase', color: '#475569', fontWeight: 600 }}>
+                            <span style={{ fontSize: 12, padding: '3px 8px', background: '#F1F5F9', borderRadius: 6, textTransform: 'uppercase', color: '#475569', fontWeight: 400 }}>
                               {order.payment_method}
                             </span>
                           </td>
-                          <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 600, fontSize: 12, color: '#0F172A', whiteSpace: 'nowrap' }}>
                             {formatRp(order.total)}
                           </td>
                           <td style={{ padding: '10px 16px', textAlign: 'center', whiteSpace: 'nowrap' }}>
@@ -366,8 +405,8 @@ const SalesReport = () => {
                               display: 'inline-block',
                               padding: '2px 10px',
                               borderRadius: 20,
-                              fontSize: 11.5,
-                              fontWeight: 600,
+                              fontSize: 12,
+                              fontWeight: 400,
                               background: order.status === 'completed' ? '#DCFCE7' : (order.status === 'processing' ? '#FEF3C7' : '#F1F5F9'),
                               color: order.status === 'completed' ? '#166534' : (order.status === 'processing' ? '#92400E' : '#475569')
                             }}>

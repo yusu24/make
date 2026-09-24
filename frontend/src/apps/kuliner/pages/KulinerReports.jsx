@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useTranslation } from '../../../contexts/I18nContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useReactToPrint } from 'react-to-print';
-import { Printer, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { Printer, TrendingUp, TrendingDown, DollarSign } from '@/constants/icons';
 import {
   ResponsiveContainer,
   BarChart,
@@ -216,36 +216,36 @@ export default function KulinerReports() {
         </div>
 
         {/* Financial KPI Summary Strip */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 20 }}>
-          <div style={{ background: '#FFFFFF', padding: '16px 20px', borderRadius: 16, border: '1px solid #E2E8F0' }}>
-            <p style={{ margin: 0, fontSize: 12, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Total Omzet Menu</p>
-            <h3 style={{ margin: '6px 0 0', fontSize: 20, fontWeight: 800, color: '#0F172A' }}>{formatRp(totalRevenue)}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">Total Omzet Menu</p>
+            <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight m-0">{formatRp(totalRevenue)}</h3>
           </div>
-          <div style={{ background: '#FFFFFF', padding: '16px 20px', borderRadius: 16, border: '1px solid #E2E8F0' }}>
-            <p style={{ margin: 0, fontSize: 12, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Total HPP Bahan Baku</p>
-            <h3 style={{ margin: '6px 0 0', fontSize: 20, fontWeight: 800, color: '#64748B' }}>{formatRp(totalCogs)}</h3>
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">Total HPP Bahan Baku</p>
+            <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-600 tracking-tight leading-tight m-0">{formatRp(totalCogs)}</h3>
           </div>
-          <div style={{ background: '#FFFFFF', padding: '16px 20px', borderRadius: 16, border: '1px solid #E2E8F0' }}>
-            <p style={{ margin: 0, fontSize: 12, color: '#059669', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Total Laba Margin</p>
-            <h3 style={{ margin: '6px 0 0', fontSize: 20, fontWeight: 800, color: '#059669' }}>{formatRp(totalMargin)}</h3>
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1 font-['Inter']">Total Laba Margin</p>
+            <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight m-0">{formatRp(totalMargin)}</h3>
           </div>
-          <div style={{ background: '#FFFFFF', padding: '16px 20px', borderRadius: 16, border: '1px solid #E2E8F0' }}>
-            <p style={{ margin: 0, fontSize: 12, color: '#B45309', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Rata-rata Margin %</p>
-            <h3 style={{ margin: '6px 0 0', fontSize: 20, fontWeight: 800, color: '#B45309' }}>{avgMarginPct}%</h3>
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1 font-['Inter']">Rata-rata Margin %</p>
+            <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-amber-600 tracking-tight leading-tight m-0">{avgMarginPct}%</h3>
           </div>
         </div>
 
         {/* 📊 DIAGRAM SECTION: Best Seller vs Worst Seller 📊 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBottom: 24 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
           {/* Chart 1: Best Seller */}
-          <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: 16, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all min-w-0 overflow-hidden">
+            <div className="flex justify-between items-center mb-4">
               <div>
-                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <TrendingUp size={18} color="#059669" />
+                <h3 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-slate-900 m-0 flex items-center gap-2">
+                  <TrendingUp size={18} className="text-emerald-600" />
                   <span>5 Menu Terlaris (Best Seller)</span>
                 </h3>
-                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748B' }}>Menu dengan volume porsi penjualan tertinggi</p>
+                <p className="text-xs text-slate-500 font-['Inter'] m-0 mt-0.5">Menu dengan volume porsi penjualan tertinggi</p>
               </div>
             </div>
 
@@ -254,7 +254,7 @@ export default function KulinerReports() {
                 Belum ada data penjualan
               </div>
             ) : (
-              <div style={{ width: '100%', height: 220 }}>
+              <div style={{ width: '100%', height: 220, minWidth: 0, overflow: 'hidden' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={top5Best} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
@@ -265,6 +265,7 @@ export default function KulinerReports() {
                       textAnchor="end" 
                       axisLine={{ stroke: '#E2E8F0' }} 
                       tickLine={false} 
+                      interval={0}
                     />
                     <YAxis tick={{ fontSize: 10.5, fill: '#64748B' }} axisLine={false} tickLine={false} />
                     <Tooltip content={<CustomTooltip isBest={true} />} />
@@ -283,14 +284,14 @@ export default function KulinerReports() {
           </div>
 
           {/* Chart 2: Worst Seller */}
-          <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: 16, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all min-w-0 overflow-hidden">
+            <div className="flex justify-between items-center mb-4">
               <div>
-                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <TrendingDown size={18} color="#DC2626" />
+                <h3 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-slate-900 m-0 flex items-center gap-2">
+                  <TrendingDown size={18} className="text-rose-600" />
                   <span>5 Menu Kurang Laku (Evaluasi)</span>
                 </h3>
-                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748B' }}>Menu dengan penjualan terendah untuk evaluasi</p>
+                <p className="text-xs text-slate-500 font-['Inter'] m-0 mt-0.5">Menu dengan penjualan terendah untuk evaluasi</p>
               </div>
             </div>
 
@@ -299,7 +300,7 @@ export default function KulinerReports() {
                 Belum ada data penjualan
               </div>
             ) : (
-              <div style={{ width: '100%', height: 220 }}>
+              <div style={{ width: '100%', height: 220, minWidth: 0, overflow: 'hidden' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={top5Worst} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
@@ -352,7 +353,7 @@ export default function KulinerReports() {
             </div>
 
             <div style={{ width: '100%', overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+              <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                     <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
@@ -362,13 +363,13 @@ export default function KulinerReports() {
                       {t('kulinerReports.tableHeaderSold') || 'Terjual (Qty)'}
                     </th>
                     <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
-                      {t('kulinerReports.tableHeaderRevenue') || 'Total Omzet'}
+                      {t('kulinerReports.tableHeaderRevenue') || 'Total Omset'}
                     </th>
                     <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
                       {t('kulinerReports.tableHeaderCogs') || 'Total HPP'}
                     </th>
                     <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
-                      {t('kulinerReports.tableHeaderMargin') || 'Laba Margin (Rp)'}
+                      {t('kulinerReports.tableHeaderProfit') || 'Laba Kotor'}
                     </th>
                     <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
                       {t('kulinerReports.tableHeaderMarginPct') || 'Margin %'}
@@ -384,18 +385,18 @@ export default function KulinerReports() {
                     </tr>
                   ) : paginatedMargin.map((m) => (
                     <tr key={m.product_id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-                      <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500 }}>{m.product_name}</td>
-                      <td style={{ padding: '10px 16px', textAlign: 'center', color: '#334155' }}>{m.qty_sold} porsi</td>
-                      <td style={{ padding: '10px 16px', textAlign: 'right', color: '#0F172A', fontWeight: 600 }}>{formatRp(m.revenue)}</td>
-                      <td style={{ padding: '10px 16px', textAlign: 'right', color: '#64748B' }}>{formatRp(m.cogs)}</td>
-                      <td style={{ padding: '10px 16px', textAlign: 'right', color: '#059669', fontWeight: 700 }}>{formatRp(m.margin)}</td>
+                      <td style={{ padding: '10px 16px', fontSize: 12, color: '#0F172A', fontWeight: 400 }}>{m.product_name}</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'center', color: '#334155', fontWeight: 600, fontSize: 12 }}>{m.qty_sold} porsi</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'right', color: '#0F172A', fontWeight: 600, fontSize: 12 }}>{formatRp(m.revenue)}</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'right', color: '#64748B', fontWeight: 600, fontSize: 12 }}>{formatRp(m.cogs)}</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'right', color: '#059669', fontWeight: 600, fontSize: 12 }}>{formatRp(m.margin)}</td>
                       <td style={{ padding: '10px 16px', textAlign: 'center' }}>
                         <span style={{
                           display: 'inline-block',
                           padding: '3px 9px',
                           borderRadius: 6,
-                          fontSize: 11.5,
-                          fontWeight: 700,
+                          fontSize: 12,
+                          fontWeight: 400,
                           background: (m.margin_pct || 0) >= 50 ? '#ECFDF5' : '#FEF3C7',
                           color: (m.margin_pct || 0) >= 50 ? '#059669' : '#D97706',
                           border: `1px solid ${(m.margin_pct || 0) >= 50 ? '#A7F3D0' : '#FDE68A'}`

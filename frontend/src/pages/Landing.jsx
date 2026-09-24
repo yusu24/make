@@ -14,7 +14,6 @@ import HowItWorks from './landing/HowItWorks'
 import RoiCalculator from './landing/RoiCalculator'
 import Testimonials from './landing/Testimonials'
 import FaqSection from './landing/FaqSection'
-import DeveloperSection from './landing/DeveloperSection'
 import Footer from './landing/Footer'
 import PromoBanner from './landing/PromoBanner'
 import BudidayaSubtypeModal from './landing/BudidayaSubtypeModal'
@@ -132,7 +131,7 @@ export default function Landing() {
   // Redirect to dashboard instantly if user is already authenticated
   if (user) {
     if (user.role === 'super_admin' || user.role === 'admin') return <Navigate to="/dashboard" replace />
-    const targetPath = getCategoryDashboardPath(user.business_category)
+    const targetPath = getCategoryDashboardPath(user.business_category, user.role)
     return <Navigate to={targetPath} replace />
   }
 
@@ -165,8 +164,6 @@ export default function Landing() {
       )}
 
       <HowItWorks steps={settings.how_it_works_steps} />
-
-      <DeveloperSection />
 
       <RoiCalculator title={settings.roi_title} desc={settings.roi_desc} />
 

@@ -10,7 +10,7 @@ import {
   UserPlus, Rocket, Eye, EyeOff, Store, Utensils, 
   Fish, Sprout, Wrench, Package, Factory, Briefcase, Building,
   KeyRound, RefreshCw, ShieldCheck, Smartphone, Car, Snowflake, Shirt, Scissors, Layers
-} from 'lucide-react'
+} from '@/constants/icons'
 
 const JASA_SUB_OPTIONS = [
   { id: 'elektronik', title: 'Elektronik & Gadget', desc: 'HP, Laptop, Komputer, TV', icon: Smartphone },

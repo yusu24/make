@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { api } from '../../../lib/api'
 import CurrencyInput from '../../../components/CurrencyInput'
-import { Plus, Trash2, Edit3 } from 'lucide-react'
+import { Plus, Trash2, Pencil } from '@/constants/icons'
 import './Shared.css'
 
 // ─── Per-category feature definitions (Extremely Granular) ────────────────────
@@ -412,11 +412,10 @@ function PlanCard({ plan, categorySlug, onEdit, onDelete }) {
   const isCustom = !['free', 'basic', 'pro'].includes(plan.plan_key)
 
   return (
-    <div className="card" style={{
-      padding: 0, overflow: 'hidden', position: 'relative',
+    <div className="card rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all" style={{
+      padding: 0, position: 'relative',
       border: pres.popular ? `2px solid ${pres.color}` : '1px solid var(--border-subtle)',
       opacity: plan.is_active ? 1 : 0.6,
-      transition: 'transform 0.18s, box-shadow 0.18s',
     }}>
       {/* Header Banner */}
       <div style={{
@@ -425,7 +424,7 @@ function PlanCard({ plan, categorySlug, onEdit, onDelete }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <span style={{ fontSize: 24 }}>{pres.icon}</span>
-            <h3 style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 700, color: '#ffffff' }}>{plan.name}</h3>
+            <h3 style={{ margin: '4px 0 0', fontSize: 18, color: '#ffffff' }} className="font-['Plus_Jakarta_Sans'] font-extrabold">{plan.name}</h3>
             <p style={{ margin: 0, fontSize: 11, opacity: 0.9, color: '#ffffff' }}>{pres.tagline}</p>
           </div>
           <div className="flex items-center gap-1.5">
@@ -446,7 +445,7 @@ function PlanCard({ plan, categorySlug, onEdit, onDelete }) {
 
         {/* Harga */}
         <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.2)' }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#ffffff' }}>
+          <div style={{ fontSize: 24, color: '#ffffff' }} className="font-['Plus_Jakarta_Sans'] font-extrabold tracking-tight">
             {fmtPrice(plan.price)}
           </div>
           <span style={{ fontSize: 11, opacity: 0.8, color: '#ffffff' }}>
@@ -492,7 +491,7 @@ function PlanCard({ plan, categorySlug, onEdit, onDelete }) {
           style={{ marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
           onClick={() => onEdit(plan)}
         >
-          <Edit3 size={14} />
+          <Pencil size={14} />
           <span>Edit Konfigurasi Paket</span>
         </button>
       </div>

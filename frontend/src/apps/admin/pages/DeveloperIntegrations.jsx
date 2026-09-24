@@ -1,4 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import {
+  CheckCircle2,
+  Copy,
+  Save,
+  Plus,
+  Trash2,
+  Key,
+  Webhook,
+  ExternalLink,
+  Code2,
+  CreditCard
+} from '@/constants/icons';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import './Shared.css';
@@ -176,7 +188,7 @@ export default function DeveloperIntegrations() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 18 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20 }}>💳</span>
+              <CreditCard size={20} className="text-indigo-600" />
               <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 16, margin: 0 }}>
                 Payment Gateway &amp; Webhook Langganan SaaS
               </h3>
@@ -191,16 +203,17 @@ export default function DeveloperIntegrations() {
               className="btn btn-secondary btn-sm"
               onClick={handleSimulateWebhook}
               disabled={simulating}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
               title="Kirim payload webhook simulasi transaksi lunas"
             >
-              {simulating ? '⏳ Menguji...' : '⚡ Test Simulasi Webhook'}
+              {simulating ? 'Menguji...' : <><Webhook size={14} /> Test Simulasi Webhook</>}
             </button>
           </div>
         </div>
 
         {pgSuccess && (
-          <div className="auth-alert auth-alert--success" style={{ marginBottom: 16 }}>
-            <span>✓</span> {pgSuccess}
+          <div className="auth-alert auth-alert--success" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CheckCircle2 size={16} /> <span>{pgSuccess}</span>
           </div>
         )}
 
@@ -228,8 +241,8 @@ export default function DeveloperIntegrations() {
                 value={pgConfig.is_production ? 'production' : 'sandbox'}
                 onChange={e => setPgConfig({ ...pgConfig, is_production: e.target.value === 'production' })}
               >
-                <option value="sandbox">🛠️ Sandbox (Uji Coba &amp; Simulasi)</option>
-                <option value="production">🚀 Production (Transaksi Nyata)</option>
+                <option value="sandbox">Sandbox (Uji Coba &amp; Simulasi)</option>
+                <option value="production">Production (Transaksi Nyata)</option>
               </select>
             </div>
 
@@ -269,8 +282,8 @@ export default function DeveloperIntegrations() {
 
           {/* Webhook Endpoint Info */}
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
-              🔗 URL WEBHOOK NOTIFIKASI PEMBAYARAN (Paste ke Dashboard Midtrans/Tripay):
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <ExternalLink size={14} /> URL WEBHOOK NOTIFIKASI PEMBAYARAN:
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <code style={{ flex: 1, padding: '6px 10px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 12.5, color: '#0f172a' }}>
@@ -279,19 +292,21 @@ export default function DeveloperIntegrations() {
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}/api/payment/webhook`);
                   alert('URL Webhook berhasil disalin ke clipboard!');
                 }}
               >
-                📋 Salin URL
+                <Copy size={13} /> Salin URL
               </button>
             </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="submit" className="btn btn-primary" disabled={savingPg}>
-              {savingPg ? 'Menyimpan...' : '💾 Simpan Konfigurasi Gateway'}
+            <button type="submit" className="btn btn-primary" disabled={savingPg} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Save size={15} />
+              {savingPg ? 'Menyimpan...' : 'Simpan Konfigurasi Gateway'}
             </button>
           </div>
         </form>
@@ -304,7 +319,9 @@ export default function DeveloperIntegrations() {
             <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>API Keys</h3>
             <p className="page-sub" style={{ marginTop: 2 }}>Buat dan cabut API key untuk aplikasi yang mengakses BIZORA secara terprogram.</p>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowKeyModal(true)}>+ Generate Key Baru</button>
+          <button className="btn btn-primary" onClick={() => setShowKeyModal(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={15} /> Generate Key Baru
+          </button>
         </div>
 
         <div className="table-wrap table-responsive" style={{ marginTop: 16 }}>
@@ -346,7 +363,9 @@ export default function DeveloperIntegrations() {
             <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>Webhooks</h3>
             <p className="page-sub" style={{ marginTop: 2 }}>Endpoint yang menerima notifikasi real-time dari platform.</p>
           </div>
-          <button className="btn btn-secondary" onClick={() => setShowWebhookModal(true)}>+ Tambah Webhook</button>
+          <button className="btn btn-secondary" onClick={() => setShowWebhookModal(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={15} /> Tambah Webhook
+          </button>
         </div>
 
         <div className="table-wrap table-responsive" style={{ marginTop: 16 }}>

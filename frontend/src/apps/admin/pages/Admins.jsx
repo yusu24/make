@@ -1,11 +1,17 @@
-import { useState, useEffect } from 'react'
+import {
+  useState,
+  useEffect } from 'react'
 import { api } from '../../../lib/api'
-import { getAvatarStyle, getInitials } from '../../../lib/avatar'
+import { getAvatarStyle,
+  getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import Modal from '../../../components/Modal'
 import { useAuth } from '../../../contexts/AuthContext'
-import { KeyRound, Edit3, Trash2 } from 'lucide-react'
+import { KeyRound,
+  Pencil,
+  Trash2
+} from '@/constants/icons'
 import './Shared.css'
 
 const ALL_PERMS = [
@@ -238,7 +244,7 @@ export default function Admins() {
                           style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px', opacity: admin.role === 'super_admin' ? 0.5 : 1 }}
                           title={admin.role === 'super_admin' ? 'Super Admin tidak bisa diedit' : 'Edit Admin'}
                         >
-                          <Edit3 size={12} />
+                          <Pencil size={12} />
                           <span>Edit</span>
                         </button>
 
@@ -267,19 +273,20 @@ export default function Admins() {
                 )}
               </tbody>
             </table>
-            {!loading && filtered.length > 0 && (
-              <SaasPagination
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-                pageSize={pageSize}
-                setPageSize={setPageSize}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                startIndex={startIndex}
-                endIndex={endIndex}
-              />
-            )}
           </div>
+
+          {!loading && filtered.length > 0 && (
+            <SaasPagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              endIndex={endIndex}
+            />
+          )}
         </div>
       </div>
 

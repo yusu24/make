@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Edit3, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Plus, X } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
@@ -116,18 +116,18 @@ export default function Modifiers() {
                 ) : (
                   currentGroups.map((g) => (
                     <tr key={g.id}>
-                      <td><div style={{ color: '#1e293b' }}>{g.name}</div></td>
+                      <td><div style={{ color: '#1e293b', fontSize: 12, fontWeight: 400 }}>{g.name}</div></td>
                       <td>
-                        <span className={`kd-status-badge ${g.is_required ? 'kd-status-active' : 'kd-status-hidden'}`}>
+                        <span className={`kd-status-badge ${g.is_required ? 'kd-status-active' : 'kd-status-hidden'}`} style={{ fontSize: 12, fontWeight: 400 }}>
                           {g.is_required ? t('kulinerExtra.reqMinMax').split(',')[0] : t('kulinerExtra.formIsOptional').split(' ')[0]}
                         </span>
                       </td>
-                      <td style={{ fontSize: 12 }}>
+                      <td style={{ fontSize: 12, fontWeight: 400 }}>
                         {g.options.map((o) => `${o.name} (${o.price_delta > 0 ? '+' : ''}${Number(o.price_delta).toLocaleString('id-ID')})`).join(', ')}
                       </td>
                       <td className="text-right">
                         <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                          <button className="kd-icon-btn" title="Edit" onClick={() => openEdit(g)}><Edit3 size={16} /></button>
+                          <button className="kd-icon-btn" title="Edit" onClick={() => openEdit(g)}><Pencil size={16} /></button>
                           <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(g)}><Trash2 size={16} /></button>
                         </div>
                       </td>
@@ -152,7 +152,7 @@ export default function Modifiers() {
           <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{editingGroup ? t('kulinerExtra.editModifierModalTitle') : t('kulinerExtra.addModifierModalTitle')}</h2>
-              <button className="kd-close-btn" onClick={() => setShowModal(false)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setShowModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={handleSave}>
               <div className="kd-modal-body">
@@ -173,7 +173,7 @@ export default function Modifiers() {
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, whiteSpace: 'nowrap' }}>
                       <input type="checkbox" checked={o.is_default} onChange={(e) => updateOption(idx, 'is_default', e.target.checked)} /> Default
                     </label>
-                    <button type="button" className="kd-btn kd-btn-secondary text-red-500" onClick={() => removeOptionRow(idx)}>✕</button>
+                    <button type="button" className="kd-btn kd-btn-secondary text-red-500 p-2" onClick={() => removeOptionRow(idx)}><Trash2 size={14} /></button>
                   </div>
                 ))}
                 <button type="button" className="kd-btn kd-btn-secondary" onClick={addOptionRow}>{t('kulinerExtra.addOptionBtn')}</button>

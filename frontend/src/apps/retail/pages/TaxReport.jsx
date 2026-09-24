@@ -4,7 +4,7 @@ import '../retail-print.css';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useReactToPrint } from 'react-to-print';
-import { FileText, Calendar, Printer } from 'lucide-react';
+import { FileText, Calendar, Printer } from '@/constants/icons';
 import { useToast } from '../../../components/Toast';
 import Skeleton from '../../../components/Skeleton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';

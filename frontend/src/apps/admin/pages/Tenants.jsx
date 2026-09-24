@@ -1,26 +1,52 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import { getAvatarStyle, getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import Modal from '../../../components/Modal'
-import { 
-  Store, Users, Shield, KeyRound, Eye, EyeOff, Edit3, Trash2, 
-  RefreshCw, Plus, CheckCircle2, AlertTriangle, 
-  Sparkles, Box, CreditCard, Package, Calendar, Mail, FileText, ShoppingBag,
-  Lock, Copy, Check, Key
-} from 'lucide-react'
+import TenantDetailDrawer from '../components/TenantDetailDrawer'
+import {
+  Store,
+  Users,
+  Shield,
+  KeyRound,
+  Eye,
+  EyeOff,
+  Pencil,
+  Trash2,
+  RefreshCw,
+  Plus,
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
+  Box,
+  CreditCard,
+  Package,
+  Calendar,
+  Mail,
+  FileText,
+  ShoppingBag,
+  Lock,
+  Copy,
+  Check,
+  Key,
+  Activity,
+  Search,
+  Inbox
+} from '@/constants/icons'
 import './Shared.css'
 
 export default function Tenants() {
   const { impersonate } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [tenants, setTenants] = useState([])
   const [search, setSearch]   = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [healthFilter, setHealthFilter] = useState(searchParams.get('health_status') || 'all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [editTenant, setEditTenant] = useState(null)
   const [viewTenant, setViewTenant] = useState(null)
@@ -102,7 +128,6 @@ export default function Tenants() {
       await api.post(`/admin/tenants/${moduleModal}/modules`, { module_ids: activeIds })
       alert('Modul tenant berhasil diperbarui!')
       setModuleModal(null)
-      // Refresh current open detail modal if open
       if (viewTenant && viewTenant.tenant_id === moduleModal) {
         handleOpenDetail(viewTenant)
       }
@@ -221,11 +246,19 @@ export default function Tenants() {
     }
   }
 
+  useEffect(() => {
+    const pHealth = searchParams.get('health_status')
+    if (pHealth && ['healthy', 'warning', 'at_risk'].includes(pHealth)) {
+      setHealthFilter(pHealth)
+    }
+  }, [searchParams])
+
   const uniqueCategories = Array.from(new Set(tenants.map(t => t.category).filter(Boolean))).sort()
 
   const filtered = tenants.filter(t => {
     const q = search.toLowerCase()
-    const matchesSearch = (t.name || '').toLowerCase().includes(q) || 
+    const matchesSearch = !search.trim() ||
+                          (t.name || '').toLowerCase().includes(q) || 
                           (t.email || '').toLowerCase().includes(q) || 
                           (t.tenant_id || '').toLowerCase().includes(q) ||
                           (t.category || '').toLowerCase().includes(q)
@@ -238,7 +271,9 @@ export default function Tenants() {
     else if (statusFilter === 'inactive') matchesStatus = t.status === 'inactive'
     else if (statusFilter === 'demo') matchesStatus = !!t.is_demo
 
-    return matchesSearch && matchesCategory && matchesStatus
+    const matchesHealth = healthFilter === 'all' || t.health_status === healthFilter
+
+    return matchesSearch && matchesCategory && matchesStatus && matchesHealth
   })
 
   const {
@@ -252,149 +287,150 @@ export default function Tenants() {
     <div className="animate-fade-in">
       {/* ── Page Header ── */}
       <div className="page-header mb-4">
-        <h2 className="page-title">Manajemen Tenant</h2>
+        <div>
+          <h2 className="page-title">Manajemen Tenant</h2>
+        </div>
       </div>
 
       {/* ── Stats row ── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex items-center gap-3.5 shadow-sm">
-          <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
             <Store size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium">Total Tenant</p>
-            <p className="text-xl font-bold text-slate-800">{tenants.length}</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Tenant</p>
+            <p className="text-2xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans']">{tenants.length}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex items-center gap-3.5 shadow-sm">
-          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
             <CheckCircle2 size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium">Tenant Aktif</p>
-            <p className="text-xl font-bold text-emerald-600">{tenants.filter(t => t.status === 'active' && !t.is_demo).length}</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tenant Aktif</p>
+            <p className="text-2xl font-extrabold text-emerald-600 tracking-tight font-['Plus_Jakarta_Sans']">{tenants.filter(t => t.status === 'active' && !t.is_demo).length}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex items-center gap-3.5 shadow-sm">
-          <div className="p-3 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shrink-0">
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
             <Sparkles size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium">Akun Demo Sandbox</p>
-            <p className="text-xl font-bold text-amber-600">{tenants.filter(t => t.is_demo).length}</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Akun Demo Sandbox</p>
+            <p className="text-2xl font-extrabold text-amber-600 tracking-tight font-['Plus_Jakarta_Sans']">{tenants.filter(t => t.is_demo).length}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex items-center gap-3.5 shadow-sm">
-          <div className="p-3 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 shrink-0">
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
             <AlertTriangle size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium">Nonaktif / Kadaluarsa</p>
-            <p className="text-xl font-bold text-rose-600">{tenants.filter(t => t.status === 'inactive').length}</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nonaktif / Kadaluarsa</p>
+            <p className="text-2xl font-extrabold text-rose-600 tracking-tight font-['Plus_Jakarta_Sans']">{tenants.filter(t => t.status === 'inactive').length}</p>
           </div>
         </div>
       </div>
 
-      <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none' }}>
+      {/* ── Table Card ── */}
+      <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1 }}>
-              <span className="search-icon">🔍</span>
+            <div className="search-wrap" style={{ minWidth: 220, maxWidth: 280, flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
               <input
                 id="input-search-tenants"
                 className="form-input search-input"
+                style={{ paddingLeft: 34 }}
                 placeholder="Cari ID, nama bisnis, email..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
-            
+
             <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ minWidth: 140 }}>
-                <select
-                  id="select-filter-status"
-                  className="form-input"
-                  value={statusFilter}
-                  onChange={e => setStatusFilter(e.target.value)}
-                  style={{
-                    padding: '8px 12px',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    outline: 'none',
-                    height: 38
-                  }}
+              <select
+                id="select-filter-status"
+                className="form-input"
+                style={{ width: 'auto', minWidth: 135, height: 38, padding: '0 32px 0 12px', fontSize: 13 }}
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+              >
+                <option value="all">Semua Status</option>
+                <option value="active">Aktif</option>
+                <option value="pending">Pending</option>
+                <option value="inactive">Nonaktif</option>
+                <option value="demo">Demo Sandbox</option>
+              </select>
+
+              <select
+                id="select-filter-health"
+                className="form-input"
+                style={{ width: 'auto', minWidth: 165, height: 38, padding: '0 32px 0 12px', fontSize: 13 }}
+                value={healthFilter}
+                onChange={e => {
+                  setHealthFilter(e.target.value)
+                  if (e.target.value === 'all') {
+                    searchParams.delete('health_status')
+                  } else {
+                    searchParams.set('health_status', e.target.value)
+                  }
+                  setSearchParams(searchParams)
+                }}
+              >
+                <option value="all">Semua Kesehatan</option>
+                <option value="healthy">🟢 Sehat &amp; Aktif (&ge;70)</option>
+                <option value="warning">🟡 Butuh Perhatian (40-69)</option>
+                <option value="at_risk">🔴 Berisiko Churn (&lt;40)</option>
+              </select>
+
+              <select
+                id="select-filter-category"
+                className="form-input"
+                style={{ width: 'auto', minWidth: 145, height: 38, padding: '0 32px 0 12px', fontSize: 13 }}
+                value={categoryFilter}
+                onChange={e => setCategoryFilter(e.target.value)}
+              >
+                <option value="all">Semua Kategori</option>
+                {uniqueCategories.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+
+              {tenants.some(t => t.is_demo) && (
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleCleanupDemo}
+                  disabled={isCleaningDemo}
+                  title="Bersihkan akun demo yang sudah kadaluarsa"
+                  style={{ height: 38, color: '#d97706', borderColor: '#fde68a' }}
                 >
-                  <option value="all">Semua Status</option>
-                  <option value="active">✓ Aktif</option>
-                  <option value="pending">⏳ Trial / Pending</option>
-                  <option value="inactive">✗ Nonaktif</option>
-                  <option value="demo">✨ Demo Sandbox</option>
-                </select>
-              </div>
+                  <Sparkles size={14} className={isCleaningDemo ? 'animate-spin' : ''} />
+                  <span>{isCleaningDemo ? 'Membersihkan...' : 'Bersihkan Demo'}</span>
+                </button>
+              )}
 
-              <div style={{ minWidth: 150 }}>
-                <select
-                  id="select-filter-category"
-                  className="form-input"
-                  value={categoryFilter}
-                  onChange={e => setCategoryFilter(e.target.value)}
-                  style={{
-                    padding: '8px 12px',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    outline: 'none',
-                    height: 38
-                  }}
-                >
-                  <option value="all">Semua Kategori</option>
-                  {uniqueCategories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-
-              <button 
-                onClick={fetchTenants} 
-                className="btn btn-secondary" 
-                style={{ height: 38, width: 38, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
-                title="Segarkan Data"
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={fetchTenants}
+                disabled={loading}
+                title="Muat ulang data"
+                style={{ height: 38 }}
               >
-                <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+                <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
               </button>
 
-              <button 
-                className="btn btn-secondary"
-                onClick={() => setShowDemoInfo(true)}
-                style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6, fontSize: '13px', fontWeight: 500 }}
-                title="Pelajari Sistem Akun Demo"
+              <button
+                id="btn-add-tenant"
+                className="btn btn-primary"
+                style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                onClick={() => setShowAddModal(true)}
               >
-                <Sparkles size={14} className="text-amber-500" />
-                <span>Info Demo (24h)</span>
-              </button>
-
-              <button 
-                className="btn btn-secondary"
-                onClick={handleCleanupDemo}
-                disabled={isCleaningDemo}
-                style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6, fontSize: '13px', fontWeight: 500, color: '#d97706', borderColor: '#fde68a' }}
-                title="Bersihkan Akun Demo Sandbox yang Sudah Kadaluarsa"
-              >
-                <Trash2 size={14} className={isCleaningDemo ? 'animate-spin' : ''} />
-                <span>{isCleaningDemo ? 'Membersihkan...' : 'Bersihkan Demo'}</span>
-              </button>
-
-              <button 
-                id="btn-add-tenant" 
-                className="btn btn-primary" 
-                onClick={() => setShowAddModal(true)} 
-                style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6 }}
-              >
-                + Tambah Tenant
+                <Plus size={16} />
+                <span>Tambah Tenant</span>
               </button>
             </div>
           </div>
@@ -404,75 +440,113 @@ export default function Tenants() {
           <table className="table">
             <thead>
               <tr>
-                <th>Tenant ID</th>
-                <th>Nama Bisnis</th>
-                <th>Email Owner</th>
-                <th>Kategori Sektor</th>
-                <th>Paket</th>
-                <th>Status Akun</th>
-                <th>Tgl Dibuat</th>
+                <th>Tenant / Bisnis</th>
+                <th>Kategori &amp; Paket</th>
+                <th>Status</th>
+                <th>Kesehatan &amp; Aktivitas</th>
+                <th>Terdaftar</th>
                 <th style={{ textAlign: 'right' }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                      <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                      <span>Menyinkronkan data tenant...</span>
+                      <RefreshCw size={24} className="animate-spin text-indigo-600" />
+                      <span>Memuat data tenant...</span>
                     </div>
                   </td>
                 </tr>
-              ) : filtered.length === 0 ? (
+              ) : paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                    Tidak ada tenant yang cocok dengan filter.
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                      <Inbox size={32} className="text-slate-400" />
+                      <span>Tidak ada tenant yang cocok dengan filter saat ini.</span>
+                      {(search || statusFilter !== 'all' || healthFilter !== 'all' || categoryFilter !== 'all') && (
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => {
+                            setSearch('')
+                            setStatusFilter('all')
+                            setHealthFilter('all')
+                            setCategoryFilter('all')
+                            searchParams.delete('health_status')
+                            setSearchParams(searchParams)
+                          }}
+                        >
+                          Reset Semua Filter
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : paginatedData.map(t => (
-                <tr key={t.id}>
+                <tr key={t.tenant_id}>
                   <td>
-                    <code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '3px 8px', borderRadius: 4, fontWeight: 600 }}>
-                      {t.tenant_id}
-                    </code>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={getAvatarStyle(t.name || t.tenant_id, 32)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={getAvatarStyle(t.name || t.tenant_id, 38)}>
                         {getInitials(t.name || t.tenant_id)}
                       </div>
                       <div>
-                        <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, display: 'block' }}>{t.name}</span>
-                        {t.is_demo && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 mt-0.5">
-                            ⚡ DEMO SANDBOX (24h)
-                          </span>
-                        )}
+                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span>{t.name || t.business_name}</span>
+                          {t.is_demo && (
+                            <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded border border-amber-200">
+                              DEMO
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <code>{t.tenant_id}</code>
+                          <span>•</span>
+                          <span>{t.email}</span>
+                        </div>
                       </div>
                     </div>
                   </td>
-                  <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{t.email}</td>
-                  <td><span className="badge badge-secondary">{t.category}</span></td>
                   <td>
-                    <span className={`badge ${
-                      (t.plan || '').toLowerCase() === 'pro' ? 'badge-violet' : 
-                      (t.plan || '').toLowerCase() === 'basic' ? 'badge-blue' : 'badge-secondary'
-                    }`}>
-                      {t.plan ? (t.plan.charAt(0).toUpperCase() + t.plan.slice(1)) : 'Free'}
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+                      {t.category || 'Belum diatur'}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      Paket: <span className="font-semibold text-slate-700">{t.subscription_plan || t.plan || 'Free'}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`badge ${t.status === 'active' ? 'badge-green' : t.status === 'pending' ? 'badge-yellow' : 'badge-red'}`}>
+                      {t.status === 'active' ? 'Aktif' : t.status === 'pending' ? 'Pending' : 'Nonaktif'}
                     </span>
                   </td>
                   <td>
-                    <span className={`badge ${
-                      t.status === 'active' ? 'badge-green' : 
-                      t.status === 'pending' ? 'badge-yellow' : 'badge-red'
-                    }`}>
-                      {t.status === 'active' ? 'Aktif' : t.status === 'pending' ? 'Trial/Pending' : 'Nonaktif'}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                          t.health_status === 'healthy'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : t.health_status === 'warning'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-rose-50 text-rose-700 border-rose-200'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            t.health_status === 'healthy' ? 'bg-emerald-500' : t.health_status === 'warning' ? 'bg-amber-500' : 'bg-rose-500'
+                          }`}></span>
+                          {t.health_label || 'Sehat'} ({t.health_score ?? 85})
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-500">
+                        {t.last_activity_human || 'Belum ada aktivitas'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                      {t.joined || t.created_at || '-'}
                     </span>
                   </td>
-                  <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.joined}</td>
-                  <td style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end', alignItems: 'center' }}>
+                  <td>
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       <button
                         className="btn btn-secondary btn-sm"
                         onClick={() => handleOpenDetail(t)}
@@ -513,7 +587,7 @@ export default function Tenants() {
                         onClick={() => setEditTenant(t)}
                         title="Edit Data Tenant"
                       >
-                        <Edit3 size={13} />
+                        <Pencil size={13} />
                       </button>
 
                       <button 
@@ -530,259 +604,117 @@ export default function Tenants() {
               ))}
             </tbody>
           </table>
-          {!loading && filtered.length > 0 && (
-            <SaasPagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              startIndex={startIndex}
-              endIndex={endIndex}
-            />
-          )}
         </div>
+
+        {!loading && filtered.length > 0 && (
+          <SaasPagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
+        )}
       </div>
 
-      {/* ── Modal Detail Tenant (Super Lengkap & Rinci) ── */}
-      {viewTenant && (
-        <Modal isOpen={!!viewTenant} onClose={() => setViewTenant(null)} title={`Detail Profil Tenant: ${viewTenant.name || viewTenant.tenant_id}`} maxWidth="720px">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            {viewTenant.is_demo && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2.5">
-                <Sparkles size={18} className="text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block text-amber-900 font-semibold mb-0.5">Akun Demo Sandbox (Uji Coba Publik)</strong>
-                  Akun ini dibuat untuk demonstrasi fitur aplikasi secara langsung. Sistem akan secara otomatis membersihkan seluruh data sandbox ini dalam 24 jam.
-                </div>
-              </div>
-            )}
+      {/* ── Slide-Over Tenant Detail Drawer (Pillar 4) ── */}
+      <TenantDetailDrawer
+        isOpen={!!viewTenant}
+        tenant={viewTenant}
+        onClose={() => setViewTenant(null)}
+        onImpersonate={handleImpersonate}
+        onOpenResetPassword={handleOpenResetModal}
+        onEdit={setEditTenant}
+        onOpenModules={openModuleModal}
+        onRefresh={fetchTenants}
+      />
 
-            {/* Profile Header Banner */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-slate-900 to-indigo-950 text-white shadow-sm">
-              <div className="flex items-center gap-3.5">
-                <div style={getAvatarStyle(viewTenant.name || viewTenant.tenant_id, 48)}>
-                  {getInitials(viewTenant.name || viewTenant.tenant_id)}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-white m-0">{viewTenant.name || viewTenant.business_name}</h3>
-                    <code className="text-[11px] bg-white/20 px-2 py-0.5 rounded text-indigo-200 font-mono">{viewTenant.tenant_id}</code>
-                  </div>
-                  <p className="text-xs text-slate-300 m-0 mt-1 flex items-center gap-1.5">
-                    <Mail size={12} className="text-indigo-300" />
-                    <span>{viewTenant.email}</span>
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-1.5">
-                <span className={`badge ${viewTenant.status === 'active' ? 'badge-green' : viewTenant.status === 'pending' ? 'badge-yellow' : 'badge-red'}`}>
-                  {viewTenant.status === 'active' ? '✓ Aktif' : viewTenant.status === 'pending' ? '⏳ Pending' : '✗ Nonaktif'}
-                </span>
-                <span className="text-[11px] text-slate-400">Terdaftar: {viewTenant.joined}</span>
-              </div>
+      {/* ── Modal Tambah Tenant ── */}
+      {showAddModal && (
+        <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Tambah Tenant Baru">
+          <form onSubmit={handleAddTenant} className="form-grid">
+            <div className="form-group">
+              <label className="form-label">Nama Bisnis / Toko</label>
+              <input name="name" className="form-input" placeholder="contoh: Toko Berkah Abadi" required />
             </div>
-
-            {/* Operational Stats Grid */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl text-center">
-                <Users size={16} className="text-indigo-600 mx-auto mb-1" />
-                <p className="text-lg font-bold text-slate-800 m-0">{viewTenant.stats?.total_users ?? 1}</p>
-                <p className="text-[11px] text-slate-500 m-0 font-medium">Staf / Akun</p>
-              </div>
-              <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl text-center">
-                <Package size={16} className="text-emerald-600 mx-auto mb-1" />
-                <p className="text-lg font-bold text-slate-800 m-0">{viewTenant.stats?.total_products ?? 0}</p>
-                <p className="text-[11px] text-slate-500 m-0 font-medium">Katalog Produk</p>
-              </div>
-              <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl text-center">
-                <ShoppingBag size={16} className="text-blue-600 mx-auto mb-1" />
-                <p className="text-lg font-bold text-slate-800 m-0">{viewTenant.stats?.total_transactions ?? 0}</p>
-                <p className="text-[11px] text-slate-500 m-0 font-medium">Transaksi</p>
-              </div>
-              <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl text-center">
-                <FileText size={16} className="text-amber-600 mx-auto mb-1" />
-                <p className="text-lg font-bold text-slate-800 m-0">{viewTenant.stats?.total_invoices ?? 0}</p>
-                <p className="text-[11px] text-slate-500 m-0 font-medium">Tagihan SaaS</p>
-              </div>
+            <div className="form-group">
+              <label className="form-label">Email Pemilik / Penanggung Jawab</label>
+              <input name="email" type="email" className="form-input" placeholder="contoh: admin@tokoberkah.com" required />
             </div>
-
-            {/* Detailed Metadata Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Box 1: Langganan & Kuota */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
-                  <CreditCard size={15} className="text-indigo-600" />
-                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider m-0">Langganan &amp; Kuota</h4>
-                </div>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between py-1 border-b border-slate-50">
-                    <span className="text-slate-500">Paket Aktif</span>
-                    <span className="font-bold text-indigo-600 uppercase">{viewTenant.plan || viewTenant.subscription_plan || 'FREE'}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-slate-50">
-                    <span className="text-slate-500">Harga Paket</span>
-                    <span className="font-semibold text-slate-800">
-                      {viewTenant.stats?.plan_price ? `Rp ${Number(viewTenant.stats.plan_price).toLocaleString('id-ID')}/bln` : 'Gratis'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-slate-50">
-                    <span className="text-slate-500">Masa Aktif Hingga</span>
-                    <span className="font-semibold text-slate-800">{viewTenant.expires_at}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-slate-50">
-                    <span className="text-slate-500">Batas Maks. Pegawai</span>
-                    <span className="font-semibold text-slate-800">{viewTenant.stats?.max_staff}</span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-slate-500">Batas Maks. Produk</span>
-                    <span className="font-semibold text-slate-800">{viewTenant.stats?.max_products}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Box 2: Sektor & Modul Aktif */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
-                  <Box size={15} className="text-emerald-600" />
-                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider m-0">Sektor &amp; Modul Ekstra</h4>
-                </div>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between py-1 border-b border-slate-50">
-                    <span className="text-slate-500">Sektor Bisnis Utama</span>
-                    <span className="font-semibold text-slate-800">{viewTenant.category}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block mb-1.5">Modul Sistem Aktif:</span>
-                    <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
-                      {viewTenant.stats?.active_modules?.length > 0 ? (
-                        viewTenant.stats.active_modules.map(modName => (
-                          <span key={modName} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
-                            ✓ {modName}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-slate-400 italic text-[11px]">Belum ada modul ekstra khusus yang aktif</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="form-group">
+              <label className="form-label">Kategori Industri</label>
+              <select name="category" className="form-input" required defaultValue="Retail">
+                <option value="Retail">Retail & Grosir</option>
+                <option value="F&B / Kuliner">F&B / Kuliner & Resto</option>
+                <option value="Jasa & Konsultasi">Jasa & Konsultasi</option>
+                <option value="Budidaya & Agribisnis">Budidaya & Agribisnis</option>
+                <option value="E-Commerce / Reseller">E-Commerce / Reseller</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
             </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-              <button 
-                className="btn btn-secondary text-xs flex items-center gap-1.5"
-                onClick={() => {
-                  const t = viewTenant;
-                  setViewTenant(null);
-                  openModuleModal(t.tenant_id);
-                }}
-              >
-                <Box size={13} />
-                <span>Atur Modul Ekstra</span>
-              </button>
-
-              <div className="flex gap-2">
-                <button className="btn btn-secondary text-xs" onClick={() => setViewTenant(null)}>Tutup</button>
-                <button 
-                  className="btn btn-secondary text-xs flex items-center gap-1"
-                  style={{ color: '#d97706' }}
-                  onClick={() => {
-                    const t = viewTenant;
-                    setViewTenant(null);
-                    handleOpenResetModal(t);
-                  }}
-                >
-                  <Key size={13} />
-                  <span>Reset Password</span>
-                </button>
-                <button 
-                  className="btn btn-secondary text-xs flex items-center gap-1"
-                  onClick={() => {
-                    const t = viewTenant;
-                    setViewTenant(null);
-                    setEditTenant(t);
-                  }}
-                >
-                  <Edit3 size={13} />
-                  <span>Edit Data</span>
-                </button>
-                <button 
-                  className="btn btn-primary text-xs flex items-center gap-1.5"
-                  onClick={() => {
-                    const t = viewTenant;
-                    setViewTenant(null);
-                    handleImpersonate(t);
-                  }}
-                >
-                  <KeyRound size={13} />
-                  <span>Login Sebagai Tenant</span>
-                </button>
-              </div>
+            <div className="form-group">
+              <label className="form-label">Paket Awal</label>
+              <select name="plan" className="form-input" required defaultValue="Free">
+                <option value="Free">Starter (Gratis)</option>
+                <option value="Pro">Pro Business</option>
+                <option value="Enterprise">Enterprise Unlimited</option>
+              </select>
             </div>
-          </div>
+            <div className="modal__actions">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Batal</button>
+              <button type="submit" className="btn btn-primary">Simpan Tenant</button>
+            </div>
+          </form>
         </Modal>
       )}
 
       {/* ── Modal Edit Tenant ── */}
       {editTenant && (
-        <Modal isOpen={!!editTenant} onClose={() => setEditTenant(null)} title={`Edit Tenant: ${editTenant.tenant_id}`}>
-          <form onSubmit={handleUpdateTenant} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <Modal isOpen={!!editTenant} onClose={() => setEditTenant(null)} title={`Edit Tenant: ${editTenant.name}`}>
+          <form onSubmit={handleUpdateTenant} className="form-grid">
             <div className="form-group">
-              <label className="form-label font-semibold">Nama Bisnis / Toko</label>
+              <label className="form-label">Nama Bisnis / Usaha</label>
               <input name="name" className="form-input" defaultValue={editTenant.name} required />
             </div>
-
             <div className="form-group">
-              <label className="form-label font-semibold">Email Pemilik Akun</label>
+              <label className="form-label">Email</label>
               <input name="email" type="email" className="form-input" defaultValue={editTenant.email} required />
             </div>
-
             <div className="form-group">
-              <label className="form-label font-semibold">Kategori Sektor Bisnis</label>
-              <select name="category" className="form-input" defaultValue={editTenant.category} required>
-                {uniqueCategories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
+              <label className="form-label">Kategori Industri</label>
+              <select name="category" className="form-input" defaultValue={editTenant.category || 'Retail'} required>
+                <option value="Retail">Retail</option>
+                <option value="F&B / Kuliner">F&B / Kuliner</option>
+                <option value="Jasa & Konsultasi">Jasa & Konsultasi</option>
+                <option value="Budidaya & Agribisnis">Budidaya & Agribisnis</option>
+                <option value="E-Commerce / Reseller">E-Commerce / Reseller</option>
+                <option value="Lainnya">Lainnya</option>
               </select>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label font-semibold">Paket Langganan</label>
-                <select name="subscription_plan" className="form-input" defaultValue={(editTenant.plan || 'free').toLowerCase()}>
-                  <option value="free">Free</option>
-                  <option value="basic">Basic</option>
-                  <option value="pro">Pro</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label font-semibold">Status Akun</label>
-                <select name="status" className="form-input" defaultValue={editTenant.status}>
-                  <option value="active">Aktif</option>
-                  <option value="pending">Trial / Pending</option>
-                  <option value="inactive">Nonaktif</option>
-                </select>
-              </div>
-            </div>
-
             <div className="form-group">
-              <label className="form-label font-semibold text-slate-700">
-                Ganti Password Baru <span className="text-slate-400 font-normal">(Kosongkan jika tidak ingin diubah)</span>
-              </label>
-              <input 
-                name="password" 
-                type="password" 
-                className="form-input" 
-                placeholder="Masukkan password baru jika ingin mengubah..." 
-              />
+              <label className="form-label">Paket Langganan</label>
+              <select name="subscription_plan" className="form-input" defaultValue={editTenant.subscription_plan || 'Free'} required>
+                <option value="Free">Starter (Free)</option>
+                <option value="Pro">Pro Business</option>
+                <option value="Enterprise">Enterprise Unlimited</option>
+              </select>
             </div>
-
-            <div className="modal__actions mt-3">
+            <div className="form-group">
+              <label className="form-label">Status Akun</label>
+              <select name="status" className="form-input" defaultValue={editTenant.status || 'active'} required>
+                <option value="active">Aktif</option>
+                <option value="pending">Pending Verifikasi</option>
+                <option value="inactive">Nonaktif / Suspend</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Ubah Password Baru (Opsional)</label>
+              <input name="password" type="password" className="form-input" placeholder="Kosongkan jika tidak ingin mengubah password" />
+            </div>
+            <div className="modal__actions">
               <button type="button" className="btn btn-secondary" onClick={() => setEditTenant(null)}>Batal</button>
               <button type="submit" className="btn btn-primary">Simpan Perubahan</button>
             </div>
@@ -790,93 +722,48 @@ export default function Tenants() {
         </Modal>
       )}
 
-      {/* ── Modal Tambah Tenant ── */}
-      {showAddModal && (
-        <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Tambah Tenant Baru">
-          <form onSubmit={handleAddTenant} style={{ display:'flex', flexDirection:'column', gap:16 }}>
-            <div className="form-group">
-              <label className="form-label font-semibold">Nama Bisnis / Toko</label>
-              <input name="name" className="form-input" required placeholder="Contoh: Toko Berkah Mandiri" />
-            </div>
-            <div className="form-group">
-              <label className="form-label font-semibold">Alamat Email Pemilik</label>
-              <input name="email" type="email" className="form-input" required placeholder="owner@tokoberkah.com" />
-            </div>
-            <div className="form-group">
-              <label className="form-label font-semibold">Kategori Sektor</label>
-              <select name="category" className="form-input" required>
-                <option value="Toko Retail">Toko Retail</option>
-                <option value="Budidaya Hewan">Budidaya Hewan</option>
-                <option value="Budidaya Tanaman">Budidaya Tanaman</option>
-                <option value="Kuliner">Kuliner</option>
-                <option value="Jasa">Jasa</option>
-                <option value="Seller">Seller</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label font-semibold">Paket Awal</label>
-              <select name="plan" className="form-input" required>
-                <option value="free">Free</option>
-                <option value="basic">Basic</option>
-                <option value="pro">Pro</option>
-              </select>
-            </div>
-            <div className="modal__actions mt-3">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Batal</button>
-              <button type="submit" className="btn btn-primary">Buat Tenant Baru</button>
-            </div>
-          </form>
-        </Modal>
-      )}
-
-      {/* ── Modal Konfirmasi Hapus Tenant ── */}
+      {/* ── Modal Konfirmasi Hapus ── */}
       {deleteTarget && (
-        <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Konfirmasi Hapus Tenant" maxWidth="480px">
-          <div style={{ textAlign: 'center', padding: '10px 0' }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#dc2626' }}>Hapus Tenant {deleteTarget.name}?</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.5, marginBottom: 20 }}>
-              Tindakan ini akan menghapus akun tenant <strong>{deleteTarget.tenant_id}</strong> beserta data login pegawainya. Pastikan Anda sudah mengecek transaksi aktif sebelum menghapus.
+        <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Hapus Tenant" maxWidth="420px">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+              Apakah Anda yakin ingin menghapus tenant <strong>{deleteTarget.name}</strong> (<code>{deleteTarget.tenant_id}</code>)?
             </p>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--danger-500)' }}>
+              Tindakan ini tidak dapat dibatalkan. Semua data toko, inventaris, dan riwayat transaksi akan dihapus permanen.
+            </p>
+            <div className="modal__actions">
               <button className="btn btn-secondary" onClick={() => setDeleteTarget(null)}>Batal</button>
-              <button className="btn btn-primary" style={{ background: '#dc2626', border: 'none' }} onClick={handleDeleteTenant}>
-                Ya, Hapus Tenant
-              </button>
+              <button className="btn btn-danger" onClick={handleDeleteTenant}>Ya, Hapus Tenant</button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* ── Modal Reset Password Tenant ── */}
+      {/* ── Modal Reset Password Khusus Superadmin ── */}
       {resetTarget && (
-        <Modal 
-          isOpen={!!resetTarget} 
-          onClose={() => setResetTarget(null)} 
-          title={`🔑 Reset Password Akun: ${resetTarget.name || resetTarget.tenant_id}`} 
-          maxWidth="500px"
-        >
-          <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5">
+        <Modal isOpen={!!resetTarget} onClose={() => setResetTarget(null)} title={`Reset Password: ${resetTarget.name}`} maxWidth="480px">
+          <form onSubmit={handleResetPassword} className="space-y-4 text-slate-700">
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2.5">
               <Key size={18} className="text-amber-600 shrink-0 mt-0.5" />
               <div>
-                <strong className="block text-amber-900 font-semibold mb-0.5">Reset Akses Tenant:</strong>
-                Tindakan ini akan langsung mereset password akun pemilik (<code>{resetTarget.email}</code>). Password baru dapat langsung disalin atau dikirimkan ke email tenant.
+                <strong className="block text-amber-900 font-semibold mb-0.5">Reset Akses Tenant</strong>
+                Password akun penanggung jawab tenant (<strong>{resetTarget.email}</strong>) akan diganti seketika.
               </div>
             </div>
 
-            <div className="form-group">
+            <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="form-label font-semibold m-0 text-slate-700">Password Baru</label>
+                <label className="text-xs font-semibold text-slate-700">Password Baru</label>
                 <button
                   type="button"
                   onClick={() => setResetPassword(generateRandomPassword())}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1"
+                  className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
                 >
-                  🎲 Buat Password Acak
+                  <RefreshCw size={12} />
+                  <span>Generate Acak</span>
                 </button>
               </div>
-
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}

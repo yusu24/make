@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Package, Upload, Trash2 } from 'lucide-react';
+import { X, Package, Upload, Trash2 } from '@/constants/icons';
 import { Product } from '../../types';
 import api from '../../../../../services/api';
 import { formatNumberInput, parseFormattedNumber } from '../../utils/formatters';
@@ -155,9 +155,11 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-md overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-md overflow-hidden max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
           <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Package className="w-5 h-5 text-indigo-600" />
             {isEdit ? 'Edit Produk' : 'Tambah Produk Baru'}
@@ -167,7 +169,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-3 text-xs overflow-y-auto">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-4 sm:p-5 space-y-3 text-xs overflow-y-auto flex-1">
           {isEdit && (
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Foto Produk</label>
@@ -344,19 +347,24 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             </p>
           )}
 
-          <div className="pt-3 flex justify-end gap-2">
+          </div>
+
+          <div 
+            className="p-3.5 sm:p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/70 flex justify-end gap-2 shrink-0"
+            style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+          >
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold disabled:opacity-50 cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+              className="flex-1 sm:flex-none justify-center px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

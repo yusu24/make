@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { 
+import {
   Receipt,
   Search,
   Filter,
@@ -16,7 +16,7 @@ import {
   Banknote,
   CheckCircle2,
   AlertCircle,
-  BarChart3,
+  BarChart2,
   Layers,
   Scale,
   BookOpen,
@@ -29,7 +29,7 @@ import {
   Sparkles,
   Package,
   ChevronRight
-} from 'lucide-react';
+} from '@/constants/icons';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import { 
   JasaInvoice, 
@@ -45,6 +45,7 @@ import { formatRupiah } from '../data/mockData';
 import usePagination from '../../../../hooks/usePagination';
 import RetailPagination from '../../../retail/components/RetailPagination';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { jasaApi } from '../services/jasaApi';
 import { useReactToPrint } from 'react-to-print';
 import '../../jasa-print.css';
 import {
@@ -98,21 +99,6 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
   onAddExpense
 }) => {
   const { user } = useAuth();
-  
-  // Accounting Mode: 'simple' (Praktis UMKM) vs 'advanced' (Akuntansi Lengkap SAK EMKM)
-  const [accountingMode, setAccountingMode] = useState<'simple' | 'advanced'>(() => {
-    const saved = localStorage.getItem('bizora_accounting_mode');
-    return saved === 'advanced' ? 'advanced' : 'simple';
-  });
-
-  const handleModeChange = (mode: 'simple' | 'advanced') => {
-    setAccountingMode(mode);
-    localStorage.setItem('bizora_accounting_mode', mode);
-    if (mode === 'simple' && (activeTab === 'payables' || activeTab === 'accounts' || activeTab === 'balance_sheet' || activeTab === 'journal')) {
-      setActiveTab('invoices');
-    }
-  };
-
   const [activeTab, setActiveTab] = useState<'invoices' | 'expenses' | 'summary' | 'payables' | 'accounts' | 'balance_sheet' | 'journal'>(initialTab);
 
   useEffect(() => {
@@ -155,43 +141,29 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     notes: ''
   });
 
+  // Tenant-scoped storage keys
+  const tenantKey = user?.tenant_id ? String(user.tenant_id) : (user?.id ? String(user.id) : 'default');
+  const payablesStorageKey = `bizora_jasa_payables_${tenantKey}`;
+  const accountsStorageKey = `bizora_jasa_accounts_${tenantKey}`;
+
+  // Clean up legacy unscoped keys
+  useEffect(() => {
+    localStorage.removeItem('bizora_jasa_payables');
+    localStorage.removeItem('bizora_jasa_accounts');
+  }, []);
+
   // --- Accounts Payable (Hutang Supplier) State ---
   const [payables, setPayables] = useState<JasaPayable[]>(() => {
-    const saved = localStorage.getItem('bizora_jasa_payables');
+    const saved = localStorage.getItem(payablesStorageKey);
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { console.error(e); }
     }
-    return [
-      {
-        id: 'AP-2026-001',
-        supplierName: 'PT Mega Auto Spareparts',
-        invoiceNumber: 'INV-SPL/2026/089',
-        issueDate: '2026-08-15',
-        dueDate: '2026-09-15',
-        totalAmount: 4800000,
-        paidAmount: 2000000,
-        status: 'Dibayar Sebagian',
-        category: 'Belanja Suku Cadang',
-        notes: 'Termin 30 hari - Pengadaan Kampas Rem & Busi'
-      },
-      {
-        id: 'AP-2026-002',
-        supplierName: 'CV Sumber Dingin Teknik',
-        invoiceNumber: 'SDT-FAK/8821',
-        issueDate: '2026-08-20',
-        dueDate: '2026-09-20',
-        totalAmount: 3200000,
-        paidAmount: 0,
-        status: 'Belum Dibayar',
-        category: 'Material & Freon AC',
-        notes: 'Freon R32 5 Tabung & Pipa Tembaga'
-      }
-    ];
+    return [];
   });
 
   const savePayables = (updated: JasaPayable[]) => {
     setPayables(updated);
-    localStorage.setItem('bizora_jasa_payables', JSON.stringify(updated));
+    localStorage.setItem(payablesStorageKey, JSON.stringify(updated));
   };
 
   const [payableSearch, setPayableSearch] = useState('');
@@ -209,17 +181,61 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
   // --- Multi Kas & Bank Accounts State ---
   const [accounts, setAccounts] = useState<FinancialAccount[]>(() => {
-    const saved = localStorage.getItem('bizora_jasa_accounts');
+    const saved = localStorage.getItem(accountsStorageKey);
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { console.error(e); }
     }
-    return INITIAL_ACCOUNTS;
+    return [];
   });
 
   const saveAccounts = (updated: FinancialAccount[]) => {
     setAccounts(updated);
-    localStorage.setItem('bizora_jasa_accounts', JSON.stringify(updated));
+    localStorage.setItem(accountsStorageKey, JSON.stringify(updated));
   };
+
+  useEffect(() => {
+    const loadFinancialData = async () => {
+      try {
+        const [payablesData, accountsData] = await Promise.all([
+          jasaApi.getPayables().catch(() => []),
+          jasaApi.getAccounts().catch(() => [])
+        ]);
+        if (Array.isArray(payablesData)) {
+          const mapped: JasaPayable[] = payablesData.map((p: any) => ({
+            id: p.payable_number || String(p.id),
+            supplierName: p.vendor_name || '',
+            invoiceNumber: p.payable_number || '',
+            issueDate: p.created_at ? p.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10),
+            dueDate: p.due_date ? p.due_date.slice(0, 10) : new Date().toISOString().slice(0, 10),
+            totalAmount: Number(p.amount || 0),
+            paidAmount: Number(p.paid_amount || 0),
+            status: (p.status || 'Belum Dibayar') as PayableStatus,
+            category: 'Belanja Suku Cadang',
+            notes: p.notes || ''
+          }));
+          setPayables(mapped);
+          localStorage.setItem(payablesStorageKey, JSON.stringify(mapped));
+        }
+
+        if (Array.isArray(accountsData)) {
+          const colors = ['emerald', 'blue', 'indigo', 'amber', 'purple', 'teal'];
+          const mappedAccs: FinancialAccount[] = accountsData.map((a: any, idx: number) => ({
+            id: String(a.id),
+            name: a.name || 'Kas',
+            type: a.type === 'Kas' ? 'Kas Tunai' : (a.type === 'Bank' ? 'Rekening Bank' : 'E-Wallet / QRIS'),
+            accountNumber: a.account_number || '',
+            balance: Number(a.balance || 0),
+            color: colors[idx % colors.length]
+          }));
+          setAccounts(mappedAccs);
+          localStorage.setItem(accountsStorageKey, JSON.stringify(mappedAccs));
+        }
+      } catch (err) {
+        console.warn('Failed loading finance data from backend:', err);
+      }
+    };
+    loadFinancialData();
+  }, [payablesStorageKey, accountsStorageKey]);
 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [newAccount, setNewAccount] = useState({
@@ -618,8 +634,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     e.preventDefault();
     if (!newPayable.supplierName || newPayable.totalAmount <= 0) return;
 
+    const payableNo = 'AP-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-4);
     const created: JasaPayable = {
-      id: 'AP-' + new Date().getFullYear() + '-' + String(payables.length + 1).padStart(3, '0'),
+      id: payableNo,
       supplierName: newPayable.supplierName,
       invoiceNumber: newPayable.invoiceNumber || 'INV-VND/' + Date.now(),
       issueDate: newPayable.issueDate,
@@ -632,6 +649,16 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     };
 
     savePayables([created, ...payables]);
+    jasaApi.storePayable({
+      payable_number: created.id,
+      vendor_name: created.supplierName,
+      description: created.notes || `Pembelian ${created.category}`,
+      amount: created.totalAmount,
+      due_date: created.dueDate,
+      status: 'Belum Lunas',
+      notes: created.notes
+    }).catch(err => console.warn('Backend storePayable fallback to local:', err));
+
     setShowAddPayable(false);
     setNewPayable({
       supplierName: '',
@@ -650,6 +677,10 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       if (p.id === payableId) {
         const newPaid = Math.min(p.totalAmount, (p.paidAmount || 0) + payAmount);
         const newStatus: PayableStatus = newPaid >= p.totalAmount ? 'Lunas' : 'Dibayar Sebagian';
+        jasaApi.updatePayable(payableId, {
+          paid_amount: newPaid,
+          status: newPaid >= p.totalAmount ? 'Lunas' : 'Dibayar Sebagian'
+        }).catch(err => console.warn('Backend updatePayable fallback to local:', err));
         return { ...p, paidAmount: newPaid, status: newStatus };
       }
       return p;
@@ -673,6 +704,13 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     };
 
     saveAccounts([...accounts, acc]);
+    jasaApi.storeAccount({
+      name: acc.name,
+      type: acc.type === 'Kas Tunai' ? 'Kas' : (acc.type === 'Rekening Bank' ? 'Bank' : 'E-Wallet'),
+      account_number: acc.accountNumber,
+      balance: acc.balance
+    }).catch(err => console.warn('Backend storeAccount fallback to local:', err));
+
     setShowAddAccount(false);
     setNewAccount({ name: '', type: 'Rekening Bank', accountNumber: '', balance: 0 });
   };
@@ -692,6 +730,17 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       }
       return acc;
     });
+
+    const fromAcc = accounts.find(a => a.id === transferData.fromAccountId);
+    const toAcc = accounts.find(a => a.id === transferData.toAccountId);
+    if (fromAcc && toAcc && !isNaN(Number(fromAcc.id)) && !isNaN(Number(toAcc.id))) {
+      jasaApi.transferAccount({
+        from_account_id: Number(fromAcc.id),
+        to_account_id: Number(toAcc.id),
+        amount: transferData.amount,
+        notes: transferData.notes
+      }).catch(err => console.warn('Backend transferAccount fallback to local:', err));
+    }
 
     saveAccounts(updated);
     setShowTransferModal(false);
@@ -720,126 +769,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
   };
 
   return (
-    <div className="space-y-5">
-      {/* Top Header with Progressive Accounting Mode Switcher */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Financial Hub</span>
-              <span className={'px-2 py-0.5 rounded-md text-[10px] font-extrabold border ' + (accountingMode === 'simple' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200')}>
-                {accountingMode === 'simple' ? 'Mode Praktis UMKM' : 'Mode Akuntansi SAK EMKM'}
-              </span>
-            </div>
-            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mt-0.5">
-              <Wallet className="w-5 h-5 text-blue-600" />
-              <span>Manajemen Keuangan & Kas Terpadu</span>
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {accountingMode === 'simple' 
-                ? 'Pencatatan kas masuk & keluar praktis, pantau piutang konsumen, serta arus laba rugi instan.'
-                : 'Sistem akuntansi terintegrasi standar SAK EMKM: AR/AP, multi-rekening bank, neraca saldo, dan jurnal otomatis.'
-              }
-            </p>
-          </div>
-
-          {/* Mode Switcher Toggle Pill */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button
-                type="button"
-                onClick={() => handleModeChange('simple')}
-                className={'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ' + (accountingMode === 'simple' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-500 hover:text-slate-800')}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Mode Praktis</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleModeChange('advanced')}
-                className={'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ' + (accountingMode === 'advanced' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800')}
-              >
-                <Scale className="w-3.5 h-3.5" />
-                <span>Akuntansi Lengkap</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Sub-Navigation Tabs based on Accounting Mode */}
-        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto pb-1">
-          {/* Core Tabs (Available in both modes) */}
-          <button
-            onClick={() => setActiveTab('invoices')}
-            className={'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ' + (activeTab === 'invoices' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100')}
-          >
-            <Receipt className="w-3.5 h-3.5" />
-            <span>Tagihan & Piutang {accountingMode === 'advanced' ? '(AR)' : ''}</span>
-            {totalReceivables > 0 && (
-              <span className={'w-2 h-2 rounded-full ' + (activeTab === 'invoices' ? 'bg-white animate-pulse' : 'bg-amber-500 animate-pulse')} />
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('expenses')}
-            className={'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ' + (activeTab === 'expenses' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100')}
-          >
-            <Banknote className="w-3.5 h-3.5" />
-            <span>Buku Kas & Pengeluaran</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('summary')}
-            className={'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ' + (activeTab === 'summary' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100')}
-          >
-            <BarChart3 className="w-3.5 h-3.5" />
-            <span>Laba Rugi {accountingMode === 'advanced' ? '(P&L)' : 'Simpel'}</span>
-          </button>
-
-          {/* Advanced SAK EMKM Tabs */}
-          {accountingMode === 'advanced' && (
-            <>
-              <div className="h-5 w-px bg-slate-200 mx-1 shrink-0" />
-
-              <button
-                onClick={() => setActiveTab('payables')}
-                className={'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ' + (activeTab === 'payables' ? 'bg-purple-600 text-white shadow-xs' : 'bg-purple-50 text-purple-700 hover:bg-purple-100')}
-              >
-                <Package className="w-3.5 h-3.5" />
-                <span>Hutang Supplier (AP)</span>
-                {totalPayables > 0 && (
-                  <span className={'w-2 h-2 rounded-full ' + (activeTab === 'payables' ? 'bg-white' : 'bg-rose-500 animate-pulse')} />
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab('accounts')}
-                className={'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ' + (activeTab === 'accounts' ? 'bg-purple-600 text-white shadow-xs' : 'bg-purple-50 text-purple-700 hover:bg-purple-100')}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>Multi Kas & Rekening Bank</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('balance_sheet')}
-                className={'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ' + (activeTab === 'balance_sheet' ? 'bg-purple-600 text-white shadow-xs' : 'bg-purple-50 text-purple-700 hover:bg-purple-100')}
-              >
-                <Scale className="w-3.5 h-3.5" />
-                <span>Laporan Neraca SAK EMKM</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('journal')}
-                className={'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ' + (activeTab === 'journal' ? 'bg-purple-600 text-white shadow-xs' : 'bg-purple-50 text-purple-700 hover:bg-purple-100')}
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Jurnal Umum Otomatis</span>
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
+    <div className="space-y-4">
       {/* ========================================================================= */}
       {/* TAB 1: TAGIHAN & PIUTANG (INVOICES / AR)                                 */}
       {/* ========================================================================= */}
@@ -847,44 +777,44 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-all flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-1">Total Kas Masuk (Lunas)</p>
-                <h4 className="text-lg font-bold text-slate-900">{formatRupiah(totalRevenueLunas)}</h4>
-                <div className="flex items-center gap-1 mt-1 text-[10px] font-semibold text-emerald-600">
-                  <ArrowUpRight className="w-3 h-3" />
+                <p className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider mb-1.5">Total Kas Masuk (Lunas)</p>
+                <h4 className="text-2xl font-extrabold font-['Plus_Jakarta_Sans'] text-slate-900 tracking-tight">{formatRupiah(totalRevenueLunas)}</h4>
+                <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-emerald-600">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
                   <span>Pelunasan Terverifikasi</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 shrink-0">
                 <Wallet className="w-5 h-5 text-emerald-600" />
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-all flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-1">Piutang Belum Tertagih</p>
-                <h4 className="text-lg font-bold text-rose-600">{formatRupiah(totalReceivables)}</h4>
-                <div className="flex items-center gap-1 mt-1 text-[10px] font-semibold text-amber-600">
-                  <Clock className="w-3 h-3" />
+                <p className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider mb-1.5">Piutang Belum Tertagih</p>
+                <h4 className="text-2xl font-extrabold font-['Plus_Jakarta_Sans'] text-rose-600 tracking-tight">{formatRupiah(totalReceivables)}</h4>
+                <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-amber-600">
+                  <Clock className="w-3.5 h-3.5" />
                   <span>Menunggu Pelunasan Klien</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100 shrink-0">
                 <CreditCard className="w-5 h-5 text-amber-600" />
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-all flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-1">Total Faktur Diterbitkan</p>
-                <h4 className="text-lg font-bold text-slate-900">{formatRupiah(totalInvoiced)}</h4>
-                <div className="flex items-center gap-1 mt-1 text-[10px] font-semibold text-blue-600">
-                  <Receipt className="w-3 h-3" />
+                <p className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider mb-1.5">Total Faktur Diterbitkan</p>
+                <h4 className="text-2xl font-semibold font-['Plus_Jakarta_Sans'] text-slate-900 tracking-tight">{formatRupiah(totalInvoiced)}</h4>
+                <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-blue-600">
+                  <Receipt className="w-3.5 h-3.5" />
                   <span>{invoices.length} Faktur Tercatat</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 shrink-0">
                 <Layers className="w-5 h-5 text-blue-600" />
               </div>
             </div>
@@ -1053,7 +983,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 shrink-0">
                     <Banknote className="w-5 h-5 text-blue-600" />
                   </div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest leading-tight">Saldo Kas Bersih<br/>(Buku Kas)</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider leading-tight">Saldo Kas Bersih</p>
                 </div>
                 <h4 className="text-3xl font-bold text-slate-900 mb-4">{formatRupiah(saldoKasBersih)}</h4>
                 
@@ -1072,7 +1002,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
             {/* Expenses Chart */}
             <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm lg:col-span-2">
-              <h4 className="text-sm font-semibold text-slate-900 mb-4">Distribusi Pengeluaran per Kategori</h4>
+              <h4 className="text-sm font-semibold text-slate-900 mb-4">Distribusi Pengeluaran</h4>
               <div className="h-44 w-full">
                 {chartData.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-xs text-slate-400">
@@ -1149,7 +1079,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                 className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Catat Transaksi Kas</span>
+                <span>Catat Transaksi Kas</span>
               </button>
 
               <button
@@ -1178,17 +1108,18 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
-                    <th className="py-3 px-4">Tipe & Tanggal</th>
-                    <th className="py-3 px-4">Kategori & Keterangan</th>
+                    <th className="py-3 px-4">Tipe &amp; Tanggal</th>
+                    <th className="py-3 px-4">Kategori &amp; Keterangan</th>
                     <th className="py-3 px-4">Ref SPK / Order</th>
                     <th className="py-3 px-4">Dicatat Oleh</th>
-                    <th className="py-3 px-4 text-right">Nominal</th>
+                    <th className="py-3 px-4 text-right text-emerald-600">Masuk (+)</th>
+                    <th className="py-3 px-4 text-right text-rose-600">Keluar (-)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
                   {expensePagination.paginatedData.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-12 text-center text-slate-400">
+                      <td colSpan={6} className="py-12 text-center text-slate-400">
                         <Banknote className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                         <p className="font-semibold text-slate-600 text-sm">Belum ada catatan transaksi kas</p>
                         <p className="text-xs text-slate-400 mt-0.5">Gunakan tombol "+ Catat Transaksi Kas" untuk membukukan pengeluaran atau pemasukan.</p>
@@ -1213,8 +1144,11 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                         <td className="py-3.5 px-4 text-slate-600">
                           {exp.recordedBy}
                         </td>
-                        <td className={'py-3.5 px-4 text-right font-bold ' + (exp.type === 'Pemasukan' ? 'text-emerald-600' : 'text-rose-600')}>
-                          {exp.type === 'Pemasukan' ? '+' : '-'}{formatRupiah(exp.amount)}
+                        <td className="py-3.5 px-4 text-right font-bold text-emerald-600">
+                          {exp.type === 'Pemasukan' ? formatRupiah(exp.amount) : '-'}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-bold text-rose-600">
+                          {exp.type === 'Pengeluaran' ? formatRupiah(exp.amount) : '-'}
                         </td>
                       </tr>
                     ))
@@ -1246,88 +1180,146 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       {/* ========================================================================= */}
       {activeTab === 'summary' && (
         <div className="space-y-4 animate-in fade-in duration-200">
-          {/* Real-time Profit & Loss Bento Cards */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Statement</span>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center mt-0.5">
-                  <BarChart3 className="w-4 h-4 mr-1.5 text-blue-600" /> Ringkasan Laba Rugi Operasional Riil
-                </h3>
+          {/* Statement Header Action Bar */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-semibold font-['Plus_Jakarta_Sans'] text-slate-900 flex items-center">
+                <BarChart2 className="w-5 h-5 mr-2 text-blue-600" /> Ringkasan Laba Rugi Riil
+              </h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200 font-['Inter']">
+                Margin Kotor: {profitMargin}%
+              </span>
+              <button
+                onClick={handlePrintPnl}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer font-['Inter']"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Cetak Laporan PDF</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 4 Standalone Modular PnL KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider">Total Penerimaan Kas</span>
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Wallet className="w-4 h-4" />
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200">
-                  Margin Kotor: {profitMargin}%
-                </span>
-                <button
-                  onClick={handlePrintPnl}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>Cetak Laporan PDF</span>
-                </button>
+              <div>
+                <h4 className="text-2xl font-extrabold font-['Plus_Jakarta_Sans'] text-slate-900 tracking-tight">{formatRupiah(actualRevenue)}</h4>
+                <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-emerald-600">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <span>Omset Kas Masuk</span>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Total Penerimaan Kas</p>
-                <p className="text-sm font-bold text-slate-900">{formatRupiah(actualRevenue)}</p>
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider">HPP Material & Part</span>
+                <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Package className="w-4 h-4" />
+                </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">HPP Material & Sparepart</p>
-                <p className="text-sm font-bold text-rose-600">-{formatRupiah(actualPartsCost)}</p>
+              <div>
+                <h4 className="text-2xl font-extrabold font-['Plus_Jakarta_Sans'] text-rose-600 tracking-tight">-{formatRupiah(actualPartsCost)}</h4>
+                <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-slate-500">
+                  <span>Beban Pokok Material</span>
+                </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Komisi & Beban Operasional</p>
-                <p className="text-sm font-bold text-rose-600">-{formatRupiah(actualTechCommission + actualOtherExpenses)}</p>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider">Komisi & Operasional</span>
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <ArrowDownRight className="w-4 h-4" />
+                </div>
               </div>
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 shadow-sm">
-                <p className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider mb-1">Laba Operasional Bersih</p>
-                <p className="text-sm font-bold text-emerald-700">{actualNetProfit >= 0 ? '+' : ''}{formatRupiah(actualNetProfit)}</p>
+              <div>
+                <h4 className="text-2xl font-extrabold font-['Plus_Jakarta_Sans'] text-amber-600 tracking-tight">-{formatRupiah(actualTechCommission + actualOtherExpenses)}</h4>
+                <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-slate-500">
+                  <span>Teknisi & Utilitas</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border border-emerald-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group bg-gradient-to-br from-white to-emerald-50/20">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold font-['Inter'] text-emerald-800 uppercase tracking-wider">Laba Bersih Riil</span>
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+              </div>
+              <div>
+                <h4 className={`text-2xl font-extrabold font-['Plus_Jakarta_Sans'] tracking-tight ${actualNetProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                  {actualNetProfit >= 0 ? '+' : ''}{formatRupiah(actualNetProfit)}
+                </h4>
+                <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-emerald-600">
+                  <span>Margin Bersih: {profitMargin}%</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Detailed Financial Breakdown Table */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Struktur Arus Kas & Posisi Finansial</h4>
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Struktur Arus Kas &amp; Posisi Finansial</h4>
             
             <table className="w-full text-xs text-left">
+              <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th className="py-2.5 px-3">Keterangan</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-600">Masuk (+)</th>
+                  <th className="py-2.5 px-3 text-right text-rose-600">Keluar (-)</th>
+                </tr>
+              </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 <tr className="bg-slate-50/60 font-semibold">
                   <td className="py-2.5 px-3 text-slate-900">A. PENDAPATAN OPERASIONAL MASUK</td>
-                  <td className="py-2.5 px-3 text-right text-emerald-700 font-bold">+{formatRupiah(actualRevenue)}</td>
+                  <td className="py-2.5 px-3 text-right text-emerald-700 font-bold">{formatRupiah(actualRevenue)}</td>
+                  <td className="py-2.5 px-3 text-right text-slate-300">-</td>
                 </tr>
                 <tr>
-                  <td className="py-2 px-6 text-slate-600">• Pendapatan Bersih dari Jasa & SPK Lunas</td>
-                  <td className="py-2 px-3 text-right text-slate-900">+{formatRupiah(actualRevenue * 0.65)}</td>
+                  <td className="py-2 px-6 text-slate-600">• Pendapatan Bersih dari Jasa &amp; SPK Lunas</td>
+                  <td className="py-2 px-3 text-right text-slate-900">{formatRupiah(actualRevenue * 0.65)}</td>
+                  <td className="py-2 px-3 text-right text-slate-300">-</td>
                 </tr>
                 <tr>
-                  <td className="py-2 px-6 text-slate-600">• Penjualan Suku Cadang & Material</td>
-                  <td className="py-2 px-3 text-right text-slate-900">+{formatRupiah(actualRevenue * 0.35)}</td>
+                  <td className="py-2 px-6 text-slate-600">• Penjualan Suku Cadang &amp; Material</td>
+                  <td className="py-2 px-3 text-right text-slate-900">{formatRupiah(actualRevenue * 0.35)}</td>
+                  <td className="py-2 px-3 text-right text-slate-300">-</td>
                 </tr>
 
                 <tr className="bg-slate-50/60 font-semibold">
-                  <td className="py-2.5 px-3 text-slate-900">B. BIAYA POKOK PENDAPATAN & OPERASIONAL (BEBAN)</td>
-                  <td className="py-2.5 px-3 text-right text-rose-700 font-bold">-{formatRupiah(actualPartsCost + actualTechCommission + actualOtherExpenses)}</td>
+                  <td className="py-2.5 px-3 text-slate-900">B. BIAYA POKOK PENDAPATAN &amp; OPERASIONAL (BEBAN)</td>
+                  <td className="py-2.5 px-3 text-right text-slate-300">-</td>
+                  <td className="py-2.5 px-3 text-right text-rose-700 font-bold">{formatRupiah(actualPartsCost + actualTechCommission + actualOtherExpenses)}</td>
                 </tr>
                 <tr>
                   <td className="py-2 px-6 text-slate-600">• Belanja Suku Cadang / Material</td>
-                  <td className="py-2 px-3 text-right text-rose-600">-{formatRupiah(actualPartsCost)}</td>
+                  <td className="py-2 px-3 text-right text-slate-300">-</td>
+                  <td className="py-2 px-3 text-right text-rose-600">{formatRupiah(actualPartsCost)}</td>
                 </tr>
                 <tr>
                   <td className="py-2 px-6 text-slate-600">• Bagi Hasil / Komisi Upah Teknisi</td>
-                  <td className="py-2 px-3 text-right text-rose-600">-{formatRupiah(actualTechCommission)}</td>
+                  <td className="py-2 px-3 text-right text-slate-300">-</td>
+                  <td className="py-2 px-3 text-right text-rose-600">{formatRupiah(actualTechCommission)}</td>
                 </tr>
                 <tr>
-                  <td className="py-2 px-6 text-slate-600">• Biaya Transportasi & Operasional Kantor</td>
-                  <td className="py-2 px-3 text-right text-rose-600">-{formatRupiah(actualOtherExpenses)}</td>
+                  <td className="py-2 px-6 text-slate-600">• Biaya Transportasi &amp; Operasional Kantor</td>
+                  <td className="py-2 px-3 text-right text-slate-300">-</td>
+                  <td className="py-2 px-3 text-right text-rose-600">{formatRupiah(actualOtherExpenses)}</td>
                 </tr>
 
                 <tr className="bg-emerald-50/50 font-bold border-t-2 border-slate-300">
                   <td className="py-3 px-3 text-emerald-950 font-extrabold text-sm">LABA OPERASIONAL BERSIH (NET PROFIT)</td>
-                  <td className="py-3 px-3 text-right text-emerald-700 font-extrabold text-sm">
+                  <td colSpan={2} className="py-3 px-3 text-right font-extrabold text-sm" style={{ color: actualNetProfit >= 0 ? '#047857' : '#dc2626' }}>
                     {actualNetProfit >= 0 ? '+' : ''}{formatRupiah(actualNetProfit)} ({profitMargin}%)
                   </td>
                 </tr>
@@ -1338,9 +1330,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 4: HUTANG USAHA SUPPLIER (ACCOUNTS PAYABLE / AP) - PRO MODE           */}
+      {/* TAB 4: HUTANG USAHA SUPPLIER (ACCOUNTS PAYABLE / AP)                      */}
       {/* ========================================================================= */}
-      {activeTab === 'payables' && accountingMode === 'advanced' && (
+      {activeTab === 'payables' && (
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Payables Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1423,7 +1415,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                 className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Catat Hutang Supplier</span>
+                <span>Catat Hutang Supplier</span>
               </button>
 
               <button
@@ -1548,9 +1540,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 5: MULTI KAS & REKENING BANK - PRO MODE                               */}
+      {/* TAB 5: MULTI KAS & REKENING BANK                                          */}
       {/* ========================================================================= */}
-      {activeTab === 'accounts' && accountingMode === 'advanced' && (
+      {activeTab === 'accounts' && (
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Header Action */}
           <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
@@ -1571,7 +1563,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                 className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Tambah Akun Bank / Kas</span>
+                <span>Tambah Akun Bank / Kas</span>
               </button>
             </div>
           </div>
@@ -1620,9 +1612,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 6: LAPORAN NERACA KEUANGAN (BALANCE SHEET SAK EMKM) - PRO MODE        */}
+      {/* TAB 6: LAPORAN NERACA KEUANGAN (BALANCE SHEET SAK EMKM)                   */}
       {/* ========================================================================= */}
-      {activeTab === 'balance_sheet' && accountingMode === 'advanced' && (
+      {activeTab === 'balance_sheet' && (
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Header Action */}
           <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
@@ -1777,9 +1769,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 7: JURNAL UMUM OTOMATIS (GENERAL JOURNAL) - PRO MODE                  */}
+      {/* TAB 7: JURNAL UMUM OTOMATIS (GENERAL JOURNAL)                             */}
       {/* ========================================================================= */}
-      {activeTab === 'journal' && accountingMode === 'advanced' && (
+      {activeTab === 'journal' && (
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Header Action */}
           <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">

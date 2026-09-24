@@ -17,7 +17,7 @@ class ExpireSessionOnDateChange
     {
         $token = $request->user()?->currentAccessToken();
 
-        if ($token && !$token->created_at->isToday()) {
+        if ($token && $token->created_at && method_exists($token->created_at, 'isToday') && !$token->created_at->isToday()) {
             $token->delete();
 
             return response()->json([

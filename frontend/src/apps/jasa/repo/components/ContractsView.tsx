@@ -1,29 +1,28 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  FileText, 
-  Plus, 
-  Search, 
-  Filter, 
-  Calendar as CalendarIcon, 
-  Clock, 
-  Building2, 
-  AlertTriangle, 
-  CheckCircle2, 
-  ChevronLeft, 
-  ChevronRight, 
-  ArrowRight, 
-  UserCheck, 
-  Wrench, 
-  ShieldCheck, 
-  Sparkles, 
+import {
+  FileText,
+  Plus,
+  Search,
+  Filter,
+  Calendar as CalendarIcon,
+  Clock,
+  Building2,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  UserCheck,
+  Wrench,
+  ShieldCheck,
+  Sparkles,
   X,
   CalendarCheck,
   Zap,
   Phone,
   Mail,
-  MapPin,
-  ListFilter
-} from 'lucide-react';
+  MapPin
+} from '@/constants/icons';
 import { JasaContract, ContractStatus, ContractFrequency, ServiceCategory, Technician, WorkOrder } from '../types';
 import { formatRupiah, formatNumberInput, parseNumberInput } from '../data/mockData';
 import usePagination from '../../../../hooks/usePagination';
@@ -306,7 +305,7 @@ export const ContractsView: React.FC<ContractsViewProps> = ({
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <ListFilter className="w-3.5 h-3.5" />
+                <Filter className="w-3.5 h-3.5" />
                 <span>Tabel Kontrak</span>
               </button>
               <button

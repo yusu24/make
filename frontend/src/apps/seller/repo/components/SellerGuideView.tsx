@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
-import { 
-  BookOpen, 
-  ShoppingBag, 
-  Package, 
-  Truck, 
-  Sparkles, 
-  Layers, 
-  CheckCircle2, 
-  RefreshCw, 
-  ArrowRight, 
-  Globe, 
+import {
+  BookOpen,
+  ShoppingBag,
+  Package,
+  Truck,
+  Sparkles,
+  Layers,
+  CheckCircle2,
+  RefreshCw,
+  ArrowRight,
+  Globe,
   HelpCircle,
   Lightbulb,
   ShieldCheck,
   TrendingUp,
-  BarChart3
-} from 'lucide-react';
+  BarChart2
+} from '@/constants/icons';
 
 interface SellerGuideViewProps {
   onNavigateTab?: (tab: string) => void;
@@ -52,7 +52,7 @@ export const SellerGuideView: React.FC<SellerGuideViewProps> = ({ onNavigateTab 
           { id: 'channels', label: '2. Integrasi Toko Marketplace', icon: Globe },
           { id: 'shipping', label: '3. Cetak Resi & Pengiriman', icon: Truck },
           { id: 'stock', label: '4. Sinkronisasi Stok Gudang', icon: Package },
-          { id: 'analytics', label: '5. Analitik Laba & Performa', icon: BarChart3 },
+          { id: 'analytics', label: '5. Analitik Laba & Performa', icon: BarChart2 },
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -212,7 +212,7 @@ export const SellerGuideView: React.FC<SellerGuideViewProps> = ({ onNavigateTab 
         <div className="space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
             <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2.5">
-              <BarChart3 className="w-6 h-6 text-purple-600" />
+              <BarChart2 className="w-6 h-6 text-purple-600" />
               <span>Laporan Finansial Bersih Per Channel</span>
             </h2>
 

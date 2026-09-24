@@ -17,6 +17,7 @@ class LandingSetting extends Model
         'show_testimonials',
         'admin_logo_path',
         'landing_logo_path',
+        'favicon_path',
         'featured_categories',
         'bank_name',
         'bank_account_no',
@@ -45,7 +46,8 @@ class LandingSetting extends Model
 
     protected $appends = [
         'admin_logo_url',
-        'landing_logo_url'
+        'landing_logo_url',
+        'favicon_url'
     ];
 
     protected $casts = [
@@ -71,5 +73,10 @@ class LandingSetting extends Model
     public function getLandingLogoUrlAttribute()
     {
         return $this->landing_logo_path ? url('storage/' . $this->landing_logo_path) : null;
+    }
+
+    public function getFaviconUrlAttribute()
+    {
+        return $this->favicon_path ? url('storage/' . $this->favicon_path) : null;
     }
 }

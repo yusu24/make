@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useBudidayaTerms } from './hooks/useBudidayaTerms'
 import { useAuth } from '../../contexts/AuthContext'
-import { Sparkles } from 'lucide-react'
+import { Sparkles } from '@/constants/icons'
+import bizoraLogo from '../../assets/bizora-logo.png'
 import './budidaya.css'
 
 const getNavItems = (terms) => [
@@ -47,28 +48,125 @@ const getNavItems = (terms) => [
   },
   {
     type: 'dropdown',
+    id: 'karyawan',
+    label: 'Karyawan & Akses',
+    icon: 'badge',
+    children: [
+      { label: 'Manajemen Pengguna', icon: 'group', path: '/budidaya/users' },
+      { label: 'Peran & Izin', icon: 'verified_user', path: '/budidaya/roles' },
+    ],
+  },
+  {
+    type: 'dropdown',
     id: 'pengaturan',
-    label: 'Pengaturan & Tim',
+    label: 'Pengaturan & Sistem',
     icon: 'tune',
     children: [
-      { label: 'Manajemen Pengguna', icon: 'group',       path: '/budidaya/users' },
-      { label: 'Peran & Izin',       icon: 'verified_user', path: '/budidaya/roles' },
-      { label: 'Buku Panduan & SOP', icon: 'menu_book',   path: '/budidaya/guide' },
-      { label: 'Integrasi API & Webhook', icon: 'api',     path: '/budidaya/developer-api' },
-      { label: 'Paket Langganan',    icon: 'credit_card',   path: '/budidaya/subscription' },
-      { label: 'Pengaturan Profil',  icon: 'settings',      path: '/budidaya/settings' },
-      { label: 'Pusat Bantuan',      icon: 'help',          path: '/budidaya/support' },
-      { label: 'Backup Data',        icon: 'backup',        path: '/budidaya/backup' },
+      { label: 'Pengaturan Profil', icon: 'settings', path: '/budidaya/settings' },
+      { label: 'Backup Data', icon: 'backup', path: '/budidaya/backup' },
+      { label: 'Integrasi API & Webhook', icon: 'api', path: '/budidaya/developer-api' },
+    ],
+  },
+  {
+    type: 'dropdown',
+    id: 'bantuan',
+    label: 'Bantuan & Akun',
+    icon: 'help',
+    children: [
+      { label: 'Buku Panduan & SOP', icon: 'menu_book', path: '/budidaya/guide' },
+      { label: 'Paket Langganan', icon: 'credit_card', path: '/budidaya/subscription' },
+      { label: 'Pusat Bantuan', icon: 'support_agent', path: '/budidaya/support' },
     ],
   },
 ]
 
-export default function BudidayaSidebar({ mobileOpen, onToggle }) {
+function CollapsedGroupFlyout({ group, anchorY, onClose, pathname, currentTab }) {
+  const ref = React.useRef(null)
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        onClose()
+      }
+    }
+    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 50)
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('mousedown', handler)
+    }
+  }, [onClose])
+
+  if (!group) return null
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: 'fixed',
+        left: 72,
+        top: Math.max(8, Math.min(anchorY, window.innerHeight - 300)),
+        zIndex: 1100,
+        minWidth: 200,
+        background: '#ffffff',
+        border: '1px solid #E9F0EC',
+        borderRadius: 12,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+        padding: 6,
+      }}
+    >
+      <div style={{ padding: '6px 12px 8px', fontSize: 11.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #f1f5f9', marginBottom: 4 }}>
+        {group.label}
+      </div>
+      {group.children?.map(child => {
+        const isChildActive = child.tab
+          ? (pathname === '/budidaya/master-data' && currentTab === child.tab)
+          : (pathname === child.path || pathname.startsWith(child.path + '/'))
+
+        return (
+          <NavLink
+            key={child.path}
+            to={child.path}
+            onClick={onClose}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '8px 12px',
+              borderRadius: 8,
+              fontSize: 13,
+              textDecoration: 'none',
+              color: isChildActive ? '#1B4332' : '#334155',
+              background: isChildActive ? '#E8F5ED' : 'transparent',
+              fontWeight: isChildActive ? 700 : 500,
+              transition: 'background 0.15s',
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 16,
+                color: isChildActive ? '#1B4332' : '#64748B',
+                lineHeight: 1,
+              }}
+            >
+              {child.icon}
+            </span>
+            <span>{child.label}</span>
+          </NavLink>
+        )
+      })}
+    </div>
+  )
+}
+
+export default function BudidayaSidebar({ collapsed, mobileOpen, onToggle, onCloseMobile }) {
   const { pathname, search } = useLocation()
   const { user } = useAuth()
   const terms = useBudidayaTerms()
   const navItems = getNavItems(terms)
   const currentTab = new URLSearchParams(search).get('tab') || 'finance'
+  const [openSection, setOpenSection] = useState(null)
+  const [flyoutAnchorY, setFlyoutAnchorY] = useState(60)
 
   // Identify which group contains the current active route
   const activeGroupId = navItems.find(item => 
@@ -85,16 +183,21 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
   useEffect(() => {
     setCollapsedActive(false)
     setExpandedNonActive(null)
+    setOpenSection(null)
   }, [pathname, search])
 
   const toggleGroup = (id) => {
     if (id === activeGroupId) {
-      // Toggle the active group only when user clicks its header/arrow
       setCollapsedActive(prev => !prev)
     } else {
-      // Toggle non-active group (auto-closing other non-active groups)
       setExpandedNonActive(prev => (prev === id ? null : id))
     }
+  }
+
+  const handleGroupIconClick = (id, e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setFlyoutAnchorY(rect.top)
+    setOpenSection(prev => prev === id ? null : id)
   }
 
   const isGroupOpen = (id) => {
@@ -104,71 +207,45 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
     return expandedNonActive === id
   }
 
+  const isMini = mobileOpen ? false : collapsed
+
   return (
     <>
       {/* ─── Sidebar ─── */}
       <aside
-        className={`aq-sidebar ${mobileOpen ? 'aq-sidebar--open' : ''}`}
+        className={`aq-sidebar ${isMini ? 'aq-sidebar--collapsed' : ''} ${mobileOpen ? 'aq-sidebar--open' : ''}`}
         style={{
-          width: 240,
+          width: isMini ? 68 : 240,
           background: '#FFFFFF',
-          borderRight: '1px solid #E9F0EC',
+          borderRight: 'none',
+          boxShadow: 'none',
           display: 'flex',
           flexDirection: 'column',
-          height: '100vh',
+          height: '100%',
+          transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* ── Brand / Logo ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '24px 18px 20px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 0', width: '100%', minHeight: 68, flexShrink: 0, borderBottom: 'none' }}>
           <div
             style={{
               width: 38,
               height: 38,
-              borderRadius: 12,
-              background: '#1B4332',
+              borderRadius: 10,
+              background: '#fff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
+              overflow: 'hidden',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontVariationSettings: "'FILL' 1, 'wght' 500",
-                fontSize: 20,
-                color: '#fff',
-                lineHeight: 1,
-              }}
-            >
-              {terms.brandIcon || (terms.isTanaman ? 'eco' : 'water_drop')}
-            </span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 16,
-                fontWeight: 800,
-                color: '#1B4332',
-                letterSpacing: '-0.3px',
-                lineHeight: 1.2,
-              }}
-            >
-              {terms.brandName || 'AquaGrow'}
-            </span>
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 9.5,
-                fontWeight: 600,
-                color: '#475569',
-                letterSpacing: '0.02em',
-                textTransform: 'none',
-              }}
-            >
-              {terms.brandSub || (terms.isTanaman ? 'Pertanian Pintar' : 'Budidaya Pintar')}
-            </span>
+            <img
+              src={user?.store_icon_url || bizoraLogo}
+              alt="Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           </div>
         </div>
 
@@ -187,6 +264,47 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
           {navItems.map((item) => {
             if (item.type === 'link') {
               const isActive = pathname === item.path || pathname.startsWith(item.path + '/')
+
+              if (isMini) {
+                return (
+                  <div key={item.path} style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '2px 0' }}>
+                    <NavLink
+                      to={item.path}
+                      title={item.label}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 38,
+                        height: 38,
+                        borderRadius: '50%',
+                        textDecoration: 'none',
+                        background: isActive ? '#1B4332' : 'transparent',
+                        color: isActive ? '#ffffff' : '#64748b',
+                        boxShadow: isActive ? '0 2px 6px rgba(27, 67, 50, 0.35)' : 'none',
+                        transition: 'all 0.18s ease',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={e => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = '#F0F7F2';
+                          e.currentTarget.style.color = '#1B4332';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = '#64748b';
+                        }
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 18, lineHeight: 1 }}>
+                        {item.icon}
+                      </span>
+                    </NavLink>
+                  </div>
+                )
+              }
 
               return (
                 <React.Fragment key={item.path}>
@@ -252,7 +370,50 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
 
             if (item.type === 'dropdown') {
               const isExpanded = isGroupOpen(item.id)
-              const hasActiveChild = item.children.some(child => pathname === child.path || pathname.startsWith(child.path + '/'))
+              const hasActiveChild = activeGroupId === item.id
+
+              if (isMini) {
+                const isItemActive = hasActiveChild || openSection === item.id;
+                return (
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '2px 0' }}>
+                    <button
+                      type="button"
+                      onClick={(e) => handleGroupIconClick(item.id, e)}
+                      title={item.label}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 38,
+                        height: 38,
+                        borderRadius: '50%',
+                        border: 'none',
+                        background: isItemActive ? '#1B4332' : 'transparent',
+                        color: isItemActive ? '#ffffff' : '#64748b',
+                        boxShadow: isItemActive ? '0 2px 6px rgba(27, 67, 50, 0.35)' : 'none',
+                        transition: 'all 0.18s ease',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={e => {
+                        if (!isItemActive) {
+                          e.currentTarget.style.background = '#F0F7F2';
+                          e.currentTarget.style.color = '#1B4332';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!isItemActive) {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = '#64748b';
+                        }
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 18, lineHeight: 1 }}>
+                        {item.icon}
+                      </span>
+                    </button>
+                  </div>
+                )
+              }
 
               return (
                 <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -268,7 +429,7 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                       borderRadius: 9999,
                       border: 'none',
                       outline: 'none',
-                      background: hasActiveChild && !isExpanded ? '#E8F5ED' : 'transparent',
+                      background: hasActiveChild ? '#E8F5ED' : 'transparent',
                       color: hasActiveChild ? '#1B4332' : '#475569',
                       fontSize: 13,
                       fontWeight: hasActiveChild ? 700 : 500,
@@ -277,15 +438,15 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                       textAlign: 'left',
                     }}
                     onMouseEnter={e => {
-                      if (!(hasActiveChild && !isExpanded)) {
+                      if (!hasActiveChild) {
                         e.currentTarget.style.background = '#F0F7F2'
                         e.currentTarget.style.color = '#1B4332'
                       }
                     }}
                     onMouseLeave={e => {
-                      if (!(hasActiveChild && !isExpanded)) {
+                      if (!hasActiveChild) {
                         e.currentTarget.style.background = 'transparent'
-                        e.currentTarget.style.color = hasActiveChild ? '#1B4332' : '#475569'
+                        e.currentTarget.style.color = '#475569'
                       }
                     }}
                   >
@@ -295,12 +456,14 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
                           width: 28,
                           height: 28,
                           borderRadius: '50%',
-                          background: hasActiveChild ? '#E8F5ED' : 'transparent',
-                          color: hasActiveChild ? '#1B4332' : '#64748b',
+                          background: hasActiveChild ? '#1B4332' : 'transparent',
+                          color: hasActiveChild ? '#ffffff' : '#64748b',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           flexShrink: 0,
+                          boxShadow: hasActiveChild ? '0 2px 6px rgba(27, 67, 50, 0.35)' : 'none',
+                          transition: 'all 0.18s ease',
                         }}
                       >
                         <span
@@ -410,6 +573,17 @@ export default function BudidayaSidebar({ mobileOpen, onToggle }) {
           })}
         </nav>
       </aside>
+
+      {/* ── Collapsed-rail flyout ── */}
+      {isMini && openSection && (
+        <CollapsedGroupFlyout
+          group={navItems.find(s => s.id === openSection)}
+          anchorY={flyoutAnchorY}
+          onClose={() => setOpenSection(null)}
+          pathname={pathname}
+          currentTab={currentTab}
+        />
+      )}
 
       {/* Mobile overlay */}
       {mobileOpen && (

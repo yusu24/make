@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { KeyRound, Edit3, Trash2 } from 'lucide-react';
+import { KeyRound, Pencil, Trash2, Shield, Plus, X, Loader2 } from '@/constants/icons';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -141,14 +141,14 @@ const CulinaryStaff = () => {
       <div className="kd-content">
         <div className="kd-page-actions">
           <a href="/kuliner/admin/roles" className="kd-btn kd-btn-secondary flex items-center gap-2">
-            ⚙️ Atur Role & Izin
+            <Shield size={15} /> Atur Role & Izin
           </a>
-          <button className="kd-btn kd-btn-primary" onClick={() => {
+          <button className="kd-btn kd-btn-primary flex items-center gap-1.5" onClick={() => {
             setEditingStaff(null);
             setForm({ name: '', email: '', password: '', role: 'cashier', kuliner_role_id: '', phone: '' });
             setShowModal(true);
           }}>
-            + Tambah Staff Baru
+            <Plus size={15} /> Tambah Staff Baru
           </button>
         </div>
         <div className="kd-panel">
@@ -185,23 +185,23 @@ const CulinaryStaff = () => {
                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 uppercase">
                             {member.name.charAt(0)}
                           </div>
-                            <span style={{ color: '#1e293b' }}>{member.name}</span>
+                            <span style={{ color: '#1e293b', fontSize: 12, fontWeight: 400 }}>{member.name}</span>
                         </div>
                       </td>
-                      <td><span className="text-xs text-slate-500">{member.email}</span></td>
+                      <td><span className="text-[12px] font-normal text-slate-500">{member.email}</span></td>
                       <td>
                           <div className="flex flex-row items-center flex-wrap gap-2">
-                            <span className={`badge ${member.role === 'chef' ? 'badge-violet' : 'badge-green'}`}>
-                              {member.role === 'chef' ? '👨‍🍳 Koki / Dapur' : '👩‍💻 Kasir'}
+                            <span className={`badge ${member.role === 'chef' ? 'badge-violet' : 'badge-green'}`} style={{ fontSize: 12, fontWeight: 400 }}>
+                              {member.role === 'chef' ? 'Koki / Dapur' : 'Kasir'}
                             </span>
                             {member.kuliner_role && (
-                              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tight bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                              <span className="text-[12px] font-normal text-amber-600 uppercase tracking-tight bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
                                 {member.kuliner_role.name}
                               </span>
                             )}
                           </div>
                       </td>
-                      <td><span className="text-xs text-slate-500">{member.phone || '-'}</span></td>
+                      <td><span className="text-[12px] font-normal text-slate-500">{member.phone || '-'}</span></td>
                       <td style={{ textAlign: 'right' }}>
                         <div className="flex justify-end gap-2">
                           <button
@@ -211,9 +211,9 @@ const CulinaryStaff = () => {
                             disabled={impersonating === member.id}
                             title="Login sebagai Staff ini"
                           >
-                            {impersonating === member.id ? '⏳' : <KeyRound size={16} />}
+                            {impersonating === member.id ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
                           </button>
-                          <button className="kd-icon-btn" title="Edit" onClick={() => handleEdit(member)}><Edit3 size={16} /></button>
+                          <button className="kd-icon-btn" title="Edit" onClick={() => handleEdit(member)}><Pencil size={16} /></button>
                           <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(member.id)}><Trash2 size={16} /></button>
                         </div>
                       </td>
@@ -241,7 +241,7 @@ const CulinaryStaff = () => {
               <h2 className="text-lg font-bold text-slate-800">
                 {editingStaff ? 'Edit Data Staff' : 'Tambah Staff Baru'}
               </h2>
-              <button className="text-slate-400 hover:text-slate-600" onClick={() => setShowModal(false)}>×</button>
+              <button className="text-slate-400 hover:text-slate-600" onClick={() => setShowModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="kd-modal-body">
@@ -275,9 +275,9 @@ const CulinaryStaff = () => {
                     className="form-input w-full" 
                     value={form.role} onChange={e => setForm({...form, role: e.target.value})}
                   >
-                    <option value="cashier">💰 Kasir (Akses Transaksi)</option>
-                    <option value="chef">👨‍🍳 Koki / Dapur (Akses Pesanan)</option>
-                    <option value="staff">👤 Staff Biasa</option>
+                    <option value="cashier">Kasir (Akses Transaksi)</option>
+                    <option value="chef">Koki / Dapur (Akses Pesanan)</option>
+                    <option value="staff">Staff Biasa</option>
                   </select>
                 </div>
                 <div className="form-group mb-5">

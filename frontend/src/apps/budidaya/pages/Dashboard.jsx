@@ -46,30 +46,74 @@ export default function Dashboard() {
   const featuredPonds = stats?.featured_ponds || []
   const recentAlerts = stats?.recent_alerts || []
 
+  const now = new Date();
+  const hour = now.getHours();
+  const timeGreeting = hour < 12 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 18 ? 'Selamat sore' : 'Selamat malam';
+  const roleLabel = user?.role === 'super_admin' ? 'Super Admin' : (user?.role === 'admin' ? 'Admin Farm' : 'Owner');
+
   return (
     <div className="aq-container" style={{ animation: 'kd-fadeIn 0.3s ease' }}>
 
+      {/* Welcome Banner - Deep Forest Emerald Theme */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#05281d] via-[#032017] to-[#02150f] p-5 sm:p-6 text-white shadow-lg border border-emerald-500/15 mb-5">
+        {/* Soft Ambient Light Accents */}
+        <div className="absolute top-0 right-0 w-96 h-full bg-gradient-to-l from-emerald-500/15 via-teal-500/5 to-transparent pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-1/3 w-72 h-32 bg-mint-500/5 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Left Column: Greeting, Subtitle, Badges */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl sm:text-2xl tracking-tight text-white leading-tight font-['Plus_Jakarta_Sans']" style={{ fontWeight: 800 }}>
+              {timeGreeting}, {user?.name || 'Farmer / Owner'}
+            </h2>
+            <p className="text-emerald-100/80 text-xs sm:text-sm mt-1 font-normal font-['Inter']">
+              Pusat operasional & monitoring {user?.tenant_name || 'BIZORA Budidaya'}.
+            </p>
+
+            {/* Badges / Status Pills */}
+            <div className="flex flex-wrap items-center gap-2 mt-3 font-['Inter']">
+              <span className="px-2.5 py-0.5 rounded-lg bg-emerald-950/70 border border-emerald-500/20 text-[11px] font-semibold text-emerald-200">
+                {roleLabel}
+              </span>
+              <span className="px-2.5 py-0.5 rounded-lg bg-emerald-950/70 border border-emerald-500/20 text-[11px] font-semibold text-emerald-100/80">
+                {now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            </div>
+          </div>
+
+          {/* Right Column: Frosted Glass Icon Card */}
+          <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
+            <div className="w-12 h-14 sm:w-14 sm:h-16 rounded-2xl bg-white/[0.07] backdrop-blur-md border border-emerald-400/20 flex items-center justify-center shadow-lg text-emerald-300">
+              <span className="material-symbols-outlined" style={{ fontSize: 24, color: '#6ee7b7' }}>
+                {terms.iconMain || 'potted_plant'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── KPI Cards Row ── */}
-      <div className="aq-grid-3" style={{ marginBottom: 18 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
 
         {/* Total Kolam / Lahan */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: 20, border: '1px solid #E9F0EC', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#E8F5ED', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{terms.iconMain}</span>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{terms.iconMain}</span>
               </div>
-              <span style={{ fontSize: 14.5, fontWeight: 700, color: '#334155' }}>{terms.totalUnitsLabel}</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">{terms.totalUnitsLabel}</span>
             </div>
             <span style={badge('#D1FAE5', '#059669')}>
               {stats?.active_ponds || 0} Aktif
             </span>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#0F172A' }}>
+            <div className="font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
               {stats?.total_ponds ?? 0}
             </div>
-            <div style={{ fontSize: 11.5, color: '#059669', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
+            <div className="text-xs text-emerald-600 mt-1 flex items-center gap-1 font-medium font-['Inter']">
               <span className="material-symbols-outlined" style={{ fontSize: 14 }}>cycle</span>
               {`${stats?.active_cycles || 0} Siklus Berjalan`}
             </div>
@@ -77,97 +121,113 @@ export default function Dashboard() {
         </div>
 
         {/* Butuh Perhatian / Peringatan */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: 20, border: '1px solid #E9F0EC', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: stats?.critical_count > 0 ? '#FFE4E6' : '#F1F5F9', color: stats?.critical_count > 0 ? '#E11D48' : '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-xl ${stats?.critical_count > 0 ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-500'} flex items-center justify-center shrink-0`}>
+                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>
                   {stats?.critical_count > 0 ? 'warning' : 'check_circle'}
                 </span>
               </div>
-              <span style={{ fontSize: 14.5, fontWeight: 700, color: '#334155' }}>Butuh Perhatian</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Butuh Perhatian</span>
             </div>
             <span style={badge(stats?.critical_count > 0 ? '#FFE4E6' : '#ECFDF5', stats?.critical_count > 0 ? '#E11D48' : '#059669')}>
               {stats?.critical_count > 0 ? 'Perhatian' : 'Optimal'}
             </span>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: stats?.critical_count > 0 ? '#E11D48' : '#0F172A' }}>
+            <div className={`font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl tracking-tight leading-tight ${stats?.critical_count > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
               {String(stats?.critical_count ?? 0).padStart(2, '0')}
             </div>
-            <div style={{ fontSize: 11.5, color: stats?.critical_count > 0 ? '#E11D48' : '#94A3B8', marginTop: 4 }}>
+            <div className={`text-xs mt-1 font-['Inter'] ${stats?.critical_count > 0 ? 'text-rose-600 font-medium' : 'text-slate-400'}`}>
               {stats?.critical_count > 0 ? 'Terdapat unit dengan FCR / kondisi tinggi' : 'Semua parameter terpantau normal'}
             </div>
           </div>
         </div>
 
         {/* Jadwal Pakan / Pemupukan Terdekat */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: 20, border: '1px solid #E9F0EC', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#ECFDF5', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{terms.iconFeed}</span>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{terms.iconFeed}</span>
               </div>
-              <span style={{ fontSize: 14.5, fontWeight: 700, color: '#334155' }}>{terms.nextFeedLabel}</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">{terms.nextFeedLabel}</span>
             </div>
             <span style={badge('#ECFDF5', '#10B981')}>Rutin</span>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#0F172A' }}>
+            <div className="font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
               {stats?.next_feed_time || '16:00'}
             </div>
-            <div style={{ fontSize: 11.5, color: '#94A3B8', marginTop: 4 }}>
+            <div className="text-xs text-slate-400 mt-1 font-['Inter']">
               {terms.nextFeedDetail}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Financial Summary Strip ── */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16, padding: '16px 20px', marginBottom: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 12, background: '#E8F5ED', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>payments</span>
+      {/* ── Financial Summary Cards ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+        {/* Card 1: Akumulasi Omzet */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Akumulasi Omzet Panen</span>
+            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined" style={{ fontSize: 22 }}>payments</span>
+            </div>
           </div>
           <div>
-            <span style={{ fontSize: 13, color: '#64748B', fontWeight: 600 }}>Akumulasi Omzet Panen</span>
-            <p style={{ fontSize: 18, fontWeight: 700, color: '#0F172A', margin: '2px 0 0' }}>
+            <div className="font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight">
               Rp {(stats?.total_revenue || 0).toLocaleString('id-ID')}
-            </p>
+            </div>
+            <div className="text-xs text-slate-400 mt-1.5 font-['Inter']">
+              Akumulasi pendapatan panen seluruh siklus
+            </div>
           </div>
         </div>
 
-        <div style={{ width: 1, height: 32, background: '#E2E8F0', display: 'inline-block' }} />
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 12, background: '#FEF2F2', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>shopping_cart_checkout</span>
+        {/* Card 2: Total Pengeluaran */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total Pengeluaran Kas</span>
+            <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined" style={{ fontSize: 22 }}>shopping_cart_checkout</span>
+            </div>
           </div>
           <div>
-            <span style={{ fontSize: 13, color: '#64748B', fontWeight: 600 }}>Total Pengeluaran Kas</span>
-            <p style={{ fontSize: 18, fontWeight: 700, color: '#DC2626', margin: '2px 0 0' }}>
+            <div className="font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl text-rose-600 tracking-tight leading-tight">
               Rp {(stats?.total_expenses || 0).toLocaleString('id-ID')}
-            </p>
+            </div>
+            <div className="text-xs text-slate-400 mt-1.5 font-['Inter']">
+              Biaya pakan, benih, energi & operasional
+            </div>
           </div>
         </div>
 
-        <div style={{ width: 1, height: 32, background: '#E2E8F0', display: 'inline-block' }} />
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 12, background: (stats?.net_profit || 0) >= 0 ? '#ECFDF5' : '#FEF2F2', color: (stats?.net_profit || 0) >= 0 ? '#059669' : '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>trending_up</span>
+        {/* Card 3: Laba Bersih Riil */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Laba Bersih Riil</span>
+            <div className={`w-11 h-11 rounded-xl ${(stats?.net_profit || 0) >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'} flex items-center justify-center shrink-0`}>
+              <span className="material-symbols-outlined" style={{ fontSize: 22 }}>trending_up</span>
+            </div>
           </div>
           <div>
-            <span style={{ fontSize: 13, color: '#64748B', fontWeight: 600 }}>Laba Bersih Riil</span>
-            <p style={{ fontSize: 18, fontWeight: 700, color: (stats?.net_profit || 0) >= 0 ? '#059669' : '#DC2626', margin: '2px 0 0' }}>
+            <div className={`font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl tracking-tight leading-tight ${(stats?.net_profit || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               Rp {(stats?.net_profit || 0).toLocaleString('id-ID')}
-            </p>
+            </div>
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
+              <span className="text-xs text-slate-400 font-['Inter']">
+                {(stats?.net_profit || 0) >= 0 ? 'Surplus operasional' : 'Defisit operasional'}
+              </span>
+              <Link to="/budidaya/finance-summary" className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-0.5">
+                <span>Laba Rugi</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
+              </Link>
+            </div>
           </div>
         </div>
-
-        <Link to="/budidaya/finance-summary" style={{ textDecoration: 'none', background: '#F1F5F9', color: '#1B4332', fontSize: 12.5, fontWeight: 700, padding: '8px 16px', borderRadius: 8, transition: 'all 0.15s' }}>
-          Buka Laba Rugi →
-        </Link>
       </div>
 
       {/* ── Main Row: Live Chart + Notifikasi ── */}
@@ -175,12 +235,9 @@ export default function Dashboard() {
         
         {/* Live Trend Chart Card */}
         <div style={cardStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
-              <p className="aq-section-title">Tren Penjualan & Panen Riil</p>
-              <p className="aq-small-text" style={{ marginTop: 3 }}>
-                Akumulasi omzet hasil panen berdasarkan periode waktu
-              </p>
+              <p className="aq-section-title">Tren Penjualan & Panen</p>
             </div>
             
             {/* Toggle 1B / 3B / 6B */}
@@ -304,7 +361,7 @@ export default function Dashboard() {
       {/* ── Status Kolam / Lahan Aktif Riil ── */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <p className="aq-section-title">{`Daftar ${terms.unit} Aktif Farm`}</p>
+          <p className="aq-section-title">{`Daftar ${terms.unit} Aktif`}</p>
           <Link to="/budidaya/ponds" style={{ fontSize: 12.5, color: '#1B4332', fontWeight: 600, textDecoration: 'none' }}>
             Lihat Semua {terms.unit} →
           </Link>

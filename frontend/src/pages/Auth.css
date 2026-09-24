@@ -34,7 +34,7 @@
   border-radius: 8px; display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 16px;
 }
-.nav-logo-name { font-size: 15px; font-weight: 600; color: #fff; }
+.nav-logo-name { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.04em; font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif; }
 .nav-links { display: flex; gap: 1.5rem; }
 .nav-link { font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer; transition: color 0.1s; font-weight: 500; }
 .nav-link:hover { color: #fff; }

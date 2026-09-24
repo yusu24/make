@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Building2, MapPin, Hash, User, Phone, Check } from 'lucide-react';
+import { X, Building2, MapPin, Hash, User, Phone, Check } from '@/constants/icons';
 import api from '../../../../../services/api';
 import { Warehouse } from '../../types';
 
@@ -58,7 +58,7 @@ export const AddWarehouseModal: React.FC<AddWarehouseModalProps> = ({ onClose, o
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
@@ -66,10 +66,12 @@ export const AddWarehouseModal: React.FC<AddWarehouseModalProps> = ({ onClose, o
       />
       
       {/* Modal Content */}
-      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
               <Building2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -81,23 +83,15 @@ export const AddWarehouseModal: React.FC<AddWarehouseModalProps> = ({ onClose, o
           </div>
           <button 
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Body */}
-        <form onSubmit={handleSubmit} className="p-6">
-          
-          {error && (
-            <div className="mb-6 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-sm font-medium flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
             
             {/* Nama & Kode Gudang */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -212,23 +206,25 @@ export const AddWarehouseModal: React.FC<AddWarehouseModalProps> = ({ onClose, o
                 Jadikan sebagai Gudang Utama (Default)
               </label>
             </div>
-
           </div>
 
           {/* Footer Actions */}
-          <div className="mt-8 flex items-center justify-end gap-3">
+          <div 
+            className="p-3.5 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 flex items-center justify-end gap-3 shrink-0"
+            style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+          >
             <button 
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
             >
               Batal
             </button>
             <button 
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-500/30 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+              className="flex-1 sm:flex-none justify-center px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-500/30 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
             >
               {loading ? (
                 <>

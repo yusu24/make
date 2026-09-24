@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Truck, Edit3, Trash2, ChevronRight, PackageCheck, Plus, RefreshCw } from 'lucide-react';
+import { Truck, Pencil, Trash2, ChevronRight, PackageCheck, Plus, RefreshCw } from '@/constants/icons';
 
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
@@ -101,7 +101,7 @@ export default function Suppliers() {
       {/* Page Title Handled by Navtop */}
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button title="Registrasi Supplier" className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }} onClick={() => { setEditingSupplier(null); setShowModal(true); }}>
+          <button title="Registrasi Supplier" className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }} onClick={() => { setEditingSupplier(null); setShowModal(true); }}>
             <Plus size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Registrasi Supplier</span>
           </button>
@@ -112,7 +112,7 @@ export default function Suppliers() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button onClick={fetchSuppliers} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
+          <button onClick={fetchSuppliers} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
@@ -166,7 +166,7 @@ export default function Suppliers() {
                   <td className="text-right pr-6">
                     <div className="flex gap-2 justify-end">
                       <button className="btn btn-sm btn-ghost" onClick={() => openEdit(s)} title="Edit Data">
-                         <Edit3 size={15} />
+                         <Pencil size={15} />
                       </button>
 
                       <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(s.id)} title="Hapus Data">

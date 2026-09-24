@@ -1,5 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Store,
+  MapPin,
+  Calendar,
+  Clock,
+  Phone,
+  LayoutGrid,
+  Utensils,
+  DollarSign,
+  CreditCard,
+  QrCode,
+  Building2,
+  Binary,
+  User,
+  Megaphone,
+  Type,
+  FileText,
+  Image as ImageIcon,
+  Sparkles,
+  AlignLeft,
+  Globe,
+  ShieldCheck,
+  Save,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
+  MessageCircle,
+  Loader2,
+  Upload,
+  Trash2
+} from '@/constants/icons';
 import api from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
@@ -50,6 +81,50 @@ const AdminSettings = () => {
   };
 
 
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = React.useRef(null);
+
+  const handleLogoUpload = async (file) => {
+    if (!file) return;
+    setLogoUploading(true);
+    setMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append('store_icon', file);
+      const res = await api.post('/tenant/branding/logo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const newUrl = res.data?.data?.store_icon_url;
+      setSettings(prev => ({ ...prev, logo_url: newUrl }));
+      updateUser({ store_icon_url: newUrl });
+      setMessage({ type: 'success', text: 'Logo toko berhasil diperbarui!' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      console.error('Failed to upload store logo:', err);
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Gagal mengunggah logo toko.' });
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const handleLogoDelete = async () => {
+    if (!window.confirm('Hapus logo toko dan gunakan logo default?')) return;
+    setLogoUploading(true);
+    setMessage(null);
+    try {
+      await api.delete('/tenant/branding/logo');
+      setSettings(prev => ({ ...prev, logo_url: '' }));
+      updateUser({ store_icon_url: null });
+      setMessage({ type: 'success', text: 'Logo toko dikembalikan ke default.' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      console.error('Failed to delete store logo:', err);
+      setMessage({ type: 'error', text: 'Gagal menghapus logo toko.' });
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -85,8 +160,8 @@ const AdminSettings = () => {
         ) : (
           <>
             {message && (
-              <div className={`p-4 rounded-2xl mb-8 text-sm font-bold border animate-in fade-in slide-in-from-top-4 duration-300 ${message.type === 'success' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
-                {message.type === 'success' ? '✨ ' : '❌ '} {message.text}
+              <div className={`p-4 rounded-2xl mb-8 text-sm font-bold border flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-300 ${message.type === 'success' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                {message.type === 'success' ? <CheckCircle2 size={16} className="text-green-600" /> : <XCircle size={16} className="text-red-600" />} {message.text}
               </div>
             )}
 
@@ -94,7 +169,7 @@ const AdminSettings = () => {
               {/* PROFILE PREVIEW HEADER */}
               <div className="kd-panel kd-settings-header p-8 flex items-center gap-8 bg-gradient-to-r from-white to-slate-50/50" style={{ marginBottom: '20px' }}>
                 <div className="w-24 h-24 rounded-3xl bg-[#b48c36] flex items-center justify-center text-4xl text-white shadow-xl shadow-[#b48c36]/20">
-                  {settings.store_name?.charAt(0) || '🏠'}
+                  {settings.store_name?.charAt(0) || <Store size={36} />}
                 </div>
                 <div>
                   <h2 className="text-2xl font-black text-slate-800 mb-1">{settings.store_name || 'Nama Toko Anda'}</h2>
@@ -112,13 +187,13 @@ const AdminSettings = () => {
                     {/* BASIC INFO */}
                     <div className="kd-panel">
                       <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-                        <span className="text-xl">📋</span>
+                        <Store size={20} className="text-[#b48c36]" />
                         <h3 className="font-bold text-slate-800">Informasi Dasar</h3>
                       </div>
                       
                       <div className="kd-form-group">
                         <label className="kd-form-label flex items-center gap-2">
-                          <span>🏪</span> Nama Toko
+                          <Store size={14} className="text-slate-500" /> Nama Toko
                         </label>
                         <input 
                           required
@@ -132,7 +207,55 @@ const AdminSettings = () => {
 
                       <div className="kd-form-group">
                         <label className="kd-form-label flex items-center gap-2">
-                          <span>📍</span> Alamat Lengkap
+                          <ImageIcon size={14} className="text-slate-500" /> Logo / Ikon Restoran
+                        </label>
+                        <p className="text-xs text-slate-500 mb-3">Logo ini akan tampil di sidebar, struk nota, dan halaman digital resto Anda.</p>
+                        <input
+                          ref={logoInputRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                          style={{ display: 'none' }}
+                          onChange={e => {
+                            if (e.target.files?.[0]) handleLogoUpload(e.target.files[0]);
+                            e.target.value = '';
+                          }}
+                        />
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-xl border border-slate-200 bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                            {settings.logo_url ? (
+                              <img src={settings.logo_url} alt="Logo Restoran" className="w-full h-full object-contain" />
+                            ) : (
+                              <Store className="w-6 h-6 text-slate-400" />
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => logoInputRef.current?.click()}
+                              disabled={logoUploading}
+                              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center gap-1.5"
+                            >
+                              <Upload size={14} />
+                              <span>{logoUploading ? 'Mengunggah...' : (settings.logo_url ? 'Ganti Logo' : 'Unggah Logo')}</span>
+                            </button>
+                            {settings.logo_url && (
+                              <button
+                                type="button"
+                                onClick={handleLogoDelete}
+                                disabled={logoUploading}
+                                className="px-3 py-2 rounded-xl text-xs font-bold bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-colors flex items-center gap-1"
+                              >
+                                <Trash2 size={14} />
+                                <span>Hapus</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="kd-form-group">
+                        <label className="kd-form-label flex items-center gap-2">
+                          <MapPin size={14} className="text-slate-500" /> Alamat Lengkap
                         </label>
                         <textarea 
                           rows="3"
@@ -146,7 +269,7 @@ const AdminSettings = () => {
                       <div className="kd-form-row">
                         <div className="kd-form-group">
                           <label className="kd-form-label flex items-center gap-2">
-                            <span>📅</span> Hari Operasional
+                            <Calendar size={14} className="text-slate-500" /> Hari Operasional
                           </label>
                           <input 
                             type="text" 
@@ -158,7 +281,7 @@ const AdminSettings = () => {
                         </div>
                         <div className="kd-form-group">
                           <label className="kd-form-label flex items-center gap-2">
-                            <span>🕒</span> Jam Operasional
+                            <Clock size={14} className="text-slate-500" /> Jam Operasional
                           </label>
                           <input 
                             type="text" 
@@ -173,7 +296,7 @@ const AdminSettings = () => {
                       <div className="kd-form-row">
                         <div className="kd-form-group">
                           <label className="kd-form-label flex items-center gap-2">
-                            <span>📱</span> WhatsApp
+                            <Phone size={14} className="text-slate-500" /> WhatsApp
                           </label>
                           <input 
                             type="text" 
@@ -185,7 +308,7 @@ const AdminSettings = () => {
                         </div>
                         <div className="kd-form-group">
                           <label className="kd-form-label flex items-center gap-2">
-                            <span>🪑</span> Jumlah Meja
+                            <LayoutGrid size={14} className="text-slate-500" /> Jumlah Meja
                           </label>
                           <input 
                             type="number" 
@@ -197,7 +320,7 @@ const AdminSettings = () => {
                         </div>
                         <div className="kd-form-group">
                           <label className="kd-form-label flex items-center gap-2">
-                            <span>🍽️</span> Mode Dine-In (Meja & QR Self Order)
+                            <Utensils size={14} className="text-slate-500" /> Mode Dine-In (Meja & QR Self Order)
                           </label>
                           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                             <input
@@ -214,7 +337,7 @@ const AdminSettings = () => {
                     {/* FINANCIAL / TAX */}
                     <div className="kd-panel">
                       <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-                        <span className="text-xl">💰</span>
+                        <DollarSign size={20} className="text-[#b48c36]" />
                         <h3 className="font-bold text-slate-800">Pajak & Biaya Tambahan</h3>
                       </div>
 
@@ -266,7 +389,7 @@ const AdminSettings = () => {
                     {/* METODE PEMBAYARAN TOKO (QRIS & TRANSFER) */}
                     <div className="kd-panel">
                       <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
-                        <span className="text-xl">💳</span>
+                        <CreditCard size={20} className="text-[#b48c36]" />
                         <div>
                           <h3 className="font-bold text-slate-800">Metode Pembayaran Kasir & QRIS Resto</h3>
                           <p className="text-xs text-slate-400 mt-0.5">Pengaturan QRIS scan dan rekening transfer untuk pelanggan Anda</p>
@@ -275,7 +398,7 @@ const AdminSettings = () => {
 
                       <div className="kd-form-group mb-4">
                         <label className="kd-form-label flex items-center gap-2">
-                          <span>📱</span> URL Gambar QRIS Toko (JPG/PNG)
+                          <QrCode size={14} className="text-slate-500" /> URL Gambar QRIS Toko (JPG/PNG)
                         </label>
                         <input 
                           type="text" 
@@ -297,7 +420,7 @@ const AdminSettings = () => {
                       <div className="kd-form-row">
                         <div className="kd-form-group">
                           <label className="kd-form-label flex items-center gap-2">
-                            <span>🏦</span> Nama Bank
+                            <Building2 size={14} className="text-slate-500" /> Nama Bank
                           </label>
                           <input 
                             type="text" 
@@ -309,7 +432,7 @@ const AdminSettings = () => {
                         </div>
                         <div className="kd-form-group">
                           <label className="kd-form-label flex items-center gap-2">
-                            <span>🔢</span> Nomor Rekening
+                            <Binary size={14} className="text-slate-500" /> Nomor Rekening
                           </label>
                           <input 
                             type="text" 
@@ -323,7 +446,7 @@ const AdminSettings = () => {
 
                       <div className="kd-form-group mt-2">
                         <label className="kd-form-label flex items-center gap-2">
-                          <span>👤</span> Atas Nama Rekening
+                          <User size={14} className="text-slate-500" /> Atas Nama Rekening
                         </label>
                         <input 
                           type="text" 
@@ -338,13 +461,13 @@ const AdminSettings = () => {
                     {/* PROMO & MARKETING */}
                     <div className="kd-panel">
                       <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-                        <span className="text-xl">📢</span>
+                        <Megaphone size={20} className="text-[#b48c36]" />
                         <h3 className="font-bold text-slate-800">Promosi & Tampilan</h3>
                       </div>
 
                       <div className="kd-form-group">
                         <label className="kd-form-label flex items-center gap-2">
-                          <span>🎬</span> Judul Utama Halaman (Hero Title)
+                          <Type size={14} className="text-slate-500" /> Judul Utama Halaman (Hero Title)
                         </label>
                         <input 
                           type="text" 
@@ -358,7 +481,7 @@ const AdminSettings = () => {
 
                       <div className="kd-form-group">
                         <label className="kd-form-label flex items-center gap-2">
-                          <span>📄</span> Sub-judul / Deskripsi Hero
+                          <FileText size={14} className="text-slate-500" /> Sub-judul / Deskripsi Hero
                         </label>
                         <textarea 
                           rows="2"
@@ -371,7 +494,7 @@ const AdminSettings = () => {
 
                       <div className="kd-form-group">
                         <label className="kd-form-label flex items-center gap-2">
-                          <span>🖼️</span> URL Gambar Utama (Background Parallax)
+                          <ImageIcon size={14} className="text-slate-500" /> URL Gambar Utama (Background Parallax)
                         </label>
                         <input 
                           type="text" 
@@ -387,7 +510,7 @@ const AdminSettings = () => {
 
                       <div className="kd-form-group">
                         <label className="kd-form-label flex items-center gap-2">
-                          <span>✨</span> Judul Promo Banner
+                          <Sparkles size={14} className="text-slate-500" /> Judul Promo Banner
                         </label>
                         <input 
                           type="text" 
@@ -400,7 +523,7 @@ const AdminSettings = () => {
 
                       <div className="kd-form-group">
                         <label className="kd-form-label flex items-center gap-2">
-                          <span>📝</span> Deskripsi Promo
+                          <AlignLeft size={14} className="text-slate-500" /> Deskripsi Promo
                         </label>
                         <textarea 
                           rows="3"
@@ -417,7 +540,7 @@ const AdminSettings = () => {
                     {/* SOCIAL MEDIA */}
                     <div className="kd-panel">
                       <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-                        <span className="text-xl">🌐</span>
+                        <Globe size={20} className="text-[#b48c36]" />
                         <h3 className="font-bold text-slate-800">Media Sosial</h3>
                       </div>
                       
@@ -451,7 +574,7 @@ const AdminSettings = () => {
                     {/* BACKUP SHORTCUT CARD */}
                     <div className="kd-panel" style={{ background: '#fdf8ee', border: '1.5px solid #fef3c7' }}>
                       <div className="flex items-center gap-3 mb-3">
-                        <span className="text-2xl">🛡️</span>
+                        <ShieldCheck size={28} className="text-[#b48c36]" />
                         <div>
                           <h4 className="font-bold text-slate-800 text-sm">Backup Data Toko</h4>
                           <p className="text-[11px] text-slate-500">Cadangkan menu, pesanan, bahan baku, keuangan, dan tabel.</p>
@@ -463,7 +586,7 @@ const AdminSettings = () => {
                         className="w-full py-2.5 bg-[#b48c36] hover:bg-[#9a762c] text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-[#b48c36]/20 flex items-center justify-center gap-2"
                       >
                         <span>Kelola & Unduh Backup</span>
-                        <span>→</span>
+                        <ArrowRight size={14} />
                       </button>
                     </div>
 
@@ -471,7 +594,10 @@ const AdminSettings = () => {
                     <div className="kd-panel" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#fff' }}>
                       <h4 className="font-bold mb-2">Butuh Bantuan?</h4>
                       <p className="text-[11px] text-slate-400 leading-relaxed mb-6">Jika Anda kesulitan mengatur profil toko, hubungi tim support kami melalui tombol di bawah ini.</p>
-                      <button type="button" onClick={() => navigate('/kuliner/admin/support')} className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all">Hubungi Support 💬</button>
+                      <button type="button" onClick={() => navigate('/kuliner/admin/support')} className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
+                        <span>Hubungi Support</span>
+                        <MessageCircle size={14} />
+                      </button>
                     </div>
 
                     {/* SAVE BUTTON PANEL */}
@@ -480,9 +606,17 @@ const AdminSettings = () => {
                       <button 
                         type="submit" 
                         disabled={saving} 
-                        className="kd-btn kd-btn-primary w-full py-4 text-lg shadow-xl shadow-[#b48c36]/20"
+                        className="kd-btn kd-btn-primary w-full py-4 text-lg shadow-xl shadow-[#b48c36]/20 flex items-center justify-center gap-2"
                       >
-                        {saving ? 'Menyimpan...' : '💾 Simpan Perubahan'}
+                        {saving ? (
+                          <>
+                            <Loader2 size={18} className="animate-spin" /> Menyimpan...
+                          </>
+                        ) : (
+                          <>
+                            <Save size={18} /> Simpan Perubahan
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>

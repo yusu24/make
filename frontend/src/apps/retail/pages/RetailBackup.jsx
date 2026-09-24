@@ -4,7 +4,7 @@ import {
   FileSpreadsheet, FileCode, ShieldCheck, Clock, Calendar,
   Package, ShoppingCart, Users, Truck, Wallet, Layers, Database,
   ArrowRight, Sparkles, RefreshCw
-} from 'lucide-react';
+} from '@/constants/icons';
 import { api } from '../../../lib/api';
 import RetailLoading from '../components/RetailLoading';
 import '../retail.css';

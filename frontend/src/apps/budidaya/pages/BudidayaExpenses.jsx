@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { api } from '../../../lib/api';
-import { Edit3, Trash2, Plus, Printer, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Search, Download } from 'lucide-react';
+import { Pencil, Trash2, Plus, Printer, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Search, Download } from '@/constants/icons';
 import { useReactToPrint } from 'react-to-print';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
@@ -317,13 +317,13 @@ export default function BudidayaExpenses() {
   };
 
   return (
-    <div style={{ padding: '18px 24px', background: '#F8FAFC', minHeight: '100vh', fontFamily: "'Inter', sans-serif", animation: 'kd-fadeIn 0.3s ease' }}>
+    <div className="aq-container" style={{ animation: 'kd-fadeIn 0.3s ease' }}>
       
       {/* ─── Top Actions Bar (Title is in Navtop Header) ─── */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         <button
           onClick={handlePrint}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', color: '#334155', border: '1px solid #cbd5e1', padding: '9px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', color: '#334155', border: '1px solid #cbd5e1', height: 38, padding: '0 14px', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}
           title="Cetak Buku Kas PDF"
         >
           <Printer size={16} />
@@ -332,7 +332,7 @@ export default function BudidayaExpenses() {
 
         <button
           onClick={handleExportExcel}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', padding: '9px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', height: 38, padding: '0 14px', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}
           title="Export ke Excel / CSV"
         >
           <Download size={16} />
@@ -342,7 +342,7 @@ export default function BudidayaExpenses() {
         {/* SINGLE ACTION BUTTON: Catat Transaksi */}
         <button
           onClick={handleOpenCreate}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1B4332', color: '#fff', border: 'none', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1B4332', color: '#fff', border: 'none', height: 38, padding: '0 18px', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 13, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
         >
           <Plus size={16} />
           <span>Catat Transaksi</span>
@@ -350,63 +350,57 @@ export default function BudidayaExpenses() {
       </div>
 
       {/* ─── Metric Cards ─── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 20 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
         
         {/* Card Inflow */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: 20, border: '1px solid #E9F0EC', borderLeft: '4px solid #059669', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
-                <ArrowUpRight size={18} />
-              </div>
-              <span style={{ fontSize: 14.5, fontWeight: 700, color: '#334155' }}>Total Kas Masuk (Pemasukan)</span>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total Kas Masuk (Pemasukan)</span>
+            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <ArrowUpRight size={20} />
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#059669' }}>
+            <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight">
               +{formatRp(totalInflow)}
             </div>
-            <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>
+            <div className="text-xs text-slate-400 mt-1.5 font-['Inter']">
               Penjualan panen, bibit, pupuk & penerimaan lain
             </div>
           </div>
         </div>
 
         {/* Card Outflow */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: 20, border: '1px solid #E9F0EC', borderLeft: '4px solid #DC2626', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#DC2626' }}>
-                <ArrowDownRight size={18} />
-              </div>
-              <span style={{ fontSize: 14.5, fontWeight: 700, color: '#334155' }}>Total Kas Keluar (Pengeluaran)</span>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total Kas Keluar (Pengeluaran)</span>
+            <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <ArrowDownRight size={20} />
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#DC2626' }}>
+            <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-rose-600 tracking-tight leading-tight">
               -{formatRp(totalOutflow)}
             </div>
-            <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>
+            <div className="text-xs text-slate-400 mt-1.5 font-['Inter']">
               Pakan, benih, listrik, gaji & operasional
             </div>
           </div>
         </div>
 
         {/* Card Net */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: 20, border: '1px solid #E9F0EC', borderLeft: `4px solid ${netCashflow >= 0 ? '#2563EB' : '#D97706'}`, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: netCashflow >= 0 ? '#EFF6FF' : '#FFFBEB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: netCashflow >= 0 ? '#2563EB' : '#D97706' }}>
-                <Wallet size={18} />
-              </div>
-              <span style={{ fontSize: 14.5, fontWeight: 700, color: '#334155' }}>Mutasi Kas Bersih (Net)</span>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Mutasi Kas Bersih (Net)</span>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${netCashflow >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>
+              <Wallet size={20} />
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: netCashflow >= 0 ? '#2563EB' : '#DC2626' }}>
+            <div className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${netCashflow >= 0 ? 'text-blue-600' : 'text-rose-600'}`}>
               {netCashflow >= 0 ? `+${formatRp(netCashflow)}` : `-${formatRp(Math.abs(netCashflow))}`}
             </div>
-            <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>
+            <div className="text-xs text-slate-400 mt-1.5 font-['Inter']">
               {netCashflow >= 0 ? 'Surplus Arus Kas Operasional' : 'Defisit Arus Kas Operasional'}
             </div>
           </div>
@@ -415,7 +409,7 @@ export default function BudidayaExpenses() {
       </div>
 
       {/* ─── Filter & Search Bar ─── */}
-      <div style={{ background: '#fff', borderRadius: 12, padding: '12px 16px', marginBottom: 16, border: '1px solid #E9F0EC', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+      <div className="bg-white rounded-2xl border border-slate-200 p-3.5 mb-6 shadow-sm flex justify-between items-center flex-wrap gap-3">
         
         {/* Left: Type Filter Dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -439,7 +433,7 @@ export default function BudidayaExpenses() {
               placeholder="Cari transaksi / catatan..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', height: 38, padding: '0 12px 0 34px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5, outline: 'none' }}
+              style={{ width: '100%', height: 38, padding: '0 12px 0 34px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13, outline: 'none' }}
             />
             <Search size={15} style={{ position: 'absolute', left: 11, top: 11, color: '#94A3B8' }} />
           </div>
@@ -449,7 +443,7 @@ export default function BudidayaExpenses() {
             <select
               value={dateFilter}
               onChange={handleDateFilterChange}
-              style={{ height: 38, padding: '0 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5, outline: 'none', background: '#fff' }}
+              style={{ height: 38, padding: '0 12px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13, outline: 'none', background: '#fff' }}
             >
               <option value="all">Semua Tanggal</option>
               <option value="today">Hari Ini</option>
@@ -464,14 +458,14 @@ export default function BudidayaExpenses() {
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                style={{ height: 38, padding: '0 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12 }}
+                style={{ height: 38, padding: '0 10px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13 }}
               />
               <span style={{ fontSize: 12, color: '#64748B' }}>s/d</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                style={{ height: 38, padding: '0 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12 }}
+                style={{ height: 38, padding: '0 10px', borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 13 }}
               />
             </div>
           )}
@@ -480,20 +474,20 @@ export default function BudidayaExpenses() {
       </div>
 
       {/* ─── Data Table ─── */}
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12.5 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
             <thead>
-              <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E9F0EC' }}>
-                <th style={{ padding: '12px 14px', width: 45, textAlign: 'center', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>No</th>
-                <th style={{ padding: '12px 14px', width: 105, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>Tanggal</th>
-                <th style={{ padding: '12px 14px', width: 130, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>Jenis</th>
-                <th style={{ padding: '12px 14px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>Kategori Pos</th>
-                <th style={{ padding: '12px 14px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>Keterangan / Pihak Terkait</th>
-                <th style={{ padding: '12px 14px', width: 140, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>Terkait Siklus</th>
-                <th style={{ padding: '12px 14px', textAlign: 'right', width: 140, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>Kas Masuk (Rp)</th>
-                <th style={{ padding: '12px 14px', textAlign: 'right', width: 140, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>Kas Keluar (Rp)</th>
-                <th style={{ padding: '12px 14px', textAlign: 'center', width: 85, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11 }}>Aksi</th>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th style={{ padding: '12px 16px', paddingLeft: 24, width: 55, textAlign: 'center', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11.5, letterSpacing: '0.05em' }}>No</th>
+                <th style={{ padding: '12px 16px', width: 110, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11.5, letterSpacing: '0.05em' }}>Tanggal</th>
+                <th style={{ padding: '12px 16px', width: 130, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11.5, letterSpacing: '0.05em' }}>Jenis</th>
+                <th style={{ padding: '12px 16px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11.5, letterSpacing: '0.05em' }}>Kategori Pos</th>
+                <th style={{ padding: '12px 16px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11.5, letterSpacing: '0.05em' }}>Keterangan / Pihak Terkait</th>
+                <th style={{ padding: '12px 16px', width: 140, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11.5, letterSpacing: '0.05em' }}>Terkait Siklus</th>
+                <th style={{ padding: '12px 16px', textAlign: 'right', width: 140, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11.5, letterSpacing: '0.05em' }}>Kas Masuk (Rp)</th>
+                <th style={{ padding: '12px 16px', textAlign: 'right', width: 140, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11.5, letterSpacing: '0.05em' }}>Kas Keluar (Rp)</th>
+                <th style={{ padding: '12px 16px', paddingRight: 24, textAlign: 'center', width: 85, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: 11.5, letterSpacing: '0.05em' }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -511,23 +505,18 @@ export default function BudidayaExpenses() {
                 </tr>
               ) : (
                 paginatedData.map((item, idx) => (
-                  <tr key={`${item.trxType}-${item.id}`} style={{ borderBottom: idx === paginatedData.length - 1 ? 'none' : '1px solid #E9F0EC' }}>
-                    <td style={{ padding: '11px 14px', textAlign: 'center', color: '#64748b' }}>{startIndex + idx + 1}</td>
-                    <td style={{ padding: '11px 14px', color: '#334155', whiteSpace: 'nowrap' }}>{(item.date || '').split('T')[0]}</td>
-                    <td style={{ padding: '11px 14px' }}>
-                      <span style={{ 
-                        display: 'inline-block', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 500,
-                        background: item.trxType === 'inflow' ? '#ECFDF5' : '#FEF2F2',
-                        color: item.trxType === 'inflow' ? '#059669' : '#DC2626',
-                        border: `1px solid ${item.trxType === 'inflow' ? '#A7F3D0' : '#FECACA'}`
-                      }}>
+                  <tr key={`${item.trxType}-${item.id}`} className="hover:bg-slate-50/70 transition-colors" style={{ borderBottom: idx === paginatedData.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px 16px', paddingLeft: 24, textAlign: 'center', color: '#64748b', fontSize: 13 }}>{startIndex + idx + 1}</td>
+                    <td style={{ padding: '12px 16px', color: '#1e293b', fontSize: 13, whiteSpace: 'nowrap' }}>{(item.date || '').split('T')[0]}</td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${item.trxType === 'inflow' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
                         {item.displayType}
                       </span>
                     </td>
-                    <td style={{ padding: '11px 14px', color: '#0F172A', textTransform: 'capitalize' }}>
+                    <td style={{ padding: '12px 16px', color: '#1e293b', fontSize: 13, textTransform: 'capitalize' }}>
                       {formatTitleCase(item.category)}
                     </td>
-                    <td style={{ padding: '11px 14px', color: '#475569', fontSize: '13px' }}>
+                    <td style={{ padding: '12px 16px', color: '#475569', fontSize: 13 }}>
                       {formatSentenceCase(item.notes || '-')}
                       {item.recipient_or_buyer && (
                         <span style={{ color: '#64748B', marginLeft: 6 }}>
@@ -535,36 +524,36 @@ export default function BudidayaExpenses() {
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: '11px 14px' }}>
+                    <td style={{ padding: '12px 16px' }}>
                       {item.cycle ? (
-                        <span style={{ fontSize: 11.5, color: '#2563EB' }}>
+                        <span style={{ fontSize: 12, color: '#2563EB', fontWeight: 500 }}>
                           Siklus #{item.cycle.id} {item.cycle.name ? `(${item.cycle.name})` : ''}
                         </span>
                       ) : (
-                        <span style={{ color: '#94A3B8', fontSize: 11.5 }}>Umum / Non-Siklus</span>
+                        <span style={{ color: '#94A3B8', fontSize: 12 }}>Umum / Non-Siklus</span>
                       )}
                     </td>
-                    <td style={{ padding: '11px 14px', textAlign: 'right', color: item.inflowAmount > 0 ? '#059669' : '#CBD5E1', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '12px 16px', textAlign: 'right', color: item.inflowAmount > 0 ? '#059669' : '#CBD5E1', fontSize: 13, fontWeight: item.inflowAmount > 0 ? 500 : 400, whiteSpace: 'nowrap' }}>
                       {item.inflowAmount > 0 ? `+${formatRp(item.inflowAmount)}` : '-'}
                     </td>
-                    <td style={{ padding: '11px 14px', textAlign: 'right', color: item.outflowAmount > 0 ? '#DC2626' : '#CBD5E1', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '12px 16px', textAlign: 'right', color: item.outflowAmount > 0 ? '#DC2626' : '#CBD5E1', fontSize: 13, fontWeight: item.outflowAmount > 0 ? 500 : 400, whiteSpace: 'nowrap' }}>
                       {item.outflowAmount > 0 ? `-${formatRp(item.outflowAmount)}` : '-'}
                     </td>
-                    <td style={{ padding: '11px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '12px 16px', paddingRight: 24, textAlign: 'center', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
                         <button
                           onClick={() => handleOpenEdit(item)}
-                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
                           title="Edit"
                         >
-                          <Edit3 size={15} />
+                          <Pencil size={14} />
                         </button>
                         <button
                           onClick={() => handleDelete(item)}
-                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#DC2626', padding: 4 }}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 text-rose-500 transition-colors"
                           title="Hapus"
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>

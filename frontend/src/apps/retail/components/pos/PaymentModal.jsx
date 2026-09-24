@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Wallet, CreditCard, Banknote, Landmark, ArrowRight, CircleAlert } from 'lucide-react';
+import {
+  X,
+  Wallet,
+  CreditCard,
+  Banknote,
+  Landmark,
+  ArrowRight,
+  AlertCircle
+} from '@/constants/icons';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
 
@@ -98,9 +106,11 @@ export default function PaymentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm select-none">
-      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-950/60 backdrop-blur-sm select-none">
+      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
           <h3 className="modal__title" style={{ margin: 0, fontSize: '20px', fontWeight: 800 }}>Pembayaran</h3>
           <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-700 transition-colors">
             <X size={18} />
@@ -110,7 +120,7 @@ export default function PaymentModal({
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {error && (
             <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-xs">
-              <CircleAlert size={16} className="shrink-0" />
+              <AlertCircle size={16} className="shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -387,7 +397,10 @@ export default function PaymentModal({
           </div>
         </div>
 
-        <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-4 shrink-0">
+        <div 
+          className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-4 shrink-0"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
           <button onClick={onClose} className="px-5 py-3 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-800 text-xs font-bold transition-colors cursor-pointer">
             Batal
           </button>

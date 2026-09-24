@@ -1,11 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
+import {
+  useParams,
+  useNavigate,
+  useOutletContext } from 'react-router-dom'
 import { api } from '../../../lib/api'
 import { 
-  ArrowLeft, ShoppingCart, Heart, Scale, BarChart3, Clock, 
-  Calendar, Thermometer, CloudRain, ShieldCheck, TrendingUp,
-  Plus, CheckCircle2, AlertCircle, MoreVertical, Utensils, Printer
-} from 'lucide-react'
+  ArrowLeft,
+  ShoppingCart,
+  Heart,
+  Scale,
+  BarChart2,
+  Clock,
+  Calendar,
+  Thermometer,
+  CloudRain,
+  ShieldCheck,
+  TrendingUp,
+  Plus,
+  CheckCircle2,
+  AlertCircle,
+  MoreVertical,
+  Utensils,
+  Printer
+} from '@/constants/icons'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useReactToPrint } from 'react-to-print'
 import Modal from '../../../components/Modal'
@@ -242,7 +259,7 @@ export default function CycleDetail() {
           {/* Tabs */}
           <div style={{ display: 'flex', gap: '32px', borderBottom: '1px solid #E2E8F0', marginBottom: '24px' }}>
             {[
-               { id: 'ikhtisar_performa', label: 'Ikhtisar Performa', icon: BarChart3 },
+               { id: 'ikhtisar_performa', label: 'Ikhtisar Performa', icon: BarChart2 },
                { id: 'log_pakan', label: terms.isTanaman ? 'Log Nutrisi' : 'Log Pakan', icon: ShoppingCart },
                { id: 'laporan_keuangan', label: 'Laporan Keuangan', icon: ShieldCheck }
             ].map(tab => (
@@ -590,16 +607,16 @@ export default function CycleDetail() {
         }
         .btn-secondary-v2:hover { background: #F8FAFC; border-color: #CBD5E1; }
 
-        .kpi-card-v3 { padding: 20px; background: #fff; border-radius: 20px; border: 1px solid #F1F5F9; box-shadow: 0 4px 10px -2px rgba(0,0,0,0.02); }
-        .kpi-label-v3 { margin: 0 0 6px; font-size: 11px; font-weight: 600; color: #64748B; letter-spacing: 0.04em; }
-        .kpi-value-v3 { margin: 0; font-size: 22px; font-weight: 700; color: #1B4332; letter-spacing: -0.01em; }
-        .kpi-unit-v3 { font-size: 12px; color: #94A3B8; font-weight: 600; margin-left: 4px; }
+        .kpi-card-v3 { padding: 20px; background: #fff; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); }
+        .kpi-label-v3 { margin: 0 0 6px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #64748B; letter-spacing: 0.05em; text-transform: uppercase; }
+        .kpi-value-v3 { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
+        .kpi-unit-v3 { font-size: 13px; color: #94A3B8; font-weight: 600; margin-left: 4px; }
         .kpi-progress-v3 { width: 100%; height: 4px; background: #F1F5F9; border-radius: 2px; margin-top: 14px; overflow: hidden; }
         .kpi-progress-v3 > div { height: 100%; border-radius: 2px; }
 
-        .finance-summary-box { padding: 24px; border-radius: 20px; background: #FFF1F2; }
-        .finance-label { margin: 0 0 8px; font-size: 11px; font-weight: 600; color: #64748B; letter-spacing: 0.04em; }
-        .finance-value { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+        .finance-summary-box { padding: 20px; border-radius: 16px; background: #FFF1F2; border: 1px solid #FFE4E6; }
+        .finance-label { margin: 0 0 6px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #64748B; letter-spacing: 0.05em; text-transform: uppercase; }
+        .finance-value { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
 
         .sidebar-op-btn-v2 { 
           display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 18px; 
@@ -904,10 +921,10 @@ export default function CycleDetail() {
       </div>
 
       <style>{`
-        .kpi-card-v2 { padding: 20px; background: #F8FAFC; border-radius: 20px; border: 1px solid #F1F5F9; }
-        .kpi-label-v2 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #64748B; }
-        .kpi-value-v2 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #1B4332; }
-        .kpi-unit-v2 { font-size: 12px; color: #94A3B8; font-weight: 600; margin-left: 4px; }
+        .kpi-card-v2 { padding: 20px; background: #F8FAFC; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); }
+        .kpi-label-v2 { margin: 0 0 6px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #64748B; letter-spacing: 0.05em; text-transform: uppercase; }
+        .kpi-value-v2 { margin: 0 0 4px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
+        .kpi-unit-v2 { font-size: 13px; color: #94A3B8; font-weight: 600; margin-left: 4px; }
         .progress-bar-v2 { width: 100%; height: 6px; background: #F1F5F9; border-radius: 3px; margin-top: 12px; overflow: hidden; }
         .progress-fill-v2 { height: 100%; border-radius: 3px; }
         

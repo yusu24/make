@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from '@/constants/icons';
 import { Product, Order, OrderItem } from '../../types';
 import { api } from '../../../../../lib/api';
 import { useAuth } from '../../../../../contexts/AuthContext';

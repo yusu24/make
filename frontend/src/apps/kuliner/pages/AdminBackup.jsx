@@ -1,4 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Clock,
+  Zap,
+  Calendar,
+  FolderArchive,
+  Mail,
+  CheckCircle2,
+  XCircle,
+  Save,
+  Download,
+  FileSpreadsheet,
+  FileCode,
+  Send,
+  Lightbulb,
+  Database,
+  Utensils,
+  Receipt,
+  Boxes,
+  Truck,
+  LayoutGrid,
+  DollarSign,
+  Store,
+  Loader2
+} from '@/constants/icons';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
@@ -110,14 +134,14 @@ const AdminBackup = () => {
   };
 
   const backupDataItems = [
-    { icon: '🍔', title: 'Menu Makanan & Minuman', desc: 'Daftar produk, kategori, harga jual, diskon, dan ketersediaan menu.' },
-    { icon: '🧾', title: 'Riwayat Pesanan & POS', desc: 'Faktur transaksi, rincian item, pajak, service charge, dan status order.' },
-    { icon: '🥬', title: 'Stok Bahan Baku', desc: 'Data bahan dapur, sisa stok aktual, batas stok minimum, dan harga modal.' },
-    { icon: '🚚', title: 'Pemasok & Supplier', desc: 'Daftar supplier bahan baku, kontak PIC, dan alamat distributor.' },
-    { icon: '🪑', title: 'Daftar Meja Resto', desc: 'Nomor meja, kapasitas kursi pelanggan, dan status dine-in.' },
-    { icon: '💰', title: 'Keuangan & Pengeluaran', desc: 'Catatan pengeluaran operasional restoran dan kategori keuangan.' },
-    { icon: '⏱️', title: 'Riwayat Shift Kasir', desc: 'Rekap buka/tutup shift kasir, saldo awal modal kasir, dan selisih kas.' },
-    { icon: '🏢', title: 'Profil & Info Toko', desc: 'Pengaturan identitas resto, jam kerja, hari operasional, dan info sistem.' },
+    { icon: <Utensils size={18} className="text-[#b48c36]" />, title: 'Menu Makanan & Minuman', desc: 'Daftar produk, kategori, harga jual, diskon, dan ketersediaan menu.' },
+    { icon: <Receipt size={18} className="text-blue-600" />, title: 'Riwayat Pesanan & POS', desc: 'Faktur transaksi, rincian item, pajak, service charge, dan status order.' },
+    { icon: <Boxes size={18} className="text-emerald-600" />, title: 'Stok Bahan Baku', desc: 'Data bahan dapur, sisa stok aktual, batas stok minimum, dan harga modal.' },
+    { icon: <Truck size={18} className="text-amber-600" />, title: 'Pemasok & Supplier', desc: 'Daftar supplier bahan baku, kontak PIC, dan alamat distributor.' },
+    { icon: <LayoutGrid size={18} className="text-purple-600" />, title: 'Daftar Meja Resto', desc: 'Nomor meja, kapasitas kursi pelanggan, dan status dine-in.' },
+    { icon: <DollarSign size={18} className="text-emerald-600" />, title: 'Keuangan & Pengeluaran', desc: 'Catatan pengeluaran operasional restoran dan kategori keuangan.' },
+    { icon: <Clock size={18} className="text-indigo-600" />, title: 'Riwayat Shift Kasir', desc: 'Rekap buka/tutup shift kasir, saldo awal modal kasir, dan selisih kas.' },
+    { icon: <Store size={18} className="text-slate-600" />, title: 'Profil & Info Toko', desc: 'Pengaturan identitas resto, jam kerja, hari operasional, dan info sistem.' },
   ];
 
   return (
@@ -133,12 +157,12 @@ const AdminBackup = () => {
         ) : (
           <>
             {message && (
-              <div className={`p-4 rounded-2xl mb-6 text-sm font-bold border animate-in fade-in slide-in-from-top-4 duration-300 ${
+              <div className={`p-4 rounded-2xl mb-6 text-sm font-bold border flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-300 ${
                 message.type === 'success' 
                   ? 'bg-green-50 text-green-700 border-green-200' 
                   : 'bg-red-50 text-red-700 border-red-200'
               }`}>
-                {message.type === 'success' ? '✨ ' : '❌ '} {message.text}
+                {message.type === 'success' ? <CheckCircle2 size={16} className="text-green-600" /> : <XCircle size={16} className="text-red-600" />} {message.text}
               </div>
             )}
 
@@ -147,8 +171,8 @@ const AdminBackup = () => {
               {/* PANEL 1: BACKUP OTOMATIS */}
               <div className="kd-panel" style={{ height: 'fit-content' }}>
                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-xl text-[#b48c36]">
-                    ⏰
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-[#b48c36]">
+                    <Clock size={20} />
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-800 text-base">Jadwal Backup Otomatis</h3>
@@ -163,7 +187,7 @@ const AdminBackup = () => {
                       <div>
                         <div className="text-sm font-bold text-slate-800">Status Backup Otomatis</div>
                         <div className="text-[11px] text-slate-400 mt-0.5">
-                          {backup.auto_backup_enabled ? '🟢 Sistem backup aktif berjalan' : '⚪ Backup otomatis nonaktif'}
+                          {backup.auto_backup_enabled ? 'Sistem backup aktif berjalan' : 'Backup otomatis nonaktif'}
                         </div>
                       </div>
                       <div
@@ -188,7 +212,7 @@ const AdminBackup = () => {
                   {backup.auto_backup_enabled && (
                     <div className="kd-form-group animate-in fade-in duration-200">
                       <label className="kd-form-label flex items-center gap-2">
-                        <span>📅</span> Frekuensi Pengiriman
+                        <Calendar size={14} className="text-slate-500" /> Frekuensi Pengiriman
                       </label>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                         {[
@@ -223,13 +247,13 @@ const AdminBackup = () => {
                   {/* Format Selector */}
                   <div className="kd-form-group">
                     <label className="kd-form-label flex items-center gap-2">
-                      <span>📁</span> Format File Backup
+                      <FolderArchive size={14} className="text-slate-500" /> Format File Backup
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       {[
-                        ['excel', '📊 Excel (.xlsx)', 'Bisa dibuka di MS Excel / Google Sheets'],
-                        ['json', '📄 JSON (.json)', 'Format data mentah untuk restore teknis']
-                      ].map(([val, label, desc]) => (
+                        ['excel', 'Excel (.xlsx)', 'Bisa dibuka di MS Excel / Google Sheets', FileSpreadsheet],
+                        ['json', 'JSON (.json)', 'Format data mentah untuk restore teknis', FileCode]
+                      ].map(([val, label, desc, IconComponent]) => (
                         <div
                           key={val}
                           onClick={() => setBackup(b => ({ ...b, auto_backup_format: val }))}
@@ -243,8 +267,8 @@ const AdminBackup = () => {
                             transition: 'all 0.15s'
                           }}
                         >
-                          <div style={{ fontWeight: 700, fontSize: '13px', color: backup.auto_backup_format === val ? '#b48c36' : '#334155' }}>
-                            {label}
+                          <div style={{ fontWeight: 700, fontSize: '13px', color: backup.auto_backup_format === val ? '#b48c36' : '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <IconComponent size={15} /> {label}
                           </div>
                           <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '3px', lineHeight: '1.3' }}>
                             {desc}
@@ -257,7 +281,7 @@ const AdminBackup = () => {
                   {/* Email Recipient */}
                   <div className="kd-form-group">
                     <label className="kd-form-label flex items-center gap-2">
-                      <span>📧</span> Email Penerima Cadangan Data
+                      <Mail size={14} className="text-slate-500" /> Email Penerima Cadangan Data
                     </label>
                     <input
                       type="email"
@@ -274,7 +298,7 @@ const AdminBackup = () => {
 
                   {backup.last_auto_backup_at && (
                     <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '10px 14px', fontSize: '12px', color: '#16a34a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>✅</span>
+                      <CheckCircle2 size={16} className="text-green-600 flex-shrink-0" />
                       <div>
                         <strong>Backup Terakhir:</strong> {new Date(backup.last_auto_backup_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })} WIB
                       </div>
@@ -284,7 +308,7 @@ const AdminBackup = () => {
                   <button
                     type="submit"
                     disabled={backupSaving}
-                    className="w-full py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-[#b48c36]/15"
+                    className="w-full py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-[#b48c36]/15 flex items-center justify-center gap-2"
                     style={{
                       background: backupSaving ? '#cbd5e1' : '#b48c36',
                       color: '#fff',
@@ -293,7 +317,15 @@ const AdminBackup = () => {
                       transition: 'all 0.2s'
                     }}
                   >
-                    {backupSaving ? 'Menyimpan Pengaturan...' : '💾 Simpan Pengaturan Backup'}
+                    {backupSaving ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" /> Menyimpan Pengaturan...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={16} /> Simpan Pengaturan Backup
+                      </>
+                    )}
                   </button>
                 </form>
               </div>
@@ -302,8 +334,8 @@ const AdminBackup = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="kd-panel" style={{ height: 'fit-content' }}>
                   <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl text-emerald-600">
-                      ⚡
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                      <Zap size={20} />
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-800 text-base">Backup Manual (Instan)</h3>
@@ -314,7 +346,7 @@ const AdminBackup = () => {
                   {/* Unduh Langsung */}
                   <div style={{ marginBottom: '20px' }}>
                     <div className="text-xs font-bold text-slate-700 mb-2.5 flex items-center gap-2">
-                      <span>📥</span> Unduh Langsung ke Perangkat:
+                      <Download size={14} className="text-slate-500" /> Unduh Langsung ke Perangkat:
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <button
@@ -338,7 +370,15 @@ const AdminBackup = () => {
                           transition: 'all 0.15s'
                         }}
                       >
-                        {downloading === 'excel' ? '⏳ Mengunduh...' : '📊 Unduh Excel (.xlsx)'}
+                        {downloading === 'excel' ? (
+                          <>
+                            <Loader2 size={15} className="animate-spin" /> Mengunduh...
+                          </>
+                        ) : (
+                          <>
+                            <FileSpreadsheet size={15} className="text-emerald-600" /> Unduh Excel (.xlsx)
+                          </>
+                        )}
                       </button>
                       <button
                         type="button"
@@ -361,7 +401,15 @@ const AdminBackup = () => {
                           transition: 'all 0.15s'
                         }}
                       >
-                        {downloading === 'json' ? '⏳ Mengunduh...' : '📄 Unduh JSON (.json)'}
+                        {downloading === 'json' ? (
+                          <>
+                            <Loader2 size={15} className="animate-spin" /> Mengunduh...
+                          </>
+                        ) : (
+                          <>
+                            <FileCode size={15} className="text-blue-600" /> Unduh JSON (.json)
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -369,7 +417,7 @@ const AdminBackup = () => {
                   {/* Kirim ke Email */}
                   <div>
                     <div className="text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                      <span>✉️</span> Kirim ke Alamat Email:
+                      <Send size={14} className="text-slate-500" /> Kirim ke Alamat Email:
                     </div>
                     <div style={{ marginBottom: '10px' }}>
                       <input
@@ -405,7 +453,15 @@ const AdminBackup = () => {
                           transition: 'all 0.15s'
                         }}
                       >
-                        {emailing === 'excel' ? '⏳ Mengirim...' : '✉️ Kirim Excel'}
+                        {emailing === 'excel' ? (
+                          <>
+                            <Loader2 size={15} className="animate-spin" /> Mengirim...
+                          </>
+                        ) : (
+                          <>
+                            <Mail size={15} /> Kirim Excel
+                          </>
+                        )}
                       </button>
                       <button
                         type="button"
@@ -427,7 +483,15 @@ const AdminBackup = () => {
                           transition: 'all 0.15s'
                         }}
                       >
-                        {emailing === 'json' ? '⏳ Mengirim...' : '✉️ Kirim JSON'}
+                        {emailing === 'json' ? (
+                          <>
+                            <Loader2 size={15} className="animate-spin" /> Mengirim...
+                          </>
+                        ) : (
+                          <>
+                            <Mail size={15} /> Kirim JSON
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -436,7 +500,7 @@ const AdminBackup = () => {
                 {/* TIPS & INFO */}
                 <div className="kd-panel" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#fff' }}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-base">💡</span>
+                    <Lightbulb size={16} className="text-amber-400 flex-shrink-0" />
                     <h4 className="font-bold text-sm text-white">Tips Keamanan Data Toko</h4>
                   </div>
                   <ul className="text-[11px] text-slate-300 space-y-2 leading-relaxed list-disc list-inside">
@@ -452,8 +516,8 @@ const AdminBackup = () => {
             {/* PANEL 3: CAKUPAN DATA YANG DI-BACKUP */}
             <div className="kd-panel">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-xl text-blue-600">
-                  📦
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                  <Database size={20} />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-800 text-base">Cakupan Data yang Dicadangkan (8 Kategori)</h3>
@@ -476,7 +540,6 @@ const AdminBackup = () => {
                     }}
                   >
                     <div style={{
-                      fontSize: '20px',
                       width: '36px',
                       height: '36px',
                       borderRadius: '10px',

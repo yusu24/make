@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
+import { Plus, Pencil, Trash2, ShieldCheck, X } from '@/constants/icons'
 import '../budidaya.css'
 import usePagination from '../../../hooks/usePagination'
 import BudidayaPagination from '../components/BudidayaPagination'
@@ -135,9 +136,13 @@ export default function RolesPermissions() {
   return (
     <div className="aq-container">
       {/* Header Section */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 0 }}>
-        <button className="btn btn-primary" onClick={handleCreateNew} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '38px', padding: '0 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add_moderator</span>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
+        <button
+          className="btn btn-primary"
+          onClick={handleCreateNew}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '38px', padding: '0 16px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
+        >
+          <Plus size={16} />
           Buat Peran Baru
         </button>
       </div>
@@ -147,10 +152,10 @@ export default function RolesPermissions() {
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-              <th style={{ padding: '10px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Nama Peran</th>
-              <th style={{ padding: '10px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Deskripsi</th>
-              <th style={{ padding: '10px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Hak Akses Aktif</th>
-              <th style={{ padding: '10px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Aksi</th>
+              <th style={{ padding: '12px 16px', paddingLeft: '24px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nama Peran</th>
+              <th style={{ padding: '12px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Deskripsi</th>
+              <th style={{ padding: '12px 16px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hak Akses Aktif</th>
+              <th style={{ padding: '12px 16px', paddingRight: '24px', fontSize: '11.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -163,8 +168,8 @@ export default function RolesPermissions() {
                 // Count active permissions
                 const activePermsCount = Object.values(role.permissions || {}).filter(Boolean).length
                 return (
-                  <tr key={role.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.2s' }}>
-                    <td style={{ padding: '12px 16px' }}>
+                  <tr key={role.id} className="hover:bg-slate-50/70 transition-colors" style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '12px 16px', paddingLeft: '24px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E8F5ED', color: '#2D6A4F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '12px', flexShrink: 0 }}>
                           {role.name ? role.name.charAt(0).toUpperCase() : 'R'}
@@ -177,31 +182,30 @@ export default function RolesPermissions() {
                         )}
                       </div>
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: '12.5px', color: '#64748B' }}>
+                    <td style={{ padding: '12px 16px', fontSize: '13px', color: '#475569' }}>
                       {role.description || '-'}
                     </td>
                     <td style={{ padding: '12px 16px' }}>
-                      <span className="badge-pill badge-pill-success">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                         {activePermsCount} Izin Aktif
                       </span>
                     </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                      <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
+                    <td style={{ padding: '12px 16px', paddingRight: '24px', textAlign: 'right' }}>
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleEdit(role)}
-                          className="btn-table-action"
+                          className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                           title="Edit Peran"
                         >
-                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
+                          <Pencil size={13} />
                         </button>
                         {!role.is_system && (
                           <button
                             onClick={() => handleDeleteRole(role)}
-                            className="btn-table-action"
-                            style={{ color: '#ef4444' }}
+                            className="w-7 h-7 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 flex items-center justify-center text-rose-500 hover:text-rose-700 transition-colors cursor-pointer"
                             title="Hapus Peran"
                           >
-                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                            <Trash2 size={13} />
                           </button>
                         )}
                       </div>

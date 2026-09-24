@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api';
+import { UserCheck, User, Mail, Phone, ShieldCheck, Key, Check, Save, ShieldAlert } from '@/constants/icons';
 import './KulinerDashboard.css';
 
 const CulinaryProfile = () => {
@@ -20,7 +21,7 @@ const CulinaryProfile = () => {
     setLoading(true);
     try {
       await api.put('/profile', form);
-      alert('Profil Anda berhasil diperbarui! ✨');
+      alert('Profil Anda berhasil diperbarui!');
       // Refresh user data would be good here, or just let them re-login
     } catch (err) {
       alert(err.response?.data?.message || 'Gagal memperbarui profil');
@@ -58,13 +59,13 @@ const CulinaryProfile = () => {
                 {/* DATA DIRI */}
                 <div className="kd-panel">
                   <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-                    <span className="text-xl">📋</span>
+                    <UserCheck className="text-[#b48c36]" size={20} />
                     <h3 className="font-bold text-slate-800">Informasi Data Diri</h3>
                   </div>
 
                   <div className="kd-form-group">
                     <label className="kd-form-label flex items-center gap-2">
-                      <span>📝</span> Nama Lengkap
+                      <User size={15} className="text-slate-400" /> Nama Lengkap
                     </label>
                     <input 
                       type="text" className="kd-form-input" 
@@ -75,7 +76,7 @@ const CulinaryProfile = () => {
                   <div className="kd-form-row">
                     <div className="kd-form-group">
                       <label className="kd-form-label flex items-center gap-2">
-                        <span>✉️</span> Email Utama
+                        <Mail size={15} className="text-slate-400" /> Email Utama
                       </label>
                       <input 
                         type="email" className="kd-form-input bg-slate-50 cursor-not-allowed text-slate-500" 
@@ -87,7 +88,7 @@ const CulinaryProfile = () => {
 
                     <div className="kd-form-group">
                       <label className="kd-form-label flex items-center gap-2">
-                        <span>📱</span> Nomor Telepon
+                        <Phone size={15} className="text-slate-400" /> Nomor Telepon
                       </label>
                       <input 
                         type="text" className="kd-form-input" 
@@ -100,7 +101,7 @@ const CulinaryProfile = () => {
                 {/* KEAMANAN AKUN */}
                 <div className="kd-panel">
                   <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-                    <span className="text-xl">🔐</span>
+                    <ShieldCheck className="text-[#b48c36]" size={20} />
                     <h3 className="font-bold text-slate-800">Keamanan Akun</h3>
                   </div>
                   <p className="text-xs text-slate-400 mb-6 -mt-2">Kosongkan kolom di bawah jika Anda tidak ingin mengubah password.</p>
@@ -108,7 +109,7 @@ const CulinaryProfile = () => {
                   <div className="kd-form-row">
                     <div className="kd-form-group">
                       <label className="kd-form-label flex items-center gap-2">
-                        <span>🔑</span> Password Baru
+                        <Key size={15} className="text-slate-400" /> Password Baru
                       </label>
                       <input 
                         type="password" className="kd-form-input" 
@@ -119,7 +120,7 @@ const CulinaryProfile = () => {
 
                     <div className="kd-form-group">
                       <label className="kd-form-label flex items-center gap-2">
-                        <span>✔️</span> Konfirmasi Password
+                        <Check size={15} className="text-slate-400" /> Konfirmasi Password
                       </label>
                       <input 
                         type="password" className="kd-form-input" 
@@ -134,7 +135,10 @@ const CulinaryProfile = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {/* HELP CARD */}
                 <div className="kd-panel" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#fff' }}>
-                  <h4 className="font-bold mb-2">Pentingnya Keamanan</h4>
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShieldAlert size={18} className="text-amber-400" />
+                    <h4 className="font-bold">Pentingnya Keamanan</h4>
+                  </div>
                   <p className="text-[11px] text-slate-400 leading-relaxed mb-6">Pastikan nomor telepon dan email Anda selalu aktif. Kami akan menggunakan data ini untuk verifikasi keamanan dan notifikasi penting terkait toko Anda.</p>
                 </div>
 
@@ -144,9 +148,15 @@ const CulinaryProfile = () => {
                   <button 
                     type="submit" 
                     disabled={loading} 
-                    className="kd-btn kd-btn-primary w-full py-4 text-lg shadow-xl shadow-[#b48c36]/20"
+                    className="kd-btn kd-btn-primary w-full py-4 text-lg shadow-xl shadow-[#b48c36]/20 flex items-center justify-center gap-2"
                   >
-                    {loading ? 'Menyimpan...' : '💾 Simpan Perubahan'}
+                    {loading ? (
+                      'Menyimpan...'
+                    ) : (
+                      <>
+                        <Save size={18} /> Simpan Perubahan
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

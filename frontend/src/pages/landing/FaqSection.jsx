@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { HelpCircle, ChevronDown } from 'lucide-react'
+import { HelpCircle, ChevronDown } from '@/constants/icons'
 
 // Used only if settings.faq_items hasn't loaded / is empty (e.g. API error).
 const DEFAULT_FAQS = [

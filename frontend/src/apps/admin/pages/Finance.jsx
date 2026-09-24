@@ -6,6 +6,21 @@ import SaasPagination from '../../../components/SaasPagination'
 import './Shared.css'
 
 import {
+  DollarSign,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  TrendingUp,
+  FileText,
+  Search,
+  RefreshCw,
+  Eye,
+  Download,
+  Check,
+  Inbox
+} from '@/constants/icons'
+
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts'
 
@@ -34,9 +49,9 @@ function RevenueChart({ data }) {
     return ['Rp ' + new Intl.NumberFormat('id-ID').format(value), 'Revenue']
   }
   return (
-    <div style={{ width: '100%', height: 240, marginTop: 10 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 10, right: 10, left: 15, bottom: 10 }}>
+    <div className="chart-responsive-box" style={{ height: 240, minHeight: 240, marginTop: 10 }}>
+      <ResponsiveContainer width="100%" height="100%" minHeight={240}>
+        <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.95}/>
@@ -44,8 +59,21 @@ function RevenueChart({ data }) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
-          <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={formatYAxis} width={65} tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <XAxis 
+            dataKey="month" 
+            tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+            axisLine={false} 
+            tickLine={false} 
+            interval="preserveStartEnd"
+            minTickGap={5}
+          />
+          <YAxis 
+            tickFormatter={formatYAxis} 
+            width={58} 
+            tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+            axisLine={false} 
+            tickLine={false} 
+          />
           <Tooltip 
             formatter={formatTooltip}
             contentStyle={{ 
@@ -55,7 +83,7 @@ function RevenueChart({ data }) {
               fontSize: '12px'
             }}
           />
-          <Bar dataKey="revenue" name="Revenue" fill="url(#colorRevenue)" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="revenue" name="Revenue" fill="url(#colorRevenue)" radius={[6, 6, 0, 0]} maxBarSize={48} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -186,50 +214,66 @@ export default function Finance() {
 
   return (
     <div className="animate-fade-in">
-      {/* ── Header ── */}
-      <div className="page-header">
-        <div>
-          <h2 className="page-title">Finansial &amp; Faktur</h2>
-          <p className="page-sub">Kelola faktur langganan dan laporan pendapatan</p>
-        </div>
+      {/* ── Page Header ── */}
+      <div className="page-header mb-2">
+        <h2 className="page-title">Finansial &amp; Faktur</h2>
+      </div>
+
+      {/* ── Action Bar below title ── */}
+      <div className="flex justify-end mb-4">
+        <button
+          className="btn btn-secondary flex items-center gap-1.5"
+          onClick={fetchData}
+          disabled={loading}
+          title="Muat ulang data faktur"
+        >
+          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          <span>Muat Ulang</span>
+        </button>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <span className="spinner" style={{ width: 36, height: 36, borderWidth: 3 }} />
-            <span>Memuat data keuangan...</span>
+        <div className="card" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+            <RefreshCw size={28} className="animate-spin text-indigo-600" />
+            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+              Memuat data faktur &amp; laporan keuangan...
+            </span>
           </div>
         </div>
       ) : (
         <>
           {/* ── Summary Cards ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
             {[
-              { label: 'Total Pendapatan', value: fmtRp(statsData.total_revenue), icon: '💰', color: '#10b981', sub: 'semua invoice lunas' },
-              { label: 'Invoice Lunas',    value: statsData.paid_count,           icon: '✅', color: '#10b981', sub: `dari ${invoices.length} invoice` },
-              { label: 'Belum / Jatuh Tempo', value: statsData.unpaid_count,     icon: '⚠️', color: '#f59e0b', sub: 'perlu tindakan' },
-            ].map(card => (
-              <div key={card.label} className="card card-pad">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: card.color + '20', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-                    {card.icon}
+              { label: 'Total Pendapatan', value: fmtRp(statsData.total_revenue), icon: DollarSign, color: '#10b981', bg: 'bg-emerald-50 text-emerald-600', sub: 'Semua invoice lunas' },
+              { label: 'Invoice Lunas',    value: statsData.paid_count,           icon: CheckCircle2, color: '#10b981', bg: 'bg-emerald-50 text-emerald-600', sub: `Dari ${invoices.length} invoice` },
+              { label: 'Belum / Jatuh Tempo', value: statsData.unpaid_count,     icon: AlertTriangle, color: '#f59e0b', bg: 'bg-amber-50 text-amber-600', sub: 'Perlu tindakan segera' },
+            ].map(card => {
+              const IconComp = card.icon;
+              return (
+                <div key={card.label} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+                  <div className={`w-11 h-11 rounded-xl ${card.bg} flex items-center justify-center shrink-0`}>
+                    <IconComp size={22} strokeWidth={2} />
                   </div>
                   <div>
-                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{card.label}</p>
-                    <p style={{ fontSize: 22, fontWeight: 600, color: card.color, lineHeight: 1 }}>{card.value}</p>
-                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{card.sub}</p>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{card.label}</p>
+                    <p className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans']" style={{ color: card.color }}>{card.value}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{card.sub}</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* ── Revenue Chart ── */}
-          <div className="card card-pad" style={{ marginBottom: 24 }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, marginBottom: 20, fontSize: 15 }}>
-              📈 Tren Pendapatan Bulanan (6 Bulan Terakhir)
-            </h3>
+          <div className="card card-pad chart-card-wrapper min-w-0" style={{ marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+              <TrendingUp size={18} className="text-indigo-600" />
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 m-0">
+                Tren Pendapatan Bulanan (6 Bulan Terakhir)
+              </h3>
+            </div>
             <RevenueChart data={months} />
           </div>
 
@@ -237,11 +281,14 @@ export default function Finance() {
           <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>📄 Daftar Invoice</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <FileText size={18} className="text-primary" />
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>Daftar Invoice</h3>
+                </div>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div className="search-wrap" style={{ minWidth: 180, maxWidth: 240 }}>
-                    <span className="search-icon">🔍</span>
-                    <input className="form-input search-input" placeholder="Cari tenant / invoice..." value={search} onChange={e => setSearch(e.target.value)} />
+                  <div className="search-wrap" style={{ minWidth: 180, maxWidth: 240, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                    <input className="form-input search-input" style={{ paddingLeft: 34 }} placeholder="Cari tenant / invoice..." value={search} onChange={e => setSearch(e.target.value)} />
                   </div>
                   <div style={{ minWidth: 150 }}>
                     <select
@@ -261,13 +308,13 @@ export default function Finance() {
                       }}
                     >
                       <option value="all">Semua Status</option>
-                      <option value="paid">✓ Lunas</option>
-                      <option value="unpaid">⏳ Belum Bayar</option>
-                      <option value="overdue">⚠️ Jatuh Tempo</option>
+                      <option value="paid">Lunas</option>
+                      <option value="unpaid">Belum Bayar</option>
+                      <option value="overdue">Jatuh Tempo</option>
                     </select>
                   </div>
-                  <button className="btn btn-secondary" onClick={fetchData} disabled={loading} style={{ height: 38, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    🔄 Refresh
+                  <button className="btn btn-secondary" onClick={fetchData} disabled={loading} style={{ height: 38, padding: '0 14px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <RefreshCw size={14} /> Refresh
                   </button>
                 </div>
               </div>
@@ -295,20 +342,31 @@ export default function Finance() {
                       <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{fmtRp(inv.amount)}</td>
                       <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{inv.date}</td>
                       <td style={{ fontSize: 12, color: inv.status === 'overdue' ? 'var(--danger-400)' : 'var(--text-primary)' }}>{inv.due}</td>
-                      <td><span className={`badge ${STATUS_BADGE[inv.status]}`}>{STATUS_LABEL[inv.status]}</span></td>
+                      <td>
+                        <span className={`badge ${STATUS_BADGE[inv.status]}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          {inv.status === 'paid' && <CheckCircle2 size={11} />}
+                          {inv.status === 'unpaid' && <Clock size={11} />}
+                          {inv.status === 'overdue' && <AlertTriangle size={11} />}
+                          {STATUS_LABEL[inv.status]}
+                        </span>
+                      </td>
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleViewInvoice(inv)} title="Lihat Detail">👁</button>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleDownloadPdf(inv.id)} title="Unduh PDF Invoice">📥</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleViewInvoice(inv)} title="Lihat Detail">
+                            <Eye size={13} />
+                          </button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleDownloadPdf(inv.id)} title="Unduh PDF Invoice">
+                            <Download size={13} />
+                          </button>
                           {inv.status !== 'paid' && (
                             <button
                               className="btn btn-primary btn-sm"
-                              style={{ fontSize: 11 }}
+                              style={{ fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                               disabled={markingPaid === inv.id}
                               onClick={() => handleMarkAsPaid(inv.id)}
                               title="Tandai Lunas"
                             >
-                              {markingPaid === inv.id ? '...' : '✓'}
+                              {markingPaid === inv.id ? '...' : <Check size={12} />}
                             </button>
                           )}
                         </div>
@@ -319,7 +377,7 @@ export default function Finance() {
                     <tr>
                       <td colSpan={8} style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 36 }}>📄</span>
+                          <Inbox size={32} className="text-slate-400" />
                           <span>Belum ada invoice.</span>
                           <span style={{ fontSize: 12 }}>Invoice akan muncul otomatis ketika tenant berlangganan.</span>
                         </div>
@@ -328,19 +386,20 @@ export default function Finance() {
                   )}
                 </tbody>
               </table>
-              {!loading && filtered.length > 0 && (
-                <SaasPagination
-                  currentPage={currentPage}
-                  setCurrentPage={setCurrentPage}
-                  pageSize={pageSize}
-                  setPageSize={setPageSize}
-                  totalPages={totalPages}
-                  totalItems={totalItems}
-                  startIndex={startIndex}
-                  endIndex={endIndex}
-                />
-              )}
             </div>
+
+            {!loading && filtered.length > 0 && (
+              <SaasPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                startIndex={startIndex}
+                endIndex={endIndex}
+              />
+            )}
           </div>
         </>
       )}

@@ -6,7 +6,7 @@ import {
   TrendingUp, TrendingDown, DollarSign, ShoppingBag, Percent, 
   Calendar, RefreshCw, Printer, Search, ArrowUpRight, 
   ArrowDownRight, Layers, Tag
-} from 'lucide-react';
+} from '@/constants/icons';
 import { 
   BarChart, Bar, Cell, XAxis, YAxis, 
   CartesianGrid, Tooltip, ResponsiveContainer 
@@ -165,10 +165,10 @@ export default function ProductMarginReport() {
           <button 
             onClick={fetchMarginReport} 
             className="btn-reset-sync"
-            style={{ width: 38, height: 38 }}
+            style={{ width: 38, height: 38, flexShrink: 0 }}
             title="Segarkan Data"
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
 
           <button
@@ -185,68 +185,68 @@ export default function ProductMarginReport() {
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="card p-4 flex items-center gap-4 bg-white border border-slate-100 shadow-sm">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-            <DollarSign size={24} />
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <DollarSign size={22} />
           </div>
-          <div>
-            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Total Penjualan</p>
-            <p className="text-xl font-bold text-slate-800">
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Penjualan</span>
+            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
               {formatRp(reportData.summary.total_revenue)}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">{reportData.summary.total_products_sold} varian barang</p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">{reportData.summary.total_products_sold} varian barang</p>
           </div>
         </div>
 
-        <div className="card p-4 flex items-center gap-4 bg-white border border-slate-100 shadow-sm">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-            <ShoppingBag size={24} />
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <ShoppingBag size={22} />
           </div>
-          <div>
-            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Total Modal (HPP)</p>
-            <p className="text-xl font-bold text-slate-800">
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Modal (HPP)</span>
+            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
               {formatRp(reportData.summary.total_cogs)}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Biaya pokok barang terjual</p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Biaya pokok barang terjual</p>
           </div>
         </div>
 
-        <div className="card p-4 flex items-center gap-4 bg-white border border-slate-100 shadow-sm">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-            <TrendingUp size={24} />
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <TrendingUp size={22} />
           </div>
-          <div>
-            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Laba Kotor (Margin)</p>
-            <p className={`text-xl font-bold ${reportData.summary.total_margin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Laba Kotor (Margin)</span>
+            <p className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${reportData.summary.total_margin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               {formatRp(reportData.summary.total_margin)}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Keuntungan kotor riil</p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Keuntungan kotor riil</p>
           </div>
         </div>
 
-        <div className="card p-4 flex items-center gap-4 bg-white border border-slate-100 shadow-sm">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-            <Percent size={24} />
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+            <Percent size={22} />
           </div>
-          <div>
-            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Rata-rata Margin</p>
-            <p className={`text-xl font-bold ${reportData.summary.avg_margin_pct >= 20 ? 'text-emerald-600' : reportData.summary.avg_margin_pct >= 10 ? 'text-blue-600' : 'text-amber-600'}`}>
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Rata-rata Margin</span>
+            <p className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${reportData.summary.avg_margin_pct >= 20 ? 'text-emerald-600' : reportData.summary.avg_margin_pct >= 10 ? 'text-blue-600' : 'text-amber-600'}`}>
               {reportData.summary.avg_margin_pct}%
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Porsi profit dari omzet</p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Porsi profit dari omzet</p>
           </div>
         </div>
       </div>
 
       {/* Top 10 Margin Horizontal Bar Chart */}
       {chartData.length > 0 && (
-        <div className="card p-5 mb-6 bg-white border border-slate-100 shadow-sm">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold text-slate-800 text-base">Top 10 Produk Penyumbang Laba Kotor Terbesar</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Peringkat produk dengan kontribusi laba kotor tertinggi dari penjualan riil</p>
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-base">Top 10 Produk Penyumbang Laba Kotor Terbesar</h3>
+              <p className="text-xs text-slate-400 mt-0.5 font-['Inter']">Peringkat produk dengan kontribusi laba kotor tertinggi dari penjualan riil</p>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100 font-['Inter']">
               Top 10 Profit
             </span>
           </div>

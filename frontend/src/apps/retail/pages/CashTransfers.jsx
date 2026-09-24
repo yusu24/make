@@ -4,7 +4,7 @@ import '../retail-print.css';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useReactToPrint } from 'react-to-print';
-import { Plus, Trash2, ArrowRightLeft, Printer } from 'lucide-react';
+import { Plus, Trash2, ArrowRightLeft, Printer } from '@/constants/icons';
 import { useToast } from '../../../components/Toast';
 import Skeleton from '../../../components/Skeleton';
 import Modal from '../../../components/Modal';

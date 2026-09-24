@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Plus, Edit, Trash2, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, RefreshCw } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
@@ -105,7 +105,7 @@ export default function Serials() {
       {/* Page Title Handled by Navtop */}
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button className="btn btn-primary" onClick={openAdd} style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}>
+          <button className="btn btn-primary" onClick={openAdd} style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}>
             <Plus size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Tambah Serial</span>
           </button>
@@ -117,8 +117,8 @@ export default function Serials() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
-            <RefreshCw size={18} />
+          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
 
@@ -155,7 +155,7 @@ export default function Serials() {
                     </span>
                   </td>
                   <td className="text-right pr-6 flex items-center justify-end gap-2">
-                    <button onClick={() => openEdit(s)} className="btn btn-sm btn-ghost" title="Edit Data"><Edit size={15} /></button>
+                    <button onClick={() => openEdit(s)} className="btn btn-sm btn-ghost" title="Edit Data"><Pencil size={15} /></button>
                     <button onClick={() => deleteSerial(s.id)} className="btn btn-sm btn-ghost retail-text-danger" title="Hapus Data"><Trash2 size={15} /></button>
                   </td>
                 </tr>

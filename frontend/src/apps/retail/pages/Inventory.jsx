@@ -8,7 +8,7 @@ import {
   CheckCircle2, 
   Package,
   Eye
-} from 'lucide-react';
+} from '@/constants/icons';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import Modal from '../../../components/Modal';
 import '../retail.css';
@@ -68,47 +68,41 @@ export default function Inventory() {
       {/* Page Header (Synced with Finance) */}
 
 
-      {/* Finance-style Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ marginBottom: 24 }}>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {/* Total Katalog Card */}
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
-              <Package size={18} />
-            </div>
-            <span className="text-sm font-medium text-slate-500">Total Katalog</span>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <Package size={22} />
           </div>
-          <div>
-            <p className="text-2xl text-slate-900 leading-tight font-normal">{totalItems}</p>
-            <p className="text-xs text-slate-400 mt-1">Jumlah SKU unik terdaftar.</p>
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Katalog</span>
+            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{totalItems}</p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Jumlah SKU unik terdaftar</p>
           </div>
         </div>
 
         {/* Stok Aman Card */}
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
-              <CheckCircle2 size={18} />
-            </div>
-            <span className="text-sm font-medium text-slate-500">Stok Aman</span>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <CheckCircle2 size={22} />
           </div>
-          <div>
-            <p className="text-2xl text-slate-900 leading-tight font-normal">{safeItems}</p>
-            <p className="text-xs text-slate-400 mt-1">Produk dengan stok di atas batas minimum.</p>
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Stok Aman</span>
+            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{safeItems}</p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Stok di atas batas minimum</p>
           </div>
         </div>
 
         {/* Perlu Restok Card */}
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0">
-              <AlertCircle size={18} />
-            </div>
-            <span className="text-sm font-medium text-slate-500">Perlu Restok</span>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <AlertCircle size={22} />
           </div>
-          <div>
-            <p className="text-2xl text-slate-900 leading-tight font-normal">{criticalItems}</p>
-            <p className="text-xs text-slate-400 mt-1">{outOfStock} habis, {lowStock} menipis.</p>
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Perlu Restok</span>
+            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{criticalItems}</p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">{outOfStock} habis, {lowStock} menipis</p>
           </div>
         </div>
       </div>
@@ -125,7 +119,7 @@ export default function Inventory() {
           <button title="Hanya Barang Kritis" 
             className={`btn ${filterCritical ? 'btn-primary' : 'btn-secondary'}`} 
             onClick={() => { setFilterCritical(!filterCritical); setCurrentPage(1); }}
-            style={{ height: 42, whiteSpace: 'nowrap' }}
+            style={{ height: 38, whiteSpace: 'nowrap' }}
           >
             <AlertCircle size={15} className="mr-2" />
             <span className="btn-text-mobile-hide">Hanya Barang Kritis</span>
@@ -133,7 +127,7 @@ export default function Inventory() {
           <button 
             onClick={fetchData} 
             className="btn-reset-sync"
-            style={{ width: 42, height: 42, flexShrink: 0 }}
+            style={{ width: 38, height: 38, flexShrink: 0 }}
             title="Segarkan Data"
           >
             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />

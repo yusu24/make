@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { History, Edit3, Trash2 } from 'lucide-react';
+import { History, Pencil, Trash2, X } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
@@ -156,13 +156,13 @@ export default function BahanBaku() {
             <table className="kd-table">
               <thead>
                 <tr>
-                  <th onClick={() => table.toggleSort('name')} style={{ cursor: 'pointer' }}>{t('kulinerInventory.headerBahanName')} {table.sortBy === 'name' ? (table.sortDir === 'asc' ? '↑' : '↓') : ''}</th>
+                  <th className="pl-6" onClick={() => table.toggleSort('name')} style={{ cursor: 'pointer' }}>{t('kulinerInventory.headerBahanName')} {table.sortBy === 'name' ? (table.sortDir === 'asc' ? '↑' : '↓') : ''}</th>
                   <th>Kode</th>
                   <th>Kategori</th>
                   <th>Supplier</th>
                   <th onClick={() => table.toggleSort('stock')} style={{ cursor: 'pointer' }}>{t('kulinerInventory.headerStock')} {table.sortBy === 'stock' ? (table.sortDir === 'asc' ? '↑' : '↓') : ''}</th>
-                  <th onClick={() => table.toggleSort('last_price')} style={{ cursor: 'pointer' }}>{t('kulinerInventory.headerAvgCost')}</th>
-                  <th className="text-right">{t('kulinerInventory.headerAction')}</th>
+                  <th className="text-right" onClick={() => table.toggleSort('last_price')} style={{ cursor: 'pointer' }}>{t('kulinerInventory.headerAvgCost')}</th>
+                  <th className="pr-6 text-right">{t('kulinerInventory.headerAction')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -172,24 +172,30 @@ export default function BahanBaku() {
                   <tr><td colSpan="7" className="text-center py-10 text-slate-400">{t('kulinerInventory.emptyBahan')}</td></tr>
                 ) : (
                   table.rows.map((ing) => (
-                    <tr key={ing.id}>
-                      <td>
-                        <div style={{ color: '#1e293b' }}>{ing.name}</div>
+                    <tr key={ing.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="pl-6 font-normal text-[12px] text-slate-900">
+                        <div>{ing.name}</div>
                       </td>
-                      <td>{ing.code || '-'}</td>
-                      <td>{ing.category || '-'}</td>
-                      <td>{ing.supplier?.name || '-'}</td>
                       <td>
-                        <span className={`kd-status-badge ${ing.is_low_stock ? 'kd-status-hidden' : 'kd-status-active'}`}>
+                        <code className="text-slate-700 font-mono text-[12px] font-normal uppercase tracking-wider">{ing.code || '-'}</code>
+                      </td>
+                      <td>
+                        <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-normal bg-purple-50 text-purple-700 border border-purple-200/80">
+                          {ing.category || 'Umum'}
+                        </span>
+                      </td>
+                      <td className="font-normal text-[12px]">{ing.supplier?.name || '-'}</td>
+                      <td>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[12px] font-semibold border ${ing.is_low_stock ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
                           {Number(ing.stock).toLocaleString('id-ID')} {ing.unit}
                         </span>
                       </td>
-                      <td>{formatRp(ing.last_price)}</td>
-                      <td className="text-right">
-                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                          <button className="kd-icon-btn" title="Riwayat" onClick={() => openMovements(ing)}><History size={16} /></button>
-                          <button className="kd-icon-btn" title="Edit" onClick={() => openEdit(ing)}><Edit3 size={16} /></button>
-                          <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(ing)}><Trash2 size={16} /></button>
+                      <td className="text-right font-semibold text-[12px] text-slate-900">{formatRp(ing.last_price)}</td>
+                      <td className="pr-6 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer" title="Riwayat Stok" onClick={() => openMovements(ing)}><History size={14} /></button>
+                          <button className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer" title="Edit" onClick={() => openEdit(ing)}><Pencil size={14} /></button>
+                          <button className="w-7 h-7 rounded-lg hover:bg-rose-50 flex items-center justify-center text-slate-400 hover:text-rose-600 transition-colors cursor-pointer" title="Hapus" onClick={() => handleDelete(ing)}><Trash2 size={14} /></button>
                         </div>
                       </td>
                     </tr>
@@ -207,7 +213,9 @@ export default function BahanBaku() {
           <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{editingItem ? t('kulinerInventory.editBahanModalTitle') : t('kulinerInventory.addBahanModalTitle')}</h2>
-              <button className="kd-close-btn" onClick={() => setShowModal(false)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setShowModal(false)}>
+                <X size={18} />
+              </button>
             </div>
             <form onSubmit={handleSave}>
               <div className="kd-modal-body">
@@ -269,7 +277,9 @@ export default function BahanBaku() {
           <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">Riwayat Stok — {movementsFor.name}</h2>
-              <button className="kd-close-btn" onClick={() => setMovementsFor(null)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setMovementsFor(null)}>
+                <X size={18} />
+              </button>
             </div>
             <div className="kd-modal-body" style={{ maxHeight: 400, overflowY: 'auto' }}>
               {movements.length === 0 ? (

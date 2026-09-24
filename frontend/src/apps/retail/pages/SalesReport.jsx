@@ -6,9 +6,9 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useReactToPrint } from 'react-to-print';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
-  BarChart3, TrendingUp, Target, ArrowUpRight, 
+  TrendingUp, Target, ArrowUpRight, 
   Receipt, RefreshCw, Printer, Calendar
-} from 'lucide-react';
+} from '@/constants/icons';
 import RetailLoading from '../components/RetailLoading';
 import '../retail.css';
 import '../retail-print.css';
@@ -242,62 +242,56 @@ export default function SalesReport() {
         {/* ========================================================= */}
         <div className="no-print">
           {/* Finance KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ marginBottom: 24 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* Total Omzet Card */}
-            <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
-                  <TrendingUp size={18} />
-                </div>
-                <span className="text-sm font-medium text-slate-500">Total Omzet</span>
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <TrendingUp size={22} />
               </div>
-              <div>
-                <p className="text-2xl text-slate-900 leading-tight font-semibold">
+              <div className="flex-1 min-w-0">
+                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Omzet</span>
+                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
                   {formatRp(data.total_sales || 0)}
                 </p>
-                <p className="text-xs text-slate-400 mt-1">Akumulasi pendapatan kotor bulan ini.</p>
+                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Akumulasi pendapatan kotor bulan ini</p>
               </div>
             </div>
 
             {/* Total Transaksi Card */}
-            <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
-                  <Target size={18} />
-                </div>
-                <span className="text-sm font-medium text-slate-500">Total Transaksi</span>
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <Target size={22} />
               </div>
-              <div>
-                <p className="text-2xl text-slate-900 leading-tight font-normal">
-                  {data.total_transactions} <span className="text-sm text-slate-400 font-medium ml-1">TRX</span>
+              <div className="flex-1 min-w-0">
+                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Transaksi</span>
+                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
+                  {data.total_transactions} <span className="text-sm text-slate-400 font-bold ml-1 font-['Inter']">TRX</span>
                 </p>
-                <p className="text-xs text-slate-400 mt-1">Volume penjualan yang berhasil diproses.</p>
+                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Volume penjualan berhasil diproses</p>
               </div>
             </div>
 
             {/* Rata-rata Transaksi */}
-            <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 shrink-0">
-                  <ArrowUpRight size={18} />
-                </div>
-                <span className="text-sm font-medium text-slate-500">Rata-rata Transaksi</span>
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <ArrowUpRight size={22} />
               </div>
-              <div>
-                <p className="text-2xl text-slate-900 leading-tight font-semibold">
+              <div className="flex-1 min-w-0">
+                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Rata-rata Transaksi</span>
+                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
                   {formatRp(data.total_transactions > 0 ? (Number(data.total_sales || 0) / data.total_transactions) : 0)}
                 </p>
-                <p className="text-xs text-slate-400 mt-1">Estimasi nilai belanja per konsumen.</p>
+                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Estimasi belanja per konsumen</p>
               </div>
             </div>
           </div>
 
           {/* Daily Sales Chart */}
-          <div className="card table-wrap animate-fade-in" style={{ padding: '24px', marginBottom: 24 }}>
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-bold text-slate-800 text-base">Tren Penjualan Harian</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Grafik dinamika omzet harian pada periode berjalan.</p>
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-base">Tren Penjualan Harian</h3>
+                <p className="text-xs text-slate-400 mt-0.5 font-['Inter']">Grafik dinamika omzet harian pada periode berjalan.</p>
               </div>
             </div>
             <div style={{ height: 260, width: '100%' }}>

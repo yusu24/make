@@ -1,4 +1,14 @@
 import { useState, useEffect } from 'react'
+import {
+  Search,
+  RefreshCw,
+  Download,
+  Info,
+  CheckCircle2,
+  AlertTriangle,
+  AlertCircle,
+  Settings
+} from '@/constants/icons'
 import { api } from '../../../lib/api'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
@@ -23,10 +33,10 @@ const LEVEL_BADGE = {
 }
 
 const LEVEL_ICON = {
-  info: 'ℹ',
-  success: '✓',
-  warning: '⚠',
-  danger: '✗',
+  info: Info,
+  success: CheckCircle2,
+  warning: AlertTriangle,
+  danger: AlertCircle,
 }
 
 export default function ActivityLogs() {
@@ -77,11 +87,12 @@ export default function ActivityLogs() {
         {/* Toolbar Header */}
         <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div className="search-wrap" style={{ minWidth: 220, maxWidth: 320, flex: 1 }}>
-              <span className="search-icon">🔍</span>
+            <div className="search-wrap" style={{ minWidth: 220, maxWidth: 320, flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
               <input
                 id="input-search-logs"
                 className="form-input search-input"
+                style={{ paddingLeft: 34 }}
                 placeholder="Cari aktivitas, pengguna, IP..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
@@ -105,23 +116,23 @@ export default function ActivityLogs() {
                   }}
                 >
                   <option value="all">Semua Level</option>
-                  <option value="info">ℹ Info</option>
-                  <option value="success">✓ Success</option>
-                  <option value="warning">⚠ Warning</option>
-                  <option value="danger">✗ Danger</option>
+                  <option value="info">Info</option>
+                  <option value="success">Success</option>
+                  <option value="warning">Warning</option>
+                  <option value="danger">Danger</option>
                 </select>
               </div>
               <button 
                 id="btn-refresh-logs" 
                 className="btn btn-secondary btn-sm" 
-                style={{ height: 38 }}
+                style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 onClick={fetchLogs}
                 disabled={loading}
               >
-                🔄 Refresh
+                <RefreshCw size={14} /> Refresh
               </button>
-              <button id="btn-export-logs" className="btn btn-secondary btn-sm" style={{ height: 38 }}>
-                ⬇ Export CSV
+              <button id="btn-export-logs" className="btn btn-secondary btn-sm" style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Download size={14} /> Export CSV
               </button>
             </div>
           </div>
@@ -154,72 +165,75 @@ export default function ActivityLogs() {
                   </td>
                 </tr>
               ) : (
-                paginatedData.map(log => (
-                  <tr key={log.id}>
-                    <td style={{ fontSize: 12.5, color: '#64748b', whiteSpace: 'nowrap' }}>
-                      <code style={{ fontSize: 12, color: 'var(--text-primary)', background: '#f1f5f9', padding: '3px 7px', borderRadius: 4 }}>
-                        {log.time}
-                      </code>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                        <div style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: '50%',
-                          background: log.user === 'System' ? '#f1f5f9' : '#eaeaff',
-                          color: log.user === 'System' ? '#64748b' : '#696cff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 700,
-                          fontSize: 11
-                        }}>
-                          {log.user === 'System' ? '⚙' : log.user.slice(0, 2).toUpperCase()}
+                paginatedData.map(log => {
+                  const LevelIcon = LEVEL_ICON[log.level] || Info;
+                  return (
+                    <tr key={log.id}>
+                      <td style={{ fontSize: 12.5, color: '#64748b', whiteSpace: 'nowrap' }}>
+                        <code style={{ fontSize: 12, color: 'var(--text-primary)', background: '#f1f5f9', padding: '3px 7px', borderRadius: 4 }}>
+                          {log.time}
+                        </code>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                          <div style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: '50%',
+                            background: log.user === 'System' ? '#f1f5f9' : '#eaeaff',
+                            color: log.user === 'System' ? '#64748b' : '#696cff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: 11
+                          }}>
+                            {log.user === 'System' ? <Settings size={14} /> : log.user.slice(0, 2).toUpperCase()}
+                          </div>
+                          <span style={{ fontWeight: 600, fontSize: 13, color: '#32475c' }}>
+                            {log.user}
+                          </span>
                         </div>
-                        <span style={{ fontWeight: 600, fontSize: 13, color: '#32475c' }}>
-                          {log.user}
+                      </td>
+                      <td>
+                        <span className={`badge ${LEVEL_BADGE[log.level] || 'badge-secondary'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <LevelIcon size={11} /> {log.level}
                         </span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`badge ${LEVEL_BADGE[log.level] || 'badge-secondary'}`}>
-                        {LEVEL_ICON[log.level]} {log.level}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="badge badge-secondary" style={{ textTransform: 'none', fontWeight: 600 }}>
-                        {log.action.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {log.target}
-                    </td>
-                    <td>
-                      <code style={{ fontSize: 11.5, color: '#475569', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2px 6px', borderRadius: 4 }}>
-                        {log.ip || '-'}
-                      </code>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td>
+                        <span className="badge badge-secondary" style={{ textTransform: 'none', fontWeight: 600 }}>
+                          {log.action.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                        {log.target}
+                      </td>
+                      <td>
+                        <code style={{ fontSize: 11.5, color: '#475569', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2px 6px', borderRadius: 4 }}>
+                          {log.ip || '-'}
+                        </code>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
-
-          {/* Pagination */}
-          {!loading && filtered.length > 0 && (
-            <SaasPagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              startIndex={startIndex}
-              endIndex={endIndex}
-            />
-          )}
         </div>
+
+        {/* Pagination */}
+        {!loading && filtered.length > 0 && (
+          <SaasPagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
+        )}
       </div>
     </div>
   )

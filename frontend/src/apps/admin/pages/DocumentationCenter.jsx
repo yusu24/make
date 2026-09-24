@@ -1,343 +1,1288 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../../../lib/api';
-import { Search, ChevronRight, BookOpen, Printer, Download, Layout, FileText, ChevronDown, AlignLeft } from 'lucide-react';
+import {
+  Search,
+  ChevronRight,
+  BookOpen,
+  Printer,
+  Download,
+  Layout,
+  FileText,
+  ChevronDown,
+  RefreshCw,
+  Copy,
+  Check,
+  ExternalLink,
+  Sparkles,
+  Clock,
+  User,
+  Folder,
+  FolderOpen,
+  HelpCircle,
+  ThumbsUp,
+  ThumbsDown,
+  ArrowLeft,
+  ArrowRight,
+  Menu,
+  X,
+  Share2,
+  Store,
+  TrendingUp,
+  Coins,
+  Settings,
+  ShieldCheck,
+  Layers,
+  Lightbulb,
+  Info,
+  ListTree,
+  Tag,
+  Hash,
+  Compass,
+  CheckCircle2,
+  MessageSquare
+} from '@/constants/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Helper to pick category icon based on name or module
+function getCategoryIcon(name = '', module = '') {
+  const lower = (name + ' ' + module).toLowerCase();
+  if (lower.includes('keuangan') || lower.includes('akuntansi') || lower.includes('laba')) {
+    return Coins;
+  }
+  if (lower.includes('retail') || lower.includes('toko') || lower.includes('pos') || lower.includes('kasir')) {
+    return Store;
+  }
+  if (lower.includes('langganan') || lower.includes('daftar') || lower.includes('paket') || lower.includes('onboarding')) {
+    return Sparkles;
+  }
+  if (lower.includes('kuliner') || lower.includes('f&b') || lower.includes('restoran')) {
+    return Compass;
+  }
+  if (lower.includes('stok') || lower.includes('produk') || lower.includes('inventori')) {
+    return Layers;
+  }
+  if (lower.includes('keamanan') || lower.includes('privasi') || lower.includes('auth')) {
+    return ShieldCheck;
+  }
+  if (lower.includes('sistem') || lower.includes('setting') || lower.includes('pengaturan')) {
+    return Settings;
+  }
+  return BookOpen;
+}
+
+// Calculate estimated reading time
+function getEstimatedReadTime(htmlContent = '') {
+  if (!htmlContent) return '1 menit';
+  const text = htmlContent.replace(/<[^>]*>/g, ' ');
+  const wordCount = text.trim().split(/\s+/).length;
+  const minutes = Math.max(1, Math.ceil(wordCount / 180));
+  return `${minutes} menit baca`;
+}
+
+// Extract H2 & H3 headings and inject matching IDs into HTML
+function processArticleContent(htmlContent = '') {
+  if (!htmlContent) return { processedHtml: '', headings: [] };
+
+  const headings = [];
+  let counter = 0;
+
+  const processedHtml = htmlContent.replace(/<(h[23])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, text) => {
+    counter++;
+    const plainText = text.replace(/<[^>]*>/g, '').trim();
+    const slugId = 'sec-' + counter + '-' + plainText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    
+    headings.push({
+      id: slugId,
+      text: plainText,
+      level: tag.toLowerCase() === 'h2' ? 2 : 3
+    });
+
+    return `<${tag}${attrs} id="${slugId}" class="doc-heading group relative">${text}<a href="#${slugId}" class="heading-anchor opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-indigo-400 hover:text-indigo-600 inline-block font-normal" title="Tautan langsung bagian ini">#</a></${tag}>`;
+  });
+
+  return { processedHtml, headings };
+}
+
 export default function DocumentationCenter() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
   const [categories, setCategories] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // Dropdown states
-  const [navDropdownOpen, setNavDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [articleLoading, setArticleLoading] = useState(false);
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchContainerRef = useRef(null);
+
+  // Sidebar & Navigation states
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [collapsedCategories, setCollapsedCategories] = useState({});
+  const [sidebarFilter, setSidebarFilter] = useState('');
+
+  // Reader UX states
+  const [copied, setCopied] = useState(false);
+  const [fontSize, setFontSize] = useState('normal'); // 'normal' | 'large'
+  const [feedbackState, setFeedbackState] = useState(null); // 'helpful' | 'unhelpful' | null
+  const [activeHeadingId, setActiveHeadingId] = useState('');
+  const articleContainerRef = useRef(null);
+
+  const initialArticleSlug = searchParams.get('article');
+
+  // Load Categories on mount
   useEffect(() => {
     fetchCategories();
-    
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setNavDropdownOpen(false);
+
+    const handleClickOutside = (e) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setSearchFocused(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Sync with URL query parameter
+  useEffect(() => {
+    const slug = searchParams.get('article');
+    if (slug) {
+      if (!selectedArticle || selectedArticle.slug !== slug) {
+        fetchArticle(slug, false);
+      }
+    } else if (categories.length > 0 && !selectedArticle) {
+      // Default to first article if available
+      const firstCatWithArticles = categories.find(c => c.articles && c.articles.length > 0);
+      if (firstCatWithArticles && firstCatWithArticles.articles[0]) {
+        fetchArticle(firstCatWithArticles.articles[0].slug, true);
+      }
+    }
+  }, [searchParams, categories]);
+
+  // Scroll spy for Table of Contents
+  useEffect(() => {
+    if (!selectedArticle) return;
+
+    const handleScroll = () => {
+      const headingElements = document.querySelectorAll('.doc-heading');
+      if (!headingElements.length) return;
+
+      const scrollPosition = window.scrollY + 140;
+      let currentId = '';
+
+      headingElements.forEach((el) => {
+        if (el.offsetTop <= scrollPosition) {
+          currentId = el.getAttribute('id');
+        }
+      });
+
+      if (currentId) {
+        setActiveHeadingId(currentId);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [selectedArticle]);
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
       const res = await api.get('/documentation/categories');
-      setCategories(res.data || []);
-      
-      if (res.data?.length > 0 && res.data[0].articles?.length > 0 && !selectedArticle) {
-        fetchArticle(res.data[0].articles[0].slug);
+      const cats = res.data || [];
+      setCategories(cats);
+
+      // Default all categories open
+      const initialCollapsed = {};
+      cats.forEach(c => {
+        initialCollapsed[c.id] = false;
+      });
+      setCollapsedCategories(initialCollapsed);
+
+      // If initial slug is present in URL, fetch it
+      const currentSlug = new URLSearchParams(window.location.search).get('article');
+      if (currentSlug) {
+        fetchArticle(currentSlug, false);
+      } else if (cats.length > 0) {
+        const firstCat = cats.find(c => c.articles && c.articles.length > 0);
+        if (firstCat && firstCat.articles[0]) {
+          fetchArticle(firstCat.articles[0].slug, true);
+        }
       }
     } catch (err) {
-      console.error(err);
+      console.error('Gagal mengambil kategori dokumentasi:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchArticle = async (slug) => {
+  const fetchArticle = async (slug, updateUrl = true) => {
+    if (!slug) return;
     try {
-      setLoading(true);
+      setArticleLoading(true);
       const res = await api.get(`/documentation/article/${slug}`);
       setSelectedArticle(res.data);
+      setFeedbackState(null);
+      setSearchFocused(false);
       setSearchQuery('');
       setSearchResults([]);
-      setNavDropdownOpen(false);
+      setMobileSidebarOpen(false);
+
+      if (updateUrl) {
+        setSearchParams({ article: slug });
+      }
+
+      // Smooth scroll to top of article area
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      console.error(err);
+      console.error('Gagal mengambil artikel:', err);
     } finally {
-      setLoading(false);
+      setArticleLoading(false);
     }
   };
 
-  const handleSearch = async (e) => {
+  // Live search handler
+  const handleSearchChange = async (e) => {
     const q = e.target.value;
     setSearchQuery(q);
-    if (q.length > 2) {
+    if (q.trim().length >= 2) {
       try {
-        const res = await api.get(`/documentation/search?q=${q}`);
+        const res = await api.get(`/documentation/search?q=${encodeURIComponent(q.trim())}`);
         setSearchResults(res.data || []);
-      } catch (err) {}
+      } catch (err) {
+        console.error('Gagal mencari panduan:', err);
+      }
     } else {
       setSearchResults([]);
     }
   };
 
-  const handleDownloadPdf = () => {
-    if (!selectedArticle) return;
-    window.open(`${import.meta.env.VITE_API_URL}/api/documentation/export/article/${selectedArticle.slug}`, '_blank');
+  const toggleCategoryCollapse = (catId) => {
+    setCollapsedCategories(prev => ({
+      ...prev,
+      [catId]: !prev[catId]
+    }));
   };
 
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!selectedArticle) return;
+    window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/documentation/export/article/${selectedArticle.slug}`, '_blank');
+  };
+
+  // Flattened list of articles for Prev / Next navigation
+  const allArticlesList = useMemo(() => {
+    const list = [];
+    categories.forEach(cat => {
+      if (cat.articles && cat.articles.length > 0) {
+        cat.articles.forEach(art => {
+          list.push({
+            ...art,
+            categoryName: cat.name
+          });
+        });
+      }
+    });
+    return list;
+  }, [categories]);
+
+  // Find previous and next articles
+  const { prevArticle, nextArticle } = useMemo(() => {
+    if (!selectedArticle || allArticlesList.length === 0) {
+      return { prevArticle: null, nextArticle: null };
+    }
+    const currentIndex = allArticlesList.findIndex(a => a.slug === selectedArticle.slug || a.id === selectedArticle.id);
+    if (currentIndex === -1) return { prevArticle: null, nextArticle: null };
+
+    return {
+      prevArticle: currentIndex > 0 ? allArticlesList[currentIndex - 1] : null,
+      nextArticle: currentIndex < allArticlesList.length - 1 ? allArticlesList[currentIndex + 1] : null
+    };
+  }, [selectedArticle, allArticlesList]);
+
+  // Filtered categories according to sidebar search query
+  const filteredCategories = useMemo(() => {
+    if (!sidebarFilter.trim()) return categories;
+    const filterLower = sidebarFilter.toLowerCase();
+    return categories
+      .map(cat => {
+        const matchedArticles = (cat.articles || []).filter(a => a.title.toLowerCase().includes(filterLower));
+        const catMatched = cat.name.toLowerCase().includes(filterLower);
+        if (catMatched || matchedArticles.length > 0) {
+          return {
+            ...cat,
+            articles: catMatched ? cat.articles : matchedArticles
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+  }, [categories, sidebarFilter]);
+
+  // Processed HTML & TOC
+  const { processedHtml, headings } = useMemo(() => {
+    if (!selectedArticle?.content) return { processedHtml: '', headings: [] };
+    return processArticleContent(selectedArticle.content);
+  }, [selectedArticle?.content]);
+
+  // Total article count
+  const totalArticles = useMemo(() => {
+    return categories.reduce((sum, c) => sum + (c.articles?.length || 0), 0);
+  }, [categories]);
+
   return (
-    <div className="relative font-sans">
-      {/* Top Navigation & Search Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-3 mb-6 flex flex-col md:flex-row gap-3 items-center justify-between hide-on-print">
+    <div className="doc-center-wrapper font-sans text-slate-800 -mt-2 -mx-2 sm:-mx-4 md:-mx-6 min-h-[calc(100vh-140px)] flex flex-col">
+      {/* Top Banner & Universal Search Header */}
+      <div className="bg-white border-b border-slate-200/80 sticky top-0 z-30 shadow-xs backdrop-blur-md bg-white/95">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row items-center justify-between gap-3">
           
-          {/* Custom Dropdown Navigation */}
-          <div className="relative w-full md:w-3/5" ref={dropdownRef}>
-            <button 
-              onClick={() => setNavDropdownOpen(!navDropdownOpen)}
-              className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left transition-colors"
-            >
-              <div className="flex items-center gap-3 overflow-hidden">
-                <AlignLeft className="w-5 h-5 text-indigo-600 shrink-0" />
-                <div className="truncate">
-                  <div className="text-xs text-slate-500 font-semibold mb-0.5">Daftar Isi Panduan</div>
-                  <div className="text-sm font-bold text-slate-800 truncate">
-                    {selectedArticle ? selectedArticle.title : 'Pilih Panduan...'}
+          {/* Left Brand / Breadcrumb Identity */}
+          <div className="w-full md:w-auto flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                className="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors"
+                title="Buka Menu Panduan"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+
+              <div 
+                onClick={() => {
+                  setSelectedArticle(null);
+                  setSearchParams({});
+                }}
+                className="cursor-pointer group flex items-center gap-2.5"
+              >
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-600/20 group-hover:scale-105 transition-transform">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      Pusat Dokumentasi
+                    </span>
+                    <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                      v2.4
+                    </span>
                   </div>
+                  <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
+                    {totalArticles} Panduan Resmi & SOP Operasional
+                  </p>
                 </div>
               </div>
-              <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${navDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
+            </div>
 
-            <AnimatePresence>
-              {navDropdownOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 max-h-[60vh] overflow-y-auto custom-scrollbar"
-                >
-                  <div className="p-2">
-                    {categories.map((cat) => (
-                      <div key={cat.id} className="mb-3 last:mb-0">
-                        <div className="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                          <Layout className="w-3.5 h-3.5" />
-                          {cat.name}
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          {cat.articles?.map(art => {
-                            const isActive = selectedArticle?.id === art.id;
-                            return (
-                              <button 
-                                key={art.id}
-                                onClick={() => fetchArticle(art.slug)}
-                                className={`
-                                  w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 flex items-start gap-2.5
-                                  ${isActive 
-                                    ? 'bg-indigo-50 text-indigo-700 font-semibold' 
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
-                                `}
-                              >
-                                <FileText className={`w-4 h-4 shrink-0 mt-0.5 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
-                                <span className="leading-snug">{art.title}</span>
-                              </button>
-                            );
-                          })}
-                          {(!cat.articles || cat.articles.length === 0) && (
-                            <span className="text-xs text-slate-400 pl-4 py-2 italic">Belum ada panduan</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Quick Mobile Action to Home */}
+            {selectedArticle && (
+              <button
+                onClick={() => {
+                  setSelectedArticle(null);
+                  setSearchParams({});
+                }}
+                className="md:hidden text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+              >
+                <span>Semua Panduan</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
-          {/* Search Box */}
-          <div className="relative w-full md:w-2/5">
-            <Search className="absolute top-3 left-3 text-slate-400 w-4 h-4" />
-            <input 
-              type="text" 
-              placeholder="Cari panduan..." 
-              className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 rounded-lg py-2.5 pl-9 pr-4 text-sm transition-all"
-              value={searchQuery}
-              onChange={handleSearch}
-            />
-            {/* Search Results Dropdown */}
-            <AnimatePresence>
-              {searchResults.length > 0 && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-[300px] overflow-y-auto"
+          {/* Center/Right Global Search Bar */}
+          <div className="relative w-full md:w-96" ref={searchContainerRef}>
+            <div className="relative flex items-center">
+              <Search className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Cari topik, rumus, modul..."
+                value={searchQuery}
+                onFocus={() => setSearchFocused(true)}
+                onChange={handleSearchChange}
+                className="w-full bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-800 placeholder-slate-400 pl-10 pr-9 py-2 rounded-xl text-sm border border-slate-200 focus:border-indigo-500 focus:ring-3 focus:ring-indigo-100 transition-all outline-none"
+              />
+              {searchQuery ? (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}
+                  className="absolute right-3 p-0.5 text-slate-400 hover:text-slate-600 rounded-full"
                 >
-                  {searchResults.map(res => (
-                    <div 
-                      key={res.id} 
-                      className="p-3 hover:bg-indigo-50 border-b border-slate-50 last:border-0 cursor-pointer" 
-                      onClick={() => fetchArticle(res.slug)}
-                    >
-                      <div className="text-sm font-semibold text-slate-800">{res.title}</div>
-                      <div className="text-xs text-slate-500 mt-0.5">{res.category?.name}</div>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <span className="absolute right-3 hidden sm:flex items-center text-[10px] font-semibold text-slate-400 bg-slate-200/70 border border-slate-300/60 px-1.5 py-0.5 rounded pointer-events-none">
+                  /
+                </span>
+              )}
+            </div>
+
+            {/* Instant Search Dropdown */}
+            <AnimatePresence>
+              {searchFocused && (searchQuery.trim().length >= 2 || searchResults.length > 0) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden max-h-[380px] overflow-y-auto custom-scrollbar"
+                >
+                  {searchResults.length > 0 ? (
+                    <div className="divide-y divide-slate-100">
+                      <div className="p-2.5 bg-slate-50/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                        <span>Hasil Pencarian ({searchResults.length})</span>
+                        <span>Klik untuk membuka</span>
+                      </div>
+                      {searchResults.map((res) => (
+                        <button
+                          key={res.id}
+                          onClick={() => fetchArticle(res.slug)}
+                          className="w-full text-left p-3 hover:bg-indigo-50/70 transition-colors flex items-start gap-3 group"
+                        >
+                          <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors shrink-0 mt-0.5">
+                            <FileText className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
+                              {res.title}
+                            </div>
+                            {res.short_description && (
+                              <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                                {res.short_description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                                {res.category?.name || 'Dokumentasi'}
+                              </span>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0 mt-2" />
+                        </button>
+                      ))}
                     </div>
-                  ))}
+                  ) : searchQuery.trim().length >= 2 ? (
+                    <div className="p-8 text-center">
+                      <HelpCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-slate-700">Tidak ada artikel yang cocok</p>
+                      <p className="text-xs text-slate-400 mt-1">Coba gunakan kata kunci umum seperti 'pos', 'stok', atau 'hpp'</p>
+                    </div>
+                  ) : null}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </div>
+      </div>
 
-        {/* Article Content Area */}
+      {/* Main Container Layout */}
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col">
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-64 opacity-50">
-            <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4" />
-            <p className="text-slate-500 font-medium">Memuat panduan...</p>
+          <div className="flex-1 flex flex-col items-center justify-center py-24 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mb-4 animate-bounce">
+              <RefreshCw className="w-7 h-7 animate-spin" />
+            </div>
+            <h3 className="text-base font-bold text-slate-800">Menyiapkan Pusat Dokumentasi...</h3>
+            <p className="text-xs text-slate-500 mt-1">Mengambil index panduan dan materi sistem</p>
           </div>
-        ) : selectedArticle ? (
-          <motion.article 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 sm:p-6 md:p-8 md:px-10"
-          >
-            {/* Top Actions & Breadcrumb (1 Line, buttons on the right) */}
-            <div className="flex flex-row justify-between items-center gap-3 mb-6 hide-on-print flex-nowrap">
-              <div className="flex items-center gap-2 text-sm font-medium text-slate-500 min-w-0">
-                <span className="hover:text-indigo-600 cursor-pointer transition-colors whitespace-nowrap shrink-0">Bizora Help Center</span>
-                <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-                <span className="text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md truncate text-xs md:text-sm font-semibold">{selectedArticle.category?.name || 'Umum'}</span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0 ml-auto">
-                <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg text-xs md:text-sm font-semibold transition-colors border border-slate-200 whitespace-nowrap">
-                  <Printer className="w-4 h-4" /> Cetak
-                </button>
-                <button onClick={handleDownloadPdf} className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs md:text-sm font-semibold transition-all shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/40 whitespace-nowrap">
-                  <Download className="w-4 h-4" /> Unduh PDF
-                </button>
-              </div>
-            </div>
-
-            {/* Article Header */}
-            <header className="mb-6 pb-6 border-b border-slate-100">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-slate-900 leading-tight mb-3 tracking-tight">
-                {selectedArticle.title}
-              </h1>
-              
-              {selectedArticle.short_description && (
-                <p className="text-sm md:text-base text-slate-600 leading-relaxed mb-4 md:mb-5 font-medium">
-                  {selectedArticle.short_description}
-                </p>
-              )}
-              
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] md:text-xs text-slate-500 font-medium">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-600">
-                    B
-                  </div>
-                  <span>Tim Bizora</span>
-                </div>
-                <span className="text-slate-300 hidden sm:inline">•</span>
-                <span>Diperbarui {selectedArticle.published_at ? new Date(selectedArticle.published_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-'}</span>
-                <span className="text-slate-300 hidden sm:inline">•</span>
-                <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">Versi {selectedArticle.version}</span>
-              </div>
-            </header>
-
-            {/* Article Content */}
-            <div 
-              className="article-content" 
-              dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
-            />
-          </motion.article>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
-            <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6">
-              <BookOpen className="w-12 h-12 text-indigo-300" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-800 mb-2">Selamat Datang di Bizora Help Center</h3>
-            <p className="text-slate-500 max-w-md">Temukan panduan, tutorial, dan jawaban atas pertanyaan Anda. Gunakan menu <b>Daftar Isi Panduan</b> di atas atau ketikkan kata kunci pada kolom pencarian.</p>
+          <div className="flex-1 flex gap-8 items-start relative">
+            
+            {/* Left Sidebar Navigation (Desktop Fixed, Mobile Drawer) */}
+            <aside
+              className={`
+                fixed inset-y-0 left-0 z-40 w-72 sm:w-80 bg-white border-r border-slate-200/90 p-4 transform transition-transform duration-300 ease-in-out lg:static lg:w-72 lg:translate-x-0 lg:border-r-0 lg:p-0 lg:bg-transparent lg:z-auto
+                ${mobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
+              `}
+            >
+              {/* Mobile Close Button */}
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 lg:hidden">
+                <span className="font-bold text-slate-800 text-sm">Daftar Panduan</span>
+                <button
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Sidebar Content Card */}
+              <div className="lg:bg-white lg:rounded-2xl lg:border lg:border-slate-200/80 lg:shadow-xs p-3.5 flex flex-col max-h-[calc(100vh-160px)] lg:sticky lg:top-24">
+                
+                {/* Search / Filter within Sidebar */}
+                <div className="relative mb-3">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Saring daftar panduan..."
+                    value={sidebarFilter}
+                    onChange={(e) => setSidebarFilter(e.target.value)}
+                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-lg focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+                  />
+                  {sidebarFilter && (
+                    <button
+                      onClick={() => setSidebarFilter('')}
+                      className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Categories & Articles Accordion Tree */}
+                <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                  {/* Home Overview Button */}
+                  <button
+                    onClick={() => {
+                      setSelectedArticle(null);
+                      setSearchParams({});
+                      setMobileSidebarOpen(false);
+                    }}
+                    className={`
+                      w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all mb-2
+                      ${!selectedArticle
+                        ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'}
+                    `}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Layout className="w-4 h-4" />
+                      <span>Beranda Panduan</span>
+                    </div>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${!selectedArticle ? 'bg-indigo-500 text-white' : 'bg-slate-200/70 text-slate-600'}`}>
+                      {totalArticles}
+                    </span>
+                  </button>
+
+                  {/* Render Categories */}
+                  {filteredCategories.map((category) => {
+                    const CategoryIcon = getCategoryIcon(category.name, category.module);
+                    const isCollapsed = collapsedCategories[category.id];
+                    const hasActiveArticle = category.articles?.some(a => a.id === selectedArticle?.id);
+
+                    return (
+                      <div key={category.id} className="rounded-xl border border-slate-100 overflow-hidden">
+                        {/* Category Header Bar */}
+                        <button
+                          onClick={() => toggleCategoryCollapse(category.id)}
+                          className={`
+                            w-full flex items-center justify-between px-3 py-2 text-left transition-colors
+                            ${hasActiveArticle ? 'bg-slate-50/90 text-indigo-950 font-semibold' : 'hover:bg-slate-50 text-slate-700'}
+                          `}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <CategoryIcon className={`w-3.5 h-3.5 shrink-0 ${hasActiveArticle ? 'text-indigo-600' : 'text-slate-400'}`} />
+                            <span className="text-xs truncate font-medium">{category.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              {category.articles?.length || 0}
+                            </span>
+                            <ChevronDown
+                              className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                                isCollapsed ? '-rotate-90' : ''
+                              }`}
+                            />
+                          </div>
+                        </button>
+
+                        {/* Article Items Under Category */}
+                        {!isCollapsed && (
+                          <div className="bg-slate-50/50 py-1 px-1.5 space-y-0.5 border-t border-slate-100/60">
+                            {category.articles && category.articles.length > 0 ? (
+                              category.articles.map((art) => {
+                                const isActive = selectedArticle?.id === art.id;
+                                return (
+                                  <button
+                                    key={art.id}
+                                    onClick={() => fetchArticle(art.slug)}
+                                    className={`
+                                      w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-all flex items-start gap-2 relative
+                                      ${
+                                        isActive
+                                          ? 'bg-indigo-50/90 text-indigo-700 font-semibold border-l-2 border-indigo-600 pl-2 shadow-xs'
+                                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-normal'
+                                      }
+                                    `}
+                                  >
+                                    <FileText className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                                    <span className="leading-snug line-clamp-2">{art.title}</span>
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <div className="px-3 py-2 text-[11px] text-slate-400 italic">
+                                Belum ada panduan di kategori ini.
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Sidebar Footer Extra Links */}
+                <div className="pt-3 mt-3 border-t border-slate-100 flex flex-col gap-1 text-[11px]">
+                  <a
+                    href="/developers"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between px-2.5 py-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-lg transition-colors font-medium"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                      Dokumentasi API Pengembang
+                    </span>
+                    <ExternalLink className="w-3 h-3 text-slate-400" />
+                  </a>
+                  <a
+                    href="/support"
+                    className="flex items-center justify-between px-2.5 py-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-lg transition-colors font-medium"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+                      Pusat Dukungan & Tiket
+                    </span>
+                    <ChevronRight className="w-3 h-3 text-slate-400" />
+                  </a>
+                </div>
+              </div>
+            </aside>
+
+            {/* Mobile Sidebar Overlay */}
+            {mobileSidebarOpen && (
+              <div
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 lg:hidden"
+                onClick={() => setMobileSidebarOpen(false)}
+              />
+            )}
+
+            {/* Main Content Reading Area */}
+            <main className="flex-1 min-w-0" ref={articleContainerRef}>
+              {articleLoading ? (
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-12 text-center flex flex-col items-center justify-center min-h-[450px]">
+                  <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
+                  <p className="text-sm font-semibold text-slate-700">Membuka panduan...</p>
+                </div>
+              ) : selectedArticle ? (
+                <div className="space-y-6">
+                  {/* Article Paper Container */}
+                  <article className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_4px_24px_rgb(0,0,0,0.03)] p-5 sm:p-7 md:p-9 lg:p-10 relative">
+                    
+                    {/* Top Breadcrumb & Action Toolbar */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-6 border-b border-slate-100 hide-on-print">
+                      {/* Breadcrumbs */}
+                      <div className="flex items-center gap-2 text-xs font-medium text-slate-500 flex-wrap">
+                        <button
+                          onClick={() => {
+                            setSelectedArticle(null);
+                            setSearchParams({});
+                          }}
+                          className="hover:text-indigo-600 transition-colors flex items-center gap-1"
+                        >
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>Pusat Bantuan</span>
+                        </button>
+                        <ChevronRight className="w-3 h-3 text-slate-300" />
+                        <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-semibold text-[11px]">
+                          {selectedArticle.category?.name || 'Umum'}
+                        </span>
+                        <ChevronRight className="w-3 h-3 text-slate-300" />
+                        <span className="text-slate-800 font-semibold truncate max-w-[200px] sm:max-w-xs">
+                          {selectedArticle.title}
+                        </span>
+                      </div>
+
+                      {/* Reading Controls & Export Actions */}
+                      <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+                        {/* Font size toggle */}
+                        <div className="flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 text-[11px] font-semibold text-slate-600">
+                          <button
+                            onClick={() => setFontSize('normal')}
+                            className={`px-2 py-1 rounded transition-colors ${fontSize === 'normal' ? 'bg-white text-indigo-600 shadow-xs' : 'hover:text-slate-900'}`}
+                            title="Ukuran teks normal"
+                          >
+                            A
+                          </button>
+                          <button
+                            onClick={() => setFontSize('large')}
+                            className={`px-2 py-1 rounded transition-colors text-xs ${fontSize === 'large' ? 'bg-white text-indigo-600 shadow-xs' : 'hover:text-slate-900'}`}
+                            title="Ukuran teks lebih besar"
+                          >
+                            A+
+                          </button>
+                        </div>
+
+                        {/* Copy Link */}
+                        <button
+                          onClick={handleCopyLink}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors"
+                          title="Salin tautan ke artikel ini"
+                        >
+                          {copied ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                              <span className="text-emerald-700 font-bold">Disalin</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="hidden sm:inline">Salin Link</span>
+                            </>
+                          )}
+                        </button>
+
+                        {/* Print Button */}
+                        <button
+                          onClick={() => window.print()}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors"
+                          title="Cetak panduan ini"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-slate-400" />
+                          <span className="hidden sm:inline">Cetak</span>
+                        </button>
+
+                        {/* PDF Download Button */}
+                        <button
+                          onClick={handleDownloadPdf}
+                          className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors shadow-xs shadow-indigo-600/20"
+                          title="Unduh format PDF"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>PDF</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Article Header Details */}
+                    <header className="mb-8">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold mb-3">
+                        <Tag className="w-3 h-3 text-indigo-500" />
+                        <span>Kategori: {selectedArticle.category?.name || 'Dokumentasi Sistem'}</span>
+                      </div>
+
+                      <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+                        {selectedArticle.title}
+                      </h1>
+
+                      {/* Metadata Chips Bar */}
+                      <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs text-slate-500 font-medium py-2.5 px-3.5 bg-slate-50/80 rounded-xl border border-slate-100 mb-6">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[9px] font-bold">
+                            B
+                          </div>
+                          <span className="font-semibold text-slate-700">Tim Bizora</span>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                        </div>
+                        <span className="text-slate-300">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{getEstimatedReadTime(selectedArticle.content)}</span>
+                        </div>
+                        <span className="text-slate-300">•</span>
+                        <span>
+                          Diperbarui{' '}
+                          {selectedArticle.published_at
+                            ? new Date(selectedArticle.published_at).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })
+                            : '-'}
+                        </span>
+                        <span className="text-slate-300">•</span>
+                        <span className="px-2 py-0.5 rounded bg-slate-200/70 text-slate-700 font-semibold text-[11px]">
+                          Versi {selectedArticle.version || '1.0'}
+                        </span>
+                      </div>
+
+                      {/* Short Description Highlight Card */}
+                      {selectedArticle.short_description && (
+                        <div className="bg-gradient-to-r from-indigo-50/90 via-indigo-50/40 to-slate-50 border-l-4 border-indigo-600 rounded-r-xl p-4 sm:p-5 text-sm md:text-base text-slate-700 font-medium leading-relaxed flex items-start gap-3 shadow-xs">
+                          <Lightbulb className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+                          <div>
+                            <div className="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-1">
+                              Ringkasan Inti
+                            </div>
+                            <p>{selectedArticle.short_description}</p>
+                          </div>
+                        </div>
+                      )}
+                    </header>
+
+                    {/* Table of Contents & Article Body Layout */}
+                    <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                      {/* Main Prose Text (3 cols on XL) */}
+                      <div className="xl:col-span-3">
+                        <div
+                          className={`article-content ${fontSize === 'large' ? 'text-lg leading-relaxed' : 'text-base leading-normal'}`}
+                          dangerouslySetInnerHTML={{ __html: processedHtml }}
+                        />
+
+                        {/* Article Footer & Was it helpful? */}
+                        <div className="mt-12 pt-8 border-t border-slate-100 hide-on-print">
+                          {/* Helpful Rating */}
+                          <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-900">
+                                Apakah artikel panduan ini membantu Anda?
+                              </h4>
+                              <p className="text-xs text-slate-500 mt-0.5">
+                                Masukan Anda sangat berarti bagi penyempurnaan panduan kami.
+                              </p>
+                            </div>
+
+                            {feedbackState ? (
+                              <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-100 animate-fade-in">
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>Terima kasih atas tanggapan Anda!</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => setFeedbackState('helpful')}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-indigo-400 hover:text-indigo-600 text-slate-700 text-xs font-semibold transition-all shadow-xs"
+                                >
+                                  <ThumbsUp className="w-3.5 h-3.5" />
+                                  <span>Ya, Membantu</span>
+                                </button>
+                                <button
+                                  onClick={() => setFeedbackState('unhelpful')}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-rose-400 hover:text-rose-600 text-slate-700 text-xs font-semibold transition-all shadow-xs"
+                                >
+                                  <ThumbsDown className="w-3.5 h-3.5" />
+                                  <span>Perlu Perbaikan</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Previous / Next Article Navigation Cards */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                            {prevArticle ? (
+                              <button
+                                onClick={() => fetchArticle(prevArticle.slug)}
+                                className="text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group flex flex-col justify-between"
+                              >
+                                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold mb-1 group-hover:text-indigo-600 transition-colors">
+                                  <ArrowLeft className="w-3.5 h-3.5" />
+                                  <span>Panduan Sebelumnya</span>
+                                </div>
+                                <div className="text-sm font-bold text-slate-800 group-hover:text-indigo-700 transition-colors line-clamp-1">
+                                  {prevArticle.title}
+                                </div>
+                              </button>
+                            ) : (
+                              <div />
+                            )}
+
+                            {nextArticle ? (
+                              <button
+                                onClick={() => fetchArticle(nextArticle.slug)}
+                                className="text-right p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group flex flex-col justify-between ml-auto w-full sm:w-auto"
+                              >
+                                <div className="flex items-center justify-end gap-1.5 text-xs text-slate-400 font-semibold mb-1 group-hover:text-indigo-600 transition-colors">
+                                  <span>Panduan Selanjutnya</span>
+                                  <ArrowRight className="w-3.5 h-3.5" />
+                                </div>
+                                <div className="text-sm font-bold text-slate-800 group-hover:text-indigo-700 transition-colors line-clamp-1">
+                                  {nextArticle.title}
+                                </div>
+                              </button>
+                            ) : (
+                              <div />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Sidebar: Table of Contents / On this page (XL screens) */}
+                      {headings.length > 0 && (
+                        <div className="hidden xl:block xl:col-span-1 hide-on-print">
+                          <div className="sticky top-24 p-3.5 rounded-xl bg-slate-50 border border-slate-100 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar">
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">
+                              <ListTree className="w-4 h-4 text-indigo-600" />
+                              <span>Di Halaman Ini</span>
+                            </div>
+                            <nav className="space-y-1 text-xs">
+                              {headings.map((h) => {
+                                const isActive = activeHeadingId === h.id;
+                                return (
+                                  <a
+                                    key={h.id}
+                                    href={`#${h.id}`}
+                                    className={`
+                                      block py-1.5 transition-colors leading-snug
+                                      ${h.level === 3 ? 'pl-4 text-[11px]' : 'pl-1 font-medium'}
+                                      ${
+                                        isActive
+                                          ? 'text-indigo-600 font-bold border-l-2 border-indigo-600 pl-2 bg-indigo-50/50 rounded-r'
+                                          : 'text-slate-600 hover:text-indigo-600 hover:bg-white rounded'
+                                      }
+                                    `}
+                                  >
+                                    {h.text}
+                                  </a>
+                                );
+                              })}
+                            </nav>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                </div>
+              ) : (
+                /* Overview / Welcome Landing View */
+                <div className="space-y-8 animate-fade-in">
+                  {/* Hero Header */}
+                  <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden">
+                    {/* Background Glow */}
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl pointer-events-none" />
+
+                    <div className="relative z-10 max-w-2xl">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-200 text-xs font-semibold mb-4 backdrop-blur-sm">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Pusat Bantuan Resmi Bizora</span>
+                      </div>
+
+                      <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-3">
+                        Bagaimana kami dapat membantu operasional Anda?
+                      </h2>
+                      <p className="text-sm sm:text-base text-indigo-200/90 leading-relaxed mb-6 font-normal">
+                        Jelajahi panduan langkah demi langkah, kalkulasi rumus sistem, hingga prosedur operasional standar (SOP) untuk memaksimalkan potensi bisnis Anda.
+                      </p>
+
+                      {/* Quick Filter Pill Buttons */}
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="text-indigo-300 font-medium">Topik populer:</span>
+                        {['Pendaftaran', 'Laba Rugi', 'Retail', 'Kasir POS'].map((topic) => (
+                          <button
+                            key={topic}
+                            onClick={() => {
+                              setSearchQuery(topic);
+                              handleSearchChange({ target: { value: topic } });
+                              setSearchFocused(true);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-colors"
+                          >
+                            {topic}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Category Grid Section */}
+                  <div>
+                    <div className="flex items-center justify-between mb-5">
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900">Kategori Dokumentasi</h3>
+                        <p className="text-xs text-slate-500">Pilih topik modul untuk membaca penjelasan detail</p>
+                      </div>
+                      <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
+                        {categories.length} Kategori Tersedia
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {categories.map((category) => {
+                        const Icon = getCategoryIcon(category.name, category.module);
+                        const articleCount = category.articles?.length || 0;
+                        const firstArticle = category.articles?.[0];
+
+                        return (
+                          <div
+                            key={category.id}
+                            className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between group"
+                          >
+                            <div>
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-50 group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white flex items-center justify-center transition-colors">
+                                  <Icon className="w-5 h-5" />
+                                </div>
+                                <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                  {articleCount} Artikel
+                                </span>
+                              </div>
+
+                              <h4 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors mb-1.5">
+                                {category.name}
+                              </h4>
+                              <p className="text-xs text-slate-500 line-clamp-2 mb-4">
+                                {category.description || `Kumpulan panduan teknis dan alur operasional untuk ${category.name}.`}
+                              </p>
+
+                              {/* Top 3 articles in this category */}
+                              <div className="space-y-1.5 mb-4">
+                                {category.articles?.slice(0, 3).map((art) => (
+                                  <button
+                                    key={art.id}
+                                    onClick={() => fetchArticle(art.slug)}
+                                    className="w-full text-left text-xs text-slate-600 hover:text-indigo-600 hover:underline flex items-center gap-1.5 truncate"
+                                  >
+                                    <FileText className="w-3 h-3 text-slate-400 shrink-0" />
+                                    <span className="truncate">{art.title}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {firstArticle && (
+                              <button
+                                onClick={() => fetchArticle(firstArticle.slug)}
+                                className="w-full py-2 px-3 rounded-xl bg-slate-50 group-hover:bg-indigo-50 text-indigo-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors border border-slate-100 group-hover:border-indigo-100"
+                              >
+                                <span>Buka Panduan</span>
+                                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Need More Assistance Banner */}
+                  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-base font-bold text-slate-900">
+                          Tidak menemukan jawaban yang Anda cari?
+                        </h4>
+                        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                          Tim layanan dukungan teknis Bizora siap membantu kendala operasional Anda setiap hari kerja.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <a
+                        href="/support"
+                        className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors shadow-xs shadow-indigo-600/20"
+                      >
+                        Buka Tiket Bantuan
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </main>
           </div>
         )}
-      
-      {/* Global & Prose Styles */}
-      <style>{`
-        /* Custom Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      </div>
 
-        /* Beautiful Typography for Article Content */
+      {/* Modern Typography & Prose Stylesheet */}
+      <style>{`
+        /* Smooth Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+          height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+
+        /* Modern Documentation Article Typography */
         .article-content {
           color: #334155;
-          font-size: 0.95rem;
-          line-height: 1.7;
+          line-height: 1.75;
+          letter-spacing: -0.01em;
         }
+
         .article-content h2 {
-          font-size: 1.25rem;
-          font-weight: 700;
+          font-size: 1.35rem;
+          font-weight: 800;
           color: #0f172a;
-          margin-top: 2rem;
-          margin-bottom: 1rem;
+          margin-top: 2.25rem;
+          margin-bottom: 0.85rem;
           letter-spacing: -0.025em;
+          padding-bottom: 0.4rem;
+          border-bottom: 1px solid #f1f5f9;
+          scroll-margin-top: 5rem;
         }
+
         .article-content h3 {
-          font-size: 1.125rem;
-          font-weight: 600;
+          font-size: 1.15rem;
+          font-weight: 700;
           color: #1e293b;
           margin-top: 1.75rem;
-          margin-bottom: 0.75rem;
+          margin-bottom: 0.65rem;
+          letter-spacing: -0.015em;
+          scroll-margin-top: 5rem;
         }
-        .article-content p {
-          margin-bottom: 1.25rem;
-        }
-        .article-content a {
-          color: #4f46e5;
-          text-decoration: none;
-          font-weight: 500;
-        }
-        .article-content a:hover {
-          text-decoration: underline;
-        }
-        .article-content ul, .article-content ol {
-          padding-left: 1.5rem;
-          margin-bottom: 1.5rem;
-        }
-        .article-content li {
+
+        .article-content h4 {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #334155;
+          margin-top: 1.25rem;
           margin-bottom: 0.5rem;
         }
-        .article-content li::marker {
-          color: #64748b;
+
+        .article-content p {
+          margin-bottom: 1.25rem;
+          color: #334155;
+        }
+
+        .article-content a {
+          color: #4f46e5;
+          text-decoration: underline;
+          text-underline-offset: 3px;
           font-weight: 600;
+          transition: color 0.15s;
         }
-        .article-content img {
-          max-width: 100%;
-          border-radius: 0.75rem;
-          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-          margin: 2rem 0;
-          border: 1px solid #f1f5f9;
+
+        .article-content a:hover {
+          color: #3730a3;
         }
+
+        .article-content ul {
+          list-style-type: disc;
+          padding-left: 1.5rem;
+          margin-bottom: 1.5rem;
+          space-y: 0.4rem;
+        }
+
+        .article-content ol {
+          list-style-type: decimal;
+          padding-left: 1.5rem;
+          margin-bottom: 1.5rem;
+          space-y: 0.4rem;
+        }
+
+        .article-content li {
+          margin-bottom: 0.45rem;
+          padding-left: 0.25rem;
+        }
+
+        .article-content li::marker {
+          color: #6366f1;
+          font-weight: 700;
+        }
+
+        .article-content strong, .article-content b {
+          color: #0f172a;
+          font-weight: 700;
+        }
+
         .article-content blockquote {
-          border-left: 4px solid #4f46e5;
-          background: #eef2ff;
-          padding: 1rem 1.5rem;
-          border-radius: 0 0.5rem 0.5rem 0;
+          position: relative;
+          border-left: 4px solid #6366f1;
+          background: #f8fafc;
+          padding: 1rem 1.25rem;
+          border-radius: 0 0.75rem 0.75rem 0;
           margin: 1.5rem 0;
           color: #1e293b;
-          font-style: italic;
+          font-style: normal;
+          font-size: 0.95em;
+          box-shadow: inset 0 1px 2px 0 rgb(0 0 0 / 0.02);
         }
+
         .article-content code {
           background: #f1f5f9;
-          padding: 0.2rem 0.4rem;
+          color: #db2777;
+          padding: 0.2rem 0.45rem;
           border-radius: 0.375rem;
           font-size: 0.875em;
-          color: #ef4444;
-          font-family: monospace;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+          border: 1px solid #e2e8f0;
         }
 
+        .article-content pre {
+          background: #0f172a;
+          color: #f8fafc;
+          padding: 1.25rem;
+          border-radius: 0.85rem;
+          overflow-x: auto;
+          margin: 1.5rem 0;
+          font-size: 0.875rem;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .article-content pre code {
+          background: transparent;
+          color: inherit;
+          padding: 0;
+          border: none;
+        }
+
+        .article-content table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 1.75rem 0;
+          font-size: 0.875rem;
+          border-radius: 0.75rem;
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+        }
+
+        .article-content th {
+          background: #f8fafc;
+          color: #1e293b;
+          font-weight: 700;
+          text-align: left;
+          padding: 0.75rem 1rem;
+          border-bottom: 2px solid #e2e8f0;
+        }
+
+        .article-content td {
+          padding: 0.75rem 1rem;
+          border-bottom: 1px solid #f1f5f9;
+        }
+
+        .article-content tr:nth-child(even) {
+          background: #fafafa;
+        }
+
+        .article-content img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.85rem;
+          margin: 2rem 0;
+          box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.08);
+          border: 1px solid #e2e8f0;
+        }
+
+        /* Print styles */
         @media print {
-          .hide-on-print { display: none !important; }
-          body { background: white !important; }
-          .article-content { color: black !important; }
-        }
-
-        @media (max-width: 768px) {
-          .article-content { font-size: 0.875rem; line-height: 1.6; }
-          .article-content h2 { font-size: 1.125rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
-          .article-content h3 { font-size: 1rem; margin-top: 1.25rem; }
-          .article-content p { margin-bottom: 1rem; }
-          .article-content img { margin: 1.5rem 0; }
-          .article-content blockquote { padding: 0.75rem 1rem; margin: 1rem 0; }
+          .hide-on-print {
+            display: none !important;
+          }
+          aside {
+            display: none !important;
+          }
+          .doc-center-wrapper {
+            background: white !important;
+            padding: 0 !important;
+          }
+          article {
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+          }
+          .article-content {
+            color: black !important;
+          }
         }
       `}</style>
     </div>

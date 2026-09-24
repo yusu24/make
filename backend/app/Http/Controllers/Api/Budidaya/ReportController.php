@@ -16,9 +16,18 @@ use Illuminate\Support\Carbon;
 
 class ReportController extends Controller
 {
+    private function getTenantId(Request $request): string
+    {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403));
+        }
+        return $tenantId;
+    }
+
     public function dashboardStats(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
 
         $totalPonds  = BudidayaPond::where('tenant_id', $tenantId)->count();
         $activePonds = BudidayaPond::where('tenant_id', $tenantId)->where('status', 'aktif')->count();
@@ -179,7 +188,7 @@ class ReportController extends Controller
     // ── Pond reports: FCR per active cycle ───────────────────────────────────
     public function pondReport(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
 
         $ponds = BudidayaPond::where('tenant_id', $tenantId)->get();
 
@@ -217,7 +226,7 @@ class ReportController extends Controller
     // ── Harvest summary: all completed cycles ────────────────────────────────
     public function harvestSummary(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
 
         $harvests = BudidayaHarvest::whereHas('cycle', fn($q) => $q->where('tenant_id', $tenantId))
             ->with(['cycle.pond', 'cycle.feedings'])
@@ -281,7 +290,7 @@ class ReportController extends Controller
     // ── Staff summary ────────────────────────────────────────────────────────
     public function staffStats(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
 
         $total   = BudidayaStaff::where('tenant_id', $tenantId)->count();
         $active  = BudidayaStaff::where('tenant_id', $tenantId)->where('status', 'aktif')->count();

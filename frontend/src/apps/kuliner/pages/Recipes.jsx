@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, Check, UtensilsCrossed, Trash2 } from 'lucide-react';
+import { ChevronDown, Check, UtensilsCrossed, Trash2 } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';

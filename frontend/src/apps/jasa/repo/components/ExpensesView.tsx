@@ -13,7 +13,7 @@ import {
   Plus,
   Printer,
   Download
-} from 'lucide-react';
+} from '@/constants/icons';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import { JasaExpense, ExpenseCategory } from '../types';
 import { formatRupiah } from '../data/mockData';
@@ -163,67 +163,88 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      {/* Metric Cards & Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Unified Cashbook Summary Card */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+      {/* 3 Standalone Modular Cashbook KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* 1. Total Masuk */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-all flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 shrink-0">
-                <Banknote className="w-5 h-5 text-blue-600" />
-              </div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest leading-tight">Saldo Kas Bersih<br/>(Buku Kas)</p>
+            <p className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider mb-1.5">Total Kas Masuk</p>
+            <h4 className="text-2xl font-semibold font-['Plus_Jakarta_Sans'] text-emerald-600 tracking-tight">+{formatRupiah(totalPemasukan)}</h4>
+            <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-emerald-600">
+              <ArrowUpRight className="w-3.5 h-3.5" />
+              <span>Penerimaan Kas & Pelunasan</span>
             </div>
-            <h4 className="text-3xl font-bold text-slate-900 mb-4">{formatRupiah(saldoBersih)}</h4>
-            
-            <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100">
-              <div>
-                <p className="text-[10px] text-slate-500 font-semibold uppercase">Total Masuk</p>
-                <p className="text-sm font-bold text-emerald-600">+{formatRupiah(totalPemasukan)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-500 font-semibold uppercase">Total Keluar</p>
-                <p className="text-sm font-bold text-rose-600">-{formatRupiah(totalPengeluaran)}</p>
-              </div>
-            </div>
+          </div>
+          <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 shrink-0">
+            <Wallet className="w-5 h-5 text-emerald-600" />
           </div>
         </div>
 
-        {/* Expenses Chart */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm lg:col-span-2">
-          <h4 className="text-sm font-semibold text-slate-900 mb-4">Distribusi Pengeluaran (Berdasarkan Kategori)</h4>
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                <XAxis 
-                  type="number" 
-                  tickFormatter={(val) => `Rp${(val / 1000000).toFixed(1)}M`}
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 10, fill: '#64748b' }} 
-                />
-                <YAxis 
-                  type="category" 
-                  dataKey="name" 
-                  width={130} 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 10, fill: '#475569', fontWeight: 600 }} 
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatRupiah(value), 'Total']}
-                  contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  cursor={{ fill: '#f1f5f9' }}
-                />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+        {/* 2. Total Keluar */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-all flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider mb-1.5">Total Pengeluaran Kas</p>
+            <h4 className="text-2xl font-semibold font-['Plus_Jakarta_Sans'] text-rose-600 tracking-tight">-{formatRupiah(totalPengeluaran)}</h4>
+            <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-rose-600">
+              <ArrowDownRight className="w-3.5 h-3.5" />
+              <span>Biaya Operasional & HPP</span>
+            </div>
           </div>
+          <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center border border-rose-100 shrink-0">
+            <Receipt className="w-5 h-5 text-rose-600" />
+          </div>
+        </div>
+
+        {/* 3. Saldo Bersih */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-all flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider mb-1.5">Saldo Kas Bersih</p>
+            <h4 className="text-2xl font-semibold font-['Plus_Jakarta_Sans'] text-slate-900 tracking-tight">{formatRupiah(saldoBersih)}</h4>
+            <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-blue-600">
+              <Banknote className="w-3.5 h-3.5" />
+              <span>Posisi Buku Kas Aktif</span>
+            </div>
+          </div>
+          <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 shrink-0">
+            <Banknote className="w-5 h-5 text-blue-600" />
+          </div>
+        </div>
+      </div>
+
+      {/* Expenses Chart */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+        <h4 className="text-sm font-semibold font-['Plus_Jakarta_Sans'] text-slate-900 mb-4">Distribusi Pengeluaran</h4>
+        <div className="h-48 w-full font-['Inter']">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+              <XAxis 
+                type="number" 
+                tickFormatter={(val) => `Rp${(val / 1000000).toFixed(1)}M`}
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 10, fill: '#64748b' }} 
+              />
+              <YAxis 
+                type="category" 
+                dataKey="name" 
+                width={130} 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 10, fill: '#475569', fontWeight: 600 }} 
+              />
+              <Tooltip 
+                formatter={(value: number) => [formatRupiah(value), 'Total']}
+                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                cursor={{ fill: '#f1f5f9' }}
+              />
+              <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

@@ -30,12 +30,13 @@ export const I18nProvider = ({ children }) => {
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);
   };
 
-  // Translation function
-  const t = useCallback((key) => {
+  // Translation function with optional fallback support
+  const t = useCallback((key, fallback) => {
     const dict = dictionaries[language];
     const value = getNestedValue(dict, key);
-    // If not found in current language, fallback to key itself
-    return value || key;
+    if (value) return value;
+    if (fallback) return fallback;
+    return key;
   }, [language]);
 
   return (

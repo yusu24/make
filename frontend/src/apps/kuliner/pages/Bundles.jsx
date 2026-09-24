@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Edit3, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, X, Plus } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
@@ -121,12 +121,12 @@ export default function Bundles() {
                 ) : (
                   currentBundles.map((b) => (
                     <tr key={b.id}>
-                      <td><div style={{ color: '#1e293b' }}>{b.name}</div></td>
-                      <td style={{ fontSize: 12 }}>{b.items.map((i) => `${i.product?.name} x${i.quantity}`).join(', ')}</td>
-                      <td>Rp {Number(b.bundle_price).toLocaleString('id-ID')}</td>
+                      <td><div style={{ color: '#1e293b', fontSize: 12, fontWeight: 400 }}>{b.name}</div></td>
+                      <td style={{ fontSize: 12, fontWeight: 400 }}>{b.items.map((i) => `${i.product?.name} x${i.quantity}`).join(', ')}</td>
+                      <td className="font-semibold" style={{ fontWeight: 600, fontSize: 12 }}>Rp {Number(b.bundle_price).toLocaleString('id-ID')}</td>
                       <td className="text-right">
                         <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                          <button className="kd-icon-btn" title="Edit" onClick={() => openEdit(b)}><Edit3 size={16} /></button>
+                          <button className="kd-icon-btn" title="Edit" onClick={() => openEdit(b)}><Pencil size={16} /></button>
                           <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(b)}><Trash2 size={16} /></button>
                         </div>
                       </td>
@@ -151,7 +151,9 @@ export default function Bundles() {
           <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{editingItem ? t('kulinerExtra.editBundleModalTitle') : t('kulinerExtra.addBundleModalTitle')}</h2>
-              <button className="kd-close-btn" onClick={() => setShowModal(false)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setShowModal(false)}>
+                <X size={18} />
+              </button>
             </div>
             <form onSubmit={handleSave}>
               <div className="kd-modal-body">
@@ -172,10 +174,14 @@ export default function Bundles() {
                       {products.map((p) => <option key={p.id} value={p.id}>{p.name} (Rp {Number(p.price).toLocaleString('id-ID')})</option>)}
                     </select>
                     <input type="number" min="1" className="kd-form-input" value={it.quantity} onChange={(e) => updateRow(idx, 'quantity', e.target.value)} />
-                    <button type="button" className="kd-btn kd-btn-secondary text-red-500" onClick={() => removeRow(idx)}>✕</button>
+                    <button type="button" className="kd-btn kd-btn-secondary text-red-500 flex items-center justify-center" onClick={() => removeRow(idx)}>
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 ))}
-                <button type="button" className="kd-btn kd-btn-secondary" onClick={addRow}>+ Tambah Menu</button>
+                <button type="button" className="kd-btn kd-btn-secondary flex items-center gap-1.5" onClick={addRow}>
+                  <Plus size={14} /> Tambah Menu
+                </button>
 
                 <div className="kd-form-group" style={{ marginTop: 16 }}>
                   <label className="kd-form-label">Harga Paket (Rp)</label>

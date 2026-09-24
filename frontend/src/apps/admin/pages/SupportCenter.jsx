@@ -1,4 +1,23 @@
 import { useState, useEffect, useCallback } from 'react'
+import { 
+  Ticket, 
+  Mail, 
+  Clock, 
+  CheckCircle2, 
+  AlertTriangle, 
+  Search, 
+  Plus, 
+  RotateCcw, 
+  Eye, 
+  Key, 
+  Check, 
+  Bug, 
+  HelpCircle, 
+  Lightbulb, 
+  CreditCard, 
+  LifeBuoy,
+  RefreshCw 
+} from '@/constants/icons'
 import { api } from '../../../lib/api'
 import Modal from '../../../components/Modal'
 import usePagination from '../../../hooks/usePagination'
@@ -11,8 +30,13 @@ const PRIORITY_BADGE = { high: 'badge-red', medium: 'badge-yellow', low: 'badge-
 const PRIORITY_LABEL = { high: 'Tinggi', medium: 'Sedang', low: 'Rendah' }
 const STATUS_BADGE = { open: 'badge-blue', in_progress: 'badge-yellow', resolved: 'badge-green' }
 const STATUS_LABEL = { open: 'Baru', in_progress: 'Diproses', resolved: 'Selesai' }
-const CAT_ICON = { bug: '🐛', question: '❓', feature: '💡', billing: '💳' }
-const CAT_LABEL = { bug: 'Bug', question: 'Pertanyaan', feature: 'Feature', billing: 'Billing' }
+
+const CATEGORY_MAP = {
+  bug: { label: 'Bug', icon: Bug, color: '#ef4444' },
+  question: { label: 'Pertanyaan', icon: HelpCircle, color: '#3b82f6' },
+  feature: { label: 'Feature', icon: Lightbulb, color: '#8b5cf6' },
+  billing: { label: 'Billing', icon: CreditCard, color: '#10b981' },
+}
 
 export default function SupportCenter() {
   const [tickets, setTickets] = useState([])
@@ -147,16 +171,31 @@ export default function SupportCenter() {
 
   return (
     <div className="animate-fade-in">
-      {/* ── Header ── */}
-      <div className="page-header">
+      {/* ── Page Header ── */}
+      <div className="page-header mb-2">
         <h2 className="page-title">Support Center</h2>
       </div>
 
+      {/* ── Action Bar below title ── */}
+      <div className="flex justify-end mb-4">
+        <button
+          className="btn btn-secondary flex items-center gap-1.5"
+          onClick={fetchData}
+          disabled={loading}
+          title="Muat ulang tiket bantuan"
+        >
+          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          <span>Muat Ulang</span>
+        </button>
+      </div>
+
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <span className="spinner" style={{ width: 36, height: 36, borderWidth: 3 }} />
-            <span>Memuat tiket dukungan...</span>
+        <div className="card" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+            <RefreshCw size={28} className="animate-spin text-indigo-600" />
+            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+              Memuat tiket dukungan &amp; layanan bantuan...
+            </span>
           </div>
         </div>
       ) : (
@@ -169,50 +208,55 @@ export default function SupportCenter() {
             marginBottom: 20
           }}>
             {[
-              { label: 'Total Tiket', value: tickets.length, icon: '🎫', color: '#3b82f6', desc: 'Semua tiket' },
-              { label: 'Tiket Baru', value: openCount, icon: '📬', color: '#6366f1', desc: 'Belum diproses' },
-              { label: 'Diproses', value: inProgressCount, icon: '⚙️', color: '#f59e0b', desc: 'Ditangani staf' },
-              { label: 'Selesai', value: resolvedCount, icon: '✅', color: '#10b981', desc: 'Tiket ditutup' },
-              { label: 'Prioritas Tinggi', value: highPriorityCount, icon: '🔴', color: '#ef4444', desc: 'Tindakan segera' },
-            ].map(card => (
-              <div
-                key={card.label}
-                className="card"
-                style={{
-                  padding: '14px 16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  gap: 8,
-                  minWidth: 0
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10,
-                    background: card.color + '18',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 18, color: card.color, flexShrink: 0
-                  }}>{card.icon}</div>
-                  <div style={{ minWidth: 0, overflow: 'hidden' }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{card.label}</div>
-                    <div style={{ fontSize: 10.5, color: 'var(--text-muted)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{card.desc}</div>
+              { label: 'Total Tiket', value: tickets.length, Icon: Ticket, color: '#3b82f6', desc: 'Semua tiket' },
+              { label: 'Tiket Baru', value: openCount, Icon: Mail, color: '#6366f1', desc: 'Belum diproses' },
+              { label: 'Diproses', value: inProgressCount, Icon: Clock, color: '#f59e0b', desc: 'Ditangani staf' },
+              { label: 'Selesai', value: resolvedCount, Icon: CheckCircle2, color: '#10b981', desc: 'Tiket ditutup' },
+              { label: 'Prioritas Tinggi', value: highPriorityCount, Icon: AlertTriangle, color: '#ef4444', desc: 'Tindakan segera' },
+            ].map(card => {
+              const CardIcon = card.Icon;
+              return (
+                <div
+                  key={card.label}
+                  className="card"
+                  style={{
+                    padding: '14px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: 8,
+                    minWidth: 0
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10,
+                      background: card.color + '18',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: card.color, flexShrink: 0
+                    }}>
+                      <CardIcon size={18} />
+                    </div>
+                    <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{card.label}</div>
+                      <div style={{ fontSize: 10.5, color: 'var(--text-muted)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{card.desc}</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 22, fontWeight: 600, color: card.color, lineHeight: 1 }}>
+                    {card.value}
                   </div>
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 600, color: card.color, lineHeight: 1 }}>
-                  {card.value}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* ── Filters + Table ── */}
           <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
-                <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280 }}>
-                  <span className="search-icon">🔍</span>
-                  <input className="form-input search-input" placeholder="Cari tiket..." value={search} onChange={e => setSearch(e.target.value)} />
+                <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, position: 'relative' }}>
+                  <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input className="form-input search-input" style={{ paddingLeft: 34 }} placeholder="Cari tiket..." value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
                 <div style={{ minWidth: 150 }}>
                   <select
@@ -232,19 +276,21 @@ export default function SupportCenter() {
                     }}
                   >
                     <option value="all">Semua Status</option>
-                    <option value="open">📬 Baru</option>
-                    <option value="in_progress">⚙️ Diproses</option>
-                    <option value="resolved">✅ Selesai</option>
+                    <option value="open">Baru (Open)</option>
+                    <option value="in_progress">Diproses (In Progress)</option>
+                    <option value="resolved">Selesai (Resolved)</option>
                   </select>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <button className="btn btn-secondary" onClick={fetchData} disabled={loading} style={{ height: 38, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  🔄 Refresh
+                  <RotateCcw size={14} />
+                  <span>Refresh</span>
                 </button>
                 <button className="btn btn-primary" onClick={() => setCreateOpen(true)} style={{ height: 38, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  + Buat Tiket
+                  <Plus size={15} />
+                  <span>Buat Tiket</span>
                 </button>
               </div>
             </div>
@@ -263,44 +309,59 @@ export default function SupportCenter() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.map(t => (
-                    <tr key={t.id}>
-                      <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.id}</code></td>
-                      <td style={{ fontWeight: 600, fontSize: 13 }}>{t.tenant}</td>
-                      <td style={{ fontSize: 13, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.subject}</td>
-                      <td><span style={{ fontSize: 12 }}>{CAT_ICON[t.category]} {CAT_LABEL[t.category]}</span></td>
-                      <td><span className={`badge ${PRIORITY_BADGE[t.priority]}`}>{PRIORITY_LABEL[t.priority]}</span></td>
-                      <td><span className={`badge ${STATUS_BADGE[t.status]}`}>{STATUS_LABEL[t.status]}</span></td>
-                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.date}</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <button className="btn btn-secondary btn-sm" onClick={() => setSelected(t)} title="Lihat Detail">👁</button>
-                          {t.tenant_id && (
-                            <button
-                              className="btn btn-primary btn-sm"
-                              onClick={() => handleImpersonate(t.tenant_id)}
-                              disabled={impersonating === t.tenant_id}
-                              title="Login Sebagai Tenant Ini"
-                              style={{ padding: '0 8px' }}
-                            >
-                              {impersonating === t.tenant_id ? '⏳' : '🔑'}
+                  {paginatedData.map(t => {
+                    const cat = CATEGORY_MAP[t.category] || { label: t.category, icon: HelpCircle, color: '#64748b' };
+                    const CatIcon = cat.icon;
+                    return (
+                      <tr key={t.id}>
+                        <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.id}</code></td>
+                        <td style={{ fontWeight: 600, fontSize: 13 }}>{t.tenant}</td>
+                        <td style={{ fontSize: 13, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.subject}</td>
+                        <td>
+                          <span style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <CatIcon size={14} style={{ color: cat.color }} />
+                            <span>{cat.label}</span>
+                          </span>
+                        </td>
+                        <td><span className={`badge ${PRIORITY_BADGE[t.priority]}`}>{PRIORITY_LABEL[t.priority]}</span></td>
+                        <td><span className={`badge ${STATUS_BADGE[t.status]}`}>{STATUS_LABEL[t.status]}</span></td>
+                        <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.date}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button className="btn btn-secondary btn-sm" onClick={() => setSelected(t)} title="Lihat Detail">
+                              <Eye size={13} />
                             </button>
-                          )}
-                          {t.status === 'open' && (
-                            <button className="btn btn-primary btn-sm" style={{ fontSize: 11 }} onClick={() => handleUpdateStatus(t.id, 'in_progress')} title="Proses Tiket">⚙️</button>
-                          )}
-                          {t.status === 'in_progress' && (
-                            <button className="btn btn-primary btn-sm" style={{ fontSize: 11, background: 'var(--success-500)', border: 'none' }} onClick={() => handleUpdateStatus(t.id, 'resolved')} title="Tandai Selesai">✓</button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {t.tenant_id && (
+                              <button
+                                className="btn btn-primary btn-sm"
+                                onClick={() => handleImpersonate(t.tenant_id)}
+                                disabled={impersonating === t.tenant_id}
+                                title="Login Sebagai Tenant Ini"
+                                style={{ padding: '0 8px' }}
+                              >
+                                {impersonating === t.tenant_id ? <Clock size={13} className="animate-spin" /> : <Key size={13} />}
+                              </button>
+                            )}
+                            {t.status === 'open' && (
+                              <button className="btn btn-primary btn-sm" style={{ fontSize: 11 }} onClick={() => handleUpdateStatus(t.id, 'in_progress')} title="Proses Tiket">
+                                <Clock size={13} />
+                              </button>
+                            )}
+                            {t.status === 'in_progress' && (
+                              <button className="btn btn-primary btn-sm" style={{ fontSize: 11, background: 'var(--success-500)', border: 'none' }} onClick={() => handleUpdateStatus(t.id, 'resolved')} title="Tandai Selesai">
+                                <Check size={13} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                   {filtered.length === 0 && (
                     <tr>
                       <td colSpan={8} style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 36 }}>🎫</span>
+                          <LifeBuoy size={36} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
                           <span>Tidak ada tiket ditemukan.</span>
                         </div>
                       </td>
@@ -308,83 +369,93 @@ export default function SupportCenter() {
                   )}
                 </tbody>
               </table>
-              {!loading && filtered.length > 0 && (
-                <SaasPagination
-                  currentPage={currentPage}
-                  setCurrentPage={setCurrentPage}
-                  pageSize={pageSize}
-                  setPageSize={setPageSize}
-                  totalPages={totalPages}
-                  totalItems={totalItems}
-                  startIndex={startIndex}
-                  endIndex={endIndex}
-                />
-              )}
             </div>
+
+            {!loading && filtered.length > 0 && (
+              <SaasPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                startIndex={startIndex}
+                endIndex={endIndex}
+              />
+            )}
           </div>
         </>
       )}
 
       {/* ── Detail Modal ── */}
-      {selected && (
-        <Modal
-          isOpen={!!selected}
-          onClose={() => setSelected(null)}
-          title={`Detail Tiket: ${selected.id}`}
-          maxWidth="520px"
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <span style={{ fontSize: 32 }}>{CAT_ICON[selected.category]}</span>
-            <div>
-              <h3 className="modal__title" style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{selected.subject}</h3>
-              <span className={`badge ${STATUS_BADGE[selected.status]}`} style={{ marginTop: 4, display: 'inline-block' }}>
-                {STATUS_LABEL[selected.status]}
-              </span>
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20, borderTop: '1px solid var(--border-color)', paddingTop: 16 }}>
-            {[
-              { label: 'Tenant / Pelapor', value: selected.tenant },
-              { label: 'Kategori', value: `${CAT_ICON[selected.category]} ${CAT_LABEL[selected.category]}` },
-              { label: 'Prioritas', value: PRIORITY_LABEL[selected.priority] },
-              { label: 'Status', value: STATUS_LABEL[selected.status] },
-              { label: 'Tanggal', value: selected.date },
-              { label: 'Ditugaskan ke', value: selected.assigned },
-            ].map(item => (
-              <div key={item.label}>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{item.label}</p>
-                <p style={{ fontSize: 13, fontWeight: 600 }}>{item.value}</p>
+      {selected && (() => {
+        const cat = CATEGORY_MAP[selected.category] || { label: selected.category, icon: HelpCircle, color: '#64748b' };
+        const CatIcon = cat.icon;
+        return (
+          <Modal
+            isOpen={!!selected}
+            onClose={() => setSelected(null)}
+            title={`Detail Tiket: ${selected.id}`}
+            maxWidth="520px"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: cat.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', color: cat.color }}>
+                <CatIcon size={24} />
               </div>
-            ))}
-          </div>
-          <div style={{ background: 'var(--bg-elevated)', borderRadius: 10, padding: 16, marginBottom: 20 }}>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>Deskripsi / Pesan Pelanggan</p>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-              {selected.description || 'Tidak ada deskripsi tambahan.'}
-            </p>
-          </div>
-          <div className="modal__actions" style={{ borderTop: '1px solid var(--border-color)', paddingTop: 16 }}>
-            <button className="btn btn-secondary" onClick={() => setSelected(null)}>Tutup</button>
-            {selected.status === 'open' && (
-              <button
-                className="btn btn-primary"
-                onClick={() => handleUpdateStatus(selected.id, 'in_progress')}
-              >
-                ⚙️ Proses Tiket
-              </button>
-            )}
-            {selected.status === 'in_progress' && (
-              <button
-                className="btn btn-primary"
-                style={{ background: 'var(--success-500)', border: 'none' }}
-                onClick={() => handleUpdateStatus(selected.id, 'resolved')}
-              >
-                ✓ Tandai Selesai
-              </button>
-            )}
-          </div>
-        </Modal>
-      )}
+              <div>
+                <h3 className="modal__title" style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{selected.subject}</h3>
+                <span className={`badge ${STATUS_BADGE[selected.status]}`} style={{ marginTop: 4, display: 'inline-block' }}>
+                  {STATUS_LABEL[selected.status]}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20, borderTop: '1px solid var(--border-color)', paddingTop: 16 }}>
+              {[
+                { label: 'Tenant / Pelapor', value: selected.tenant },
+                { label: 'Kategori', value: cat.label },
+                { label: 'Prioritas', value: PRIORITY_LABEL[selected.priority] },
+                { label: 'Status', value: STATUS_LABEL[selected.status] },
+                { label: 'Tanggal', value: selected.date },
+                { label: 'Ditugaskan ke', value: selected.assigned },
+              ].map(item => (
+                <div key={item.label}>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{item.label}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600 }}>{item.value}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: 'var(--bg-elevated)', borderRadius: 10, padding: 16, marginBottom: 20 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>Deskripsi / Pesan Pelanggan</p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                {selected.description || 'Tidak ada deskripsi tambahan.'}
+              </p>
+            </div>
+            <div className="modal__actions" style={{ borderTop: '1px solid var(--border-color)', paddingTop: 16 }}>
+              <button className="btn btn-secondary" onClick={() => setSelected(null)}>Tutup</button>
+              {selected.status === 'open' && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleUpdateStatus(selected.id, 'in_progress')}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                >
+                  <Clock size={14} />
+                  <span>Proses Tiket</span>
+                </button>
+              )}
+              {selected.status === 'in_progress' && (
+                <button
+                  className="btn btn-primary"
+                  style={{ background: 'var(--success-500)', border: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => handleUpdateStatus(selected.id, 'resolved')}
+                >
+                  <Check size={14} />
+                  <span>Tandai Selesai</span>
+                </button>
+              )}
+            </div>
+          </Modal>
+        );
+      })()}
 
       {/* ── Create Ticket Modal ── */}
       {createOpen && (
@@ -443,10 +514,10 @@ export default function SupportCenter() {
                   value={createForm.category}
                   onChange={e => setCreateForm({ ...createForm, category: e.target.value })}
                 >
-                  <option value="bug">🐛 Bug / Error</option>
-                  <option value="question">❓ Pertanyaan</option>
-                  <option value="feature">💡 Request Fitur</option>
-                  <option value="billing">💳 Billing / Pembayaran</option>
+                  <option value="bug">Bug / Error</option>
+                  <option value="question">Pertanyaan</option>
+                  <option value="feature">Request Fitur</option>
+                  <option value="billing">Billing / Pembayaran</option>
                 </select>
               </div>
 
@@ -457,9 +528,9 @@ export default function SupportCenter() {
                   value={createForm.priority}
                   onChange={e => setCreateForm({ ...createForm, priority: e.target.value })}
                 >
-                  <option value="low">🔘 Rendah</option>
-                  <option value="medium">🟡 Sedang</option>
-                  <option value="high">🔴 Tinggi</option>
+                  <option value="low">Rendah</option>
+                  <option value="medium">Sedang</option>
+                  <option value="high">Tinggi</option>
                 </select>
               </div>
             </div>

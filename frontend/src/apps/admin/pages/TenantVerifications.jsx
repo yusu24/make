@@ -1,4 +1,16 @@
 import { useState, useEffect, useMemo } from 'react'
+import {
+  FileText,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Search,
+  RefreshCw,
+  Eye,
+  ShieldCheck,
+  Check,
+  X
+} from '@/constants/icons'
 import { api } from '../../../lib/api'
 import Modal from '../../../components/Modal'
 import SaasPagination from '../../../components/SaasPagination'
@@ -198,133 +210,138 @@ export default function TenantVerifications() {
       </div>
 
       {/* ── KPI Stat Cards ── */}
-      <div className="grid-4 stagger" style={{ marginBottom: 20 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
         {[
-          { label: 'Total Pengajuan', value: kycs.length, icon: '📋', color: '#696cff' },
-          { label: 'Menunggu Review', value: pendingCount, icon: '⏳', color: '#ffab00' },
-          { label: 'Terverifikasi', value: verifiedCount, icon: '✅', color: '#71dd37' },
-          { label: 'Ditolak / Perlu Revisi', value: rejectedCount, icon: '❌', color: '#ff3e1d' },
-        ].map((s, i) => (
-          <div key={i} className="card card-pad" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{
-              width: 44, height: 44, borderRadius: 12,
-              background: s.color + '18',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 20, color: s.color, flexShrink: 0
-            }}>{s.icon}</div>
-            <div>
-              <div style={{ fontSize: 24, fontWeight: 600, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{s.label}</div>
+          { label: 'Total Pengajuan', value: kycs.length, icon: FileText, color: '#4f46e5', bg: 'bg-indigo-50 text-indigo-600' },
+          { label: 'Menunggu Review', value: pendingCount, icon: Clock, color: '#d97706', bg: 'bg-amber-50 text-amber-600' },
+          { label: 'Terverifikasi', value: verifiedCount, icon: CheckCircle2, color: '#16a34a', bg: 'bg-emerald-50 text-emerald-600' },
+          { label: 'Ditolak / Perlu Revisi', value: rejectedCount, icon: XCircle, color: '#dc2626', bg: 'bg-rose-50 text-rose-600' },
+        ].map((s, i) => {
+          const IconComp = s.icon;
+          return (
+            <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+              <div className={`w-11 h-11 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
+                <IconComp size={22} strokeWidth={2} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{s.label}</p>
+                <div className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans']" style={{ color: s.color }}>
+                  {s.value}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* ── Toolbar: Search + Filter Tabs + Action ── */}
       <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
-          <div className="search-wrap" style={{ minWidth: 220, maxWidth: 360 }}>
-            <span className="search-icon">🔍</span>
+          <div className="search-wrap" style={{ minWidth: 220, maxWidth: 360, position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
             <input
               id="input-search-kyc"
               className="form-input search-input"
+              style={{ paddingLeft: 34 }}
               placeholder="Cari tenant, NIK, atau pemilik..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <div style={{ minWidth: 160 }}>
+          <div style={{ minWidth: 150 }}>
             <select
+              id="select-filter-kyc-status"
+              className="form-input"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               style={{
-                width: '100%',
-                padding: '10px 16px',
-                borderRadius: '10px',
-                border: '1px solid #cbd5e1',
-                backgroundColor: '#fff',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#334155',
+                width: 'auto',
+                minWidth: 150,
+                height: 38,
+                padding: '0 32px 0 12px',
+                fontSize: 13,
                 cursor: 'pointer',
-                outline: 'none',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                outline: 'none'
               }}
             >
               <option value="all">Semua Status</option>
-              <option value="pending">⏳ Menunggu</option>
-              <option value="verified">✅ Terverifikasi</option>
-              <option value="rejected">❌ Ditolak</option>
+              <option value="pending">Menunggu</option>
+              <option value="verified">Terverifikasi</option>
+              <option value="rejected">Ditolak</option>
             </select>
           </div>
         </div>
 
         <button className="btn btn-secondary" onClick={fetchKycs} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          🔄 Refresh
+          <RefreshCw size={14} /> Refresh
         </button>
       </div>
 
       {/* ── Table KYC ── */}
-      <div className="table-wrap table-responsive">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Tenant ID</th>
-              <th>Nama Usaha</th>
-              <th>Pemilik / NIK</th>
-              <th>Dokumen</th>
-              <th>Status</th>
-              <th>Tanggal Pengajuan</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+      <div className="table-wrap">
+        <div className="table-responsive">
+          <table className="table">
+            <thead>
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                  <span className="spinner" style={{ width: 24, height: 24, borderWidth: 2, marginRight: 8 }}></span>
-                  Memuat data KYC...
-                </td>
+                <th>Tenant ID</th>
+                <th>Nama Usaha</th>
+                <th>Pemilik / NIK</th>
+                <th>Dokumen</th>
+                <th>Status</th>
+                <th>Tanggal Pengajuan</th>
+                <th>Aksi</th>
               </tr>
-            ) : paginatedData.length === 0 ? (
-              <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                  Tidak ada antrean verifikasi KYC ditemukan.
-                </td>
-              </tr>
-            ) : paginatedData.map(k => (
-              <tr key={k.id || k.tenant_id}>
-                <td><code style={{ fontSize: 11.5, background: '#f5f5f9', padding: '3px 8px', borderRadius: 6 }}>{k.tenant_id}</code></td>
-                <td>
-                  <div style={{ fontWeight: 700 }}>{k.name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{k.business_category || 'Retail'}</div>
-                </td>
-                <td>
-                  <div>{k.owner_name || 'Pemilik Usaha'}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{k.nik || '3201xxxxxxxx0001'}</div>
-                </td>
-                <td>
-                  <span style={{ fontSize: 12, fontWeight: 600 }}>📄 {k.kyc_document_type || 'KTP / NIB'}</span>
-                </td>
-                <td>
-                  {k.kyc_status === 'pending' && <span className="badge badge-warning">⏳ Menunggu</span>}
-                  {k.kyc_status === 'verified' && <span className="badge badge-success">✓ Terverifikasi</span>}
-                  {k.kyc_status === 'rejected' && <span className="badge badge-danger">✗ Ditolak</span>}
-                </td>
-                <td>
-                  <span style={{ fontSize: 12.5 }}>
-                    {k.kyc_submitted_at ? new Date(k.kyc_submitted_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
-                  </span>
-                </td>
-                <td>
-                  <button className="btn btn-secondary btn-sm" onClick={() => setSelected(k)} style={{ fontWeight: 600 }}>
-                    🔍 Tinjau
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                    <span className="spinner" style={{ width: 24, height: 24, borderWidth: 2, marginRight: 8 }}></span>
+                    Memuat data KYC...
+                  </td>
+                </tr>
+              ) : paginatedData.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                    Tidak ada antrean verifikasi KYC ditemukan.
+                  </td>
+                </tr>
+              ) : paginatedData.map(k => (
+                <tr key={k.id || k.tenant_id}>
+                  <td><code style={{ fontSize: 11.5, background: '#f5f5f9', padding: '3px 8px', borderRadius: 6 }}>{k.tenant_id}</code></td>
+                  <td>
+                    <div style={{ fontWeight: 700 }}>{k.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{k.business_category || 'Retail'}</div>
+                  </td>
+                  <td>
+                    <div>{k.owner_name || 'Pemilik Usaha'}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{k.nik || '3201xxxxxxxx0001'}</div>
+                  </td>
+                  <td>
+                    <span style={{ fontSize: 12, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <FileText size={13} className="text-slate-400" /> {k.kyc_document_type || 'KTP / NIB'}
+                    </span>
+                  </td>
+                  <td>
+                    {k.kyc_status === 'pending' && <span className="badge badge-warning" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Clock size={11} /> Menunggu</span>}
+                    {k.kyc_status === 'verified' && <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><CheckCircle2 size={11} /> Terverifikasi</span>}
+                    {k.kyc_status === 'rejected' && <span className="badge badge-danger" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><XCircle size={11} /> Ditolak</span>}
+                  </td>
+                  <td>
+                    <span style={{ fontSize: 12.5 }}>
+                      {k.kyc_submitted_at ? new Date(k.kyc_submitted_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                    </span>
+                  </td>
+                  <td>
+                    <button className="btn btn-secondary btn-sm" onClick={() => setSelected(k)} style={{ fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <Eye size={13} /> Tinjau
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {filtered.length > 0 && (
           <SaasPagination
@@ -341,7 +358,7 @@ export default function TenantVerifications() {
       </div>
 
       {/* ── Modal Tinjau Dokumen ── */}
-      <Modal isOpen={!!selected} onClose={() => { setSelected(null); setShowRejectModal(false) }} title="🔍 Tinjau Berkas KYC Tenant" maxWidth="600px">
+      <Modal isOpen={!!selected} onClose={() => { setSelected(null); setShowRejectModal(false) }} title="Tinjau Berkas KYC Tenant" maxWidth="600px">
         {selected && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Info Tenant */}
@@ -458,14 +475,14 @@ export default function TenantVerifications() {
               <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
                 <button
                   className="btn btn-primary"
-                  style={{ flex: 1, height: 42, background: '#71dd37', borderColor: '#71dd37', fontWeight: 700 }}
+                  style={{ flex: 1, height: 38, background: '#71dd37', borderColor: '#71dd37', fontWeight: 700 }}
                   onClick={() => handleApprove(selected.tenant_id)}
                 >
                   ✓ Setujui Verifikasi
                 </button>
                 <button
                   className="btn btn-secondary"
-                  style={{ flex: 1, height: 42, color: '#ff3e1d', borderColor: '#ff3e1d', fontWeight: 700 }}
+                  style={{ flex: 1, height: 38, color: '#ff3e1d', borderColor: '#ff3e1d', fontWeight: 700 }}
                   onClick={() => setShowRejectModal(true)}
                 >
                   ✗ Tolak Dokumen

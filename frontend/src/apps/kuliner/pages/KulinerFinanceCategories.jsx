@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit3, Trash2, Tag, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, X } from '@/constants/icons';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import ClientPagination from '../components/ClientPagination';
@@ -153,7 +153,7 @@ export default function KulinerFinanceCategories() {
                             title="Edit"
                             style={{ background: '#F1F5F9', border: 'none', borderRadius: 6, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4F46E5', cursor: 'pointer' }}
                           >
-                            <Edit3 size={15} />
+                            <Pencil size={15} />
                           </button>
                           <button 
                             onClick={() => handleDelete(cat)} 

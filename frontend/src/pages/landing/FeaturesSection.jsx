@@ -1,4 +1,4 @@
-import { Sparkles, Check } from 'lucide-react'
+import { Sparkles, Check } from '@/constants/icons'
 
 // Used only if settings.features_platform hasn't loaded / is empty (e.g. API error).
 const DEFAULT_FEATURES = [

@@ -27,7 +27,7 @@ import {
   HelpCircle,
   FileCode,
   Download
-} from 'lucide-react';
+} from '@/constants/icons';
 import bizoraLogo from '../assets/bizora-logo.png';
 
 export default function DeveloperDocs() {
@@ -239,10 +239,10 @@ print("Products:", res.json())`
             </button>
 
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden group-hover:scale-105 transition-transform">
-                <img src={bizoraLogo} alt="Bizora" className="w-full h-full object-contain" />
+              <div className="w-[38px] h-[38px] rounded-[10px] overflow-hidden flex items-center justify-center shadow-md shadow-emerald-950/40 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+                <img src={bizoraLogo} alt="Bizora" className="w-full h-full object-contain rounded-[10px]" />
               </div>
-              <span className="text-xl font-black text-white font-mono tracking-wider">
+              <span className="text-2xl font-extrabold text-white tracking-[0.06em]" style={{ fontFamily: "'Plus Jakarta Sans', 'Outfit', sans-serif" }}>
                 BIZORA
               </span>
             </Link>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { QrCode, Edit3, Trash2, LayoutGrid, Users, X, Printer, Copy, Check } from 'lucide-react';
+import { QrCode, Pencil, Trash2, LayoutGrid, Users, X, Printer, Copy, Check } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
@@ -102,8 +102,13 @@ export default function Tables() {
           </div>
         )}
 
-        <div className="kd-page-actions">
-          <button className="kd-btn kd-btn-primary" onClick={openCreate}>{t('kulinerOrders.addTableBtn') || '+ Tambah Meja'}</button>
+        <div className="kd-page-actions" style={{ marginBottom: 16 }}>
+          <button 
+            className="h-[38px] px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5" 
+            onClick={openCreate}
+          >
+            <span>{t('kulinerOrders.addTableBtn') || '+ Tambah Meja'}</span>
+          </button>
         </div>
 
         <div className="kd-panel">
@@ -137,7 +142,7 @@ export default function Tables() {
                   </button>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button className="kd-icon-btn" style={{ flex: 1 }} title="QR Code" onClick={() => setQrTable(t)}><QrCode size={16} /></button>
-                    <button className="kd-icon-btn" style={{ flex: 1 }} title="Edit" onClick={() => openEdit(t)}><Edit3 size={16} /></button>
+                    <button className="kd-icon-btn" style={{ flex: 1 }} title="Edit" onClick={() => openEdit(t)}><Pencil size={16} /></button>
                     <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(t)}><Trash2 size={16} /></button>
                   </div>
                 </div>

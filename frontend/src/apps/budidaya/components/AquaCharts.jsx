@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export function AquaLineChart({ data }) {
   return (
-    <div style={{ width: '100%', height: '240px' }}>
+    <div style={{ width: '100%', height: '240px', minWidth: 0, overflow: 'hidden' }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
@@ -78,7 +78,7 @@ export function AquaLineChart({ data }) {
 
 export function AquaBarChart({ data }) {
   return (
-    <div style={{ width: '100%', height: '200px' }}>
+    <div style={{ width: '100%', height: '200px', minWidth: 0, overflow: 'hidden' }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
           <Tooltip cursor={{ fill: '#F8FAFC' }} content={<CustomTooltip />} />

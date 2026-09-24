@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, AlertCircle } from 'lucide-react';
+import { X, Save, AlertCircle } from '@/constants/icons';
 
 interface ServiceCatalogFormModalProps {
   catalogItem?: any;
@@ -69,8 +69,10 @@ export const ServiceCatalogFormModal: React.FC<ServiceCatalogFormModalProps> = (
       ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-2xl overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[90vh] animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
         <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-100 bg-slate-50/50">
           <h2 className="text-xl font-bold text-slate-800">
             {catalogItem ? 'Edit Layanan' : 'Tambah Layanan Baru'}
@@ -199,7 +201,10 @@ export const ServiceCatalogFormModal: React.FC<ServiceCatalogFormModalProps> = (
           </form>
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
+        <div 
+          className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 shrink-0"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
           <button
             type="button"
             onClick={onClose}

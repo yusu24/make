@@ -18,12 +18,9 @@ class CheckPlanFeature
     {
         $user = $request->user();
         if (!$user) {
-            $tenantId = $request->query('tenant_id') ?: $request->header('X-Tenant-ID');
-            if ($tenantId && $tenantId !== 'undefined') {
-                $normalizedId = str_replace('_', '-', $tenantId);
-                $tenant = \App\Models\Tenant::where('tenant_id', $normalizedId)->orWhere('tenant_id', $tenantId)->first();
-            } else {
-                $tenant = null;
+            $tenant = $request->attributes->get('tenant');
+            if (!$tenant && $request->attributes->has('tenant_id')) {
+                $tenant = \App\Models\Tenant::where('tenant_id', $request->attributes->get('tenant_id'))->first();
             }
         } else {
             // Demo sandboxes & Super Admin bypass feature checks

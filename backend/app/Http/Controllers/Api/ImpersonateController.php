@@ -17,13 +17,27 @@ class ImpersonateController extends Controller
     {
         $requester = $request->user();
         
-        // If $id is a tenant_id (e.g. starting with TN-), find the first user of that tenant
+        // If $id is a tenant_id (e.g. starting with TN-), find the tenant's primary user
         if (is_string($id) && str_starts_with($id, 'TN-')) {
-            $targetUser = User::with(['businessCategory', 'tenant', 'retailRole', 'kulinerRole'])
+            $targetUser = User::with(['businessCategory', 'tenant.businessCategory', 'retailRole', 'kulinerRole', 'jasaRole'])
                 ->where('tenant_id', $id)
-                ->firstOrFail();
+                ->orderByRaw("FIELD(role, 'owner', 'customer', 'admin', 'jasa_owner', 'jasa_staff') ASC")
+                ->first();
+
+            if (!$targetUser) {
+                $tenant = Tenant::with('businessCategory')->where('tenant_id', $id)->firstOrFail();
+                $targetUser = User::create([
+                    'tenant_id'            => $tenant->tenant_id,
+                    'name'                 => $tenant->name ?: 'Tenant Owner',
+                    'email'                => $tenant->email ?: strtolower($tenant->tenant_id) . '@tenant.local',
+                    'password'             => \Illuminate\Support\Facades\Hash::make('password123'),
+                    'role'                 => 'owner',
+                    'status'               => 'active',
+                    'business_category_id' => $tenant->business_category_id,
+                ])->load(['businessCategory', 'tenant.businessCategory', 'retailRole', 'kulinerRole', 'jasaRole']);
+            }
         } else {
-            $targetUser = User::with(['businessCategory', 'tenant', 'retailRole', 'kulinerRole'])->findOrFail($id);
+            $targetUser = User::with(['businessCategory', 'tenant.businessCategory', 'retailRole', 'kulinerRole', 'jasaRole'])->findOrFail($id);
         }
 
         // Authorization check
@@ -49,6 +63,7 @@ class ImpersonateController extends Controller
         $tenant = $targetUser->tenant;
         $plan = $tenant?->subscription_plan ?? 'free';
         $businessCategory = $targetUser->businessCategory?->name ?? $tenant?->businessCategory?->name;
+        $businessCategoryId = $targetUser->business_category_id ?? $tenant?->business_category_id;
 
         $userData = [
             'id'                  => $targetUser->id,
@@ -60,13 +75,13 @@ class ImpersonateController extends Controller
             'status'              => $targetUser->status,
             'phone'               => $targetUser->phone,
             'business_category'   => $businessCategory,
-            'business_category_id'=> $targetUser->business_category_id,
+            'business_category_id'=> $businessCategoryId,
             'subscription_plan'   => $plan,
             'subscription_status' => 'active',
             'subscription_days_left' => 999,
-            'permissions'         => ($targetUser->role === 'customer' || $targetUser->role === 'super_admin') 
+            'permissions'         => ($targetUser->role === 'customer' || $targetUser->role === 'super_admin' || $targetUser->role === 'owner') 
                                     ? 'all' 
-                                    : ($targetUser->retailRole ? $targetUser->retailRole->permissions : ($targetUser->kulinerRole ? $targetUser->kulinerRole->permissions : [])),
+                                    : ($targetUser->retailRole ? $targetUser->retailRole->permissions : ($targetUser->kulinerRole ? $targetUser->kulinerRole->permissions : ($targetUser->jasaRole ? $targetUser->jasaRole->permissions : []))),
             'is_impersonating'    => true,
             'active_modules'      => $tenant ? $tenant->modules()->where('is_active', true)->pluck('name')->toArray() : [],
         ];
@@ -85,12 +100,25 @@ class ImpersonateController extends Controller
     public function resolveRedirect(?string $category, ?string $role = null): string
     {
         if ($role === 'super_admin' || $role === 'admin') return '/dashboard';
+        if ($role === 'jasa_staff' || $role === 'jasa_owner') return '/jasa/dashboard';
+        if ($role === 'retail_cashier') return '/retail/pos';
 
-        $cat = trim((string) $category);
-        if (strcasecmp($cat, 'Budidaya Hewan') === 0)     return '/budidaya/dashboard';
-        if (strcasecmp($cat, 'Budidaya Tanaman') === 0)  return '/budidaya/dashboard';
-        if (strcasecmp($cat, 'Toko Retail') === 0)       return '/retail/dashboard';
-        if (strcasecmp($cat, 'Kuliner') === 0)           return '/kuliner/admin/categories';
+        $cat = strtolower(trim((string) $category));
+        if (str_contains($cat, 'budi') || str_contains($cat, 'ternak') || str_contains($cat, 'ikan') || str_contains($cat, 'tani')) {
+            return '/budidaya/dashboard';
+        }
+        if (str_contains($cat, 'retail') || str_contains($cat, 'toko')) {
+            return '/retail/dashboard';
+        }
+        if (str_contains($cat, 'kuliner') || str_contains($cat, 'resto') || str_contains($cat, 'cafe')) {
+            return '/kuliner/admin';
+        }
+        if (str_contains($cat, 'seller') || str_contains($cat, 'omnichannel')) {
+            return '/seller/dashboard';
+        }
+        if (str_contains($cat, 'jasa') || str_contains($cat, 'repair') || str_contains($cat, 'servis') || str_contains($cat, 'bengkel')) {
+            return '/jasa/dashboard';
+        }
 
         return '/coming-soon';
     }

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import {
-  Package, RefreshCw, Plus,
-  Edit3, Trash2, AlertCircle, Download, Upload
-} from 'lucide-react';
+import { Package, RefreshCw, Plus, Pencil, Trash2, AlertCircle, Download, Upload } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
@@ -244,7 +241,7 @@ export default function Products() {
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button title="Tambah baru" className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }} onClick={() => setShowModal(true)}>
+          <button title="Tambah baru" className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }} onClick={() => setShowModal(true)}>
             <Plus size={15} className="mr-2 mobile-no-margin" />
             <span className="btn-text-mobile-hide">Tambah baru</span>
           </button>
@@ -258,7 +255,7 @@ export default function Products() {
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              height: 42, 
+              height: 38, 
               padding: '0 16px',
               background: '#eff6ff',
               color: '#2563eb',
@@ -280,7 +277,7 @@ export default function Products() {
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              height: 42, 
+              height: 38, 
               padding: '0 16px',
               background: '#f0fdf4',
               color: '#16a34a',
@@ -302,7 +299,7 @@ export default function Products() {
           <button 
             onClick={fetchData} 
             className="btn-reset-sync"
-            style={{ width: 42, height: 42, flexShrink: 0 }}
+            style={{ width: 38, height: 38, flexShrink: 0 }}
             title="Segarkan Data"
           >
             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
@@ -374,7 +371,7 @@ export default function Products() {
                   </td>
                   <td className="pr-6 text-right">
                      <div className="flex justify-end gap-2">
-                        <button className="btn btn-sm btn-ghost" title="Edit Data" onClick={() => openEdit(p)}><Edit3 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost" title="Edit Data" onClick={() => openEdit(p)}><Pencil size={14} /></button>
                         <button className="btn btn-sm btn-ghost retail-text-danger" title="Hapus Data" onClick={() => handleDelete(p.id)}><Trash2 size={14} /></button>
                      </div>
                   </td>

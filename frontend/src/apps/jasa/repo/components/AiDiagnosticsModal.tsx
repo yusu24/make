@@ -11,7 +11,7 @@ import {
   RefreshCw,
   Cpu,
   FileCheck
-} from 'lucide-react';
+} from '@/constants/icons';
 import { AIDiagnosisResult, ServiceCategory, PriorityLevel } from '../types';
 import { formatRupiah } from '../data/mockData';
 
@@ -108,8 +108,11 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] border border-slate-200 animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[90vh] border border-slate-200 animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150">
+        
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
         
         {/* Header */}
         <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
@@ -339,10 +342,13 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <div 
+          className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
+            className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
           >
             Tutup
           </button>

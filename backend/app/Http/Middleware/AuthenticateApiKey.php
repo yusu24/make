@@ -37,61 +37,73 @@ class AuthenticateApiKey
             ], 401);
         }
 
-        // If it's a tenant-scoped API key, check tenant status & subscription
-        if ($apiKey->tenant_id) {
-            $tenantId = $apiKey->tenant_id;
-            $tenant = Tenant::where('tenant_id', $tenantId)->first();
-
-            if (!$tenant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Toko / Tenant pemilik API Key tidak ditemukan.',
-                    'error_code' => 'TENANT_NOT_FOUND'
-                ], 404);
-            }
-
-            // Check if demo bypass
-            $isDemo = str_starts_with($tenantId, 'TN-DS-') || str_starts_with($tenantId, 'TN-DK-');
-
-            if (!$isDemo) {
-                $now = now();
-                $expiresAt = $tenant->subscription_expires_at ?? $tenant->trial_ends_at;
-
-                if ($tenant->status === 'expired' || ($expiresAt && $now->greaterThan($expiresAt))) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Akses API ditolak. Masa berlaku langganan toko telah berakhir. Silakan perpanjang paket langganan Anda.',
-                        'error_code' => 'SUBSCRIPTION_EXPIRED'
-                    ], 402);
-                }
-
-                if ($tenant->status === 'suspended') {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Akses API ditolak. Akun toko ditangguhkan.',
-                        'error_code' => 'TENANT_SUSPENDED'
-                    ], 403);
-                }
-
-                // Check plan permission
-                $plan = SubscriptionPlan::forTenant($tenant);
-                $hasApiAccess = ($plan && is_array($plan->features) && (!empty($plan->features['apiAccess']) || !empty($plan->features['api_access'])))
-                    || $tenant->subscription_plan === 'enterprise' 
-                    || $tenant->subscription_plan === 'pro_developer';
-
-                if (!$hasApiAccess) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Akses API ditolak. Fitur Akses API Developer belum diaktifkan pada paket langganan toko Anda.',
-                        'error_code' => 'API_FEATURE_DISABLED'
-                    ], 403);
-                }
-            }
-
-            // Bind tenant context
-            $request->attributes->set('tenant_id', $tenantId);
-            $request->attributes->set('tenant', $tenant);
+        // An API key MUST have an associated tenant_id
+        if (empty($apiKey->tenant_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses API ditolak: Kunci API ini tidak terikat pada Tenant yang sah.',
+                'error_code' => 'API_KEY_ORPHANED'
+            ], 403);
         }
+
+        $tenantId = $apiKey->tenant_id;
+
+        // Block API access for demo / sandbox tenants
+        if (str_starts_with($tenantId, 'TN-DS-') || str_starts_with($tenantId, 'TN-DK-')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses API tidak diizinkan untuk akun demo / sandbox.',
+                'error_code' => 'DEMO_API_DISABLED'
+            ], 403);
+        }
+
+        $tenant = Tenant::where('tenant_id', $tenantId)->first();
+
+        if (!$tenant) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Toko / Tenant pemilik API Key tidak ditemukan.',
+                'error_code' => 'TENANT_NOT_FOUND'
+            ], 404);
+        }
+
+        $now = now();
+        $expiresAt = $tenant->subscription_expires_at ?? $tenant->trial_ends_at;
+
+        if ($tenant->status === 'expired' || ($expiresAt && $now->greaterThan($expiresAt))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses API ditolak. Masa berlaku langganan toko telah berakhir. Silakan perpanjang paket langganan Anda.',
+                'error_code' => 'SUBSCRIPTION_EXPIRED'
+            ], 402);
+        }
+
+        if ($tenant->status === 'suspended') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses API ditolak. Akun toko ditangguhkan.',
+                'error_code' => 'TENANT_SUSPENDED'
+            ], 403);
+        }
+
+        // Check plan permission
+        $plan = SubscriptionPlan::forTenant($tenant);
+        $hasApiAccess = app()->environment('local')
+            || ($plan && is_array($plan->features) && (!empty($plan->features['apiAccess']) || !empty($plan->features['api_access'])))
+            || $tenant->subscription_plan === 'enterprise' 
+            || $tenant->subscription_plan === 'pro_developer';
+
+        if (!$hasApiAccess) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses API ditolak. Fitur Akses API Developer belum diaktifkan pada paket langganan toko Anda.',
+                'error_code' => 'API_FEATURE_DISABLED'
+            ], 403);
+        }
+
+        // Bind tenant context
+        $request->attributes->set('tenant_id', $tenantId);
+        $request->attributes->set('tenant', $tenant);
 
         // Update last used timestamp asynchronously/quietly
         $apiKey->update(['last_used_at' => now()]);

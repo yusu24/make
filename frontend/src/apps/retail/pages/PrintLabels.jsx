@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import Barcode from 'react-barcode';
-import { Search, Printer, Plus, Trash2, X } from 'lucide-react';
+import { Search, Printer, Plus, Trash2, X } from '@/constants/icons';
 import { api } from '../../../lib/api';
 import { useToast } from '../../../components/Toast';
 import Modal from '../../../components/Modal';

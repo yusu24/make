@@ -74,8 +74,9 @@ class KulinerController extends Controller
      */
     public function getBestSellers(Request $request)
     {
-        $tenantId = $request->query('tenant_id') ?: $request->header('X-Tenant-ID');
-        if (!$tenantId) return response()->json(['monthly' => null, 'daily_food' => null, 'daily_drink' => null]);
+        $tenant = $this->resolveTenantFromRequest($request);
+        if (!$tenant) return response()->json(['monthly' => null, 'daily_food' => null, 'daily_drink' => null]);
+        $tenantId = $tenant->tenant_id;
 
         // 1. Monthly Featured
         $monthlyTopId = DB::table('order_items')
@@ -176,9 +177,9 @@ class KulinerController extends Controller
 
     private function resolveTenantFromRequest(Request $request): ?Tenant
     {
-        $tenantId = $request->query('tenant_id') ?: $request->header('X-Tenant-ID');
+        $tenantId = $request->query('tenant_id') ?: $request->query('store');
         if ($tenantId === 'undefined' || !$tenantId) {
-            $tenantId = auth('sanctum')->user()?->tenant_id;
+            $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
         }
 
         if ($tenantId) {
@@ -189,7 +190,7 @@ class KulinerController extends Controller
             if ($tenant) return $tenant;
         }
 
-        return Tenant::where('type', 'kuliner')->first();
+        return null;
     }
 
     public function getSettings(Request $request)
@@ -297,13 +298,15 @@ class KulinerController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Determine tenant - fallback to first culinary tenant if not specified
-        $tenantId = $request->input('tenant_id') ?: ($request->header('X-Tenant-ID') ?: Tenant::where('type', 'kuliner')->first()?->tenant_id);
+        // Determine tenant strictly from validated tenant_id or store identifier
+        $tenantId = $request->input('tenant_id');
+        $tenant = $tenantId ? Tenant::where('tenant_id', $tenantId)->first() : null;
         
-        if (!$tenantId) {
-            return response()->json(['message' => 'Konfigurasi toko (Tenant) belum tersedia.'], 400);
+        if (!$tenant) {
+            return response()->json(['message' => 'Konfigurasi toko (Tenant) tidak ditemukan atau tidak valid.'], 404);
         }
 
+        $tenantId = $tenant->tenant_id;
         $settings = KulinerSetting::where('tenant_id', $tenantId)->first();
 
         return DB::transaction(function () use ($request, $tenantId, $settings) {
@@ -312,7 +315,7 @@ class KulinerController extends Controller
                 $orderItems = [];
 
                 foreach ($request->items as $itemData) {
-                    $product = KulinerProduct::withoutGlobalScopes()->find($itemData['id']);
+                    $product = KulinerProduct::withoutGlobalScopes()->where('tenant_id', $tenantId)->find($itemData['id']);
 
                     if (!$product) {
                         $price = (float) ($itemData['price'] ?? 0);
@@ -1256,17 +1259,7 @@ class KulinerController extends Controller
      */
     public function getPublicTestimonials(Request $request)
     {
-        $tenantId = $request->query('tenant_id') ?: $request->header('X-Tenant-ID');
-        
-        if ($tenantId === 'undefined' || !$tenantId) {
-            $tenantId = auth('sanctum')->user()?->tenant_id;
-        }
-
-        $tenant = $tenantId ? Tenant::where('tenant_id', $tenantId)->first() : null;
-        if (!$tenant) {
-            $tenant = Tenant::where('type', 'kuliner')->first();
-        }
-        
+        $tenant = $this->resolveTenantFromRequest($request);
         if (!$tenant) return response()->json([], 200);
 
         $testimonials = KulinerTestimonial::where('tenant_id', $tenant->tenant_id)
@@ -1293,14 +1286,15 @@ class KulinerController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $tenantId = $request->input('tenant_id') ?: ($request->header('X-Tenant-ID') ?: Tenant::where('type', 'kuliner')->first()?->tenant_id);
+        $tenantId = $request->input('tenant_id');
+        $tenant = $tenantId ? Tenant::where('tenant_id', $tenantId)->first() : null;
         
-        if (!$tenantId) {
-            return response()->json(['message' => 'Konfigurasi toko tidak ditemukan.'], 400);
+        if (!$tenant) {
+            return response()->json(['message' => 'Konfigurasi toko tidak ditemukan.'], 404);
         }
 
         $testimonial = KulinerTestimonial::create([
-            'tenant_id' => $tenantId,
+            'tenant_id' => $tenant->tenant_id,
             'customer_name' => $request->customer_name,
             'rating' => $request->rating,
             'comment' => $request->comment,

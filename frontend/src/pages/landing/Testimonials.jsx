@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { MessageSquare, Quote, CheckCircle2, Star, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MessageSquare, Quote, CheckCircle2, Star, ChevronLeft, ChevronRight } from '@/constants/icons'
 
 export default function Testimonials({
   testimonials, testimonialsLoading,

@@ -1,4 +1,14 @@
 import { useState, useEffect } from 'react'
+import {
+  Archive,
+  Download,
+  CheckCircle2,
+  AlertTriangle,
+  HardDrive,
+  Database,
+  Clock,
+  RefreshCw
+} from '@/constants/icons'
 import { api } from '../../../lib/api'
 import './Shared.css'
 
@@ -41,7 +51,7 @@ export default function Backups() {
     setRunning(true)
     try {
       await api.post('/admin/backups/run')
-      showMsg('Backup berhasil dijalankan! 🎉', 'success')
+      showMsg('Backup berhasil dijalankan!', 'success')
       fetchBackups()
     } catch (err) {
       showMsg('Backup gagal: ' + (err.response?.data?.message || 'Koneksi bermasalah'), 'error')
@@ -89,31 +99,48 @@ export default function Backups() {
       {msg && (
         <div
           className={`auth-alert ${msgType === 'success' ? 'auth-alert--success' : 'auth-alert--error'}`}
-          style={{ marginBottom: 20 }}
+          style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}
         >
-          <span>{msgType === 'success' ? '✓' : '⚠'}</span> {msg}
+          {msgType === 'success' ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
+          <span>{msg}</span>
         </div>
       )}
 
       {!reachable && (
-        <div className="auth-alert auth-alert--error" style={{ marginBottom: 20 }}>
-          <span>⚠</span> Tujuan backup tidak bisa diakses{connectionError ? `: ${connectionError}` : '.'}
+        <div className="auth-alert auth-alert--error" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <AlertTriangle size={16} />
+          <span>Tujuan backup tidak bisa diakses{connectionError ? `: ${connectionError}` : '.'}</span>
         </div>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 20 }}>
-        <div className="card card-pad">
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Jumlah Backup</span>
-          <div style={{ fontSize: 26, fontWeight: 700, marginTop: 6 }}>{backups.length}</div>
+        <div className="card card-pad" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#6366f118', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Archive size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.1 }}>{backups.length}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Jumlah File Backup</div>
+          </div>
         </div>
-        <div className="card card-pad">
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Total Ukuran</span>
-          <div style={{ fontSize: 26, fontWeight: 700, marginTop: 6 }}>{totalSizeHuman}</div>
+        <div className="card card-pad" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#10b98118', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <HardDrive size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.1 }}>{totalSizeHuman}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Total Ukuran Disk</div>
+          </div>
         </div>
-        <div className="card card-pad">
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Backup Terbaru</span>
-          <div style={{ fontSize: 15, fontWeight: 600, marginTop: 10 }}>
-            {newest ? formatDate(newest.date) : '—'}
+        <div className="card card-pad" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#f59e0b18', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Clock size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+              {newest ? formatDate(newest.date) : '—'}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Backup Terbaru</div>
           </div>
         </div>
       </div>
@@ -123,8 +150,8 @@ export default function Backups() {
         <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
           Terjadwal otomatis setiap hari pukul <strong>03:00 WIB</strong>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={handleRunBackup} disabled={running}>
-          {running ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Menjalankan...</> : '💾 Jalankan Backup Sekarang'}
+        <button className="btn btn-primary btn-sm" onClick={handleRunBackup} disabled={running} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          {running ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Menjalankan...</> : <><Archive size={14} /> Jalankan Backup Sekarang</>}
         </button>
       </div>
 
@@ -164,8 +191,9 @@ export default function Backups() {
                       className="btn btn-secondary btn-sm"
                       onClick={() => handleDownload(b)}
                       disabled={downloadingFile === b.filename}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
                     >
-                      {downloadingFile === b.filename ? '...' : '⬇ Unduh'}
+                      {downloadingFile === b.filename ? '...' : <><Download size={13} /> Unduh</>}
                     </button>
                   </td>
                 </tr>
@@ -177,3 +205,4 @@ export default function Backups() {
     </div>
   )
 }
+

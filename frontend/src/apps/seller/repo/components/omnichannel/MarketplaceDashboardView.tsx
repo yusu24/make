@@ -12,7 +12,7 @@ import {
   Plus,
   X,
   Check
-} from 'lucide-react';
+} from '@/constants/icons';
 import { ConnectMarketplaceModal } from '../modals/ConnectMarketplaceModal';
 import { useAuth } from '../../../../../contexts/AuthContext';
 
@@ -123,35 +123,24 @@ export const MarketplaceDashboardView: React.FC<{ onNavigateToConnected?: () => 
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">Marketplace Dashboard</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Pantau status koneksi dan aktivitas sinkronisasi seluruh toko marketplace Anda.
-          </p>
-        </div>
-        <div className="shrink-0 flex items-center gap-3">
-          <button
-            onClick={handleGlobalSync}
-            disabled={isGlobalSyncing}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors text-xs cursor-pointer disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isGlobalSyncing ? 'animate-spin' : ''}`} />
-            <span>{isGlobalSyncing ? 'Menyinkronkan...' : 'Sinkronisasi Global'}</span>
-          </button>
+      {/* Top Action Bar */}
+      <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
+        <button
+          onClick={handleGlobalSync}
+          disabled={isGlobalSyncing}
+          className="flex items-center gap-2 px-4 h-[38px] bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors text-xs cursor-pointer disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${isGlobalSyncing ? 'animate-spin' : ''}`} />
+          <span>{isGlobalSyncing ? 'Menyinkronkan...' : 'Sinkronisasi Global'}</span>
+        </button>
 
-          <button
-            onClick={() => setIsAddStoreModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 shadow-md shadow-indigo-500/20 transition-all text-xs cursor-pointer"
-          >
-            <LinkIcon className="w-4 h-4" />
-            <span>Tambah Toko</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setIsAddStoreModalOpen(true)}
+          className="flex items-center gap-2 px-4 h-[38px] bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 shadow-xs transition-colors text-xs cursor-pointer"
+        >
+          <LinkIcon className="w-4 h-4" />
+          <span>Tambah Toko</span>
+        </button>
       </div>
 
       {/* Overview Cards */}

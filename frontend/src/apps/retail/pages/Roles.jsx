@@ -6,7 +6,7 @@ import { useConfirm } from '../../../components/ConfirmDialog';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import RetailPagination from '../components/RetailPagination';
 import usePagination from '../../../hooks/usePagination';
-import { Edit3, Trash2, RefreshCw, Plus, ShieldCheck, CheckSquare, Square } from 'lucide-react';
+import { Pencil, Trash2, RefreshCw, Plus, ShieldCheck, CheckSquare, Square } from '@/constants/icons';
 
 export const GRANULAR_PERMISSION_GROUPS = [
   {
@@ -204,7 +204,7 @@ export default function Roles() {
           <button 
             title="Tambah Jabatan Baru" 
             className="btn btn-primary" 
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
             onClick={handleOpenAdd}
           >
             <Plus size={15} className="mr-2 mobile-no-margin" />
@@ -217,7 +217,7 @@ export default function Roles() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button onClick={fetchRoles} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
+          <button onClick={fetchRoles} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
             <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
@@ -261,7 +261,7 @@ export default function Roles() {
                     </td>
                     <td style={{ textAlign: 'right' }} className="pr-6">
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                        <button className="btn btn-sm btn-ghost" onClick={() => handleEdit(r)} title="Edit Izin Jabatan"><Edit3 size={14} /></button>
+                        <button className="btn btn-sm btn-ghost" onClick={() => handleEdit(r)} title="Edit Izin Jabatan"><Pencil size={14} /></button>
                         <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(r.id)} title="Hapus Jabatan"><Trash2 size={14} /></button>
                       </div>
                     </td>

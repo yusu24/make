@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { RefreshCw, Plus } from '@/constants/icons'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import Modal from '../../../components/Modal'
@@ -204,10 +205,12 @@ export default function Categories() {
 
       <div className="grid-auto stagger">
         {loading ? (
-          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-              <span className="spinner" style={{ width: 32, height: 32, borderWidth: 3 }}></span>
-              <span style={{ fontSize: 16 }}>Memuat data kategori...</span>
+          <div className="card" style={{ gridColumn: '1 / -1', padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+              <RefreshCw size={28} className="animate-spin text-indigo-600" />
+              <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+                Memuat data kategori bisnis...
+              </span>
             </div>
           </div>
         ) : filtered.length === 0 ? (

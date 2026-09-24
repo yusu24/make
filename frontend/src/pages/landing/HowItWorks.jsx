@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@/constants/icons'
 
 // Used only if settings.how_it_works_steps hasn't loaded / is empty (e.g. API error).
 const DEFAULT_STEPS = [

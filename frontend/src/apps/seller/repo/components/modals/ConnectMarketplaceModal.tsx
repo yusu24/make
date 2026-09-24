@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Store, ExternalLink, KeyRound, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { X, Store, ExternalLink, KeyRound, ShieldAlert, CheckCircle2 } from '@/constants/icons';
 
 type Platform = 'Shopee' | 'Tokopedia' | 'TikTok Shop' | 'Lazada';
 
@@ -101,9 +101,11 @@ export const ConnectMarketplaceModal: React.FC<ConnectMarketplaceModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-xl overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-xl overflow-hidden max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
           <h3 className="font-semibold text-base text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Store className="w-5 h-5 text-indigo-600" />
             Hubungkan Toko Marketplace
@@ -178,7 +180,10 @@ export const ConnectMarketplaceModal: React.FC<ConnectMarketplaceModalProps> = (
           </div>
         </div>
 
-        <div className="p-5 border-t border-slate-100 dark:border-slate-700 shrink-0 flex items-center justify-between gap-3">
+        <div 
+          className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-700 shrink-0 flex items-center justify-between gap-3"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
           <span className="text-[11px] text-slate-400 flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Toko Offline (POS) Anda sudah tersambung otomatis, tanpa perlu langkah ini.

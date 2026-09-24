@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Printer, MessageCircle, X } from 'lucide-react';
+import { Printer, MessageCircle, X } from '@/constants/icons';
 import { useReactToPrint } from 'react-to-print';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
@@ -27,9 +27,11 @@ export default function KulinerReceiptModal({ isOpen, order, storeName, onClose 
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70" onClick={onClose}>
-      <div className="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-        <div className="p-4 flex items-center justify-between border-b border-slate-100">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-950/70 select-none" onClick={onClose}>
+      <div className="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
+        <div className="p-4 flex items-center justify-between border-b border-slate-100 shrink-0">
           <h3 className="font-bold text-slate-800 text-sm">Struk Digital</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X size={18} /></button>
         </div>
@@ -81,7 +83,10 @@ export default function KulinerReceiptModal({ isOpen, order, storeName, onClose 
           </div>
         </div>
 
-        <div className="p-4 border-t border-slate-100 flex gap-2">
+        <div 
+          className="p-4 border-t border-slate-100 flex gap-2 shrink-0"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
           {/* Browser print dialog already offers "Save as PDF" as a destination,
               so a separate PDF button here would just duplicate this one. */}
           <button onClick={handlePrint} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 text-white text-xs font-semibold">

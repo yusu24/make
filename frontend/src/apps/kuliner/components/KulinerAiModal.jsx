@@ -12,8 +12,10 @@ import {
   Calculator,
   UtensilsCrossed,
   DollarSign,
-  Flame
-} from 'lucide-react';
+  Flame,
+  Lightbulb,
+  TrendingDown
+} from '@/constants/icons';
 
 export default function KulinerAiModal({ isOpen, onClose }) {
   if (!isOpen) return null;
@@ -103,10 +105,12 @@ export default function KulinerAiModal({ isOpen, onClose }) {
   };
 
   return createPortal(
-    <div className="fixed inset-0 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200" style={{ zIndex: 99999 }}>
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200" style={{ zIndex: 99999 }}>
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[85vh]">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 text-white flex items-center justify-between">
+        <div className="px-5 sm:px-6 py-4 bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
               <ChefHat className="w-5 h-5 text-white" />
@@ -130,7 +134,7 @@ export default function KulinerAiModal({ isOpen, onClose }) {
         </div>
 
         {/* Sub Navigation Tabs */}
-        <div className="flex items-center gap-2 p-3 bg-slate-50 border-b border-slate-200 text-xs font-bold">
+        <div className="flex items-center gap-2 p-3 bg-slate-50 border-b border-slate-200 text-xs font-bold overflow-x-auto no-scrollbar shrink-0">
           <button
             onClick={() => setActiveTab('advisor')}
             className={'flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ' + (
@@ -167,18 +171,20 @@ export default function KulinerAiModal({ isOpen, onClose }) {
           <div className="flex-1 flex flex-col min-h-0">
             {/* Quick Prompts */}
             <div className="p-3 bg-orange-50/50 border-b border-orange-100 flex items-center gap-2 overflow-x-auto text-[11px] font-semibold">
-              <span className="text-orange-800 shrink-0">💡 Saran Cepat:</span>
+              <span className="text-orange-800 shrink-0 flex items-center gap-1">
+                <Lightbulb size={14} className="text-amber-500" /> Saran Cepat:
+              </span>
               <button
                 onClick={() => handleSendPrompt('Berikan 3 ide menu kekinian yang margin untungnya di atas 60%')}
-                className="px-2.5 py-1 bg-white border border-orange-200 text-orange-900 rounded-lg shrink-0 hover:bg-orange-100/50 cursor-pointer"
+                className="px-2.5 py-1 bg-white border border-orange-200 text-orange-900 rounded-lg shrink-0 hover:bg-orange-100/50 cursor-pointer flex items-center gap-1.5"
               >
-                🔥 Ide Menu Untung 60%+
+                <TrendingUp size={13} className="text-orange-600" /> Ide Menu Untung 60%+
               </button>
               <button
                 onClick={() => handleSendPrompt('Bagaimana cara menekan food cost restoran agar di bawah 30%?')}
-                className="px-2.5 py-1 bg-white border border-orange-200 text-orange-900 rounded-lg shrink-0 hover:bg-orange-100/50 cursor-pointer"
+                className="px-2.5 py-1 bg-white border border-orange-200 text-orange-900 rounded-lg shrink-0 hover:bg-orange-100/50 cursor-pointer flex items-center gap-1.5"
               >
-                📉 Cara Tekan Food Cost
+                <TrendingDown size={13} className="text-orange-600" /> Cara Tekan Food Cost
               </button>
             </div>
 
@@ -193,17 +199,19 @@ export default function KulinerAiModal({ isOpen, onClose }) {
                   )}
                   <div className={'p-3.5 rounded-2xl max-w-lg leading-relaxed whitespace-pre-line ' + (
                     m.role === 'user' 
-                      ? 'bg-orange-600 text-white rounded-br-none shadow-xs' 
-                      : 'bg-slate-100 text-slate-800 rounded-bl-none'
+                      ? 'bg-orange-600 text-white font-medium rounded-br-xs shadow-xs' 
+                      : 'bg-slate-50 text-slate-800 border border-slate-200/80 rounded-bl-xs shadow-2xs font-normal'
                   )}>
                     {m.text}
                   </div>
                 </div>
               ))}
               {isLoading && (
-                <div className="flex gap-2 items-center text-xs text-orange-600 font-semibold p-2 animate-pulse">
-                  <Sparkles className="w-4 h-4 animate-spin" />
-                  <span>Chef AI sedang meracik analisis terbaik...</span>
+                <div className="flex gap-2.5 items-center text-slate-400 font-medium">
+                  <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4 animate-spin" />
+                  </div>
+                  <span>Bizora AI sedang menganalisis data kuliner...</span>
                 </div>
               )}
             </div>
@@ -216,15 +224,16 @@ export default function KulinerAiModal({ isOpen, onClose }) {
                 value={inputPrompt}
                 onChange={e => setInputPrompt(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSendPrompt()}
-                className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-orange-600/20"
+                className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-orange-600/20 font-medium"
               />
               <button
+                type="button"
                 onClick={() => handleSendPrompt()}
                 disabled={isLoading || !inputPrompt.trim()}
-                className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 text-xs"
+                className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer text-xs"
               >
-                <Send className="w-3.5 h-3.5" />
                 <span>Kirim</span>
+                <Send className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -232,40 +241,49 @@ export default function KulinerAiModal({ isOpen, onClose }) {
 
         {/* Tab 2: HPP Calculator */}
         {activeTab === 'hpp' && (
-          <div className="p-6 space-y-5 overflow-y-auto text-xs">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            <div className="bg-orange-50/50 border border-orange-100 rounded-2xl p-4 text-xs">
+              <div className="flex items-center gap-2 text-orange-950 font-bold mb-1">
+                <Calculator className="w-4 h-4 text-orange-600" />
+                <span>Kalkulator HPP & Target Margin Restoran</span>
+              </div>
+              <p className="text-orange-900/80 leading-relaxed text-[11px]">
+                Hitung otomatis harga jual rekomendasi dengan acuan standar industri F&B (Food cost ideal: 28-35%).
+              </p>
+            </div>
+
             <form onSubmit={calculateHpp} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Nama Menu Hidangan</label>
+                <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1.5">Nama Menu / Hidangan</label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Nasi Goreng Spesial Wagyu"
+                  placeholder="Contoh: Rice Bowl Beef Teriyaki"
                   value={hppForm.menuName}
                   onChange={e => setHppForm({ ...hppForm, menuName: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-orange-600/20"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Target Margin Kotor (%)</label>
-                <input
-                  type="number"
-                  required
-                  min="10"
-                  max="90"
-                  placeholder="65"
-                  value={hppForm.desiredMargin}
-                  onChange={e => setHppForm({ ...hppForm, desiredMargin: e.target.value })}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-orange-600/20"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Biaya Bahan Baku (Raw Cost Rp)</label>
+                <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1.5">Target Food Cost (%)</label>
                 <input
                   type="number"
                   required
-                  min="100"
+                  min="10"
+                  max="80"
+                  placeholder="30"
+                  value={hppForm.targetMargin}
+                  onChange={e => setHppForm({ ...hppForm, targetMargin: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-orange-600/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1.5">Total Biaya Bahan Baku / Porsi (Rp)</label>
+                <input
+                  type="number"
+                  required
                   placeholder="12000"
                   value={hppForm.rawCost}
                   onChange={e => setHppForm({ ...hppForm, rawCost: e.target.value })}
@@ -274,7 +292,7 @@ export default function KulinerAiModal({ isOpen, onClose }) {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Kemasan / Box / Cup (Rp)</label>
+                <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1.5">Biaya Packaging / Paper Bowl (Rp)</label>
                 <input
                   type="number"
                   placeholder="1500"
@@ -287,9 +305,9 @@ export default function KulinerAiModal({ isOpen, onClose }) {
               <div className="md:col-span-2 pt-2">
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-xs transition-all cursor-pointer text-xs"
+                  className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-xs transition-all cursor-pointer text-xs flex items-center justify-center gap-1.5"
                 >
-                  ⚡ Hitung Rekomendasi Harga Jual & Profit AI
+                  <Sparkles size={14} /> Hitung Rekomendasi Harga Jual & Profit AI
                 </button>
               </div>
             </form>

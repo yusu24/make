@@ -2,41 +2,64 @@ import { useState, useRef, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
-import { Search, Bell, User, LogOut, Shield, Calendar, CreditCard } from 'lucide-react'
+import { Search, Bell, User, LogOut, Shield, Calendar, CreditCard } from '@/constants/icons'
 import './Header.css'
 
 const PAGE_TITLES = {
-  '/dashboard':   { title: 'Dashboard', sub: 'Ringkasan statistik platform' },
-  '/users':       { title: 'Users', sub: 'Kelola semua pengguna terdaftar' },
-  '/tenants':     { title: 'Tenant Management', sub: 'Kelola tenant dan pelanggan bisnis' },
-  '/kyc':         { title: 'Verifikasi KYC', sub: 'Verifikasi identitas dan dokumen legalitas tenant' },
-  '/subscriptions':          { title: 'Pelanggan Langganan', sub: 'Kelola data pelanggan yang sedang berlangganan aktif' },
-  '/subscription-requests': { title: 'Permintaan Langganan', sub: 'Verifikasi pembayaran dan aktivasi paket langganan customer' },
-  '/packages-features': { title: 'Packages & Features', sub: 'Atur paket dan fitur yang tersedia' },
-  '/finance':     { title: 'Finance', sub: 'Kelola transaksi dan laporan keuangan' },
-  '/invoice-settings': { title: 'Pengaturan Invoice', sub: 'Pengaturan identitas faktur, rekening bank, dan templat email' },
-  '/support-center': { title: 'Support Center', sub: 'Layanan pelanggan dan tiket dukungan' },
-  '/system-monitoring': { title: 'System Monitoring', sub: 'Pantau performa dan kesehatan sistem' },
-  '/content-announcement': { title: 'Content & Announcement', sub: 'Kelola konten dan pengumuman platform' },
-  '/reports-analytics': { title: 'Laporan Overview', sub: 'Ringkasan performa platform SaaS' },
-  '/reports-revenue':   { title: 'Laporan Pendapatan', sub: 'Tren omzet dan akumulasi pendapatan' },
-  '/reports-tenants':   { title: 'Analitik Tenant', sub: 'Distribusi paket, kategori, dan top tenant' },
-  '/logs':        { title: 'Security & Audit', sub: 'Riwayat aktivitas sistem' },
-  '/settings':          { title: 'Teks & Elemen Hero', sub: 'Edit teks hero, kampanye, dan konfigurasi umum landing page' },
-  '/landing-settings':  { title: 'Teks & Elemen Hero', sub: 'Edit teks hero, kampanye, dan konfigurasi umum landing page' },
-  '/landing-sectors':   { title: 'Sektor Bisnis', sub: 'Kelola tampilan dan konten section spesialisasi bisnis' },
-  '/landing-features':  { title: 'Fitur Platform', sub: 'Atur daftar fitur unggulan yang ditampilkan di landing page' },
-  '/landing-howitworks':{ title: 'Cara Kerja', sub: 'Kelola langkah-langkah cara kerja platform' },
-  '/landing-faq':       { title: 'FAQ & Pertanyaan Umum', sub: 'Kelola pertanyaan dan jawaban yang sering ditanyakan' },
-  '/landing-testimonials':{ title: 'Testimoni Pelanggan', sub: 'Kelola ulasan dan testimoni pelanggan' },
-  '/landing-billing':   { title: 'Harga Paket & Rekening', sub: 'Atur harga paket langganan dan informasi rekening bank' },
-  '/landing-logo':      { title: 'Logo & Branding', sub: 'Kelola identitas visual dan branding platform' },
-  '/developer-integrations':  { title: 'Developer & Integrations', sub: 'Atur integrasi dan akses developer' },
-  '/admins':      { title: 'Admins', sub: 'Kelola administrator' },
-  '/saas-roles':  { title: 'SaaS Roles', sub: 'Kelola peran dan izin akses administrator' },
-  '/categories':  { title: 'Business Categories', sub: 'Kelola master kategori bisnis' },
-  '/module-docs': { title: 'Dokumentasi Modul', sub: 'Arsitektur, visual ERD & spesifikasi modul sistem' },
-  '/profile':     { title: 'Profil Saya', sub: 'Pengaturan akun Anda' },
+  // SaaS Admin Module
+  '/admin':                     { title: 'Dashboard', sub: 'Ringkasan statistik platform' },
+  '/dashboard':                 { title: 'Dashboard', sub: 'Ringkasan statistik platform' },
+  '/reports-analytics':         { title: 'Laporan Overview', sub: 'Ringkasan performa platform SaaS' },
+  '/reports-revenue':           { title: 'Laporan Pendapatan', sub: 'Tren omzet dan akumulasi pendapatan' },
+  '/reports-tenants':           { title: 'Analitik Tenant', sub: 'Distribusi paket, kategori, dan top tenant' },
+  '/logs':                      { title: 'Log Aktivitas & Audit', sub: 'Riwayat aktivitas sistem dan keamanan' },
+  
+  '/tenants':                   { title: 'Daftar Tenant', sub: 'Kelola tenant dan pelanggan bisnis' },
+  '/kyc':                       { title: 'Verifikasi KYC Tenant', sub: 'Verifikasi identitas dan dokumen legalitas tenant' },
+  '/users':                     { title: 'Pengguna Platform', sub: 'Kelola semua pengguna terdaftar platform' },
+  '/categories':                { title: 'Kategori Bisnis', sub: 'Kelola master kategori bisnis' },
+  
+  '/packages-features':         { title: 'Paket & Fitur', sub: 'Atur paket dan fitur yang tersedia' },
+  '/subscriptions':             { title: 'Manajemen Langganan', sub: 'Kelola data pelanggan yang sedang berlangganan aktif' },
+  '/subscription-requests':     { title: 'Permintaan Langganan', sub: 'Verifikasi pembayaran dan aktivasi paket langganan customer' },
+  '/finance':                   { title: 'Finansial & Faktur', sub: 'Kelola transaksi dan laporan keuangan' },
+  '/invoice-settings':          { title: 'Pengaturan Invoice', sub: 'Pengaturan identitas faktur, rekening bank, dan templat email' },
+  '/subscription-reminders':    { title: 'Pengingat & Otomasi', sub: 'Konfigurasi jadwal pengingat jatuh tempo & notifikasi' },
+  
+  '/content-announcement':      { title: 'Pengumuman & Konten', sub: 'Kelola konten dan pengumuman platform' },
+  '/support-center':            { title: 'Pusat Bantuan (Tiket)', sub: 'Layanan pelanggan dan tiket dukungan' },
+  
+  '/settings':                  { title: 'Pengaturan Landing Page', sub: 'Edit teks hero, kampanye, dan konfigurasi umum landing page' },
+  '/landing-settings':          { title: 'Pengaturan Landing Page', sub: 'Edit teks hero, kampanye, dan konfigurasi umum landing page' },
+  '/landing-sectors':           { title: 'Sektor Bisnis', sub: 'Kelola tampilan dan konten section spesialisasi bisnis' },
+  '/landing-features':          { title: 'Fitur Platform', sub: 'Atur daftar fitur unggulan yang ditampilkan di landing page' },
+  '/landing-howitworks':        { title: 'Cara Kerja', sub: 'Kelola langkah-langkah cara kerja platform' },
+  '/landing-faq':               { title: 'FAQ & Pertanyaan Umum', sub: 'Kelola pertanyaan dan jawaban yang sering ditanyakan' },
+  '/landing-footer':            { title: 'Pengaturan Footer', sub: 'Kelola tautan dan informasi footer landing page' },
+  '/landing-testimonials':      { title: 'Testimoni Pelanggan', sub: 'Kelola ulasan dan testimoni pelanggan' },
+  '/landing-billing':           { title: 'Harga Paket & Rekening', sub: 'Atur harga paket langganan dan informasi rekening bank' },
+  '/landing-logo':              { title: 'Logo & Branding', sub: 'Kelola identitas visual dan branding platform' },
+  
+  '/doc-center':                { title: 'Pusat Dokumentasi', sub: 'Dokumentasi lengkap panduan sistem dan modul Bizora' },
+  '/doc-dashboard':             { title: 'Kelola Dokumentasi', sub: 'Manajemen artikel, dokumen panduan, dan konten bantuan' },
+  '/module-docs':               { title: 'Arsitektur Modul', sub: 'Arsitektur, visual ERD & spesifikasi modul sistem' },
+  '/icon-dictionary':           { title: 'Kamus Icon UI', sub: 'Kamus icon dan aset visual sistem' },
+  '/admin/icon-dictionary':     { title: 'Kamus Icon UI', sub: 'Kamus icon dan aset visual sistem' },
+  '/card-dictionary':           { title: 'Kamus Card UI', sub: 'Standarisasi komponen kartu, KPI metrik, dan container data' },
+  '/admin/card-dictionary':     { title: 'Kamus Card UI', sub: 'Standarisasi komponen kartu, KPI metrik, dan container data' },
+  '/font-dictionary':           { title: 'Kamus Font & Tipografi', sub: 'Standarisasi hirarki teks, skala ukuran font, dan styling' },
+  '/admin/font-dictionary':     { title: 'Kamus Font & Tipografi', sub: 'Standarisasi hirarki teks, skala ukuran font, dan styling' },
+  '/ui-consistency':            { title: 'Audit Konsistensi UI', sub: 'Laporan standarisasi komponen UI Bizora SaaS dan showcase sistem desain' },
+  '/admin/ui-consistency':      { title: 'Audit Konsistensi UI', sub: 'Laporan standarisasi komponen UI Bizora SaaS dan showcase sistem desain' },
+  
+  '/admins':                    { title: 'Kelola Admin', sub: 'Kelola administrator dan hak akses pengguna admin' },
+  '/saas-roles':                { title: 'Role & Hak Akses', sub: 'Kelola peran dan izin akses administrator' },
+  '/system-monitoring':         { title: 'Monitoring Sistem', sub: 'Pantau performa dan kesehatan sistem' },
+  '/developer-integrations':    { title: 'Integrasi & Webhook', sub: 'Atur integrasi API dan webhook developer' },
+  '/backups':                   { title: 'Cadangan Data (Backup)', sub: 'Kelola pencadangan data sistem' },
+  '/profile':                   { title: 'Profil Saya', sub: 'Pengaturan akun Anda' },
+  '/customer-onboarding':       { title: 'Panduan Onboarding', sub: 'Petunjuk pengguna baru' },
+  '/admin-documentation':       { title: 'Dokumentasi Sistem', sub: 'Arsitektur dan panduan platform' },
   
   // Retail Module
   '/retail/dashboard':          { title: 'Dashboard Retail' },
@@ -102,14 +125,26 @@ const PAGE_TITLES = {
   '/kuliner/analytics':         { title: 'Menu Engineering Analytics' },
 }
 
-export default function Header({ onMenuToggle, collapsed }) {
+export default function Header({ onMenuToggle, collapsed, onOpenCommandPalette }) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { user, isImpersonating, exitImpersonate, logout, isSuperAdmin } = useAuth()
   const isRetail = pathname.startsWith('/retail')
   const isKuliner = pathname.startsWith('/kuliner')
   const normalizedPath = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname
-  const page = PAGE_TITLES[normalizedPath] || { title: '', sub: '' }
+  const lookupPath = normalizedPath.startsWith('/admin/') ? normalizedPath.replace('/admin', '') : normalizedPath
+  let page = PAGE_TITLES[lookupPath] || PAGE_TITLES[normalizedPath]
+  if (!page) {
+    if (lookupPath.startsWith('/categories/')) {
+      const catName = decodeURIComponent(lookupPath.replace('/categories/', ''))
+      page = { title: `Kategori: ${catName}`, sub: 'Detail dan konfigurasi kategori bisnis' }
+    } else if (lookupPath.startsWith('/doc-center/')) {
+      page = { title: 'Pusat Dokumentasi', sub: 'Dokumentasi lengkap panduan sistem dan modul Bizora' }
+    }
+  }
+  if (!page) {
+    page = { title: '', sub: '' }
+  }
 
   const isSaasAdminPage = !isRetail && !isKuliner && (isSuperAdmin?.() || user?.role === 'admin')
 
@@ -209,13 +244,24 @@ export default function Header({ onMenuToggle, collapsed }) {
           </svg>
         </button>
 
-        {!isSaasAdminPage && (
-          <div className="header__title">
-            <h1 className="header__page-title">
-              {page.title || 'Bizora'}
-            </h1>
-          </div>
-        )}
+        <div className="header__title ml-1 sm:ml-2">
+          <h1 className="header__page-title">
+            {page.title || (isSaasAdminPage ? 'Bizora SaaS' : 'Bizora')}
+          </h1>
+        </div>
+
+        <button
+          type="button"
+          onClick={onOpenCommandPalette}
+          className="header__search-trigger hidden sm:flex items-center gap-2.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 px-3.5 py-1.5 rounded-xl text-slate-500 text-xs font-medium transition-all shadow-2xs ml-1"
+          title="Buka Command Palette (Ctrl + K)"
+        >
+          <Search size={14} className="text-slate-400" />
+          <span className="text-slate-600">{isSaasAdminPage ? 'Cari tenant, menu, aksi...' : 'Cari menu, aksi, data...'}</span>
+          <kbd className="bg-white border border-slate-300 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-slate-500 font-mono shadow-2xs">
+            Ctrl K
+          </kbd>
+        </button>
       </div>
 
       <div className="header__right">

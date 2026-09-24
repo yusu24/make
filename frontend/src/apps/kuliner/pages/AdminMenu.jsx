@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Edit3, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search, X, UtensilsCrossed, Utensils, Folder } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import api from '../../../services/api';
@@ -282,9 +282,7 @@ const AdminMenu = () => {
               }}>
                 {/* Search Field */}
                 <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: 14, pointerEvents: 'none' }}>
-                    🔍
-                  </span>
+                  <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
                   <input
                     type="text"
                     className="kd-form-input"
@@ -304,7 +302,7 @@ const AdminMenu = () => {
                 >
                   <option value="">{t('adminMenu.allCategories')}</option>
                   {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.image_url ? `${c.image_url} ` : ''}{c.name}</option>
+                    <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
 
@@ -316,8 +314,8 @@ const AdminMenu = () => {
                   onChange={(e) => setAvailabilityFilter(e.target.value)}
                 >
                   <option value="">{t('adminMenu.allStatus')}</option>
-                  <option value="available">✅ {t('adminMenu.statusAvailable')}</option>
-                  <option value="out_of_stock">❌ {t('adminMenu.statusOutOfStock')}</option>
+                  <option value="available">{t('adminMenu.statusAvailable')}</option>
+                  <option value="out_of_stock">{t('adminMenu.statusOutOfStock')}</option>
                 </select>
 
                 {/* Reset Filter Button — appears only when filters are active */}
@@ -327,7 +325,7 @@ const AdminMenu = () => {
                     onClick={resetFilters}
                     style={{ height: 38, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   >
-                    ✕ {t('adminMenu.clearFilter')}
+                    <X size={13} /> {t('adminMenu.clearFilter')}
                   </button>
                 )}
               </div>
@@ -364,8 +362,8 @@ const AdminMenu = () => {
                     <tr>
                       <td colSpan="6" style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         {hasActiveFilters
-                          ? <><div style={{ fontSize: 28, marginBottom: 8 }}>🔍</div><div style={{ fontWeight: 600, marginBottom: 4 }}>{t('adminMenu.emptyMatch')}</div><div style={{ fontSize: 11 }}>{t('adminMenu.tryChangeFilter')} <button onClick={resetFilters} style={{ color: 'var(--primary-600)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>{t('adminMenu.clearFilter')}</button></div></>
-                          : <><div style={{ fontSize: 28, marginBottom: 8 }}>🍽️</div><div>{t('adminMenu.emptyMenu')}</div></>
+                          ? <><div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}><Search size={32} className="text-slate-400" /></div><div style={{ fontWeight: 600, marginBottom: 4 }}>{t('adminMenu.emptyMatch')}</div><div style={{ fontSize: 11 }}>{t('adminMenu.tryChangeFilter')} <button onClick={resetFilters} style={{ color: 'var(--primary-600)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>{t('adminMenu.clearFilter')}</button></div></>
+                          : <><div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}><UtensilsCrossed size={32} className="text-slate-400" /></div><div>{t('adminMenu.emptyMenu')}</div></>
                         }
                       </td>
                     </tr>
@@ -378,28 +376,28 @@ const AdminMenu = () => {
                               {product.image_url || '🍲'}
                             </div>
                             <div>
-                              <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>{product.name}</div>
+                              <div style={{ fontSize: 12, color: '#0F172A', fontWeight: 400 }}>{product.name}</div>
                             </div>
                           </div>
                         </td>
-                        <td className="text-xs text-slate-500 italic">
+                        <td className="text-[12px] text-slate-500 italic">
                           <div className="max-w-[200px] line-clamp-1">{product.description || '-'}</div>
                         </td>
-                        <td style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
+                        <td style={{ fontSize: 12, color: '#0F172A', fontWeight: 400 }}>
                           {categories.find(c => c.id === product.category_id)?.name || t('adminMenu.uncategorized')}
                         </td>
-                        <td style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
+                        <td style={{ fontSize: 12, color: '#0F172A', fontWeight: 600 }}>
                           {formatRp(product.price)}
                         </td>
-                        <td style={{ fontSize: 12.5 }}>
+                        <td style={{ fontSize: 12 }}>
                           {product.is_available 
-                            ? <span style={{ color: '#059669', fontWeight: 500 }}>{t('adminMenu.statusAvailable') || 'Tersedia'}</span> 
-                            : <span style={{ color: '#94A3B8', fontWeight: 500 }}>{t('adminMenu.statusOutOfStock') || 'Habis'}</span>
+                            ? <span style={{ color: '#059669', fontWeight: 400 }}>{t('adminMenu.statusAvailable') || 'Tersedia'}</span> 
+                            : <span style={{ color: '#94A3B8', fontWeight: 400 }}>{t('adminMenu.statusOutOfStock') || 'Habis'}</span>
                           }
                         </td>
                         <td className="text-right">
                           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                            <button className="kd-icon-btn" title="Edit" onClick={() => handleOpenProductModal(product)}><Edit3 size={16} /></button>
+                            <button className="kd-icon-btn" title="Edit" onClick={() => handleOpenProductModal(product)}><Pencil size={16} /></button>
                             <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDeleteProduct(product.id)}><Trash2 size={16} /></button>
                           </div>
                         </td>
@@ -432,21 +430,21 @@ const AdminMenu = () => {
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <div className="text-2xl">{cat.image_url || '📂'}</div>
-                            <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>{cat.name}</div>
+                            <div style={{ fontSize: 12, color: '#0F172A', fontWeight: 400 }}>{cat.name}</div>
                           </div>
                         </td>
-                        <td className="text-xs text-slate-500 italic">
+                        <td className="text-[12px] text-slate-500 italic">
                           <div className="max-w-[300px] line-clamp-1">{cat.description || '-'}</div>
                         </td>
-                        <td style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
+                        <td style={{ fontSize: 12, color: '#0F172A', fontWeight: 600 }}>
                           <span>
                             {products.filter(p => p.category_id === cat.id).length}
                           </span>
-                          <span style={{ fontSize: 12, color: '#64748B', marginLeft: 4 }}>Menu</span>
+                          <span style={{ fontSize: 12, color: '#64748B', marginLeft: 4, fontWeight: 400 }}>Menu</span>
                         </td>
                         <td className="text-right">
                           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                            <button className="kd-icon-btn" title="Edit" onClick={() => handleOpenCategoryModal(cat)}><Edit3 size={16} /></button>
+                            <button className="kd-icon-btn" title="Edit" onClick={() => handleOpenCategoryModal(cat)}><Pencil size={16} /></button>
                             <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDeleteCategory(cat.id)}><Trash2 size={16} /></button>
                           </div>
                         </td>
@@ -487,7 +485,7 @@ const AdminMenu = () => {
           <div className="kd-modal max-w-md" onClick={e => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{editingItem ? t('adminMenu.editMenuTitle') : t('adminMenu.addMenuTitle')}</h2>
-              <button className="kd-close-btn" onClick={() => setShowProductModal(false)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setShowProductModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={handleSaveProduct}>
               <div className="kd-modal-body">
@@ -597,7 +595,7 @@ const AdminMenu = () => {
           <div className="kd-modal max-w-md" onClick={e => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{editingItem ? t('adminMenu.editCategoryTitle') : t('adminMenu.addCategoryTitle')}</h2>
-              <button className="kd-close-btn" onClick={() => setShowCategoryModal(false)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setShowCategoryModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={handleSaveCategory}>
               <div className="kd-modal-body">

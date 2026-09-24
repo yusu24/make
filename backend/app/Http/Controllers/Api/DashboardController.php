@@ -102,8 +102,8 @@ class DashboardController extends Controller
         $totalUsers = \App\Models\User::count();
         $totalTenants = \App\Models\Tenant::count();
         
-        $basicSubs = \App\Models\Tenant::where('subscription_plan', 'basic')->count();
-        $proSubs = \App\Models\Tenant::where('subscription_plan', 'pro')->count();
+        $basicSubs = \App\Models\Tenant::where('subscription_plan', 'basic')->where('status', '!=', 'inactive')->count();
+        $proSubs = \App\Models\Tenant::where('subscription_plan', 'pro')->where('status', '!=', 'inactive')->count();
         $activeSubs = $basicSubs + $proSubs;
         
         $totalCategories = \App\Models\BusinessCategory::count();
@@ -134,8 +134,7 @@ class DashboardController extends Controller
                 ];
             });
 
-        // 2. Chart data for the two trend charts, bucketed to match whichever
-        // period the dashboard's filter dropdown is set to.
+        // 2. Chart data for the two trend charts
         $period = $request->query('period', 'year');
         $monthlyData = $this->buildChartData(
             $period,
@@ -143,23 +142,60 @@ class DashboardController extends Controller
             $request->query('end_date')
         );
 
-        // Calculate MRR (Monthly Recurring Revenue)
-        // Assume Basic = 50000, Pro = 150000 if not using SubscriptionPlan dynamic values for now
-        $mrr = ($basicSubs * 50000) + ($proSubs * 150000);
+        // Calculate SaaS Executive Metrics (MRR, ARR, ARPU)
+        $mrr = ($basicSubs * 149000) + ($proSubs * 299000);
+        if ($mrr === 0 && $revenue > 0) {
+            $mrr = $revenue;
+        }
+        $arr = $mrr * 12;
+        $arpu = $activeSubs > 0 ? round($mrr / $activeSubs) : 0;
 
         // Calculate basic churn rate (inactive / total tenants)
         $inactiveTenants = \App\Models\Tenant::where('status', 'inactive')->count();
         $churnRate = $totalTenants > 0 ? round(($inactiveTenants / $totalTenants) * 100, 1) : 0;
+
+        // Calculate Tenant Health Breakdown
+        $allTenants = \App\Models\Tenant::with('user')->get();
+        $healthyCount = 0;
+        $warningCount = 0;
+        $atRiskCount = 0;
+
+        foreach ($allTenants as $t) {
+            $lastActivity = $t->updated_at ?? $t->created_at;
+            if ($t->user && $t->user->updated_at && $t->user->updated_at->gt($lastActivity)) {
+                $lastActivity = $t->user->updated_at;
+            }
+
+            $diffDays = $lastActivity ? now()->diffInDays($lastActivity) : 999;
+            if ($t->status === 'inactive' || $diffDays > 14) {
+                $atRiskCount++;
+            } elseif ($diffDays >= 4) {
+                $warningCount++;
+            } else {
+                $healthyCount++;
+            }
+        }
+
+        $pendingKyc = \App\Models\Tenant::where('kyc_status', 'pending')->count();
 
         return response()->json(['data' => [
             'total_users' => $totalUsers,
             'total_tenants' => $totalTenants,
             'total_categories' => $totalCategories,
             'active_subscriptions' => $activeSubs,
-            'revenue_this_month' => $revenue,
+            'revenue_this_month' => $revenue > 0 ? $revenue : $mrr,
             'new_users_this_week' => $newUsersThisWeek,
             'mrr' => $mrr,
+            'arr' => $arr,
+            'arpu' => $arpu,
             'churn_rate' => $churnRate,
+            'pending_kyc' => $pendingKyc,
+            'tenant_health' => [
+                'healthy' => $healthyCount,
+                'warning' => $warningCount,
+                'at_risk' => $atRiskCount,
+                'total' => $totalTenants
+            ],
             'recent_users' => $recentUsers,
             'monthly_data' => $monthlyData,
         ]]);

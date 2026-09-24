@@ -18,7 +18,7 @@ import {
   DollarSign,
   Store,
   Layers,
-} from 'lucide-react';
+} from '@/constants/icons';
 import { api } from '../../../../../lib/api';
 
 interface AutoBackupSettings {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Calculator, TrendingUp, Clock, Sparkles } from 'lucide-react'
+import { Calculator, TrendingUp, Clock, Sparkles } from '@/constants/icons'
 
 const DEFAULT_TITLE = 'Berapa Banyak Waktu & Biaya yang Bisa Anda Hemat Setiap Bulan?'
 const DEFAULT_DESC = 'Pencatatan kertas, pembukuan manual yang salah hitung, serta selisih stok yang misterius menguras jam kerja bernilai jutaan rupiah setiap bulannya.'

@@ -23,9 +23,18 @@ class RoleController extends Controller
         'hapus_pengguna'     => false,
     ];
 
+    private function getTenantId(Request $request): string
+    {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403));
+        }
+        return $tenantId;
+    }
+
     public function index(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
 
         // Seed default roles if none exist for this tenant
         $this->seedDefaultRoles($tenantId);
@@ -41,7 +50,7 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
 
         $request->validate([
             'name'        => 'required|string|max:100',
@@ -66,7 +75,7 @@ class RoleController extends Controller
 
     public function update(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $role     = BudidayaRole::where('tenant_id', $tenantId)->findOrFail($id);
 
         $request->validate([
@@ -89,7 +98,7 @@ class RoleController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $role     = BudidayaRole::where('tenant_id', $tenantId)->findOrFail($id);
 
         if ($role->is_system) {

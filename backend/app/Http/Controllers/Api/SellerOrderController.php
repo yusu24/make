@@ -10,10 +10,13 @@ use Illuminate\Support\Facades\DB;
 
 class SellerOrderController extends Controller
 {
-    private function getTenantId(Request $request): ?string
+    private function getTenantId(Request $request): string
     {
-        $user = $request->user();
-        return $user?->tenant_id ?? $request->header('X-Tenant-Id');
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403));
+        }
+        return $tenantId;
     }
 
     public function index(Request $request)

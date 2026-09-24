@@ -3,7 +3,7 @@ import { api } from '../../../lib/api'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import Modal from '../../../components/Modal'
-import { Edit3, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Search, Plus } from '@/constants/icons'
 import './Shared.css'
 
 const ALL_PERMS = [
@@ -116,11 +116,12 @@ export default function SaasRoles() {
         <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1 }}>
-                <span className="search-icon">🔍</span>
+              <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
                 <input
                   id="input-search-roles"
                   className="form-input search-input"
+                  style={{ paddingLeft: 34 }}
                   placeholder="Cari nama role atau deskripsi..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
@@ -130,7 +131,7 @@ export default function SaasRoles() {
               <button
                 id="btn-add-role"
                 className="btn btn-primary"
-                style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6 }}
+                style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 onClick={() => {
                   setShow(true)
                   setEditingId(null)
@@ -138,7 +139,7 @@ export default function SaasRoles() {
                   setForm({ name: '', description: '', permissions: [] })
                 }}
               >
-                + Tambah Role
+                <Plus size={16} /> Tambah Role
               </button>
             </div>
           </div>
@@ -198,7 +199,7 @@ export default function SaasRoles() {
                           onClick={() => handleEdit(role)}
                           title="Edit Role"
                         >
-                          <Edit3 size={12} />
+                          <Pencil size={12} />
                           <span>Edit</span>
                         </button>
                         <button
@@ -224,19 +225,20 @@ export default function SaasRoles() {
                 )}
               </tbody>
             </table>
-            {!loading && filtered.length > 0 && (
-              <SaasPagination
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-                pageSize={pageSize}
-                setPageSize={setPageSize}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                startIndex={startIndex}
-                endIndex={endIndex}
-              />
-            )}
           </div>
+
+          {!loading && filtered.length > 0 && (
+            <SaasPagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              endIndex={endIndex}
+            />
+          )}
         </div>
       </div>
 

@@ -10,7 +10,7 @@ const CategoryStorefront = () => {
   const tenant = new URLSearchParams(location.search).get('tenant_id') || 
                  new URLSearchParams(location.search).get('tenant');
   
-  const { t, language, toggleLanguage } = useTranslation();
+  const { t } = useTranslation();
   const [activeCat, setActiveCat] = useState(t('storefront.all'));
   const [settings, setSettings] = useState({
     store_name: 'Loading...',
@@ -192,16 +192,6 @@ const CategoryStorefront = () => {
           <li><a href="#testimoni">{t('storefront.testimonials')}</a></li>
         </ul>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button
-            onClick={toggleLanguage}
-            style={{
-              padding: '6px 12px', borderRadius: 8, background: 'transparent',
-              border: '1px solid #b48c36', color: '#b48c36', fontSize: 13,
-              fontWeight: 'bold', cursor: 'pointer',
-            }}
-          >
-            {language === 'id' ? 'ID' : 'EN'}
-          </button>
           <Link to={menuUrl} className="kl-nav-cta">{t('storefront.orderNow')}</Link>
         </div>
       </nav>

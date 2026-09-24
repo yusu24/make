@@ -28,22 +28,31 @@
 
 ## 2. MODUL RETAIL & POINT OF SALE (POS)
 
-> **Cocok Untuk**: Minimarket, Toko Kelontong, Toko Pakaian, Toko ATK, Swalayan, Toko Elektronik/Hardware.
+> **Cocok Untuk**: Minimarket, Toko Kelontong, Toko Pakaian, Toko ATK, Swalayan, Toko Elektronik/Hardware, Apotek, dan Toko Sembako.  
+> 📖 **Dokumentasi Lengkap, Skema ERD & 37 Menu**: Silakan baca dokumen komprehensif di [docs/DOKUMENTASI_LENGKAP_MODUL_RETAIL.md](file:///c:/Project/umkm/docs/DOKUMENTASI_LENGKAP_MODUL_RETAIL.md).
 
 ### A. Alur Kerja Utama (Workflow Kasir)
 1. **Buka Shift Kasir**: Masukkan modal kas awal laci (*cash drawer*).
 2. **Transaksi Penjualan (POS Register)**:
-   - Scan barcode produk atau gunakan pencarian nama/kategori.
+   - Scan barcode produk atau gunakan pencarian nama/kategori (`F2`).
    - Pilih tipe pelanggan (*Umum / Member Grosir*).
    - Terapkan diskon item atau voucher transaksi jika ada.
    - Pilih metode pembayaran: **Tunai, QRIS Statis/Dinamis, Transfer Bank, atau Piutang (Kredit)**.
    - Cetak struk belanja (Thermal 58mm/80mm) atau kirim e-Receipt via WhatsApp.
-3. **Tutup Shift Kasir**: Hitung rekonsiliasi kas fisik vs sistem dan cetak Laporan X/Z Shift.
+3. **Tutup Shift Kasir (Laporan Z)**: Hitung rekonsiliasi kas fisik vs sistem dan cetak Struk Laporan Shift Z.
 
-### B. Manajemen Inventori & Gudang
-* **Barcode & Varian Produk**: Setiap barang dapat memiliki varian (*Ukuran, Warna, Kemasan Dus/Pcs*) dan multi-harga (ecer vs grosir).
+### B. Manajemen Inventori, Gudang & Logistik
+* **Barcode & Varian Produk**: Setiap barang dapat memiliki varian (*Ukuran, Warna, Kemasan Dus/Pcs*) dan multi-satuan UOM dengan rasio konversi.
+* **Moving Average HPP**: Kalkulasi otomatis harga pokok penjualan setiap penerimaan barang dari Purchase Order (PO) supplier.
 * **Stock Opname & Mutasi Antar Cabang**: Pencatatan penyesuaian selisih stok berkala dan mutasi barang antar gudang cabang.
 * **Peringatan Minimum Stok**: Notifikasi otomatis saat persediaan barang menipis mendekati batas *reorder point*.
+
+### C. Modul Keuangan & Akuntansi Retail Terpadu
+* **Laporan Laba Rugi Komprehensif (P&L)**: Omset kotor, potongan diskon/retur, penjualan bersih, HPP barang terjual, beban operasional, dan laba bersih.
+* **Buku Kas Operasional**: Pencatatan kas masuk & keluar non-POS (gaji, listrik, sewa ruko).
+* **Buku Hutang Dagang Supplier (AP)**: Pelacakan tempo pembayaran (TOP) dan status jatuh tempo faktur.
+* **Buku Piutang Pelanggan (AR)**: Kontrol batas kredit kasbon member dan pelunasan cicilan.
+* **Mutasi Antar Kas & Setor Bank**: Pemindahan uang laci kasir ke rekening bank toko.
 
 ---
 

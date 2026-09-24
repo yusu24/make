@@ -3,10 +3,20 @@ import '../retail.css';
 import '../retail-print.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
-import { api } from '../../../lib/api';
+import {
+  api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useReactToPrint } from 'react-to-print';
-import { Wallet, TrendingUp, CheckCircle, AlertCircle, RefreshCw, Trash2, Printer, Calendar, Filter } from 'lucide-react';
+import { Wallet,
+  TrendingUp,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  Trash2,
+  Printer,
+  Calendar,
+  Filter
+} from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
@@ -404,46 +414,40 @@ export default function Receivables() {
         {/* SCREEN-ONLY INTERACTIVE UI                                 */}
         {/* ========================================================= */}
         <div className="no-print">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ marginBottom: 24 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* Total Piutang Card */}
-            <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
-                  <TrendingUp size={18} />
-                </div>
-                <span className="text-sm font-medium text-slate-500">Total Piutang</span>
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <TrendingUp size={22} />
               </div>
-              <div>
-                <p className="text-2xl text-slate-900 leading-tight font-semibold">{formatRp(summary.total_credit)}</p>
-                <p className="text-xs text-slate-400 mt-1">Total keseluruhan piutang dari pelanggan.</p>
+              <div className="flex-1 min-w-0">
+                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Piutang</span>
+                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{formatRp(summary.total_credit)}</p>
+                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total piutang dari pelanggan</p>
               </div>
             </div>
 
             {/* Sudah Diterima Card */}
-            <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shrink-0">
-                  <CheckCircle size={18} />
-                </div>
-                <span className="text-sm font-medium text-slate-500">Sudah Diterima</span>
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <CheckCircle2 size={22} />
               </div>
-              <div>
-                <p className="text-2xl text-emerald-600 leading-tight font-semibold">{formatRp(summary.total_paid)}</p>
-                <p className="text-xs text-slate-400 mt-1">Total pembayaran yang telah diterima.</p>
+              <div className="flex-1 min-w-0">
+                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Sudah Diterima</span>
+                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight">{formatRp(summary.total_paid)}</p>
+                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total pembayaran telah diterima</p>
               </div>
             </div>
 
             {/* Sisa Piutang Card */}
-            <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0">
-                  <AlertCircle size={18} />
-                </div>
-                <span className="text-sm font-medium text-slate-500">Sisa Piutang</span>
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <AlertCircle size={22} />
               </div>
-              <div>
-                <p className="text-2xl text-rose-600 leading-tight font-semibold">{formatRp(summary.total_outstanding)}</p>
-                <p className="text-xs text-slate-400 mt-1">Piutang yang belum dilunasi pelanggan.</p>
+              <div className="flex-1 min-w-0">
+                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Sisa Piutang</span>
+                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-rose-600 tracking-tight leading-tight">{formatRp(summary.total_outstanding)}</p>
+                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Piutang yang belum dilunasi</p>
               </div>
             </div>
           </div>
@@ -453,7 +457,7 @@ export default function Receivables() {
             <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
               <button title="Catat Piutang Baru"
                 className="btn btn-primary"
-                style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+                style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
                 onClick={() => setShowModal(true)}
               >
                 <Wallet size={15} className="mr-2 mobile-no-margin" />
@@ -498,7 +502,7 @@ export default function Receivables() {
                 </div>
               )}
 
-              <button onClick={fetchData} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
+              <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
                 <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
               </button>
             </div>

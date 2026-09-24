@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Eye, Ban } from 'lucide-react';
+import { Eye, Ban, RefreshCw } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 
@@ -105,6 +105,9 @@ export default function Transactions() {
               style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
             />
           </div>
+          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+          </button>
         </div>
         <div className="retail-table-responsive"><table className="table">
           <thead>

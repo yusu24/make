@@ -1,18 +1,22 @@
 import React, { useRef } from 'react';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Clock, 
-  Award, 
-  CheckCircle2, 
-  AlertTriangle, 
+import {
+  BarChart2,
+  TrendingUp,
+  Clock,
+  Award,
+  CheckCircle2,
+  AlertTriangle,
   PieChart as PieIcon,
   ShieldCheck,
   Star,
   Users,
   Printer,
-  Download
-} from 'lucide-react';
+  Download,
+  Wallet,
+  Package,
+  ArrowDownRight,
+  ArrowUpRight
+} from '@/constants/icons';
 import { 
   ResponsiveContainer, 
   AreaChart, 
@@ -240,13 +244,9 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
         {/* Left 2 Cols: Monthly Revenue vs Target */}
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between mb-3">
-            <div>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Financial Overview</span>
-              <h3 className="text-sm font-semibold text-slate-900 flex items-center mt-0.5">
-                <TrendingUp className="w-4 h-4 mr-1 text-blue-600" /> Tren Omset Jasa vs Biaya Tenaga Kerja
-              </h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Total pendapatan kotor layanan dan porsi biaya operasional teknisi</p>
-            </div>
+            <h3 className="text-sm font-semibold text-slate-900 flex items-center">
+              <TrendingUp className="w-4 h-4 mr-1.5 text-blue-600" /> Tren Omset & Biaya Teknisi
+            </h3>
             <div className="text-right">
               <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
                 Target: {targetPct}
@@ -298,11 +298,9 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
         {/* Right 1 Col: Category Distribution Donut */}
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Market Share</span>
-            <h3 className="text-sm font-semibold text-slate-900 flex items-center mt-0.5">
-              <PieIcon className="w-4 h-4 mr-1 text-purple-600" /> Komposisi Kategori Servis
+            <h3 className="text-sm font-semibold text-slate-900 flex items-center">
+              <PieIcon className="w-4 h-4 mr-1.5 text-purple-600" /> Komposisi Kategori Servis
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">Persentase SPK per kategori layanan</p>
           </div>
 
           <div className="h-44 w-full my-2">
@@ -344,34 +342,78 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
 
       </div>
 
-      {/* Real-time Profit & Loss Summary */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Real-Time P&L</span>
-            <h3 className="text-sm font-semibold text-slate-900 flex items-center mt-0.5">
-              <BarChart3 className="w-4 h-4 mr-1.5 text-blue-600" /> Ringkasan Laba Rugi Berdasarkan Transaksi
-            </h3>
+      {/* Statement Header Bar */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-base font-semibold font-['Plus_Jakarta_Sans'] text-slate-900 flex items-center">
+          <BarChart2 className="w-5 h-5 mr-2 text-blue-600" /> Ringkasan Laba Rugi Riil
+        </h3>
+        <span className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200 font-['Inter']">
+          Margin: {profitMargin}%
+        </span>
+      </div>
+
+      {/* 4 Standalone Modular PnL KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider">Total Pendapatan</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Wallet className="w-4 h-4" />
+            </div>
           </div>
-          <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200">Margin: {profitMargin}%</span>
+          <div>
+            <h4 className="text-2xl font-extrabold font-['Plus_Jakarta_Sans'] text-slate-900 tracking-tight">{formatRupiah(actualRevenue)}</h4>
+            <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-emerald-600">
+              <ArrowUpRight className="w-3.5 h-3.5" />
+              <span>Omset Masuk Riil</span>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Total Pendapatan</p>
-            <p className="text-sm font-bold text-slate-900">{formatRupiah(actualRevenue)}</p>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider">Beban Material (HPP)</span>
+            <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Package className="w-4 h-4" />
+            </div>
           </div>
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Beban Material (HPP)</p>
-            <p className="text-sm font-bold text-rose-600">-{formatRupiah(actualPartsCost)}</p>
+          <div>
+            <h4 className="text-2xl font-extrabold font-['Plus_Jakarta_Sans'] text-rose-600 tracking-tight">-{formatRupiah(actualPartsCost)}</h4>
+            <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-slate-500">
+              <span>Beban Suku Cadang</span>
+            </div>
           </div>
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Komisi & Operasional</p>
-            <p className="text-sm font-bold text-rose-600">-{formatRupiah(actualTechCommission + actualOtherExpenses)}</p>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold font-['Inter'] text-slate-500 uppercase tracking-wider">Komisi & Operasional</span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <ArrowDownRight className="w-4 h-4" />
+            </div>
           </div>
-          <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 shadow-sm">
-            <p className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider mb-1">Laba Bersih</p>
-            <p className="text-sm font-bold text-emerald-700">{actualNetProfit >= 0 ? '+' : ''}{formatRupiah(actualNetProfit)}</p>
+          <div>
+            <h4 className="text-2xl font-extrabold font-['Plus_Jakarta_Sans'] text-amber-600 tracking-tight">-{formatRupiah(actualTechCommission + actualOtherExpenses)}</h4>
+            <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-slate-500">
+              <span>Biaya Kerja & Operasional</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-emerald-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group bg-gradient-to-br from-white to-emerald-50/20">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold font-['Inter'] text-emerald-800 uppercase tracking-wider">Laba Bersih</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <h4 className={`text-2xl font-extrabold font-['Plus_Jakarta_Sans'] tracking-tight ${actualNetProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+              {actualNetProfit >= 0 ? '+' : ''}{formatRupiah(actualNetProfit)}
+            </h4>
+            <div className="flex items-center gap-1 mt-1.5 text-xs font-medium font-['Inter'] text-emerald-600">
+              <span>Margin Bersih: {profitMargin}%</span>
+            </div>
           </div>
         </div>
       </div>
@@ -382,8 +424,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
         {/* SLA & Quality Card */}
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
           <div>
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Quality Control</span>
-            <h3 className="text-sm font-semibold text-slate-900 flex items-center mt-0.5">
+            <h3 className="text-sm font-semibold text-slate-900 flex items-center">
               <ShieldCheck className="w-4 h-4 mr-1.5 text-emerald-600" /> Indikator SLA & Kualitas
             </h3>
           </div>
@@ -432,12 +473,9 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ stats, technicians
         {/* Technician Leaderboard (2 Cols) */}
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between mb-3">
-            <div>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Hall of Fame</span>
-              <h3 className="text-sm font-semibold text-slate-900 flex items-center mt-0.5">
-                <Award className="w-4 h-4 mr-1.5 text-amber-500" /> Peringkat Performa Teknisi
-              </h3>
-            </div>
+            <h3 className="text-sm font-semibold text-slate-900 flex items-center">
+              <Award className="w-4 h-4 mr-1.5 text-amber-500" /> Peringkat Performa Teknisi
+            </h3>
             <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-lg">{technicians.length} Personel Aktif</span>
           </div>
 

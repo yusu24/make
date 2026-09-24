@@ -1,19 +1,47 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { 
+  Rocket, 
+  Store, 
+  Zap, 
+  RefreshCw, 
+  MessageSquare, 
+  HelpCircle, 
+  FileText, 
+  CreditCard, 
+  Image, 
+  Globe, 
+  ExternalLink,
+  Sparkles,
+  Settings,
+  Tag,
+  Calculator,
+  Building2,
+  DollarSign,
+  Save,
+  Trash2,
+  Edit3,
+  Plus,
+  Monitor,
+  MapPin,
+  Phone,
+  Mail,
+  ShieldCheck
+} from '@/constants/icons'
 import { api } from '../../../lib/api'
 import CurrencyInput from '../../../components/CurrencyInput'
 import bizoraLogo from '../../../assets/bizora-logo.png'
 
 const TABS = [
-  { id: 'general',      label: 'Hero & Banner',    icon: '🚀', desc: 'Judul, Slogan & Promo' },
-  { id: 'sectors',      label: 'Sektor Bisnis',    icon: '🏬', desc: 'Kategori Usaha' },
-  { id: 'features',     label: 'Fitur Platform',   icon: '⚡', desc: 'Keunggulan Sistem' },
-  { id: 'howitworks',   label: 'Cara Kerja',       icon: '🔄', desc: 'Langkah Onboarding' },
-  { id: 'testimonials', label: 'Testimoni',        icon: '💬', desc: 'Ulasan Pelanggan' },
-  { id: 'faq',          label: 'FAQ & ROI',        icon: '❓', desc: 'Tanya Jawab & Simulasi' },
-  { id: 'footer',       label: 'Footer & Kontak',  icon: '🦶', desc: 'Alamat, CS & Legalitas' },
-  { id: 'billing',      label: 'Harga & Rekening', icon: '💳', desc: 'Bank BCA & Paket' },
-  { id: 'logo',         label: 'Logo & Branding',  icon: '🎨', desc: 'Logo & Identitas' },
+  { id: 'general',      label: 'Hero & Banner',    icon: Rocket, desc: 'Judul, Slogan & Promo' },
+  { id: 'sectors',      label: 'Sektor Bisnis',    icon: Store, desc: 'Kategori Usaha' },
+  { id: 'features',     label: 'Fitur Platform',   icon: Zap, desc: 'Keunggulan Sistem' },
+  { id: 'howitworks',   label: 'Cara Kerja',       icon: RefreshCw, desc: 'Langkah Onboarding' },
+  { id: 'testimonials', label: 'Testimoni',        icon: MessageSquare, desc: 'Ulasan Pelanggan' },
+  { id: 'faq',          label: 'FAQ & ROI',        icon: HelpCircle, desc: 'Tanya Jawab & Simulasi' },
+  { id: 'footer',       label: 'Footer & Kontak',  icon: FileText, desc: 'Alamat, CS & Legalitas' },
+  { id: 'billing',      label: 'Harga & Rekening', icon: CreditCard, desc: 'Bank BCA & Paket' },
+  { id: 'logo',         label: 'Logo & Branding',  icon: Image, desc: 'Logo & Identitas' },
 ]
 
 export default function LandingSettings({ defaultTab = 'general' }) {
@@ -277,7 +305,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
         }
         .ls-logo-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
           gap: 24px;
           margin-top: 10px;
         }
@@ -346,7 +374,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             textDecoration: 'none'
           }}
         >
-          <span>🌐</span> Lihat Halaman Depan ↗
+          <Globe size={15} /> <span>Lihat Halaman Depan</span> <ExternalLink size={13} />
         </a>
       </div>
 
@@ -354,6 +382,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
       <div className="ls-tabs-container">
         {TABS.map(tab => {
           const isActive = activeTab === tab.id;
+          const TabIcon = tab.icon;
           return (
             <button
               key={tab.id}
@@ -365,9 +394,12 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                 color: isActive ? '#4338ca' : '#64748b',
                 fontWeight: isActive ? 700 : 500,
                 boxShadow: isActive ? '0 4px 12px rgba(67, 56, 202, 0.12), 0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8
               }}
             >
-              <span style={{ fontSize: 15 }}>{tab.icon}</span>
+              <TabIcon size={16} />
               <span>{tab.label}</span>
             </button>
           );
@@ -390,6 +422,17 @@ export default function LandingSettings({ defaultTab = 'general' }) {
         </div>
       )}
 
+      {loading ? (
+        <div className="card" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+            <RefreshCw size={28} className="animate-spin text-indigo-600" />
+            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+              Memuat konfigurasi portal &amp; landing page...
+            </span>
+          </div>
+        </div>
+      ) : (
+        <>
       {/* TAB CONTENT: GENERAL TEXT & VISIBILITY CONFIG */}
       {activeTab === 'general' && (
         <div className="ls-two-col-grid">
@@ -399,7 +442,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             {/* Section: Hero Banner */}
             <div>
               <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🚀</span> Bagian Hero Utama
+                <Rocket size={18} className="text-primary" /> Bagian Hero Utama
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Atur judul dan deskripsi utama yang memikat calon pengguna di halaman beranda.</p>
               
@@ -428,7 +471,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                   <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>DESKRIPSI HERO</label>
                   <textarea 
                     className="form-input" 
-                    rows="3"
+                    rows="3" 
                     value={form.hero_desc || ''}
                     onChange={e => setForm({...form, hero_desc: e.target.value})}
                     required
@@ -443,7 +486,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             {/* Section: Promo Strip */}
             <div>
               <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🎉</span> Banner Promo Berjalan
+                <Sparkles size={18} className="text-primary" /> Banner Promo Berjalan
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Pasang pengumuman, diskon, atau promo menarik di bawah hero banner.</p>
 
@@ -504,7 +547,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             {/* Section: Visibility Controls */}
             <div>
               <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>⚙️</span> Pengaturan Visibilitas Elemen
+                <Settings size={18} className="text-primary" /> Pengaturan Visibilitas Elemen
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Aktifkan atau sembunyikan section tertentu sesuai kesiapan platform.</p>
 
@@ -591,7 +634,10 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                 {saving ? (
                   <span className="spinner" style={{ width: 18, height: 18 }}></span>
                 ) : (
-                  '💾 Simpan Hero & Banner'
+                  <>
+                    <Save size={16} />
+                    <span>Simpan Hero &amp; Banner</span>
+                  </>
                 )}
               </button>
             </div>
@@ -600,7 +646,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
           {/* LIVE MOCKUP PREVIEW */}
           <div className="ls-sticky-preview">
             <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>🖥️</span> Pratonton Realtime (Desktop Mockup)
+              <Monitor size={18} className="text-primary" /> Pratonton Realtime (Desktop Mockup)
             </h3>
             
             <div style={{
@@ -722,7 +768,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             <div style={{ marginTop: 12, padding: '12px 14px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 16 }}>💡</span>
               <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                <strong>Kelola bagian lain:</strong> Untuk mengatur Footer & Kontak, pilih tab <strong>"🦶 Footer & Kontak"</strong> di atas.
+                <strong>Kelola bagian lain:</strong> Untuk mengatur Footer &amp; Kontak, pilih tab <strong>"Footer &amp; Kontak"</strong> di atas.
               </p>
             </div>
           </div>
@@ -733,7 +779,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
       {activeTab === 'sectors' && (
         <div className="card" style={{ padding: 28, maxWidth: 640 }}>
           <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span>🏷️</span> Konten Section "Spesialisasi Sektor Bisnis"
+            <Tag size={18} className="text-primary" /> Konten Section "Spesialisasi Sektor Bisnis"
           </h3>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
             Badge, headline, daftar fitur, dan statistik dampak yang tampil saat sebuah kategori dipilih di tab "Sektor Bisnis" pada landing page
@@ -741,7 +787,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             yang diinginkan, lalu isi bagian "Detail Panel Sektor (Landing Page)".
           </p>
           <Link to="/categories" className="btn btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
-            🏷️ Buka Kategori Bisnis
+            <Tag size={15} /> Buka Kategori Bisnis
           </Link>
         </div>
       )}
@@ -761,7 +807,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button type="button" className="btn btn-ghost btn-sm" disabled={idx === 0} onClick={() => moveListItem('features_platform', idx, -1)}>↑</button>
                   <button type="button" className="btn btn-ghost btn-sm" disabled={idx === form.features_platform.length - 1} onClick={() => moveListItem('features_platform', idx, 1)}>↓</button>
-                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('features_platform', idx)}>🗑</button>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('features_platform', idx)}><Trash2 size={14} /></button>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr 1fr', gap: 10 }}>
@@ -778,8 +824,8 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             <button type="button" className="btn btn-secondary" onClick={() => addListItem('features_platform', { icon: '✨', title: '', tag: '', description: '' })}>
               + Tambah Fitur
             </button>
-            <button type="submit" disabled={saving} className="btn btn-primary">
-              {saving ? 'Menyimpan...' : '💾 Simpan Fitur Platform'}
+            <button type="submit" disabled={saving} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              {saving ? 'Menyimpan...' : <><Save size={15} /> Simpan Fitur Platform</>}
             </button>
           </div>
         </form>
@@ -800,7 +846,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button type="button" className="btn btn-ghost btn-sm" disabled={idx === 0} onClick={() => moveListItem('how_it_works_steps', idx, -1)}>↑</button>
                   <button type="button" className="btn btn-ghost btn-sm" disabled={idx === form.how_it_works_steps.length - 1} onClick={() => moveListItem('how_it_works_steps', idx, 1)}>↓</button>
-                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('how_it_works_steps', idx)}>🗑</button>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('how_it_works_steps', idx)}><Trash2 size={14} /></button>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 10 }}>
@@ -816,8 +862,8 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             <button type="button" className="btn btn-secondary" onClick={() => addListItem('how_it_works_steps', { icon: '✅', title: '', description: '' })}>
               + Tambah Langkah
             </button>
-            <button type="submit" disabled={saving} className="btn btn-primary">
-              {saving ? 'Menyimpan...' : '💾 Simpan Cara Kerja'}
+            <button type="submit" disabled={saving} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              {saving ? 'Menyimpan...' : <><Save size={15} /> Simpan Cara Kerja</>}
             </button>
           </div>
         </form>
@@ -829,7 +875,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
           {/* Section 1: ROI Calculator header */}
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span>🧮</span> Judul Simulasi Penghematan ROI
+              <Calculator size={18} className="text-primary" /> Judul Simulasi Penghematan ROI
             </h3>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
               Kalkulator ROI sendiri (slider transaksi, staf, hasil hitung) dihitung otomatis oleh sistem — di sini Anda dapat menyesuaikan judul dan deskripsi pembukanya.
@@ -864,7 +910,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
           {/* Section 2: FAQ Items */}
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span>❓</span> Pertanyaan yang Sering Diajukan (FAQ)
+              <HelpCircle size={18} className="text-primary" /> Pertanyaan yang Sering Diajukan (FAQ)
             </h3>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Daftar pertanyaan dan jawaban interaktif di bagian bawah landing page.</p>
 
@@ -876,7 +922,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button type="button" className="btn btn-ghost btn-sm" disabled={idx === 0} onClick={() => moveListItem('faq_items', idx, -1)}>↑</button>
                       <button type="button" className="btn btn-ghost btn-sm" disabled={idx === form.faq_items.length - 1} onClick={() => moveListItem('faq_items', idx, 1)}>↓</button>
-                      <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('faq_items', idx)}>🗑</button>
+                      <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-400)' }} onClick={() => removeListItem('faq_items', idx)}><Trash2 size={14} /></button>
                     </div>
                   </div>
                   <input className="form-input" placeholder="Pertanyaan..." value={faq.q || ''} onChange={e => updateListItem('faq_items', idx, 'q', e.target.value)} />
@@ -891,8 +937,8 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             <button type="button" className="btn btn-secondary" onClick={() => addListItem('faq_items', { q: '', a: '' })}>
               + Tambah FAQ
             </button>
-            <button type="submit" disabled={saving} className="btn btn-primary">
-              {saving ? 'Menyimpan...' : '💾 Simpan FAQ & ROI'}
+            <button type="submit" disabled={saving} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              {saving ? 'Menyimpan...' : <><Save size={15} /> Simpan FAQ &amp; ROI</>}
             </button>
           </div>
         </form>
@@ -905,7 +951,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
           <form onSubmit={handleSaveGeneral} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
             <div>
               <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🦶</span> Informasi Footer &amp; Kontak Resmi
+                <FileText size={18} className="text-primary" /> Informasi Footer &amp; Kontak Resmi
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
                 Deskripsi profil platform, alamat operasional, kontak CS, email, dan teks garansi keamanan di bagian paling bawah landing page publik.
@@ -926,7 +972,9 @@ export default function LandingSettings({ defaultTab = 'general' }) {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>📍 ALAMAT KANTOR / OPERASIONAL</label>
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <MapPin size={13} className="text-primary" /> ALAMAT KANTOR / OPERASIONAL
+                    </label>
                     <input 
                       className="form-input" 
                       placeholder="Jakarta & Bandung, Indonesia"
@@ -935,7 +983,9 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>📞 NOMOR WHATSAPP CS</label>
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Phone size={13} className="text-primary" /> NOMOR WHATSAPP CS
+                    </label>
                     <input 
                       className="form-input" 
                       placeholder="+62 812-3456-7890"
@@ -947,24 +997,32 @@ export default function LandingSettings({ defaultTab = 'general' }) {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🌐 EMAIL INFORMASI PORTAL</label>
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Globe size={13} className="text-primary" /> EMAIL INFORMASI PORTAL
+                    </label>
                     <input className="form-input" type="email" placeholder="info@bizora.id" value={form.footer_email || ''}
                       onChange={e => setForm({...form, footer_email: e.target.value})} />
                   </div>
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>💳 EMAIL PENAGIHAN &amp; INVOICE</label>
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <CreditCard size={13} className="text-primary" /> EMAIL PENAGIHAN &amp; INVOICE
+                    </label>
                     <input className="form-input" type="email" placeholder="billing@bizora.id" value={form.billing_email || ''}
                       onChange={e => setForm({...form, billing_email: e.target.value})} />
                   </div>
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🎧 EMAIL CS &amp; BANTUAN</label>
+                    <label className="form-label" style={{ fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Mail size={13} className="text-primary" /> EMAIL CS &amp; BANTUAN
+                    </label>
                     <input className="form-input" type="email" placeholder="bantuan@bizora.id" value={form.support_email || ''}
                       onChange={e => setForm({...form, support_email: e.target.value})} />
                   </div>
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>🛡️ TEKS KEAMANAN &amp; LAYANAN</label>
+                  <label className="form-label" style={{ fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <ShieldCheck size={13} className="text-primary" /> TEKS KEAMANAN &amp; LAYANAN
+                  </label>
                   <textarea 
                     className="form-input" 
                     rows="2" 
@@ -991,7 +1049,10 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                 {saving ? (
                   <span className="spinner" style={{ width: 18, height: 18 }}></span>
                 ) : (
-                  '💾 Simpan Footer & Kontak'
+                  <>
+                    <Save size={16} />
+                    <span>Simpan Footer &amp; Kontak</span>
+                  </>
                 )}
               </button>
             </div>
@@ -1000,7 +1061,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
           {/* LIVE FOOTER PREVIEW */}
           <div className="ls-sticky-preview">
             <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>🖥️</span> Pratonton Realtime Footer (Desktop Mockup)
+              <Monitor size={18} className="text-primary" /> Pratonton Realtime Footer (Desktop Mockup)
             </h3>
             
             <div style={{
@@ -1033,15 +1094,15 @@ export default function LandingSettings({ defaultTab = 'general' }) {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4, fontSize: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8' }}>
-                        <span style={{ color: '#34d399' }}>📍</span>
+                        <MapPin size={9} style={{ color: '#34d399' }} />
                         <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{form.footer_address || 'Jakarta & Bandung, Indonesia'}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8' }}>
-                        <span style={{ color: '#34d399' }}>📞</span>
+                        <Phone size={9} style={{ color: '#34d399' }} />
                         <span>{form.footer_phone || '+62 812-3456-7890'}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8' }}>
-                        <span style={{ color: '#34d399' }}>✉️</span>
+                        <Mail size={9} style={{ color: '#34d399' }} />
                         <span>{form.footer_email || form.support_email || 'bantuan@bizora.id'}</span>
                       </div>
                     </div>
@@ -1104,15 +1165,15 @@ export default function LandingSettings({ defaultTab = 'general' }) {
               type="button" 
               className="btn btn-primary"
               onClick={openAddTesti}
-              style={{ padding: '10px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600 }}
+              style={{ padding: '10px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
-              💬 + Tambah Testimoni Baru
+              <Plus size={15} /> Tambah Testimoni Baru
             </button>
           </div>
 
           {testimonials.length === 0 ? (
-            <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
-              <span style={{ fontSize: 32, display: 'block', marginBottom: 12 }}>💬</span>
+            <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <MessageSquare size={36} style={{ color: 'var(--text-muted)', marginBottom: 12 }} />
               Belum ada testimoni. Klik "+ Tambah Testimoni Baru" untuk menambahkan ulasan pertama!
             </div>
           ) : (
@@ -1191,16 +1252,16 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                       <button 
                         type="button" 
                         onClick={() => openEditTesti(testi)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--primary-500)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 4 }}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--primary-500)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                       >
-                        ✏️ Edit
+                        <Edit3 size={13} /> Edit
                       </button>
                       <button 
                         type="button" 
                         onClick={() => handleDeleteTesti(testi.id)}
-                        style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 4 }}
+                        style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                       >
-                        🗑️ Hapus
+                        <Trash2 size={13} /> Hapus
                       </button>
                     </div>
                   </div>
@@ -1226,8 +1287,9 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             style={{ width: '100%', maxWidth: '460px', padding: 28, display: 'flex', flexDirection: 'column', gap: 18 }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-default)', paddingBottom: 12 }}>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-                {editingTesti ? '💬 Edit Ulasan Pelanggan' : '💬 Tambah Ulasan Baru'}
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <MessageSquare size={16} className="text-primary" />
+                <span>{editingTesti ? 'Edit Ulasan Pelanggan' : 'Tambah Ulasan Baru'}</span>
               </h3>
               <button 
                 type="button" 
@@ -1278,7 +1340,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
               <label className="form-label" style={{ fontSize: 11, fontWeight: 600 }}>TEKS ULASAN / KUTIPAN</label>
               <textarea 
                 className="form-input" 
-                rows="4"
+                rows="4" 
                 placeholder="Tulis ulasan jujur atau review singkat pelanggan di sini..."
                 value={testiForm.text}
                 onChange={e => setTestiForm({...testiForm, text: e.target.value})}
@@ -1333,9 +1395,9 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                 type="submit" 
                 disabled={testiSaving}
                 className="btn btn-primary"
-                style={{ padding: '10px 24px', borderRadius: 8, fontSize: 13, fontWeight: 600 }}
+                style={{ padding: '10px 24px', borderRadius: 8, fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
-                {testiSaving ? 'Menyimpan...' : '💾 Simpan Testimoni'}
+                {testiSaving ? 'Menyimpan...' : <><Save size={15} /> Simpan Testimoni</>}
               </button>
             </div>
 
@@ -1353,7 +1415,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                 <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span>🏦</span> Rekening Bank Tujuan Transfer ({((form.bank_accounts && form.bank_accounts.length > 0) ? form.bank_accounts : [1]).length} Rekening)
+                  <Building2 size={18} className="text-primary" /> Rekening Bank Tujuan Transfer ({((form.bank_accounts && form.bank_accounts.length > 0) ? form.bank_accounts : [1]).length} Rekening)
                 </h3>
                 <button
                   type="button"
@@ -1473,7 +1535,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             {/* Section: Harga Paket */}
             <div>
               <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>💰</span> Harga Dasar Paket SaaS (Bulanan)
+                <DollarSign size={18} className="text-primary" /> Harga Dasar Paket SaaS (Bulanan)
               </h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Tentukan harga dasar bulanan untuk paket Basic dan Pro. Harga ini akan otomatis disesuaikan jika ada diskon aktif per kategori.</p>
 
@@ -1521,7 +1583,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
                   transition: 'all 0.2s ease'
                 }}
               >
-                {saving ? 'Menyimpan...' : '✓ Simpan Pengaturan'}
+                {saving ? 'Menyimpan...' : <><Save size={16} /> Simpan Pengaturan</>}
               </button>
             </div>
           </form>
@@ -1529,7 +1591,9 @@ export default function LandingSettings({ defaultTab = 'general' }) {
           {/* PREVIEW PANEL */}
           <div className="card" style={{ padding: 28, background: 'var(--bg-elevated)', border: '1px dashed var(--border-default)', display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div>
-              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>💳 Visualisasi Halaman Langganan Tenant</h4>
+              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <CreditCard size={16} className="text-primary" /> Visualisasi Halaman Langganan Tenant
+              </h4>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>Berikut adalah tampilan instruksi pembayaran yang akan dilihat oleh tenant Anda:</p>
             </div>
 
@@ -1592,7 +1656,35 @@ export default function LandingSettings({ defaultTab = 'general' }) {
             onUploadSuccess={(url) => setForm({ ...form, admin_logo_url: url })}
             onResetSuccess={() => setForm({ ...form, admin_logo_url: null })}
           />
+
+          {/* Uploader 3: Favicon Tab Browser */}
+          <LogoUploaderCard
+            title="Favicon (Icon Tab Browser)"
+            description="Icon kecil yang muncul di tab atas browser di sebelah judul website."
+            type="favicon"
+            currentUrl={form.favicon_url}
+            defaultLogo="/favicon.png"
+            onUploadSuccess={(url) => {
+              setForm({ ...form, favicon_url: url })
+              localStorage.setItem('bizora_custom_favicon', url)
+              let link = document.querySelector("link[rel*='icon']")
+              if (!link) {
+                link = document.createElement('link')
+                link.rel = 'icon'
+                document.head.appendChild(link)
+              }
+              link.href = url
+            }}
+            onResetSuccess={() => {
+              setForm({ ...form, favicon_url: null })
+              localStorage.removeItem('bizora_custom_favicon')
+              let link = document.querySelector("link[rel*='icon']")
+              if (link) link.href = '/favicon.png'
+            }}
+          />
         </div>
+      )}
+        </>
       )}
 
     </div>
@@ -1605,8 +1697,9 @@ function LogoUploaderCard({ title, description, type, currentUrl, defaultLogo, o
 
   const handleFile = async (file) => {
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      alert('File harus berupa gambar (PNG, JPG, SVG, dll)')
+    const isImageOrIco = file.type.startsWith('image/') || file.name.endsWith('.ico')
+    if (!isImageOrIco) {
+      alert('File harus berupa gambar (PNG, JPG, SVG, ICO, dll)')
       return
     }
     // Client-side size check: 5MB = 5 * 1024 * 1024 = 5242880 bytes
@@ -1632,14 +1725,14 @@ function LogoUploaderCard({ title, description, type, currentUrl, defaultLogo, o
     } catch (err) {
       const errData = err.response?.data
       const errMsg = errData?.message || (errData?.errors?.file && errData.errors.file[0]) || 'Terjadi kesalahan'
-      alert('Gagal mengunggah logo: ' + errMsg)
+      alert('Gagal mengunggah logo/favicon: ' + errMsg)
     } finally {
       setUploading(false)
     }
   }
 
   const handleReset = async () => {
-    if (!window.confirm('Kembalikan logo ke default?')) return
+    if (!window.confirm('Kembalikan logo/favicon ke default?')) return
     setUploading(true)
     try {
       const res = await api.post('/admin/landing-settings/reset-logo', { type })
@@ -1647,7 +1740,7 @@ function LogoUploaderCard({ title, description, type, currentUrl, defaultLogo, o
         onResetSuccess()
       }
     } catch (err) {
-      alert('Gagal mengembalikan logo ke default')
+      alert('Gagal mengembalikan logo/favicon ke default')
     } finally {
       setUploading(false)
     }
@@ -1684,7 +1777,7 @@ function LogoUploaderCard({ title, description, type, currentUrl, defaultLogo, o
         <input 
           id={`file-input-${type}`}
           type="file" 
-          accept="image/*" 
+          accept="image/*,.ico" 
           onChange={(e) => handleFile(e.target.files[0])}
           style={{ display: 'none' }}
         />
@@ -1719,7 +1812,7 @@ function LogoUploaderCard({ title, description, type, currentUrl, defaultLogo, o
             <div style={{ textAlign: 'center' }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary-500)' }}>Pilih berkas</span>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}> atau tarik gambar ke sini</span>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Format PNG, JPG, atau SVG (Maks. 5MB)</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Format PNG, JPG, SVG, atau ICO (Maks. 5MB)</div>
             </div>
           </>
         )}
@@ -1742,7 +1835,7 @@ function LogoUploaderCard({ title, description, type, currentUrl, defaultLogo, o
             gap: 6
           }}
         >
-          🗑️ Hapus & Gunakan Logo Default
+          <Trash2 size={14} /> Hapus &amp; Gunakan Logo Default
         </button>
       )}
     </div>

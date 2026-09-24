@@ -167,7 +167,7 @@ const CulinaryRoles = () => {
       // If it's old flat permission, wildcard, or has all 4 actions
       if (grouped[mod].includes('all') || grouped[mod].includes('*') || grouped[mod].length === 4) {
         return (
-          <span key={mod} className="text-[10px] px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-medium mb-1 mr-1 inline-block">
+          <span key={mod} className="text-[12px] px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-normal mb-1 mr-1 inline-block">
             {modName} (Semua)
           </span>
         );
@@ -183,7 +183,7 @@ const CulinaryRoles = () => {
       }).join(', ');
 
       return (
-        <span key={mod} className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-full mb-1 mr-1 inline-block">
+        <span key={mod} className="text-[12px] px-2 py-0.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-full font-normal mb-1 mr-1 inline-block">
           {modName}: <span className="opacity-70">{actionsTrans}</span>
         </span>
       );
@@ -232,7 +232,7 @@ const CulinaryRoles = () => {
                           <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
                             <Shield />
                           </div>
-                          <span style={{ color: '#1e293b', fontWeight: 600 }}>{role.name}</span>
+                          <span style={{ color: '#1e293b', fontWeight: 400, fontSize: 12 }}>{role.name}</span>
                         </div>
                       </td>
                       <td style={{ verticalAlign: 'top', paddingTop: '16px' }}>

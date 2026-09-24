@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import { 
    History, Calendar, ArrowRight, Activity
- } from 'lucide-react'
+ } from '@/constants/icons'
  import { useNavigate } from 'react-router-dom'
  import Modal from '../../../components/Modal'
  import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
@@ -84,7 +84,7 @@ import {
            onClick={() => setModalOpen(true)}
            style={{
              display: 'flex', alignItems: 'center', gap: 6, height: '38px', padding: '0 16px',
-             borderRadius: '8px', background: '#1B4332', color: '#fff', border: 'none',
+             borderRadius: '12px', background: '#1B4332', color: '#fff', border: 'none',
              fontWeight: 600, fontSize: '13px', cursor: 'pointer'
            }}
          >
@@ -108,25 +108,25 @@ import {
              <p style={{ color: '#64748B', fontWeight: 500, fontSize: '13px' }}>{terms.emptyCyclesDesc}</p>
           </div>
         ) : (
-          <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
             <Table>
               <TableHeader>
                 <TableRow isHoverable={false}>
-                  <TableHeaderCell>{terms.unit}</TableHeaderCell>
+                  <TableHeaderCell className="pl-6">{terms.unit}</TableHeaderCell>
                   <TableHeaderCell>Komoditas</TableHeaderCell>
                   <TableHeaderCell>Tgl {terms.isTanaman ? 'Tanam' : 'Tebar'}</TableHeaderCell>
                   <TableHeaderCell>Status</TableHeaderCell>
-                  <TableHeaderCell>Total Modal</TableHeaderCell>
-                  <TableHeaderCell>Pendapatan</TableHeaderCell>
-                  <TableHeaderCell>Laba/Rugi</TableHeaderCell>
-                  <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
+                  <TableHeaderCell style={{ textAlign: 'right' }}>Total Modal</TableHeaderCell>
+                  <TableHeaderCell style={{ textAlign: 'right' }}>Pendapatan</TableHeaderCell>
+                  <TableHeaderCell style={{ textAlign: 'right' }}>Laba/Rugi</TableHeaderCell>
+                  <TableHeaderCell className="pr-6" style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedData.map((cycle) => (
                   <TableRow key={cycle.id}>
-                    <TableCell>
-                      <span style={{ color: '#0f172a', fontSize: '13px', fontWeight: 500 }}>{cycle.pond_name || '-'}</span>
+                    <TableCell className="pl-6">
+                      <span style={{ color: '#0f172a', fontSize: '13px', fontWeight: 600 }}>{cycle.pond_name || '-'}</span>
                     </TableCell>
                     <TableCell>
                       <span style={{ color: '#0f172a', fontSize: '13px' }}>{cycle.seed_type || '-'}</span>
@@ -138,31 +138,31 @@ import {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span className={`badge-pill ${cycle.status === 'panen' ? 'badge-pill-neutral' : 'badge-pill-success'}`} style={{ fontSize: '11.5px' }}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${cycle.status === 'panen' ? 'bg-slate-100 text-slate-700 border-slate-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
                         {cycle.status === 'panen' ? 'Selesai' : 'Aktif'}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      <div style={{ color: '#EF4444', fontSize: '13px', fontWeight: 500 }}>Rp {(Number(cycle.total_cost) || 0).toLocaleString('id-ID')}</div>
+                    <TableCell style={{ textAlign: 'right' }}>
+                      <div className="font-medium text-slate-800" style={{ fontSize: '13px' }}>Rp {(Number(cycle.total_cost) || 0).toLocaleString('id-ID')}</div>
                     </TableCell>
-                    <TableCell>
-                      <div style={{ color: '#059669', fontSize: '13px', fontWeight: 500 }}>
+                    <TableCell style={{ textAlign: 'right' }}>
+                      <div className="font-medium text-slate-800" style={{ fontSize: '13px' }}>
                         {cycle.status === 'panen' ? `Rp ${(Number(cycle.total_revenue) || 0).toLocaleString('id-ID')}` : '-'}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {cycle.status === 'panen' ? (
-                        <div style={{ color: (cycle.profit || 0) >= 0 ? '#1B4332' : '#EF4444', fontSize: '13px', fontWeight: 500 }}>
-                          {(cycle.profit || 0) >= 0 ? '+' : ''}Rp {(Number(cycle.profit) || 0).toLocaleString()}
-                        </div>
-                      ) : <span style={{ fontSize: '13px' }}>-</span>}
-                    </TableCell>
                     <TableCell style={{ textAlign: 'right' }}>
-                      <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
+                      {cycle.status === 'panen' ? (
+                        <div className={`font-semibold ${(cycle.profit || 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'}`} style={{ fontSize: '13px' }}>
+                          {(cycle.profit || 0) >= 0 ? '+' : ''}Rp {(Number(cycle.profit) || 0).toLocaleString('id-ID')}
+                        </div>
+                      ) : <span style={{ fontSize: '13px', color: '#94a3b8' }}>-</span>}
+                    </TableCell>
+                    <TableCell className="pr-6" style={{ textAlign: 'right' }}>
+                      <div className="flex items-center justify-end">
                         <button 
                           onClick={() => navigate(`/budidaya/cycles/${cycle.id}`)}
                           title="Detail Siklus"
-                          className="btn-table-action"
+                          className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                         >
                           <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
                         </button>

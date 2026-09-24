@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Edit3, Trash2, Tag } from 'lucide-react';
+import { Pencil, Trash2, Tag, RefreshCw } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
@@ -66,7 +66,7 @@ export default function Discounts() {
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button title="Kode Diskon Baru"
             className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
             onClick={() => { setEditing(null); setType('percentage'); setShowModal(true); }}
           >
             <Tag size={15} className="mr-2 mobile-no-margin" />
@@ -79,6 +79,9 @@ export default function Discounts() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
+          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+          </button>
         </div>
         <div className="retail-table-responsive"><table className="table">
           <thead>
@@ -110,7 +113,7 @@ export default function Discounts() {
                   </td>
                   <td className="pr-6 text-right">
                     <div className="flex gap-2 justify-end">
-                      <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(d); setType(d.type || 'percentage'); setShowModal(true); }}><Edit3 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(d); setType(d.type || 'percentage'); setShowModal(true); }}><Pencil size={14} /></button>
                       <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if (confirm('Hapus kode diskon ini?')) { await api.delete(`/retail/discounts/${d.id}`); fetchData(); } }}><Trash2 size={14} /></button>
                     </div>
                   </td>

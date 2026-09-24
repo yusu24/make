@@ -186,53 +186,60 @@ class SaasAdminDummySeeder extends Seeder
 
         // 8. Tenant Invoices (Tagihan/Transaksi SaaS)
         TenantInvoice::truncate();
-        
-        // 8.1. Tagihan yang sudah dibayar (Paid)
-        TenantInvoice::create([
-            'id' => 'INV-' . now()->format('Ym') . '0001',
-            'tenant_id' => 'TN-0001',
-            'plan' => 'pro',
-            'amount' => 299000,
-            'status' => 'paid',
-            'date' => now()->subDays(15)->toDateString(),
-            'due_date' => now()->subDays(8)->toDateString(),
-            'paid_at' => now()->subDays(14),
-        ]);
-        
-        TenantInvoice::create([
-            'id' => 'INV-' . now()->format('Ym') . '0002',
-            'tenant_id' => 'TN-BUDIDAYA',
-            'plan' => 'basic',
-            'amount' => 149000,
-            'status' => 'paid',
-            'date' => now()->subDays(10)->toDateString(),
-            'due_date' => now()->subDays(3)->toDateString(),
-            'paid_at' => now()->subDays(9),
-        ]);
+        $allTenants = \App\Models\Tenant::all();
+        $plans = ['basic' => 149000, 'pro' => 299000, 'enterprise' => 599000];
+        $invCounter = 1;
 
-        // 8.2. Tagihan belum dibayar (Unpaid - masih dalam tenggang waktu)
-        TenantInvoice::create([
-            'id' => 'INV-' . now()->format('Ym') . '0003',
-            'tenant_id' => 'TN-KULINER',
-            'plan' => 'pro',
-            'amount' => 299000,
-            'status' => 'unpaid',
-            'date' => now()->subDays(2)->toDateString(),
-            'due_date' => now()->addDays(5)->toDateString(),
-            'paid_at' => null,
-        ]);
+        for ($i = 5; $i >= 0; $i--) {
+            $monthDate = now()->subMonths($i);
+            $yearMonth = $monthDate->format('Ym');
 
-        // 8.3. Penunggakan (Overdue) - diset 'unpaid' agar terdeteksi oleh command
-        TenantInvoice::create([
-            'id' => 'INV-' . now()->subMonth()->format('Ym') . '0045',
-            'tenant_id' => 'TN-TANAMAN',
-            'plan' => 'basic',
-            'amount' => 149000,
-            'status' => 'unpaid',
-            'date' => now()->subDays(40)->toDateString(),
-            'due_date' => now()->subDays(33)->toDateString(),
-            'paid_at' => null,
-        ]);
+            foreach ($allTenants as $idx => $tenant) {
+                $planKey = $tenant->subscription_plan ?: ($idx % 3 === 0 ? 'pro' : ($idx % 3 === 1 ? 'basic' : 'enterprise'));
+                if ($planKey === 'free') {
+                    $planKey = ($idx % 2 === 0) ? 'basic' : 'pro';
+                }
+                $amount = $plans[$planKey] ?? 299000;
+                $invId = sprintf("INV-%s%04d", $yearMonth, $invCounter++);
+                $day = ($idx * 3 + 5) % 25 + 1;
+                $invDate = $monthDate->copy()->day($day);
+                if ($invDate->isFuture()) {
+                    $invDate = now()->subDays(rand(1, 5));
+                }
+                $dueDate = $invDate->copy()->addDays(7);
+
+                if ($i > 0) {
+                    $isPaid = ($idx % 5 !== 0);
+                    $status = $isPaid ? 'paid' : 'overdue';
+                    $paidAt = $isPaid ? $invDate->copy()->addDays(rand(1, 6)) : null;
+                } else {
+                    if ($idx % 3 === 0) {
+                        $status = 'paid';
+                        $paidAt = $invDate->copy()->addDays(rand(1, 4));
+                    } elseif ($idx % 3 === 1) {
+                        $status = 'unpaid';
+                        $paidAt = null;
+                    } else {
+                        $status = 'overdue';
+                        $paidAt = null;
+                    }
+                }
+
+                TenantInvoice::create([
+                    'id' => $invId,
+                    'tenant_id' => $tenant->tenant_id,
+                    'plan' => $planKey,
+                    'amount' => $amount,
+                    'status' => $status,
+                    'date' => $invDate->toDateString(),
+                    'due_date' => $dueDate->toDateString(),
+                    'paid_at' => $paidAt,
+                    'payment_method' => $status === 'paid' ? (['Bank BCA', 'Mandiri Virtual Account', 'QRIS Mandiri', 'Kartu Kredit'][$idx % 4]) : null,
+                    'created_at' => $invDate,
+                    'updated_at' => $paidAt ?: $invDate,
+                ]);
+            }
+        }
         
         // 9. Tenant KYC Verifications
         $tenants = \App\Models\Tenant::take(10)->get();

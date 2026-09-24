@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../lib/api'
-import { CreditCard, LogOut } from 'lucide-react'
+import { CreditCard, LogOut } from '@/constants/icons'
 import '../budidaya.css'
 
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
@@ -28,7 +28,7 @@ const getNavItems = (terms) => [
   { label: 'Kategori Pakan',      path: '/budidaya/feed-categories' },
 ]
 
-export default function BudidayaHeader({ onMenuToggle }) {
+export default function BudidayaHeader({ onMenuToggle, collapsed }) {
   const { user, isImpersonating, exitImpersonate, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -133,29 +133,32 @@ export default function BudidayaHeader({ onMenuToggle }) {
 
   return (
     <header className="aq-header-container">
-      {/* Left: hamburger + page title */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+      {/* Left: hamburger + page title + quick search */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
         <button
           onClick={onMenuToggle}
+          title={collapsed ? 'Perlebar Sidebar' : 'Perkecil Sidebar'}
           style={{
-            padding: '5px',
-            background: 'transparent',
-            border: 'none',
+            padding: '6px',
+            background: '#F4F7F5',
+            border: '1px solid #E9F0EC',
             cursor: 'pointer',
             color: '#1B4332',
-            borderRadius: 8,
+            borderRadius: 9,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
+            transition: 'all 0.15s',
           }}
-          className="lg-hidden"
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 22, fontWeight: 700 }}>menu</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 20, fontWeight: 700 }}>menu</span>
         </button>
-        <h1 className="aq-header-title">
-          {pageTitle}
-        </h1>
+        <div style={{ flex: 'none', maxWidth: 280, minWidth: 0 }}>
+          <h1 className="aq-header-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {pageTitle}
+          </h1>
+        </div>
       </div>
 
       {/* Right: notif + avatar */}

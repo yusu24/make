@@ -1,5 +1,5 @@
 import apiClient from '../../../../services/api';
-import { WorkOrder, Technician, ServiceCatalogItem } from '../types';
+import { WorkOrder, Technician, ServiceCatalogItem, JasaContract, JasaRole, JasaStaff, DEFAULT_JASA_ROLES } from '../types';
 
 /**
  * Maps Backend WorkOrder (snake_case) to Frontend WorkOrder (camelCase)
@@ -13,25 +13,30 @@ export const mapBackendWorkOrder = (item: any): WorkOrder => ({
   customerEmail: item.customer_email || '',
   customerAddress: item.customer_address || '',
   category: item.category || 'Perbaikan & Troubleshooting (Corrective)',
-  equipmentName: item.equipment_name || '',
-  serialNumber: item.serial_number || '',
+  serviceObjectName: item.equipment_name || item.serviceObjectName || '',
+  serviceObjectIdentifier: item.serial_number || item.serviceObjectIdentifier || '',
   priority: item.priority || 'Sedang',
   status: item.status || 'Menunggu Konfirmasi',
+  createdAt: item.created_at || new Date().toISOString(),
   scheduledDate: item.scheduled_date || '',
   scheduledTime: item.scheduled_time || '',
-  technicianId: item.assigned_technician_id ? String(item.assigned_technician_id) : (item.technician?.id ? String(item.technician.id) : 'T-01'),
+  completionDate: item.completion_date || undefined,
+  assignedTechnicianId: item.assigned_technician_id ? String(item.assigned_technician_id) : (item.technician?.id ? String(item.technician.id) : ''),
   technicianName: item.technician?.name || item.technician_name || 'Belum Ditugaskan',
   estimatedHours: Number(item.estimated_hours || 2),
+  actualHours: item.actual_hours ? Number(item.actual_hours) : undefined,
   laborRate: Number(item.labor_rate || 150000),
   serviceDescription: item.service_description || '',
-  partsReplaced: Array.isArray(item.parts) ? item.parts.map((p: any) => ({
+  rootCauseNotes: item.root_cause_notes || '',
+  partsUsed: Array.isArray(item.parts) ? item.parts.map((p: any) => ({
     id: String(p.id || ''),
     name: p.name || '',
-    partNumber: p.part_number || '',
     quantity: Number(p.quantity || 1),
-    unitCost: Number(p.unit_cost || 0),
-    isApprovedByClient: Boolean(p.is_approved_by_client ?? true)
-  })) : (item.partsReplaced || []),
+    unitCost: Number(p.unit_cost || 0)
+  })) : (item.partsUsed || []),
+  totalPartsCost: Number(item.total_parts_cost || 0),
+  totalLaborCost: Number(item.total_labor_cost || 0),
+  dpAmount: item.dp_amount ? Number(item.dp_amount) : 0,
   grandTotal: Number(item.grand_total || (Number(item.total_parts_cost || 0) + Number(item.total_labor_cost || 0))),
   paymentStatus: item.payment_status || 'Belum Bayar',
   warrantyPeriod: item.warranty_period || '30 Hari',
@@ -60,7 +65,9 @@ export const mapBackendTechnician = (item: any): Technician => ({
   currentStatus: item.current_status || 'Tersedia',
   activeWorkOrderId: item.active_work_order_id ? String(item.active_work_order_id) : undefined,
   skills: Array.isArray(item.skills) ? item.skills : [],
-  certifications: Array.isArray(item.certifications) ? item.certifications : []
+  certifications: Array.isArray(item.certifications) ? item.certifications : [],
+  user_id: item.user_id ? Number(item.user_id) : (item.user?.id ? Number(item.user.id) : null),
+  user: item.user || null
 });
 
 /**
@@ -137,6 +144,10 @@ export const jasaApi = {
     return mapBackendServiceCatalog(res.data?.data);
   },
 
+  async createService(payload: any) {
+    return this.storeService(payload);
+  },
+
   async updateService(id: number | string, payload: any) {
     const res = await apiClient.put(`/jasa/services/${id}`, payload);
     return mapBackendServiceCatalog(res.data?.data);
@@ -166,19 +177,19 @@ export const jasaApi = {
       customer_email: order.customerEmail,
       customer_address: order.customerAddress,
       category: order.category,
-      equipment_name: order.equipmentName,
-      serial_number: order.serialNumber,
+      equipment_name: order.serviceObjectName,
+      serial_number: order.serviceObjectIdentifier,
       priority: order.priority,
       status: order.status || 'Menunggu Konfirmasi',
       scheduled_date: order.scheduledDate,
       scheduled_time: order.scheduledTime,
-      assigned_technician_id: order.technicianId ? (isNaN(Number(order.technicianId)) ? null : Number(order.technicianId)) : null,
+      assigned_technician_id: order.assignedTechnicianId ? (isNaN(Number(order.assignedTechnicianId)) ? null : Number(order.assignedTechnicianId)) : null,
       estimated_hours: order.estimatedHours,
       labor_rate: order.laborRate,
       service_description: order.serviceDescription,
       payment_status: order.paymentStatus || 'Belum Bayar',
       warranty_period: order.warrantyPeriod || '30 Hari',
-      parts: order.partsReplaced?.map(p => ({
+      parts: order.partsUsed?.map(p => ({
         name: p.name,
         quantity: p.quantity,
         unitCost: p.unitCost
@@ -189,9 +200,65 @@ export const jasaApi = {
     return mapBackendWorkOrder(res.data?.data);
   },
 
+  async updateWorkOrder(id: string | number, order: Partial<WorkOrder>) {
+    const payload: any = {};
+    if (order.title !== undefined) payload.title = order.title;
+    if (order.customerName !== undefined) payload.customer_name = order.customerName;
+    if (order.customerCompany !== undefined) payload.customer_company = order.customerCompany;
+    if (order.customerPhone !== undefined) payload.customer_phone = order.customerPhone;
+    if (order.customerEmail !== undefined) payload.customer_email = order.customerEmail;
+    if (order.customerAddress !== undefined) payload.customer_address = order.customerAddress;
+    if (order.category !== undefined) payload.category = order.category;
+    if (order.serviceObjectName !== undefined) payload.equipment_name = order.serviceObjectName;
+    if (order.serviceObjectIdentifier !== undefined) payload.serial_number = order.serviceObjectIdentifier;
+    if (order.priority !== undefined) payload.priority = order.priority;
+    if (order.status !== undefined) payload.status = order.status;
+    if (order.scheduledDate !== undefined) payload.scheduled_date = order.scheduledDate;
+    if (order.scheduledTime !== undefined) payload.scheduled_time = order.scheduledTime;
+    if (order.assignedTechnicianId !== undefined) {
+      payload.assigned_technician_id = isNaN(Number(order.assignedTechnicianId)) ? null : Number(order.assignedTechnicianId);
+    }
+    if (order.estimatedHours !== undefined) payload.estimated_hours = order.estimatedHours;
+    if (order.laborRate !== undefined) payload.labor_rate = order.laborRate;
+    if (order.serviceDescription !== undefined) payload.service_description = order.serviceDescription;
+    if (order.paymentStatus !== undefined) payload.payment_status = order.paymentStatus;
+    if (order.warrantyPeriod !== undefined) payload.warranty_period = order.warrantyPeriod;
+    if (order.partsUsed) {
+      payload.parts = order.partsUsed.map(p => ({
+        name: p.name,
+        quantity: p.quantity,
+        unitCost: p.unitCost
+      }));
+    }
+
+    const res = await apiClient.put(`/jasa/work-orders/${id}`, payload);
+    return mapBackendWorkOrder(res.data?.data);
+  },
+
   async updateWorkOrderStatus(id: string | number, status: string, notes?: string) {
     const res = await apiClient.patch(`/jasa/work-orders/${id}/status`, { status, notes });
     return mapBackendWorkOrder(res.data?.data);
+  },
+
+  // Direct POS Kasir Checkout
+  async posCheckout(payload: {
+    items: { id?: string | number; name: string; price: number; quantity: number; type: string }[];
+    customerName: string;
+    customerPhone?: string;
+    customerAddress?: string;
+    paymentMethod: string;
+    amountPaid: number;
+    total: number;
+    vehiclePlate?: string;
+  }) {
+    const res = await apiClient.post('/jasa/pos/checkout', payload);
+    return res.data;
+  },
+
+  // Customer List (Isolated to Jasa)
+  async getCustomers() {
+    const res = await apiClient.get('/jasa/customers');
+    return Array.isArray(res.data?.data) ? res.data.data : [];
   },
 
   // Technicians
@@ -219,7 +286,6 @@ export const jasaApi = {
     const res = await apiClient.delete(`/jasa/technicians/${id}`);
     return res.data?.success;
   },
-
 
   // B2B Maintenance Contracts
   async getContracts(params?: { status?: string; search?: string }) {
@@ -362,5 +428,137 @@ export const jasaApi = {
   async deleteExpense(id: string | number) {
     const res = await apiClient.delete(`/jasa/expenses/${id}`);
     return res.data?.success;
+  },
+
+  // Payables (Hutang Usaha)
+  async getPayables() {
+    const res = await apiClient.get('/jasa/payables');
+    return Array.isArray(res.data?.data) ? res.data.data : [];
+  },
+
+  async storePayable(payload: {
+    payable_number: string;
+    vendor_name: string;
+    description: string;
+    amount: number;
+    paid_amount?: number;
+    due_date: string;
+    status?: string;
+    notes?: string;
+  }) {
+    const res = await apiClient.post('/jasa/payables', payload);
+    return res.data?.data;
+  },
+
+  async updatePayable(id: string | number, payload: any) {
+    const res = await apiClient.put(`/jasa/payables/${id}`, payload);
+    return res.data?.data;
+  },
+
+  async deletePayable(id: string | number) {
+    const res = await apiClient.delete(`/jasa/payables/${id}`);
+    return res.data?.success;
+  },
+
+  // Financial Accounts (Rekening & Kas)
+  async getAccounts() {
+    const res = await apiClient.get('/jasa/accounts');
+    return Array.isArray(res.data?.data) ? res.data.data : [];
+  },
+
+  async storeAccount(payload: {
+    name: string;
+    type: string;
+    account_number?: string;
+    balance: number;
+    is_active?: boolean;
+  }) {
+    const res = await apiClient.post('/jasa/accounts', payload);
+    return res.data?.data;
+  },
+
+  async updateAccount(id: string | number, payload: any) {
+    const res = await apiClient.put(`/jasa/accounts/${id}`, payload);
+    return res.data?.data;
+  },
+
+  async deleteAccount(id: string | number) {
+    const res = await apiClient.delete(`/jasa/accounts/${id}`);
+    return res.data?.success;
+  },
+
+  async transferAccount(payload: {
+    from_account_id: number;
+    to_account_id: number;
+    amount: number;
+    notes?: string;
+  }) {
+    const res = await apiClient.post('/jasa/accounts/transfer', payload);
+    return res.data;
+  },
+
+  // Roles & Permissions
+  async getRoles(): Promise<JasaRole[]> {
+    try {
+      const res = await apiClient.get('/jasa/roles');
+      if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
+        return res.data.data;
+      }
+      return DEFAULT_JASA_ROLES;
+    } catch (err) {
+      console.warn('Fallback to default roles:', err);
+      return DEFAULT_JASA_ROLES;
+    }
+  },
+
+  async createRole(payload: { name: string; description?: string; permissions: Record<string, boolean> }) {
+    const res = await apiClient.post('/jasa/roles', payload);
+    return res.data?.data;
+  },
+
+  async storeRole(payload: { name: string; description?: string; permissions: Record<string, boolean> }) {
+    const res = await apiClient.post('/jasa/roles', payload);
+    return res.data?.data;
+  },
+
+  async updateRole(id: number | string, payload: { name: string; description?: string; permissions: Record<string, boolean> }) {
+    const res = await apiClient.put(`/jasa/roles/${id}`, payload);
+    return res.data?.data;
+  },
+
+  async deleteRole(id: number | string) {
+    const res = await apiClient.delete(`/jasa/roles/${id}`);
+    return res.data;
+  },
+
+  // Staff & User Accounts
+  async getStaff(): Promise<JasaStaff[]> {
+    try {
+      const res = await apiClient.get('/jasa/staff');
+      return Array.isArray(res.data?.data) ? res.data.data : [];
+    } catch (err) {
+      console.warn('Failed to load staff:', err);
+      return [];
+    }
+  },
+
+  async createStaff(payload: any) {
+    const res = await apiClient.post('/jasa/staff', payload);
+    return res.data?.data;
+  },
+
+  async storeStaff(payload: any) {
+    const res = await apiClient.post('/jasa/staff', payload);
+    return res.data?.data;
+  },
+
+  async updateStaff(id: number | string, payload: any) {
+    const res = await apiClient.put(`/jasa/staff/${id}`, payload);
+    return res.data?.data;
+  },
+
+  async deleteStaff(id: number | string) {
+    const res = await apiClient.delete(`/jasa/staff/${id}`);
+    return res.data;
   }
 };

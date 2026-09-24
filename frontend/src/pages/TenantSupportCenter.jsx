@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
-import { Plus, Search, MessageSquare, Tag, AlertCircle, Clock } from 'lucide-react'
+import { Plus, Search, MessageSquare, Tag, AlertCircle, Clock } from '@/constants/icons'
 import { api } from '../lib/api'
 import Modal from '../components/Modal'
 import '../apps/admin/pages/Shared.css'
@@ -83,7 +83,7 @@ const TenantSupportCenter = forwardRef(({ hideAction }, ref) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', width: '280px' }}>
-            <span className="material-symbols-outlined" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748B', fontSize: '18px' }}>search</span>
+            <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748B' }} />
             <input
               type="text"
               style={{
@@ -125,8 +125,8 @@ const TenantSupportCenter = forwardRef(({ hideAction }, ref) => {
               fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' 
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
-            Buat Tiket Baru
+            <Plus size={16} />
+            <span>Buat Tiket Baru</span>
           </button>
         )}
       </div>

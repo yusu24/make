@@ -20,7 +20,7 @@ import {
   Sparkles,
   Layers,
   Terminal
-} from 'lucide-react';
+} from '@/constants/icons';
 import { api } from '../lib/api';
 import Modal from './Modal';
 
@@ -58,12 +58,11 @@ export const TenantDeveloperPortal = ({
     setLoading(true);
     try {
       const statusRes = await api.get('/tenant/developer/status');
-      if (statusRes.data?.success) {
-        setHasAccess(Boolean(statusRes.data.has_access));
-        setTenantInfo(statusRes.data);
-      }
+      const canAccess = Boolean(statusRes.data?.success && statusRes.data?.has_access);
+      setHasAccess(canAccess);
+      setTenantInfo(statusRes.data || null);
 
-      if (statusRes.data?.has_access) {
+      if (canAccess) {
         const [keysRes, hooksRes] = await Promise.allSettled([
           api.get('/tenant/developer/api-keys'),
           api.get('/tenant/developer/webhooks')
@@ -178,9 +177,134 @@ export const TenantDeveloperPortal = ({
     setTimeout(() => setCopiedKey(false), 2500);
   };
 
+  const isJasa = (moduleName || '').toLowerCase().includes('jasa') || (moduleName || '').toLowerCase().includes('servis');
+
   const getCodeSnippet = () => {
     const baseUrl = `${window.location.origin}/api/v1/external`;
     const sampleKey = apiKeys.length > 0 ? (apiKeys[0].key_prefix.replace('...', '') + 'xxxxxxxxxxxxxxxxxxxx') : 'bzr_live_your_api_key_here';
+
+    if (isJasa) {
+      if (snippetLang === 'curl') {
+        return `# 1. Ambil Profil Servis & Bengkel
+curl -X GET "${baseUrl}/profile" \\
+  -H "X-API-KEY: ${sampleKey}" \\
+  -H "Content-Type: application/json"
+
+# 2. Terbitkan SPK / Tiket Servis Baru Otomatis (Integrasi Website/WA Bot)
+curl -X POST "${baseUrl}/work-orders" \\
+  -H "X-API-KEY: ${sampleKey}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "title": "Servis Rutin Berkala & Penggantian Sparepart",
+    "customer_name": "Budi Santoso",
+    "customer_phone": "08123456789",
+    "equipment_name": "Printer Epson L3110",
+    "priority": "Sedang",
+    "service_description": "Hasil cetak bergaris dan roller macet",
+    "labor_rate": 150000
+  }'
+
+# 3. Lacak Status SPK Pelanggan (Portal Tracking Publik)
+curl -X GET "${baseUrl}/work-orders/SPK-12345678" \\
+  -H "X-API-KEY: ${sampleKey}"
+
+# 4. Ambil Katalog Tarif Layanan Servis
+curl -X GET "${baseUrl}/services" \\
+  -H "X-API-KEY: ${sampleKey}"
+
+# 5. Cek Tim Teknisi Siap Tugas
+curl -X GET "${baseUrl}/technicians" \\
+  -H "X-API-KEY: ${sampleKey}"`;
+      }
+
+      if (snippetLang === 'javascript') {
+        return `// JavaScript (Fetch / Axios) Node.js / React
+const API_URL = '${baseUrl}';
+const API_KEY = '${sampleKey}';
+
+// 1. Terbitkan SPK Baru
+async function createWorkOrder(spkPayload) {
+  const response = await fetch(\`\${API_URL}/work-orders\`, {
+    method: 'POST',
+    headers: {
+      'X-API-KEY': API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(spkPayload)
+  });
+  return await response.json();
+}
+
+// 2. Lacak Status SPK Pelanggan
+async function checkSpkStatus(spkNumber) {
+  const response = await fetch(\`\${API_URL}/work-orders/\${spkNumber}\`, {
+    headers: {
+      'X-API-KEY': API_KEY,
+      'Content-Type': 'application/json'
+    }
+  });
+  return await response.json();
+}`;
+      }
+
+      if (snippetLang === 'php') {
+        return `<?php
+// PHP cURL Integration - Terbitkan SPK Jasa Baru
+$apiKey = '${sampleKey}';
+$url = '${baseUrl}/work-orders';
+
+$payload = [
+    'title' => 'Servis AC Ruang Rapat',
+    'customer_name' => 'PT Surya Digital',
+    'customer_phone' => '08123456789',
+    'equipment_name' => 'AC Daikin 2PK Inverter',
+    'priority' => 'Tinggi',
+    'service_description' => 'Tidak dingin dan bocor air',
+    'labor_rate' => 200000
+];
+
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'X-API-KEY: ' . $apiKey,
+    'Content-Type: application/json'
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$data = json_decode($response, true);
+print_r($data);
+?>`;
+      }
+
+      if (snippetLang === 'python') {
+        return `import requests
+
+API_URL = "${baseUrl}"
+API_KEY = "${sampleKey}"
+
+headers = {
+    "X-API-KEY": API_KEY,
+    "Content-Type": "application/json"
+}
+
+# Terbitkan Tiket SPK Baru
+payload = {
+    "title": "Perbaikan Laptop Tidak Menyala",
+    "customer_name": "Ahmad Fauzi",
+    "customer_phone": "081298765432",
+    "equipment_name": "Asus ROG Zephyrus G14",
+    "priority": "Tinggi",
+    "service_description": "Mati total setelah lonjakan daya"
+}
+
+res = requests.post(f"{API_URL}/work-orders", json=payload, headers=headers)
+print("SPK Response:", res.json())`;
+      }
+    }
 
     if (snippetLang === 'curl') {
       return `# 1. Ambil Profil Toko
@@ -300,7 +424,7 @@ print("Response:", res.json())`;
                 : 'bg-amber-950/80 text-amber-300 border-amber-700'
             }`}>
               <span className={`w-2 h-2 rounded-full ${hasAccess ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-              <span>{hasAccess ? 'Akses API Aktif' : 'Akses API Terkunci'}</span>
+              <span>{hasAccess ? (tenantInfo?.is_local ? '🛠️ Mode Dev / Sandbox Aktif' : 'Akses API Aktif') : 'Akses API Terkunci (Perlu Pro/Enterprise)'}</span>
             </span>
           </div>
         </div>
@@ -309,58 +433,19 @@ print("Response:", res.json())`;
         <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
       </div>
 
-      {/* LOCKED SCREEN (If Subscription Does Not Include API Access) */}
-      {!loading && !hasAccess && (
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm text-center max-w-3xl mx-auto space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
-            <Lock className="w-8 h-8" />
-          </div>
-
-          <div className="space-y-2 max-w-lg mx-auto">
-            <h2 className="text-xl font-extrabold text-slate-900">
-              Fitur REST API & Webhooks Belum Aktif
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Fitur integrasi pihak ketiga membutuhkan paket langganan <strong>Pro Developer</strong> atau <strong>Enterprise</strong>. Anda dapat mengaktifkannya melalui menu Paket Langganan atau menghubungi SaaS Admin.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left max-w-xl mx-auto text-xs">
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-              <Key className="w-4 h-4 text-indigo-600" />
-              <strong className="block text-slate-900">Token API Terisolasi</strong>
-              <p className="text-slate-500 text-[11px]">Akses aman CRUD produk, stok, dan kasir.</p>
-            </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-              <WebhookIcon className="w-4 h-4 text-emerald-600" />
-              <strong className="block text-slate-900">Event Realtime</strong>
-              <p className="text-slate-500 text-[11px]">Notifikasi instan saat order masuk atau dibayar.</p>
-            </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-              <ShieldCheck className="w-4 h-4 text-purple-600" />
-              <strong className="block text-slate-900">SLA 99.9% Uptime</strong>
-              <p className="text-slate-500 text-[11px]">Performa tinggi untuk ribuan request harian.</p>
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <Link
-              to={subscriptionLink}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-xs shadow-md transition-all cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Upgrade ke Paket Developer</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+      {/* LOADING STATE */}
+      {loading && (
+        <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center shadow-xs">
+          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin mx-auto mb-3" />
+          <p className="text-xs text-slate-500 font-medium">Memeriksa status integrasi API & Webhooks...</p>
         </div>
       )}
 
       {/* ACTIVE DEVELOPER PORTAL */}
-      {!loading && hasAccess && (
+      {!loading && (
         <div className="space-y-6 animate-in fade-in duration-200">
           {/* Tabs */}
-          <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+          <div className="flex items-center gap-2 border-b border-slate-200 pb-2 flex-wrap">
             {[
               { id: 'keys', label: '1. Kunci API (API Keys)', icon: Key },
               { id: 'webhooks', label: '2. Webhooks & Notifikasi Event', icon: WebhookIcon },
@@ -388,6 +473,27 @@ print("Response:", res.json())`;
           {/* TAB 1: API KEYS */}
           {activeTab === 'keys' && (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+              {!hasAccess && (
+                <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-amber-900">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 text-amber-700">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <strong className="block font-bold text-sm text-slate-900">Pembuatan Kunci API Memerlukan Paket Pro/Enterprise</strong>
+                      <span className="text-slate-600 text-xs">Paket Anda saat ini adalah <strong>{tenantInfo?.subscription_plan || 'Standar'}</strong>. Anda tetap dapat membaca dokumentasi & contoh integrasi pada Tab 3.</span>
+                    </div>
+                  </div>
+                  <Link
+                    to={subscriptionLink}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shrink-0 transition-colors shadow-xs flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Upgrade Paket</span>
+                  </Link>
+                </div>
+              )}
+
               <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
@@ -402,13 +508,17 @@ print("Response:", res.json())`;
                 <button
                   type="button"
                   onClick={() => {
+                    if (!hasAccess) {
+                      alert('Fitur pembuatan Kunci API memerlukan upgrade ke paket Pro Developer atau Enterprise.');
+                      return;
+                    }
                     setNewRawKey(null);
                     setShowKeyModal(true);
                   }}
                   className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>+ Buat Kunci API Baru</span>
+                  <span>Buat Kunci API Baru</span>
                 </button>
               </div>
 
@@ -428,7 +538,7 @@ print("Response:", res.json())`;
                     {apiKeys.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="p-8 text-center text-slate-400 font-sans">
-                          Belum ada kunci API yang dibuat. Klik tombol <strong>"+ Buat Kunci API Baru"</strong> di atas.
+                          Belum ada kunci API yang dibuat. Klik tombol <strong>"Buat Kunci API Baru"</strong> di atas.
                         </td>
                       </tr>
                     ) : (
@@ -467,6 +577,27 @@ print("Response:", res.json())`;
           {/* TAB 2: WEBHOOKS */}
           {activeTab === 'webhooks' && (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+              {!hasAccess && (
+                <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-amber-900">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 text-amber-700">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <strong className="block font-bold text-sm text-slate-900">Registrasi Webhook Memerlukan Paket Pro/Enterprise</strong>
+                      <span className="text-slate-600 text-xs">Paket Anda saat ini adalah <strong>{tenantInfo?.subscription_plan || 'Standar'}</strong>. Notifikasi event webhook otomatis hanya aktif untuk pelanggan paket Pro Developer atau Enterprise.</span>
+                    </div>
+                  </div>
+                  <Link
+                    to={subscriptionLink}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shrink-0 transition-colors shadow-xs flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Upgrade Paket</span>
+                  </Link>
+                </div>
+              )}
+
               <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
@@ -480,11 +611,17 @@ print("Response:", res.json())`;
 
                 <button
                   type="button"
-                  onClick={() => setShowWebhookModal(true)}
+                  onClick={() => {
+                    if (!hasAccess) {
+                      alert('Fitur pendaftaran Webhook endpoint memerlukan upgrade ke paket Pro Developer atau Enterprise.');
+                      return;
+                    }
+                    setShowWebhookModal(true);
+                  }}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>+ Tambah Webhook Endpoint</span>
+                  <span>Tambah Webhook Endpoint</span>
                 </button>
               </div>
 
@@ -608,29 +745,75 @@ print("Response:", res.json())`;
                     <span className="font-sans text-slate-500">Mengecek profil toko & status langganan</span>
                   </div>
 
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">GET</span>
-                      <span className="font-bold text-slate-800">/api/v1/external/products</span>
-                    </div>
-                    <span className="font-sans text-slate-500">Mengambil katalog produk, harga & stok</span>
-                  </div>
+                  {isJasa ? (
+                    <>
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">GET</span>
+                          <span className="font-bold text-slate-800">/api/v1/external/work-orders</span>
+                        </div>
+                        <span className="font-sans text-slate-500">Mengambil daftar seluruh SPK & tiket servis</span>
+                      </div>
 
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded">POST</span>
-                      <span className="font-bold text-slate-800">/api/v1/external/orders</span>
-                    </div>
-                    <span className="font-sans text-slate-500">Membuat transaksi order & potong stok otomatis</span>
-                  </div>
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded">POST</span>
+                          <span className="font-bold text-slate-800">/api/v1/external/work-orders</span>
+                        </div>
+                        <span className="font-sans text-slate-500">Menerbitkan SPK / tiket servis baru otomatis</span>
+                      </div>
 
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">GET</span>
-                      <span className="font-bold text-slate-800">/api/v1/external/stock</span>
-                    </div>
-                    <span className="font-sans text-slate-500">Sinkronisasi kuota stok real-time</span>
-                  </div>
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">GET</span>
+                          <span className="font-bold text-slate-800">/api/v1/external/work-orders/{'{spk_number}'}</span>
+                        </div>
+                        <span className="font-sans text-slate-500">Lacak progres, estimasi biaya & status pengerjaan</span>
+                      </div>
+
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">GET</span>
+                          <span className="font-bold text-slate-800">/api/v1/external/services</span>
+                        </div>
+                        <span className="font-sans text-slate-500">Mengambil katalog tarif layanan & durasi</span>
+                      </div>
+
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">GET</span>
+                          <span className="font-bold text-slate-800">/api/v1/external/technicians</span>
+                        </div>
+                        <span className="font-sans text-slate-500">Mengecek tim teknisi & kesiapan kerja lapangan</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">GET</span>
+                          <span className="font-bold text-slate-800">/api/v1/external/products</span>
+                        </div>
+                        <span className="font-sans text-slate-500">Mengambil katalog produk, harga & stok</span>
+                      </div>
+
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded">POST</span>
+                          <span className="font-bold text-slate-800">/api/v1/external/orders</span>
+                        </div>
+                        <span className="font-sans text-slate-500">Membuat transaksi order & potong stok otomatis</span>
+                      </div>
+
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">GET</span>
+                          <span className="font-bold text-slate-800">/api/v1/external/stock</span>
+                        </div>
+                        <span className="font-sans text-slate-500">Sinkronisasi kuota stok real-time</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -734,11 +917,16 @@ print("Response:", res.json())`;
                 Pilih Event Notifikasi:
               </label>
               <div className="space-y-2 text-xs">
-                {[
+                {(isJasa ? [
+                  { id: 'spk.created', label: 'spk.created (SPK / tiket servis baru diterbitkan)' },
+                  { id: 'spk.status_updated', label: 'spk.status_updated (Status pengerjaan diperbarui)' },
+                  { id: 'spk.completed', label: 'spk.completed (Servis tuntas & siap diambil)' },
+                  { id: 'payment.received', label: 'payment.received (Pembayaran nota servis diterima)' },
+                ] : [
                   { id: 'order.created', label: 'order.created (Pesanan baru masuk)' },
                   { id: 'payment.success', label: 'payment.success (Pembayaran lunas)' },
                   { id: 'stock.low', label: 'stock.low (Peringatan stok menipis)' },
-                ].map(ev => (
+                ]).map(ev => (
                   <label key={ev.id} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"

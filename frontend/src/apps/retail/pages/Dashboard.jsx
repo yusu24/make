@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ShoppingCart, TrendingUp, Package, Users,
-  ArrowRight, BarChart3, Clock, CheckCircle,
-  AlertTriangle, Star, Zap, Receipt
-} from 'lucide-react';
+  ShoppingCart,
+  TrendingUp,
+  Package,
+  Users,
+  ArrowRight,
+  BarChart2,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Star,
+  Zap,
+  Receipt
+} from '@/constants/icons';
 import { useCore } from '../../../hooks/useCore';
 import { useAuth } from '../../../contexts/AuthContext';
 import RetailLoading from '../components/RetailLoading';
 import KpiCard from '../../../components/KpiCard';
-
 
 function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
   const colors = {
@@ -28,8 +36,8 @@ function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
         <Icon size={18} className="text-white" style={{ color: '#ffffff' }} />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-xs sm:text-sm text-white truncate" style={{ color: '#ffffff' }}>{title}</h3>
-        <p className="text-[11px] text-white/90 truncate" style={{ color: '#ffffff' }}>{desc}</p>
+        <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-xs sm:text-sm text-white truncate" style={{ color: '#ffffff' }}>{title}</h3>
+        <p className="font-['Inter'] text-[11px] text-white/90 truncate" style={{ color: '#ffffff' }}>{desc}</p>
       </div>
       <ArrowRight size={15} className="text-white group-hover:translate-x-1 transition-transform duration-200 shrink-0" style={{ color: '#ffffff' }} />
     </Link>
@@ -39,8 +47,6 @@ function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
 const fmtRp = (val) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(val || 0));
 
-// Keyed by tenant so switching accounts (impersonate, logout/login) within
-// the same browser tab can never show a previous user's cached numbers.
 const _cacheStore = {};
 const CACHE_TTL = 60_000;
 const EMPTY_DASHBOARD = {
@@ -90,52 +96,72 @@ export default function RetailDashboard() {
 
   if (loading) return <RetailLoading text="Menyinkronkan dashboard..." />;
 
-  // Our retail tenants use role 'customer' for the store owner and
-  // 'retail_cashier' for staff — map those onto the owner/cashier split.
   const isCashier = user?.role === 'retail_cashier';
   const isOwnerOrManager = !isCashier;
 
   const now = new Date();
   const hour = now.getHours();
-  const greeting = hour < 12 ? 'Selamat pagi' : hour < 17 ? 'Selamat siang' : 'Selamat malam';
-  const roleLabel = isCashier ? 'Kasir' : 'Owner';
+  const timeGreeting = hour < 12 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 18 ? 'Selamat sore' : 'Selamat malam';
+  const roleLabel = isCashier ? 'Kasir' : (user?.role === 'super_admin' ? 'Super Admin' : (user?.role === 'admin' ? 'Admin' : 'Owner'));
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl p-4 sm:p-5 text-white shadow-lg">
-        <div className="absolute -top-8 -right-8 w-40 h-40 bg-indigo-600/20 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 -left-6 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Welcome Banner - Silky Smooth Midnight Navy */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#072544] via-[#051e36] to-[#041628] p-6 sm:p-7 text-white shadow-xl border border-white/10">
+        {/* Soft Ambient Light Accents */}
+        <div className="absolute top-0 right-0 w-96 h-full bg-gradient-to-l from-sky-500/15 via-blue-500/5 to-transparent pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-1/3 w-72 h-32 bg-indigo-400/5 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="relative z-10 flex items-center justify-between flex-wrap gap-4 min-w-0">
-          <div className="min-w-0 flex-1">
-            <p className="text-indigo-300 text-xs sm:text-sm font-medium mb-1">{greeting}, 👋</p>
-            <h2 className="text-xl sm:text-2xl font-extrabold leading-tight text-white truncate" style={{ color: '#ffffff' }}>{user?.name || 'User'}</h2>
-            <p className="text-slate-400 text-xs sm:text-sm mt-1 truncate">
-              Role: <span className="text-indigo-300 font-normal">{roleLabel}</span>
-              {user?.tenant_name && (
-                <> &middot; Outlet: <span className="text-indigo-300 font-normal">{user.tenant_name}</span></>
-              )}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          {/* Left Column: Greeting, Subtitle, Badges */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-2xl sm:text-[28px] tracking-tight text-white leading-tight font-['Plus_Jakarta_Sans']" style={{ fontWeight: 800 }}>
+              {timeGreeting}, {user?.name || 'User'}
+            </h2>
+            <p className="text-slate-300 text-xs sm:text-sm mt-1.5 font-normal font-['Inter']">
+              Selamat datang kembali di {user?.tenant_name || 'BIZORA Retail'}.
             </p>
+
+            {/* Badges / Status Pills matching reference image */}
+            <div className="flex flex-wrap items-center gap-2 mt-4 font-['Inter']">
+              <span className="px-2.5 py-1 rounded-md bg-[#0a3156]/90 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-slate-200 shadow-sm">
+                {roleLabel}
+              </span>
+              {user?.tenant_name && (
+                <span className="px-2.5 py-1 rounded-md bg-[#0a3156]/90 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-slate-200 shadow-sm">
+                  {user.tenant_name}
+                </span>
+              )}
+              <span className="px-2.5 py-1 rounded-md bg-[#0a3156]/90 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-slate-200 shadow-sm">
+                RETAIL
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-[#0a3156]/90 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-emerald-300 shadow-sm">
+                ONLINE
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-[#0a3156]/90 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-sky-200/90 shadow-sm">
+                {now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            </div>
           </div>
-          <div className="hidden sm:flex items-center gap-2 bg-white/10 border border-white/10 rounded-2xl px-4 py-3 shrink-0">
-            <Clock size={16} className="text-indigo-300" />
-            <span className="text-sm font-medium text-white/80 whitespace-nowrap">
-              {now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </span>
+
+          {/* Right Column: Actions & Frosted Glass Icon Card */}
+          <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
+            {isCashier && (
+              <Link
+                to="/retail/pos"
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all shadow-md hover:shadow-indigo-500/25 font-['Plus_Jakarta_Sans']"
+              >
+                <Zap size={15} />
+                Buka Kasir POS
+                <ArrowRight size={13} />
+              </Link>
+            )}
+            <div className="w-14 h-16 sm:w-16 sm:h-20 rounded-2xl bg-white/[0.07] backdrop-blur-md border border-white/15 flex items-center justify-center shadow-lg text-sky-200">
+              <Users size={26} className="text-sky-300" />
+            </div>
           </div>
         </div>
-
-        {isCashier && (
-          <Link
-            to="/retail/pos"
-            className="relative z-10 mt-5 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors duration-200 shadow-md"
-          >
-            <Zap size={16} />
-            Buka Kasir POS
-            <ArrowRight size={14} className="ml-1" />
-          </Link>
-        )}
       </div>
 
       {/* Stats Grid - only for owner */}
@@ -174,13 +200,13 @@ export default function RetailDashboard() {
 
       {/* Quick Actions */}
       <div>
-        <h3 className="text-sm font-normal text-slate-600 uppercase tracking-wider mb-3">Akses Cepat</h3>
+        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 font-['Inter']">Akses Cepat</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
           <QuickAction icon={ShoppingCart} title="Kasir POS" desc="Mulai sesi penjualan" href="/retail/pos" color="indigo" />
           {isOwnerOrManager && (
             <>
               <QuickAction icon={Package} title="Kelola Produk" desc="Tambah atau edit produk" href="/retail/products" color="emerald" />
-              <QuickAction icon={BarChart3} title="Lihat Laporan" desc="Analisis penjualan" href="/retail/reports/sales" color="amber" />
+              <QuickAction icon={BarChart2} title="Lihat Laporan" desc="Analisis penjualan" href="/retail/reports/sales" color="amber" />
               <QuickAction icon={Receipt} title="Riwayat Transaksi" desc="Daftar semua pesanan" href="/retail/transactions" color="slate" />
             </>
           )}
@@ -191,64 +217,64 @@ export default function RetailDashboard() {
       {isOwnerOrManager && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Recent Transactions */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-[15px]">Transaksi Terbaru</h3>
-              <Link to="/retail/transactions" className="text-xs text-indigo-600 hover:underline font-medium flex items-center gap-1">
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-sm md:text-base m-0">Transaksi Terbaru</h3>
+              <Link to="/retail/transactions" className="text-xs text-indigo-600 hover:underline font-semibold flex items-center gap-1 font-['Inter']">
                 Lihat semua <ArrowRight size={13} />
               </Link>
             </div>
             <div className="divide-y divide-slate-50">
               {data.recent_transactions.length > 0 ? data.recent_transactions.slice(0, 5).map((t) => (
-                <div key={t.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/80 transition-colors">
-                  <div className="p-2 bg-indigo-50 rounded-lg shrink-0">
-                    <Receipt size={16} className="text-indigo-500" />
+                <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/80 transition-colors">
+                  <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                    <Receipt size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13.5px] font-medium text-slate-800 truncate">#{t.invoice_no}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{t.cashier_name || 'Kasir'}</p>
+                    <p className="text-xs font-mono font-bold text-slate-800 truncate">#{t.invoice_no}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 font-['Inter']">{t.cashier_name || 'Kasir'}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[13.5px] font-semibold text-slate-900">{fmtRp(t.total_amount)}</p>
-                    <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full mt-0.5 ${
+                    <p className="text-xs md:text-sm font-['Plus_Jakarta_Sans'] font-extrabold text-slate-900">{fmtRp(t.total_amount)}</p>
+                    <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full mt-0.5 ${
                       t.status === 'paid' ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50'
                     }`}>
-                      {t.status === 'paid' ? <><CheckCircle size={10} /> Lunas</> : t.status}
+                      {t.status === 'paid' ? <><CheckCircle2 size={10} /> Lunas</> : t.status}
                     </span>
                   </div>
                 </div>
               )) : (
                 <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
                   <Receipt size={28} className="opacity-30" />
-                  <p className="text-sm">Belum ada transaksi.</p>
+                  <p className="text-sm font-['Inter']">Belum ada transaksi.</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Low Stock Products */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-[15px] flex items-center gap-2">
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-sm md:text-base flex items-center gap-2 m-0">
                 <AlertTriangle size={16} className="text-amber-500" />
-                Stok Hampir Habis
+                Stok Menipis &amp; Buffer Minimum
               </h3>
-              <Link to="/retail/inventory" className="text-xs text-indigo-600 hover:underline font-medium flex items-center gap-1">
+              <Link to="/retail/inventory" className="text-xs text-indigo-600 hover:underline font-semibold flex items-center gap-1 font-['Inter']">
                 Kelola stok <ArrowRight size={13} />
               </Link>
             </div>
             <div className="divide-y divide-slate-50">
               {data.low_stock.length > 0 ? data.low_stock.slice(0, 5).map((p) => (
-                <div key={p.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/80 transition-colors">
-                  <div className="p-2 bg-amber-50 rounded-lg shrink-0">
-                    <Package size={16} className="text-amber-500" />
+                <div key={p.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/80 transition-colors">
+                  <div className="w-9 h-9 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+                    <Package size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13.5px] font-medium text-slate-800 truncate">{p.name}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{p.category || 'Tanpa Kategori'}</p>
+                    <p className="text-xs md:text-sm font-semibold text-slate-800 truncate font-['Plus_Jakarta_Sans']">{p.name}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 font-['Inter']">{p.category || 'Tanpa Kategori'}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
+                    <span className={`inline-block text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-md ${
                       p.stock <= 0 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
                     }`}>
                       Sisa: {Math.round(p.stock)}
@@ -258,7 +284,7 @@ export default function RetailDashboard() {
               )) : (
                 <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
                   <Star size={28} className="opacity-30 text-emerald-500" />
-                  <p className="text-sm text-emerald-600 font-medium">Semua stok aman! 🎉</p>
+                  <p className="text-sm text-emerald-600 font-medium font-['Inter']">Semua stok aman! 🎉</p>
                 </div>
               )}
             </div>

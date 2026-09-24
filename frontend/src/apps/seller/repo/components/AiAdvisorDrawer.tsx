@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, Send, Bot, User, Calculator, TrendingUp, HelpCircle } from 'lucide-react';
+import { X, Sparkles, Send, Bot, User, Calculator, TrendingUp, HelpCircle } from '@/constants/icons';
 import { GoogleGenAI } from '@google/genai';
 import { Expense, Order, Product } from '../types';
 import { formatIDR } from '../utils/formatters';

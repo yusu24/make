@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ClipboardCheck, CheckCircle2, Eye, X, Package } from 'lucide-react';
+import { ClipboardCheck, CheckCircle2, Eye, X, Package } from '@/constants/icons';
 import api from '../../../../../services/api';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
@@ -33,6 +33,7 @@ export const StockOpnameView: React.FC = () => {
   const [opnames, setOpnames] = useState<OpnameRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<OpnameDetail | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [counts, setCounts] = useState<Record<number, string>>({});
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -69,6 +70,7 @@ export const StockOpnameView: React.FC = () => {
       const c: Record<number, string> = {};
       res.data.items.forEach((it: OpnameItem) => { c[it.product_id] = String(it.physical_qty); });
       setCounts(c);
+      setIsDetailOpen(true);
     } catch {
       alert('Gagal memuat detail stock opname.');
     }
@@ -110,20 +112,11 @@ export const StockOpnameView: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <ClipboardCheck className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">{i18n?.language === 'en' ? 'Stock Count (Physical Audit Opname)' : 'Stock Opname (Hitung Fisik Gudang)'}</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            {i18n?.language === 'en' ? 'Reconcile system stock with physical count. System stock automatically adjusts on finalization.' : 'Cocokkan stok sistem dengan hasil hitung fisik. Saat difinalisasi, stok sistem otomatis disesuaikan.'}
-          </p>
-        </div>
+      <div className="flex items-center justify-end gap-2 shrink-0">
         <button
           onClick={startOpname}
           disabled={starting}
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          className="px-4 h-[38px] rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
         >
           <ClipboardCheck className="w-4 h-4" />
           <span>{starting ? (i18n?.language === 'en' ? 'Starting...' : 'Memulai...') : (i18n?.language === 'en' ? 'Start Stock Opname' : 'Mulai Stock Opname')}</span>

@@ -33,9 +33,11 @@ import {
   Archive,
   BookOpen,
   Code2
-} from 'lucide-react';
+} from '@/constants/icons';
 import { ActiveTab, StoreChannel } from '../types';
 import { useTranslation } from '../../../../contexts/I18nContext';
+import { useAuth } from '../../../../contexts/AuthContext';
+import bizoraLogo from '../../../../assets/bizora-logo.png';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -48,6 +50,97 @@ interface SidebarProps {
   stores?: StoreChannel[];
 }
 
+interface FlyoutItem {
+  id: ActiveTab;
+  label: string;
+  icon?: React.ReactNode;
+}
+
+interface FlyoutGroup {
+  id: string;
+  label: string;
+  items: FlyoutItem[];
+}
+
+const CollapsedGroupFlyout: React.FC<{
+  group: FlyoutGroup;
+  anchorY: number;
+  onClose: () => void;
+  activeTab: ActiveTab;
+  onSelect: (tab: ActiveTab) => void;
+}> = ({ group, anchorY, onClose, activeTab, onSelect }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 50);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handler);
+    };
+  }, [onClose]);
+
+  if (!group) return null;
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: 'fixed',
+        left: 72,
+        top: Math.max(8, Math.min(anchorY, window.innerHeight - 320)),
+        zIndex: 1100,
+        minWidth: 210,
+        background: '#ffffff',
+        border: '1px solid #e2e8f0',
+        borderRadius: 12,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+        padding: 6,
+      }}
+    >
+      <div style={{ padding: '6px 12px 8px', fontSize: 11.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #f1f5f9', marginBottom: 4 }}>
+        {group.label}
+      </div>
+      {group.items.map(item => {
+        const isActive = activeTab === item.id;
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => {
+              onSelect(item.id);
+              onClose();
+            }}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '8px 12px',
+              borderRadius: 8,
+              fontSize: 13,
+              border: 'none',
+              cursor: 'pointer',
+              color: isActive ? '#4f46e5' : '#334155',
+              background: isActive ? '#eef2ff' : 'transparent',
+              fontWeight: isActive ? 700 : 500,
+              textAlign: 'left',
+              transition: 'background 0.15s',
+            }}
+          >
+            {item.icon && <span style={{ display: 'flex', color: isActive ? '#4f46e5' : '#64748b' }}>{item.icon}</span>}
+            <span style={{ flex: 1 }}>{item.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
@@ -58,8 +151,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setMobileMenuOpen,
   stores = [],
 }) => {
+  const { user } = useAuth();
   const i18n = useTranslation();
   const t = i18n?.t || ((key: string) => key);
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const [flyoutAnchorY, setFlyoutAnchorY] = useState(60);
+
   const isKeuanganActive = activeTab.startsWith('keuangan-');
   const [keuanganOpen, setKeuanganOpen] = useState(isKeuanganActive);
 
@@ -86,32 +183,98 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setMasterOpen(['master-data', 'pelanggan'].includes(activeTab));
     setMarketplaceOpen(activeTab.startsWith('marketplace-'));
     setShippingOpen(activeTab.startsWith('shipping-'));
+    setOpenSection(null);
   }, [activeTab]);
 
+  const handleGroupIconClick = (sectionId: string, e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setFlyoutAnchorY(rect.top);
+    setOpenSection(prev => prev === sectionId ? null : sectionId);
+  };
+
+  const flyoutGroups: Record<string, FlyoutGroup> = {
+    marketplace: {
+      id: 'marketplace',
+      label: t('seller.marketplace'),
+      items: [
+        { id: 'marketplace-dashboard', label: t('seller.dashboardMarketplace'), icon: <Globe className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'marketplace-connected', label: t('seller.tokoTerhubung'), icon: <Link className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'marketplace-mapping', label: t('seller.mappingProduk'), icon: <Layers className="w-3.5 h-3.5 text-blue-500" /> },
+        { id: 'marketplace-sync', label: t('seller.sinkronisasi'), icon: <RefreshCw className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'marketplace-history', label: t('seller.riwayatSync'), icon: <History className="w-3.5 h-3.5 text-purple-500" /> },
+      ]
+    },
+    shipping: {
+      id: 'shipping',
+      label: t('seller.pengiriman'),
+      items: [
+        { id: 'shipping-dashboard', label: t('seller.dashboardPengiriman', 'Dashboard Pengiriman'), icon: <Truck className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'shipping-management', label: t('seller.kurirEkspedisi'), icon: <Package className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'shipping-packing', label: t('seller.packingResi'), icon: <ClipboardCheck className="w-3.5 h-3.5 text-amber-500" /> },
+      ]
+    },
+    gudang: {
+      id: 'gudang',
+      label: t('seller.inventoriGudang'),
+      items: [
+        { id: 'gudang', label: t('seller.stokGudang'), icon: <Box className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'penerimaan-barang', label: t('seller.penerimaanBarang'), icon: <Package className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'stock-opname', label: t('seller.stockOpname'), icon: <ClipboardCheck className="w-3.5 h-3.5 text-amber-500" /> },
+      ]
+    },
+    keuangan: {
+      id: 'keuangan',
+      label: t('seller.keuanganLaporan'),
+      items: [
+        { id: 'keuangan-pengeluaran', label: t('seller.pengeluaran'), icon: <TrendingDown className="w-3.5 h-3.5 text-rose-500" /> },
+        { id: 'keuangan-pemasukan', label: t('seller.pemasukanLain'), icon: <TrendingUp className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'keuangan-kas', label: t('seller.bukuKas'), icon: <Coins className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'keuangan-laporan', label: t('seller.labaRugi'), icon: <FileSpreadsheet className="w-3.5 h-3.5 text-blue-500" /> },
+      ]
+    },
+    master: {
+      id: 'master',
+      label: t('seller.masterData'),
+      items: [
+        { id: 'master-data', label: t('seller.masterKategori'), icon: <Database className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'pelanggan', label: t('seller.dataPelanggan'), icon: <Users className="w-3.5 h-3.5 text-emerald-500" /> },
+      ]
+    },
+    settings: {
+      id: 'settings',
+      label: t('seller.pengaturanSistem'),
+      items: [
+        { id: 'settings-app', label: t('seller.pengaturanAplikasi'), icon: <Store className="w-3.5 h-3.5 text-orange-500" /> },
+        { id: 'settings-account', label: t('seller.akunSaya'), icon: <User className="w-3.5 h-3.5 text-sky-500" /> },
+        { id: 'settings-roles', label: t('seller.hakAksesPeran'), icon: <Shield className="w-3.5 h-3.5 text-violet-500" /> },
+        { id: 'settings-users', label: t('seller.manajemenUser'), icon: <Users className="w-3.5 h-3.5 text-teal-500" /> },
+        { id: 'backup', label: 'Backup Data Toko', icon: <Archive className="w-3.5 h-3.5 text-amber-500" /> },
+      ]
+    }
+  };
+
   return (
+    <>
     <aside
-      className={`fixed top-0 left-0 z-40 h-screen bg-white dark:bg-[#101828] border-r border-gray-200 dark:border-slate-800 transition-all duration-300 flex flex-col 
-      ${collapsed ? 'md:w-20' : 'md:w-64'} 
+      className={`fixed top-0 left-0 z-40 h-screen bg-white dark:bg-[#101828] transition-all duration-300 flex flex-col 
+      ${collapsed ? 'md:w-[68px]' : 'md:w-64'} 
       w-64 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
     >
       {/* Brand Header */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-gray-200 dark:border-slate-800">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/25 shrink-0">
-            <Zap className="w-5 h-5 fill-white/20 stroke-white" />
+      <div className="h-16 px-4 relative flex items-center justify-center">
+        <div className="flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 p-1.5 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
+            <img 
+              src={user?.store_icon_url || bizoraLogo} 
+              alt="Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
-          {!collapsed && (
-            <div className="flex flex-col">
-              <span className="font-extrabold text-lg tracking-tight text-[#101828] dark:text-white">
-                Bizora
-              </span>
-            </div>
-          )}
         </div>
         
         {/* Mobile close button */}
         <button 
-          className="md:hidden p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          className="md:hidden absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           onClick={() => setMobileMenuOpen?.(false)}
         >
            <ChevronRight className="w-5 h-5 rotate-180" />
@@ -126,7 +289,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title={collapsed ? t('seller.dashboard') : ''}
           className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13.5px] transition-all duration-200 group ${
             activeTab === 'menu-utama'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
+              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
@@ -140,14 +303,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title={collapsed ? 'Kasir (POS)' : ''}
           className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13.5px] transition-all duration-200 group ${
             activeTab === 'toko-offline'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
+              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
           <CreditCard className={`w-5 h-5 shrink-0 ${activeTab === 'toko-offline' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
           {!collapsed && <span className="flex-1 text-left truncate">Kasir (POS)</span>}
           {!collapsed && (
-            <span className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+            <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
               POS
             </span>
           )}
@@ -184,22 +347,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Marketplace & Sync Section */}
         <div>
           <button
-            onClick={() => {
+            onClick={(e) => {
               if (collapsed) {
-                onToggleCollapse();
-                setMarketplaceOpen(true);
+                handleGroupIconClick('marketplace', e);
               } else {
                 setMarketplaceOpen(!marketplaceOpen);
               }
             }}
             title={collapsed ? t('seller.marketplace') : ''}
             className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-              isMarketplaceActive
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
+              isMarketplaceActive || openSection === 'marketplace'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
-            <Globe className={`w-5 h-5 shrink-0 ${isMarketplaceActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            <Globe className={`w-5 h-5 shrink-0 ${isMarketplaceActive || openSection === 'marketplace' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">{t('seller.marketplace')}</span>}
             {!collapsed && (
               marketplaceOpen ? (
@@ -220,8 +382,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <LayoutDashboard className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
-                <span>{t('seller.connectionStatus')}</span>
+                <Globe className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                <span>{t('seller.dashboardMarketplace')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-connected')}
@@ -231,8 +393,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Link className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                <span>{t('seller.connectedAccounts')}</span>
+                <Link className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                <span>{t('seller.tokoTerhubung')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-mapping')}
@@ -242,8 +404,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Layers className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
-                <span>{t('seller.productMapping')}</span>
+                <Layers className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+                <span>{t('seller.mappingProduk')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-sync')}
@@ -253,8 +415,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <RefreshCw className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                <span>{t('seller.syncCenter')}</span>
+                <RefreshCw className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                <span>{t('seller.sinkronisasi')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-history')}
@@ -264,8 +426,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <History className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                <span>{t('seller.syncHistory')}</span>
+                <History className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
+                <span>{t('seller.riwayatSync')}</span>
               </button>
             </div>
           )}
@@ -274,23 +436,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Gudang & Stok Section (Accordion) */}
         <div>
           <button
-            onClick={() => {
+            onClick={(e) => {
               if (collapsed) {
-                onToggleCollapse();
-                setGudangOpen(true);
+                handleGroupIconClick('gudang', e);
               } else {
                 setGudangOpen(!gudangOpen);
               }
             }}
-            title={collapsed ? t('seller.gudangStok') : ''}
+            title={collapsed ? t('seller.inventoriGudang') : ''}
             className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-              isGudangActive
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
+              isGudangActive || openSection === 'gudang'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
-            <WarehouseIcon className={`w-5 h-5 shrink-0 ${isGudangActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.gudangStok')}</span>}
+            <WarehouseIcon className={`w-5 h-5 shrink-0 ${isGudangActive || openSection === 'gudang' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.inventoriGudang')}</span>}
             {!collapsed && (
               gudangOpen ? (
                 <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -311,8 +472,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <WarehouseIcon className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                <span>{t('seller.gudang')}</span>
+                <Box className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                <span>{t('seller.stokGudang')}</span>
               </button>
 
               <button
@@ -323,7 +484,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Truck className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
+                <Package className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                 <span>{t('seller.penerimaanBarang')}</span>
               </button>
 
@@ -335,7 +496,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <ClipboardCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                <ClipboardCheck className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                 <span>{t('seller.stockOpname')}</span>
               </button>
             </div>
@@ -345,22 +506,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Shipping & Fulfillment */}
         <div>
           <button
-            onClick={() => {
+            onClick={(e) => {
               if (collapsed) {
-                onToggleCollapse();
-                setShippingOpen(true);
+                handleGroupIconClick('shipping', e);
               } else {
                 setShippingOpen(!shippingOpen);
               }
             }}
             title={collapsed ? t('seller.pengiriman') : ''}
             className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-              isShippingActive
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
+              isShippingActive || openSection === 'shipping'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
-            <Truck className={`w-5 h-5 shrink-0 ${isShippingActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            <Truck className={`w-5 h-5 shrink-0 ${isShippingActive || openSection === 'shipping' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pengiriman')}</span>}
             {!collapsed && (
               shippingOpen ? (
@@ -381,8 +541,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <LayoutDashboard className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
-                <span>{t('seller.fulfillmentDashboard')}</span>
+                <Truck className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                <span>{t('seller.dashboardPengiriman', 'Dashboard Pengiriman')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('shipping-management')}
@@ -392,8 +552,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Box className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
-                <span>{t('seller.manajemenEkspedisi')}</span>
+                <Package className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                <span>{t('seller.kurirEkspedisi')}</span>
               </button>
               <button
                 onClick={() => setActiveTab('shipping-packing')}
@@ -403,8 +563,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <QrCode className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                <span>{t('seller.packingImprovement')}</span>
+                <ClipboardCheck className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                <span>{t('seller.packingResi')}</span>
               </button>
             </div>
           )}
@@ -414,23 +574,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Keuangan Section (Accordion) */}
         <div>
           <button
-            onClick={() => {
+            onClick={(e) => {
               if (collapsed) {
-                onToggleCollapse();
-                setKeuanganOpen(true);
+                handleGroupIconClick('keuangan', e);
               } else {
                 setKeuanganOpen(!keuanganOpen);
               }
             }}
-            title={collapsed ? t('seller.keuangan') : ''}
+            title={collapsed ? t('seller.keuanganLaporan') : ''}
             className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-              isKeuanganActive
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
+              isKeuanganActive || openSection === 'keuangan'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
-            <Wallet className={`w-5 h-5 shrink-0 ${isKeuanganActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.keuangan')}</span>}
+            <Wallet className={`w-5 h-5 shrink-0 ${isKeuanganActive || openSection === 'keuangan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.keuanganLaporan')}</span>}
             {!collapsed && (
               keuanganOpen ? (
                 <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -444,18 +603,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {(!collapsed && keuanganOpen) && (
             <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
               <button
-                onClick={() => setActiveTab('keuangan-pemasukan')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
-                  activeTab === 'keuangan-pemasukan'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                <span>{t('seller.pemasukanLain')}</span>
-              </button>
-
-              <button
                 onClick={() => setActiveTab('keuangan-pengeluaran')}
                 className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-pengeluaran'
@@ -468,6 +615,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
 
               <button
+                onClick={() => setActiveTab('keuangan-pemasukan')}
+                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                  activeTab === 'keuangan-pemasukan'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                <span>{t('seller.pemasukanLain')}</span>
+              </button>
+
+              <button
                 onClick={() => setActiveTab('keuangan-kas')}
                 className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
                   activeTab === 'keuangan-kas'
@@ -476,7 +635,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Coins className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                <span>{t('seller.ringkasanKas')}</span>
+                <span>{t('seller.bukuKas')}</span>
               </button>
 
               <button
@@ -488,7 +647,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
-                <span>{t('seller.laporanPenjualan')}</span>
+                <span>{t('seller.labaRugi')}</span>
               </button>
             </div>
           )}
@@ -497,22 +656,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Data Master Section (Accordion) */}
         <div>
           <button
-            onClick={() => {
+            onClick={(e) => {
               if (collapsed) {
-                onToggleCollapse();
-                setMasterOpen(true);
+                handleGroupIconClick('master', e);
               } else {
                 setMasterOpen(!masterOpen);
               }
             }}
             title={collapsed ? t('seller.dataMaster') : ''}
             className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-              isMasterActive
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
+              isMasterActive || openSection === 'master'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
-            <Database className={`w-5 h-5 shrink-0 ${isMasterActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            <Database className={`w-5 h-5 shrink-0 ${isMasterActive || openSection === 'master' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">{t('seller.dataMaster')}</span>}
             {!collapsed && (
               masterOpen ? (
@@ -534,8 +692,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Layers className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />
-                <span>{t('seller.masterDataIntegrasi')}</span>
+                <Database className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                <span>{t('seller.masterKategori')}</span>
               </button>
 
               <button
@@ -546,7 +704,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Users className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
+                <Users className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                 <span>{t('seller.dataPelanggan')}</span>
               </button>
             </div>
@@ -612,22 +770,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Pengaturan Sistem */}
         <div>
           <button
-            onClick={() => {
+            onClick={(e) => {
               if (collapsed) {
-                onToggleCollapse();
-                setSettingsOpen(true);
+                handleGroupIconClick('settings', e);
               } else {
                 setSettingsOpen(!settingsOpen);
               }
             }}
             title={collapsed ? t('seller.pengaturanSistem') : ''}
             className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-              isSettingsActive
+              isSettingsActive || openSection === 'settings'
                 ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
-            <Settings className={`w-5 h-5 shrink-0 ${isSettingsActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            <Settings className={`w-5 h-5 shrink-0 ${isSettingsActive || openSection === 'settings' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pengaturanSistem')}</span>}
             {!collapsed && (
               settingsOpen ? (
@@ -715,10 +872,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
     </aside>
+
+    {/* ── Collapsed-rail flyout ── */}
+    {collapsed && openSection && flyoutGroups[openSection] && (
+      <CollapsedGroupFlyout
+        group={flyoutGroups[openSection]}
+        anchorY={flyoutAnchorY}
+        onClose={() => setOpenSection(null)}
+        activeTab={activeTab}
+        onSelect={(tab) => {
+          setActiveTab(tab);
+          setMobileMenuOpen?.(false);
+        }}
+      />
+    )}
+    </>
   );
 };
-
-
-
-
-

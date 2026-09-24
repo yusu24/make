@@ -3,7 +3,7 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Edit3, Trash2, Plus, RefreshCw } from 'lucide-react';
+import { Pencil, Trash2, Plus, RefreshCw } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
@@ -77,7 +77,7 @@ export default function Pricelists() {
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button title="Aturan Harga Baru"
             className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
             onClick={openNew}
           >
             <Plus size={15} className="mr-2 mobile-no-margin" />
@@ -90,7 +90,7 @@ export default function Pricelists() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
+          <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
             <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
@@ -116,7 +116,7 @@ export default function Pricelists() {
                   <td className="text-center">{pl.items?.length || 0}</td>
                   <td className="pr-6 text-right">
                     <div className="flex gap-2 justify-end">
-                      <button className="btn btn-sm btn-ghost" onClick={() => openEdit(pl)}><Edit3 size={14} /></button>
+                      <button className="btn btn-sm btn-ghost" onClick={() => openEdit(pl)}><Pencil size={14} /></button>
                       <button className="btn btn-sm btn-ghost retail-text-danger" onClick={async () => { if (confirm('Hapus aturan harga ini?')) { await api.delete(`/retail/pricelists/${pl.id}`); fetchData(); } }}><Trash2 size={14} /></button>
                     </div>
                   </td>

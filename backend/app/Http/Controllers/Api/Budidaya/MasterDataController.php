@@ -11,6 +11,15 @@ use Illuminate\Database\Schema\Blueprint;
 
 class MasterDataController extends Controller
 {
+    private function getTenantId(Request $request): string
+    {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403));
+        }
+        return $tenantId;
+    }
+
     private function ensureTablesExist($tenantId)
     {
         // 1. Ensure Finance Categories Table
@@ -103,7 +112,7 @@ class MasterDataController extends Controller
     // ─── 1. FINANCIAL CATEGORIES (POS KEUANGAN) ──────────────────────────────
     public function indexFinanceCategories(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $this->ensureTablesExist($tenantId);
 
         $type = $request->query('type');
@@ -118,7 +127,7 @@ class MasterDataController extends Controller
 
     public function storeFinanceCategory(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $this->ensureTablesExist($tenantId);
 
         $request->validate([
@@ -142,7 +151,7 @@ class MasterDataController extends Controller
 
     public function updateFinanceCategory(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $this->ensureTablesExist($tenantId);
 
         $category = BudidayaFinanceCategory::where('tenant_id', $tenantId)->findOrFail($id);
@@ -167,7 +176,7 @@ class MasterDataController extends Controller
 
     public function destroyFinanceCategory(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $this->ensureTablesExist($tenantId);
 
         $category = BudidayaFinanceCategory::where('tenant_id', $tenantId)->findOrFail($id);
@@ -179,7 +188,7 @@ class MasterDataController extends Controller
     // ─── 2. MASTER SATUAN DASAR (UNITS) ──────────────────────────────────────
     public function indexUnits(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $this->ensureTablesExist($tenantId);
 
         $query = BudidayaUnit::where('tenant_id', $tenantId);
@@ -188,7 +197,7 @@ class MasterDataController extends Controller
 
     public function storeUnit(Request $request)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $this->ensureTablesExist($tenantId);
 
         $request->validate([
@@ -213,7 +222,7 @@ class MasterDataController extends Controller
 
     public function updateUnit(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $this->ensureTablesExist($tenantId);
 
         $unit = BudidayaUnit::where('tenant_id', $tenantId)->findOrFail($id);
@@ -239,7 +248,7 @@ class MasterDataController extends Controller
 
     public function destroyUnit(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id ?? 'TN-001';
+        $tenantId = $this->getTenantId($request);
         $this->ensureTablesExist($tenantId);
 
         $unit = BudidayaUnit::where('tenant_id', $tenantId)->findOrFail($id);

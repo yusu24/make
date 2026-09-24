@@ -1,5 +1,5 @@
 import React from 'react';
-import { Warehouse as WarehouseIcon, MapPin, User, Phone, ArrowUpRight, ArrowDownLeft, RefreshCw, Plus, Pencil, Trash2, Download } from 'lucide-react';
+import { Warehouse as WarehouseIcon, MapPin, User, Phone, ArrowUpRight, ArrowDownLeft, RefreshCw, Plus, Pencil, Trash2, Download } from '@/constants/icons';
 import { Warehouse, StockMovement } from '../../types';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
@@ -35,37 +35,25 @@ export const WarehouseView: React.FC<WarehouseViewProps> = ({ warehouses, stockM
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <WarehouseIcon className="w-5 h-5 text-indigo-600 shrink-0" />
-            <span className="truncate">{t('seller.gudang')}</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            {t('seller.gudangSubtitle')}
-          </p>
-        </div>
+      {/* Top Action Bar */}
+      <div className="flex items-center justify-end gap-2 shrink-0">
+        <button
+          onClick={handleExportExcel}
+          className="px-3.5 h-[38px] rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+          title="Export Riwayat Mutasi ke Excel/CSV"
+        >
+          <Download className="w-4 h-4" />
+          <span>{t('seller.exportExcel')}</span>
+        </button>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={handleExportExcel}
-            className="px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-            title="Export Riwayat Mutasi ke Excel/CSV"
-          >
-            <Download className="w-4 h-4" />
-            <span>{t('seller.exportExcel')}</span>
-          </button>
-
-          <button
-            onClick={onAddWarehouse}
-            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('seller.addWarehouse')}</span>
-            <span className="sm:hidden">Tambah</span>
-          </button>
-        </div>
+        <button
+          onClick={onAddWarehouse}
+          className="px-4 h-[38px] rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('seller.addWarehouse')}</span>
+          <span className="sm:hidden">Tambah</span>
+        </button>
       </div>
 
       {/* Warehouse Cards */}

@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { 
-  Plus, RefreshCw, Truck, 
-  TrendingDown, Package, Edit3, Trash2
-} from 'lucide-react';
+import { Plus, RefreshCw, Truck, TrendingDown, Package, Pencil, Trash2 } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
@@ -213,7 +210,7 @@ export default function PurchaseOrders() {
         <div className="toolbar-no-stack" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--retail-border, #e2e8f0)', flexWrap: 'wrap' }}>
           <button title="Buat PO Baru" 
             className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 40, padding: '0 14px' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
             onClick={() => {
               setItems([{ product_id: '', qty: 1, cost_per_item: 0 }]);
               setShowModal(true);
@@ -249,10 +246,10 @@ export default function PurchaseOrders() {
           <button 
             onClick={fetchData} 
             className="btn-reset-sync"
-            style={{ flexShrink: 0 }}
+            style={{ width: 38, height: 38, flexShrink: 0 }}
             title="Segarkan Data"
           >
-            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
 
@@ -294,7 +291,7 @@ export default function PurchaseOrders() {
                   </td>
                   <td style={{ textAlign: 'right' }} className="pr-6">
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                      <button className="btn btn-sm btn-secondary" title="Detail" onClick={() => setDetailPurchase(p)}><Edit3 size={14} /></button>
+                      <button className="btn btn-sm btn-secondary" title="Detail" onClick={() => setDetailPurchase(p)}><Pencil size={14} /></button>
                       <button className="btn btn-sm btn-ghost retail-text-danger" title="Hapus" onClick={() => handleDelete(p)}><Trash2 size={14} /></button>
                     </div>
                   </td>

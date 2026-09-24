@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Lock, Rocket, ArrowRight } from 'lucide-react';
+import { Lock, Rocket, ArrowRight } from '@/constants/icons';
 
 const SubscriptionLock = ({ status, daysLeft }) => {
   const navigate = useNavigate();

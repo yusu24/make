@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, AlertTriangle } from 'lucide-react';
+import { X, Save, AlertTriangle } from '@/constants/icons';
 import { JasaSparepart } from '../types';
 import { jasaApi } from '../services/jasaApi';
 
@@ -82,7 +82,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}

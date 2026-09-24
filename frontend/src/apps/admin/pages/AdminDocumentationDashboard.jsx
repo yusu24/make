@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { api } from '../../../lib/api'
-import { Plus, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react'
+import {
+  api } from '../../../lib/api'
+import { Plus,
+  Pencil,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  RefreshCw
+} from '@/constants/icons'
 
 export default function AdminDocumentationDashboard() {
   const [articles, setArticles] = useState([])
@@ -138,22 +145,46 @@ export default function AdminDocumentationDashboard() {
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: 40 }}>
-      <div className="page-header">
+      {/* ── Page Header ── */}
+      <div className="page-header mb-2">
         <h2 className="page-title">Manajemen Dokumentasi</h2>
       </div>
 
-      <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
-        <button className="btn btn-primary" onClick={() => {
-          setEditingArticle(null)
-          setFormData({title: '', short_description: '', content: '', category_id: '', module: 'umum', status: 'draft'})
-          setShowEditor(true)
-        }}>
-          <Plus size={16} /> Tulis Artikel
+      {/* ── Action Bar below title ── */}
+      <div className="flex justify-end gap-2.5 mb-4">
+        <button
+          className="btn btn-secondary flex items-center gap-1.5"
+          onClick={fetchData}
+          disabled={loading}
+          title="Muat ulang artikel"
+        >
+          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          <span>Muat Ulang</span>
+        </button>
+        <button
+          className="btn btn-primary flex items-center gap-1.5"
+          onClick={() => {
+            setEditingArticle(null)
+            setFormData({title: '', short_description: '', content: '', category_id: '', module: 'umum', status: 'draft'})
+            setShowEditor(true)
+          }}
+        >
+          <Plus size={16} />
+          <span>Tulis Artikel</span>
         </button>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl p-6">
-        {loading ? <p>Loading...</p> : (
+      {loading ? (
+        <div className="card" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+            <RefreshCw size={28} className="animate-spin text-indigo-600" />
+            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+              Memuat data artikel &amp; dokumentasi...
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white border border-slate-200 rounded-xl p-6">
           <div className="table-responsive">
             <table className="table">
               <thead>
@@ -179,7 +210,7 @@ export default function AdminDocumentationDashboard() {
                     <td>
                       <div style={{ display: 'flex', gap: 10 }}>
                         <button className="btn btn-secondary" style={{ padding: '4px 8px' }} onClick={() => handleEdit(art)}>
-                          <Edit2 size={14} />
+                          <Pencil size={14} />
                         </button>
                         <button className="btn btn-secondary" style={{ padding: '4px 8px', color: '#ef4444' }} onClick={() => handleDelete(art.id)}>
                           <Trash2 size={14} />
@@ -194,8 +225,8 @@ export default function AdminDocumentationDashboard() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

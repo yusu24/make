@@ -6,9 +6,11 @@ import {
   Phone, MapPin, Building2, Percent, Star, Package,
   Receipt, Shield, Database, Download, Mail, Calendar, Clock,
   FileSpreadsheet, FileCode
-} from 'lucide-react';
+} from '@/constants/icons';
 import { api } from '../../../lib/api';
 import RetailLoading from '../components/RetailLoading';
+import { useAuth } from '../../../contexts/AuthContext';
+import bizoraLogo from '../../../assets/bizora-logo.png';
 
 /* ─── Helper: Toast notification ──────────────────────────────────────────── */
 function Toast({ message, type = 'success', onDone }) {
@@ -96,6 +98,7 @@ const TABS = [
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
 export default function Settings() {
+  const { updateUser } = useAuth();
   const [settings, setSettings] = useState(null);
   const [activeTab, setActiveTab] = useState('store');
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
@@ -178,6 +181,9 @@ export default function Settings() {
       fields.forEach(f => { payload[f] = settings[f]; });
       const res = await api.put('/retail/settings', payload);
       setSettings(res.data);
+      if (payload.store_name) {
+        updateUser({ tenant_name: payload.store_name });
+      }
       showToast('Pengaturan berhasil disimpan');
     } catch (e) {
       showToast(e.response?.data?.message || 'Gagal menyimpan', 'error');
@@ -228,6 +234,7 @@ export default function Settings() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setSettings(prev => ({ ...prev, store_icon_path: res.data.store_icon_path, store_icon_url: res.data.store_icon_url }));
+      updateUser({ store_icon_url: res.data.store_icon_url });
       showToast('Icon toko berhasil diupload');
     } catch (e) {
       showToast('Gagal upload icon toko', 'error');
@@ -242,6 +249,7 @@ export default function Settings() {
     try {
       await api.delete('/retail/settings/store-icon');
       setSettings(prev => ({ ...prev, store_icon_path: null, store_icon_url: null }));
+      updateUser({ store_icon_url: null });
       showToast('Icon toko dihapus');
     } catch (e) {
       showToast('Gagal hapus icon toko', 'error');
@@ -466,14 +474,14 @@ export default function Settings() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <div style={{
                       width: 56, height: 56, borderRadius: 14, overflow: 'hidden', flexShrink: 0,
-                      background: '#f8fafc', border: '1px solid var(--retail-border, #e2e8f0)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      background: '#fff', border: '1px solid var(--retail-border, #e2e8f0)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4
                     }}>
-                      {settings.store_icon_url ? (
-                        <img src={settings.store_icon_url} alt="Icon Toko" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <Store size={22} color="var(--retail-text-secondary)" />
-                      )}
+                      <img 
+                        src={settings.store_icon_url || bizoraLogo} 
+                        alt="Icon Toko" 
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                      />
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button

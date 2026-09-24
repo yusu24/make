@@ -7,11 +7,10 @@ import {
   Sun,
   Moon,
   LogOut,
-  Globe,
   CreditCard,
   ShieldCheck,
   Building2,
-} from 'lucide-react';
+} from '@/constants/icons';
 import { StoreChannel, ActiveTab, Product } from '../types';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useTranslation } from '../../../../contexts/I18nContext';
@@ -82,8 +81,6 @@ export const Header: React.FC<HeaderProps> = ({
   const navigate = useNavigate();
   const { user, logout, isImpersonating, exitImpersonate } = useAuth();
   const i18n = useTranslation();
-  const language = i18n?.language || 'id';
-  const toggleLanguage = i18n?.toggleLanguage || (() => {});
   const t = i18n?.t || ((key: string) => key);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -144,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({
   }).format(new Date());
 
   return (
-    <header className={`h-16 bg-white dark:bg-[#101828] border-b border-gray-200 dark:border-slate-800 fixed top-0 right-0 left-0 ${collapsed ? 'md:left-20' : 'md:left-64'} z-30 transition-all duration-300 px-3 sm:px-4 md:px-6 flex items-center justify-between shadow-xs shrink-0`}>
+    <header className={`h-16 bg-white dark:bg-[#101828] border-b border-gray-200 dark:border-slate-800 fixed top-0 right-0 left-0 ${collapsed ? 'md:left-[68px]' : 'md:left-64'} z-30 transition-all duration-300 px-3 sm:px-4 md:px-6 flex items-center justify-between shadow-xs shrink-0`}>
       {/* Left section: Toggle, Dynamic Page Title & Date Badge */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button
@@ -163,10 +160,10 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center space-x-2 min-w-0">
-            <h1 className="text-[15px] sm:text-base lg:text-[17px] font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate whitespace-nowrap">
+            <h1 className="text-[15px] sm:text-base lg:text-[17px] font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate whitespace-nowrap font-['Plus_Jakarta_Sans']">
               {TAB_TITLES[activeTab] || 'Bizora Seller'}
             </h1>
-            <span className="hidden md:inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md shrink-0">
+            <span className="hidden md:inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md shrink-0 font-['Inter']">
               <Calendar className="w-3 h-3 text-slate-400" />
               <span>{currentDate}</span>
             </span>
@@ -174,17 +171,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right section: Language, Dark Mode, Notifications & Profile */}
+      {/* Right section: Dark Mode, Notifications & Profile */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-        {/* Language Switcher Toggle */}
-        <button
-          onClick={toggleLanguage}
-          className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-extrabold transition-colors cursor-pointer shrink-0 flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow-xs"
-          title={language === 'id' ? 'Switch to English' : 'Beralih ke Bahasa Indonesia'}
-        >
-          <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-          <span className="uppercase tracking-wider">{language === 'id' ? 'ID 🇮🇩' : 'EN 🇬🇧'}</span>
-        </button>
 
         {/* Dark Mode Toggle */}
         <button

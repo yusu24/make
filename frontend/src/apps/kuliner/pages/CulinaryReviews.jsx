@@ -17,8 +17,9 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  TrendingUp,
   X
-} from 'lucide-react';
+} from '@/constants/icons';
 
 const CulinaryReviews = () => {
   const { t } = useTranslation();
@@ -336,7 +337,7 @@ const CulinaryReviews = () => {
             </div>
           ) : filteredReviews.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '50px 20px' }}>
-              <div style={{ fontSize: 36, marginBottom: 10 }}>💬</div>
+              <MessageSquare size={36} className="text-slate-300 mx-auto mb-2" />
               <h4 style={{ fontWeight: 700, color: '#1e293b', fontSize: 15 }}>
                 {searchTerm || statusFilter !== 'all' || ratingFilter !== 'all' 
                   ? 'Tidak ada ulasan yang cocok dengan filter' 
@@ -374,7 +375,7 @@ const CulinaryReviews = () => {
                           }}
                         >
                           {/* Index */}
-                          <td style={{ textAlign: 'center', fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>
+                          <td style={{ textAlign: 'center', fontSize: 12, color: '#94a3b8', fontWeight: 400 }}>
                             {globalIndex}
                           </td>
 
@@ -391,18 +392,18 @@ const CulinaryReviews = () => {
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  fontSize: 13.5,
-                                  fontWeight: 700,
+                                  fontSize: 12,
+                                  fontWeight: 600,
                                   flexShrink: 0
                                 }}
                               >
-                                {isLowRating ? '⚠️' : (review.customer_name?.charAt(0).toUpperCase() || 'P')}
+                                {isLowRating ? <AlertTriangle size={16} /> : (review.customer_name?.charAt(0).toUpperCase() || 'P')}
                               </div>
                               <div>
-                                <div style={{ fontWeight: 700, color: '#0f172a', fontSize: 13 }}>
+                                <div style={{ fontWeight: 400, color: '#0f172a', fontSize: 12 }}>
                                   {review.customer_name}
                                 </div>
-                                <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                                <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 400 }}>
                                   {new Date(review.created_at).toLocaleDateString('id-ID', {
                                     day: 'numeric',
                                     month: 'short',
@@ -422,9 +423,10 @@ const CulinaryReviews = () => {
                           <td>
                             <div 
                               style={{ 
-                                fontSize: 12.5, 
+                                fontSize: 12, 
                                 color: isLowRating ? '#9f1239' : '#334155',
                                 fontStyle: 'italic',
+                                fontWeight: 400,
                                 maxHeight: 40,
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
@@ -446,17 +448,17 @@ const CulinaryReviews = () => {
                                 style={{
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  gap: 3,
+                                  gap: 4,
                                   padding: '2.5px 8px',
                                   borderRadius: 9999,
-                                  fontSize: 11,
-                                  fontWeight: 700,
+                                  fontSize: 12,
+                                  fontWeight: 400,
                                   background: '#fee2e2',
                                   color: '#dc2626',
                                   border: '1px solid #fca5a5'
                                 }}
                               >
-                                🚨 Keluhan
+                                <AlertTriangle size={12} /> Keluhan
                               </span>
                             ) : review.is_displayed ? (
                               <span 
@@ -466,8 +468,8 @@ const CulinaryReviews = () => {
                                   gap: 3,
                                   padding: '2.5px 8px',
                                   borderRadius: 9999,
-                                  fontSize: 11,
-                                  fontWeight: 700,
+                                  fontSize: 12,
+                                  fontWeight: 400,
                                   background: '#dcfce7',
                                   color: '#15803d',
                                   border: '1px solid #86efac'
@@ -483,8 +485,8 @@ const CulinaryReviews = () => {
                                   gap: 3,
                                   padding: '2.5px 8px',
                                   borderRadius: 9999,
-                                  fontSize: 11,
-                                  fontWeight: 700,
+                                  fontSize: 12,
+                                  fontWeight: 400,
                                   background: '#f1f5f9',
                                   color: '#64748b',
                                   border: '1px solid #cbd5e1'
@@ -645,7 +647,7 @@ const CulinaryReviews = () => {
 
         {/* ── Reputation Tip Card ── */}
         <div style={{ marginTop: 20, padding: '18px 22px', background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', borderRadius: 16, color: '#fff', display: 'flex', gap: 18, alignItems: 'center' }}>
-          <div style={{ fontSize: 32 }}>📈</div>
+          <TrendingUp size={32} className="text-amber-400 shrink-0" />
           <div>
             <h4 style={{ fontWeight: 800, color: '#ffffff', fontSize: 14.5, marginBottom: 2 }}>Tips Membangun Reputasi Kuliner</h4>
             <p style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, margin: 0 }}>
@@ -700,7 +702,7 @@ const CulinaryReviews = () => {
                     fontWeight: 800
                   }}
                 >
-                  {Number(selectedReview.rating) <= 2 ? '⚠️' : (selectedReview.customer_name?.charAt(0).toUpperCase() || 'P')}
+                  {Number(selectedReview.rating) <= 2 ? <AlertTriangle size={18} /> : (selectedReview.customer_name?.charAt(0).toUpperCase() || 'P')}
                 </div>
                 <div>
                   <h3 style={{ fontWeight: 800, fontSize: 15, color: '#0f172a', margin: 0 }}>{selectedReview.customer_name}</h3>
@@ -785,10 +787,21 @@ const CulinaryReviews = () => {
                   background: selectedReview.is_displayed ? '#f1f5f9' : '#10b981',
                   color: selectedReview.is_displayed ? '#475569' : '#ffffff',
                   border: selectedReview.is_displayed ? '1px solid #cbd5e1' : 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6
                 }}
               >
-                {selectedReview.is_displayed ? '🚫 Sembunyikan' : '✅ Setujui & Tampilkan'}
+                {selectedReview.is_displayed ? (
+                  <>
+                    <EyeOff size={14} /> Sembunyikan
+                  </>
+                ) : (
+                  <>
+                    <Eye size={14} /> Setujui & Tampilkan
+                  </>
+                )}
               </button>
 
               <button

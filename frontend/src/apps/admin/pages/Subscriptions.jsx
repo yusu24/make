@@ -1,139 +1,59 @@
 import { useState, useEffect } from 'react'
+import {
+  Search,
+  RefreshCw,
+  Eye,
+  Mail,
+  Check,
+  X,
+  Camera,
+  Users,
+  Inbox,
+  FileText,
+  Download,
+  Calendar,
+  Clock,
+  AlertTriangle,
+  Sparkles,
+  Plus,
+  ArrowRight,
+  Shield,
+  CreditCard,
+  CheckCircle2
+} from '@/constants/icons'
 import { api } from '../../../lib/api'
 import { getAvatarStyle, getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
+import Modal from '../../../components/Modal'
 import './Shared.css'
-
-const DUMMY_TENANTS = [
-  { id:1, name:'Ahmad Suharto',  email:'ahmad@retail.com', category:'Toko Retail',   status:'active',   plan:'Pro',   tenant_id:'TN-001', joined:'2026-03-10' },
-  { id:2, name:'Siti Rahayu',   email:'siti@ikan.com',    category:'Budidaya Hewan', status:'active',   plan:'Basic', tenant_id:'TN-002', joined:'2026-03-15' },
-  { id:3, name:'Budi Santoso',  email:'budi@jasa.com',    category:'Jasa',          status:'pending',  plan:'-',     tenant_id:'TN-003', joined:'2026-04-01' },
-  { id:4, name:'Dewi Lestari',  email:'dewi@mftr.com',    category:'Manufaktur',    status:'active',   plan:'Pro',   tenant_id:'TN-004', joined:'2026-03-28' },
-  { id:5, name:'Teguh Prasetyo',email:'teguh@retail.com', category:'Toko Retail',   status:'inactive', plan:'Basic', tenant_id:'TN-005', joined:'2026-02-20' },
-]
-
-const PLAN_BADGE = { Pro:'badge-violet', Basic:'badge-blue', Free:'badge-secondary', pro:'badge-violet', basic:'badge-blue', free:'badge-secondary', '-':'badge-secondary' }
-const STATUS_BADGE = { active:'badge-green', pending:'badge-yellow', inactive:'badge-red', approved:'badge-green', rejected:'badge-red' }
-
-const getPlanBadge = (plan) => {
-  const p = (plan || '').toLowerCase()
-  if (p === 'pro') return 'badge-violet'
-  if (p === 'basic') return 'badge-blue'
-  return 'badge-secondary'
-}
-
-const getStatusBadge = (status) => {
-  const s = (status || '').toLowerCase()
-  if (s === 'active' || s === 'approved') return 'badge-green'
-  if (s === 'pending') return 'badge-yellow'
-  if (s === 'rejected' || s === 'inactive') return 'badge-red'
-  return 'badge-gray'
-}
-
-const getPlanStyle = (plan) => {
-  const p = (plan || '').toLowerCase()
-  if (p === 'pro') {
-    return {
-      background: '#f3e8ff',
-      border: '1px solid #d8b4fe',
-      color: '#111827',
-      borderRadius: '6px',
-      padding: '4px 10px',
-      fontSize: 13,
-      fontWeight: 500,
-    }
-  }
-  if (p === 'basic') {
-    return {
-      background: '#dbeafe',
-      border: '1px solid #93c5fd',
-      color: '#111827',
-      borderRadius: '6px',
-      padding: '4px 10px',
-      fontSize: 13,
-      fontWeight: 500,
-    }
-  }
-  return {
-    background: '#f1f5f9',
-    border: '1px solid #cbd5e1',
-    color: '#111827',
-    borderRadius: '6px',
-    padding: '4px 10px',
-    fontSize: 13,
-    fontWeight: 500,
-  }
-}
-
-const getStatusStyle = (status) => {
-  const s = (status || '').toLowerCase()
-  if (s === 'active' || s === 'approved') {
-    return {
-      background: '#dcfce7',
-      border: '1px solid #86efac',
-      color: '#111827',
-      borderRadius: '6px',
-      padding: '4px 10px',
-      fontSize: 13,
-      fontWeight: 500,
-    }
-  }
-  if (s === 'pending') {
-    return {
-      background: '#fef3c7',
-      border: '1px solid #fcd34d',
-      color: '#111827',
-      borderRadius: '6px',
-      padding: '4px 10px',
-      fontSize: 13,
-      fontWeight: 500,
-    }
-  }
-  if (s === 'rejected' || s === 'inactive') {
-    return {
-      background: '#ffe4e6',
-      border: '1px solid #fda4af',
-      color: '#111827',
-      borderRadius: '6px',
-      padding: '4px 10px',
-      fontSize: 13,
-      fontWeight: 500,
-    }
-  }
-  return {
-    background: '#f1f5f9',
-    border: '1px solid #cbd5e1',
-    color: '#111827',
-    borderRadius: '6px',
-    padding: '4px 10px',
-    fontSize: 13,
-    fontWeight: 500,
-  }
-}
 
 export default function Subscriptions({ defaultTab = 'list' }) {
   const [tenants, setTenants] = useState([])
   const [requests, setRequests] = useState([])
   const [search, setSearch] = useState('')
+  const [lifecycleFilter, setLifecycleFilter] = useState('all')
   const [activeTab, setActiveTab] = useState(defaultTab)
 
   useEffect(() => {
     setActiveTab(defaultTab)
   }, [defaultTab])
+
   const [billingTenant, setBillingTenant] = useState(null)
   const [tenantInvoices, setTenantInvoices] = useState([])
   const [loadingInvoices, setLoadingInvoices] = useState(false)
   const [selectedProof, setSelectedProof] = useState(null)
-
+  const [extendTarget, setExtendTarget] = useState(null)
+  const [extendDays, setExtendDays] = useState(7)
+  const [isExtending, setIsExtending] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const fetchTenants = async () => {
     try {
       const res = await api.get('/admin/tenants')
-      setTenants(res.data?.data || DUMMY_TENANTS)
+      setTenants(res.data?.data || [])
     } catch (err) {
-      setTenants(DUMMY_TENANTS)
+      setTenants([])
     }
   }
 
@@ -206,13 +126,21 @@ export default function Subscriptions({ defaultTab = 'list' }) {
     }
   }
 
-  const handleResendRequestInvoice = async (req) => {
-    if (!window.confirm(`Kirim invoice tagihan untuk request berlangganan ini?`)) return
+  const handleExtendSubscription = async (e) => {
+    if (e) e.preventDefault()
+    if (!extendTarget) return
+    setIsExtending(true)
     try {
-      const res = await api.post(`/admin/tenants/${req.tenant_id}/resend-invoice`)
-      alert(res.data.message || 'Invoice berhasil dikirim')
+      const res = await api.post(`/admin/tenants/${extendTarget.tenant_id}/extend-subscription`, {
+        days: extendDays
+      })
+      alert(res.data.message || 'Masa aktif langganan berhasil diperpanjang.')
+      setExtendTarget(null)
+      fetchTenants()
     } catch (err) {
-      alert('Gagal mengirim invoice: ' + (err.response?.data?.message || err.message))
+      alert('Gagal memperpanjang masa aktif: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setIsExtending(false)
     }
   }
 
@@ -233,7 +161,23 @@ export default function Subscriptions({ defaultTab = 'list' }) {
 
   const filteredTenants = tenants.filter(t => {
     const q = search.toLowerCase()
-    return t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q) || t.category.toLowerCase().includes(q) || t.tenant_id.toLowerCase().includes(q)
+    const matchesSearch = (t.name || '').toLowerCase().includes(q) || 
+                          (t.email || '').toLowerCase().includes(q) || 
+                          (t.category || '').toLowerCase().includes(q) || 
+                          (t.tenant_id || '').toLowerCase().includes(q)
+    
+    let matchesLifecycle = true
+    if (lifecycleFilter === 'expiring_soon') {
+      matchesLifecycle = t.lifecycle_status === 'expiring_soon'
+    } else if (lifecycleFilter === 'grace_period') {
+      matchesLifecycle = t.lifecycle_status === 'grace_period'
+    } else if (lifecycleFilter === 'overdue') {
+      matchesLifecycle = t.lifecycle_status === 'overdue'
+    } else if (lifecycleFilter === 'active') {
+      matchesLifecycle = t.lifecycle_status === 'active'
+    }
+
+    return matchesSearch && matchesLifecycle
   })
 
   const {
@@ -253,27 +197,94 @@ export default function Subscriptions({ defaultTab = 'list' }) {
   return (
     <>
       <div className="animate-fade-in">
-        <div className="page-header">
+        <div className="page-header mb-4">
           <div>
-            <h2 className="page-title">Manajemen Langganan</h2>
-            <p className="page-sub">Kelola pelanggan aktif dan verifikasi permintaan langganan baru</p>
+            <h2 className="page-title">Siklus &amp; Manajemen Langganan</h2>
           </div>
         </div>
 
-        {/* Single unified card — same as Finance.jsx */}
-        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
+        {/* ── Lifecycle Metric Cards ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <CheckCircle2 size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Langganan Aktif Aman</p>
+              <p className="text-2xl font-extrabold text-emerald-600 tracking-tight font-['Plus_Jakarta_Sans']">
+                {tenants.filter(t => t.lifecycle_status === 'active').length}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Clock size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Segera Jatuh Tempo (&le;7 Hari)</p>
+              <p className="text-2xl font-extrabold text-amber-600 tracking-tight font-['Plus_Jakarta_Sans']">
+                {tenants.filter(t => t.lifecycle_status === 'expiring_soon').length}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+              <AlertTriangle size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Masa Tenggang (Grace Period)</p>
+              <p className="text-2xl font-extrabold text-orange-600 tracking-tight font-['Plus_Jakarta_Sans']">
+                {tenants.filter(t => t.lifecycle_status === 'grace_period').length}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <X size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Overdue / Kadaluarsa</p>
+              <p className="text-2xl font-extrabold text-rose-600 tracking-tight font-['Plus_Jakarta_Sans']">
+                {tenants.filter(t => t.lifecycle_status === 'overdue').length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Table Card ── */}
+        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none' }}>
           {/* Card header toolbar */}
-          <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
               {activeTab === 'list' ? (
-                <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1 }}>
-                  <span className="search-icon">🔍</span>
-                  <input
-                    className="form-input search-input"
-                    placeholder="Cari tenant atau email..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
+                  <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                    <input
+                      className="form-input search-input"
+                      style={{ paddingLeft: 34 }}
+                      placeholder="Cari tenant, ID, email..."
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                    />
+                  </div>
+
+                  <select
+                    id="select-filter-subscription-lifecycle"
+                    className="form-input"
+                    style={{ width: 'auto', minWidth: 170, height: 38, padding: '0 32px 0 12px', fontSize: 13, cursor: 'pointer', outline: 'none' }}
+                    value={lifecycleFilter}
+                    onChange={e => setLifecycleFilter(e.target.value)}
+                  >
+                    <option value="all">Semua Siklus Langganan</option>
+                    <option value="active">🟢 Aktif Aman (&gt;7 Hari)</option>
+                    <option value="expiring_soon">🟡 Segera Jatuh Tempo (&le;7 Hari)</option>
+                    <option value="grace_period">🟠 Masa Tenggang Grace Period (&le;3 Hari)</option>
+                    <option value="overdue">🔴 Overdue / Kadaluarsa</option>
+                  </select>
                 </div>
               ) : <div style={{ flex: 1 }} />}
 
@@ -283,13 +294,13 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                     className={`filter-tab ${activeTab === 'list' ? 'filter-tab--active' : ''}`}
                     onClick={() => setActiveTab('list')}
                   >
-                    Pelanggan Aktif
+                    Pelanggan Aktif ({tenants.length})
                   </button>
                   <button
                     className={`filter-tab ${activeTab === 'requests' ? 'filter-tab--active' : ''}`}
                     onClick={() => setActiveTab('requests')}
                   >
-                    Permintaan Baru
+                    Permintaan Langganan
                     {requests.length > 0 && (
                       <span style={{
                         marginLeft: 6, background: '#ef4444', color: '#fff',
@@ -301,14 +312,14 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                 </div>
                 <button
                   className="btn btn-secondary btn-sm"
-                  style={{ height: 38 }}
+                  style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                   onClick={() => {
                     setLoading(true)
                     Promise.all([fetchTenants(), fetchRequests()]).finally(() => setLoading(false))
                   }}
                   disabled={loading}
                 >
-                  🔄 Refresh
+                  <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
                 </button>
               </div>
             </div>
@@ -316,310 +327,366 @@ export default function Subscriptions({ defaultTab = 'list' }) {
 
           {/* Table content */}
           {activeTab === 'list' ? (
-            <div className="table-responsive">
+            <>
+              <div className="table-responsive">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Tenant ID</th>
-                    <th>Nama</th>
-                    <th>Email</th>
-                    <th>Paket</th>
-                    <th>Status</th>
-                    <th>Bergabung</th>
-                    <th>Aksi</th>
+                    <th>Tenant / Bisnis</th>
+                    <th>Paket Aktif</th>
+                    <th>Status Siklus Langganan</th>
+                    <th>Masa Berlaku &amp; Sisa Hari</th>
+                    <th>Faktur</th>
+                    <th style={{ textAlign: 'right' }}>Aksi Kelola</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                          <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                          <span>Memuat data langganan...</span>
+                          <RefreshCw size={24} className="animate-spin text-indigo-600" />
+                          <span>Memuat data pelanggan langganan...</span>
                         </div>
                       </td>
                     </tr>
-                  ) : filteredTenants.length === 0 ? (
+                  ) : tPaginatedData.length === 0 ? (
                     <tr>
-                      <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 36 }}>👥</span>
-                          <span>Tidak ada pelanggan ditemukan</span>
-                        </div>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                        <Inbox size={32} className="text-slate-400 mx-auto mb-2" />
+                        <span>Tidak ada pelanggan langganan yang cocok.</span>
                       </td>
                     </tr>
-                  ) : tPaginatedData.map(t => (
-                    <tr key={t.id}>
-                      <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{t.tenant_id}</code></td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={getAvatarStyle(t.name || t.tenant_id, 32)}>
-                            {getInitials(t.name)}
+                  ) : tPaginatedData.map(t => {
+                    const isExpiring = t.lifecycle_status === 'expiring_soon'
+                    const isGrace = t.lifecycle_status === 'grace_period'
+                    const isOverdue = t.lifecycle_status === 'overdue'
+
+                    return (
+                      <tr key={t.tenant_id}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={getAvatarStyle(t.name || t.tenant_id, 38)}>
+                              {getInitials(t.name || t.tenant_id)}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                                {t.name}
+                              </div>
+                              <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
+                                <code>{t.tenant_id}</code> • {t.email}
+                              </div>
+                            </div>
                           </div>
-                          <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{t.name}</span>
-                        </div>
-                      </td>
-                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.email}</td>
-                      <td>
-                        <select
-                          className={`badge ${t.plan === 'Pro' || t.plan === 'pro' ? 'badge-violet' : t.plan === 'Basic' || t.plan === 'basic' ? 'badge-blue' : 'badge-secondary'}`}
-                          style={{ cursor: 'pointer', outline: 'none', border: 'none', appearance: 'none', paddingRight: 8 }}
-                          value={t.plan}
-                          onChange={e => handlePlanChange(t, e.target.value)}
-                        >
-                          <option value="Free">Free</option>
-                          <option value="Basic">Basic</option>
-                          <option value="Pro">Pro</option>
-                        </select>
-                      </td>
-                      <td>
-                        <span className={`badge ${
-                          (t.status || '').toLowerCase() === 'active' ? 'badge-green' :
-                          (t.status || '').toLowerCase() === 'pending' ? 'badge-yellow' :
-                          (t.status || '').toLowerCase() === 'inactive' ? 'badge-red' : 'badge-secondary'
-                        }`}>
-                          {t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1).toLowerCase()) : 'Active'}
-                        </span>
-                      </td>
-                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.joined}</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleOpenBilling(t)} title="Riwayat Invoice">👁</button>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleResendInvoice(t)} title="Kirim Invoice">✉</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td>
+                          <span className={`badge ${t.plan === 'Pro' || t.plan === 'pro' ? 'badge-violet' : 'badge-blue'} font-bold`}>
+                            {t.plan || 'Free Starter'}
+                          </span>
+                        </td>
+                        <td>
+                          {isOverdue ? (
+                            <span className="badge badge-red inline-flex items-center gap-1 text-[11px]">
+                              <X size={11} /> Overdue / Expired
+                            </span>
+                          ) : isGrace ? (
+                            <span className="badge badge-yellow inline-flex items-center gap-1 text-[11px]" style={{ background: '#ffedd5', color: '#c2410c', border: '1px solid #fed7aa' }}>
+                              <AlertTriangle size={11} /> Masa Tenggang (Grace)
+                            </span>
+                          ) : isExpiring ? (
+                            <span className="badge badge-yellow inline-flex items-center gap-1 text-[11px]">
+                              <Clock size={11} /> Segera Jatuh Tempo
+                            </span>
+                          ) : (
+                            <span className="badge badge-green inline-flex items-center gap-1 text-[11px]">
+                              <CheckCircle2 size={11} /> Aktif Aman
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <div className="flex flex-col gap-0.5 text-xs">
+                            <span className="font-semibold text-slate-700">
+                              {t.expires_at || 'Selamanya (Free)'}
+                            </span>
+                            {t.days_left !== null && (
+                              <span className={`text-[11px] font-bold ${
+                                t.days_left < 0 ? 'text-rose-600' : t.days_left <= 3 ? 'text-orange-600' : t.days_left <= 7 ? 'text-amber-600' : 'text-slate-500'
+                              }`}>
+                                {t.days_left < 0 ? `Lewat ${Math.abs(t.days_left)} hari` : `Tersisa ${t.days_left} hari`}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleOpenBilling(t)}
+                            title="Lihat Riwayat Tagihan / Invoice"
+                          >
+                            <FileText size={13} />
+                            <span>Invoice</span>
+                          </button>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                            <button
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => {
+                                setExtendTarget(t)
+                                setExtendDays(7)
+                              }}
+                              title="Beri Grace Period / Perpanjang Masa Aktif"
+                              style={{ color: '#4f46e5', borderColor: '#c7d2fe', background: '#eef2ff' }}
+                            >
+                              <Sparkles size={13} />
+                              <span>+ Perpanjang / Grace</span>
+                            </button>
+
+                            <button
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => handleResendInvoice(t)}
+                              title="Kirim Ulang Email Tagihan"
+                            >
+                              <Mail size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
-              {!loading && filteredTenants.length > 0 && (
-                <SaasPagination
-                  currentPage={tPage} setCurrentPage={setTPage}
-                  pageSize={tPageSize} setPageSize={setTPageSize}
-                  totalPages={tTotalPages} totalItems={tTotalItems}
-                  startIndex={tStart} endIndex={tEnd}
-                />
-              )}
             </div>
+
+            {!loading && filteredTenants.length > 0 && (
+              <SaasPagination
+                currentPage={tPage}
+                setCurrentPage={setTPage}
+                pageSize={tPageSize}
+                setPageSize={setTPageSize}
+                totalPages={tTotalPages}
+                totalItems={tTotalItems}
+                startIndex={tStart}
+                endIndex={tEnd}
+              />
+            )}
+          </>
           ) : (
-            <div className="table-responsive">
+            <>
+              <div className="table-responsive">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Tenant ID</th>
-                    <th>Nama Tenant</th>
-                    <th>Paket Dipilih</th>
-                    <th>Bukti Transfer</th>
-                    <th>Catatan / Pengirim</th>
-                    <th>Waktu Request</th>
+                    <th>Tenant</th>
+                    <th>Paket Diminta</th>
+                    <th>Metode &amp; Bukti</th>
+                    <th>Tanggal Request</th>
                     <th>Status</th>
-                    <th style={{ textAlign: 'right' }}>Aksi</th>
+                    <th style={{ textAlign: 'right' }}>Aksi Verifikasi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                          <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                          <span>Memuat data permintaan...</span>
-                        </div>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                        Memuat data permintaan langganan...
                       </td>
                     </tr>
-                  ) : requests.length === 0 ? (
+                  ) : rPaginatedData.length === 0 ? (
                     <tr>
-                      <td colSpan={8} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 36 }}>📥</span>
-                          <span>Belum ada permintaan langganan baru.</span>
-                        </div>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                        <Inbox size={32} className="text-slate-400 mx-auto mb-2" />
+                        <span>Tidak ada permintaan langganan yang pending.</span>
                       </td>
                     </tr>
                   ) : rPaginatedData.map(req => (
                     <tr key={req.id}>
-                      <td><code style={{ fontSize: 11, color: 'var(--text-primary)', background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{req.tenant_id}</code></td>
                       <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={getAvatarStyle(req.tenant?.business_name || req.tenant_id, 32)}>
-                            {getInitials(req.tenant?.business_name || req.tenant_id)}
-                          </div>
-                          <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>
-                            {req.tenant?.business_name || req.tenant_id}
-                          </span>
+                        <div className="font-semibold text-slate-800">{req.tenant?.business_name || req.tenant_id}</div>
+                        <div className="text-xs text-slate-500">{req.tenant?.email || req.tenant_id}</div>
+                      </td>
+                      <td>
+                        <span className="badge badge-violet uppercase font-bold">{req.requested_plan || req.plan_key}</span>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold">{req.payment_method || 'Transfer Bank'}</span>
+                          {req.payment_proof_path && (
+                            <button
+                              className="btn btn-secondary btn-xs flex items-center gap-1"
+                              onClick={() => setSelectedProof(req.payment_proof_path)}
+                            >
+                              <Camera size={11} /> Bukti Transfer
+                            </button>
+                          )}
                         </div>
                       </td>
                       <td>
-                        <span className={`badge ${
-                          (req.plan || '').toLowerCase() === 'pro' ? 'badge-violet' :
-                          (req.plan || '').toLowerCase() === 'basic' ? 'badge-blue' : 'badge-secondary'
-                        }`}>
-                          {req.plan ? (req.plan.charAt(0).toUpperCase() + req.plan.slice(1).toLowerCase()) : 'Free'}
+                        <span className="text-xs text-slate-600">{req.created_at?.slice(0, 10)}</span>
+                      </td>
+                      <td>
+                        <span className={`badge ${req.status === 'approved' ? 'badge-green' : req.status === 'rejected' ? 'badge-red' : 'badge-yellow'}`}>
+                          {req.status === 'approved' ? 'Disetujui' : req.status === 'rejected' ? 'Ditolak' : 'Menunggu Approval'}
                         </span>
                       </td>
                       <td>
-                        {req.proof ? (
-                          <button
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => setSelectedProof(req)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 8px', fontSize: 11.5, color: '#2563eb', fontWeight: 600 }}
-                          >
-                            📷 Lihat Bukti
-                          </button>
-                        ) : (
-                          <span className="badge badge-secondary" style={{ fontSize: 11, opacity: 0.7 }}>Belum Upload</span>
-                        )}
-                      </td>
-                      <td style={{ fontSize: 12, color: 'var(--text-primary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={req.notes || '-'}>
-                        {req.notes || '-'}
-                      </td>
-                      <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{new Date(req.created_at).toLocaleString('id-ID')}</td>
-                      <td>
-                        <span className={`badge ${
-                          (req.status || '').toLowerCase() === 'approved' || (req.status || '').toLowerCase() === 'active' ? 'badge-green' :
-                          (req.status || '').toLowerCase() === 'pending' ? 'badge-yellow' :
-                          (req.status || '').toLowerCase() === 'rejected' ? 'badge-red' : 'badge-yellow'
-                        }`}>
-                          {req.status ? (req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase()) : 'Pending'}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleResendRequestInvoice(req)} title="Kirim Tagihan">✉</button>
-                          <button className="btn btn-primary btn-sm" onClick={() => handleApprove(req.id)} title="Setujui &amp; Aktifkan">✓</button>
-                          <button className="btn btn-secondary btn-sm" style={{ color: 'var(--danger-500)' }} onClick={() => handleReject(req.id)} title="Tolak">✗</button>
+                          {req.status === 'pending' && (
+                            <>
+                              <button className="btn btn-primary btn-sm flex items-center gap-1" onClick={() => handleApprove(req.id)}>
+                                <Check size={13} /> Setujui
+                              </button>
+                              <button className="btn btn-danger btn-sm flex items-center gap-1" onClick={() => handleReject(req.id)}>
+                                <X size={13} /> Tolak
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {!loading && requests.length > 0 && (
-                <SaasPagination
-                  currentPage={rPage} setCurrentPage={setRPage}
-                  pageSize={rPageSize} setPageSize={setRPageSize}
-                  totalPages={rTotalPages} totalItems={rTotalItems}
-                  startIndex={rStart} endIndex={rEnd}
-                />
-              )}
             </div>
+
+            {!loading && requests.length > 0 && (
+              <SaasPagination
+                currentPage={rPage}
+                setCurrentPage={setRPage}
+                pageSize={rPageSize}
+                setPageSize={setRPageSize}
+                totalPages={rTotalPages}
+                totalItems={rTotalItems}
+                startIndex={rStart}
+                endIndex={rEnd}
+              />
+            )}
+          </>
           )}
         </div>
       </div>
 
-      {/* MODAL PREVIEW BUKTI TRANSFER PEMBAYARAN */}
-      {selectedProof && (
-        <div className="modal-overlay" onClick={() => setSelectedProof(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 540 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h3 className="modal__title" style={{ margin: 0 }}>📷 Bukti Pembayaran Langganan</h3>
-              <button className="btn btn-ghost btn-sm" onClick={() => setSelectedProof(null)}>✕</button>
-            </div>
-            
-            <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 16, fontSize: 13 }}>
-              <div>Tenant: <strong style={{ color: '#0f172a' }}>{selectedProof.tenant?.business_name || selectedProof.tenant_id}</strong> (<code>{selectedProof.tenant_id}</code>)</div>
-              <div>Paket yang Diminta: <strong style={{ color: '#6366f1' }}>Paket {selectedProof.plan?.toUpperCase()}</strong></div>
-              <div>Detail / Catatan: <strong>{selectedProof.notes || 'Tidak ada catatan'}</strong></div>
-              <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 4 }}>Waktu Upload: {new Date(selectedProof.created_at).toLocaleString('id-ID')}</div>
-            </div>
-
-            <div style={{ textAlign: 'center', background: '#0f172a', padding: 12, borderRadius: 12, marginBottom: 16, maxHeight: '55vh', overflow: 'auto' }}>
-              {selectedProof.proof ? (
-                selectedProof.proof.endsWith('.pdf') ? (
-                  <div style={{ padding: 24, color: '#fff' }}>
-                    <div style={{ fontSize: 40, marginBottom: 8 }}>📄</div>
-                    <p style={{ margin: '0 0 12px 0' }}>Dokumen Bukti Transfer (PDF)</p>
-                    <a href={selectedProof.proof} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">
-                      Buka PDF di Tab Baru ↗
-                    </a>
-                  </div>
-                ) : (
-                  <img
-                    src={selectedProof.proof}
-                    alt="Bukti Transfer"
-                    style={{ maxWidth: '100%', maxHeight: '50vh', objectFit: 'contain', borderRadius: 6 }}
-                  />
-                )
-              ) : (
-                <div style={{ color: '#94a3b8', padding: 24 }}>Tidak ada file bukti pembayaran</div>
-              )}
+      {/* ── Modal Extend Subscription & Grace Period (Pillar 5) ── */}
+      {extendTarget && (
+        <Modal
+          isOpen={!!extendTarget}
+          onClose={() => setExtendTarget(null)}
+          title={`⏱️ Perpanjangan & Grace Period: ${extendTarget.name}`}
+          maxWidth="460px"
+        >
+          <form onSubmit={handleExtendSubscription} className="space-y-4 text-slate-700">
+            <div className="p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl text-xs text-indigo-900 flex items-start gap-2.5">
+              <Sparkles size={18} className="text-indigo-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-indigo-950 font-bold mb-0.5">Otomasi Siklus Langganan</strong>
+                Perpanjang masa aktif tenant secara instan atau berikan masa tenggang (Grace Period) tambahan agar operasional kasir tetap berjalan.
+              </div>
             </div>
 
-            <div className="modal__actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              {selectedProof.proof && (
-                <a href={selectedProof.proof} download target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ marginRight: 'auto' }}>
-                  📥 Unduh File
-                </a>
-              )}
-              <button type="button" className="btn btn-secondary" onClick={() => setSelectedProof(null)}>Tutup</button>
-              <button 
-                type="button" 
-                className="btn btn-primary"
-                onClick={() => {
-                  const id = selectedProof.id;
-                  setSelectedProof(null);
-                  handleApprove(id);
-                }}
-              >
-                ✓ Verifikasi &amp; Aktifkan Paket
+            <div>
+              <label className="form-label font-semibold">Pilih Durasi Perpanjangan / Grace Period</label>
+              <div className="grid grid-cols-3 gap-2 mt-1.5">
+                {[
+                  { label: '+3 Hari (Grace)', val: 3 },
+                  { label: '+7 Hari (1 Mgg)', val: 7 },
+                  { label: '+30 Hari (1 Bln)', val: 30 },
+                  { label: '+90 Hari (3 Bln)', val: 90 },
+                  { label: '+180 Hari (6 Bln)', val: 180 },
+                  { label: '+365 Hari (1 Thn)', val: 365 },
+                ].map(opt => (
+                  <button
+                    key={opt.val}
+                    type="button"
+                    onClick={() => setExtendDays(opt.val)}
+                    className={`p-2.5 rounded-xl border text-xs font-semibold text-center transition-all ${
+                      extendDays === opt.val
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-2xs font-bold'
+                        : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label font-semibold">Atau Masukkan Hari Kustom</label>
+              <input
+                type="number"
+                min="1"
+                max="3650"
+                className="form-input"
+                value={extendDays}
+                onChange={(e) => setExtendDays(Number(e.target.value))}
+                required
+              />
+            </div>
+
+            <div className="modal__actions pt-3 border-t border-slate-200">
+              <button type="button" className="btn btn-secondary" onClick={() => setExtendTarget(null)} disabled={isExtending}>
+                Batal
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={isExtending}>
+                {isExtending ? 'Menyimpan...' : `Simpan (+${extendDays} Hari)`}
               </button>
             </div>
-          </div>
-        </div>
+          </form>
+        </Modal>
       )}
 
+      {/* ── Modal Billing & Invoices ── */}
       {billingTenant && (
-        <div className="modal-overlay" onClick={() => setBillingTenant(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
-            <h3 className="modal__title">Riwayat Invoice</h3>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-              Menampilkan riwayat invoice untuk <strong style={{ fontWeight: 600 }}>{billingTenant.name}</strong> ({billingTenant.tenant_id})
-            </p>
-            
-            <div className="table-wrap table-responsive">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>No. Invoice</th>
-                    <th>Tanggal</th>
-                    <th>Nominal</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loadingInvoices ? (
-                    <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)' }}>Memuat data invoice...</td>
-                    </tr>
-                  ) : tenantInvoices.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)' }}>Belum ada invoice</td>
-                    </tr>
-                  ) : (
-                    tenantInvoices.map(inv => (
-                      <tr key={inv.id}>
-                        <td><code style={{fontSize:11}}>{inv.id}</code></td>
-                        <td>{inv.date}</td>
-                        <td>Rp {Number(inv.amount).toLocaleString('id-ID')}</td>
-                        <td><span className={`badge ${inv.status === 'paid' ? 'badge-green' : 'badge-yellow'}`}>{inv.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span></td>
-                        <td>
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            <button className="btn btn-ghost btn-sm" onClick={() => handleDownloadPdf(inv.id)} title="Unduh PDF Invoice">📥</button>
-                            <button className="btn btn-primary btn-sm" onClick={() => handleResendInvoice(billingTenant)} title="Kirim Invoice">✉</button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="modal__actions mt-6">
-              <button type="button" className="btn btn-secondary" onClick={() => setBillingTenant(null)}>Tutup</button>
+        <Modal
+          isOpen={!!billingTenant}
+          onClose={() => setBillingTenant(null)}
+          title={`Faktur Tagihan: ${billingTenant.name}`}
+          maxWidth="680px"
+        >
+          <div className="space-y-4">
+            {loadingInvoices ? (
+              <div className="py-8 text-center text-slate-500">Memuat riwayat faktur...</div>
+            ) : tenantInvoices.length === 0 ? (
+              <div className="py-8 text-center text-slate-400">Belum ada faktur tagihan yang diterbitkan untuk tenant ini.</div>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {tenantInvoices.map(inv => (
+                  <div key={inv.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-slate-800 text-sm">{inv.invoice_number}</div>
+                      <div className="text-xs text-slate-500">
+                        {inv.period_label || 'Langganan'} • Rp {Number(inv.total_amount || 0).toLocaleString('id-ID')}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`badge ${inv.status === 'paid' ? 'badge-green' : 'badge-yellow'}`}>
+                        {inv.status === 'paid' ? 'Lunas' : 'Belum Lunas'}
+                      </span>
+                      <button className="btn btn-secondary btn-sm" onClick={() => handleDownloadPdf(inv.id)}>
+                        <Download size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="modal__actions">
+              <button className="btn btn-secondary" onClick={() => setBillingTenant(null)}>Tutup</button>
             </div>
           </div>
-        </div>
+        </Modal>
+      )}
+
+      {/* ── Modal Bukti Pembayaran ── */}
+      {selectedProof && (
+        <Modal isOpen={!!selectedProof} onClose={() => setSelectedProof(null)} title="Bukti Transfer Pelanggan" maxWidth="520px">
+          <div className="p-2 text-center">
+            <img src={selectedProof} alt="Bukti Transfer" className="max-h-96 max-w-full rounded-xl mx-auto shadow-sm" />
+          </div>
+          <div className="modal__actions">
+            <button className="btn btn-secondary" onClick={() => setSelectedProof(null)}>Tutup</button>
+          </div>
+        </Modal>
       )}
     </>
   )

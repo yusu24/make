@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
-import { 
-  Package, Plus, Search, Trash2, 
-  ArrowUpCircle, AlertCircle, ShoppingBag, 
-  ChevronRight, MoreVertical, Edit2, 
-  Layers, Database, Filter, ArrowRight,
-  TrendingDown, TrendingUp, Info
-} from 'lucide-react'
+import { Package, Plus, Search, Trash2, ArrowUpCircle, AlertCircle, ShoppingBag, ChevronRight, MoreVertical, Pencil, Layers, Database, Filter, ArrowRight, TrendingDown, TrendingUp, Info } from '@/constants/icons'
 import Modal from '../../../components/Modal'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
@@ -100,8 +94,12 @@ export default function Feeds() {
     <div className="aq-container">
       {/* Premium Header */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
-        <button className="btn btn-primary" onClick={() => { setSelectedFeed(null); setFormData({ name: '', stock_kg: '' }); setModalOpen(true); }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => { setSelectedFeed(null); setFormData({ name: '', stock_kg: '' }); setModalOpen(true); }}
+          style={{ height: '38px', borderRadius: '12px', padding: '0 16px', display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
           <span>Registrasi Pakan</span>
         </button>
       </div>
@@ -173,19 +171,19 @@ export default function Feeds() {
             <Table>
               <TableHeader>
                 <TableRow isHoverable={false}>
-                  <TableHeaderCell>Nama / merk pakan</TableHeaderCell>
-                  <TableHeaderCell>Estimasi stok</TableHeaderCell>
-                  <TableHeaderCell>Kategori status</TableHeaderCell>
-                  <TableHeaderCell style={{ textAlign: 'right' }}>Manajemen</TableHeaderCell>
+                  <TableHeaderCell className="pl-6">Nama / Merk Pakan</TableHeaderCell>
+                  <TableHeaderCell>Estimasi Stok</TableHeaderCell>
+                  <TableHeaderCell>Kategori Status</TableHeaderCell>
+                  <TableHeaderCell className="pr-6" style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedData.map((feed, idx) => {
                   const isLow = Number(feed.stock_kg) < 50;
                   return (
-                    <TableRow key={feed.id}>
-                      <TableCell>
-                        <span style={{ color: '#0f172a', fontSize: '13px', fontWeight: 500 }}>{feed.name}</span>
+                    <TableRow key={feed.id} className="hover:bg-slate-50/70 transition-colors">
+                      <TableCell className="pl-6">
+                        <span style={{ color: '#0f172a', fontSize: '13px', fontWeight: 600 }}>{feed.name}</span>
                       </TableCell>
                       <TableCell>
                         <div className="stock-visual-bar">
@@ -199,17 +197,17 @@ export default function Feeds() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className={`badge-pill ${isLow ? 'badge-pill-danger' : 'badge-pill-success'}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${isLow ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
                           {isLow ? 'Stok Menipis' : 'Tersedia'}
                         </span>
                       </TableCell>
-                      <TableCell style={{ textAlign: 'right' }}>
-                        <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
-                          <button className="btn-table-action" onClick={() => { setSelectedFeed(feed); setRestockModalOpen(true); }} title="Restok Pakan">
-                             <ArrowUpCircle size={15} />
+                      <TableCell className="pr-6" style={{ textAlign: 'right' }}>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer" onClick={() => { setSelectedFeed(feed); setRestockModalOpen(true); }} title="Restok Pakan">
+                             <ArrowUpCircle size={14} />
                           </button>
-                          <button className="btn-table-action" onClick={() => { setSelectedFeed(feed); setFormData({ name: feed.name, stock_kg: feed.stock_kg }); setModalOpen(true); }} title="Edit Data">
-                            <Edit2 size={14} />
+                          <button className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer" onClick={() => { setSelectedFeed(feed); setFormData({ name: feed.name, stock_kg: feed.stock_kg }); setModalOpen(true); }} title="Edit Data">
+                            <Pencil size={14} />
                           </button>
                         </div>
                       </TableCell>
@@ -291,30 +289,31 @@ export default function Feeds() {
         }
         .badge-glow { position: absolute; inset: -4px; background: inherit; filter: blur(10px); opacity: 0.3; z-index: -1; }
 
-        .premium-feed-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
+        .premium-feed-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
         .kpi-highlight-box { 
-           position: relative; overflow: hidden; display: flex; align-items: center; gap: 24px; padding: 28px !important; 
-           transition: all 0.3s;
+           position: relative; overflow: hidden; display: flex; align-items: center; gap: 18px; padding: 20px !important; 
+           background: #ffffff !important; border-radius: 16px !important; border: 1px solid #E2E8F0 !important;
+           box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important; transition: all 0.2s;
         }
-        .kpi-highlight-box:hover { transform: translateY(-5px); border-color: var(--primary-400); }
-        .kpi-highlight-box.primary { border-left: 6px solid var(--success-500); }
-        .kpi-highlight-box.danger { border-left: 6px solid var(--danger-500); }
-        .kpi-highlight-box.success { border-left: 6px solid var(--success-500); }
-        .kpi-highlight-box.info { border-left: 6px solid var(--primary-500); }
+        .kpi-highlight-box:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important; }
+        .kpi-highlight-box.primary { border-left: 4px solid #059669 !important; }
+        .kpi-highlight-box.danger { border-left: 4px solid #DC2626 !important; }
+        .kpi-highlight-box.success { border-left: 4px solid #059669 !important; }
+        .kpi-highlight-box.info { border-left: 4px solid #2563EB !important; }
 
-        .kpi-icon-wrapper { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: var(--bg-elevated); color: var(--text-muted); }
-        .primary .kpi-icon-wrapper { background: var(--success-50); color: var(--success-600); }
-        .danger .kpi-icon-wrapper { background: var(--danger-50); color: var(--danger-600); }
-        .success .kpi-icon-wrapper { background: var(--success-50); color: var(--success-600); }
-        .info .kpi-icon-wrapper { background: var(--primary-50); color: var(--primary-600); }
+        .kpi-icon-wrapper { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #F8FAFC; color: #64748B; flex-shrink: 0; }
+        .primary .kpi-icon-wrapper { background: #ECFDF5; color: #059669; }
+        .danger .kpi-icon-wrapper { background: #FEF2F2; color: #DC2626; }
+        .success .kpi-icon-wrapper { background: #ECFDF5; color: #059669; }
+        .info .kpi-icon-wrapper { background: #EFF6FF; color: #2563EB; }
 
-        .kpi-info .label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
-        .kpi-info .value { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-        .kpi-info .value small { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-        .kpi-trend { position: absolute; top: 20px; right: 20px; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 40px; background: var(--bg-elevated); color: var(--text-muted); }
-        .positive { color: var(--success-500); }
+        .kpi-info .label { display: block; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+        .kpi-info .value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
+        .kpi-info .value small { font-size: 13px; font-weight: 600; color: #64748B; }
+        .kpi-trend { position: absolute; top: 16px; right: 16px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 9999px; background: #F1F5F9; color: #64748B; }
+        .positive { color: #059669; background: #ECFDF5; }
 
-        .board-container { border-radius: 32px !important; box-shadow: 0 20px 50px rgba(0,0,0,0.05) !important; background: var(--bg-card) !important; }
+        .board-container { border-radius: 16px !important; border: 1px solid #E2E8F0 !important; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important; background: #ffffff !important; }
         .board-header { padding: 24px 32px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); }
         .search-box-premium { position: relative; width: 400px; display: flex; align-items: center; gap: 12px; background: var(--bg-elevated); padding: 12px 20px; border-radius: 16px; border: 1px solid var(--border-subtle); transition: 0.2s; }
         .search-box-premium input { background: transparent; border: none; outline: none; width: 100%; font-weight: 600; font-size: 14px; color: var(--text-primary); }

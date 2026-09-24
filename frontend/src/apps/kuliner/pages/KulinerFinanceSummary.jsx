@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../../lib/api';
-import { TrendingUp, TrendingDown, Wallet, Calendar, Printer } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Calendar, Printer } from '@/constants/icons';
 import { useReactToPrint } from 'react-to-print';
 import usePagination from '../../../hooks/usePagination';
 import ClientPagination from '../components/ClientPagination';
@@ -84,7 +84,7 @@ export default function KulinerFinanceSummary() {
 
   const renderLedgerRows = (items) => items.map(item => (
     <tr key={item.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-      <td style={{ padding: '10px 16px', fontSize: 12.5, color: '#64748B', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', whiteSpace: 'nowrap', fontWeight: 400 }}>
         {new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
       </td>
       <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
@@ -93,20 +93,20 @@ export default function KulinerFinanceSummary() {
           color: item.type === 'income' ? '#166534' : '#475569', 
           padding: '3px 10px', 
           borderRadius: 20, 
-          fontSize: 11.5, 
-          fontWeight: 600, 
+          fontSize: 12, 
+          fontWeight: 400, 
           display: 'inline-block' 
         }}>
           {item.category}
         </span>
       </td>
-      <td style={{ padding: '10px 16px', fontSize: 13, color: '#0F172A', fontWeight: 500 }}>
+      <td style={{ padding: '10px 16px', fontSize: 12, color: '#0F172A', fontWeight: 400 }}>
         {item.description}
       </td>
-      <td style={{ padding: '10px 16px', color: '#16A34A', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', color: '#16A34A', fontWeight: 600, fontSize: 12, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {item.type === 'income' ? formatRp(item.amount) : '-'}
       </td>
-      <td style={{ padding: '10px 16px', color: '#DC2626', fontWeight: 700, textAlign: 'right', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '10px 16px', color: '#DC2626', fontWeight: 600, fontSize: 12, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {item.type === 'expense' ? formatRp(item.amount) : '-'}
       </td>
     </tr>
@@ -208,71 +208,66 @@ export default function KulinerFinanceSummary() {
 
             <div ref={printRef}>
               {/* Net Profit Banner */}
-              <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 rounded-3xl shadow-xl border border-emerald-700/40 relative overflow-hidden mb-6 mt-4 no-print">
+              <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 sm:p-7 rounded-2xl shadow-xl border border-emerald-700/40 relative overflow-hidden mb-6 no-print">
                 <div className="flex flex-row items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-semibold text-emerald-300 uppercase tracking-widest bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-400/30">
+                    <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-400/30 font-['Inter']">
                       ESTIMASI PROFIT BERSIH (NET PROFIT)
                     </span>
-                    <div className="text-2xl sm:text-4xl font-black mt-3 tracking-tight">{loading ? '...' : formatRp(summary.profit)}</div>
-                    <p className="text-xs text-emerald-100/80 mt-1">
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold mt-3 tracking-tight font-['Plus_Jakarta_Sans']">{loading ? '...' : formatRp(summary.profit)}</div>
+                    <p className="text-xs text-emerald-100/80 mt-1 font-['Inter']">
                       Sudah dipotong seluruh HPP resep & pengeluaran operasional terdaftar.
                     </p>
                   </div>
 
                   <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center shrink-0">
-                    <span className="text-xs text-emerald-200 font-semibold uppercase block">NET MARGIN RATE</span>
-                    <div className="text-3xl font-black text-emerald-300 mt-1">{loading ? '...' : `${(summary.total_sales || 0) > 0 ? ((summary.profit / (summary.total_sales || 0)) * 100).toFixed(1) : '0'}%`}</div>
-                    <span className="text-[10px] text-white/80">Kategori Bisnis Kuliner</span>
+                    <span className="text-xs text-emerald-200 font-semibold uppercase block font-['Inter']">NET MARGIN RATE</span>
+                    <div className="text-3xl font-extrabold text-emerald-300 mt-1 font-['Plus_Jakarta_Sans']">{loading ? '...' : `${(summary.total_sales || 0) > 0 ? ((summary.profit / (summary.total_sales || 0)) * 100).toFixed(1) : '0'}%`}</div>
+                    <span className="text-[10px] text-white/80 font-['Inter']">Kategori Bisnis Kuliner</span>
                   </div>
                 </div>
               </div>
 
               {/* Profit & Loss Waterfall Breakdown Table */}
-              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden mb-8 no-print">
-                <div className="p-4 bg-slate-50 border-b border-slate-200/80">
-                  <h3 className="text-sm font-semibold text-slate-800">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden mb-8 no-print">
+                <div className="p-4 bg-slate-50 border-b border-slate-200">
+                  <h3 className="text-sm font-bold text-slate-900 font-['Plus_Jakarta_Sans']">
                     Rincian Komponen Laba Rugi (P&L Summary)
                   </h3>
                 </div>
 
-                <div className="p-5 space-y-3">
+                <div className="p-5 space-y-3 font-['Inter']">
                   <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl font-semibold text-sm text-slate-800">
                     <span>(+) Total Omset Kotor Penjualan (Revenue)</span>
-                    <span className="text-emerald-600">{loading ? '...' : formatRp(summary.total_sales || 0)}</span>
+                    <span className="text-emerald-600 font-['Plus_Jakarta_Sans'] font-bold">{loading ? '...' : formatRp(summary.total_sales || 0)}</span>
                   </div>
 
                   <div className="flex items-center justify-between p-3.5 bg-rose-50/40 rounded-xl text-xs font-semibold text-slate-700">
                     <span>(-) Estimasi HPP / Cost of Goods Sold (Resep)</span>
-                    <span className="text-rose-600">-{loading ? '...' : formatRp(summary.total_cogs || 0)}</span>
+                    <span className="text-rose-600 font-['Plus_Jakarta_Sans'] font-bold">-{loading ? '...' : formatRp(summary.total_cogs || 0)}</span>
                   </div>
 
                   <div className="flex items-center justify-between p-3.5 bg-emerald-50 rounded-xl font-bold text-sm text-emerald-800 border border-emerald-100">
-                    <span>(=) Laba Kotor (Gross Profit)</span>
-                    <span>{loading ? '...' : formatRp(summary.gross_profit || 0)}</span>
+                    <span>(=) Laba Kotor Usaha (Gross Profit Restoran)</span>
+                    <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-base">{loading ? '...' : formatRp(summary.gross_profit || (summary.total_sales - summary.total_cogs))}</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl font-semibold text-sm text-slate-800">
-                    <span>(+) Pemasukan Tambahan (Non-Sales)</span>
-                    <span className="text-emerald-600">{loading ? '...' : formatRp(summary.other_income || 0)}</span>
+                  <div className="flex items-center justify-between p-3.5 bg-amber-50/40 rounded-xl text-xs font-semibold text-slate-700">
+                    <span>(-) Beban Operasional, Gaji, Sewa & Lainnya</span>
+                    <span className="text-amber-700 font-['Plus_Jakarta_Sans'] font-bold">-{loading ? '...' : formatRp(summary.total_expenses || 0)}</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3.5 bg-rose-50/40 rounded-xl text-xs font-semibold text-slate-700">
-                    <span>(-) Total Pengeluaran Operasional (Beban)</span>
-                    <span className="text-rose-600">-{loading ? '...' : formatRp(summary.total_expenses || 0)}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-slate-800 rounded-xl font-black text-base text-white mt-2 shadow-inner">
-                    <span>(=) Laba Bersih (Net Profit)</span>
-                    <span className="text-emerald-400">{loading ? '...' : formatRp(summary.profit || 0)}</span>
+                  <div className="flex items-center justify-between p-4 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-md">
+                    <span>(=) Laba Bersih Akhir (Net Profit Restoran)</span>
+                    <span className="text-emerald-400 font-['Plus_Jakarta_Sans'] font-extrabold text-lg">{loading ? '...' : formatRp(summary.profit)}</span>
                   </div>
                 </div>
               </div>
 
               {/* CHARTS SECTION */}
               <div className="kd-ledger-grid no-print" style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-                <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 12, textAlign: 'center' }}>
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all">
+                  <div className="text-sm font-bold text-slate-900 mb-3 text-center font-['Plus_Jakarta_Sans']">
                     Komposisi Pemasukan vs Pengeluaran
                   </div>
                   <div style={{ height: 300, width: '100%' }}>
@@ -304,13 +299,13 @@ export default function KulinerFinanceSummary() {
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
-                      <div className="flex items-center justify-center h-full text-slate-400 text-sm">Tidak ada data</div>
+                      <div className="flex items-center justify-center h-full text-slate-400 text-sm font-['Inter']">Tidak ada data</div>
                     )}
                   </div>
                 </div>
                 
-                <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 12, textAlign: 'center' }}>
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all">
+                  <div className="text-sm font-bold text-slate-900 mb-3 text-center font-['Plus_Jakarta_Sans']">
                     Rincian Pengeluaran
                   </div>
                   <div style={{ height: 300, width: '100%' }}>
@@ -342,16 +337,16 @@ export default function KulinerFinanceSummary() {
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
-                      <div className="flex items-center justify-center h-full text-slate-400 text-sm">Tidak ada pengeluaran</div>
+                      <div className="flex items-center justify-center h-full text-slate-400 text-sm font-['Inter']">Tidak ada pengeluaran</div>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* LEDGER TABLE */}
-              <div className="no-print" style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', marginBottom: 24 }}>
+              <div className="no-print bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all mb-6">
                 <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+                  <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                     <thead>
                       <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                         <th style={{ padding: '10px 16px', fontSize: 11.5, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>Tanggal</th>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wifi, WifiOff, RefreshCw, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, AlertCircle, CheckCircle2, X } from '@/constants/icons';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
 

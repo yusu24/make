@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Edit3, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Plus, X } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
@@ -99,11 +99,11 @@ export default function Addons() {
                 ) : (
                   currentAddons.map((a) => (
                     <tr key={a.id}>
-                      <td><div style={{ color: '#1e293b' }}>{a.name}</div></td>
-                      <td>+Rp {Number(a.price).toLocaleString('id-ID')}</td>
+                      <td><div style={{ color: '#1e293b', fontSize: 12, fontWeight: 400 }}>{a.name}</div></td>
+                      <td className="font-semibold" style={{ fontWeight: 600, fontSize: 12 }}>+Rp {Number(a.price).toLocaleString('id-ID')}</td>
                       <td className="text-right">
                         <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                          <button className="kd-icon-btn" title="Edit" onClick={() => openEdit(a)}><Edit3 size={16} /></button>
+                          <button className="kd-icon-btn" title="Edit" onClick={() => openEdit(a)}><Pencil size={16} /></button>
                           <button className="kd-icon-btn text-red-500" title="Hapus" onClick={() => handleDelete(a)}><Trash2 size={16} /></button>
                         </div>
                       </td>
@@ -128,7 +128,7 @@ export default function Addons() {
           <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">{editingItem ? t('kulinerExtra.editAddonModalTitle') : t('kulinerExtra.addAddonModalTitle')}</h2>
-              <button className="kd-close-btn" onClick={() => setShowModal(false)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setShowModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={handleSave}>
               <div className="kd-modal-body">

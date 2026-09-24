@@ -3,7 +3,7 @@ import {
   ArrowRight, Sparkles, Monitor, ShoppingBag, Fish, Sprout,
   UtensilsCrossed, ShieldCheck, Zap, Clock, Gift, ChevronRight, Eye, Building2,
   Globe, Wrench
-} from 'lucide-react'
+} from '@/constants/icons'
 
 // Visual config per slug — icon + accent color for the sandbox demo buttons.
 // Falls back to a generic icon/color for any category admin adds later.

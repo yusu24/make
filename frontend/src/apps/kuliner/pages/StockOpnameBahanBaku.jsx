@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, X } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
@@ -163,7 +163,7 @@ export default function StockOpnameBahanBaku() {
           <div className="kd-modal max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="kd-modal-header">
               <h2 className="kd-modal-title">Stock Opname #{detail.id} — {STATUS_LABEL[detail.status]}</h2>
-              <button className="kd-close-btn" onClick={() => setDetail(null)}>✕</button>
+              <button className="kd-close-btn" onClick={() => setDetail(null)}><X size={18} /></button>
             </div>
             <div className="kd-modal-body" style={{ maxHeight: 400, overflowY: 'auto' }}>
               <table className="kd-table">

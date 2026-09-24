@@ -67,6 +67,9 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     Route::put('profile', [ProfileController::class, 'update']);
     Route::get('settings/kyc', [\App\Http\Controllers\Api\TenantKycController::class, 'index']);
     Route::post('settings/kyc', [\App\Http\Controllers\Api\TenantKycController::class, 'upload']);
+    Route::get('tenant/branding', [\App\Http\Controllers\Api\TenantBrandingController::class, 'getBranding']);
+    Route::post('tenant/branding/logo', [\App\Http\Controllers\Api\TenantBrandingController::class, 'uploadLogo']);
+    Route::delete('tenant/branding/logo', [\App\Http\Controllers\Api\TenantBrandingController::class, 'deleteLogo']);
     Route::get('logs', [ActivityLogController::class, 'index']);
 
     // Notifications
@@ -77,6 +80,8 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     // User & Admin Management
     Route::get('users', [UserController::class, 'index']);
     Route::post('users', [UserController::class, 'store']);
+    Route::put('users/{user}', [UserController::class, 'update']);
+    Route::patch('users/{user}', [UserController::class, 'update']);
     Route::patch('users/{user}/status', [UserController::class, 'updateStatus']);
     Route::delete('users/{user}', [UserController::class, 'destroy']);
 
@@ -425,9 +430,13 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             // Settings
             Route::get('settings', [\App\Http\Controllers\Api\JasaController::class, 'getSettings']);
             Route::put('settings', [\App\Http\Controllers\Api\JasaController::class, 'updateSettings']);
+            Route::post('settings', [\App\Http\Controllers\Api\JasaController::class, 'updateSettings']);
 
             // Dashboard & Stats
             Route::get('stats', [\App\Http\Controllers\Api\JasaController::class, 'getStats']);
+
+            // Customers
+            Route::get('customers', [\App\Http\Controllers\Api\JasaController::class, 'getCustomers']);
 
             // Work Orders
             Route::get('work-orders', [\App\Http\Controllers\Api\JasaController::class, 'getWorkOrders']);
@@ -435,6 +444,9 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             Route::put('work-orders/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateWorkOrder']);
             Route::patch('work-orders/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateStatus']);
             Route::put('work-orders/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateWorkOrderStatus']); // Keep old for backward compat
+
+            // Direct POS Checkout
+            Route::post('pos/checkout', [\App\Http\Controllers\Api\JasaController::class, 'posCheckout']);
 
             // Contracts
             Route::get('contracts', [\App\Http\Controllers\Api\JasaController::class, 'getContracts']);
@@ -457,11 +469,25 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
 
             // Invoices & Expenses
             Route::get('invoices', [\App\Http\Controllers\Api\JasaController::class, 'getInvoices']);
+            Route::patch('invoices/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateInvoiceStatus']);
             Route::put('invoices/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateInvoiceStatus']);
             Route::get('expenses', [\App\Http\Controllers\Api\JasaController::class, 'getExpenses']);
             Route::post('expenses', [\App\Http\Controllers\Api\JasaController::class, 'storeExpense']);
             Route::put('expenses/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateExpense']);
             Route::delete('expenses/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyExpense']);
+
+            // Payables (Hutang Supplier)
+            Route::get('payables', [\App\Http\Controllers\Api\JasaController::class, 'getPayables']);
+            Route::post('payables', [\App\Http\Controllers\Api\JasaController::class, 'storePayable']);
+            Route::put('payables/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updatePayable']);
+            Route::delete('payables/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyPayable']);
+
+            // Accounts (Multi Kas & Bank)
+            Route::get('accounts', [\App\Http\Controllers\Api\JasaController::class, 'getAccounts']);
+            Route::post('accounts', [\App\Http\Controllers\Api\JasaController::class, 'storeAccount']);
+            Route::put('accounts/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateAccount']);
+            Route::delete('accounts/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyAccount']);
+            Route::post('accounts/transfer', [\App\Http\Controllers\Api\JasaController::class, 'transferAccount']);
 
             // Inventory
             Route::get('inventory', [\App\Http\Controllers\Api\JasaController::class, 'getInventory']);
@@ -472,6 +498,17 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             // Calendar
             Route::get('calendar-events', [\App\Http\Controllers\Api\JasaController::class, 'getCalendarEvents']);
 
+            // Roles & Staff (Tim & Hak Akses)
+            Route::get('roles', [\App\Http\Controllers\Api\JasaRoleController::class, 'index']);
+            Route::post('roles', [\App\Http\Controllers\Api\JasaRoleController::class, 'store']);
+            Route::put('roles/{id}', [\App\Http\Controllers\Api\JasaRoleController::class, 'update']);
+            Route::delete('roles/{id}', [\App\Http\Controllers\Api\JasaRoleController::class, 'destroy']);
+
+            Route::get('staff', [\App\Http\Controllers\Api\JasaStaffController::class, 'index']);
+            Route::post('staff', [\App\Http\Controllers\Api\JasaStaffController::class, 'store']);
+            Route::put('staff/{id}', [\App\Http\Controllers\Api\JasaStaffController::class, 'update']);
+            Route::delete('staff/{id}', [\App\Http\Controllers\Api\JasaStaffController::class, 'destroy']);
+
             // Backup & Data Security
             Route::prefix('settings/backup')->group(function () {
                 Route::get('config', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'getSettings']);
@@ -479,6 +516,8 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
                 Route::get('download', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'download']);
                 Route::post('email', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'email']);
             });
+            Route::get('backup/manual', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'manualBackup']);
+            Route::post('backup/test-email', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'testEmail']);
         });
 
         // ─── BUDIDAYA (AQUACULTURE) ENDPOINTS ───────────────────────────────────
@@ -770,6 +809,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::post('tenants/{tenant_id}/impersonate', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonateUser']);
         Route::post('tenants/{tenant_id}/resend-invoice', [TenantController::class, 'resendInvoice']);
         Route::post('tenants/{tenant_id}/reset-password', [TenantController::class, 'resetPassword']);
+        Route::post('tenants/{tenant_id}/extend-subscription', [TenantController::class, 'extendSubscription']);
         Route::post('tenants/cleanup-demo', [TenantController::class, 'cleanupDemoSandboxes']);
 
         // KYC Verifications
@@ -832,9 +872,9 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     Route::get('announcements/active', [\App\Http\Controllers\Api\AnnouncementController::class, 'activeForTenant']);
 
     // =========================================================================
-    // SELLER MODULE ROUTES
+    // SELLER MODULE ROUTES (Protected by Tenant Isolation)
     // =========================================================================
-    Route::prefix('seller')->group(function () {
+    Route::prefix('seller')->middleware('tenant')->group(function () {
         // Warehouses
         Route::get('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'index']);
         Route::post('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'store']);
@@ -858,62 +898,6 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::patch('channels/{id}/toggle', [\App\Http\Controllers\Api\SellerChannelController::class, 'toggle']);
         Route::post('sync', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncNow']);
         Route::get('sync-logs', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncLogs']);
-    });
-
-    // =========================================================================
-    // JASA (SERVICES OS) ENDPOINTS
-    // =========================================================================
-    Route::prefix('jasa')->group(function () {
-        // Settings & Stats
-        Route::get('settings', [\App\Http\Controllers\Api\JasaController::class, 'getSettings']);
-        Route::post('settings', [\App\Http\Controllers\Api\JasaController::class, 'updateSettings']);
-        Route::get('stats', [\App\Http\Controllers\Api\JasaController::class, 'getStats']);
-
-        // Work Orders (SPK)
-        Route::get('work-orders', [\App\Http\Controllers\Api\JasaController::class, 'getWorkOrders']);
-        Route::post('work-orders', [\App\Http\Controllers\Api\JasaController::class, 'storeWorkOrder']);
-        Route::patch('work-orders/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateStatus']);
-
-        // Technicians
-        Route::get('technicians', [\App\Http\Controllers\Api\JasaController::class, 'getTechnicians']);
-        Route::post('technicians', [\App\Http\Controllers\Api\JasaController::class, 'storeTechnician']);
-        Route::put('technicians/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateTechnician']);
-        Route::delete('technicians/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyTechnician']);
-        Route::put('technicians/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateTechnicianStatus']);
-
-        // Service Catalog
-        Route::get('services', [\App\Http\Controllers\Api\JasaController::class, 'getServices']);
-        Route::post('services', [\App\Http\Controllers\Api\JasaController::class, 'storeService']);
-        Route::put('services/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateService']);
-        Route::delete('services/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyService']);
-
-        // Contracts B2B
-        Route::get('contracts', [\App\Http\Controllers\Api\JasaController::class, 'getContracts']);
-        Route::post('contracts', [\App\Http\Controllers\Api\JasaController::class, 'storeContract']);
-        Route::post('contracts/{id}/generate-spk', [\App\Http\Controllers\Api\JasaController::class, 'generateSpkFromContract']);
-
-        // Calendar
-        Route::get('calendar-events', [\App\Http\Controllers\Api\JasaController::class, 'getCalendarEvents']);
-
-        // Finance / Invoices & Expenses
-        Route::get('invoices', [\App\Http\Controllers\Api\JasaController::class, 'getInvoices']);
-        Route::patch('invoices/{id}/status', [\App\Http\Controllers\Api\JasaController::class, 'updateInvoiceStatus']);
-        Route::get('expenses', [\App\Http\Controllers\Api\JasaController::class, 'getExpenses']);
-        Route::post('expenses', [\App\Http\Controllers\Api\JasaController::class, 'storeExpense']);
-        Route::put('expenses/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateExpense']);
-        Route::delete('expenses/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyExpense']);
-
-        // Inventory (Spareparts)
-        Route::get('inventory', [\App\Http\Controllers\Api\JasaController::class, 'getInventory']);
-        Route::post('inventory', [\App\Http\Controllers\Api\JasaController::class, 'storeInventory']);
-        Route::put('inventory/{id}', [\App\Http\Controllers\Api\JasaController::class, 'updateInventory']);
-        Route::delete('inventory/{id}', [\App\Http\Controllers\Api\JasaController::class, 'destroyInventory']);
-
-        // Backup
-        Route::get('settings/backup/config', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'getSettings']);
-        Route::post('settings/backup/config', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'updateSettings']);
-        Route::get('backup/manual', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'manualBackup']);
-        Route::post('backup/test-email', [\App\Http\Controllers\Api\Jasa\JasaBackupController::class, 'testEmail']);
     });
 });
 
@@ -948,5 +932,12 @@ Route::prefix('v1/external')->middleware(['auth.apikey'])->group(function () {
     Route::get('products', [\App\Http\Controllers\Api\ExternalApiController::class, 'getProducts']);
     Route::post('orders', [\App\Http\Controllers\Api\ExternalApiController::class, 'createOrder']);
     Route::get('stock', [\App\Http\Controllers\Api\ExternalApiController::class, 'getStock']);
+
+    // Jasa / Service endpoints
+    Route::get('work-orders', [\App\Http\Controllers\Api\ExternalApiController::class, 'getWorkOrders']);
+    Route::post('work-orders', [\App\Http\Controllers\Api\ExternalApiController::class, 'createWorkOrder']);
+    Route::get('work-orders/{id}', [\App\Http\Controllers\Api\ExternalApiController::class, 'getWorkOrderDetail']);
+    Route::get('services', [\App\Http\Controllers\Api\ExternalApiController::class, 'getServices']);
+    Route::get('technicians', [\App\Http\Controllers\Api\ExternalApiController::class, 'getTechnicians']);
 });
 

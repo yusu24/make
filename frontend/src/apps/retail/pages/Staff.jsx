@@ -5,7 +5,7 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
-import { Edit3, Trash2, RefreshCw, Plus, LogIn, Users, Shield, UserCheck, AlertCircle } from 'lucide-react';
+import { Pencil, Trash2, RefreshCw, Plus, LogIn, Users, Shield, UserCheck, AlertCircle } from '@/constants/icons';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export default function Staff() {
@@ -120,33 +120,40 @@ export default function Staff() {
     <div className="retail-page-classic animate-fade-in">
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex items-center gap-3.5 shadow-sm">
-          <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0">
-            <Users size={20} />
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <Users size={22} />
           </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium">Total Pegawai Terdaftar</p>
-            <p className="text-xl font-bold text-slate-800">{staff.length} <span className="text-xs text-slate-400 font-normal">Akun</span></p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex items-center gap-3.5 shadow-sm">
-          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
-            <UserCheck size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium">Status Pengguna Aktif</p>
-            <p className="text-xl font-bold text-emerald-600">{staff.filter(s => s.status !== 'inactive').length} <span className="text-xs text-slate-400 font-normal">Aktif Bekerja</span></p>
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Pegawai</span>
+            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
+              {staff.length} <span className="text-xs text-slate-400 font-bold ml-1 font-['Inter']">AKUN</span>
+            </p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Pegawai terdaftar di sistem</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex items-center gap-3.5 shadow-sm">
-          <div className="p-3 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shrink-0">
-            <Shield size={20} />
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <UserCheck size={22} />
           </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium">Kuota Paket ({user?.subscription_plan?.toUpperCase() || 'FREE'})</p>
-            <p className="text-xl font-bold text-slate-800">{maxQuota}</p>
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Pengguna Aktif</span>
+            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight">
+              {staff.filter(s => s.status !== 'inactive').length} <span className="text-xs text-emerald-600/70 font-bold ml-1 font-['Inter']">AKTIF</span>
+            </p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Staf aktif bekerja saat ini</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <Shield size={22} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Kuota Paket ({user?.subscription_plan?.toUpperCase() || 'FREE'})</span>
+            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{maxQuota}</p>
+            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Batas akun diperbolehkan</p>
           </div>
         </div>
       </div>
@@ -156,7 +163,7 @@ export default function Staff() {
           <button 
             title="Tambah Pegawai Baru"
             className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, padding: '0 16px' }}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
             onClick={() => { setEditingUser(null); setErrorMsg(''); setShowModal(true); }}
           >
             <Plus size={15} className="mr-2 mobile-no-margin" />
@@ -169,7 +176,7 @@ export default function Staff() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button onClick={fetchStaff} className="btn-reset-sync" style={{ width: 42, height: 42, flexShrink: 0 }} title="Segarkan Data">
+          <button onClick={fetchStaff} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
             <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
@@ -237,7 +244,7 @@ export default function Staff() {
                             <LogIn size={13} />
                             <span>Impersonate</span>
                           </button>
-                          <button className="btn btn-sm btn-ghost" onClick={() => handleEdit(s)} title="Edit Pegawai"><Edit3 size={14} /></button>
+                          <button className="btn btn-sm btn-ghost" onClick={() => handleEdit(s)} title="Edit Pegawai"><Pencil size={14} /></button>
                           <button className="btn btn-sm btn-ghost retail-text-danger" onClick={() => handleDelete(s.id)} title="Hapus Akun Pegawai"><Trash2 size={14} /></button>
                         </>
                       ) : (

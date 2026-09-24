@@ -207,13 +207,20 @@ class RetailReturnService
     private function generateNumber(string $modelClass, string $column, string $prefix): string
     {
         $date = now()->format('Ymd');
-        $last = $modelClass::where($column, 'like', "{$prefix}-{$date}-%")
+        $last = $modelClass::withoutGlobalScopes()
+            ->where($column, 'like', "{$prefix}-{$date}-%")
             ->orderByDesc('id')
             ->lockForUpdate()
             ->first();
 
         $seq = $last ? ((int) substr($last->{$column}, -5)) + 1 : 1;
+        $candidate = sprintf('%s-%s-%05d', $prefix, $date, $seq);
 
-        return sprintf('%s-%s-%05d', $prefix, $date, $seq);
+        while ($modelClass::withoutGlobalScopes()->where($column, $candidate)->exists()) {
+            $seq++;
+            $candidate = sprintf('%s-%s-%05d', $prefix, $date, $seq);
+        }
+
+        return $candidate;
     }
 }

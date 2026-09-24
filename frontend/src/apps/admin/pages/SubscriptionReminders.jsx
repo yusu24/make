@@ -1,10 +1,24 @@
 import React, { useState, useEffect } from 'react'
-import { api } from '../../../lib/api'
+import {
+  api } from '../../../lib/api'
 import Modal from '../../../components/Modal'
 import {
-  Bell, Mail, MessageSquare, Smartphone, CheckCircle, AlertTriangle,
-  Clock, ShieldAlert, Zap, Send, Save, RefreshCw, Copy, Check, Eye
-} from 'lucide-react'
+  Bell,
+  Mail,
+  MessageSquare,
+  Smartphone,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  ShieldAlert,
+  Zap,
+  Send,
+  Save,
+  RefreshCw,
+  Copy,
+  Check,
+  Eye
+} from '@/constants/icons'
 import './Shared.css'
 
 const SCHEDULE_TABS = [
@@ -107,16 +121,7 @@ export default function SubscriptionReminders() {
     }
   }
 
-  if (loading || !settings) {
-    return (
-      <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>
-        <div className="spinner" style={{ margin: '0 auto 16px', width: 32, height: 32 }} />
-        <p>Memuat Pengaturan Pengingat &amp; Otomasi...</p>
-      </div>
-    )
-  }
-
-  const currentReminder = settings.reminders[activeTab] || settings.reminders.h7
+  const currentReminder = settings?.reminders?.[activeTab] || settings?.reminders?.h7
 
   // Helper to render dynamic sample preview
   const renderPreviewText = (text) => {
@@ -139,15 +144,48 @@ export default function SubscriptionReminders() {
           color: '#ffffff', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
           display: 'flex', alignItems: 'center', gap: 8
         }}>
-          {toast.type === 'error' ? <AlertTriangle size={18} /> : <CheckCircle size={18} />}
+          {toast.type === 'error' ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
           {toast.msg}
         </div>
       )}
 
       {/* ── Page Header ── */}
-      <div className="page-header mb-4">
+      <div className="page-header mb-2">
         <h2 className="page-title">Pengingat &amp; Otomasi Tagihan</h2>
       </div>
+
+      {/* ── Action Bar below title ── */}
+      <div className="flex justify-end gap-2.5 mb-4">
+        <button
+          className="btn btn-secondary flex items-center gap-1.5"
+          onClick={fetchSettings}
+          disabled={loading}
+          title="Muat ulang pengaturan"
+        >
+          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          <span>Muat Ulang</span>
+        </button>
+        <button
+          className="btn btn-primary flex items-center gap-1.5"
+          onClick={handleSave}
+          disabled={saving || loading || !settings}
+        >
+          <Save size={15} />
+          <span>{saving ? 'Menyimpan...' : 'Simpan Pengaturan'}</span>
+        </button>
+      </div>
+
+      {loading || !settings ? (
+        <div className="card" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+            <RefreshCw size={28} className="animate-spin text-indigo-600" />
+            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+              Memuat pengaturan pengingat &amp; otomasi tagihan...
+            </span>
+          </div>
+        </div>
+      ) : (
+        <>
 
       {/* ── Master Status & Delivery Channels Card ── */}
       <div className="card" style={{ padding: 20, marginBottom: 24, border: '1px solid var(--border-subtle)' }}>
@@ -170,7 +208,7 @@ export default function SubscriptionReminders() {
           <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
             Saluran Pengiriman Notifikasi (Delivery Channels)
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Email Channel */}
             <label style={{
               display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10,
@@ -241,7 +279,7 @@ export default function SubscriptionReminders() {
       </div>
 
       {/* ── Schedule Selector Tabs ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 20 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         {SCHEDULE_TABS.map(tab => {
           const isSelected = activeTab === tab.key
           const isItemActive = settings.reminders[tab.key]?.active
@@ -291,10 +329,10 @@ export default function SubscriptionReminders() {
       </div>
 
       {/* ── Main Workspace: Template Editor (Left) & Realtime Simulator (Right) ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.9fr)', gap: 24, alignItems: 'start' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* LEFT: Template Editor */}
-        <div className="card" style={{ padding: 22, border: '1px solid var(--border-subtle)' }}>
+        <div className="lg:col-span-7 card" style={{ padding: 22, border: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 14 }}>
             <div>
               <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
@@ -432,8 +470,8 @@ export default function SubscriptionReminders() {
         </div>
 
         {/* RIGHT: Live Preview Simulator */}
-        <div>
-          <div className="card" style={{ padding: 18, border: '1px solid var(--border-subtle)', position: 'sticky', top: 20 }}>
+        <div className="lg:col-span-5">
+          <div className="card lg:sticky lg:top-6" style={{ padding: 18, border: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Eye size={16} /> Pratinjau Pesan Realtime
@@ -586,6 +624,8 @@ export default function SubscriptionReminders() {
           <Save size={16} /> {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
         </button>
       </div>
+      </>
+      )}
 
       {/* ── Test Send Modal ── */}
       {testModalOpen && (

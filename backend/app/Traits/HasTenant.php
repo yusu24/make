@@ -16,13 +16,23 @@ trait HasTenant
         static::addGlobalScope(new TenantScope);
 
         static::creating(function ($model) {
-            if (empty($model->tenant_id)) {
+            $trustedTenantId = null;
+            if (request()) {
+                $trustedTenantId = request()->attributes->get('tenant_id') ?? request()->user()?->tenant_id;
+            }
+            if (!$trustedTenantId) {
                 $user = auth('sanctum')->user() ?: auth()->user();
-                if ($user && !empty($user->tenant_id)) {
-                    $model->tenant_id = $user->tenant_id;
-                } elseif (request() && request()->header('X-Tenant-ID')) {
-                    $model->tenant_id = request()->header('X-Tenant-ID');
-                }
+                $trustedTenantId = $user?->tenant_id;
+            }
+
+            if (!empty($trustedTenantId)) {
+                $model->tenant_id = $trustedTenantId;
+            }
+        });
+
+        static::updating(function ($model) {
+            if ($model->isDirty('tenant_id') && $model->getOriginal('tenant_id') !== null) {
+                $model->tenant_id = $model->getOriginal('tenant_id');
             }
         });
     }

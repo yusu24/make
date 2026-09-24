@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { api } from '../lib/api';
 
 const ROUTE_TITLES = {
   // Public & Authentication
@@ -11,73 +12,86 @@ const ROUTE_TITLES = {
   '/support': 'Pusat Bantuan & Support',
 
   // SaaS Super Admin
-  '/dashboard': 'Dashboard Admin SaaS',
-  '/admin/dashboard': 'Dashboard Admin SaaS',
-  '/users': 'Manajemen Pengguna',
-  '/admin/users': 'Manajemen Pengguna',
+  '/dashboard': 'Dashboard',
+  '/admin/dashboard': 'Dashboard',
+  '/users': 'Pengguna Platform',
+  '/admin/users': 'Pengguna Platform',
   '/categories': 'Kategori Bisnis',
   '/admin/categories': 'Kategori Bisnis',
-  '/tenants': 'Manajemen Tenant UMKM',
-  '/admin/tenants': 'Manajemen Tenant UMKM',
-  '/kyc': 'Verifikasi Identitas & Legalitas',
-  '/subscriptions': 'Pelanggan Langganan',
-  '/admin/subscriptions': 'Pelanggan Langganan',
-  '/subscription-requests': 'Permintaan Upgrade Langganan',
-  '/admin/subscription-requests': 'Permintaan Upgrade Langganan',
-  '/packages-features': 'Paket & Fitur Platform',
-  '/admin/packages-features': 'Paket & Fitur Platform',
-  '/finance': 'Laporan Keuangan SaaS',
-  '/admin/finance': 'Laporan Keuangan SaaS',
-  '/invoice-settings': 'Pengaturan Faktur & Invoice',
-  '/admin/invoice-settings': 'Pengaturan Faktur & Invoice',
-  '/subscription-reminders': 'Pengingat Jatuh Tempo',
-  '/admin/subscription-reminders': 'Pengingat Jatuh Tempo',
-  '/support-center': 'Pusat Bantuan & Tiket',
-  '/admin/support-center': 'Pusat Bantuan & Tiket',
-  '/system-monitoring': 'Monitoring Sistem & Server',
-  '/admin/system-monitoring': 'Monitoring Sistem & Server',
-  '/content-announcement': 'Konten & Pengumuman',
-  '/admin/content-announcement': 'Konten & Pengumuman',
-  '/reports-analytics': 'Analitik Performa Platform',
-  '/admin/reports-analytics': 'Analitik Performa Platform',
-  '/reports-revenue': 'Laporan Pendapatan SaaS',
-  '/admin/reports-revenue': 'Laporan Pendapatan SaaS',
-  '/reports-tenants': 'Analitik Distribusi Tenant',
-  '/admin/reports-tenants': 'Analitik Distribusi Tenant',
-  '/admins': 'Daftar Administrator',
-  '/admin/admins': 'Daftar Administrator',
-  '/saas-roles': 'Hak Akses & Role Admin',
-  '/admin/saas-roles': 'Hak Akses & Role Admin',
-  '/logs': 'Audit Log & Keamanan',
-  '/admin/logs': 'Audit Log & Keamanan',
+  '/tenants': 'Daftar Tenant',
+  '/admin/tenants': 'Daftar Tenant',
+  '/kyc': 'Verifikasi KYC Tenant',
+  '/admin/kyc': 'Verifikasi KYC Tenant',
+  '/subscriptions': 'Manajemen Langganan',
+  '/admin/subscriptions': 'Manajemen Langganan',
+  '/subscription-requests': 'Permintaan Langganan',
+  '/admin/subscription-requests': 'Permintaan Langganan',
+  '/packages-features': 'Paket & Fitur',
+  '/admin/packages-features': 'Paket & Fitur',
+  '/finance': 'Finansial & Faktur',
+  '/admin/finance': 'Finansial & Faktur',
+  '/invoice-settings': 'Pengaturan Invoice',
+  '/admin/invoice-settings': 'Pengaturan Invoice',
+  '/subscription-reminders': 'Pengingat & Otomasi',
+  '/admin/subscription-reminders': 'Pengingat & Otomasi',
+  '/support-center': 'Pusat Bantuan (Tiket)',
+  '/admin/support-center': 'Pusat Bantuan (Tiket)',
+  '/system-monitoring': 'Monitoring Sistem',
+  '/admin/system-monitoring': 'Monitoring Sistem',
+  '/content-announcement': 'Pengumuman & Konten',
+  '/admin/content-announcement': 'Pengumuman & Konten',
+  '/reports-analytics': 'Laporan Overview',
+  '/admin/reports-analytics': 'Laporan Overview',
+  '/reports-revenue': 'Laporan Pendapatan',
+  '/admin/reports-revenue': 'Laporan Pendapatan',
+  '/reports-tenants': 'Analitik Tenant',
+  '/admin/reports-tenants': 'Analitik Tenant',
+  '/admins': 'Kelola Admin',
+  '/admin/admins': 'Kelola Admin',
+  '/saas-roles': 'Role & Hak Akses',
+  '/admin/saas-roles': 'Role & Hak Akses',
+  '/logs': 'Log Aktivitas & Audit',
+  '/admin/logs': 'Log Aktivitas & Audit',
   '/settings': 'Pengaturan Landing Page',
   '/admin/settings': 'Pengaturan Landing Page',
   '/landing-settings': 'Pengaturan Landing Page',
   '/admin/landing-settings': 'Pengaturan Landing Page',
-  '/landing-sectors': 'Sektor Industri Bisnis',
-  '/admin/landing-sectors': 'Sektor Industri Bisnis',
-  '/landing-features': 'Fitur Unggulan Platform',
-  '/admin/landing-features': 'Fitur Unggulan Platform',
-  '/landing-howitworks': 'Langkah Cara Kerja',
-  '/admin/landing-howitworks': 'Langkah Cara Kerja',
+  '/landing-sectors': 'Sektor Bisnis',
+  '/admin/landing-sectors': 'Sektor Bisnis',
+  '/landing-features': 'Fitur Platform',
+  '/admin/landing-features': 'Fitur Platform',
+  '/landing-howitworks': 'Cara Kerja',
+  '/admin/landing-howitworks': 'Cara Kerja',
   '/landing-faq': 'FAQ & Pertanyaan Umum',
   '/admin/landing-faq': 'FAQ & Pertanyaan Umum',
-  '/landing-testimonials': 'Ulasan & Testimoni Pelanggan',
-  '/admin/landing-testimonials': 'Ulasan & Testimoni Pelanggan',
+  '/landing-footer': 'Pengaturan Footer',
+  '/admin/landing-footer': 'Pengaturan Footer',
+  '/landing-testimonials': 'Testimoni Pelanggan',
+  '/admin/landing-testimonials': 'Testimoni Pelanggan',
   '/landing-billing': 'Harga Paket & Rekening',
   '/admin/landing-billing': 'Harga Paket & Rekening',
-  '/landing-logo': 'Identitas & Logo Platform',
-  '/admin/landing-logo': 'Identitas & Logo Platform',
-  '/developer-integrations': 'Integrasi API & Developer',
-  '/admin/developer-integrations': 'Integrasi API & Developer',
-  '/module-docs': 'Dokumentasi Arsitektur Modul',
-  '/admin/module-docs': 'Dokumentasi Arsitektur Modul',
-  '/backups': 'Backup & Pemulihan Sistem',
-  '/admin/backups': 'Backup & Pemulihan Sistem',
-  '/doc-dashboard': 'Dashboard Dokumentasi',
-  '/admin/doc-dashboard': 'Dashboard Dokumentasi',
-  '/doc-center': 'Pusat Dokumentasi Lengkap',
-  '/profile': 'Profil Akun Pengguna',
+  '/landing-logo': 'Logo & Branding',
+  '/admin/landing-logo': 'Logo & Branding',
+  '/developer-integrations': 'Integrasi & Webhook',
+  '/admin/developer-integrations': 'Integrasi & Webhook',
+  '/module-docs': 'Arsitektur Modul',
+  '/admin/module-docs': 'Arsitektur Modul',
+  '/backups': 'Cadangan Data (Backup)',
+  '/admin/backups': 'Cadangan Data (Backup)',
+  '/doc-dashboard': 'Kelola Dokumentasi',
+  '/admin/doc-dashboard': 'Kelola Dokumentasi',
+  '/doc-center': 'Pusat Dokumentasi',
+  '/admin/doc-center': 'Pusat Dokumentasi',
+  '/icon-dictionary': 'Kamus Icon UI',
+  '/admin/icon-dictionary': 'Kamus Icon UI',
+  '/card-dictionary': 'Kamus Card UI',
+  '/admin/card-dictionary': 'Kamus Card UI',
+  '/font-dictionary': 'Kamus Font & Tipografi',
+  '/admin/font-dictionary': 'Kamus Font & Tipografi',
+  '/ui-consistency': 'Audit Konsistensi UI',
+  '/admin/ui-consistency': 'Audit Konsistensi UI',
+  '/profile': 'Profil Saya',
+  '/admin/profile': 'Profil Saya',
 
   // Retail Module (/retail/...)
   '/retail': 'Dashboard Retail',
@@ -167,6 +181,32 @@ const ROUTE_TITLES = {
   '/kuliner/admin/profile': 'Pengaturan Profil Resto',
   '/kuliner/subscription': 'Paket Langganan Resto',
 
+  // Jasa Module (/jasa/...)
+  '/jasa': 'Dashboard Jasa',
+  '/jasa/dashboard': 'Dashboard Jasa',
+  '/jasa/pos': 'Kasir (POS)',
+  '/jasa/work-orders': 'Daftar SPK',
+  '/jasa/spk': 'Daftar SPK',
+  '/jasa/contracts': 'Jadwal & Kontrak',
+  '/jasa/technicians': 'Tim & Teknisi',
+  '/jasa/catalog': 'Katalog Layanan',
+  '/jasa/inventory': 'Stok & Material',
+  '/jasa/finance-summary': 'Laba Rugi',
+  '/jasa/finance': 'Laba Rugi',
+  '/jasa/expenses': 'Buku Kas',
+  '/jasa/invoices': 'Tagihan & Piutang',
+  '/jasa/payables': 'Hutang Vendor',
+  '/jasa/accounts': 'Rekening & Bank',
+  '/jasa/analytics': 'Laporan & SLA',
+  '/jasa/settings': 'Pengaturan Jasa',
+  '/jasa/roles': 'Role & Hak Akses',
+  '/jasa/staff': 'Staf & Operator',
+  '/jasa/backup': 'Backup Data',
+  '/jasa/developer-api': 'Integrasi API',
+  '/jasa/profile': 'Profil Pengguna',
+  '/jasa/guide': 'Buku Panduan',
+  '/jasa/subscription': 'Paket Langganan',
+
   // Budidaya Module (/budidaya/...)
   '/budidaya': 'Dashboard Budidaya',
   '/budidaya/dashboard': 'Dashboard Budidaya',
@@ -211,6 +251,40 @@ function formatSlugToTitle(path) {
 
 export default function DocumentTitleHandler() {
   const location = useLocation();
+
+  // Apply custom favicon from SaaS Admin branding settings
+  useEffect(() => {
+    const cachedFavicon = localStorage.getItem('bizora_custom_favicon');
+    if (cachedFavicon) {
+      let link = document.querySelector("link[rel*='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = cachedFavicon;
+    }
+
+    api.get('/landing-settings')
+      .then(res => {
+        const faviconUrl = res.data?.data?.favicon_url;
+        let link = document.querySelector("link[rel*='icon']");
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'icon';
+          document.head.appendChild(link);
+        }
+
+        if (faviconUrl) {
+          localStorage.setItem('bizora_custom_favicon', faviconUrl);
+          link.href = faviconUrl;
+        } else {
+          localStorage.removeItem('bizora_custom_favicon');
+          link.href = '/favicon.png';
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // If in Jasa module, JasaInnerApp handles the dynamic terminology

@@ -1,4 +1,16 @@
 import { useState, useEffect } from 'react'
+import {
+  Clock,
+  Radio,
+  Zap,
+  AlertTriangle,
+  Activity,
+  Wrench,
+  FileText,
+  AlertCircle,
+  Info,
+  Server
+} from '@/constants/icons'
 import './Shared.css'
 
 // ─── Fake real-time metrics ────────────────────────────────────────────────────
@@ -74,7 +86,7 @@ const DUMMY_LOGS = [
 ]
 
 const LOG_COLOR = { error: '#ef4444', warn: '#f59e0b', info: '#3b82f6' }
-const LOG_ICON = { error: '🔴', warn: '🟡', info: '🔵' }
+const LOG_ICON_COMP = { error: AlertCircle, warn: AlertTriangle, info: Info }
 const SVC_STATUS = { operational: { label: 'Operational', badge: 'badge-green' }, degraded: { label: 'Degraded', badge: 'badge-yellow' }, down: { label: 'Down', badge: 'badge-red' } }
 
 export default function SystemMonitoring() {
@@ -101,38 +113,40 @@ export default function SystemMonitoring() {
       </div>
 
       {/* ── Top Stats ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
         {[
-          { label: 'Uptime', value: metrics.uptime, icon: '⏱', color: '#10b981', desc: 'Lama server aktif' },
-          { label: 'Req / Menit', value: metrics.requests, icon: '📡', color: '#3b82f6', desc: 'Total request API saat ini' },
-          { label: 'Avg Latency', value: `${Math.round(metrics.latency)}ms`, icon: '⚡', color: '#8b5cf6', desc: 'Kecepatan respon server' },
-          { label: 'Errors (24j)', value: metrics.errors, icon: '⚠️', color: '#ef4444', desc: 'Kegagalan sistem terdeteksi' },
-        ].map(card => (
-          <div key={card.label} className="card card-pad" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: 12,
-                background: card.color + '20',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 22, color: card.color, flexShrink: 0
-              }}>{card.icon}</div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{card.label}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.2 }}>{card.desc}</div>
+          { label: 'Uptime', value: metrics.uptime, icon: Clock, color: '#10b981', bg: 'bg-emerald-50 text-emerald-600', desc: 'Lama server aktif' },
+          { label: 'Req / Menit', value: metrics.requests, icon: Radio, color: '#3b82f6', bg: 'bg-blue-50 text-blue-600', desc: 'Total request API saat ini' },
+          { label: 'Avg Latency', value: `${Math.round(metrics.latency)}ms`, icon: Zap, color: '#8b5cf6', bg: 'bg-violet-50 text-violet-600', desc: 'Kecepatan respon server' },
+          { label: 'Errors (24j)', value: metrics.errors, icon: AlertTriangle, color: '#ef4444', bg: 'bg-rose-50 text-rose-600', desc: 'Kegagalan sistem terdeteksi' },
+        ].map(card => {
+          const IconComp = card.icon;
+          return (
+            <div key={card.label} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+                <div className={`w-11 h-11 rounded-xl ${card.bg} flex items-center justify-center shrink-0`}>
+                  <IconComp size={22} strokeWidth={2} />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-0.5">{card.label}</div>
+                  <div className="text-[11px] text-slate-400 font-medium leading-tight">{card.desc}</div>
+                </div>
+              </div>
+              <div className="text-2xl md:text-3xl font-extrabold tracking-tight font-['Plus_Jakarta_Sans']" style={{ color: card.color }}>
+                {card.value}
               </div>
             </div>
-            <div style={{ fontSize: 24, fontWeight: 600, color: card.color, lineHeight: 1 }}>
-              {card.value}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
         {/* ── Resource Usage ── */}
         <div className="card card-pad">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>🖥️ Resource Usage</h3>
+            <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 m-0" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Server size={18} className="text-indigo-600" /> Resource Usage
+            </h3>
             <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Update setiap 2 detik</span>
           </div>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
@@ -161,7 +175,9 @@ export default function SystemMonitoring() {
 
         {/* ── Service Status ── */}
         <div className="card card-pad">
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 4 }}>🔧 Status Layanan</h3>
+          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Wrench size={18} className="text-amber-500" /> Status Layanan
+          </h3>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
             Status operasional subsistem backend, database cache, dan layanan eksternal.
           </p>
@@ -182,26 +198,34 @@ export default function SystemMonitoring() {
       {/* ── Active Server Logs ── */}
       <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
         <div style={{ padding: '20px 24px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 4 }}>📋 Log Sistem Terbaru</h3>
+          <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <FileText size={18} className="text-indigo-500" /> Log Sistem Terbaru
+          </h3>
           <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
             Catatan log kejadian, warning, dan error sistem untuk mempermudah audit operasional.
           </p>
         </div>
         <div style={{ padding: '12px 0' }}>
-          {DUMMY_LOGS.map((log, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 24px',
-              borderBottom: i < DUMMY_LOGS.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-            }}>
-              <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{LOG_ICON[log.level]}</span>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 13, color: 'var(--text-primary)' }}>{log.message}</p>
+          {DUMMY_LOGS.map((log, i) => {
+            const LogIcon = LOG_ICON_COMP[log.level] || Info;
+            return (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 24px',
+                borderBottom: i < DUMMY_LOGS.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+              }}>
+                <span style={{ flexShrink: 0, marginTop: 2, color: LOG_COLOR[log.level] }}>
+                  <LogIcon size={14} />
+                </span>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-primary)' }}>{log.message}</p>
+                </div>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>{log.time}</span>
               </div>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>{log.time}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
   )
 }
+

@@ -39,12 +39,15 @@ class JasaBackupController extends Controller
     }
 
     /**
-     * Resolve the current tenant identifier from request attributes, authenticated user, or headers.
+     * Resolve the current tenant identifier strictly from trusted request attributes or authenticated user.
      */
-    protected function resolveTenantId(Request $request)
+    protected function resolveTenantId(Request $request): string
     {
-        return $request->attributes->get('tenant_id')
-            ?: ($request->user()?->tenant_id ?: $request->header('X-Tenant-ID'));
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this request.'], 403));
+        }
+        return $tenantId;
     }
 
     /**

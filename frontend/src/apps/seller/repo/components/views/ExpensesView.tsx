@@ -1,22 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import {
-  Plus,
-  Search,
-  Calendar,
-  Filter,
-  Trash2,
-  Edit2,
-  TrendingDown,
-  DollarSign,
-  PieChart as PieChartIcon,
-  Tag,
-  ArrowUpDown,
-  Building2,
-  FileSpreadsheet,
-  Download,
-  AlertCircle,
-  Printer
-} from 'lucide-react';
+import { Plus, Search, Calendar, Filter, Trash2, Pencil, TrendingDown, DollarSign, PieChart as PieChartIcon, Tag, ArrowUpDown, Building2, FileSpreadsheet, Download, AlertCircle, Printer } from '@/constants/icons';
 import { Expense, ExpenseCategory, StoreChannel } from '../../types';
 import { formatIDR } from '../../utils/formatters';
 import { useTranslation } from '../../../../../contexts/I18nContext';
@@ -118,67 +101,67 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
       {/* Top Banner & Bento Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
         {/* Total Pengeluaran */}
-        <div className="bg-white dark:bg-[#101828] p-6 rounded-[28px] border border-gray-200 dark:border-slate-800 shadow-xs relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#101828] p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-xs relative overflow-hidden flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
               {t('seller.expenses')}
             </span>
-            <div className="w-9 h-9 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <TrendingDown className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-[#101828] dark:text-white mt-3">
+          <div className="text-2xl font-extrabold text-[#101828] dark:text-white mt-3 font-['Plus_Jakarta_Sans'] tracking-tight">
             {formatIDR(totalExpensesAmount)}
           </div>
-          <div className="text-[11px] text-[#667085] mt-2 flex items-center gap-1">
+          <div className="text-[11px] text-[#667085] dark:text-slate-400 mt-2 flex items-center gap-1 font-['Inter']">
             <span>Filter: {selectedDateFilter}</span>
           </div>
         </div>
 
         {/* Biaya Iklan & Ads */}
-        <div className="bg-white dark:bg-[#101828] p-6 rounded-[28px] border border-gray-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#101828] p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
               Iklan & Marketing
             </span>
-            <div className="w-9 h-9 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
               <PieChartIcon className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-[#101828] dark:text-white mt-3">
+          <div className="text-2xl font-extrabold text-[#101828] dark:text-white mt-3 font-['Plus_Jakarta_Sans'] tracking-tight">
             {formatIDR(adsExpenseAmount)}
           </div>
-          <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold mt-2">
+          <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold mt-2 font-['Inter']">
             Shopee Ads & TikTok Affiliate
           </div>
         </div>
 
         {/* Packing & Bahan */}
-        <div className="bg-white dark:bg-[#101828] p-6 rounded-[28px] border border-gray-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#101828] p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
               Packing & Bahan
             </span>
-            <div className="w-9 h-9 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
               <Tag className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-[#101828] dark:text-white mt-3">
+          <div className="text-2xl font-extrabold text-[#101828] dark:text-white mt-3 font-['Plus_Jakarta_Sans'] tracking-tight">
             {formatIDR(packingExpenseAmount)}
           </div>
-          <div className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-2">
+          <div className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-2 font-['Inter']">
             Bubble wrap, lakban, packaging
           </div>
         </div>
 
         {/* Catatan Efisiensi Profit Solid Bento Card */}
-        <div className="bg-indigo-600 p-6 rounded-[28px] text-white shadow-xs relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-indigo-600 p-6 rounded-2xl text-white shadow-xs relative overflow-hidden flex flex-col justify-between">
           <div>
-            <div className="text-xs font-semibold text-indigo-200 uppercase tracking-wider">
+            <div className="text-xs font-semibold text-indigo-200 uppercase tracking-wider font-['Inter']">
               ANALISIS MARGIN NETTO
             </div>
-            <div className="text-lg font-extrabold mt-1">Biaya Iklan Terkendali</div>
-            <p className="text-xs text-indigo-100/90 mt-1 leading-snug">
+            <div className="text-lg font-extrabold mt-1 font-['Plus_Jakarta_Sans']">Biaya Iklan Terkendali</div>
+            <p className="text-xs text-indigo-100/90 mt-1 leading-snug font-['Inter']">
               12.4% dari omset harian. Profitabilitas bisnis sehat!
             </p>
           </div>
@@ -187,7 +170,7 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
       </div>
 
       {/* Main Expense Table Container */}
-      <div className="bg-white dark:bg-[#101828] rounded-[32px] border border-gray-200 dark:border-slate-800 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#101828] rounded-2xl border border-gray-200 dark:border-slate-800 shadow-xs overflow-hidden">
         {/* Controls Bar */}
         <div className="p-5 bg-gray-50/50 dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-800 flex flex-wrap items-center gap-3">
           {/* + Tambah Pengeluaran Button */}
@@ -324,7 +307,7 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
                           className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors"
                           title="Edit Pengeluaran"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => onDeleteExpense(exp.id)}

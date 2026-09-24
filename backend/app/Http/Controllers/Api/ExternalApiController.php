@@ -17,7 +17,15 @@ class ExternalApiController extends Controller
 {
     protected function getTenantId(Request $request): string
     {
-        return $request->attributes->get('tenant_id') ?? $request->header('X-Tenant-ID') ?? '';
+        $tenantId = $request->attributes->get('tenant_id');
+        if (empty($tenantId)) {
+            abort(response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: No Tenant context associated with this API key.',
+                'error_code' => 'API_KEY_NO_TENANT'
+            ], 403));
+        }
+        return $tenantId;
     }
 
     /**
@@ -202,6 +210,160 @@ class ExternalApiController extends Controller
         return response()->json([
             'success' => true,
             'data' => $products
+        ]);
+    }
+
+    // ─── JASA (SERVICES) EXTERNAL API ENDPOINTS ─────────────────────────────
+
+    /**
+     * 5. GET /api/v1/external/work-orders
+     */
+    public function getWorkOrders(Request $request)
+    {
+        $tenantId = $this->getTenantId($request);
+        $query = \App\Models\JasaWorkOrder::where('tenant_id', $tenantId)->with('technician:id,name,specialty,phone');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('spk_number', 'like', "%{$search}%")
+                  ->orWhere('title', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_phone', 'like', "%{$search}%")
+                  ->orWhere('equipment_name', 'like', "%{$search}%");
+            });
+        }
+
+        $perPage = min(100, max(1, (int) ($request->per_page ?? 20)));
+        $orders = $query->latest()->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $orders->items(),
+            'pagination' => [
+                'total' => $orders->total(),
+                'per_page' => $orders->perPage(),
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+            ]
+        ]);
+    }
+
+    /**
+     * 6. POST /api/v1/external/work-orders
+     */
+    public function createWorkOrder(Request $request)
+    {
+        $tenantId = $this->getTenantId($request);
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'nullable|string|max:50',
+            'customer_email' => 'nullable|email|max:100',
+            'customer_company' => 'nullable|string|max:255',
+            'customer_address' => 'nullable|string',
+            'category' => 'nullable|string|max:100',
+            'equipment_name' => 'nullable|string|max:255',
+            'serial_number' => 'nullable|string|max:100',
+            'priority' => 'nullable|string|in:Rendah,Sedang,Tinggi,Darurat',
+            'service_description' => 'nullable|string',
+            'scheduled_date' => 'nullable|date',
+            'labor_rate' => 'nullable|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $spkNumber = 'SPK-' . strtoupper(Str::random(8));
+
+        $order = \App\Models\JasaWorkOrder::create([
+            'tenant_id' => $tenantId,
+            'spk_number' => $spkNumber,
+            'title' => $request->title,
+            'customer_name' => $request->customer_name,
+            'customer_company' => $request->customer_company,
+            'customer_phone' => $request->customer_phone,
+            'customer_email' => $request->customer_email,
+            'customer_address' => $request->customer_address,
+            'category' => $request->category ?? 'Perbaikan & Troubleshooting (Corrective)',
+            'equipment_name' => $request->equipment_name ?? 'Unit / Perangkat Klien',
+            'serial_number' => $request->serial_number,
+            'priority' => $request->priority ?? 'Sedang',
+            'status' => 'Antrean',
+            'scheduled_date' => $request->scheduled_date ?? now()->toDateString(),
+            'labor_rate' => $request->labor_rate ?? 0,
+            'grand_total' => $request->labor_rate ?? 0,
+            'service_description' => $request->service_description,
+            'payment_status' => 'Belum Bayar',
+        ]);
+
+        // Dispatch Webhook to tenant
+        $this->dispatchTenantWebhook($tenantId, 'spk.created', $order->toArray());
+
+        return response()->json([
+            'success' => true,
+            'message' => "SPK {$spkNumber} berhasil diterbitkan via API!",
+            'data' => $order
+        ], 201);
+    }
+
+    /**
+     * 7. GET /api/v1/external/work-orders/{id}
+     */
+    public function getWorkOrderDetail(Request $request, $id)
+    {
+        $tenantId = $this->getTenantId($request);
+        $order = \App\Models\JasaWorkOrder::where('tenant_id', $tenantId)
+            ->where(function ($q) use ($id) {
+                $q->where('id', $id)->orWhere('spk_number', $id);
+            })
+            ->with(['technician:id,name,specialty,phone', 'parts', 'logs'])
+            ->first();
+
+        if (!$order) {
+            return response()->json(['success' => false, 'message' => 'Data SPK tidak ditemukan'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $order
+        ]);
+    }
+
+    /**
+     * 8. GET /api/v1/external/services
+     */
+    public function getServices(Request $request)
+    {
+        $tenantId = $this->getTenantId($request);
+        $services = \App\Models\JasaServiceCatalog::where('tenant_id', $tenantId)->latest()->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $services
+        ]);
+    }
+
+    /**
+     * 9. GET /api/v1/external/technicians
+     */
+    public function getTechnicians(Request $request)
+    {
+        $tenantId = $this->getTenantId($request);
+        $technicians = \App\Models\JasaTechnician::where('tenant_id', $tenantId)
+            ->get(['id', 'name', 'specialty', 'phone', 'rating', 'current_status', 'completed_jobs']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $technicians
         ]);
     }
 }

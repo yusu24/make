@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Sparkles, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Sparkles, X } from '@/constants/icons';
 
 interface SellerAiFabProps {
   onOpen: () => void;
@@ -7,45 +7,148 @@ interface SellerAiFabProps {
 }
 
 export const SellerAiFab: React.FC<SellerAiFabProps> = ({ onOpen, isPosView = false }) => {
-  const [posAiEnabled, setPosAiEnabled] = useState(() => {
-    const saved = localStorage.getItem('bizora_seller_pos_ai_enabled');
-    return saved !== null ? saved === 'true' : true;
+  const [isHidden, setIsHidden] = useState(() => {
+    return localStorage.getItem('bizora_seller_ai_hidden') === 'true';
   });
   const [isHovered, setIsHovered] = useState(false);
 
+  // Position state (null = use CSS default placement)
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(() => {
+    try {
+      const saved = localStorage.getItem('bizora_seller_ai_pos');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const fabRef = useRef<HTMLDivElement | null>(null);
+  const isDragging = useRef(false);
+  const dragInfo = useRef({ startX: 0, startY: 0, initialLeft: 0, initialTop: 0 });
+
   useEffect(() => {
-    const handleToggle = (e: any) => {
-      const next = e.detail?.enabled !== undefined ? e.detail.enabled : !posAiEnabled;
-      setPosAiEnabled(next);
-      localStorage.setItem('bizora_seller_pos_ai_enabled', String(next));
+    const handleOpenAi = () => {
+      setIsHidden(false);
+      onOpen();
     };
+    const handleToggle = (e: any) => {
+      const next = e.detail?.enabled !== undefined ? !e.detail.enabled : !isHidden;
+      setIsHidden(next);
+      localStorage.setItem('bizora_seller_ai_hidden', String(next));
+    };
+
+    window.addEventListener('bizora:open-seller-ai', handleOpenAi);
     window.addEventListener('bizora:toggle-seller-pos-ai', handleToggle);
-    return () => window.removeEventListener('bizora:toggle-seller-pos-ai', handleToggle);
-  }, [posAiEnabled]);
+    return () => {
+      window.removeEventListener('bizora:open-seller-ai', handleOpenAi);
+      window.removeEventListener('bizora:toggle-seller-pos-ai', handleToggle);
+    };
+  }, [isHidden, onOpen]);
 
-  if (isPosView && !posAiEnabled) {
-    return null;
-  }
+  // Handle pointer down (mouse or touch) for dragging
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('button[data-dismiss]')) return;
 
-  const handleDismissInPos = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setPosAiEnabled(false);
-    localStorage.setItem('bizora_seller_pos_ai_enabled', 'false');
+    const el = fabRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    dragInfo.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initialLeft: rect.left,
+      initialTop: rect.top
+    };
+    isDragging.current = false;
+
+    const onPointerMove = (moveEv: PointerEvent) => {
+      const dx = moveEv.clientX - dragInfo.current.startX;
+      const dy = moveEv.clientY - dragInfo.current.startY;
+
+      if (Math.hypot(dx, dy) > 5) {
+        isDragging.current = true;
+      }
+
+      if (isDragging.current) {
+        const maxX = window.innerWidth - 60;
+        const maxY = window.innerHeight - 60;
+        const nextX = Math.max(10, Math.min(maxX, dragInfo.current.initialLeft + dx));
+        const nextY = Math.max(10, Math.min(maxY, dragInfo.current.initialTop + dy));
+        setPosition({ x: nextX, y: nextY });
+      }
+    };
+
+    const onPointerUp = () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+
+      if (isDragging.current) {
+        setPosition((curr) => {
+          if (curr) localStorage.setItem('bizora_seller_ai_pos', JSON.stringify(curr));
+          return curr;
+        });
+        setTimeout(() => {
+          isDragging.current = false;
+        }, 80);
+      }
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
   };
+
+  const handleBubbleClick = (e: React.MouseEvent) => {
+    if (isDragging.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    onOpen();
+  };
+
+  const handleDismiss = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsHidden(true);
+    localStorage.setItem('bizora_seller_ai_hidden', 'true');
+  };
+
+  const handleRestore = () => {
+    setIsHidden(false);
+    localStorage.setItem('bizora_seller_ai_hidden', 'false');
+  };
+
+  if (isHidden) {
+    return (
+      <button
+        type="button"
+        onClick={handleRestore}
+        className="fixed bottom-20 md:bottom-6 right-3 z-40 p-2 rounded-full bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-md backdrop-blur-sm border border-indigo-400/40 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+        title="Tampilkan kembali AI Seller"
+        aria-label="Tampilkan kembali AI Seller"
+      >
+        <Sparkles size={16} className="animate-pulse" />
+      </button>
+    );
+  }
 
   return (
     <div
-      className={`fixed z-40 transition-all duration-300 ease-out select-none ${
-        isPosView
-          ? 'bottom-5 right-5 lg:bottom-6 lg:right-[400px]'
-          : 'bottom-6 right-6'
-      }`}
+      ref={fabRef}
+      onPointerDown={handlePointerDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      className={`fixed z-40 select-none cursor-grab active:cursor-grabbing touch-none ${
+        position ? '' : (
+          isPosView
+            ? 'bottom-5 right-5 lg:bottom-6 lg:right-[400px]'
+            : 'bottom-20 md:bottom-6 right-6'
+        )
+      }`}
+      style={position ? { left: `${position.x}px`, top: `${position.y}px`, bottom: 'auto', right: 'auto' } : undefined}
     >
-      {/* Tooltip on hover */}
+      {/* Tooltip on hover (desktop) */}
       <div
-        className={`absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-slate-900/90 backdrop-blur-md text-white text-xs font-semibold shadow-xl border border-slate-700/50 pointer-events-none whitespace-nowrap transition-all duration-200 flex items-center gap-2 ${
+        className={`hidden md:flex absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-slate-900/90 backdrop-blur-md text-white text-xs font-semibold shadow-xl border border-slate-700/50 pointer-events-none whitespace-nowrap transition-all duration-200 items-center gap-2 ${
           isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
         }`}
       >
@@ -56,24 +159,24 @@ export const SellerAiFab: React.FC<SellerAiFabProps> = ({ onOpen, isPosView = fa
         </span>
       </div>
 
-      {/* Small dismiss "x" button when on POS screen */}
-      {isPosView && isHovered && (
-        <button
-          type="button"
-          onClick={handleDismissInPos}
-          className="absolute -top-1.5 -left-1.5 z-50 w-5 h-5 rounded-full bg-slate-800 text-slate-300 hover:text-white hover:bg-rose-600 border border-slate-600 flex items-center justify-center shadow transition-all duration-150 cursor-pointer"
-          title="Sembunyikan AI di Kasir"
-        >
-          <X size={11} />
-        </button>
-      )}
+      {/* Dismiss "X" button - visible everywhere */}
+      <button
+        type="button"
+        data-dismiss="true"
+        onClick={handleDismiss}
+        className="absolute -top-1 -right-1 z-50 w-5 h-5 rounded-full bg-slate-800 text-slate-300 hover:text-white hover:bg-rose-600 border border-slate-600 flex items-center justify-center shadow transition-all duration-150 cursor-pointer"
+        title="Sembunyikan AI Seller"
+        aria-label="Sembunyikan AI Seller"
+      >
+        <X size={11} />
+      </button>
 
       {/* Circular Bubble Button */}
       <button
         type="button"
-        onClick={onOpen}
-        className="relative flex items-center justify-center w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-indigo-700 text-white shadow-lg shadow-indigo-500/35 hover:shadow-xl hover:shadow-indigo-500/50 hover:scale-105 active:scale-95 transition-all duration-200 border border-white/20 focus:outline-none cursor-pointer"
-        title="Buka AI Seller Advisor"
+        onClick={handleBubbleClick}
+        className="relative flex items-center justify-center w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-indigo-700 text-white shadow-lg shadow-indigo-500/35 hover:shadow-xl hover:shadow-indigo-500/50 hover:scale-105 active:scale-95 transition-transform duration-150 border border-white/20 focus:outline-none cursor-pointer"
+        title="Buka AI Seller Advisor (Bisa digeser)"
         aria-label="AI Seller Advisor"
       >
         {/* Subtle glowing pulse ring */}

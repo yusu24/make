@@ -14,7 +14,7 @@ import {
   Clock, 
   TrendingUp,
   Scale
-} from 'lucide-react';
+} from '@/constants/icons';
 
 export default function BudidayaAiModal({ isOpen, onClose }) {
   if (!isOpen) return null;
@@ -109,10 +109,12 @@ export default function BudidayaAiModal({ isOpen, onClose }) {
   };
 
   return createPortal(
-    <div className="fixed inset-0 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200" style={{ zIndex: 99999 }}>
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200" style={{ zIndex: 99999 }}>
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[85vh]">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white flex items-center justify-between">
+        <div className="px-5 sm:px-6 py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
               <Fish className="w-5 h-5 text-white" />
@@ -136,7 +138,7 @@ export default function BudidayaAiModal({ isOpen, onClose }) {
         </div>
 
         {/* Sub Navigation Tabs */}
-        <div className="flex items-center gap-2 p-3 bg-slate-50 border-b border-slate-200 text-xs font-bold">
+        <div className="flex items-center gap-2 p-3 bg-slate-50 border-b border-slate-200 text-xs font-bold overflow-x-auto no-scrollbar shrink-0">
           <button
             onClick={() => setActiveTab('diagnose')}
             className={'flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ' + (

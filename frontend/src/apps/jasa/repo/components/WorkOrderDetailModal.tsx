@@ -17,7 +17,7 @@ import {
   Trash2,
   Send,
   Star
-} from 'lucide-react';
+} from '@/constants/icons';
 import { formatRupiah, formatNumberInput, parseNumberInput } from '../data/mockData';
 import { PrintReceiptModal } from './PrintReceiptModal';
 import { useJasa } from '../contexts/JasaContext';
@@ -217,31 +217,89 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-5 z-[60]">
-      <div className="bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl w-full max-w-4xl max-h-[95vh] sm:max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[2000] overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-5">
+      <div className="bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl w-full max-w-4xl max-h-[92dvh] sm:max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-150">
         
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2 sm:hidden shrink-0" />
+
         {/* Modal Header */}
-        <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-100 flex items-start justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
-                {currentOrder.id}
-              </span>
-              <span className={`px-2.5 py-0.5 rounded-lg text-xs font-semibold ${
-                currentOrder.priority === 'Darurat' ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse font-semibold' :
-                currentOrder.priority === 'Tinggi' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
-                'bg-blue-50 text-blue-700 border border-blue-200'
-              }`}>
-                Prioritas {currentOrder.priority}
-              </span>
-              <span className="text-xs text-slate-500">
+        <div className="p-4 sm:p-6 bg-slate-50 border-b border-slate-100 shrink-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 shadow-2xs">
+                  {currentOrder.id}
+                </span>
+                <span className={`px-2.5 py-0.5 rounded-lg text-xs font-bold ${
+                  currentOrder.priority === 'Darurat' ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse' :
+                  currentOrder.priority === 'Tinggi' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
+                  'bg-blue-50 text-blue-700 border border-blue-200'
+                }`}>
+                  Prioritas {currentOrder.priority}
+                </span>
+                <span className="text-xs text-slate-500 hidden sm:inline">
+                  Kategori: <strong className="text-slate-800 font-semibold">{currentOrder.category}</strong>
+                </span>
+              </div>
+              <h2 className="text-base sm:text-xl font-bold text-slate-900 mt-2 tracking-tight leading-snug">
+                {currentOrder.title}
+              </h2>
+              <div className="text-xs text-slate-500 mt-1 sm:hidden">
                 Kategori: <strong className="text-slate-800 font-semibold">{currentOrder.category}</strong>
-              </span>
+              </div>
             </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mt-2">{currentOrder.title}</h2>
+
+            {/* Actions & Close button */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Desktop Action Buttons */}
+              <div className="hidden sm:flex items-center gap-2">
+                {currentOrder.customerPhone && (
+                  <button
+                    onClick={() => {
+                      const phone = currentOrder.customerPhone.replace(/\D/g, '');
+                      const formattedPhone = phone.startsWith('0') ? '62' + phone.substring(1) : phone;
+                      const text = encodeURIComponent(
+                        `Halo Bpk/Ibu *${currentOrder.customerName}*,\n\nBerikut update status pengerjaan servis Anda di *BIZORA Jasa & Servis*:\n\n📋 *No. SPK:* ${currentOrder.id}\n🔧 *Layanan:* ${currentOrder.title}\n⚙️ *Status Terkini:* *${currentOrder.status}*\n💰 *Estimasi Biaya:* ${formatRupiah(currentOrder.grandTotal || 0)}\n\nJika ada pertanyaan, silakan balas pesan ini. Terima kasih! 🙏`
+                      );
+                      window.open(`https://wa.me/${formattedPhone}?text=${text}`, '_blank');
+                    }}
+                    className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+                    title="Kirim notifikasi status SPK via WhatsApp ke pelanggan"
+                  >
+                    <Send className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Kirim WA</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowPrintReceipt(true)}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+                >
+                  <FileText className="w-4 h-4 text-slate-500" />
+                  <span>Cetak Struk</span>
+                </button>
+                <button
+                  onClick={() => onPrintOrder(currentOrder)}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+                >
+                  <Printer className="w-4 h-4 text-slate-500" />
+                  <span>Cetak SPK</span>
+                </button>
+              </div>
+
+              {/* Prominent Close button */}
+              <button
+                onClick={onClose}
+                className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-700 border border-slate-200 transition-colors shadow-2xs cursor-pointer"
+                aria-label="Tutup Rincian SPK"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          {/* Mobile Quick Action Buttons Bar */}
+          <div className="flex sm:hidden items-center gap-2 mt-3 pt-3 border-t border-slate-200/70">
             {currentOrder.customerPhone && (
               <button
                 onClick={() => {
@@ -252,32 +310,25 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
                   );
                   window.open(`https://wa.me/${formattedPhone}?text=${text}`, '_blank');
                 }}
-                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
-                title="Kirim notifikasi status SPK via WhatsApp ke pelanggan"
+                className="flex-1 flex items-center justify-center space-x-1.5 py-2 px-2.5 rounded-xl bg-emerald-50 active:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold shadow-2xs cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="hidden sm:inline">Kirim WA</span>
+                <span>Kirim WA</span>
               </button>
             )}
             <button
               onClick={() => setShowPrintReceipt(true)}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+              className="flex-1 flex items-center justify-center space-x-1.5 py-2 px-2.5 rounded-xl bg-white active:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold shadow-2xs cursor-pointer"
             >
-              <FileText className="w-4 h-4 text-slate-500" />
-              <span className="hidden sm:inline">Cetak Struk</span>
+              <FileText className="w-3.5 h-3.5 text-slate-500" />
+              <span>Struk</span>
             </button>
             <button
               onClick={() => onPrintOrder(currentOrder)}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+              className="flex-1 flex items-center justify-center space-x-1.5 py-2 px-2.5 rounded-xl bg-white active:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold shadow-2xs cursor-pointer"
             >
-              <Printer className="w-4 h-4 text-slate-500" />
-              <span className="hidden sm:inline">Cetak SPK</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-700 border border-slate-200 transition-colors shadow-2xs cursor-pointer"
-            >
-              <X className="w-5 h-5" />
+              <Printer className="w-3.5 h-3.5 text-slate-500" />
+              <span>SPK</span>
             </button>
           </div>
         </div>
@@ -431,8 +482,8 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
 
             {/* Form Add Spare Part */}
             {showAddPart && (
-              <form onSubmit={handleAddSparePart} className="mb-4 p-3.5 bg-white rounded-xl border border-slate-200 flex flex-wrap items-end gap-2.5 shadow-2xs">
-                <div className="flex-1 min-w-[200px] relative">
+              <form onSubmit={handleAddSparePart} className="mb-4 p-3.5 bg-white rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end shadow-2xs">
+                <div className={`${isCustomPart ? 'sm:col-span-4' : 'sm:col-span-5'} relative`}>
                   <label className="block text-[11px] font-semibold text-slate-600 mb-1">Nama Suku Cadang / Material</label>
                   <select
                     value={isCustomPart ? 'custom' : newPartName}
@@ -450,7 +501,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
                         }
                       }
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 appearance-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 appearance-none"
                   >
                     <option value="">-- Pilih dari Gudang / Retail --</option>
                     <option disabled>--- Database Retail / POS ---</option>
@@ -464,7 +515,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
                   </select>
                 </div>
                 {isCustomPart && (
-                  <div className="flex-1 min-w-[150px]">
+                  <div className="sm:col-span-3">
                     <label className="block text-[11px] font-semibold text-slate-600 mb-1">Input Manual</label>
                     <input
                       type="text"
@@ -472,36 +523,38 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
                       value={newPartName}
                       onChange={(e) => setNewPartName(e.target.value)}
                       placeholder="Ketik nama part..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800"
                     />
                   </div>
                 )}
-                <div className="w-20">
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jumlah</label>
-                  <input
-                    type="number"
-                    min="1"
-                    placeholder="1"
-                    value={newPartQty}
-                    onChange={(e) => setNewPartQty(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:bg-white"
-                  />
+                <div className="grid grid-cols-2 gap-2 sm:contents">
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jumlah</label>
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="1"
+                      value={newPartQty}
+                      onChange={(e) => setNewPartQty(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 focus:bg-white"
+                    />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Harga Satuan (Rp)</label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: 100.000"
+                      value={newPartCost}
+                      onChange={(e) => setNewPartCost(formatNumberInput(e.target.value))}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 focus:bg-white font-medium"
+                    />
+                  </div>
                 </div>
-                <div className="w-32">
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Harga Satuan (Rp)</label>
-                  <input
-                    type="text"
-                    placeholder="Contoh: 100.000"
-                    value={newPartCost}
-                    onChange={(e) => setNewPartCost(formatNumberInput(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:bg-white font-medium"
-                  />
-                </div>
-                <div className="flex space-x-1.5">
-                  <button type="submit" className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-2xs">
+                <div className="flex space-x-1.5 sm:col-span-2 pt-1 sm:pt-0">
+                  <button type="submit" className="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-2xs cursor-pointer">
                     Simpan
                   </button>
-                  <button type="button" onClick={() => setShowAddPart(false)} className="px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg">
+                  <button type="button" onClick={() => setShowAddPart(false)} className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-lg cursor-pointer">
                     Batal
                   </button>
                 </div>
@@ -509,8 +562,8 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
             )}
 
             {/* Parts List */}
-            <div className="overflow-x-auto bg-white rounded-xl border border-slate-200">
-              <table className="w-full text-xs text-left">
+            <div className="overflow-x-auto bg-white rounded-xl border border-slate-200 -mx-1 sm:mx-0">
+              <table className="w-full min-w-[500px] sm:min-w-full text-xs text-left">
                 <thead className="text-slate-400 border-b border-slate-100 bg-slate-50/50">
                   <tr>
                     <th className="py-2 px-3 font-semibold uppercase text-[10px]">Item Material / Jasa</th>
@@ -658,13 +711,16 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+        <div 
+          className="p-3.5 sm:p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between shrink-0"
+          style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+        >
           <div className="text-xs text-slate-500">
             Dibuat pada: <strong className="text-slate-700">{(currentOrder.createdAt || '').split('T')[0]}</strong>
           </div>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-2xs transition-all"
+            className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer"
           >
             Tutup
           </button>

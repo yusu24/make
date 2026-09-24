@@ -1,5 +1,5 @@
 import React from 'react';
-import { Inbox, Plus } from 'lucide-react';
+import { Inbox, Plus } from '@/constants/icons';
 
 /**
  * EmptyTableState - Standard Empty State Component for Bizora SaaS

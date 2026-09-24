@@ -1,5 +1,6 @@
 import React from 'react';
 import { TenantDeveloperPortal } from '../../../components/TenantDeveloperPortal';
+import '../retail.css';
 
 export default function RetailDeveloperApi() {
   return (

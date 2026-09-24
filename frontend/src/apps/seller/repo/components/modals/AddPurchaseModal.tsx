@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Truck, Plus, Trash2 } from 'lucide-react';
+import { X, Truck, Plus, Trash2 } from '@/constants/icons';
 import api from '../../../../../services/api';
 
 interface SupplierOption {
@@ -100,9 +100,11 @@ export const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
+    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl overflow-hidden max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
           <h3 className="font-semibold text-base text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Truck className="w-5 h-5 text-indigo-600" />
             Catat Penerimaan Barang
@@ -112,7 +114,8 @@ export const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({ isOpen, onCl
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs overflow-y-auto">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-4 sm:p-5 space-y-4 text-xs overflow-y-auto flex-1">
           {error && <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 font-medium">{error}</div>}
 
           <div className="grid grid-cols-2 gap-3">
@@ -214,14 +217,19 @@ export const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({ isOpen, onCl
             </span>
           </div>
 
-          <div className="pt-1 flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold">
+          </div>
+
+          <div 
+            className="p-3.5 sm:p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/70 flex items-center justify-end gap-2 shrink-0"
+            style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))' }}
+          >
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold cursor-pointer">
               Batal
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-md disabled:opacity-50"
+              className="flex-1 sm:flex-none justify-center px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-md disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Menyimpan...' : 'Simpan Penerimaan'}
             </button>

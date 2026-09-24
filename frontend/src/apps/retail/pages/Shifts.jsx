@@ -4,6 +4,7 @@ import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
+import { RefreshCw } from '@/constants/icons';
 import RetailPagination from '../components/RetailPagination';
 import '../retail.css';
 
@@ -80,10 +81,6 @@ export default function Shifts() {
 
   return (
     <div className="retail-page-classic">
-      {/* Header section similar to retail pages */}
-      <div className="page-header" style={{ marginBottom: 32, justifyContent: 'flex-end' }}>
-      </div>
-
       <div className="card mb-6 p-6 animate-fade-in" style={{ borderLeft: current?.id ? '4px solid #10b981' : '4px solid #94a3b8' }}>
         {loading ? (
           <div className="text-slate-400">Memuat status shift...</div>
@@ -110,8 +107,11 @@ export default function Shifts() {
       </div>
 
       <div className="card table-wrap animate-fade-in">
-        <div className="toolbar-no-stack" style={{ padding: '16px 20px', borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
+        <div className="toolbar-no-stack" style={{ padding: '16px 20px', borderBottom: '1px solid var(--retail-border, #e2e8f0)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className="font-bold retail-text-primary m-0">Riwayat Shift</h2>
+          <button onClick={load} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+          </button>
         </div>
         
         <div className="retail-table-responsive">

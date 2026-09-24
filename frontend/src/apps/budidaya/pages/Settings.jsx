@@ -1,17 +1,61 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
+import api from '../../../services/api'
+import bizoraLogo from '../../../assets/bizora-logo.png'
 import '../budidaya.css'
 import { useBudidayaContext } from '../contexts/BudidayaContext'
 
 export default function Settings() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const { terms, farmType, farmName, updateFarmSettings } = useBudidayaContext()
   const [theme, setTheme] = useState('light')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const [message, setMessage] = useState(null)
+  const logoInputRef = useRef(null)
   
   const [formFarmType, setFormFarmType] = useState(farmType)
-  const [formFarmName, setFormFarmName] = useState(farmName || '')
+  const [formFarmName, setFormFarmName] = useState(farmName || user?.tenant_name || '')
+
+  const handleLogoUpload = async (file) => {
+    if (!file) return;
+    setLogoUploading(true);
+    setMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append('store_icon', file);
+      const res = await api.post('/tenant/branding/logo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const newUrl = res.data?.data?.store_icon_url;
+      updateUser({ store_icon_url: newUrl });
+      setMessage({ type: 'success', text: 'Logo budidaya berhasil diperbarui!' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      console.error('Failed to upload farm logo:', err);
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Gagal mengunggah logo.' });
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const handleLogoDelete = async () => {
+    if (!window.confirm('Hapus logo budidaya dan gunakan logo default?')) return;
+    setLogoUploading(true);
+    setMessage(null);
+    try {
+      await api.delete('/tenant/branding/logo');
+      updateUser({ store_icon_url: null });
+      setMessage({ type: 'success', text: 'Logo budidaya dikembalikan ke default.' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      console.error('Failed to delete logo:', err);
+      setMessage({ type: 'error', text: 'Gagal menghapus logo.' });
+    } finally {
+      setLogoUploading(false);
+    }
+  };
 
   React.useEffect(() => {
     setFormFarmType(farmType)
@@ -54,7 +98,7 @@ export default function Settings() {
   const sectionHeader = (icon, title) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
       <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#1B4332' }}>{icon}</span>
-      <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#0f172a', margin: 0, fontFamily: "'Inter', sans-serif" }}>{title}</h3>
+      <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#0f172a', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{title}</h3>
     </div>
   )
 
@@ -96,7 +140,7 @@ export default function Settings() {
   )
 
   return (
-    <div className="aq-container" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+    <div className="aq-container">
       <style>{`
         @media (max-width: 768px) {
           .settings-header { flex-direction: column; align-items: flex-start !important; gap: 16px; }
@@ -154,8 +198,23 @@ export default function Settings() {
           
           {/* Pengaturan Bisnis Budidaya */}
           <div style={cardStyle}>
-            {sectionHeader('storefront', 'Bisnis Budidaya')}
+            {sectionHeader('storefront', 'Bisnis Budidaya & Branding')}
             
+            {message && (
+              <div style={{
+                padding: '10px 14px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: '500',
+                marginBottom: '14px',
+                background: message.type === 'success' ? '#DEF7EC' : '#FDE8E8',
+                color: message.type === 'success' ? '#03543F' : '#9B1C1C',
+                border: `1px solid ${message.type === 'success' ? '#BCF0DA' : '#F8B4B4'}`
+              }}>
+                {message.text}
+              </div>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <label style={labelStyle}>Nama Peternakan / Budidaya</label>
@@ -166,6 +225,65 @@ export default function Settings() {
                   placeholder="Misal: AquaGrow Farm" 
                 />
               </div>
+
+              <div>
+                <label style={labelStyle}>Logo / Ikon Budidaya</label>
+                <p style={{ fontSize: '11.5px', color: '#64748b', margin: '2px 0 8px 0' }}>Logo ini akan tampil di sidebar dan laporan modul budidaya.</p>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  style={{ display: 'none' }}
+                  onChange={e => {
+                    if (e.target.files?.[0]) handleLogoUpload(e.target.files[0]);
+                    e.target.value = '';
+                  }}
+                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '56px', height: '56px', borderRadius: '12px', border: '1px solid #CBD5E1',
+                    background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    overflow: 'hidden', padding: '4px', flexShrink: 0
+                  }}>
+                    <img 
+                      src={user?.store_icon_url || bizoraLogo} 
+                      alt="Logo Budidaya" 
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={logoUploading}
+                      style={{
+                        padding: '6px 12px', borderRadius: '8px', border: '1px solid #CBD5E1',
+                        background: '#F8FAFC', color: '#334155', fontSize: '12px', fontWeight: '600',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>upload</span>
+                      {logoUploading ? 'Mengunggah...' : (user?.store_icon_url ? 'Ganti Logo' : 'Unggah Logo')}
+                    </button>
+                    {user?.store_icon_url && (
+                      <button
+                        type="button"
+                        onClick={handleLogoDelete}
+                        disabled={logoUploading}
+                        style={{
+                          padding: '6px 12px', borderRadius: '8px', border: '1px solid #FECACA',
+                          background: '#FEF2F2', color: '#DC2626', fontSize: '12px', fontWeight: '600',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
+                        }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>delete</span>
+                        Hapus
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label style={labelStyle}>Tipe Budidaya</label>
                 <div style={{ position: 'relative' }}>
@@ -319,8 +437,10 @@ export default function Settings() {
           onClick={async () => {
             setSaving(true)
             await updateFarmSettings(formFarmType, formFarmName)
+            updateUser({ tenant_name: formFarmName })
             setSaving(false)
-            alert('Pengaturan berhasil disimpan')
+            setMessage({ type: 'success', text: 'Pengaturan budidaya berhasil disimpan!' })
+            setTimeout(() => setMessage(null), 3000)
           }}
           style={{ 
             padding: '8px 20px', borderRadius: '8px', border: 'none', 

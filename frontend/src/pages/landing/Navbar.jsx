@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, X, ArrowRight, Sparkles, Building2 } from 'lucide-react'
+import { Menu, X, ArrowRight, Sparkles, Building2 } from '@/constants/icons'
+import bizoraLogo from '../../assets/bizora-logo.png'
 
 const NAV_LINKS = [
   { name: 'Beranda', href: '#beranda' },
   { name: 'Fitur', href: '#fitur' },
   { name: 'Cara Kerja', href: '#cara-kerja' },
-  { name: 'API & Developer', href: '#developer' },
+  { name: 'API & Developer', href: '/developers', isRoute: true },
   { name: 'Testimoni', href: '#testimoni' },
 ]
 
@@ -24,31 +25,34 @@ export default function Navbar({ user, onLogout, onScrollTo, logoUrl }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
 
         <a href="#beranda" onClick={(e) => handleNavClick(e, '#beranda')} className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-emerald-950/40 group-hover:scale-105 transition-transform duration-200 overflow-hidden">
-            {logoUrl ? (
-              <img src={logoUrl} alt="BIZORA Logo" className="w-full h-full object-contain" />
-            ) : (
-              <div className="w-6 h-6 bg-[#041512] rounded-lg flex items-center justify-center relative">
-                <Building2 className="w-4 h-4 text-emerald-400" />
-                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
-              </div>
-            )}
+          <div className="w-[38px] h-[38px] rounded-[10px] overflow-hidden flex items-center justify-center shadow-md shadow-emerald-950/40 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+            <img src={logoUrl || bizoraLogo} alt="BIZORA" className="w-full h-full object-contain rounded-[10px]" />
           </div>
-          <span className="text-xl font-black tracking-wider text-white font-mono">
+          <span className="text-2xl font-extrabold text-white tracking-[0.06em]" style={{ fontFamily: "'Plus Jakarta Sans', 'Outfit', sans-serif" }}>
             BIZORA
           </span>
         </a>
 
         <nav className="hidden md:flex items-center gap-8">
           {NAV_LINKS.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              onClick={(e) => handleNavClick(e, link.href)}
-              className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors duration-200"
-            >
-              {link.name}
-            </a>
+            link.isRoute ? (
+              <Link
+                key={link.name}
+                to={link.href}
+                className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors duration-200"
+              >
+                {link.name}
+              </Link>
+            ) : (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
+                className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors duration-200"
+              >
+                {link.name}
+              </a>
+            )
           ))}
         </nav>
 
@@ -94,14 +98,25 @@ export default function Navbar({ user, onLogout, onScrollTo, logoUrl }) {
         <div className="md:hidden bg-[#051c17] border-b border-[#0f382e] px-4 pt-3 pb-6 space-y-4">
           <div className="flex flex-col space-y-3">
             {NAV_LINKS.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => handleNavClick(e, link.href)}
-                className="text-sm font-medium text-slate-300 hover:text-emerald-400 py-2 border-b border-[#0f382e]/40"
-              >
-                {link.name}
-              </a>
+              link.isRoute ? (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm font-medium text-slate-300 hover:text-emerald-400 py-2 border-b border-[#0f382e]/40"
+                >
+                  {link.name}
+                </Link>
+              ) : (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(e, link.href)}
+                  className="text-sm font-medium text-slate-300 hover:text-emerald-400 py-2 border-b border-[#0f382e]/40"
+                >
+                  {link.name}
+                </a>
+              )
             ))}
           </div>
           <div className="flex flex-col gap-3 pt-2">

@@ -18,7 +18,22 @@ export const PageLoader = () => (
   </div>
 );
 
-export function getCategoryDashboardPath(category) {
+export function getCategoryDashboardPath(category, role) {
+  // Role-based routing for module staff who may lack business_category
+  if (role) {
+    const r = String(role).toLowerCase();
+    if (r === 'jasa_staff' || r === 'jasa_owner' || r === 'owner') {
+      // Still prefer category if available
+      if (!category) return '/jasa/dashboard';
+    }
+    if (r === 'retail_cashier' || r === 'retail_staff') {
+      if (!category) return '/retail/dashboard';
+    }
+    if (r === 'kuliner_staff' || r === 'kuliner_cashier') {
+      if (!category) return '/kuliner/admin';
+    }
+  }
+
   if (!category) return '/coming-soon';
   const cat = String(category).toLowerCase();
   
@@ -63,7 +78,7 @@ export const GuestRoute = ({ children }) => {
   if (loading) return <PageLoader />;
   if (user) {
     if (user.role === 'super_admin' || user.role === 'admin') return <Navigate to="/dashboard" replace />;
-    const targetPath = getCategoryDashboardPath(user.business_category);
+    const targetPath = getCategoryDashboardPath(user.business_category, user.role);
     return <Navigate to={targetPath} replace />;
   }
   return children;
@@ -72,16 +87,20 @@ export const GuestRoute = ({ children }) => {
 export const RootRedirect = () => {
   const { user } = useAuth();
   if (user?.role === 'super_admin' || user?.role === 'admin') return <Navigate to="/dashboard" replace />;
-  const targetPath = getCategoryDashboardPath(user?.business_category);
+  const targetPath = getCategoryDashboardPath(user?.business_category, user?.role);
   return <Navigate to={targetPath} replace />;
 };
 
-export const CategoryRoute = ({ children, allowedCategory }) => {
+export const CategoryRoute = ({ children, allowedCategory, allowedRoles }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'super_admin' || user.role === 'admin') return children;
   
+  if (allowedRoles && allowedRoles.includes(user.role)) {
+    return children;
+  }
+
   if (!isCategoryAllowed(user.business_category, allowedCategory)) {
     return <Navigate to="/dashboard-redirect" replace />;
   }

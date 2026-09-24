@@ -3,8 +3,8 @@
    AquaGrow — Budidaya Hewan Design System
    ═══════════════════════════════════════════════ */
 
-/* ── Google Font (Inter - Matching Seller Clean Standard) ── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ── Google Fonts (Inter + Plus Jakarta Sans Design Tokens) ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
   --aq-primary:        #1B4332;
@@ -26,40 +26,66 @@
   --aq-active-bg:      #F1F5F2;
 }
 
-/* ── Typography Scale (Unified with Seller Standard) ── */
+/* ── Typography System (Unified with Design System Dictionary & Retail Standard) ── */
+.budidaya-scope {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.budidaya-scope h1,
+.budidaya-scope h2,
+.budidaya-scope h3,
+.budidaya-scope h4,
+.budidaya-scope h5,
+.budidaya-scope h6,
+.budidaya-scope .font-headline {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+.budidaya-scope table,
+.budidaya-scope input,
+.budidaya-scope select,
+.budidaya-scope textarea,
+.budidaya-scope button {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ── Typography Scale (Unified with Design System Dictionary) ── */
 .aq-page-title {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-  font-size: 18px !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.aq-section-title {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 15px !important;
   font-weight: 600 !important;
   color: #0f172a !important;
   margin: 0;
   letter-spacing: -0.01em;
 }
 
-.aq-section-title {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  color: #1e293b !important;
-  margin: 0;
-}
-
 .aq-kpi-label {
   font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-  font-size: 14.5px !important;
-  font-weight: 700 !important;
-  color: #334155 !important;
-  text-transform: none !important;
-  margin: 0;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin: 0 0 4px 0 !important;
 }
 
 .aq-kpi-value {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-  font-size: 22px !important;
-  font-weight: 700 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 600 !important;
   color: #0f172a !important;
-  margin: 4px 0 0;
-  line-height: 1.2;
+  letter-spacing: -0.02em !important;
+  line-height: 1.15 !important;
+  margin: 0 !important;
 }
 
 .aq-body-text {
@@ -92,7 +118,8 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 12.5px;
+  font-size: 13px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .aq-table-header {
@@ -101,14 +128,22 @@
 }
 
 .aq-table-header-cell {
-  padding: 10px 16px !important;
+  padding: 12px 16px !important;
   font-size: 11.5px !important;
   font-weight: 600 !important;
   color: #64748b !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
+  letter-spacing: 0.05em !important;
   background: #f8fafc !important;
   white-space: nowrap;
+}
+
+.aq-table-header-cell:first-child {
+  padding-left: 24px !important;
+}
+
+.aq-table-header-cell:last-child {
+  padding-right: 24px !important;
 }
 
 .aq-table-row {
@@ -125,12 +160,20 @@
 }
 
 .aq-table-cell {
-  padding: 10px 16px !important;
+  padding: 12px 16px !important;
   font-size: 13px !important;
-  color: #334155 !important;
+  color: #1e293b !important;
   font-weight: 400 !important;
-  line-height: 1.4;
+  line-height: 1.5;
   vertical-align: middle !important;
+}
+
+.aq-table-cell:first-child {
+  padding-left: 24px !important;
+}
+
+.aq-table-cell:last-child {
+  padding-right: 24px !important;
 }
 
 .aq-table-cell strong,
@@ -149,20 +192,23 @@
 .table-row-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .btn-table-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 10px;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   border: 1px solid #e2e8f0;
   background: #ffffff;
-  color: #475569;
+  color: #64748b;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -294,32 +340,41 @@
    ════════════════════════════════════════════════ */
 
 .aq-sidebar {
-  position: absolute !important;
+  position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   height: 100% !important;
-  width: 240px !important;
+  width: 240px;
   background: #FFFFFF !important;
-  border-right: 1px solid #E9F0EC !important;
+  border-right: none !important;
+  border: none !important;
   display: flex !important;
   flex-direction: column !important;
   z-index: 200 !important;
   transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  transition: width 0.25s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,0,.2,1);
 }
 
-/* Desktop: always visible */
+/* Desktop: always visible as natural flex column (never overlaps content) */
 @media (min-width: 1024px) {
   .aq-sidebar {
+    position: relative !important;
     transform: translateX(0) !important;
     box-shadow: none !important;
+    flex-shrink: 0 !important;
+    z-index: 20 !important;
   }
+}
+
+.aq-sidebar--collapsed {
+  width: 68px !important;
 }
 
 /* Mobile: open state */
 .aq-sidebar--open {
   transform: translateX(0) !important;
   box-shadow: 4px 0 24px rgba(0,0,0,.12) !important;
+  width: 240px !important;
 }
 
 /* Sidebar Overlay */
@@ -338,19 +393,13 @@
 }
 
 
-/* Content shifting helper */
+/* Content shifting helper - flex-1 guarantees 100% proper layout without overlap */
 .aq-main-content {
-  margin-left: 0;
-  transition: margin-left 0.3s ease;
-  width: 100%;
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  margin-left: 0 !important;
   overflow-x: hidden; /* Prevent child elements from breaking viewport */
-}
-
-@media (min-width: 1024px) {
-  .aq-main-content {
-    margin-left: 240px !important;
-    width: calc(100% - 240px) !important;
-  }
 }
 
 /* ── Reports page specific grids ── */
@@ -509,18 +558,24 @@
 .aquagrow-card {
   background: var(--aq-card-bg) !important;
   border: 1px solid var(--aq-border) !important;
-  border-radius: 20px !important;
-  box-shadow: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 
+.aquagrow-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05) !important;
+}
+
 .kpi-icon-box {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
 .search-input-aquagrow {
@@ -588,7 +643,7 @@
   border-color: #1B4332 !important;
   color: #ffffff !important;
   box-shadow: 0 2px 8px rgba(27, 67, 50, 0.25);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .sp-btn:hover:not(:disabled):not(.active) {
@@ -621,7 +676,7 @@
 .aq-header-title {
   margin: 0;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 600;
   color: #1B4332;
   letter-spacing: -0.02em;
   display: flex;
@@ -657,7 +712,7 @@
   justify-content: center;
   color: #fff;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   flex-shrink: 0;
   position: relative;
   box-shadow: 0 2px 6px rgba(27, 67, 50, 0.35);

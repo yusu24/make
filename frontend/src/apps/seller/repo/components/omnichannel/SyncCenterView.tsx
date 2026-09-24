@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, Package, ShoppingCart, Tag, Box, Play, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { RefreshCw, Package, ShoppingCart, Tag, Box, Play, CheckCircle2, AlertCircle, Clock } from '@/constants/icons';
 
 export const SyncCenterView: React.FC = () => {
   const [syncing, setSyncing] = useState<string | null>(null);
@@ -71,27 +71,16 @@ export const SyncCenterView: React.FC = () => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <RefreshCw className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span className="truncate">Synchronization Center</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-full">
-            Pusat kendali untuk memicu sinkronisasi manual secara massal.
-          </p>
-        </div>
-        <div className="shrink-0">
-          <button
-            onClick={() => handleSync('all', 'Sinkronisasi Global')}
-            disabled={syncing !== null}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-500 shadow-md shadow-emerald-500/20 transition-all text-xs cursor-pointer disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${syncing === 'all' ? 'animate-spin' : ''}`} />
-            <span>{syncing === 'all' ? 'Menyinkronkan Semua...' : 'Sync All (Global)'}</span>
-          </button>
-        </div>
+      {/* Top Action Bar */}
+      <div className="flex items-center justify-end gap-2 shrink-0">
+        <button
+          onClick={() => handleSync('all', 'Sinkronisasi Global')}
+          disabled={syncing !== null}
+          className="flex items-center gap-2 px-4 h-[38px] bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-500 shadow-xs transition-colors text-xs cursor-pointer disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${syncing === 'all' ? 'animate-spin' : ''}`} />
+          <span>{syncing === 'all' ? 'Menyinkronkan Semua...' : 'Sync All (Global)'}</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
