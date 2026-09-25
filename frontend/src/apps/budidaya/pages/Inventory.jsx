@@ -113,8 +113,7 @@ export default function Inventory() {
     borderRadius: '16px', 
     padding: '16px 20px',
     border: '1px solid #E2E8F0',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-    fontFamily: "'Inter', system-ui, -apple-system, sans-serif"
+    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
   }
 
   const getStockStatus = (item) => {
@@ -126,9 +125,35 @@ export default function Inventory() {
   return (
     <div className="aq-container">
       
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <div></div>
+      {/* ── Standard KPI Metric Cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        {[
+          { label: 'Total Barang', val: items.length, icon: 'inventory', bg: '#E8F5ED', color: '#1B4332', sub: 'Item terdaftar' },
+          { label: 'Stok Menipis', val: items.filter(i => i.stock <= i.min_stock && i.stock > 0).length, icon: 'warning', bg: '#FEF3C7', color: '#F59E0B', sub: 'Perlu restok' },
+          { label: 'Stok Habis', val: items.filter(i => i.stock <= 0).length, icon: 'error', bg: '#FEE2E2', color: '#EF4444', sub: 'Kritis / Kosong' },
+          { label: 'Nilai Aset', val: `Rp ${(items.reduce((acc, i) => acc + (i.stock * i.price_per_unit), 0)).toLocaleString('id-ID')}`, icon: 'payments', bg: '#E0E7FF', color: '#4F46E5', sub: 'Valuasi persediaan' },
+        ].map((s, i) => (
+          <div key={i} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">{s.label}</span>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{s.icon}</span>
+              </div>
+            </div>
+            <div>
+              <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl sm:text-3xl text-slate-900 tracking-tight leading-tight m-0 truncate">{s.val}</div>
+              <div className="text-xs text-slate-400 font-medium mt-1 font-['Inter']">{s.sub}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Header Actions Card */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs mb-5 flex justify-between items-center flex-wrap gap-3">
+        <div>
+          <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-800 text-sm sm:text-base m-0">Inventaris & Sarana Budidaya</h3>
+          <p className="text-xs text-slate-400 font-['Inter'] m-0">Kelola stok pakan, obat-obatan, vitamin, dan sarana produksi</p>
+        </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button 
             className="btn btn-secondary"
@@ -141,7 +166,7 @@ export default function Inventory() {
           <button 
             className="btn btn-primary"
             onClick={() => { setSelectedItem(null); setFormData({ name: '', category: defaultCat, stock: 0, unit: 'kg', min_stock: 0, price_per_unit: 0, description: '' }); setShowModal(true) }}
-            style={{ height: '38px', padding: '0 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: 6, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
+            style={{ height: '38px', padding: '0 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: 6, background: '#1B4332', color: '#fff', border: 'none', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
             <span>Tambah Barang</span>
@@ -149,30 +174,8 @@ export default function Inventory() {
         </div>
       </div>
 
-      {/* Stats Summary */}
-      <div className="aq-grid-4">
-        {[
-          { label: 'Total Barang', val: items.length, icon: 'inventory', bg: '#E8F5ED', color: '#1B4332' },
-          { label: 'Stok Menipis', val: items.filter(i => i.stock <= i.min_stock && i.stock > 0).length, icon: 'warning', bg: '#FEF3C7', color: '#F59E0B' },
-          { label: 'Stok Habis', val: items.filter(i => i.stock <= 0).length, icon: 'error', bg: '#FEE2E2', color: '#EF4444' },
-          { label: 'Nilai Aset', val: `Rp ${(items.reduce((acc, i) => acc + (i.stock * i.price_per_unit), 0)).toLocaleString()}`, icon: 'payments', bg: '#E0E7FF', color: '#4F46E5' },
-        ].map((s, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">{s.label}</span>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, flexShrink: 0 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{s.icon}</span>
-              </div>
-            </div>
-            <div>
-              <h2 className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight m-0">{s.val}</h2>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* Filter & Content */}
-      <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden mb-6">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ position: 'relative', minWidth: '200px' }}>

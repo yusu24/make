@@ -109,7 +109,7 @@ export default function Dashboard() {
             </span>
           </div>
           <div>
-            <div className="font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
+            <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
               {stats?.total_ponds ?? 0}
             </div>
             <div className="text-xs text-emerald-600 mt-1 flex items-center gap-1 font-medium font-['Inter']">
@@ -135,7 +135,7 @@ export default function Dashboard() {
             </span>
           </div>
           <div>
-            <div className={`font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl tracking-tight leading-tight ${stats?.critical_count > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
+            <div className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${stats?.critical_count > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
               {String(stats?.critical_count ?? 0).padStart(2, '0')}
             </div>
             <div className={`text-xs mt-1 font-['Inter'] ${stats?.critical_count > 0 ? 'text-rose-600 font-medium' : 'text-slate-400'}`}>
@@ -156,7 +156,7 @@ export default function Dashboard() {
             <span style={badge('#ECFDF5', '#10B981')}>Rutin</span>
           </div>
           <div>
-            <div className="font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
+            <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
               {stats?.next_feed_time || '16:00'}
             </div>
             <div className="text-xs text-slate-400 mt-1 font-['Inter']">
@@ -177,7 +177,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div>
-            <div className="font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight">
+            <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight">
               Rp {(stats?.total_revenue || 0).toLocaleString('id-ID')}
             </div>
             <div className="text-xs text-slate-400 mt-1.5 font-['Inter']">
@@ -195,7 +195,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div>
-            <div className="font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl text-rose-600 tracking-tight leading-tight">
+            <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-rose-600 tracking-tight leading-tight">
               Rp {(stats?.total_expenses || 0).toLocaleString('id-ID')}
             </div>
             <div className="text-xs text-slate-400 mt-1.5 font-['Inter']">
@@ -213,7 +213,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div>
-            <div className={`font-['Plus_Jakarta_Sans'] font-semibold text-2xl md:text-3xl tracking-tight leading-tight ${(stats?.net_profit || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+            <div className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${(stats?.net_profit || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               Rp {(stats?.net_profit || 0).toLocaleString('id-ID')}
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
@@ -416,8 +416,9 @@ export default function Dashboard() {
 const cardStyle = {
   background: '#FFFFFF',
   border: '1px solid #E2E8F0',
-  borderRadius: 14,
-  padding: '18px 20px',
+  borderRadius: 16,
+  padding: '20px',
+  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
 }
 
 function iconBox(bg, color) {

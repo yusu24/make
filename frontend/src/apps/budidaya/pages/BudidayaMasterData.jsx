@@ -235,8 +235,8 @@ export default function BudidayaMasterData() {
         </div>
       </div>
 
-      {/* ─── Search & Sub-Filter Bar ─── */}
-      <div style={{ background: '#fff', borderRadius: 16, padding: '12px 16px', marginBottom: 16, border: '1px solid #E9F0EC', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+      {/* ─── Search & Sub-Filter Bar Card ─── */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs mb-5 flex justify-between items-center flex-wrap gap-3">
         
         {/* Left Sub-filter based on active tab */}
         <div>
@@ -295,7 +295,7 @@ export default function BudidayaMasterData() {
 
       {/* ─── TAB 1: KATEGORI KEUANGAN TABLE ─── */}
       {activeTab === 'finance' && (
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden mb-6">
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
@@ -381,7 +381,7 @@ export default function BudidayaMasterData() {
 
       {/* ─── TAB 2: MASTER SATUAN DASAR (UNITS) TABLE ─── */}
       {activeTab === 'units' && (
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden mb-6">
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
@@ -453,7 +453,7 @@ export default function BudidayaMasterData() {
 
       {/* ─── TAB 3: KATEGORI PAKAN TABLE ─── */}
       {activeTab === 'feeds' && (
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden mb-6">
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>

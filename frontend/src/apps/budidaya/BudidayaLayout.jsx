@@ -9,6 +9,7 @@ import BudidayaMobileBottomSheet from './components/BudidayaMobileBottomSheet'
 import SubscriptionLock from '../../components/SubscriptionLock'
 import { BudidayaProvider } from './contexts/BudidayaContext'
 import { BudidayaPageSkeleton } from './components/BudidayaPageSkeleton'
+import './budidaya.css'
 
 export default function BudidayaLayout() {
   const [collapsed, setCollapsed] = useState(() => {

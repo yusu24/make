@@ -26,9 +26,10 @@
   --aq-active-bg:      #F1F5F2;
 }
 
-/* ── Typography System (Unified with Design System Dictionary & Retail Standard) ── */
+/* ── Typography System (Unified with Bizora Design System & FontDictionary) ── */
 .budidaya-scope {
-  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--aq-text-secondary);
 }
 
 .budidaya-scope h1,
@@ -37,7 +38,12 @@
 .budidaya-scope h4,
 .budidaya-scope h5,
 .budidaya-scope h6,
-.budidaya-scope .font-headline {
+.budidaya-scope .font-headline,
+.budidaya-scope .aq-page-title,
+.budidaya-scope .aq-section-title,
+.budidaya-scope .aq-kpi-value,
+.budidaya-scope .kpi-value,
+.budidaya-scope .stat-value {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
@@ -45,7 +51,10 @@
 .budidaya-scope input,
 .budidaya-scope select,
 .budidaya-scope textarea,
-.budidaya-scope button {
+.budidaya-scope button,
+.budidaya-scope .aq-kpi-label,
+.budidaya-scope .aq-body-text,
+.budidaya-scope .aq-small-text {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -330,10 +339,6 @@
   .lg-hidden { display: none !important; }
 }
 
-/* Only apply Inter to non-icon elements — don't override Material Symbols! */
-.budidaya-scope *:not(.material-symbols-outlined):not(.material-symbols-rounded):not(.material-symbols-sharp) {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-}
 
 /* ════════════════════════════════════════════════
    SIDEBAR
@@ -552,20 +557,51 @@
 }
 
 /* ════════════════════════════════════════════════
-   CARDS & SHARED UTILITIES
+   CARDS & SHARED UTILITIES (Unified Bizora Enterprise Standard)
    ════════════════════════════════════════════════ */
 
-.aquagrow-card {
-  background: var(--aq-card-bg) !important;
-  border: 1px solid var(--aq-border) !important;
+.aquagrow-card,
+.aq-card,
+.premium-card {
+  background: #ffffff !important;
+  border: 1px solid #E2E8F0 !important;
   border-radius: 16px !important;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
 }
 
-.aquagrow-card:hover {
-  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05) !important;
+.aquagrow-card:hover,
+.aq-card:hover,
+.premium-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06) !important;
+  border-color: #CBD5E1 !important;
+}
+
+.kpi-card-v3,
+.kpi-highlight-box {
+  background: #ffffff !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.kpi-card-v3:hover,
+.kpi-highlight-box:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06) !important;
+  border-color: #A7F3D0 !important;
+}
+
+.board-container {
+  background: #ffffff !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden !important;
 }
 
 .kpi-icon-box {

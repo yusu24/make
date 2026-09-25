@@ -105,51 +105,78 @@ export default function Feeds() {
         </button>
       </div>
 
-      {/* Premium KPI Section */}
-      <div className="premium-feed-summary stagger">
-        <div className="premium-card kpi-highlight-box primary">
-           <div className="kpi-icon-wrapper"><Database size={24} /></div>
-           <div className="kpi-info">
-              <span className="label">Total Kapasitas Pakan</span>
-              <span className="value">{totalStok.toLocaleString()} <small>KG</small></span>
-           </div>
-           <div className="kpi-trend positive"><TrendingUp size={14} /> Stok Aman</div>
+      {/* Standard KPI Metric Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total Kapasitas Pakan</span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <Database size={20} />
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
+              {totalStok.toLocaleString()} <span className="text-sm font-semibold text-slate-400 font-['Inter']">KG</span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-2 text-xs text-emerald-600 font-medium font-['Inter']">
+              <TrendingUp size={14} />
+              <span>Stok Tersedia</span>
+            </div>
+          </div>
         </div>
 
-        <div className={`premium-card kpi-highlight-box ${lowStockCount > 0 ? 'danger' : 'success'}`}>
-           <div className="kpi-icon-wrapper">{lowStockCount > 0 ? <AlertCircle size={24} /> : <Layers size={24} />}</div>
-           <div className="kpi-info">
-              <span className="label">Status Kritis</span>
-              <span className="value">{lowStockCount} <small>Merk</small></span>
-           </div>
-           <div className="kpi-trend">{lowStockCount > 0 ? 'Perlu Restok' : 'Optimal'}</div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-amber-300 hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Status Kritis</span>
+            <div className={`w-10 h-10 rounded-xl ${lowStockCount > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'} flex items-center justify-center shrink-0`}>
+              {lowStockCount > 0 ? <AlertCircle size={20} /> : <Layers size={20} />}
+            </div>
+          </div>
+          <div>
+            <div className={`text-2xl md:text-3xl font-extrabold tracking-tight font-['Plus_Jakarta_Sans'] leading-tight ${lowStockCount > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
+              {lowStockCount} <span className="text-sm font-semibold text-slate-400 font-['Inter']">Merk</span>
+            </div>
+            <div className={`flex items-center gap-1.5 mt-2 text-xs font-medium font-['Inter'] ${lowStockCount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+              <span>{lowStockCount > 0 ? 'Perlu Restok Segera' : 'Semua Stok Optimal'}</span>
+            </div>
+          </div>
         </div>
 
-        <div className="premium-card kpi-highlight-box info">
-           <div className="kpi-icon-wrapper"><ShoppingBag size={24} /></div>
-           <div className="kpi-info">
-              <span className="label">Varian Merk Aktif</span>
-              <span className="value">{feeds.length} <small>Jenis</small></span>
-           </div>
-           <div className="kpi-trend neutral">Aktif</div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Varian Merk Aktif</span>
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <ShoppingBag size={20} />
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
+              {feeds.length} <span className="text-sm font-semibold text-slate-400 font-['Inter']">Jenis</span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-400 font-medium font-['Inter']">
+              <span>Terdaftar di Master Pakan</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Main Board Container */}
-      <div className="premium-card board-container animate-fade-in" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="board-header">
-           <div className="search-box-premium">
-              <Search size={20} className="search-icon" />
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden mb-6">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
+           <div className="relative w-80">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text" 
                 placeholder="Cari Merk atau Nama Pakan..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-10 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium outline-none focus:border-emerald-500 focus:bg-white transition-all font-['Inter']"
               />
            </div>
-           <div className="board-actions">
-              <button className="btn btn-icon btn-secondary"><Filter size={18} /></button>
-              <button className="btn btn-icon btn-secondary"><MoreVertical size={18} /></button>
+           <div className="flex items-center gap-2">
+              <button className="h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5 transition-colors font-['Inter']">
+                <Filter size={15} /> Filter
+              </button>
            </div>
         </div>
 

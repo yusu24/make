@@ -68,8 +68,7 @@ export default function Settings() {
     borderRadius: '16px',
     padding: '20px 24px',
     border: '1px solid #E2E8F0',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-    fontFamily: "'Inter', system-ui, -apple-system, sans-serif"
+    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
   }
 
   const inputStyle = {

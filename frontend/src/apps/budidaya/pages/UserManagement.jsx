@@ -99,30 +99,31 @@ export default function UserManagement() {
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="aq-grid-4">
+      {/* Standard KPI Metric Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         {[
-          { label: 'Total staf',         val: stats.total,    sub: '+4 bulan ini',       subColor: '#059669', icon: 'groups',             iconBg: '#D1FAE5', iconColor: '#059669' },
-          { label: 'Aktif sekarang',     val: stats.active,   sub: `Di unit ${terms.unitLower}`, subColor: '#475569', icon: 'sensors',    iconBg: '#D1FAE5', iconColor: '#059669' },
-          { label: 'Manajer',            val: stats.managers, sub: 'Administrator Sistem',subColor: '#475569', icon: 'admin_panel_settings',iconBg: '#F1F5F9', iconColor: '#475569' },
-          { label: 'Kesehatan keamanan', val: `${stats.security}%`, sub: 'MFA diaktifkan', subColor: '#059669', icon: 'check_circle', iconBg: '#D1FAE5', iconColor: '#059669' },
+          { label: 'Total Staf', val: stats.total, sub: 'Pengguna terdaftar', icon: 'groups', iconBg: '#D1FAE5', iconColor: '#059669' },
+          { label: 'Aktif Sekarang', val: stats.active, sub: `Di unit ${terms.unitLower}`, icon: 'sensors', iconBg: '#D1FAE5', iconColor: '#059669' },
+          { label: 'Manajer / Admin', val: stats.managers, sub: 'Hak akses penuh', icon: 'admin_panel_settings', iconBg: '#F1F5F9', iconColor: '#475569' },
+          { label: 'Keamanan Akun', val: `${stats.security}%`, sub: 'Tingkat keamanan', icon: 'check_circle', iconBg: '#D1FAE5', iconColor: '#059669' },
         ].map((s, i) => (
-          <div key={i} style={{ ...cardStyle, padding: '20px 24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-              <p className="aq-kpi-label">{s.label}</p>
-              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: s.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.iconColor }}>
-
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{s.icon}</span>
+          <div key={i} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">{s.label}</span>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: s.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.iconColor }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{s.icon}</span>
               </div>
             </div>
-            <h2 className="aq-kpi-value">{s.val}</h2>
-            <p className="aq-small-text" style={{ fontWeight: '600', color: s.subColor, marginTop: '4px' }}>{s.sub}</p>
+            <div>
+              <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl sm:text-3xl text-slate-900 tracking-tight leading-tight">{s.val}</div>
+              <p className="text-xs text-slate-400 font-medium mt-1 font-['Inter']">{s.sub}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Table */}
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E9F0EC', overflow: 'hidden' }}>
+      {/* Table Container Card */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden mb-6">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #E9F0EC', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ position: 'relative', width: '320px' }}>
             <Search size={16} style={{ position: 'absolute', left: '12px', top: '11px', color: '#64748B' }} />

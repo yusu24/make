@@ -181,8 +181,71 @@ export default function Ponds() {
   return (
     <div className="aq-container">
 
-      {/* ── Page Actions ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+      {/* ── Standard KPI Metric Cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total {terms.unit}</span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{terms.iconMain}</span>
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
+              {ponds.length}
+            </div>
+            <div className="text-xs text-slate-400 font-medium mt-1 font-['Inter']">Terdaftar di sistem</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">{terms.unit} Aktif</span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>check_circle</span>
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-700 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
+              {displayPonds.filter(p => p.status_key === 'healthy').length}
+            </div>
+            <div className="text-xs text-emerald-600 font-medium mt-1 font-['Inter']">Siklus budidaya aktif</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-amber-300 hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Perawatan</span>
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>build</span>
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-amber-700 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
+              {displayPonds.filter(p => p.status_key === 'warning').length}
+            </div>
+            <div className="text-xs text-amber-600 font-medium mt-1 font-['Inter']">Sterilisasi / Perbaikan</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Kosong / Siap</span>
+            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>crop_free</span>
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-slate-700 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
+              {displayPonds.filter(p => p.status_key === 'kosong').length}
+            </div>
+            <div className="text-xs text-slate-400 font-medium mt-1 font-['Inter']">Siap tebar siklus baru</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Page Actions Card ── */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs mb-5 flex items-center justify-between flex-wrap gap-3">
         {/* Search bar */}
         <div style={{ position: 'relative', width: '320px' }}>
           <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748B', fontSize: '18px' }}>search</span>
@@ -190,7 +253,7 @@ export default function Ponds() {
             placeholder={`Cari kode atau nama ${terms.unitLower}...`}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', height: '38px', padding: '0 14px 0 38px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', fontSize: '13px', outline: 'none' }}
+            className="w-full h-10 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium outline-none focus:border-emerald-500 focus:bg-white transition-all font-['Inter']"
           />
         </div>
 

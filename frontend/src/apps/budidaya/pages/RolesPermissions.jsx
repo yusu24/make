@@ -136,12 +136,16 @@ export default function RolesPermissions() {
 
   return (
     <div className="aq-container">
-      {/* Header Section */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
+      {/* Header Actions Card */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs mb-5 flex justify-between items-center flex-wrap gap-3">
+        <div>
+          <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-800 text-sm sm:text-base m-0">Peran & Hak Akses Budidaya</h3>
+          <p className="text-xs text-slate-400 font-['Inter'] m-0">Atur hak akses operasional, pakan, siklus, dan laporan keuangan per staf</p>
+        </div>
         <button
           className="btn btn-primary"
           onClick={handleCreateNew}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '38px', padding: '0 16px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '38px', padding: '0 16px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, background: '#1B4332', color: '#fff', border: 'none', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
         >
           <Plus size={16} />
           Buat Peran Baru
@@ -149,7 +153,7 @@ export default function RolesPermissions() {
       </div>
 
       {/* Table Section */}
-      <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden mb-6">
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>

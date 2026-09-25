@@ -76,17 +76,88 @@ import {
     endIndex
   } = usePagination(cycles)
 
+  const activeCycles = cycles.filter(c => c.status !== 'panen').length;
+  const harvestedCycles = cycles.filter(c => c.status === 'panen').length;
+  const totalCostAll = cycles.reduce((acc, c) => acc + (Number(c.total_cost) || 0), 0);
+
   return (
      <div className="aq-container">
-       {/* Header Section */}
-       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 0 }}>
+       {/* ── Standard KPI Metric Cards ── */}
+       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between">
+           <div className="flex items-center justify-between mb-2">
+             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total Siklus</span>
+             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+               <Activity size={20} />
+             </div>
+           </div>
+           <div>
+             <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
+               {cycles.length}
+             </div>
+             <div className="text-xs text-slate-400 font-medium mt-1 font-['Inter']">Total histori pencatatan</div>
+           </div>
+         </div>
+
+         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between">
+           <div className="flex items-center justify-between mb-2">
+             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Siklus Berjalan</span>
+             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>sync</span>
+             </div>
+           </div>
+           <div>
+             <div className="text-2xl sm:text-3xl font-extrabold text-emerald-700 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
+               {activeCycles}
+             </div>
+             <div className="text-xs text-emerald-600 font-medium mt-1 font-['Inter']">Sedang dalam perawatan</div>
+           </div>
+         </div>
+
+         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between">
+           <div className="flex items-center justify-between mb-2">
+             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Siklus Panen</span>
+             <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>check_circle</span>
+             </div>
+           </div>
+           <div>
+             <div className="text-2xl sm:text-3xl font-extrabold text-blue-700 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
+               {harvestedCycles}
+             </div>
+             <div className="text-xs text-blue-600 font-medium mt-1 font-['Inter']">Siklus panen tuntas</div>
+           </div>
+         </div>
+
+         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between">
+           <div className="flex items-center justify-between mb-2">
+             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Akumulasi Modal</span>
+             <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>payments</span>
+             </div>
+           </div>
+           <div>
+             <div className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] leading-tight truncate">
+               Rp {totalCostAll.toLocaleString('id-ID')}
+             </div>
+             <div className="text-xs text-slate-400 font-medium mt-1 font-['Inter']">Total belanja operasional</div>
+           </div>
+         </div>
+       </div>
+
+       {/* Header Actions */}
+       <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs mb-5 flex justify-between items-center flex-wrap gap-3">
+         <div>
+           <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-800 text-sm sm:text-base m-0">Daftar Siklus Budidaya</h3>
+           <p className="text-xs text-slate-400 font-['Inter'] m-0">Pantau performa komoditas, masa tebar, dan laba rugi tiap siklus</p>
+         </div>
          <button 
            className="btn btn-primary" 
            onClick={() => setModalOpen(true)}
            style={{
              display: 'flex', alignItems: 'center', gap: 6, height: '38px', padding: '0 16px',
              borderRadius: '12px', background: '#1B4332', color: '#fff', border: 'none',
-             fontWeight: 600, fontSize: '13px', cursor: 'pointer'
+             fontWeight: 600, fontSize: '13px', cursor: 'pointer', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
            }}
          >
            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>

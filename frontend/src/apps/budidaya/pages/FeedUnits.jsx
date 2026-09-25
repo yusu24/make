@@ -66,9 +66,9 @@ export default function FeedUnits() {
   return (
     <div className="aq-container">
 
-      <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden', maxWidth: 800 }}>
-        <div style={{ padding: '10px 16px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
-          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#0f172a' }}>Daftar Satuan Pakan</h3>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden max-w-3xl mb-6">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="m-0 font-['Plus_Jakarta_Sans'] text-sm sm:text-base font-bold text-slate-800">Daftar Satuan Pakan</h3>
         </div>
         <div style={{ padding: 14 }}>
           <form onSubmit={addUnit} style={{ display: 'flex', gap: 10, marginBottom: 14 }}>

@@ -173,12 +173,8 @@ export default function BudidayaFinanceSummary() {
         </button>
       </div>
 
-      {/* Filter Section */}
-      <div className="no-print" style={{ 
-        background: '#fff', borderRadius: 12, padding: '10px 16px', marginBottom: 14, 
-        display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap',
-        border: '1px solid #E9F0EC'
-      }}>
+      {/* Filter Section Card */}
+      <div className="no-print bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs mb-5 flex gap-3 items-center flex-wrap">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Calendar size={18} color="#64748b" />
           <span style={{ fontWeight: 600, fontSize: 13, color: '#475569' }}>Periode:</span>
