@@ -4,6 +4,7 @@ import { UserPlus, Trash2, Search, Filter, Download } from '@/constants/icons'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
+import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import BudidayaPagination from '../components/BudidayaPagination'
 
@@ -142,12 +143,6 @@ export default function UserManagement() {
           </div>
         </div>
 
-        {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', flexDirection: 'column', gap: 12 }}>
-            <div style={{ width: 32, height: 32, border: '3px solid #E2E8F0', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <p style={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>Memuat data pengguna...</p>
-          </div>
-        ) : (
           <Table>
             <TableHeader>
               <TableRow isHoverable={false}>
@@ -157,7 +152,9 @@ export default function UserManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {staff.length === 0 ? (
+              {loading ? (
+                <BudidayaTableSkeleton rows={5} cols={6} />
+              ) : staff.length === 0 ? (
                 <TableRow><TableCell colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>Belum ada staf terdaftar</TableCell></TableRow>
               ) : staff.map((u, i) => (
                 <TableRow key={u.id} className="hover:bg-slate-50/70 transition-colors">
@@ -194,7 +191,6 @@ export default function UserManagement() {
               ))}
             </TableBody>
           </Table>
-        )}
 
         {/* Pagination */}
         <BudidayaPagination

@@ -77,6 +77,12 @@ class HealthController extends Controller
 
     public function update(Request $request, $id)
     {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        $health = BudidayaHealth::where(function ($q) use ($tenantId) {
+            $q->whereHas('cycle', fn($c) => $c->where('tenant_id', $tenantId))
+              ->orWhereHas('animal', fn($a) => $a->where('tenant_id', $tenantId));
+        })->findOrFail($id);
+
         $validated = $request->validate([
             'action_type'     => 'nullable|in:health_check,vaccination,medication,vitamin,quarantine,mortality',
             'mortality_count' => 'nullable|integer|min:0',
@@ -88,7 +94,6 @@ class HealthController extends Controller
             'date'            => 'required|date',
         ]);
 
-        $health = BudidayaHealth::findOrFail($id);
         $cycle = $health->cycle;
         $newMortality = $validated['mortality_count'] ?? 0;
 
@@ -117,9 +122,13 @@ class HealthController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $health = BudidayaHealth::findOrFail($id);
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        $health = BudidayaHealth::where(function ($q) use ($tenantId) {
+            $q->whereHas('cycle', fn($c) => $c->where('tenant_id', $tenantId))
+              ->orWhereHas('animal', fn($a) => $a->where('tenant_id', $tenantId));
+        })->findOrFail($id);
         $cycle = $health->cycle;
 
         DB::transaction(function () use ($health, $cycle) {

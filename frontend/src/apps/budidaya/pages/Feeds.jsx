@@ -4,6 +4,7 @@ import { Package, Plus, Search, Trash2, ArrowUpCircle, AlertCircle, ShoppingBag,
 import Modal from '../../../components/Modal'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
+import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
 import usePagination from '../../../hooks/usePagination'
 import BudidayaPagination from '../components/BudidayaPagination'
 
@@ -152,12 +153,7 @@ export default function Feeds() {
            </div>
         </div>
 
-        {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', flexDirection: 'column', gap: 12 }}>
-            <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Menyinkronkan data gudang...</p>
-          </div>
-        ) : filteredFeeds.length === 0 ? (
+        {!loading && filteredFeeds.length === 0 ? (
           <div className="empty-state-premium">
              <div className="empty-icon-wrap">
                 <ShoppingBag size={64} style={{ opacity: 0.1 }} />
@@ -178,7 +174,9 @@ export default function Feeds() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((feed, idx) => {
+                {loading ? (
+                  <BudidayaTableSkeleton rows={5} cols={4} />
+                ) : paginatedData.map((feed, idx) => {
                   const isLow = Number(feed.stock_kg) < 50;
                   return (
                     <TableRow key={feed.id} className="hover:bg-slate-50/70 transition-colors">

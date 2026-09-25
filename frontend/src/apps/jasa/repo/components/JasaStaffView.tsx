@@ -21,7 +21,7 @@ import { jasaApi } from '../services/jasaApi';
 import '../../../retail/retail.css';
 import usePagination from '../../../../hooks/usePagination';
 import RetailPagination from '../../../retail/components/RetailPagination';
-import RetailTableLoadingRow from '../../../retail/components/RetailTableLoadingRow';
+import { JasaTableSkeleton } from './JasaTableSkeleton';
 import { useAuth } from '../../../../contexts/AuthContext';
 
 export const JasaStaffView: React.FC<{
@@ -308,7 +308,7 @@ export const JasaStaffView: React.FC<{
             </thead>
             <tbody>
               {loading ? (
-                <RetailTableLoadingRow colSpan={7} text="Memuat data akun staf & operator..." />
+                <JasaTableSkeleton rows={4} cols={7} />
               ) : p.paginatedData.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-6 text-slate-500">

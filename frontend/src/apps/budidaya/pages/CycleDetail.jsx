@@ -31,6 +31,7 @@ import { LoadingButton } from '../components/UXComponents'
 import CurrencyInput from '../../../components/CurrencyInput'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import '../budidaya.css'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 import '../budidaya-print.css'
 import {
   BudidayaPrintHeader,
@@ -158,12 +159,7 @@ export default function CycleDetail() {
     finally { setSaving(false) }
   }
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
-      <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat detail siklus...</p>
-    </div>
-  )
+  if (loading) return <BudidayaPageSkeleton />
 
   const cycle = data?.cycle
   const stats = data?.stats || { total_cost: 0, total_revenue: 0, profit: 0, current_population: 0, survival_rate: 0, total_feed_kg: 0, fcr: 0 }

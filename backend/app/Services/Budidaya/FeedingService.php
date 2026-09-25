@@ -20,17 +20,17 @@ class FeedingService
             throw new Exception('Siklus sudah selesai (panen). Tidak dapat menambah data pakan.');
         }
 
-        $inventory = BudidayaInventory::findOrFail($data['inventory_id']);
+        return DB::transaction(function () use ($cycle, $data) {
+            $inventory = BudidayaInventory::lockForUpdate()->findOrFail($data['inventory_id']);
 
-        if (strtolower($inventory->category) !== 'pakan') {
-            throw new Exception('Barang yang dipilih bukan pakan.');
-        }
+            if (strtolower($inventory->category) !== 'pakan') {
+                throw new Exception('Barang yang dipilih bukan pakan.');
+            }
 
-        if ($inventory->stock < $data['amount_kg']) {
-            throw new Exception('Stok pakan tidak mencukupi. Sisa stok: ' . $inventory->stock . ' ' . $inventory->unit);
-        }
+            if ($inventory->stock < $data['amount_kg']) {
+                throw new Exception('Stok pakan tidak mencukupi. Sisa stok: ' . $inventory->stock . ' ' . $inventory->unit);
+            }
 
-        return DB::transaction(function () use ($cycle, $data, $inventory) {
             // 1. Record Feeding
             $feeding = BudidayaFeeding::create([
                 'cycle_id' => $cycle->id,

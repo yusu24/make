@@ -7,6 +7,7 @@ import {
  import Modal from '../../../components/Modal'
  import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
  import { LoadingButton } from '../components/UXComponents'
+ import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
  import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
  import usePagination from '../../../hooks/usePagination'
  import BudidayaPagination from '../components/BudidayaPagination'
@@ -93,12 +94,7 @@ import {
          </button>
        </div>
  
-        {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
-            <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Menganalisis data siklus...</p>
-          </div>
-        ) : cycles.length === 0 ? (
+        {!loading && cycles.length === 0 ? (
           <div style={{ 
             background: '#fff', padding: '60px 20px', textAlign: 'center', 
             borderRadius: 16, border: '1px solid #E9F0EC' 
@@ -123,7 +119,9 @@ import {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((cycle) => (
+                {loading ? (
+                  <BudidayaTableSkeleton rows={5} cols={8} />
+                ) : paginatedData.map((cycle) => (
                   <TableRow key={cycle.id}>
                     <TableCell className="pl-6">
                       <span style={{ color: '#0f172a', fontSize: '13px', fontWeight: 600 }}>{cycle.pond_name || '-'}</span>

@@ -25,6 +25,7 @@ interface OverviewDashboardProps {
   stats: ServiceStats;
   workOrders: WorkOrder[];
   technicians: Technician[];
+  loading?: boolean;
   onOpenNewSpk: () => void;
   onNavigateTab: (tab: string) => void;
   onSelectWorkOrder: (order: WorkOrder) => void;
@@ -37,6 +38,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   stats,
   workOrders,
   technicians,
+  loading = false,
   onOpenNewSpk,
   onNavigateTab,
   onSelectWorkOrder,
@@ -165,26 +167,29 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
       .slice(0, 6);
   }, [workOrders, isOperatorOrTech, myTechnician]);
 
-  const isEmptyAccount = workOrders.length === 0 && technicians.length === 0;
+  const isEmptyAccount = !loading && workOrders.length === 0 && technicians.length === 0;
 
   return (
     <div className="space-y-4">
-      {/* Welcome & Context Bar - Sleek & Compact */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#170e2b] via-[#120a22] to-[#0a0515] p-4 sm:p-5 text-white shadow-xs border border-purple-500/20">
+      {/* Welcome & Context Bar - Sleek & Compact with Jasa Blue Theme */}
+      <div 
+        className="relative overflow-hidden rounded-2xl bg-slate-900 p-4 sm:p-5 text-white shadow-md border border-blue-500/30"
+        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%)' }}
+      >
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg sm:text-xl font-['Plus_Jakarta_Sans'] tracking-tight text-white" style={{ fontWeight: 800 }}>
+            <h2 className="text-lg sm:text-xl font-['Plus_Jakarta_Sans'] tracking-tight text-white font-extrabold">
               {greetingTime}, {displayName}
             </h2>
-            <p className="text-purple-200/70 text-xs mt-0.5 font-['Inter'] flex items-center gap-2">
-              <span>{businessName}</span>
-              <span>•</span>
+            <p className="text-blue-200 text-xs mt-0.5 font-['Inter'] flex items-center gap-2">
+              <span className="font-semibold text-blue-100">{businessName}</span>
+              <span className="text-blue-400">•</span>
               <span>{dayFormatted}, {dateFormatted}</span>
             </p>
           </div>
-          <div className="flex items-center gap-2 bg-white/[0.07] px-3 py-1.5 rounded-xl border border-purple-400/20 self-start sm:self-center">
-            <Clock className="w-3.5 h-3.5 text-purple-300 shrink-0" />
-            <span className="font-mono text-xs text-white">{timeFormatted} WIB</span>
+          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-xl border border-blue-300/30 self-start sm:self-center shadow-xs">
+            <Clock className="w-3.5 h-3.5 text-blue-300 shrink-0" />
+            <span className="font-mono text-xs font-semibold text-white">{timeFormatted} WIB</span>
           </div>
         </div>
       </div>

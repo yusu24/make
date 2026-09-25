@@ -87,13 +87,10 @@ class HarvestController extends Controller
 
     public function update(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id;
-        $harvest = BudidayaHarvest::findOrFail($id);
-        $cycle = $harvest->cycle;
-
-        if ($cycle->tenant_id !== $tenantId) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        $harvest = BudidayaHarvest::whereHas('cycle', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        })->findOrFail($id);
 
         $validated = $request->validate([
             'output_type'       => 'nullable|in:meat_biomass,eggs,milk,live_count,offspring',
@@ -133,13 +130,10 @@ class HarvestController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id;
-        $harvest = BudidayaHarvest::findOrFail($id);
-        $cycle = $harvest->cycle;
-
-        if ($cycle->tenant_id !== $tenantId) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        $harvest = BudidayaHarvest::whereHas('cycle', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        })->findOrFail($id);
 
         $harvest->delete();
 

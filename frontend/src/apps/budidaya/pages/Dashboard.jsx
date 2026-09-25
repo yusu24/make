@@ -4,6 +4,7 @@ import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import '../budidaya.css'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -27,12 +28,7 @@ export default function Dashboard() {
     }
   }
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
-      <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Memuat data live farm...</p>
-    </div>
-  )
+  if (loading) return <BudidayaPageSkeleton />
 
   const rawChartData = stats?.charts?.[chartRange] || []
   const chartItems = rawChartData.length > 0 ? rawChartData : [
@@ -55,7 +51,10 @@ export default function Dashboard() {
     <div className="aq-container" style={{ animation: 'kd-fadeIn 0.3s ease' }}>
 
       {/* Welcome Banner - Deep Forest Emerald Theme */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#05281d] via-[#032017] to-[#02150f] p-5 sm:p-6 text-white shadow-lg border border-emerald-500/15 mb-5">
+      <div 
+        className="relative overflow-hidden rounded-2xl p-5 sm:p-6 text-white shadow-lg border border-emerald-500/15 mb-5"
+        style={{ background: 'linear-gradient(135deg, #05281d 0%, #032017 50%, #02150f 100%)' }}
+      >
         {/* Soft Ambient Light Accents */}
         <div className="absolute top-0 right-0 w-96 h-full bg-gradient-to-l from-emerald-500/15 via-teal-500/5 to-transparent pointer-events-none" />
         <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />

@@ -6,14 +6,16 @@ import RetailPagination from '../../../retail/components/RetailPagination';
 import { JasaSparepart } from '../types';
 import { InventoryFormModal } from './InventoryFormModal';
 import { jasaApi } from '../services/jasaApi';
+import { JasaTableSkeleton } from './JasaTableSkeleton';
 
 interface InventoryViewProps {
   inventory: JasaSparepart[];
   settings: any;
+  loading?: boolean;
   onRefresh: () => void;
 }
 
-export const InventoryView: React.FC<InventoryViewProps> = ({ inventory, settings, onRefresh }) => {
+export const InventoryView: React.FC<InventoryViewProps> = ({ inventory, settings, loading = false, onRefresh }) => {
   const [search, setSearch] = useState('');
   
   // Modal State
@@ -131,7 +133,20 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ inventory, setting
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {paginatedData.map(item => (
+              {loading ? (
+                <JasaTableSkeleton rows={5} cols={6} />
+              ) : filteredInventory.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                    <Package className="w-9 h-9 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-slate-700">Belum ada suku cadang / material.</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {search ? 'Tidak ada barang yang sesuai dengan kata kunci pencarian.' : 'Klik "Tambah Sparepart" untuk mendaftarkan stok suku cadang Anda.'}
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                paginatedData.map(item => (
                 <tr key={item.id} className="hover:bg-blue-50/40 transition-colors group">
                   <td className="py-3.5 px-4">
                     <div className="font-semibold text-slate-900 flex items-center gap-1.5">{item.name}</div>
@@ -185,17 +200,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ inventory, setting
                     </div>
                   </td>
                 </tr>
-              ))}
-              
-              {paginatedData.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
-                    <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-sm font-medium text-slate-900">Belum ada data barang/sparepart</p>
-                    <p className="text-xs text-slate-500 mt-1">Tambahkan sparepart atau ubah kata kunci pencarian Anda.</p>
-                  </td>
-                </tr>
-              )}
+              )))}
             </tbody>
           </table>
         </div>

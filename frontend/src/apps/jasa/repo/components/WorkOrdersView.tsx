@@ -23,10 +23,12 @@ import RetailPagination from '../../../retail/components/RetailPagination';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useJasa } from '../contexts/JasaContext';
 import { hasJasaPermission } from './Sidebar';
+import { JasaTableSkeleton } from './JasaTableSkeleton';
 
 interface WorkOrdersViewProps {
   workOrders: WorkOrder[];
   technicians?: any[];
+  loading?: boolean;
   onSelectWorkOrder: (order: WorkOrder) => void;
   onPrintWorkOrder: (order: WorkOrder) => void;
   onOpenNewSpk: () => void;
@@ -41,6 +43,7 @@ interface WorkOrdersViewProps {
 export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
   workOrders,
   technicians = [],
+  loading = false,
   onSelectWorkOrder,
   onPrintWorkOrder,
   onOpenNewSpk,
@@ -233,7 +236,9 @@ export const WorkOrdersView: React.FC<WorkOrdersViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {filteredOrders.length === 0 ? (
+              {loading ? (
+                <JasaTableSkeleton rows={5} cols={8} />
+              ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-400">
                     <ClipboardList className="w-9 h-9 text-slate-300 mx-auto mb-2" />

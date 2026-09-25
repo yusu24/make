@@ -24,7 +24,7 @@ import { jasaApi } from '../services/jasaApi';
 import '../../../retail/retail.css';
 import usePagination from '../../../../hooks/usePagination';
 import RetailPagination from '../../../retail/components/RetailPagination';
-import RetailTableLoadingRow from '../../../retail/components/RetailTableLoadingRow';
+import { JasaTableSkeleton } from './JasaTableSkeleton';
 
 export const JASA_PERMISSION_GROUPS = [
   {
@@ -298,7 +298,7 @@ export const JasaRolesView: React.FC<{
             </thead>
             <tbody>
               {loading ? (
-                <RetailTableLoadingRow colSpan={6} text="Memuat daftar role & hak akses..." />
+                <JasaTableSkeleton rows={4} cols={6} />
               ) : p.paginatedData.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-6 text-slate-500">

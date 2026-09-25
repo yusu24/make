@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table';
-
+import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton';
 import usePagination from '../../../hooks/usePagination';
 import BudidayaPagination from '../components/BudidayaPagination';
 
@@ -87,25 +87,20 @@ export default function FeedCategories() {
             </button>
           </form>
           
-          {loading ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '30vh', flexDirection: 'column', gap: 12 }}>
-              <div style={{ width: 32, height: 32, border: '3px solid #E2E8F0', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-              <p style={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>Memuat kategori...</p>
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow isHoverable={false}>
-                    <TableHeaderCell style={{ width: 80 }}>ID</TableHeaderCell>
-                    <TableHeaderCell>Nama Kategori</TableHeaderCell>
-                    <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categories.length === 0 ? (
-                    <TableRow><TableCell colSpan="3" style={{ textAlign: 'center', color: '#64748b', padding: 32 }}>Belum ada data kategori pakan.</TableCell></TableRow>
-                  ) : (
+            <Table>
+              <TableHeader>
+                <TableRow isHoverable={false}>
+                  <TableHeaderCell style={{ width: 80 }}>ID</TableHeaderCell>
+                  <TableHeaderCell>Nama Kategori</TableHeaderCell>
+                  <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <BudidayaTableSkeleton rows={4} cols={3} />
+                ) : categories.length === 0 ? (
+                  <TableRow><TableCell colSpan="3" style={{ textAlign: 'center', color: '#64748b', padding: 32 }}>Belum ada data kategori pakan.</TableCell></TableRow>
+                ) : (
                     paginatedData.map(c => (
                       <TableRow key={c.id}>
                         <TableCell>#{c.id}</TableCell>
@@ -144,8 +139,6 @@ export default function FeedCategories() {
                 startIndex={startIndex}
                 endIndex={endIndex}
               />
-            </>
-          )}
         </div>
       </div>
 

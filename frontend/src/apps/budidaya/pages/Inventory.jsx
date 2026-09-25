@@ -3,6 +3,7 @@ import { api } from '../../../lib/api'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton, EmptyState } from '../components/UXComponents'
+import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import CurrencyInput from '../../../components/CurrencyInput'
 import usePagination from '../../../hooks/usePagination'
@@ -215,12 +216,7 @@ export default function Inventory() {
           </div>
         </div>
 
-        {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', flexDirection: 'column', gap: 12 }}>
-            <div style={{ width: 32, height: 32, border: '3px solid #E2E8F0', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <p style={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>Memuat data gudang...</p>
-          </div>
-        ) : items.length === 0 ? (
+        {!loading && items.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', background: '#F8FAFC' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '44px', color: '#CBD5E1' }}>inventory_2</span>
             <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#475569', marginTop: '12px' }}>Belum ada barang</h3>
@@ -242,7 +238,9 @@ export default function Inventory() {
               </TableRow>
             </TableHeader>
             <TableBody>
-                {paginatedData.map(item => {
+                {loading ? (
+                  <BudidayaTableSkeleton rows={6} cols={8} />
+                ) : paginatedData.map(item => {
                   const status = getStockStatus(item)
                   return (
                     <TableRow key={item.id}>

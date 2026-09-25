@@ -10,13 +10,23 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
+    private function getTenantId(Request $request): string
+    {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403));
+        }
+        return $tenantId;
+    }
+
     public function index(Request $request)
     {
+        $tenantId = $this->getTenantId($request);
         $category = $request->query('category');
         $search = $request->query('search');
-        $perPage = $request->query('per_page', 50);
+        $perPage = (int) $request->query('per_page', 50);
 
-        $query = BudidayaInventory::query();
+        $query = BudidayaInventory::where('tenant_id', $tenantId);
 
         if ($category && $category !== 'Semua') {
             $catLower = strtolower(trim($category));
@@ -68,46 +78,47 @@ class InventoryController extends Controller
 
     public function store(Request $request)
     {
+        $tenantId = $this->getTenantId($request);
+
         $validated = $request->validate([
-            'name' => 'required|string',
-            'category' => 'required|string',
-            'stock' => 'required|numeric',
-            'unit' => 'required|string',
-            'min_stock' => 'nullable|numeric',
-            'price_per_unit' => 'nullable|numeric',
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
+            'stock' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:50',
+            'min_stock' => 'nullable|numeric|min:0',
+            'price_per_unit' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
         ]);
 
-        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
-        if (empty($tenantId)) {
-            return response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403);
-        }
-        $item = BudidayaInventory::create(array_merge($validated, ['tenant_id' => $tenantId]));
+        return DB::transaction(function () use ($validated, $tenantId) {
+            $item = BudidayaInventory::create(array_merge($validated, ['tenant_id' => $tenantId]));
 
-        // Log initial stock
-        if ($item->stock > 0) {
-            BudidayaInventoryLog::create([
-                'inventory_id' => $item->id,
-                'type' => 'in',
-                'quantity' => $item->stock,
-                'note' => 'Stok awal',
-                'transaction_date' => now(),
-            ]);
-        }
+            // Log initial stock
+            if ($item->stock > 0) {
+                BudidayaInventoryLog::create([
+                    'inventory_id' => $item->id,
+                    'type' => 'in',
+                    'quantity' => $item->stock,
+                    'note' => 'Stok awal',
+                    'transaction_date' => now(),
+                ]);
+            }
 
-        return response()->json(['message' => 'Barang berhasil ditambahkan', 'data' => $item]);
+            return response()->json(['message' => 'Barang berhasil ditambahkan', 'data' => $item], 201);
+        });
     }
 
     public function update(Request $request, $id)
     {
-        $item = BudidayaInventory::findOrFail($id);
+        $tenantId = $this->getTenantId($request);
+        $item = BudidayaInventory::where('tenant_id', $tenantId)->findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string',
-            'category' => 'required|string',
-            'unit' => 'required|string',
-            'min_stock' => 'nullable|numeric',
-            'price_per_unit' => 'nullable|numeric',
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
+            'unit' => 'required|string|max:50',
+            'min_stock' => 'nullable|numeric|min:0',
+            'price_per_unit' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
         ]);
 
@@ -118,7 +129,7 @@ class InventoryController extends Controller
 
     public function updateStock(Request $request, $id)
     {
-        $item = BudidayaInventory::findOrFail($id);
+        $tenantId = $this->getTenantId($request);
 
         $validated = $request->validate([
             'type' => 'required|in:in,out',
@@ -126,7 +137,15 @@ class InventoryController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($item, $validated) {
+        return DB::transaction(function () use ($tenantId, $id, $validated) {
+            $item = BudidayaInventory::where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($id);
+
+            if ($validated['type'] === 'out' && $item->stock < $validated['quantity']) {
+                return response()->json([
+                    'message' => "Stok tidak mencukupi (sisa {$item->stock} {$item->unit})"
+                ], 422);
+            }
+
             if ($validated['type'] === 'in') {
                 $item->increment('stock', $validated['quantity']);
             } else {
@@ -137,17 +156,18 @@ class InventoryController extends Controller
                 'inventory_id' => $item->id,
                 'type' => $validated['type'],
                 'quantity' => $validated['quantity'],
-                'note' => $validated['note'],
+                'note' => $validated['note'] ?? null,
                 'transaction_date' => now(),
             ]);
-        });
 
-        return response()->json(['message' => 'Stok berhasil diperbarui', 'data' => $item->fresh()]);
+            return response()->json(['message' => 'Stok berhasil diperbarui', 'data' => $item->fresh()]);
+        });
     }
 
     public function destroy(Request $request, $id)
     {
-        $item = BudidayaInventory::findOrFail($id);
+        $tenantId = $this->getTenantId($request);
+        $item = BudidayaInventory::where('tenant_id', $tenantId)->findOrFail($id);
         $item->delete();
 
         return response()->json(['message' => 'Barang berhasil dihapus']);
@@ -155,8 +175,9 @@ class InventoryController extends Controller
 
     public function logs(Request $request, $id)
     {
-        $perPage = $request->query('per_page', 15);
-        $item = BudidayaInventory::findOrFail($id);
+        $tenantId = $this->getTenantId($request);
+        $perPage = (int) $request->query('per_page', 15);
+        $item = BudidayaInventory::where('tenant_id', $tenantId)->findOrFail($id);
         $logs = $item->logs()->orderBy('transaction_date', 'desc')->paginate($perPage);
 
         return response()->json($logs);

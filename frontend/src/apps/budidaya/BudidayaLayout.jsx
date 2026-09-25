@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import BudidayaSidebar from './BudidayaSidebar'
@@ -8,6 +8,7 @@ import BudidayaMobileBottomNav from './components/BudidayaMobileBottomNav'
 import BudidayaMobileBottomSheet from './components/BudidayaMobileBottomSheet'
 import SubscriptionLock from '../../components/SubscriptionLock'
 import { BudidayaProvider } from './contexts/BudidayaContext'
+import { BudidayaPageSkeleton } from './components/BudidayaPageSkeleton'
 
 export default function BudidayaLayout() {
   const [collapsed, setCollapsed] = useState(() => {
@@ -80,7 +81,9 @@ export default function BudidayaLayout() {
               }}
             />
             <main className="flex-1 overflow-y-auto">
-              <Outlet />
+              <Suspense fallback={<BudidayaPageSkeleton />}>
+                <Outlet />
+              </Suspense>
               {/* Mobile Bottom Clearance Spacer so bottom-most content is never covered by bottom nav */}
               <div
                 className="md:hidden"

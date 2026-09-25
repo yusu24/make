@@ -271,6 +271,11 @@ class CycleController extends Controller
 
     public function updateSampling(Request $request, $id)
     {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        $sampling = BudidayaSampling::whereHas('cycle', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        })->findOrFail($id);
+
         $validated = $request->validate([
             'average_weight_gram'  => 'required|numeric|min:0.1',
             'sample_count'         => 'nullable|integer|min:1',
@@ -279,7 +284,6 @@ class CycleController extends Controller
             'notes'                => 'nullable|string|max:500',
         ]);
 
-        $sampling = BudidayaSampling::findOrFail($id);
         $cycle = $sampling->cycle;
 
         if ($cycle->status === 'panen') {
@@ -296,9 +300,12 @@ class CycleController extends Controller
         return response()->json(['message' => 'Data sampling berhasil diperbarui', 'data' => $sampling]);
     }
 
-    public function deleteSampling($id)
+    public function deleteSampling(Request $request, $id)
     {
-        $sampling = BudidayaSampling::findOrFail($id);
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        $sampling = BudidayaSampling::whereHas('cycle', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        })->findOrFail($id);
         $cycle = $sampling->cycle;
 
         if ($cycle->status === 'panen') {
@@ -312,7 +319,7 @@ class CycleController extends Controller
 
     public function movePond(Request $request, $id)
     {
-        $tenantId = $request->user()->tenant_id;
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
         $request->validate([
             'new_pond_id' => 'required|exists:budidaya_ponds,id',
         ]);

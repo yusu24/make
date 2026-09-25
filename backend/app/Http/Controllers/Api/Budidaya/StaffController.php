@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\BudidayaStaff;
 use App\Models\BudidayaRole;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
 
 class StaffController extends Controller
@@ -55,7 +56,7 @@ class StaffController extends Controller
                 'total'    => $total,
                 'active'   => $active,
                 'managers' => $managers,
-                'security' => 98, // placeholder MFA health
+                'security' => 98,
             ],
         ]);
     }
@@ -64,19 +65,27 @@ class StaffController extends Controller
     {
         $tenantId = $this->getTenantId($request);
 
-        $request->validate([
+        $validated = $request->validate([
             'name'             => 'required|string|max:255',
             'email'            => 'nullable|email',
             'phone'            => 'nullable|string|max:20',
             'position'         => 'nullable|string|max:100',
-            'budidaya_role_id' => 'nullable|exists:budidaya_roles,id',
-            'status'           => 'in:aktif,tidak_aktif',
+            'budidaya_role_id' => [
+                'nullable',
+                Rule::exists('budidaya_roles', 'id')->where('tenant_id', $tenantId)
+            ],
+            'status'           => 'nullable|in:aktif,tidak_aktif',
         ]);
 
-        $staff = BudidayaStaff::create(array_merge($request->all(), [
-            'tenant_id' => $tenantId,
-            'status'    => $request->status ?? 'aktif',
-        ]));
+        $staff = BudidayaStaff::create([
+            'tenant_id'        => $tenantId,
+            'name'             => $validated['name'],
+            'email'            => $validated['email'] ?? null,
+            'phone'            => $validated['phone'] ?? null,
+            'position'         => $validated['position'] ?? null,
+            'budidaya_role_id' => $validated['budidaya_role_id'] ?? null,
+            'status'           => $validated['status'] ?? 'aktif',
+        ]);
 
         return response()->json([
             'message' => 'Staf berhasil ditambahkan',
@@ -89,16 +98,26 @@ class StaffController extends Controller
         $tenantId = $this->getTenantId($request);
         $staff    = BudidayaStaff::where('tenant_id', $tenantId)->findOrFail($id);
 
-        $request->validate([
+        $validated = $request->validate([
             'name'             => 'required|string|max:255',
             'email'            => 'nullable|email',
             'phone'            => 'nullable|string|max:20',
             'position'         => 'nullable|string|max:100',
-            'budidaya_role_id' => 'nullable|exists:budidaya_roles,id',
-            'status'           => 'in:aktif,tidak_aktif',
+            'budidaya_role_id' => [
+                'nullable',
+                Rule::exists('budidaya_roles', 'id')->where('tenant_id', $tenantId)
+            ],
+            'status'           => 'nullable|in:aktif,tidak_aktif',
         ]);
 
-        $staff->update($request->all());
+        $staff->update([
+            'name'             => $validated['name'],
+            'email'            => $validated['email'] ?? null,
+            'phone'            => $validated['phone'] ?? null,
+            'position'         => $validated['position'] ?? null,
+            'budidaya_role_id' => $validated['budidaya_role_id'] ?? null,
+            'status'           => $validated['status'] ?? $staff->status,
+        ]);
 
         return response()->json([
             'message' => 'Data staf diperbarui',

@@ -6,6 +6,7 @@ import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import usePagination from '../../../hooks/usePagination';
 import BudidayaPagination from '../components/BudidayaPagination';
+import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms';
 import '../budidaya.css';
@@ -492,11 +493,7 @@ export default function BudidayaExpenses() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>
-                    Memuat data buku kas...
-                  </td>
-                </tr>
+                <BudidayaTableSkeleton rows={6} cols={9} />
               ) : paginatedData.length === 0 ? (
                 <tr>
                   <td colSpan={9} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>

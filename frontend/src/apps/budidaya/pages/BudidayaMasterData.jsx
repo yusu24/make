@@ -8,6 +8,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms';
 import usePagination from '../../../hooks/usePagination';
 import BudidayaPagination from '../components/BudidayaPagination';
+import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton';
 import '../budidaya.css';
 
 export default function BudidayaMasterData() {
@@ -309,7 +310,7 @@ export default function BudidayaMasterData() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>Memuat kategori keuangan...</td></tr>
+                  <BudidayaTableSkeleton rows={5} cols={6} />
                 ) : paginationFinance.paginatedData.length === 0 ? (
                   <tr><td colSpan={6} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>Belum ada kategori keuangan terdaftar.</td></tr>
                 ) : (
@@ -395,7 +396,7 @@ export default function BudidayaMasterData() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>Memuat satuan dasar...</td></tr>
+                  <BudidayaTableSkeleton rows={5} cols={6} />
                 ) : paginationUnits.paginatedData.length === 0 ? (
                   <tr><td colSpan={6} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>Belum ada satuan dasar terdaftar.</td></tr>
                 ) : (
@@ -464,7 +465,7 @@ export default function BudidayaMasterData() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={3} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>Memuat kategori pakan...</td></tr>
+                  <BudidayaTableSkeleton rows={4} cols={3} />
                 ) : paginationFeedCats.paginatedData.length === 0 ? (
                   <tr><td colSpan={3} style={{ textAlign: 'center', padding: 36, color: '#94a3b8' }}>Belum ada kategori pakan terdaftar.</td></tr>
                 ) : (

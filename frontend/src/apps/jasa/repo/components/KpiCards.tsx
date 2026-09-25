@@ -57,10 +57,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({
         </div>
         <div>
           <div className="text-xl sm:text-2xl font-extrabold font-['Plus_Jakarta_Sans'] text-slate-900 tracking-tight">
-            {stats.completedThisMonth} <span className="text-xs font-semibold text-slate-400 font-['Inter']">/ {stats.totalOrders}</span>
+            {stats.completedThisMonth} <span className="text-xs font-semibold text-slate-400 font-['Inter']">/ {stats.totalOrders || 0}</span>
           </div>
           <div className="mt-1 text-xs text-slate-500 font-medium font-['Inter']">
-            Rasio <span className="text-blue-600 font-semibold">{((stats.completedThisMonth / stats.totalOrders) * 100).toFixed(0)}%</span>
+            Rasio <span className="text-blue-600 font-semibold">{stats.totalOrders > 0 ? ((stats.completedThisMonth / stats.totalOrders) * 100).toFixed(0) : '0'}%</span>
           </div>
         </div>
       </div>

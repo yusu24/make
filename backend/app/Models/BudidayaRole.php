@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasTenant;
 
 class BudidayaRole extends Model
 {
+    use HasTenant;
+
     protected $fillable = [
         'tenant_id', 'name', 'slug', 'description', 'is_system', 'permissions',
     ];

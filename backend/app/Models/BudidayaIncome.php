@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\HasTenant;
 
 class BudidayaIncome extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
 
     protected $table = 'budidaya_incomes';
 

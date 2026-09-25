@@ -3,6 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import api from '../../../services/api'
 import bizoraLogo from '../../../assets/bizora-logo.png'
 import '../budidaya.css'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 import { useBudidayaContext } from '../contexts/BudidayaContext'
 
 export default function Settings() {
@@ -132,12 +133,7 @@ export default function Settings() {
     </div>
   )
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
-      <div style={{ width: 32, height: 32, border: '3px solid #E2E8F0', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <p style={{ color: '#64748b', fontSize: 13, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>Memuat pengaturan...</p>
-    </div>
-  )
+  if (loading) return <BudidayaPageSkeleton />
 
   return (
     <div className="aq-container">

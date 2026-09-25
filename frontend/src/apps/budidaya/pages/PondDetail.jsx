@@ -35,6 +35,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } f
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import usePagination from '../../../hooks/usePagination'
 import BudidayaPagination from '../components/BudidayaPagination'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 
 // Helper for card styles to match high-fidelity UI
 const cardStyle = {
@@ -571,14 +572,7 @@ export default function PondDetail() {
   // Siklus sudah selesai (panen total) — batasi aksi yang tersedia
   const isCycleDone = cycle?.status === 'panen'
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
-        <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-        <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>{`Memuat data ${terms.unitLower}...`}</p>
-      </div>
-    )
-  }
+  if (loading) return <BudidayaPageSkeleton />;
 
   return (
     <div className="aq-container">

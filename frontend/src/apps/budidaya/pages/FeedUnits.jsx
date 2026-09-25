@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table';
-
+import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton';
 import usePagination from '../../../hooks/usePagination';
 import BudidayaPagination from '../components/BudidayaPagination';
 
@@ -87,65 +87,58 @@ export default function FeedUnits() {
             </button>
           </form>
           
-          {loading ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '30vh', flexDirection: 'column', gap: 12 }}>
-              <div style={{ width: 32, height: 32, border: '3px solid #E2E8F0', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-              <p style={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>Memuat data satuan...</p>
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow isHoverable={false}>
-                    <TableHeaderCell style={{ width: 80 }}>ID</TableHeaderCell>
-                    <TableHeaderCell>Nama Satuan</TableHeaderCell>
-                    <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {units.length === 0 ? (
-                    <TableRow><TableCell colSpan="3" style={{ textAlign: 'center', color: '#64748b', padding: 32 }}>Belum ada data satuan pakan.</TableCell></TableRow>
-                  ) : (
-                    paginatedData.map(u => (
-                      <TableRow key={u.id}>
-                        <TableCell>#{u.id}</TableCell>
-                        <TableCell style={{ color: '#0f172a' }}>{u.name}</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}>
-                          <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
-                            <button 
-                              title="Edit Satuan"
-                              className="btn-table-action" 
-                              onClick={() => setEditingUnit(u)}
-                            >
-                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>edit</span>
-                            </button>
-                            <button 
-                              title="Hapus Satuan"
-                              className="btn-table-action" 
-                              onClick={() => confirm('Hapus satuan ini?') && console.log('Delete logic')}
-                              style={{ color: '#EF4444' }}
-                            >
-                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>delete</span>
-                            </button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-              <BudidayaPagination
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-                pageSize={pageSize}
-                setPageSize={setPageSize}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                startIndex={startIndex}
-                endIndex={endIndex}
-              />
-            </>
-          )}
+            <Table>
+              <TableHeader>
+                <TableRow isHoverable={false}>
+                  <TableHeaderCell style={{ width: 80 }}>ID</TableHeaderCell>
+                  <TableHeaderCell>Nama Satuan</TableHeaderCell>
+                  <TableHeaderCell style={{ textAlign: 'right' }}>Aksi</TableHeaderCell>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <BudidayaTableSkeleton rows={4} cols={3} />
+                ) : units.length === 0 ? (
+                  <TableRow><TableCell colSpan="3" style={{ textAlign: 'center', color: '#64748b', padding: 32 }}>Belum ada data satuan pakan.</TableCell></TableRow>
+                ) : (
+                  paginatedData.map(u => (
+                    <TableRow key={u.id}>
+                      <TableCell>#{u.id}</TableCell>
+                      <TableCell style={{ color: '#0f172a' }}>{u.name}</TableCell>
+                      <TableCell style={{ textAlign: 'right' }}>
+                        <div className="table-row-actions" style={{ justifyContent: 'flex-end' }}>
+                          <button 
+                            title="Edit Satuan"
+                            className="btn-table-action" 
+                            onClick={() => setEditingUnit(u)}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>edit</span>
+                          </button>
+                          <button 
+                            title="Hapus Satuan"
+                            className="btn-table-action" 
+                            onClick={() => confirm('Hapus satuan ini?') && console.log('Delete logic')}
+                            style={{ color: '#EF4444' }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>delete</span>
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+            <BudidayaPagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              endIndex={endIndex}
+            />
         </div>
       </div>
 

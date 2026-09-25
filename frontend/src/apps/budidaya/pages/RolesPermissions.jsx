@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, ShieldCheck, X } from '@/constants/icons'
 import '../budidaya.css'
 import usePagination from '../../../hooks/usePagination'
 import BudidayaPagination from '../components/BudidayaPagination'
+import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
 
 const getPermissions = (terms) => {
   const opCategory = terms.isTanaman ? 'Operasi Kebun' : (terms.category === 'aquaculture' ? 'Operasi Tambak' : 'Operasi Peternakan')
@@ -160,7 +161,7 @@ export default function RolesPermissions() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>Memuat data peran...</td></tr>
+              <BudidayaTableSkeleton rows={4} cols={4} />
             ) : roles.length === 0 ? (
               <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>Belum ada peran terdaftar.</td></tr>
             ) : (

@@ -27,11 +27,13 @@ import { JasaContract, ContractStatus, ContractFrequency, ServiceCategory, Techn
 import { formatRupiah, formatNumberInput, parseNumberInput } from '../data/mockData';
 import usePagination from '../../../../hooks/usePagination';
 import RetailPagination from '../../../retail/components/RetailPagination';
+import { JasaTableSkeleton } from './JasaTableSkeleton';
 
 interface ContractsViewProps {
   contracts: JasaContract[];
   technicians: Technician[];
   workOrders: WorkOrder[];
+  loading?: boolean;
   onCreateContract: (newContract: Partial<JasaContract>) => Promise<void>;
   onGenerateSpkFromContract: (contract: JasaContract) => Promise<void>;
   onSelectWorkOrder: (order: WorkOrder) => void;
@@ -58,6 +60,7 @@ export const ContractsView: React.FC<ContractsViewProps> = ({
   contracts,
   technicians,
   workOrders,
+  loading = false,
   onCreateContract,
   onGenerateSpkFromContract,
   onSelectWorkOrder
@@ -352,7 +355,9 @@ export const ContractsView: React.FC<ContractsViewProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredContracts.length === 0 ? (
+                {loading ? (
+                  <JasaTableSkeleton rows={4} cols={8} />
+                ) : filteredContracts.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-slate-400">
                       <FileText className="w-9 h-9 text-slate-300 mx-auto mb-2" />

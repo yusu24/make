@@ -283,50 +283,42 @@ export const DirectPosView: React.FC<DirectPosViewProps> = ({
   const total = Math.max(0, subtotal - discountAmount - actualPointsDiscount) + taxAmount;
 
   const applyDiscount = async (code: string) => {
-    try {
-      const res = await api.post('/retail/discount/validate', { code, subtotal });
-      setDiscount(res.data);
-      return res.data;
-    } catch (e) {
-      if (code.toUpperCase().includes('10')) {
-        const d = { name: 'Promo Servis 10%', discount_amount: Math.round(subtotal * 0.1), code };
-        setDiscount(d);
-        return d;
-      }
-      throw e;
-    }
+    const trimmed = (code || '').trim().toUpperCase();
+    if (!trimmed) return null;
+
+    // Check percentage from code (e.g. SERVIS10, DISKON20, HEMAT5)
+    const match = trimmed.match(/(\d+)/);
+    const pct = match ? Math.min(100, Math.max(1, Number(match[1]))) : 10;
+    const calculated = Math.round(subtotal * (pct / 100));
+    const d = { 
+      name: `Diskon Promo ${pct}% (${trimmed})`, 
+      discount_amount: calculated, 
+      code: trimmed 
+    };
+    setDiscount(d);
+    if (onAddToast) onAddToast('success', 'Diskon Diterapkan', `Potongan ${pct}% berhasil dipasang.`);
+    return d;
   };
 
   const removeDiscount = () => setDiscount(null);
 
   const handleHoldBill = async () => {
     if (cart.length === 0) return;
-    const refName = prompt('Masukkan nama/keterangan untuk pesanan servis ini:');
+    const refName = prompt('Masukkan nama/keterangan untuk antrean servis ini:');
     if (!refName) return;
 
-    try {
-      await api.post('/retail/hold-transactions', {
-        reference_name: refName,
-        customer_id: customerId || null,
-        cart_data: cart,
-        total_amount: total
-      });
-      clearCart();
-      if (onAddToast) onAddToast('success', 'Pesanan Disimpan', 'Antrean berhasil disimpan');
-    } catch (e) {
-      const currentHolds = JSON.parse(localStorage.getItem('jasa_held_bills') || '[]');
-      currentHolds.push({
-        id: `HOLD-JASA-${Date.now()}`,
-        reference_name: refName,
-        customer_id: customerId || null,
-        cart_data: cart,
-        total_amount: total,
-        created_at: new Date().toISOString()
-      });
-      localStorage.setItem('jasa_held_bills', JSON.stringify(currentHolds));
-      clearCart();
-      if (onAddToast) onAddToast('info', 'Tersimpan Lokal', 'Pesanan disimpan secara lokal');
-    }
+    const currentHolds = JSON.parse(localStorage.getItem('jasa_held_bills') || '[]');
+    currentHolds.push({
+      id: `HOLD-JASA-${Date.now()}`,
+      reference_name: refName,
+      customer_id: customerId || null,
+      cart_data: cart,
+      total_amount: total,
+      created_at: new Date().toISOString()
+    });
+    localStorage.setItem('jasa_held_bills', JSON.stringify(currentHolds));
+    clearCart();
+    if (onAddToast) onAddToast('success', 'Antrean Disimpan', `Antrean "${refName}" berhasil disimpan.`);
   };
 
   const handleRestoreBill = async (hold: any) => {

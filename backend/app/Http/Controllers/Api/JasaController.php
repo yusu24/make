@@ -437,12 +437,14 @@ class JasaController extends Controller
 
                 if ($type === 'part' || $type === 'sparepart') {
                     $totalPartsCost += ($qty * $price);
-                    // Deduct stock if sparepart exists
+                    // Deduct stock if sparepart exists with pessimistic lock
                     if (!empty($item['id'])) {
                         $sparepart = JasaSparepart::where('tenant_id', $tenantId)
                             ->where(function($q) use ($item) {
                                 $q->where('id', $item['id'])->orWhere('item_code', $item['id']);
-                            })->first();
+                            })
+                            ->lockForUpdate()
+                            ->first();
 
                         if ($sparepart) {
                             $sparepart->stock = max(0, $sparepart->stock - $qty);
@@ -510,6 +512,17 @@ class JasaController extends Controller
                 'notes' => 'Kasir POS Jasa: ' . $spkNumber,
                 'work_order_id' => $workOrder->id,
             ]);
+
+            // Update cash account balance if available
+            $account = JasaAccount::where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->lockForUpdate()
+                ->first();
+
+            if ($account) {
+                $account->balance += $grandTotal;
+                $account->save();
+            }
 
             DB::commit();
 
@@ -718,8 +731,8 @@ class JasaController extends Controller
 
                 $tech->user_id = $newUser->id;
             } elseif ($tech->user_id && $request->filled('password')) {
-                // Update existing user password if provided
-                $linkedUser = \App\Models\User::find($tech->user_id);
+                // Update existing user password if provided (strictly scoped to tenant)
+                $linkedUser = \App\Models\User::where('tenant_id', $tenantId)->find($tech->user_id);
                 if ($linkedUser) {
                     $linkedUser->password = Hash::make($request->password);
                     if ($request->filled('jasa_role_id')) {
@@ -1518,10 +1531,11 @@ class JasaController extends Controller
 
         DB::beginTransaction();
         try {
-            $fromAcc = JasaAccount::where('tenant_id', $tenantId)->findOrFail($request->from_account_id);
-            $toAcc = JasaAccount::where('tenant_id', $tenantId)->findOrFail($request->to_account_id);
+            $fromAcc = JasaAccount::where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($request->from_account_id);
+            $toAcc = JasaAccount::where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($request->to_account_id);
 
             if ($fromAcc->balance < $request->amount) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'Saldo akun asal tidak mencukupi untuk transfer.'

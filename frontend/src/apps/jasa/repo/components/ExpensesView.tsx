@@ -32,13 +32,17 @@ import {
   formatDateIndo
 } from '../../components/JasaPrintLayout';
 
+import { JasaTableSkeleton } from './JasaTableSkeleton';
+
 interface ExpensesViewProps {
   expenses: JasaExpense[];
+  loading?: boolean;
   onAddExpense: (expense: Omit<JasaExpense, 'id'>) => void;
 }
 
 export const ExpensesView: React.FC<ExpensesViewProps> = ({ 
   expenses = [],
+  loading = false,
   onAddExpense
 }) => {
   const { user } = useAuth();
@@ -467,7 +471,9 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {filteredExpenses.length === 0 ? (
+              {loading ? (
+                <JasaTableSkeleton rows={5} cols={6} />
+              ) : filteredExpenses.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
                     <Banknote className="w-9 h-9 text-slate-300 mx-auto mb-2" />

@@ -4,6 +4,7 @@ import { api } from '../../../lib/api'
 import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton, EmptyState } from '../components/UXComponents'
+import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
 import usePagination from '../../../hooks/usePagination'
@@ -118,7 +119,9 @@ export default function Ponds() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedData.map((pond) => {
+          {loading ? (
+            <BudidayaTableSkeleton rows={5} cols={7} />
+          ) : paginatedData.map((pond) => {
             const st = STATUS[pond.status_key] || STATUS.kosong
             return (
               <TableRow key={pond.id} onClick={() => navigate(`/budidaya/ponds/${pond.id}`)} style={{ cursor: 'pointer' }}>
@@ -206,12 +209,7 @@ export default function Ponds() {
       </div>
 
       {/* ── Content ── */}
-      {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
-          <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-          <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>{`Memuat data ${terms.unitLower}...`}</p>
-        </div>
-      ) : ponds.length === 0 ? (
+      {!loading && ponds.length === 0 ? (
         <EmptyState 
           icon={terms.iconSeed}
           title={`Belum ada ${terms.unitLower}`}

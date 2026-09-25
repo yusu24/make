@@ -7,9 +7,12 @@ import RetailPagination from '../../../retail/components/RetailPagination';
 import { ServiceCatalogFormModal } from './ServiceCatalogFormModal';
 import { jasaApi } from '../services/jasaApi';
 
+import { JasaTableSkeleton } from './JasaTableSkeleton';
+
 interface ServiceCatalogViewProps {
   catalog: ServiceCatalogItem[];
   settings: any;
+  loading?: boolean;
   onRefresh: () => void;
   onSelectCatalogForSpk: (item: ServiceCatalogItem) => void;
 }
@@ -17,6 +20,7 @@ interface ServiceCatalogViewProps {
 export const ServiceCatalogView: React.FC<ServiceCatalogViewProps> = ({
   catalog,
   settings,
+  loading = false,
   onRefresh,
   onSelectCatalogForSpk
 }) => {
@@ -112,7 +116,7 @@ export const ServiceCatalogView: React.FC<ServiceCatalogViewProps> = ({
                 setEditingItem(null);
                 setShowFormModal(true);
               }}
-              className="h-[38px] flex items-center space-x-1.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-all whitespace-nowrap cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+              className="h-[38px] flex items-center space-x-1.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all whitespace-nowrap cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>Tambah Layanan</span>
@@ -135,7 +139,9 @@ export const ServiceCatalogView: React.FC<ServiceCatalogViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {filteredCatalog.length === 0 ? (
+              {loading ? (
+                <JasaTableSkeleton rows={5} cols={6} />
+              ) : filteredCatalog.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
                     <BookOpen className="w-9 h-9 text-slate-300 mx-auto mb-2" />
@@ -145,9 +151,9 @@ export const ServiceCatalogView: React.FC<ServiceCatalogViewProps> = ({
                 </tr>
               ) : (
                 paginatedData.map((item: ServiceCatalogItem) => (
-                  <tr key={item.id} className="hover:bg-indigo-50/40 transition-colors group">
+                  <tr key={item.id} className="hover:bg-blue-50/40 transition-colors group">
                     <td className="py-3.5 px-4 max-w-[240px]">
-                      <div className="font-mono text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-200/80 inline-block mb-1">
+                      <div className="font-mono text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200/80 inline-block mb-1">
                         {item.code}
                       </div>
                       <div className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">

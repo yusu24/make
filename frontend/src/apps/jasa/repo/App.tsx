@@ -721,6 +721,7 @@ function JasaInnerApp() {
             stats={stats}
             workOrders={workOrders}
             technicians={technicians}
+            loading={isLoadingData}
             onOpenNewSpk={() => setShowNewSpkModal(true)}
             onNavigateTab={(tab) => setActiveTab(tab)}
             onSelectWorkOrder={(order) => setSelectedOrder(order)}
@@ -741,6 +742,7 @@ function JasaInnerApp() {
           <WorkOrdersView
             workOrders={workOrders}
             technicians={technicians}
+            loading={isLoadingData}
             onSelectWorkOrder={(order) => setSelectedOrder(order)}
             onPrintWorkOrder={(order) => setPrintingOrder(order)}
             onOpenNewSpk={() => setShowNewSpkModal(true)}
@@ -787,6 +789,7 @@ function JasaInnerApp() {
             contracts={contracts}
             technicians={technicians}
             workOrders={workOrders}
+            loading={isLoadingData}
             onCreateContract={handleCreateContract}
             onGenerateSpkFromContract={handleGenerateSpkFromContract}
             onSelectWorkOrder={(order) => setSelectedOrder(order)}
@@ -799,6 +802,7 @@ function JasaInnerApp() {
             technicians={technicians}
             workOrders={workOrders}
             settings={jasaSettings}
+            loading={isLoadingData}
             onUpdateStatus={handleUpdateTechnicianStatus}
             onSelectWorkOrder={(order) => setSelectedOrder(order)}
             onRefresh={() => loadAllDataFromDatabase(true)}
@@ -810,6 +814,7 @@ function JasaInnerApp() {
           <ServiceCatalogView
             catalog={catalog}
             settings={jasaSettings}
+            loading={isLoadingData}
             onRefresh={loadAllDataFromDatabase}
             onSelectCatalogForSpk={handleSelectCatalogForSpk}
           />
@@ -820,6 +825,7 @@ function JasaInnerApp() {
           <InventoryView 
             inventory={inventory}
             settings={jasaSettings}
+            loading={isLoadingData}
             onRefresh={() => loadAllDataFromDatabase(true)}
           />
         )}
@@ -841,6 +847,7 @@ function JasaInnerApp() {
             invoices={invoices}
             expenses={expenses}
             inventory={inventory}
+            loading={isLoadingData}
             initialTab={
               activeTab === 'finance-summary' ? 'summary' :
               activeTab === 'finance-expenses' || activeTab === 'expenses' ? 'expenses' :

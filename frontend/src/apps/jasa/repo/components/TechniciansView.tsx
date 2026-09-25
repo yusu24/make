@@ -4,13 +4,14 @@ import { Technician, TechnicianStatus, WorkOrder } from '../types';
 import usePagination from '../../../../hooks/usePagination';
 import RetailPagination from '../../../retail/components/RetailPagination';
 import { TechnicianFormModal } from './TechnicianFormModal';
-import { jasaApi } from '../services/jasaApi';
+import { JasaTableSkeleton } from './JasaTableSkeleton';
 import '../../../retail/retail.css';
 
 interface TechniciansViewProps {
   technicians: Technician[];
   workOrders: WorkOrder[];
   settings: any;
+  loading?: boolean;
   onUpdateStatus: (techId: number, status: 'Tersedia' | 'Bertugas' | 'Izin / Cuti' | 'Siaga') => void;
   onSelectWorkOrder: (order: WorkOrder) => void;
   onRefresh: () => void;
@@ -20,6 +21,7 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
   technicians,
   workOrders,
   settings,
+  loading = false,
   onUpdateStatus,
   onSelectWorkOrder,
   onRefresh
@@ -178,7 +180,9 @@ export const TechniciansView: React.FC<TechniciansViewProps> = ({
               </tr>
             </thead>
             <tbody>
-              {filteredTechs.length === 0 ? (
+              {loading ? (
+                <JasaTableSkeleton rows={4} cols={7} />
+              ) : filteredTechs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400">
                     <Users className="w-9 h-9 text-slate-300 mx-auto mb-2" />

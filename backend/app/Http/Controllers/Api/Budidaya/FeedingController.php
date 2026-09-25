@@ -61,6 +61,16 @@ class FeedingController extends Controller
 
     public function update(Request $request, $id)
     {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        $feeding = BudidayaFeeding::whereHas('cycle', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        })->findOrFail($id);
+        $cycle = $feeding->cycle;
+
+        if ($cycle->status === 'panen') {
+            return response()->json(['message' => 'Siklus sudah selesai (panen). Tidak dapat mengubah data pakan.'], 400);
+        }
+
         $validated = $request->validate([
             'inventory_id' => 'required|exists:budidaya_inventories,id',
             'amount_kg' => 'required|numeric|min:0.01',
@@ -68,17 +78,10 @@ class FeedingController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $feeding = BudidayaFeeding::findOrFail($id);
-        $cycle = $feeding->cycle;
-
-        if ($cycle->status === 'panen') {
-            return response()->json(['message' => 'Siklus sudah selesai (panen). Tidak dapat mengubah data pakan.'], 400);
-        }
-
         try {
-            DB::transaction(function () use ($feeding, $validated) {
-                $oldInventory = $feeding->inventory;
-                $newInventory = BudidayaInventory::findOrFail($validated['inventory_id']);
+            DB::transaction(function () use ($feeding, $validated, $tenantId) {
+                $oldInventory = $feeding->inventory_id ? BudidayaInventory::where('tenant_id', $tenantId)->lockForUpdate()->find($feeding->inventory_id) : null;
+                $newInventory = BudidayaInventory::where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($validated['inventory_id']);
 
                 // Restore old stock
                 if ($oldInventory) {
@@ -140,9 +143,12 @@ class FeedingController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $feeding = BudidayaFeeding::findOrFail($id);
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        $feeding = BudidayaFeeding::whereHas('cycle', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        })->findOrFail($id);
         $cycle = $feeding->cycle;
 
         if ($cycle->status === 'panen') {
@@ -150,8 +156,8 @@ class FeedingController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($feeding) {
-                $inventory = $feeding->inventory;
+            DB::transaction(function () use ($feeding, $tenantId) {
+                $inventory = $feeding->inventory_id ? BudidayaInventory::where('tenant_id', $tenantId)->lockForUpdate()->find($feeding->inventory_id) : null;
                 if ($inventory) {
                     $inventory->increment('stock', $feeding->amount_kg);
                 }

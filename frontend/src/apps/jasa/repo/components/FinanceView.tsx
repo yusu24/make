@@ -57,11 +57,13 @@ import {
   formatRp,
   formatDateIndo
 } from '../../components/JasaPrintLayout';
+import { JasaTableSkeleton } from './JasaTableSkeleton';
 
 interface FinanceViewProps {
   invoices: JasaInvoice[];
   expenses: JasaExpense[];
   inventory?: any[];
+  loading?: boolean;
   initialTab?: 'invoices' | 'expenses' | 'summary' | 'payables' | 'accounts' | 'balance_sheet' | 'journal';
   onUpdateInvoiceStatus: (invoiceId: string, status: InvoiceStatus) => void;
   onViewInvoice: (invoice: JasaInvoice) => void;
@@ -93,6 +95,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
   invoices = [], 
   expenses = [],
   inventory = [],
+  loading = false,
   initialTab = 'invoices',
   onUpdateInvoiceStatus,
   onViewInvoice,
@@ -889,7 +892,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {invoicePagination.paginatedData.length === 0 ? (
+                  {loading ? (
+                    <JasaTableSkeleton rows={5} cols={8} />
+                  ) : invoicePagination.paginatedData.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-12 text-center text-slate-400">
                         <Receipt className="w-8 h-8 mx-auto mb-2 text-slate-300" />
@@ -1117,7 +1122,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {expensePagination.paginatedData.length === 0 ? (
+                  {loading ? (
+                    <JasaTableSkeleton rows={5} cols={6} />
+                  ) : expensePagination.paginatedData.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-slate-400">
                         <Banknote className="w-8 h-8 mx-auto mb-2 text-slate-300" />
@@ -1455,7 +1462,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {payablesPagination.paginatedData.length === 0 ? (
+                  {loading ? (
+                    <JasaTableSkeleton rows={4} cols={8} />
+                  ) : payablesPagination.paginatedData.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-12 text-center text-slate-400">
                         <Package className="w-8 h-8 mx-auto mb-2 text-slate-300" />

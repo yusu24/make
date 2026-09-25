@@ -8,6 +8,7 @@ import { Printer } from '@/constants/icons'
 import '../budidaya.css'
 import '../budidaya-print.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 import usePagination from '../../../hooks/usePagination'
 import BudidayaPagination from '../components/BudidayaPagination'
 import {
@@ -92,12 +93,7 @@ export default function Reports() {
     return map[status] || map.kosong
   }
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
-      <div style={{ width: 36, height: 36, border: '3px solid #E9F0EC', borderTopColor: '#1B4332', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <p style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>Menganalisis data laporan...</p>
-    </div>
-  )
+  if (loading) return <BudidayaPageSkeleton />
 
   if (error) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
