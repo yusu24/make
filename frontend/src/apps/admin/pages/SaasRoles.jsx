@@ -3,7 +3,19 @@ import { api } from '../../../lib/api'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import Modal from '../../../components/Modal'
-import { Pencil, Trash2, Search, Plus } from '@/constants/icons'
+import {
+  Pencil,
+  Trash2,
+  Search,
+  Plus,
+  Shield,
+  Users,
+  KeyRound,
+  CheckCircle2,
+  RefreshCw,
+  Lock
+} from '@/constants/icons'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 const ALL_PERMS = [
@@ -93,6 +105,11 @@ export default function SaasRoles() {
     }
   }
 
+  const totalAssignedAdmins = roles.reduce((s, r) => s + (r.users_count || 0), 0)
+  const avgPerms = roles.length > 0
+    ? Math.round(roles.reduce((s, r) => s + (r.permissions?.length || 0), 0) / roles.length)
+    : 0
+
   const filtered = roles.filter(r => {
     const q = search.toLowerCase()
     return r.name.toLowerCase().includes(q) || (r.description && r.description.toLowerCase().includes(q))
@@ -106,140 +123,183 @@ export default function SaasRoles() {
   } = usePagination(filtered)
 
   return (
-    <>
-      <div className="animate-fade-in">
-        <div className="page-header mb-4">
-          <h2 className="page-title">SaaS Roles &amp; Permissions</h2>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Top Actions Toolbar ── */}
+      <div className="flex items-center justify-end gap-2.5">
+        <button
+          onClick={fetchRoles}
+          disabled={loading}
+          className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+          title="Muat ulang data role"
+        >
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <span>Refresh</span>
+        </button>
+          <button
+            id="btn-add-role"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all"
+            onClick={() => {
+              setShow(true)
+              setEditingId(null)
+              setError('')
+              setForm({ name: '', description: '', permissions: [] })
+            }}
+          >
+            <Plus size={15} />
+            <span>Tambah Role</span>
+          </button>
+      </div>
+
+      {/* ── KPI Metric Cards ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatScoreCard
+          title="TOTAL PERAN SAAS"
+          value={roles.length}
+          icon={Shield}
+          statusBadge={{ text: "Terdefinisi", color: "blue" }}
+          subtitle="Profil peran hak akses"
+          progressBar={{ value: 100, color: "bg-blue-500" }}
+        />
+        <StatScoreCard
+          title="ADMIN TERALOKASI"
+          value={totalAssignedAdmins}
+          icon={Users}
+          statusBadge={{ text: "Aktif Bertugas", color: "emerald" }}
+          subtitle="Admin dengan role terikat"
+          progressBar={{ value: 85, color: "bg-emerald-500" }}
+        />
+        <StatScoreCard
+          title="MODUL GRANULAR"
+          value={ALL_PERMS.length}
+          icon={Lock}
+          statusBadge={{ text: "Akses Tersedia", color: "violet" }}
+          subtitle="Cakupan modul sistem admin"
+          progressBar={{ value: 100, color: "bg-violet-500" }}
+        />
+        <StatScoreCard
+          title="RATA-RATA IZIN/ROLE"
+          value={`${avgPerms} Izin`}
+          icon={KeyRound}
+          statusBadge={{ text: "Optimal", color: "amber" }}
+          subtitle="Distribusi wewenang rata-rata"
+          progressBar={{ value: Math.min(100, avgPerms * 15), color: "bg-amber-500" }}
+        />
+      </div>
+
+      {/* ── Table Card ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        {/* Toolbar Header */}
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex items-center justify-between flex-wrap gap-3">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input
+              id="input-search-roles"
+              className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
+              placeholder="Cari nama role atau deskripsi..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Menampilkan <span className="font-bold text-slate-700 dark:text-slate-200">{filtered.length}</span> role
+          </div>
         </div>
 
-        {/* Table Card */}
-        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
-                <input
-                  id="input-search-roles"
-                  className="form-input search-input"
-                  style={{ paddingLeft: 34 }}
-                  placeholder="Cari nama role atau deskripsi..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
-              </div>
-
-              <button
-                id="btn-add-role"
-                className="btn btn-primary"
-                style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                onClick={() => {
-                  setShow(true)
-                  setEditingId(null)
-                  setError('')
-                  setForm({ name: '', description: '', permissions: [] })
-                }}
-              >
-                <Plus size={16} /> Tambah Role
-              </button>
-            </div>
-          </div>
-
-          <div className="table-responsive">
-            <table className="table">
-              <thead>
+        <div className="table-responsive">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Role</th>
+                <th>Deskripsi</th>
+                <th>Permissions</th>
+                <th>Jumlah Admin</th>
+                <th className="text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
                 <tr>
-                  <th>#</th>
-                  <th>Role</th>
-                  <th>Deskripsi</th>
-                  <th>Permissions</th>
-                  <th>Jumlah Admin</th>
-                  <th>Aksi</th>
+                  <td colSpan={6} className="text-center py-12">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <RefreshCw size={24} className="animate-spin text-indigo-600" />
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Memuat data peran SaaS...</span>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                        <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                        <span>Memuat data role...</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : paginatedData.map((role, i) => (
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-slate-400 dark:text-slate-500">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Shield size={32} className="opacity-40" />
+                      <span className="text-xs">Tidak ada role ditemukan.</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedData.map((role, i) => (
                   <tr key={role.id}>
-                    <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
+                    <td className="text-slate-400 font-medium text-xs">{startIndex + i + 1}</td>
                     <td>
-                      <span className="badge badge-violet" style={{ fontSize: 12, fontWeight: 600, padding: '2px 8px' }}>
+                      <span className="badge badge-violet text-xs font-semibold px-2.5 py-1">
                         {role.name}
                       </span>
                     </td>
-                    <td style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>{role.description || '-'}</td>
+                    <td className="text-xs text-slate-600 dark:text-slate-400 max-w-[200px] truncate">{role.description || '—'}</td>
                     <td>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 420 }}>
+                      <div className="flex flex-wrap gap-1 max-w-[420px]">
                         {role.permissions && role.permissions.length > 0 ? (
                           role.permissions.map(p => {
                             const pm = ALL_PERMS.find(x => x.key === p)
-                            return <span key={p} className="badge badge-gray" style={{ fontSize: 10 }}>{pm?.label || p}</span>
+                            return <span key={p} className="badge badge-gray text-[10px]">{pm?.label || p}</span>
                           })
                         ) : (
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tidak ada permission</span>
+                          <span className="text-[11px] text-slate-400">Tidak ada permission</span>
                         )}
                       </div>
                     </td>
-                    <td style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    <td className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                       {role.users_count || 0} Admin
                     </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 6 }}>
+                    <td className="text-right">
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           id={`btn-edit-role-${role.id}`}
-                          className="btn btn-secondary btn-sm"
-                          style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px' }}
                           onClick={() => handleEdit(role)}
+                          className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-xs transition-colors"
                           title="Edit Role"
                         >
-                          <Pencil size={12} />
-                          <span>Edit</span>
+                          <Pencil size={13} />
                         </button>
                         <button
                           id={`btn-del-role-${role.id}`}
-                          className="btn btn-secondary btn-sm"
-                          style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px', color: '#dc2626' }}
                           onClick={() => handleDelete(role.id)}
+                          className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-rose-200 dark:border-rose-800/60 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 shadow-xs transition-colors"
                           title="Hapus Role"
                         >
-                          <Trash2 size={12} />
-                          <span>Hapus</span>
+                          <Trash2 size={13} />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
-                {!loading && filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
-                      Tidak ada role ditemukan
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {!loading && filtered.length > 0 && (
-            <SaasPagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              startIndex={startIndex}
-              endIndex={endIndex}
-            />
-          )}
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
+
+        {!loading && filtered.length > 0 && (
+          <SaasPagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
+        )}
       </div>
 
       {show && (
@@ -249,65 +309,55 @@ export default function SaasRoles() {
           title={editingId ? 'Edit Role SaaS' : 'Tambah Role SaaS Baru'}
           maxWidth="540px"
         >
-          {error && <div className="auth-alert auth-alert--error" style={{ marginBottom: 16 }}><span>⚠</span> {error}</div>}
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 4 }}>
-            <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Nama Role</label>
+          {error && <div className="p-3 mb-4 rounded-xl border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-semibold"><span>⚠</span> {error}</div>}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Role</label>
               <input
-                className="form-input"
+                className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
                 placeholder="Misal: Finance Admin, Support Staff"
                 required
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
               />
             </div>
-            <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Deskripsi</label>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Deskripsi</label>
               <input
-                className="form-input"
-                placeholder="Penjelasan singkat mengenai peran role ini"
+                className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
+                placeholder="Penjelasan singkat mengenai fungsi peran role ini"
                 value={form.description}
                 onChange={e => setForm({ ...form, description: e.target.value })}
               />
             </div>
-            <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Hak Akses (Permissions)</label>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 10,
-                padding: '12px 14px',
-                background: 'var(--bg-elevated)',
-                borderRadius: 10,
-                maxHeight: 250,
-                overflowY: 'auto',
-                border: '1px solid var(--border-subtle)'
-              }}>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Hak Akses Modul (Permissions)</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80 max-h-56 overflow-y-auto">
                 {ALL_PERMS.map(p => (
-                  <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 12.5 }}>
+                  <label key={p.key} className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors text-xs">
                     <input
                       type="checkbox"
                       id={`perm-${p.key}`}
                       checked={form.permissions.includes(p.key)}
                       onChange={() => togglePerm(p.key)}
-                      style={{ width: 16, height: 16, accentColor: 'var(--primary-500)', cursor: 'pointer' }}
+                      className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
                     />
-                    <span style={{ color: 'var(--text-secondary)' }}>{p.label}</span>
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">{p.label}</span>
                   </label>
                 ))}
               </div>
             </div>
-            <div className="modal__actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2.5">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="h-[38px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-xs font-semibold"
                 onClick={() => setShow(false)}
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="h-[38px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all disabled:opacity-50"
                 disabled={saving}
               >
                 {saving ? 'Menyimpan...' : 'Simpan Role'}
@@ -316,6 +366,6 @@ export default function SaasRoles() {
           </form>
         </Modal>
       )}
-    </>
+    </div>
   )
 }

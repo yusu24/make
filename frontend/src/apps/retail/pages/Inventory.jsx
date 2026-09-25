@@ -11,6 +11,7 @@ import {
 } from '@/constants/icons';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import Modal from '../../../components/Modal';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import '../retail.css';
 
 export default function Inventory() {
@@ -69,42 +70,32 @@ export default function Inventory() {
 
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Total Katalog Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-            <Package size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Katalog</span>
-            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{totalItems}</p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Jumlah SKU unik terdaftar</p>
-          </div>
-        </div>
-
-        {/* Stok Aman Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <CheckCircle2 size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Stok Aman</span>
-            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{safeItems}</p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Stok di atas batas minimum</p>
-          </div>
-        </div>
-
-        {/* Perlu Restok Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-            <AlertCircle size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Perlu Restok</span>
-            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{criticalItems}</p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">{outOfStock} habis, {lowStock} menipis</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="TOTAL KATALOG"
+          value={totalItems}
+          icon={Package}
+          statusBadge={{ text: "Terdaftar", color: "indigo" }}
+          subtitle="Jumlah SKU unik dalam sistem"
+          progressBar={{ value: 100, color: "bg-indigo-500" }}
+        />
+        <StatScoreCard
+          title="STOK AMAN"
+          value={safeItems}
+          icon={CheckCircle2}
+          statusBadge={{ text: "Optimal", color: "emerald" }}
+          subtitle="Stok berada di atas batas minimum"
+          progressBar={{ value: totalItems > 0 ? Math.round((safeItems / totalItems) * 100) : 100, color: "bg-emerald-500" }}
+        />
+        <StatScoreCard
+          title="PERLU RESTOK"
+          value={criticalItems}
+          icon={AlertCircle}
+          statusBadge={{ text: criticalItems > 0 ? `${outOfStock} Habis` : "Aman", color: criticalItems > 0 ? "rose" : "emerald" }}
+          subtitle={`${lowStock} stok menipis mendekati buffer`}
+          progressBar={{ value: totalItems > 0 ? Math.round((criticalItems / totalItems) * 100) : 0, color: "bg-rose-500" }}
+          onClick={() => { setFilterCritical(!filterCritical); }}
+        />
       </div>
 
       <div className="card table-wrap animate-fade-in">

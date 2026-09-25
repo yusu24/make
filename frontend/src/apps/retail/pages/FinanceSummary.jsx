@@ -18,7 +18,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from '@/constants/icons';
-import KpiCard from '../../../components/KpiCard';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import { 
   RetailPrintHeader, 
   RetailPrintSectionHeader, 
@@ -342,42 +342,54 @@ export default function FinanceSummary() {
 
           {/* Key Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <KpiCard
-              icon={TrendingUp}
-              label="Total Penjualan Bersih"
+            <StatScoreCard
+              title="Total Penjualan Bersih"
               value={formatRp(summary.total_sales || 0)}
-              sub={`Kotor: ${formatRp(grossSales)}${Number(summary.total_discounts) > 0 ? ` · Diskon: -${formatRp(summary.total_discounts)}` : ''}`}
-              color="blue"
+              subtitle={`Kotor: ${formatRp(grossSales)}${Number(summary.total_discounts) > 0 ? ` · Diskon: -${formatRp(summary.total_discounts)}` : ''}`}
+              icon={TrendingUp}
+              badgeText="Net Sales"
+              badgeVariant="blue"
+              progress={100}
+              progressVariant="blue"
             />
-            <KpiCard
-              icon={Layers}
-              label="Beban Pokok (HPP)"
+            <StatScoreCard
+              title="Beban Pokok (HPP)"
               value={formatRp(summary.total_cogs || 0)}
-              sub="Modal awal barang yang terjual"
-              color="amber"
+              subtitle="Modal awal barang yang terjual"
+              icon={Layers}
+              badgeText="HPP"
+              badgeVariant="amber"
+              progress={summary.total_sales > 0 ? Math.min(100, Math.round(((summary.total_cogs || 0) / summary.total_sales) * 100)) : 0}
+              progressVariant="amber"
             />
-            <KpiCard
-              icon={Percent}
-              label="Laba Kotor (Gross)"
+            <StatScoreCard
+              title="Laba Kotor (Gross)"
               value={formatRp(summary.gross_profit || grossProfit)}
-              sub={`Gross Margin: ${grossMarginRate}%`}
-              color="emerald"
+              subtitle={`Gross Margin: ${grossMarginRate}%`}
+              icon={Percent}
+              badgeText={`${grossMarginRate}%`}
+              badgeVariant="emerald"
+              progress={Math.min(100, Math.max(0, Math.round(Number(grossMarginRate) || 0)))}
+              progressVariant="emerald"
             />
-            <KpiCard
-              icon={TrendingDown}
-              label="Beban Operasional"
+            <StatScoreCard
+              title="Beban Operasional"
               value={formatRp(summary.total_expenses || 0)}
-              sub="Pengeluaran & operasional toko"
-              color="rose"
+              subtitle="Pengeluaran & operasional toko"
+              icon={TrendingDown}
+              badgeText="Beban"
+              badgeVariant="rose"
+              progress={summary.total_sales > 0 ? Math.min(100, Math.round(((summary.total_expenses || 0) / summary.total_sales) * 100)) : 0}
+              progressVariant="rose"
             />
           </div>
 
           {/* Income Statement Table View on Screen */}
-          <div className="table-wrap bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all overflow-hidden">
-            <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+          <div className="table-wrap bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-md transition-all overflow-hidden">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <FileText className="text-indigo-600" size={18} />
-                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-base">Rincian Laporan Laba Rugi Komprehensif</h3>
+                <FileText className="text-indigo-600 dark:text-indigo-400" size={18} />
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 dark:text-white text-base">Rincian Laporan Laba Rugi Komprehensif</h3>
               </div>
             </div>
 

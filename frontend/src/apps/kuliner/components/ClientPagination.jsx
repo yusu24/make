@@ -9,6 +9,7 @@ export default function ClientPagination({
   setItemsPerPage,
   totalItems,
   compact = false,
+  theme = 'amber',
   ...rest
 }) {
   return (
@@ -19,6 +20,7 @@ export default function ClientPagination({
       pageSize={itemsPerPage}
       setPageSize={setItemsPerPage}
       totalItems={totalItems}
+      theme={theme}
       className={compact ? 'sp-compact' : ''}
       {...rest}
     />

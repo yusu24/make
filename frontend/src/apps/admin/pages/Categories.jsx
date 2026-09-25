@@ -1,9 +1,23 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { RefreshCw, Plus } from '@/constants/icons'
+import {
+  RefreshCw,
+  Plus,
+  Search,
+  Store,
+  Users,
+  CheckCircle2,
+  Tag,
+  Eye,
+  CreditCard,
+  Pencil,
+  Trash2,
+  ExternalLink
+} from '@/constants/icons'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import Modal from '../../../components/Modal'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 const COLORS = ['#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#ec4899','#84cc16']
@@ -47,14 +61,6 @@ export const resolveCategorySlug = (cat) => {
   return null
 }
 
-const DUMMY_CATS = [
-  { id:1, name:'Toko Retail',        slug:'toko-retail',     description:'Manajemen stok dan penjualan toko fisik',   tenant_count:142, active:true,  icon:'🛒', color:'#3b82f6' },
-  { id:2, name:'Budidaya Hewan',      slug:'budidaya-hewan',  description:'Pemantauan kandang/kolam dan siklus panen',    tenant_count:89,  active:true,  icon:'🐟', color:'#10b981' },
-  { id:3, name:'Jasa & Repair',      slug:'jasa',            description:'Manajemen booking dan layanan jasa',         tenant_count:76,  active:true,  icon:'🔧', color:'#8b5cf6' },
-  { id:4, name:'Seller Marketplace', slug:'seller',          description:'Manajemen toko online, marketplace & gudang',tenant_count:65,  active:true,  icon:'📦', color:'#6366f1' },
-  { id:5, name:'Kuliner',            slug:'kuliner',         description:'Manajemen restoran, cafe, dan pesanan online', tenant_count:56, active:true,  icon:'🍱', color:'#ec4899' },
-]
-
 export default function Categories() {
   const navigate = useNavigate()
   const { impersonateDemoSandbox } = useAuth()
@@ -92,12 +98,16 @@ export default function Categories() {
 
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchCats = () => {
     setLoading(true)
     api.get('/categories')
       .then(r => setCats(r.data?.data || []))
       .catch(() => {})
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchCats()
   }, [])
 
   const openAdd = () => {
@@ -136,8 +146,6 @@ export default function Categories() {
       ? form.features_input.split(',').map(s => s.trim()).filter(Boolean)
       : []
 
-    // Only keep stats if the admin actually filled at least one field in —
-    // otherwise let the landing page fall back to its generic stat cards.
     const hasStats = form.stats.some(st => st.value.trim() || st.label.trim())
 
     const payload = {
@@ -176,54 +184,121 @@ export default function Categories() {
     try { await api.patch(`/categories/${id}/toggle`) } catch {}
   }
 
+  const totalTenants = cats.reduce((sum, c) => sum + (c.tenant_count || 0), 0)
+  const activeCount = cats.filter(c => c.active).length
+  const promoCount = cats.filter(c => c.promo_active).length
+
   const filtered = cats.filter(c => {
     const q = search.toLowerCase()
-    return c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)
+    return c.name.toLowerCase().includes(q) || (c.description && c.description.toLowerCase().includes(q))
   })
 
   return (
-    <>
-      <div className="animate-fade-in">
-        <div className="page-header">
-          <h2 className="page-title">Kategori Bisnis</h2>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Top Actions Toolbar ── */}
+      <div className="flex items-center justify-end gap-2.5">
+        <button
+          onClick={fetchCats}
+          disabled={loading}
+          className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+          title="Muat ulang kategori"
+        >
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <span>Refresh</span>
+        </button>
+          <button
+            id="btn-add-category"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all"
+            onClick={openAdd}
+          >
+            <Plus size={15} />
+            <span>Tambah Kategori</span>
+          </button>
+      </div>
+
+      {/* ── KPI Metric Cards ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatScoreCard
+          title="TOTAL SEKTOR BISNIS"
+          value={cats.length}
+          icon={Store}
+          statusBadge={{ text: "Terdefinisi", color: "blue" }}
+          subtitle="Vertikal industri platform"
+          progressBar={{ value: 100, color: "bg-blue-500" }}
+        />
+        <StatScoreCard
+          title="TENANT TERDISTRIBUSI"
+          value={totalTenants}
+          icon={Users}
+          statusBadge={{ text: "Akumulasi", color: "emerald" }}
+          subtitle="Populasi tenant di sektor"
+          progressBar={{ value: 88, color: "bg-emerald-500" }}
+        />
+        <StatScoreCard
+          title="KATEGORI AKTIF (LIVE)"
+          value={activeCount}
+          icon={CheckCircle2}
+          statusBadge={{ text: activeCount === cats.length ? "100% Live" : "Sebagian", color: "violet" }}
+          subtitle="Tampil di pendaftaran publik"
+          progressBar={{ value: Math.min(100, Math.round((activeCount / (cats.length || 1)) * 100)), color: "bg-violet-500" }}
+        />
+        <StatScoreCard
+          title="PROMOSI BERJALAN"
+          value={`${promoCount} Sektor`}
+          icon={Tag}
+          statusBadge={{ text: promoCount > 0 ? "Diskon Aktif" : "Normal", color: promoCount > 0 ? "amber" : "slate" }}
+          subtitle="Diskon upgrade paket usaha"
+          progressBar={{ value: Math.min(100, promoCount * 25), color: "bg-amber-500" }}
+        />
+      </div>
+
+      {/* ── Search Bar Filter ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex items-center justify-between flex-wrap gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input
+            id="input-search-categories"
+            className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
+            placeholder="Cari kategori atau deskripsi sektor..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
-
-        <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
-          <div className="search-wrap" style={{ flex: 1, minWidth: 200, maxWidth: 360 }}>
-            <span className="search-icon">🔍</span>
-            <input
-              id="input-search-categories"
-              className="form-input search-input"
-              placeholder="Cari kategori..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-
-          <button id="btn-add-category" className="btn btn-primary" onClick={openAdd}>+ Tambah Kategori</button>
+        <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          Menampilkan <span className="font-bold text-slate-700 dark:text-slate-200">{filtered.length}</span> sektor bisnis
         </div>
+      </div>
 
-      <div className="grid-auto stagger">
+      {/* ── Category Cards Grid ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {loading ? (
-          <div className="card" style={{ gridColumn: '1 / -1', padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+          <div className="col-span-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-sm">
+            <div className="flex flex-col items-center justify-center gap-3">
               <RefreshCw size={28} className="animate-spin text-indigo-600" />
-              <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Memuat data kategori bisnis...
               </span>
             </div>
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-            Tidak ada kategori ditemukan
+          <div className="col-span-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-400 dark:text-slate-500 shadow-sm">
+            <Store size={36} className="mx-auto mb-2 opacity-40" />
+            <p className="text-sm font-medium">Tidak ada kategori ditemukan</p>
           </div>
         ) : filtered.map(cat => (
-          <div key={cat.id} id={`cat-card-${cat.id}`} className="cat-card card card-pad animate-fade-in">
-            <div className="cat-card__top">
-              <div className="cat-card__icon" style={{ background: (cat.color||'#3b82f6') + '20' }}>
-                <span>{cat.icon || '🏢'}</span>
-              </div>
-              <div className="cat-card__actions">
+          <div
+            key={cat.id}
+            id={`cat-card-${cat.id}`}
+            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3.5">
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
+                  style={{ background: (cat.color || '#3b82f6') + '20' }}
+                >
+                  <span>{cat.icon || '🏢'}</span>
+                </div>
                 <button
                   className={`toggle-btn ${cat.active ? 'toggle-btn--on' : 'toggle-btn--off'}`}
                   onClick={() => toggleActive(cat.id, cat.active)}
@@ -232,111 +307,139 @@ export default function Categories() {
                   <span className="toggle-knob" />
                 </button>
               </div>
+
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 dark:text-white mb-1">
+                {cat.name}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-3">
+                {cat.description || 'Tidak ada deskripsi kategori.'}
+              </p>
+
+              {cat.promo_active && cat.discount_pct > 0 && (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-violet-600 to-pink-600 text-white text-[10px] font-bold tracking-wide uppercase shadow-xs mb-3">
+                  <span>🔥 PROMO {cat.discount_pct}% OFF</span>
+                </div>
+              )}
             </div>
-            <h3 className="cat-card__name">{cat.name}</h3>
-            <p className="cat-card__desc">{cat.description}</p>
-            {cat.promo_active && cat.discount_pct > 0 && (
-              <div className="cat-card__promo-badge" style={{
-                background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-                color: '#fff',
-                fontSize: 10,
-                fontWeight: 600,
-                padding: '4px 10px',
-                borderRadius: 8,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                marginTop: 8,
-                alignSelf: 'flex-start'
-              }}>
-                <span>🔥 PROMO {cat.discount_pct}% OFF</span>
-              </div>
-            )}
-            <div className="cat-card__footer">
-              <div className="cat-card__stat">
-                <span className="cat-card__stat-num" style={{ color: cat.color||'#3b82f6' }}>
-                  {cat.tenant_count}
+
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 mt-2">
+              <div className="flex items-center justify-between mb-3.5">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xl font-extrabold font-['Plus_Jakarta_Sans']" style={{ color: cat.color || '#3b82f6' }}>
+                    {cat.tenant_count || 0}
+                  </span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Tenant</span>
+                </div>
+                <span className={`badge ${cat.active ? 'badge-green' : 'badge-gray'}`}>
+                  {cat.active ? 'Aktif' : 'Nonaktif'}
                 </span>
-                <span className="cat-card__stat-lbl">Tenant</span>
               </div>
-              <span className={`badge ${cat.active ? 'badge-green' : 'badge-gray'}`}>
-                {cat.active ? 'Aktif' : 'Nonaktif'}
-              </span>
-            </div>
-            <div className="cat-card__btns" style={{ display: 'flex', gap: 6 }}>
-              <button
-                id={`btn-view-cat-${cat.id}`}
-                className="btn btn-primary btn-sm"
-                style={{ flex: 1 }}
-                onClick={() => handleEnterDemo(cat)}
-                disabled={demoLoading}
-              >
-                👁 Masuk Sistem
-              </button>
-              <button 
-                className="btn btn-secondary btn-sm" 
-                title="Kelola Paket & Fitur Kategori Ini" 
-                onClick={() => navigate('/packages-features')}
-              >
-                💳 Paket
-              </button>
-              <button id={`btn-edit-cat-${cat.id}`} className="btn btn-secondary btn-sm" onClick={() => openEdit(cat)} title="Edit Kategori">✏</button>
-              <button id={`btn-del-cat-${cat.id}`} className="btn btn-ghost btn-sm" style={{color:'var(--danger-400)'}} onClick={() => handleDelete(cat.id)} title="Hapus">🗑</button>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  id={`btn-view-cat-${cat.id}`}
+                  onClick={() => handleEnterDemo(cat)}
+                  disabled={demoLoading}
+                  className="flex-1 h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-xs font-semibold shadow-xs transition-colors"
+                >
+                  <Eye size={13} />
+                  <span>Demo</span>
+                </button>
+                <button 
+                  onClick={() => navigate('/packages-features')}
+                  title="Kelola Paket & Fitur Kategori Ini" 
+                  className="h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-xs font-semibold shadow-xs transition-colors"
+                >
+                  <CreditCard size={13} />
+                  <span>Paket</span>
+                </button>
+                <button
+                  id={`btn-edit-cat-${cat.id}`}
+                  onClick={() => openEdit(cat)}
+                  title="Edit Kategori"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-xs transition-colors"
+                >
+                  <Pencil size={13} />
+                </button>
+                <button
+                  id={`btn-del-cat-${cat.id}`}
+                  onClick={() => handleDelete(cat.id)}
+                  title="Hapus Kategori"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-rose-200 dark:border-rose-800/60 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 shadow-xs transition-colors"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      </div>
+      {/* ── Add/Edit Modal ── */}
+      <Modal isOpen={show} onClose={() => setShow(false)} title={editing ? 'Edit Kategori Bisnis' : 'Tambah Kategori Bisnis Baru'} maxWidth="580px">
+        {msg && <div className="p-3 mb-4 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold"><span>✓</span> {msg}</div>}
+        <form id="form-category" onSubmit={handleSave} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Kategori *</label>
+            <input
+              className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
+              placeholder="cth. Toko Retail"
+              value={form.name}
+              onChange={e => setForm({...form, name: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Deskripsi</label>
+            <textarea
+              className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 resize-y"
+              rows={3}
+              placeholder="Deskripsi singkat kategori..."
+              value={form.description}
+              onChange={e => setForm({...form, description: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Fitur Utama (Pills) — Pisahkan dengan koma</label>
+            <input
+              className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
+              placeholder="cth. Kasir POS, Stok Realtime, Laporan Penjualan" 
+              value={form.features_input}
+              onChange={e => setForm({...form, features_input: e.target.value})}
+            />
+          </div>
 
-      {/* Add/Edit Modal */}
-      <Modal isOpen={show} onClose={() => setShow(false)} title={editing ? 'Edit Kategori' : 'Tambah Kategori Baru'} maxWidth="580px">
-        {msg && <div className="auth-alert auth-alert--success" style={{marginBottom:12}}><span>✓</span> {msg}</div>}
-        <form id="form-category" onSubmit={handleSave} style={{ display:'flex', flexDirection:'column', gap:16 }}>
-          <div className="form-group">
-            <label className="form-label">Nama Kategori *</label>
-            <input className="form-input" placeholder="cth. Toko Retail" value={form.name}
-              onChange={e => setForm({...form, name: e.target.value})} required />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Deskripsi</label>
-            <textarea className="form-input" rows={3} placeholder="Deskripsi singkat kategori..."
-              value={form.description} onChange={e => setForm({...form, description: e.target.value})}
-              style={{resize:'vertical'}} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Fitur Utama (Pills) — Pisahkan dengan koma</label>
-            <input className="form-input" placeholder="cth. Kasir POS, Stok Realtime, Laporan Penjualan" 
-              value={form.features_input} onChange={e => setForm({...form, features_input: e.target.value})} />
-          </div>
-          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
-            <div className="form-group">
-              <label className="form-label">Icon</label>
-              <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Icon Emoji</label>
+              <div className="flex gap-2 flex-wrap">
                 {ICONS.map(ic => (
-                  <button key={ic} type="button"
-                    style={{
-                      width:36, height:36, borderRadius:8, border:'1.5px solid',
-                      borderColor: form.icon===ic ? 'var(--primary-500)' : 'var(--border-default)',
-                      background: form.icon===ic ? 'rgba(59,130,246,0.15)' : 'var(--bg-elevated)',
-                      fontSize:18, cursor:'pointer', transition:'all 0.2s'
-                    }}
+                  <button
+                    key={ic}
+                    type="button"
+                    className={`w-9 h-9 rounded-xl border text-base flex items-center justify-center transition-all ${
+                      form.icon === ic
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/60 ring-2 ring-indigo-500/20'
+                        : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'
+                    }`}
                     onClick={() => setForm({...form, icon: ic})}
-                  >{ic}</button>
+                  >
+                    {ic}
+                  </button>
                 ))}
               </div>
             </div>
-            <div className="form-group">
-              <label className="form-label">Warna</label>
-              <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Aksen Warna</label>
+              <div className="flex gap-2 flex-wrap items-center">
                 {COLORS.map(c => (
-                  <button key={c} type="button"
-                    style={{
-                      width:28, height:28, borderRadius:6, border:'2.5px solid',
-                      borderColor: form.color===c ? '#fff' : 'transparent',
-                      background: c, cursor:'pointer', transition:'transform 0.2s',
-                      transform: form.color===c ? 'scale(1.2)' : 'scale(1)'
-                    }}
+                  <button
+                    key={c}
+                    type="button"
+                    className={`w-7 h-7 rounded-lg border-2 transition-transform ${
+                      form.color === c ? 'scale-110 border-white ring-2 ring-slate-400' : 'border-transparent'
+                    }`}
+                    style={{ background: c }}
                     onClick={() => setForm({...form, color: c})}
                   />
                 ))}
@@ -344,68 +447,67 @@ export default function Categories() {
             </div>
           </div>
 
-          {/* Sector Detail Panel (Landing Page) Section */}
-          <div style={{ borderTop: '1px solid var(--border-default)', paddingTop: 16, marginTop: 8 }}>
-            <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detail Panel Sektor (Landing Page)</h4>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>Ditampilkan di section "Spesialisasi Sektor Bisnis" saat kategori ini dipilih.</p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div className="form-group">
-                <label className="form-label">Badge (Label Kecil)</label>
-                <input className="form-input" placeholder="cth. Solusi Kasir & Stok" value={form.badge}
-                  onChange={e => setForm({...form, badge: e.target.value})} />
+          {/* Sector Detail Panel Section */}
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+              Detail Panel Sektor (Landing Page)
+            </h4>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Badge</label>
+                <input
+                  className="w-full h-9 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="cth. Solusi Kasir & Stok"
+                  value={form.badge}
+                  onChange={e => setForm({...form, badge: e.target.value})}
+                />
               </div>
-              <div className="form-group">
-                <label className="form-label">Headline</label>
-                <input className="form-input" placeholder="cth. Kasir POS Cepat, Stok Terintegrasi, Bebas Selisih Barang" value={form.headline}
-                  onChange={e => setForm({...form, headline: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Statistik Dampak (2 kartu)</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                  {form.stats.map((st, idx) => (
-                    <div key={idx} style={{ display: 'flex', gap: 8 }}>
-                      <input className="form-input" placeholder="cth. 3x" style={{ width: 70 }} value={st.value}
-                        onChange={e => {
-                          const next = [...form.stats]
-                          next[idx] = { ...next[idx], value: e.target.value }
-                          setForm({...form, stats: next})
-                        }} />
-                      <input className="form-input" placeholder="cth. Proses Transaksi Lebih Cepat" value={st.label}
-                        onChange={e => {
-                          const next = [...form.stats]
-                          next[idx] = { ...next[idx], label: e.target.value }
-                          setForm({...form, stats: next})
-                        }} />
-                    </div>
-                  ))}
-                </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Headline</label>
+                <input
+                  className="w-full h-9 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="cth. Kasir POS Cepat, Stok Terintegrasi, Bebas Selisih Barang"
+                  value={form.headline}
+                  onChange={e => setForm({...form, headline: e.target.value})}
+                />
               </div>
             </div>
           </div>
 
           {/* Category Promo Section */}
-          <div style={{ borderTop: '1px solid var(--border-default)', paddingTop: 16, marginTop: 8 }}>
-            <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Paket Promo Kategori</h4>
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+              Paket Promo Kategori
+            </h4>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16, marginBottom: 12 }}>
-              <div className="form-group">
-                <label className="form-label">Teks Deskripsi Promo</label>
-                <input className="form-input" placeholder="cth. Launching Promo 30%!" value={form.promo_text}
-                  onChange={e => setForm({...form, promo_text: e.target.value})} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Teks Promo</label>
+                <input
+                  className="w-full h-9 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="cth. Launching Promo 30%!"
+                  value={form.promo_text}
+                  onChange={e => setForm({...form, promo_text: e.target.value})}
+                />
               </div>
-              
-              <div className="form-group">
-                <label className="form-label">Diskon (%)</label>
-                <input type="number" min="0" max="100" className="form-input" placeholder="cth. 30" value={form.discount_pct}
-                  onChange={e => setForm({...form, discount_pct: Math.min(100, Math.max(0, parseInt(e.target.value) || 0))})} />
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Diskon (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className="w-full h-9 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="cth. 30"
+                  value={form.discount_pct}
+                  onChange={e => setForm({...form, discount_pct: Math.min(100, Math.max(0, parseInt(e.target.value) || 0))})}
+                />
               </div>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-elevated)', padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border-default)' }}>
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
               <div>
-                <span style={{ fontSize: 12, fontWeight: 600, display: 'block', color: 'var(--text-primary)' }}>Aktifkan Promo Paket</span>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Terapkan potongan harga saat tenant kategori ini upgrade</span>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Aktifkan Promo Paket</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">Terapkan potongan harga saat tenant kategori ini upgrade</span>
               </div>
               <button
                 type="button"
@@ -416,14 +518,27 @@ export default function Categories() {
               </button>
             </div>
           </div>
-          <div className="modal__actions">
-            <button id="btn-cancel-cat" type="button" className="btn btn-secondary" onClick={() => setShow(false)}>Batal</button>
-            <button id="btn-save-cat" type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? <><span className="spinner" style={{width:16,height:16,borderWidth:2}}/> Menyimpan...</> : (editing ? 'Simpan Perubahan' : 'Tambah Kategori')}
+
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2.5">
+            <button
+              id="btn-cancel-cat"
+              type="button"
+              className="h-[38px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-xs font-semibold"
+              onClick={() => setShow(false)}
+            >
+              Batal
+            </button>
+            <button
+              id="btn-save-cat"
+              type="submit"
+              className="h-[38px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all disabled:opacity-50"
+              disabled={saving}
+            >
+              {saving ? 'Menyimpan...' : (editing ? 'Simpan Perubahan' : 'Tambah Kategori')}
             </button>
           </div>
         </form>
       </Modal>
-    </>
+    </div>
   )
 }

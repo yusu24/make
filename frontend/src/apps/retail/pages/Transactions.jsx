@@ -3,11 +3,14 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Eye, Ban, RefreshCw } from '@/constants/icons';
+import { Eye, Ban, RefreshCw, Receipt, CreditCard, TrendingUp } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import { useToast } from '../../../components/Toast';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 
 export default function Transactions() {
+  const toast = useToast();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
@@ -29,15 +32,16 @@ export default function Transactions() {
 
   const openDetail = async (id) => {
     try { const res = await api.get(`/retail/transactions/${id}`); setDetail(res.data); }
-    catch { alert('Gagal memuat detail'); }
+    catch { toast.error('Gagal memuat detail transaksi'); }
   };
 
   const submitVoid = async (e) => {
     e.preventDefault();
     try {
       await api.post(`/retail/transactions/${voidModal.id}/void`, { reason: voidReason });
+      toast.success('Transaksi berhasil dibatalkan (void)');
       setVoidModal(null); setVoidReason(''); fetchData();
-    } catch (e) { alert(e.response?.data?.message || 'Gagal membatalkan transaksi'); }
+    } catch (e) { toast.error(e.response?.data?.message || 'Gagal membatalkan transaksi'); }
   };
 
   const filteredTransactions = transactions.filter(t => {
@@ -65,6 +69,9 @@ export default function Transactions() {
     return matchesSearch && matchesStart && matchesEnd;
   });
 
+  const successTransactions = transactions.filter(t => t.status !== 'void');
+  const totalRevenue = successTransactions.reduce((acc, t) => acc + Number(t.total_amount || 0), 0);
+
   const {
     currentPage,
     setCurrentPage,
@@ -79,6 +86,42 @@ export default function Transactions() {
 
   return (
     <div className="animate-fade-in retail-dashboard-spacing">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Transaksi"
+          value={transactions.length}
+          suffix=" TRX"
+          subtitle="Volume riwayat transaksi kasir"
+          icon={Receipt}
+          badgeText="Historis"
+          badgeVariant="indigo"
+          progress={100}
+          progressVariant="indigo"
+        />
+        <StatScoreCard
+          title="Transaksi Berhasil"
+          value={successTransactions.length}
+          suffix=" TRX"
+          subtitle="Transaksi terbayar sah & valid"
+          icon={CreditCard}
+          badgeText="Paid"
+          badgeVariant="emerald"
+          progress={transactions.length > 0 ? Math.min(100, Math.round((successTransactions.length / transactions.length) * 100)) : 100}
+          progressVariant="emerald"
+        />
+        <StatScoreCard
+          title="Akumulasi Nilai Bruto"
+          value={`Rp ${Math.round(totalRevenue).toLocaleString('id-ID')}`}
+          subtitle="Total nilai omzet terproses"
+          icon={TrendingUp}
+          badgeText="Omzet"
+          badgeVariant="blue"
+          progress={100}
+          progressVariant="blue"
+        />
+      </div>
+
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)', flexWrap: 'wrap' }}>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
@@ -94,7 +137,7 @@ export default function Transactions() {
               className="form-input" 
               value={startDate} 
               onChange={e => setStartDate(e.target.value)} 
-              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+              style={{ width: 'auto', margin: 0, padding: '0 12px', height: 38 }}
             />
             <span style={{ color: 'var(--text-muted)' }}>-</span>
             <input 
@@ -102,7 +145,7 @@ export default function Transactions() {
               className="form-input" 
               value={endDate} 
               onChange={e => setEndDate(e.target.value)} 
-              style={{ width: 'auto', margin: 0, padding: '8px 12px' }}
+              style={{ width: 'auto', margin: 0, padding: '0 12px', height: 38 }}
             />
           </div>
           <button onClick={fetchData} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">

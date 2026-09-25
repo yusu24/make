@@ -8,7 +8,7 @@ import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
-import KpiCard from '../../../components/KpiCard';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import EmptyTableState from '../../../components/EmptyTableState';
 import FormLabel from '../../../components/FormLabel';
 import '../retail.css';
@@ -187,7 +187,7 @@ export default function Products() {
       link.click();
       link.remove();
     } catch (e) {
-      alert('Gagal mengunduh Excel');
+      toast.error('Gagal mengunduh Excel');
     }
   };
 
@@ -200,93 +200,77 @@ export default function Products() {
       });
       fetchData();
       setShowImportModal(false);
-      alert('Produk berhasil diimpor!');
+      toast.success('Produk berhasil diimpor ke katalog!');
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal mengimpor data produk');
+      toast.error(err.response?.data?.message || 'Gagal mengimpor data produk');
     }
   };
 
+  const lowStockCount = products.filter(p => Number(p.stock) <= Number(p.stock_min)).length;
+
   return (
     <div className="retail-page-classic">
-      {/* Page Header (Synced with Finance) */}
-
-
-
-
-      {/* Overview Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <KpiCard
-          icon={Package}
-          label="Total Produk"
+      {/* Overview Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="TOTAL PRODUK"
           value={products.length}
-          sub="produk terdaftar"
-          color="indigo"
+          icon={Package}
+          statusBadge={{ text: "Katalog", color: "indigo" }}
+          subtitle="Seluruh SKU produk terdaftar"
+          progressBar={{ value: 100, color: "bg-indigo-500" }}
         />
-        <KpiCard
-          icon={RefreshCw}
-          label="Kategori Tersedia"
+        <StatScoreCard
+          title="KATEGORI TERSEDIA"
           value={categories.length}
-          sub="klasifikasi barang"
-          color="slate"
+          icon={RefreshCw}
+          statusBadge={{ text: "Aktif", color: "blue" }}
+          subtitle="Klasifikasi departemen barang"
+          progressBar={{ value: 85, color: "bg-blue-500" }}
         />
-        <KpiCard
+        <StatScoreCard
+          title="STOK MENIPIS"
+          value={lowStockCount}
           icon={AlertCircle}
-          label="Stok Menipis"
-          value={products.filter(p => Number(p.stock) <= Number(p.stock_min)).length}
-          sub="perlu reorder segera"
-          color="rose"
+          statusBadge={{
+            text: lowStockCount > 0 ? "Perlu Reorder" : "Aman",
+            color: lowStockCount > 0 ? "rose" : "emerald"
+          }}
+          subtitle="Stok mendekati batas minimum"
+          progressBar={{
+            value: Math.min(100, lowStockCount * 12),
+            color: lowStockCount > 0 ? "bg-rose-500" : "bg-emerald-500"
+          }}
         />
       </div>
       
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button title="Tambah baru" className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }} onClick={() => setShowModal(true)}>
-            <Plus size={15} className="mr-2 mobile-no-margin" />
-            <span className="btn-text-mobile-hide">Tambah baru</span>
+          <button
+            title="Tambah baru"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0"
+            onClick={() => setShowModal(true)}
+          >
+            <Plus size={15} className="mobile-no-margin" />
+            <span className="btn-text-mobile-hide">Tambah Produk</span>
           </button>
           
           <button 
-            title="Import" 
-            className="btn" 
-            style={{ 
-              whiteSpace: 'nowrap', 
-              flexShrink: 0, 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              height: 38, 
-              padding: '0 16px',
-              background: '#eff6ff',
-              color: '#2563eb',
-              border: '1px solid #bfdbfe',
-              fontWeight: 600
-            }} 
+            title="Import Excel" 
+            className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 font-semibold text-xs shadow-xs transition-colors shrink-0" 
             onClick={() => setShowImportModal(true)}
           >
-            <Upload size={15} className="mr-2 text-blue-600" />
+            <Upload size={14} className="text-blue-600 dark:text-blue-400" />
             <span className="btn-text-mobile-hide">Import</span>
           </button>
           
           <button 
-            title="Export" 
-            className="btn" 
-            style={{ 
-              whiteSpace: 'nowrap', 
-              flexShrink: 0, 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              height: 38, 
-              padding: '0 16px',
-              background: '#f0fdf4',
-              color: '#16a34a',
-              border: '1px solid #bbf7d0',
-              fontWeight: 600
-            }} 
+            title="Export Excel" 
+            className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 font-semibold text-xs shadow-xs transition-colors shrink-0" 
             onClick={handleExport}
           >
-            <Download size={15} className="mr-2 text-green-600" />
+            <Download size={14} className="text-emerald-600 dark:text-emerald-400" />
             <span className="btn-text-mobile-hide">Export</span>
           </button>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>

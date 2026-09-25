@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  api } from '../../../lib/api'
+import { api } from '../../../lib/api'
 import Modal from '../../../components/Modal'
 import {
   Bell,
@@ -19,6 +18,7 @@ import {
   Check,
   Eye
 } from '@/constants/icons'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 const SCHEDULE_TABS = [
@@ -121,9 +121,8 @@ export default function SubscriptionReminders() {
     }
   }
 
-  const currentReminder = settings?.reminders?.[activeTab] || settings?.reminders?.h7
+  const currentReminder = settings?.reminders?.[activeTab] || settings?.reminders?.h7 || {}
 
-  // Helper to render dynamic sample preview
   const renderPreviewText = (text) => {
     if (!text) return ''
     let out = text
@@ -133,516 +132,469 @@ export default function SubscriptionReminders() {
     return out
   }
 
+  const activeChannelsCount = settings?.channels ? Object.values(settings.channels).filter(Boolean).length : 0
+
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: 60 }}>
+    <div className="animate-fade-in space-y-6">
       {/* Toast Notification */}
       {toast && (
-        <div style={{
-          position: 'fixed', top: 20, right: 20, zIndex: 9999,
-          padding: '12px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600,
-          background: toast.type === 'error' ? '#ef4444' : '#10b981',
-          color: '#ffffff', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-          display: 'flex', alignItems: 'center', gap: 8
-        }}>
-          {toast.type === 'error' ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
-          {toast.msg}
+        <div className={`fixed top-5 right-5 z-[9999] px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 text-xs font-semibold text-white ${
+          toast.type === 'error' ? 'bg-rose-600' : 'bg-emerald-600'
+        }`}>
+          {toast.type === 'error' ? <AlertTriangle size={16} /> : <CheckCircle2 size={16} />}
+          <span>{toast.msg}</span>
         </div>
       )}
 
-      {/* ── Page Header ── */}
-      <div className="page-header mb-2">
-        <h2 className="page-title">Pengingat &amp; Otomasi Tagihan</h2>
-      </div>
-
-      {/* ── Action Bar below title ── */}
-      <div className="flex justify-end gap-2.5 mb-4">
+      {/* ── Top Actions Toolbar ── */}
+      <div className="flex items-center justify-end gap-2.5">
         <button
-          className="btn btn-secondary flex items-center gap-1.5"
           onClick={fetchSettings}
           disabled={loading}
+          className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
           title="Muat ulang pengaturan"
         >
-          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           <span>Muat Ulang</span>
         </button>
-        <button
-          className="btn btn-primary flex items-center gap-1.5"
-          onClick={handleSave}
-          disabled={saving || loading || !settings}
-        >
-          <Save size={15} />
-          <span>{saving ? 'Menyimpan...' : 'Simpan Pengaturan'}</span>
-        </button>
+          <button
+            onClick={() => {
+              setTestSchedule(activeTab)
+              setTestModalOpen(true)
+            }}
+            disabled={!settings}
+            className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+          >
+            <Send size={14} className="text-indigo-600 dark:text-indigo-400" />
+            <span>Uji Coba</span>
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving || loading || !settings}
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all disabled:opacity-50"
+          >
+            <Save size={15} />
+            <span>{saving ? 'Menyimpan...' : 'Simpan Pengaturan'}</span>
+          </button>
       </div>
 
       {loading || !settings ? (
-        <div className="card" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-sm">
+          <div className="flex flex-col items-center justify-center gap-3">
             <RefreshCw size={28} className="animate-spin text-indigo-600" />
-            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Memuat pengaturan pengingat &amp; otomasi tagihan...
             </span>
           </div>
         </div>
       ) : (
         <>
-
-      {/* ── Master Status & Delivery Channels Card ── */}
-      <div className="card" style={{ padding: 20, marginBottom: 24, border: '1px solid var(--border-subtle)' }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 14, marginBottom: 16 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={settings.is_enabled}
-              onChange={e => setSettings(s => ({ ...s, is_enabled: e.target.checked }))}
-              style={{ width: 18, height: 18, cursor: 'pointer', accentColor: '#3b82f6' }}
+          {/* ── KPI Metric Cards ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatScoreCard
+              title="OTOMASI MASTER"
+              value={settings.is_enabled ? "Aktif Berjalan" : "Dihentikan"}
+              icon={Zap}
+              statusBadge={{ text: settings.is_enabled ? "Running" : "Paused", color: settings.is_enabled ? "emerald" : "slate" }}
+              subtitle="Daemon pengingat harian 08:00"
+              progressBar={{ value: settings.is_enabled ? 100 : 0, color: "bg-emerald-500" }}
             />
-            <span style={{ fontSize: 13, fontWeight: 700, color: settings.is_enabled ? '#10b981' : 'var(--text-muted)' }}>
-              {settings.is_enabled ? 'OTOMASI AKTIF' : 'NONAKTIF'}
-            </span>
-          </label>
-        </div>
-
-        {/* Channels Toggles */}
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
-            Saluran Pengiriman Notifikasi (Delivery Channels)
+            <StatScoreCard
+              title="SALURAN TERHUBUNG"
+              value={`${activeChannelsCount}/3 Saluran`}
+              icon={Send}
+              statusBadge={{ text: "Email / WA / App", color: "blue" }}
+              subtitle="Kanal distribusi notifikasi"
+              progressBar={{ value: Math.round((activeChannelsCount / 3) * 100), color: "bg-blue-500" }}
+            />
+            <StatScoreCard
+              title="SIKLUS JADWAL"
+              value="4 Siklus"
+              icon={Clock}
+              statusBadge={{ text: "H-7 s/d Overdue", color: "violet" }}
+              subtitle="Eskalasi pengingat tagihan"
+              progressBar={{ value: 100, color: "bg-violet-500" }}
+            />
+            <StatScoreCard
+              title="MASA TENGGANG"
+              value={`${settings.grace_period_days || 3} Hari`}
+              icon={ShieldAlert}
+              statusBadge={{ text: "Toleransi", color: "amber" }}
+              subtitle="Tenggang sebelum tenant suspend"
+              progressBar={{ value: 60, color: "bg-amber-500" }}
+            />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {/* Email Channel */}
-            <label style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10,
-              background: settings.channels.email ? 'rgba(59, 130, 246, 0.08)' : 'var(--bg-elevated)',
-              border: `1px solid ${settings.channels.email ? 'rgba(59, 130, 246, 0.3)' : 'var(--border-subtle)'}`,
-              cursor: 'pointer'
-            }}>
-              <input
-                type="checkbox"
-                checked={settings.channels.email}
-                onChange={e => setSettings(s => ({ ...s, channels: { ...s.channels, email: e.target.checked } }))}
-                style={{ width: 16, height: 16, accentColor: '#3b82f6', cursor: 'pointer' }}
-              />
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#3b82f6', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Mail size={16} />
-              </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Email Otomatis</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Kirim rincian invoice ke email tenant</div>
-              </div>
-            </label>
 
-            {/* WhatsApp Channel */}
-            <label style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10,
-              background: settings.channels.whatsapp ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-elevated)',
-              border: `1px solid ${settings.channels.whatsapp ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-subtle)'}`,
-              cursor: 'pointer'
-            }}>
-              <input
-                type="checkbox"
-                checked={settings.channels.whatsapp}
-                onChange={e => setSettings(s => ({ ...s, channels: { ...s.channels, whatsapp: e.target.checked } }))}
-                style={{ width: 16, height: 16, accentColor: '#10b981', cursor: 'pointer' }}
-              />
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#10b981', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <MessageSquare size={16} />
-              </div>
+          {/* ── Master Status & Delivery Channels Card ── */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>WhatsApp Notification</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Pesan WA langsung ke pemilik toko</div>
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-900 dark:text-white">
+                  Sakelar Utama Mesin Pengingat
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Jika dinonaktifkan, pengiriman notifikasi pengingat otomatis akan dihentikan sementara.
+                </p>
               </div>
-            </label>
-
-            {/* In-App Banner Channel */}
-            <label style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10,
-              background: settings.channels.in_app ? 'rgba(139, 92, 246, 0.08)' : 'var(--bg-elevated)',
-              border: `1px solid ${settings.channels.in_app ? 'rgba(139, 92, 246, 0.3)' : 'var(--border-subtle)'}`,
-              cursor: 'pointer'
-            }}>
-              <input
-                type="checkbox"
-                checked={settings.channels.in_app}
-                onChange={e => setSettings(s => ({ ...s, channels: { ...s.channels, in_app: e.target.checked } }))}
-                style={{ width: 16, height: 16, accentColor: '#8b5cf6', cursor: 'pointer' }}
-              />
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#8b5cf6', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Smartphone size={16} />
-              </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Banner Kasir / POS</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Muncul alert bar saat kasir login</div>
-              </div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Schedule Selector Tabs ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-        {SCHEDULE_TABS.map(tab => {
-          const isSelected = activeTab === tab.key
-          const isItemActive = settings.reminders[tab.key]?.active
-          const Icon = tab.icon
-          return (
-            <div
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              style={{
-                padding: '14px 16px',
-                borderRadius: 12,
-                cursor: 'pointer',
-                background: isSelected ? 'var(--bg-surface)' : 'var(--bg-elevated)',
-                border: `2px solid ${isSelected ? tab.color : 'transparent'}`,
-                boxShadow: isSelected ? `0 6px 18px ${tab.color}25` : 'none',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'space-between'
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{
-                    padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800,
-                    background: tab.bg, color: tab.color
-                  }}>
-                    {tab.badge}
-                  </span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                    {tab.label}
-                  </span>
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                  {tab.sub}
-                </div>
-              </div>
-
-              <div style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: isItemActive ? '#10b981' : '#94a3b8',
-                marginTop: 4
-              }} title={isItemActive ? 'Jadwal Aktif' : 'Jadwal Nonaktif'} />
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.is_enabled}
+                  onChange={e => setSettings(s => ({ ...s, is_enabled: e.target.checked }))}
+                  className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+                />
+                <span className={`text-xs font-bold ${settings.is_enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+                  {settings.is_enabled ? 'OTOMASI AKTIF' : 'NONAKTIF'}
+                </span>
+              </label>
             </div>
-          )
-        })}
-      </div>
 
-      {/* ── Main Workspace: Template Editor (Left) & Realtime Simulator (Right) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* LEFT: Template Editor */}
-        <div className="lg:col-span-7 card" style={{ padding: 22, border: '1px solid var(--border-subtle)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 14 }}>
+            {/* Channels Toggles */}
             <div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                Pengaturan Pesan: {currentReminder.title}
-              </h3>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>
-                Kustomisasi teks email dan WhatsApp yang dikirimkan pada jadwal ini.
-              </p>
-            </div>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={currentReminder.active}
-                onChange={e => {
-                  const checked = e.target.checked
-                  setSettings(s => ({
-                    ...s,
-                    reminders: {
-                      ...s.reminders,
-                      [activeTab]: { ...s.reminders[activeTab], active: checked }
-                    }
-                  }))
-                }}
-                style={{ width: 16, height: 16, accentColor: '#3b82f6', cursor: 'pointer' }}
-              />
-              <span style={{ fontSize: 12, fontWeight: 700, color: currentReminder.active ? '#10b981' : 'var(--text-muted)' }}>
-                {currentReminder.active ? 'Aktif' : 'Nonaktif'}
-              </span>
-            </label>
-          </div>
-
-          {/* Variable Chips Toolbar */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>
-              Variabel Dinamis (Klik untuk Salin):
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {VARIABLE_TAGS.map(v => (
-                <button
-                  key={v.tag}
-                  type="button"
-                  onClick={() => handleCopyTag(v.tag)}
-                  style={{
-                    background: copiedTag === v.tag ? '#10b981' : 'var(--bg-elevated)',
-                    color: copiedTag === v.tag ? '#ffffff' : 'var(--text-secondary)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 6,
-                    padding: '3px 8px',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    transition: 'all 0.15s'
-                  }}
-                  title={`Contoh: ${v.sample}`}
-                >
-                  {copiedTag === v.tag ? <Check size={12} /> : <Copy size={12} />}
-                  <code>{v.tag}</code>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Email Subject */}
-          <div style={{ marginBottom: 16 }}>
-            <label className="form-label" style={{ fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Mail size={14} style={{ color: '#3b82f6' }} /> Subjek Email Notifikasi
-            </label>
-            <input
-              className="form-input"
-              value={currentReminder.subject || ''}
-              onChange={e => {
-                const val = e.target.value
-                setSettings(s => ({
-                  ...s,
-                  reminders: {
-                    ...s.reminders,
-                    [activeTab]: { ...s.reminders[activeTab], subject: val }
-                  }
-                }))
-              }}
-              placeholder="Subjek email..."
-              style={{ fontSize: 13 }}
-            />
-          </div>
-
-          {/* Email Body */}
-          <div style={{ marginBottom: 18 }}>
-            <label className="form-label" style={{ fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Mail size={14} style={{ color: '#3b82f6' }} /> Konten Isi Email (Email Body)
-            </label>
-            <textarea
-              className="form-input"
-              rows={9}
-              value={currentReminder.email_body || ''}
-              onChange={e => {
-                const val = e.target.value
-                setSettings(s => ({
-                  ...s,
-                  reminders: {
-                    ...s.reminders,
-                    [activeTab]: { ...s.reminders[activeTab], email_body: val }
-                  }
-                }))
-              }}
-              style={{ fontSize: 12, lineHeight: 1.5, fontFamily: 'monospace' }}
-            />
-          </div>
-
-          {/* WhatsApp Body */}
-          <div>
-            <label className="form-label" style={{ fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <MessageSquare size={14} style={{ color: '#10b981' }} /> Pesan WhatsApp (Format WA: *tebal*, _miring_)
-            </label>
-            <textarea
-              className="form-input"
-              rows={6}
-              value={currentReminder.wa_body || ''}
-              onChange={e => {
-                const val = e.target.value
-                setSettings(s => ({
-                  ...s,
-                  reminders: {
-                    ...s.reminders,
-                    [activeTab]: { ...s.reminders[activeTab], wa_body: val }
-                  }
-                }))
-              }}
-              style={{ fontSize: 12, lineHeight: 1.5, fontFamily: 'monospace' }}
-            />
-          </div>
-        </div>
-
-        {/* RIGHT: Live Preview Simulator */}
-        <div className="lg:col-span-5">
-          <div className="card lg:sticky lg:top-6" style={{ padding: 18, border: '1px solid var(--border-subtle)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Eye size={16} /> Pratinjau Pesan Realtime
+              <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
+                Saluran Pengiriman Notifikasi (Delivery Channels)
               </div>
-
-              {/* Mode Switcher */}
-              <div style={{ display: 'flex', background: 'var(--bg-elevated)', padding: 3, borderRadius: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode('whatsapp')}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: 6,
-                    border: 'none',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    background: previewMode === 'whatsapp' ? '#10b981' : 'transparent',
-                    color: previewMode === 'whatsapp' ? '#ffffff' : 'var(--text-muted)'
-                  }}
-                >
-                  💬 WhatsApp
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode('email')}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: 6,
-                    border: 'none',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    background: previewMode === 'email' ? '#3b82f6' : 'transparent',
-                    color: previewMode === 'email' ? '#ffffff' : 'var(--text-muted)'
-                  }}
-                >
-                  📧 Email
-                </button>
-              </div>
-            </div>
-
-            {/* Simulated Output */}
-            {previewMode === 'whatsapp' ? (
-              /* WhatsApp Phone Mockup */
-              <div style={{
-                background: '#0b141a',
-                borderRadius: 16,
-                padding: '16px 14px',
-                border: '1px solid #222d34',
-                boxShadow: '0 12px 30px rgba(0,0,0,0.35)',
-                color: '#e9edef',
-                fontFamily: 'system-ui, -apple-system, sans-serif'
-              }}>
-                {/* WhatsApp Chat Header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 10, borderBottom: '1px solid #222d34', marginBottom: 12 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#25d366', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 13 }}>
-                    BZ
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {/* Email Channel */}
+                <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                  settings.channels.email
+                    ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800/60'
+                    : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={settings.channels.email}
+                    onChange={e => setSettings(s => ({ ...s, channels: { ...s.channels, email: e.target.checked } }))}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+                  />
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+                    <Mail size={16} />
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#e9edef' }}>BIZORA Official Billing</div>
-                    <div style={{ fontSize: 10, color: '#8696a0' }}>Online · Akun Resmi Terverifikasi</div>
+                    <div className="text-xs font-bold text-slate-800 dark:text-slate-200">Email Otomatis</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Kirim rincian invoice ke email tenant</div>
                   </div>
-                </div>
+                </label>
 
-                {/* WhatsApp Message Bubble */}
-                <div style={{
-                  background: '#005c4b',
-                  padding: '10px 12px',
-                  borderRadius: '10px 10px 2px 10px',
-                  fontSize: 12,
-                  lineHeight: 1.45,
-                  whiteSpace: 'pre-wrap',
-                  color: '#e9edef',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                }}>
-                  {renderPreviewText(currentReminder.wa_body)}
-                  <div style={{ textAlign: 'right', fontSize: 9.5, color: '#8696a0', marginTop: 4 }}>
-                    10:45 ✓✓
+                {/* WhatsApp Channel */}
+                <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                  settings.channels.whatsapp
+                    ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60'
+                    : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={settings.channels.whatsapp}
+                    onChange={e => setSettings(s => ({ ...s, channels: { ...s.channels, whatsapp: e.target.checked } }))}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+                  />
+                  <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                    <MessageSquare size={16} />
                   </div>
-                </div>
-              </div>
-            ) : (
-              /* Email Client Mockup */
-              <div style={{
-                background: '#ffffff',
-                borderRadius: 12,
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-                overflow: 'hidden',
-                color: '#1e293b'
-              }}>
-                <div style={{ background: '#f8fafc', padding: '10px 14px', borderBottom: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>Dari: <strong>billing@bizora.id</strong></div>
-                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Kepada: <strong>ahmad@retail.com</strong></div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', marginTop: 4 }}>
-                    Subjek: {renderPreviewText(currentReminder.subject)}
+                  <div>
+                    <div className="text-xs font-bold text-slate-800 dark:text-slate-200">WhatsApp Notification</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Pesan WA langsung ke pemilik toko</div>
                   </div>
-                </div>
-                <div style={{
-                  padding: '16px 14px',
-                  fontSize: 12,
-                  lineHeight: 1.5,
-                  whiteSpace: 'pre-wrap',
-                  color: '#334155',
-                  maxHeight: 380,
-                  overflowY: 'auto'
-                }}>
-                  {renderPreviewText(currentReminder.email_body)}
-                </div>
-              </div>
-            )}
+                </label>
 
-            {/* In-App POS Banner Preview */}
-            {settings.channels.in_app && (
-              <div style={{ marginTop: 14, background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: 8, padding: '10px 12px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#b45309', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Smartphone size={14} /> Simulasi Alert Banner di Kasir (POS):
-                </div>
-                <div style={{ fontSize: 11.5, color: '#92400e', marginTop: 4, lineHeight: 1.4 }}>
-                  ⚠️ <strong>Pengingat Langganan:</strong> Paket Anda akan berakhir dalam 7 hari ({renderPreviewText('{due_date}')}). <a href="#" style={{ color: '#b45309', fontWeight: 700, textDecoration: 'underline' }}>Perpanjang Sekarang</a>
-                </div>
+                {/* In-App POS Banner */}
+                <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                  settings.channels.in_app
+                    ? 'bg-violet-50/50 dark:bg-violet-950/20 border-violet-200 dark:border-violet-800/60'
+                    : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={settings.channels.in_app}
+                    onChange={e => setSettings(s => ({ ...s, channels: { ...s.channels, in_app: e.target.checked } }))}
+                    className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+                  />
+                  <div className="w-8 h-8 rounded-lg bg-violet-600 text-white flex items-center justify-center shrink-0">
+                    <Smartphone size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-800 dark:text-slate-200">Banner Kasir / POS</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Muncul alert bar saat kasir login</div>
+                  </div>
+                </label>
               </div>
-            )}
+            </div>
           </div>
-        </div>
 
-      </div>
+          {/* ── Schedule Selector Tabs ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {SCHEDULE_TABS.map(tab => {
+              const isSelected = activeTab === tab.key
+              const isItemActive = settings.reminders[tab.key]?.active
+              return (
+                <div
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`p-3.5 rounded-2xl cursor-pointer transition-all border flex items-start justify-between ${
+                    isSelected
+                      ? 'bg-white dark:bg-slate-900 border-indigo-500 dark:border-indigo-500 shadow-md ring-2 ring-indigo-500/20'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className="px-2 py-0.5 rounded-md text-[11px] font-extrabold"
+                        style={{ background: tab.bg, color: tab.color }}
+                      >
+                        {tab.badge}
+                      </span>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        {tab.label}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {tab.sub}
+                    </div>
+                  </div>
 
-      {/* ── Bottom Action Bar ── */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24 }}>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => {
-            setTestSchedule(activeTab)
-            setTestModalOpen(true)
-          }}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
-        >
-          <Send size={15} /> Uji Coba Pesan
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={handleSave}
-          disabled={saving}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
-        >
-          <Save size={16} /> {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
-        </button>
-      </div>
-      </>
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${isItemActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                    title={isItemActive ? 'Jadwal Aktif' : 'Jadwal Nonaktif'}
+                  />
+                </div>
+              )
+            })}
+          </div>
+
+          {/* ── Main Workspace: Template Editor (Left) & Realtime Simulator (Right) ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* LEFT: Template Editor */}
+            <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                  <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-900 dark:text-white">
+                    Pengaturan Pesan: {currentReminder.title || activeTab.toUpperCase()}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Kustomisasi teks notifikasi email dan WhatsApp yang dikirimkan pada jadwal ini.
+                  </p>
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={currentReminder.active}
+                    onChange={e => {
+                      const checked = e.target.checked
+                      setSettings(s => ({
+                        ...s,
+                        reminders: {
+                          ...s.reminders,
+                          [activeTab]: { ...s.reminders[activeTab], active: checked }
+                        }
+                      }))
+                    }}
+                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+                  />
+                  <span className={`text-xs font-bold ${currentReminder.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+                    {currentReminder.active ? 'Aktif' : 'Nonaktif'}
+                  </span>
+                </label>
+              </div>
+
+              {/* Variable Chips Toolbar */}
+              <div>
+                <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                  Variabel Dinamis (Klik untuk Salin):
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {VARIABLE_TAGS.map(v => (
+                    <button
+                      key={v.tag}
+                      type="button"
+                      onClick={() => handleCopyTag(v.tag)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium border flex items-center gap-1.5 transition-all ${
+                        copiedTag === v.tag
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                      }`}
+                      title={`Contoh isi: ${v.sample}`}
+                    >
+                      {copiedTag === v.tag ? <Check size={12} /> : <Copy size={12} />}
+                      <code className="text-[11px]">{v.tag}</code>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Email Subject */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <Mail size={14} className="text-blue-500" /> Subjek Email Notifikasi
+                </label>
+                <input
+                  className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
+                  value={currentReminder.subject || ''}
+                  onChange={e => {
+                    const val = e.target.value
+                    setSettings(s => ({
+                      ...s,
+                      reminders: {
+                        ...s.reminders,
+                        [activeTab]: { ...s.reminders[activeTab], subject: val }
+                      }
+                    }))
+                  }}
+                  placeholder="Subjek email..."
+                />
+              </div>
+
+              {/* Email Body */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <Mail size={14} className="text-blue-500" /> Konten Isi Email (Email Body)
+                </label>
+                <textarea
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 font-mono resize-y"
+                  rows={8}
+                  value={currentReminder.email_body || ''}
+                  onChange={e => {
+                    const val = e.target.value
+                    setSettings(s => ({
+                      ...s,
+                      reminders: {
+                        ...s.reminders,
+                        [activeTab]: { ...s.reminders[activeTab], email_body: val }
+                      }
+                    }))
+                  }}
+                />
+              </div>
+
+              {/* WhatsApp Body */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <MessageSquare size={14} className="text-emerald-500" /> Pesan WhatsApp (Format WA: *tebal*, _miring_)
+                </label>
+                <textarea
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 font-mono resize-y"
+                  rows={6}
+                  value={currentReminder.wa_body || ''}
+                  onChange={e => {
+                    const val = e.target.value
+                    setSettings(s => ({
+                      ...s,
+                      reminders: {
+                        ...s.reminders,
+                        [activeTab]: { ...s.reminders[activeTab], wa_body: val }
+                      }
+                    }))
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* RIGHT: Live Preview Simulator */}
+            <div className="lg:col-span-5">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm lg:sticky lg:top-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <Eye size={15} /> Pratinjau Pesan Realtime
+                  </div>
+
+                  {/* Mode Switcher */}
+                  <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewMode('whatsapp')}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        previewMode === 'whatsapp'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                      }`}
+                    >
+                      💬 WhatsApp
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewMode('email')}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        previewMode === 'email'
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                      }`}
+                    >
+                      📧 Email
+                    </button>
+                  </div>
+                </div>
+
+                {/* Simulated Output */}
+                {previewMode === 'whatsapp' ? (
+                  <div className="bg-[#0b141a] rounded-2xl p-4 border border-[#222d34] shadow-xl text-[#e9edef] font-sans">
+                    <div className="flex items-center gap-2.5 pb-2.5 border-b border-[#222d34] mb-3">
+                      <div className="w-8 h-8 rounded-full bg-[#25d366] text-black flex items-center justify-center font-extrabold text-xs">
+                        BZ
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-[#e9edef]">BIZORA Official Billing</div>
+                        <div className="text-[10px] text-[#8696a0]">Online · Akun Resmi Terverifikasi</div>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#005c4b] p-3 rounded-2xl rounded-tr-xs text-xs leading-relaxed whitespace-pre-wrap shadow-md text-[#e9edef]">
+                      {renderPreviewText(currentReminder.wa_body)}
+                      <div className="text-right text-[9px] text-[#8696a0] mt-1.5">
+                        10:45 ✓✓
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden text-slate-800 dark:text-slate-200">
+                    <div className="bg-slate-50 dark:bg-slate-900/80 p-3 border-b border-slate-200 dark:border-slate-800 text-xs space-y-1">
+                      <div className="text-slate-500 dark:text-slate-400">Dari: <strong className="text-slate-800 dark:text-slate-200">billing@bizora.id</strong></div>
+                      <div className="text-slate-500 dark:text-slate-400">Kepada: <strong className="text-slate-800 dark:text-slate-200">ahmad@retail.com</strong></div>
+                      <div className="font-bold text-slate-900 dark:text-white pt-1">
+                        Subjek: {renderPreviewText(currentReminder.subject)}
+                      </div>
+                    </div>
+                    <div className="p-4 text-xs leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300 max-h-80 overflow-y-auto">
+                      {renderPreviewText(currentReminder.email_body)}
+                    </div>
+                  </div>
+                )}
+
+                {/* In-App POS Banner Preview */}
+                {settings.channels.in_app && (
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs">
+                    <div className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 mb-1">
+                      <Smartphone size={14} /> Simulasi Alert Banner di Kasir (POS):
+                    </div>
+                    <div className="text-amber-700 dark:text-amber-400 text-[11px] leading-relaxed">
+                      ⚠️ <strong>Pengingat Langganan:</strong> Paket Anda akan berakhir dalam 7 hari ({renderPreviewText('{due_date}')}). <span className="underline font-bold cursor-pointer">Perpanjang Sekarang</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* ── Test Send Modal ── */}
       {testModalOpen && (
         <Modal onClose={() => setTestModalOpen(false)}>
-          <div style={{ padding: 4 }}>
-            <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>
-              Uji Coba Pengiriman Notifikasi
-            </h3>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 18 }}>
-              Kirimkan simulasi pesan pengingat ke kontak email atau nomor WhatsApp Anda untuk memeriksa tampilan aslinya.
-            </p>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Uji Coba Pengiriman Notifikasi
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Kirimkan simulasi pesan pengingat ke kontak email atau nomor WhatsApp Anda untuk memeriksa tampilan aslinya.
+              </p>
+            </div>
 
-            <form onSubmit={handleTestSend}>
-              <div style={{ marginBottom: 14 }}>
-                <label className="form-label">Pilih Jadwal Notifikasi</label>
+            <form onSubmit={handleTestSend} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Pilih Jadwal Notifikasi</label>
                 <select
-                  className="form-input"
+                  className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   value={testSchedule}
                   onChange={e => setTestSchedule(e.target.value)}
                 >
@@ -654,36 +606,38 @@ export default function SubscriptionReminders() {
                 </select>
               </div>
 
-              <div style={{ marginBottom: 14 }}>
-                <label className="form-label">Saluran Pengiriman</label>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13 }}>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Saluran Pengiriman</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700 dark:text-slate-300">
                     <input
                       type="radio"
                       name="testChannel"
                       checked={testChannel === 'email'}
                       onChange={() => setTestChannel('email')}
+                      className="text-indigo-600 focus:ring-indigo-500"
                     />
                     📧 Email
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13 }}>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700 dark:text-slate-300">
                     <input
                       type="radio"
                       name="testChannel"
                       checked={testChannel === 'whatsapp'}
                       onChange={() => setTestChannel('whatsapp')}
+                      className="text-indigo-600 focus:ring-indigo-500"
                     />
                     💬 WhatsApp (Simulasi Log)
                   </label>
                 </div>
               </div>
 
-              <div style={{ marginBottom: 20 }}>
-                <label className="form-label">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                   {testChannel === 'email' ? 'Alamat Email Tujuan' : 'Nomor WhatsApp Tujuan'}
                 </label>
                 <input
-                  className="form-input"
+                  className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
                   placeholder={testChannel === 'email' ? 'admin@anda.com' : '081234567890'}
                   value={testTarget}
                   onChange={e => setTestTarget(e.target.value)}
@@ -691,11 +645,19 @@ export default function SubscriptionReminders() {
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setTestModalOpen(false)}>
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  className="h-[38px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-xs font-semibold"
+                  onClick={() => setTestModalOpen(false)}
+                >
                   Batal
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={testSending}>
+                <button
+                  type="submit"
+                  className="h-[38px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all disabled:opacity-50"
+                  disabled={testSending}
+                >
                   {testSending ? 'Mengirim...' : 'Kirim Sekarang'}
                 </button>
               </div>

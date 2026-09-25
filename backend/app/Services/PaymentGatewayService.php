@@ -6,6 +6,7 @@ use App\Models\LandingSetting;
 use App\Models\Tenant;
 use App\Models\TenantInvoice;
 use App\Models\SubscriptionRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -64,74 +65,76 @@ class PaymentGatewayService
      */
     public static function processSettlement(string $invoiceNumber, ?string $paymentMethod = 'QRIS'): array
     {
-        $invoice = TenantInvoice::where('id', $invoiceNumber)->first();
+        return DB::transaction(function () use ($invoiceNumber, $paymentMethod) {
+            $invoice = TenantInvoice::where('id', $invoiceNumber)->lockForUpdate()->first();
 
-        if (!$invoice) {
-            return ['success' => false, 'message' => 'Invoice tidak ditemukan.'];
-        }
+            if (!$invoice) {
+                return ['success' => false, 'message' => 'Invoice tidak ditemukan.'];
+            }
 
-        if ($invoice->status === 'paid') {
-            return ['success' => true, 'message' => 'Invoice sudah berstatus lunas sebelumnya.'];
-        }
+            if ($invoice->status === 'paid') {
+                return ['success' => true, 'message' => 'Invoice sudah berstatus lunas sebelumnya.'];
+            }
 
-        // Mark invoice as paid
-        $invoice->update([
-            'status'         => 'paid',
-            'payment_method' => $paymentMethod ?? 'Payment Gateway',
-        ]);
-
-        // Find tenant and update subscription
-        $tenant = Tenant::where('tenant_id', $invoice->tenant_id)->first();
-        if ($tenant) {
-            $currentExpires = ($tenant->subscription_expires_at && $tenant->subscription_expires_at->isFuture())
-                ? $tenant->subscription_expires_at
-                : now();
-
-            $newExpires = $currentExpires->copy()->addDays(30);
-
-            $tenant->update([
-                'subscription_plan'       => strtolower($invoice->plan),
-                'subscription_status'     => 'active',
-                'subscription_expires_at' => $newExpires,
+            // Mark invoice as paid
+            $invoice->update([
+                'status'         => 'paid',
+                'payment_method' => $paymentMethod ?? 'Payment Gateway',
             ]);
 
-            // Update pending SubscriptionRequest if exists
-            SubscriptionRequest::where('tenant_id', $tenant->tenant_id)
-                ->where('status', 'pending')
-                ->update([
-                    'status' => 'approved',
+            // Find tenant and update subscription
+            $tenant = Tenant::where('tenant_id', $invoice->tenant_id)->lockForUpdate()->first();
+            if ($tenant) {
+                $currentExpires = ($tenant->subscription_expires_at && $tenant->subscription_expires_at->isFuture())
+                    ? $tenant->subscription_expires_at
+                    : now();
+
+                $newExpires = $currentExpires->copy()->addDays(30);
+
+                $tenant->update([
+                    'subscription_plan'       => strtolower($invoice->plan),
+                    'subscription_status'     => 'active',
+                    'subscription_expires_at' => $newExpires,
                 ]);
 
-            // Notify Tenant via In-App Notification & Email
-            $owner = $tenant->owner;
-            if ($owner) {
-                \App\Models\Notification::create([
-                    'user_id' => $owner->id,
-                    'type'    => 'success',
-                    'title'   => 'Pembayaran Langganan Berhasil! 🎉',
-                    'message' => "Paket {$invoice->plan} Anda telah aktif hingga " . $newExpires->format('d M Y') . ". Terima kasih atas kepercayaan Anda!",
-                    'data'    => ['invoice_id' => $invoice->id, 'link' => '/subscription']
-                ]);
+                // Update pending SubscriptionRequest if exists
+                SubscriptionRequest::where('tenant_id', $tenant->tenant_id)
+                    ->where('status', 'pending')
+                    ->update([
+                        'status' => 'approved',
+                    ]);
 
-                if (!empty($owner->email)) {
-                    try {
-                        \Illuminate\Support\Facades\Mail::to($owner->email)->send(new \App\Mail\SubscriptionActivatedMail([
-                            'customer_name'  => $owner->name,
-                            'invoice_number' => $invoice->id,
-                            'plan'           => ucfirst($invoice->plan),
-                            'expires_at'     => $newExpires->format('d M Y'),
-                        ]));
-                    } catch (\Throwable $e) {
-                        Log::warning('Gagal mengirim email aktivasi langganan: ' . $e->getMessage());
+                // Notify Tenant via In-App Notification & Email
+                $owner = $tenant->owner;
+                if ($owner) {
+                    \App\Models\Notification::create([
+                        'user_id' => $owner->id,
+                        'type'    => 'success',
+                        'title'   => 'Pembayaran Langganan Berhasil! 🎉',
+                        'message' => "Paket {$invoice->plan} Anda telah aktif hingga " . $newExpires->format('d M Y') . ". Terima kasih atas kepercayaan Anda!",
+                        'data'    => ['invoice_id' => $invoice->id, 'link' => '/subscription']
+                    ]);
+
+                    if (!empty($owner->email)) {
+                        try {
+                            \Illuminate\Support\Facades\Mail::to($owner->email)->send(new \App\Mail\SubscriptionActivatedMail([
+                                'customer_name'  => $owner->name,
+                                'invoice_number' => $invoice->id,
+                                'plan'           => ucfirst($invoice->plan),
+                                'expires_at'     => $newExpires->format('d M Y'),
+                            ]));
+                        } catch (\Throwable $e) {
+                            Log::warning('Gagal mengirim email aktivasi langganan: ' . $e->getMessage());
+                        }
                     }
                 }
             }
-        }
 
-        return [
-            'success' => true,
-            'message' => "Invoice {$invoiceNumber} berhasil diselesaikan. Langganan aktif!",
-            'invoice' => $invoice,
-        ];
+            return [
+                'success' => true,
+                'message' => "Invoice {$invoiceNumber} berhasil diselesaikan. Langganan aktif!",
+                'invoice' => $invoice,
+            ];
+        });
     }
 }

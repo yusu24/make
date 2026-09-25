@@ -215,6 +215,8 @@ class DocumentationSeeder extends Seeder
             'slug' => 'panduan-akses-multi-device-wifi-lokal',
             'short_description' => 'Cara menghubungkan kasir dari smartphone atau tablet ke server komputer kasir lokal tanpa perlu konfigurasi IP manual.',
             'content' => '
+                <blockquote><b>Catatan Penting:</b> Panduan ini khusus untuk penggunaan beberapa perangkat kasir sekaligus (Multi-Device) yang saling terhubung ke satu PC server toko melalui router/hotspot lokal. <b>Untuk operasional kasir mandiri, Bizora sudah mendukung penuh Mode Offline (tetap bisa transaksi dan cetak struk tanpa internet sama sekali).</b></blockquote>
+
                 <p>Aplikasi Bizora mendukung akses kasir multi-device melalui jaringan Wi-Fi lokal secara otomatis.</p>
 
                 <h2>1. Pastikan Perangkat Terhubung ke Wi-Fi yang Sama</h2>
@@ -226,6 +228,46 @@ class DocumentationSeeder extends Seeder
 
                 <h2>3. Login Akun Staf / Kasir</h2>
                 <p>Gunakan akun staf kasir yang telah didaftarkan di menu <b>Manajemen Staf</b> untuk mulai melayani transaksi pelanggan.</p>
+            ',
+            'status' => 'published',
+            'module' => 'retail',
+            'published_at' => now(),
+            'version' => '1.1'
+        ]);
+
+        DocumentationArticle::create([
+            'category_id' => $catRetail->id,
+            'title' => 'Mode Kasir Offline (POS Tanpa Internet): Cara Kerja & Sinkronisasi Otomatis',
+            'slug' => 'mode-kasir-offline-pos-tanpa-internet',
+            'short_description' => 'Penjelasan lengkap bagaimana kasir Bizora tetap dapat melayani penjualan dan mencetak struk meski internet atau Wi-Fi terputus total.',
+            'content' => '
+                <h2>1. Apakah Kasir Wajib Terhubung Internet Terus-Menerus?</h2>
+                <p><b>Jawabannya: TIDAK.</b> Kasir POS Bizora dilengkapi dengan teknologi <b>Offline Resilience Engine</b> berbasis penyimpanan lokal browser (IndexedDB). Anda tetap bisa melayani pembeli di toko tanpa terganggu saat koneksi internet mati atau sinyal Wi-Fi terputus.</p>
+
+                <h2>2. Perbedaan Antara Mode Offline dan Wi-Fi Lokal</h2>
+                <ul>
+                    <li><b>Mode Kasir Offline:</b> Fitur keamanan transaksi agar kasir toko tetap bisa scan barcode produk, menerima pembayaran tunai, mencetak struk belanja, dan memotong stok lokal meskipun toko <u>tidak memiliki koneksi internet sama sekali</u>.</li>
+                    <li><b>Jaringan Wi-Fi Lokal:</b> Konfigurasi opsional jika Anda ingin menghubungkan beberapa perangkat tambahan (seperti tablet pramusaji atau HP kasir kedua) ke satu PC server utama di dalam toko yang sama melalui router/hotspot lokal tanpa memerlukan paket data internet.</li>
+                </ul>
+
+                <h2>3. Cara Kerja Transaksi Saat Internet Terputus</h2>
+                <ol>
+                    <li><b>Deteksi Otomatis:</b> Jika jaringan internet tiba-tiba mati atau lambat, sistem secara otomatis mengalihkan proses transaksi ke <i>Offline Mode</i> tanpa pesan error yang mengganggu pelanggan.</li>
+                    <li><b>Pencarian & Scan Produk Cepat:</b> Seluruh data katalog barang dan harga telah dicache secara aman di browser kasir, sehingga pencarian barcode dan pemilihan produk tetap berjalan secepat kilat.</li>
+                    <li><b>Nomor Invoice Khusus:</b> Struk belanja akan otomatis dicetak menggunakan kode invoice offline resmi dengan format <code>OFF-YYYYMMDD-XXXX</code>.</li>
+                    <li><b>Pengurangan Stok Lokal:</b> Stok produk pada memori kasir langsung dipotong secara real-time untuk mencegah penjualan barang yang sudah habis (overselling).</li>
+                    <li><b>Antrean Aman (Local Queue):</b> Data transaksi disimpan secara terenkripsi di penyimpanan IndexedDB perangkat kasir sampai koneksi internet kembali normal.</li>
+                </ol>
+
+                <h2>4. Sinkronisasi Otomatis ke Cloud (Auto-Sync)</h2>
+                <p>Ketika koneksi internet atau Wi-Fi kembali aktif:</p>
+                <ul>
+                    <li>Sistem Bizora di latar belakang (background process) akan langsung mendeteksi koneksi online secara otomatis.</li>
+                    <li>Seluruh transaksi yang tadi tertahan di antrean lokal kasir akan diunggah (sync) satu per satu ke database Cloud server dengan tanda <code>is_offline_sync: true</code>.</li>
+                    <li>Laporan penjualan harian, laporan laba rugi, dan data analitik toko akan langsung terakumulasi secara akurat tanpa kasir perlu mengetik atau menghitung ulang manual.</li>
+                </ul>
+
+                <blockquote><b>Tips Praktis:</b> Pastikan di pagi hari kasir sempat membuka aplikasi saat ada internet agar katalog produk dan harga terbaru terunduh ke perangkat. Setelah itu, kasir aman digunakan seharian penuh walaupun internet mati total.</blockquote>
             ',
             'status' => 'published',
             'module' => 'retail',

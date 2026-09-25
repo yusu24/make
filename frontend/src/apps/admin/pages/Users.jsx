@@ -5,6 +5,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { getAvatarStyle, getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import {
   Users as UsersIcon,
   Search,
@@ -218,103 +219,146 @@ export default function Users() {
     endIndex,
   } = usePagination(filtered, 20)
 
+  const totalUsers = users.length
+  const customerCount = users.filter(u => u.role === 'customer').length
+  const customerPercent = totalUsers > 0 ? Math.round((customerCount / totalUsers) * 100) : 0
+  const activeCount = users.filter(u => u.status === 'active').length
+  const activePercent = totalUsers > 0 ? Math.round((activeCount / totalUsers) * 100) : 0
+  const staffCount = users.filter(u => u.role !== 'customer').length
+  const staffPercent = totalUsers > 0 ? Math.round((staffCount / totalUsers) * 100) : 0
+
   return (
     <div className="animate-fade-in" style={{ paddingBottom: 40 }}>
-      {/* ── Page Header ── */}
-      <div className="page-header mb-2">
-        <h2 className="page-title">Manajemen Pengguna</h2>
-      </div>
+      {/* ── Top Metrics with StatScoreCard ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Pengguna"
+          value={totalUsers}
+          status="Terdaftar"
+          statusVariant="indigo"
+          icon={UsersIcon}
+          desc="Seluruh akun terdaftar pada platform SaaS"
+          progress={100}
+          progressVariant="indigo"
+          onClick={() => { setRoleFilter('all'); setStatusFilter('all'); }}
+        />
 
-      {/* ── Action Bar below title ── */}
-      <div className="flex justify-end gap-2.5 mb-4">
-        <button
-          className="btn btn-secondary flex items-center gap-1.5"
-          onClick={fetchUsers}
-          disabled={loading}
-          title="Muat ulang data"
-        >
-          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-          <span>Muat Ulang</span>
-        </button>
-        <button
-          className="btn btn-primary flex items-center gap-1.5"
-          onClick={() => { setFormError(''); setShowAddModal(true) }}
-        >
-          <Plus size={16} />
-          <span>Tambah Pengguna</span>
-        </button>
-      </div>
+        <StatScoreCard
+          title="Owner / Pelanggan"
+          value={customerCount}
+          status={`${customerPercent}% Pemilik`}
+          statusVariant="indigo"
+          icon={Store}
+          desc="Pemilik tenant bisnis yang mengelola toko"
+          progress={customerPercent}
+          progressVariant="indigo"
+          onClick={() => setRoleFilter('customer')}
+        />
 
-      {/* ── Search & Filter Bar ── */}
-      <div className="card card-pad" style={{ marginBottom: 16, padding: '16px 20px', borderRadius: 12 }}>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Search Box */}
-          <div className="search-wrap" style={{ minWidth: 240, flex: '1 1 260px' }}>
-            <Search size={15} className="search-icon" />
-            <input
-              type="text"
-              className="form-input search-input"
-              placeholder="Cari nama, email, Tenant ID, usaha..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ paddingLeft: 36, height: 38 }}
-            />
-          </div>
+        <StatScoreCard
+          title="Akun Aktif"
+          value={activeCount}
+          status={`${activePercent}% Aktif`}
+          statusVariant="emerald"
+          icon={CheckCircle2}
+          desc="Pengguna yang memiliki hak akses login aktif"
+          progress={activePercent}
+          progressVariant="emerald"
+          onClick={() => setStatusFilter('active')}
+        />
 
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-            <select
-              className="form-input"
-              value={roleFilter}
-              onChange={e => setRoleFilter(e.target.value)}
-              style={{ width: 'auto', minWidth: 140, height: 38, padding: '0 32px 0 12px', fontSize: 13, flex: '1 1 auto' }}
-            >
-              <option value="all">Semua Peran</option>
-              <option value="customer">Owner / Pelanggan</option>
-              <option value="admin">Admin SaaS</option>
-              <option value="super_admin">Super Admin</option>
-              <option value="retail_cashier">Kasir / Staff</option>
-            </select>
-
-            <select
-              className="form-input"
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              style={{ width: 'auto', minWidth: 130, height: 38, padding: '0 32px 0 12px', fontSize: 13, flex: '1 1 auto' }}
-            >
-              <option value="all">Semua Status</option>
-              <option value="active">🟢 Active</option>
-              <option value="pending">🟡 Pending</option>
-              <option value="inactive">⚪ Inactive</option>
-            </select>
-
-            <select
-              className="form-input"
-              value={categoryFilter}
-              onChange={e => setCategoryFilter(e.target.value)}
-              style={{ width: 'auto', minWidth: 140, height: 38, padding: '0 32px 0 12px', fontSize: 13, flex: '1 1 auto' }}
-            >
-              <option value="all">Semua Kategori</option>
-              {categories.map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
-            </select>
-
-            {(search || roleFilter !== 'all' || statusFilter !== 'all' || categoryFilter !== 'all') && (
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); setCategoryFilter('all') }}
-                style={{ color: 'var(--primary-600)', fontSize: 12, height: 38, padding: '0 12px', whiteSpace: 'nowrap' }}
-              >
-                Reset
-              </button>
-            )}
-          </div>
-        </div>
+        <StatScoreCard
+          title="Admin &amp; Staff"
+          value={staffCount}
+          status={`${staffPercent}% Staf`}
+          statusVariant="amber"
+          icon={ShieldCheck}
+          desc="Superadmin, admin internal, dan kasir/operator"
+          progress={staffPercent}
+          progressVariant="amber"
+          onClick={() => setRoleFilter('admin')}
+        />
       </div>
 
       {/* ── Table Card ── */}
-      <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none' }}>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-6">
+        {/* Table Toolbar */}
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[220px] max-w-sm">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
+                placeholder="Cari nama, email, Tenant ID, usaha..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-2 items-center flex-wrap">
+              <select
+                className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                value={roleFilter}
+                onChange={e => setRoleFilter(e.target.value)}
+              >
+                <option value="all">Semua Peran</option>
+                <option value="customer">Owner / Pelanggan</option>
+                <option value="admin">Admin SaaS</option>
+                <option value="super_admin">Super Admin</option>
+                <option value="retail_cashier">Kasir / Staff</option>
+              </select>
+
+              <select
+                className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+              >
+                <option value="all">Semua Status</option>
+                <option value="active">🟢 Active</option>
+                <option value="pending">🟡 Pending</option>
+                <option value="inactive">⚪ Inactive</option>
+              </select>
+
+              <select
+                className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                value={categoryFilter}
+                onChange={e => setCategoryFilter(e.target.value)}
+              >
+                <option value="all">Semua Kategori</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+
+              {(search || roleFilter !== 'all' || statusFilter !== 'all' || categoryFilter !== 'all') && (
+                <button
+                  className="h-[38px] px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  onClick={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); setCategoryFilter('all') }}
+                >
+                  Reset
+                </button>
+              )}
+
+              <button
+                className="h-[38px] w-[38px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                onClick={fetchUsers}
+                disabled={loading}
+                title="Muat ulang data"
+              >
+                <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+              </button>
+
+              <button
+                className="h-[38px] px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors"
+                onClick={() => { setFormError(''); setShowAddModal(true) }}
+              >
+                <Plus size={16} />
+                <span>Tambah Pengguna</span>
+              </button>
+            </div>
+          </div>
+        </div>
         <div className="table-responsive">
           <table className="table">
             <thead>
@@ -466,32 +510,29 @@ export default function Users() {
 
                       {/* Actions */}
                       <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <div className="flex gap-1.5 justify-end items-center">
                           <button
-                            className="btn btn-secondary btn-sm"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50"
                             title="Impersonate (Masuk sebagai Pengguna / Tenant ini)"
                             onClick={() => handleImpersonate(u)}
                             disabled={impersonating === u.id}
-                            style={{ color: 'var(--primary-600)', height: 32, padding: '0 8px' }}
                           >
                             {impersonating === u.id ? <RefreshCw size={13} className="animate-spin" /> : <KeyRound size={13} />}
                           </button>
 
                           <button
-                            className="btn btn-secondary btn-sm"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                             title="Edit Pengguna &amp; Data Bisnis"
                             onClick={() => { setFormError(''); setEditUser(u) }}
-                            style={{ height: 32, padding: '0 8px' }}
                           >
                             <Pencil size={13} />
                           </button>
 
                           {u.role !== 'super_admin' && (
                             <button
-                              className="btn btn-secondary btn-sm"
+                              className="w-8 h-8 rounded-lg flex items-center justify-center border border-rose-200 dark:border-rose-800/60 bg-rose-50/60 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
                               title="Hapus Pengguna &amp; Tenant"
                               onClick={() => setDelUser(u)}
-                              style={{ color: 'var(--danger-500)', height: 32, padding: '0 8px' }}
                             >
                               <Trash2 size={13} />
                             </button>

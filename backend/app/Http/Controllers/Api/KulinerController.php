@@ -253,7 +253,7 @@ class KulinerController extends Controller
             ], 403);
         }
 
-        $categories = KulinerCategory::where('tenant_id', $tenant->tenant_id)->get();
+        $categories = KulinerCategory::withoutGlobalScopes()->where('tenant_id', $tenant->tenant_id)->get();
         return response()->json($categories);
     }
 
@@ -273,7 +273,7 @@ class KulinerController extends Controller
             ], 403);
         }
 
-        $products = KulinerProduct::where('tenant_id', $tenant->tenant_id)
+        $products = KulinerProduct::withoutGlobalScopes()->where('tenant_id', $tenant->tenant_id)
             ->where('is_available', true)
             ->get();
         return response()->json($products);
@@ -1615,7 +1615,7 @@ class KulinerController extends Controller
         $code = strtoupper($request->code);
         $tenantId = $request->tenant_id;
 
-        $promo = KulinerPromo::where('tenant_id', $tenantId)
+        $promo = KulinerPromo::withoutGlobalScopes()->where('tenant_id', $tenantId)
             ->where('code', $code)
             ->where('status', 'active')
             ->first();

@@ -1488,5 +1488,95 @@
   }
 }
 
+/* ── Comprehensive Dark Mode Support for Kuliner Module ── */
+.dark .kd-body {
+  background: #090d16 !important;
+  color: #f1f5f9 !important;
+}
 
+.dark .kd-sidebar {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+}
 
+.dark .kd-navtop {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-bottom: 1px solid #1e293b !important;
+}
+
+.dark .kd-navtop-title {
+  color: #f8fafc !important;
+}
+
+.dark .kd-panel {
+  background: #0f172a !important;
+  border: 1px solid #1e293b !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.dark .kd-panel-title {
+  color: #f8fafc !important;
+}
+
+.dark .kd-table {
+  color: #cbd5e1 !important;
+}
+
+.dark .kd-table thead tr {
+  background: #1e293b !important;
+  border-bottom-color: #334155 !important;
+}
+
+.dark .kd-table thead th {
+  color: #94a3b8 !important;
+}
+
+.dark .kd-table tbody tr {
+  border-bottom-color: #1e293b !important;
+}
+
+.dark .kd-table tbody tr:hover {
+  background: rgba(30, 41, 59, 0.5) !important;
+}
+
+.dark .kd-form-input,
+.dark .kd-form-select,
+.dark .kd-search-input {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.dark .kd-form-input:focus,
+.dark .kd-form-select:focus {
+  border-color: #d97706 !important;
+}
+
+.dark .kd-btn-secondary {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+.dark .kd-btn-secondary:hover {
+  background: #334155 !important;
+  color: #ffffff !important;
+}
+
+.dark .kd-modal {
+  background: #0f172a !important;
+  border: 1px solid #1e293b !important;
+  color: #f8fafc !important;
+}
+
+.dark .kd-modal-header {
+  border-bottom-color: #1e293b !important;
+}
+
+.dark .kd-modal-footer {
+  border-top-color: #1e293b !important;
+}
+
+.dark .kd-card-subtext {
+  color: #94a3b8 !important;
+}

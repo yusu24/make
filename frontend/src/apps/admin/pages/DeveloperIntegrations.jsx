@@ -9,10 +9,12 @@ import {
   Webhook,
   ExternalLink,
   Code2,
-  CreditCard
+  CreditCard,
+  ShieldCheck
 } from '@/constants/icons';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import './Shared.css';
 
 export default function DeveloperIntegrations() {
@@ -179,31 +181,73 @@ export default function DeveloperIntegrations() {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header">
-        <h2 className="page-title">Integrasi &amp; Developer</h2>
+      {/* ── Top Metrics with StatScoreCard ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatScoreCard
+          title="Payment Gateway"
+          value={pgConfig.provider.toUpperCase()}
+          status={pgConfig.is_production ? 'Production (Live)' : 'Sandbox Ready'}
+          statusVariant={pgConfig.is_production ? 'emerald' : 'amber'}
+          icon={CreditCard}
+          desc="Otomatisasi settlement invoice langganan"
+          progress={98}
+          progressVariant={pgConfig.is_production ? 'emerald' : 'amber'}
+        />
+
+        <StatScoreCard
+          title="Webhook Security"
+          value="HMAC SHA-512"
+          status="Fail-Closed Aktif"
+          statusVariant="emerald"
+          icon={ShieldCheck}
+          desc="Timing-safe signature verification aktif"
+          progress={100}
+          progressVariant="emerald"
+        />
+
+        <StatScoreCard
+          title="API Keys Terdaftar"
+          value={apiKeys.length}
+          status="Otentikasi REST"
+          statusVariant="indigo"
+          icon={Key}
+          desc="Token akses terprogram developer"
+          progress={100}
+          progressVariant="indigo"
+        />
+
+        <StatScoreCard
+          title="Outbound Webhooks"
+          value={webhooks.length}
+          status={`${webhooks.filter(w => w.is_active).length} Aktif`}
+          statusVariant="emerald"
+          icon={Webhook}
+          desc="Notifikasi event real-time ke sistem pihak ke-3"
+          progress={webhooks.length > 0 ? Math.round((webhooks.filter(w => w.is_active).length / webhooks.length) * 100) : 100}
+          progressVariant="emerald"
+        />
       </div>
 
       {/* ── Payment Gateway Integration Card ── */}
-      <div className="card card-pad" style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 18 }}>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm mb-6">
+        <div className="flex justify-between items-start flex-wrap gap-3 mb-5">
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CreditCard size={20} className="text-indigo-600" />
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 16, margin: 0 }}>
+            <div className="flex items-center gap-2">
+              <CreditCard size={18} className="text-indigo-600 dark:text-indigo-400" />
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-800 dark:text-slate-100 m-0">
                 Payment Gateway &amp; Webhook Langganan SaaS
               </h3>
             </div>
-            <p className="page-sub" style={{ marginTop: 4 }}>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 m-0">
               Otomatisasi invoice tagihan langganan tenant melalui QRIS, Virtual Account (BCA/Mandiri/BRI/BNI), dan E-Wallet.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex gap-2">
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
+              className="h-[38px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               onClick={handleSimulateWebhook}
               disabled={simulating}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
               title="Kirim payload webhook simulasi transaksi lunas"
             >
               {simulating ? 'Menguji...' : <><Webhook size={14} /> Test Simulasi Webhook</>}
@@ -212,7 +256,7 @@ export default function DeveloperIntegrations() {
         </div>
 
         {pgSuccess && (
-          <div className="auth-alert auth-alert--success" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
             <CheckCircle2 size={16} /> <span>{pgSuccess}</span>
           </div>
         )}
@@ -313,18 +357,21 @@ export default function DeveloperIntegrations() {
       </div>
 
       {/* API Keys */}
-      <div className="card card-pad" style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm mb-6">
+        <div className="flex justify-between items-start flex-wrap gap-3">
           <div>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>API Keys</h3>
-            <p className="page-sub" style={{ marginTop: 2 }}>Buat dan cabut API key untuk aplikasi yang mengakses BIZORA secara terprogram.</p>
+            <div className="flex items-center gap-2">
+              <Key size={18} className="text-indigo-600 dark:text-indigo-400" />
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-800 dark:text-slate-100 m-0">API Keys (REST Tokens)</h3>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 m-0">Buat dan cabut API key untuk aplikasi pihak ke-3 yang mengakses BIZORA secara terprogram.</p>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowKeyModal(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <button className="h-[38px] px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors" onClick={() => setShowKeyModal(true)}>
             <Plus size={15} /> Generate Key Baru
           </button>
         </div>
 
-        <div className="table-wrap table-responsive" style={{ marginTop: 16 }}>
+        <div className="table-wrap table-responsive mt-4">
           <table className="table">
             <thead>
               <tr>
@@ -357,13 +404,16 @@ export default function DeveloperIntegrations() {
       </div>
 
       {/* Webhooks */}
-      <div className="card card-pad">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm mb-6">
+        <div className="flex justify-between items-start flex-wrap gap-3">
           <div>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15 }}>Webhooks</h3>
-            <p className="page-sub" style={{ marginTop: 2 }}>Endpoint yang menerima notifikasi real-time dari platform.</p>
+            <div className="flex items-center gap-2">
+              <Webhook size={18} className="text-indigo-600 dark:text-indigo-400" />
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-800 dark:text-slate-100 m-0">Outbound Webhooks</h3>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 m-0">Endpoint eksternal yang menerima notifikasi real-time dari platform saat terjadi event transaksi.</p>
           </div>
-          <button className="btn btn-secondary" onClick={() => setShowWebhookModal(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <button className="h-[38px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onClick={() => setShowWebhookModal(true)}>
             <Plus size={15} /> Tambah Webhook
           </button>
         </div>

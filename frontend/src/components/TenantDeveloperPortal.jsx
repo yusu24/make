@@ -436,8 +436,10 @@ print("Response:", res.json())`;
       {/* LOADING STATE */}
       {loading && (
         <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center shadow-xs">
-          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-500 font-medium">Memeriksa status integrasi API & Webhooks...</p>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-amber-200 border-t-amber-600 rounded-full animate-spin" />
+            <p className="text-xs text-slate-500 font-medium">Memeriksa status integrasi API & Webhooks...</p>
+          </div>
         </div>
       )}
 

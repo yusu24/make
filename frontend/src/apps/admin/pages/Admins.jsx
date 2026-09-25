@@ -1,17 +1,23 @@
-import {
-  useState,
-  useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
-import { getAvatarStyle,
-  getInitials } from '../../../lib/avatar'
+import { getAvatarStyle, getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import Modal from '../../../components/Modal'
 import { useAuth } from '../../../contexts/AuthContext'
-import { KeyRound,
+import {
+  KeyRound,
   Pencil,
-  Trash2
+  Trash2,
+  Search,
+  Plus,
+  Shield,
+  Users,
+  CheckCircle2,
+  RefreshCw,
+  UserCheck
 } from '@/constants/icons'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 const ALL_PERMS = [
@@ -115,6 +121,10 @@ export default function Admins() {
     }
   }
 
+  const superAdminCount = admins.filter(a => a.role === 'super_admin').length
+  const operationalAdminCount = admins.filter(a => a.role !== 'super_admin').length
+  const activeCount = admins.filter(a => a.status === 'active').length
+
   const filtered = admins.filter(a =>
     a.name?.toLowerCase().includes(search.toLowerCase()) ||
     a.email?.toLowerCase().includes(search.toLowerCase())
@@ -128,93 +138,149 @@ export default function Admins() {
   } = usePagination(filtered)
 
   return (
-    <>
-      <div className="animate-fade-in">
-        <div className="page-header mb-4">
-          <h2 className="page-title">Manajemen Admin</h2>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Top Actions Toolbar ── */}
+      <div className="flex items-center justify-end gap-2.5">
+        <button
+          onClick={fetchData}
+          disabled={loading}
+          className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+          title="Muat ulang data admin"
+        >
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <span>Refresh</span>
+        </button>
+          <button
+            id="btn-add-admin"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all"
+            onClick={() => {
+              setShow(true)
+              setEditingId(null)
+              setError('')
+              setForm({ name: '', email: '', password: '', saas_role_id: '' })
+            }}
+          >
+            <Plus size={15} />
+            <span>Tambah Admin</span>
+          </button>
+      </div>
+
+      {/* ── KPI Metric Cards ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatScoreCard
+          title="TOTAL ADMINISTRATOR"
+          value={admins.length}
+          icon={Users}
+          statusBadge={{ text: "Terdaftar", color: "blue" }}
+          subtitle="Populasi admin sistem"
+          progressBar={{ value: 100, color: "bg-blue-500" }}
+        />
+        <StatScoreCard
+          title="SUPER ADMIN"
+          value={superAdminCount}
+          icon={Shield}
+          statusBadge={{ text: "Root Access", color: "red" }}
+          subtitle="Akses kontrol tanpa batas"
+          progressBar={{ value: Math.min(100, Math.round((superAdminCount / (admins.length || 1)) * 100)), color: "bg-red-500" }}
+        />
+        <StatScoreCard
+          title="ADMIN OPERASIONAL"
+          value={operationalAdminCount}
+          icon={UserCheck}
+          statusBadge={{ text: "Scoped Roles", color: "violet" }}
+          subtitle="Akses berbasis peran SaaS"
+          progressBar={{ value: Math.min(100, Math.round((operationalAdminCount / (admins.length || 1)) * 100)), color: "bg-violet-500" }}
+        />
+        <StatScoreCard
+          title="STATUS AKTIF"
+          value={activeCount}
+          icon={CheckCircle2}
+          statusBadge={{ text: activeCount === admins.length ? "100% Aktif" : "Sebagian", color: "emerald" }}
+          subtitle="Kredensial siap login"
+          progressBar={{ value: Math.min(100, Math.round((activeCount / (admins.length || 1)) * 100)), color: "bg-emerald-500" }}
+        />
+      </div>
+
+      {/* ── Table Card ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        {/* Toolbar Header */}
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex items-center justify-between flex-wrap gap-3">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input
+              id="input-search-admins"
+              className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
+              placeholder="Cari nama atau email..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Menampilkan <span className="font-bold text-slate-700 dark:text-slate-200">{filtered.length}</span> administrator
+          </div>
         </div>
 
-        {/* Table Card */}
-        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1 }}>
-                <span className="search-icon">🔍</span>
-                <input
-                  id="input-search-admins"
-                  className="form-input search-input"
-                  placeholder="Cari nama atau email..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
-              </div>
-              <button
-                id="btn-add-admin"
-                className="btn btn-primary"
-                style={{ height: 38, display: 'flex', alignItems: 'center', gap: 6 }}
-                onClick={() => {
-                  setShow(true)
-                  setEditingId(null)
-                  setError('')
-                  setForm({ name: '', email: '', password: '', saas_role_id: '' })
-                }}
-              >
-                + Tambah Admin
-              </button>
-            </div>
-          </div>
-
-          <div className="table-responsive">
-            <table className="table">
-              <thead>
+        <div className="table-responsive">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Permissions</th>
+                <th>Status</th>
+                <th className="text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
                 <tr>
-                  <th>#</th>
-                  <th>Nama</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Permissions</th>
-                  <th>Status</th>
-                  <th>Aksi</th>
+                  <td colSpan={7} className="text-center py-12">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <RefreshCw size={24} className="animate-spin text-indigo-600" />
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Memuat data administrator...</span>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                        <span className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }}></span>
-                        <span>Memuat data admin...</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : paginatedData.map((admin, i) => (
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12 text-slate-400 dark:text-slate-500">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Users size={32} className="opacity-40" />
+                      <span className="text-xs">Tidak ada administrator ditemukan.</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedData.map((admin, i) => (
                   <tr key={admin.id}>
-                    <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{startIndex + i + 1}</td>
+                    <td className="text-slate-400 font-medium text-xs">{startIndex + i + 1}</td>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={getAvatarStyle(admin.name || admin.email, 32)}>
+                      <div className="flex items-center gap-2.5">
+                        <div style={getAvatarStyle(admin.name || admin.email, 30)} className="rounded-lg font-bold text-xs shrink-0 flex items-center justify-center">
                           {getInitials(admin.name)}
                         </div>
-                        <span style={{ color: 'var(--text-primary)', fontSize: 13 }}>{admin.name}</span>
+                        <span className="font-semibold text-xs text-slate-800 dark:text-slate-200">{admin.name}</span>
                       </div>
                     </td>
-                    <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{admin.email}</td>
+                    <td className="text-xs text-slate-600 dark:text-slate-400">{admin.email}</td>
                     <td>
                       <span className={`badge ${admin.role === 'super_admin' ? 'badge-red' : 'badge-violet'}`}>
                         {admin.role === 'super_admin' ? 'Super Admin' : (admin.saas_role || 'Admin')}
                       </span>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 300 }}>
+                      <div className="flex flex-wrap gap-1 max-w-[300px]">
                         {admin.role === 'super_admin' ? (
-                          <span className="badge badge-red" style={{ fontSize: 10 }}>Semua Akses (Super Admin)</span>
+                          <span className="badge badge-red text-[10px]">Semua Akses (Super Admin)</span>
                         ) : (admin.permissions && admin.permissions.length > 0) ? (
                           admin.permissions.map(p => {
                             const pm = ALL_PERMS.find(x => x.key === p)
-                            return <span key={p} className="badge badge-violet" style={{ fontSize: 10 }}>{pm?.label || p}</span>
+                            return <span key={p} className="badge badge-violet text-[10px]">{pm?.label || p}</span>
                           })
                         ) : (
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tidak ada permission</span>
+                          <span className="text-[11px] text-slate-400">Tidak ada permission</span>
                         )}
                       </div>
                     </td>
@@ -223,14 +289,13 @@ export default function Admins() {
                         {admin.status}
                       </span>
                     </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <td className="text-right">
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           id={`btn-impersonate-admin-${admin.id}`}
-                          className="btn btn-secondary btn-sm"
                           onClick={() => handleImpersonate(admin.id)}
                           title="Login sebagai Admin ini"
-                          style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px' }}
+                          className="h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-xs font-semibold shadow-xs transition-colors"
                         >
                           <KeyRound size={12} />
                           <span>Login</span>
@@ -238,56 +303,45 @@ export default function Admins() {
 
                         <button
                           id={`btn-edit-admin-${admin.id}`}
-                          className="btn btn-secondary btn-sm"
                           onClick={() => handleEdit(admin)}
                           disabled={admin.role === 'super_admin'}
-                          style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px', opacity: admin.role === 'super_admin' ? 0.5 : 1 }}
+                          className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-xs transition-colors disabled:opacity-40"
                           title={admin.role === 'super_admin' ? 'Super Admin tidak bisa diedit' : 'Edit Admin'}
                         >
-                          <Pencil size={12} />
-                          <span>Edit</span>
+                          <Pencil size={13} />
                         </button>
 
                         {admin.role !== 'super_admin' && (
                           <button
                             id={`btn-del-admin-${admin.id}`}
-                            className="btn btn-secondary btn-sm"
-                            style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '0 8px', color: '#dc2626' }}
+                            className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-rose-200 dark:border-rose-800/60 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 shadow-xs transition-colors"
                             onClick={() => handleDelete(admin.id)}
                             title="Hapus Admin"
                           >
-                            <Trash2 size={12} />
-                            <span>Hapus</span>
+                            <Trash2 size={13} />
                           </button>
                         )}
                       </div>
                     </td>
                   </tr>
-                ))}
-                {!loading && filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
-                      Tidak ada admin ditemukan
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {!loading && filtered.length > 0 && (
-            <SaasPagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              startIndex={startIndex}
-              endIndex={endIndex}
-            />
-          )}
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
+
+        {!loading && filtered.length > 0 && (
+          <SaasPagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
+        )}
       </div>
 
       {show && (
@@ -297,23 +351,23 @@ export default function Admins() {
           title={editingId ? 'Edit Administrator' : 'Tambah Administrator Baru'}
           maxWidth="540px"
         >
-          {error && <div className="auth-alert auth-alert--error" style={{ marginBottom: 16 }}><span>⚠</span> {error}</div>}
-          <form id="form-add-admin" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 4 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Nama Lengkap</label>
+          {error && <div className="p-3 mb-4 rounded-xl border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-semibold"><span>⚠</span> {error}</div>}
+          <form id="form-add-admin" onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
                 <input
-                  className="form-input"
+                  className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
                   placeholder="Nama admin"
                   required
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                 />
               </div>
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Email</label>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
                 <input
-                  className="form-input"
+                  className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
                   type="email"
                   placeholder="admin@bizora.id"
                   required
@@ -322,10 +376,12 @@ export default function Admins() {
                 />
               </div>
             </div>
-            <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>{editingId ? 'Password (Kosongkan jika tidak diubah)' : 'Password'}</label>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                {editingId ? 'Password (Kosongkan jika tidak diubah)' : 'Password'}
+              </label>
               <input
-                className="form-input"
+                className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
                 type="password"
                 placeholder={editingId ? 'Min. 8 karakter (opsional)' : 'Min. 8 karakter'}
                 required={!editingId}
@@ -333,10 +389,10 @@ export default function Admins() {
                 onChange={e => setForm({ ...form, password: e.target.value })}
               />
             </div>
-            <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>Pilih Role SaaS</label>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Pilih Role SaaS</label>
               <select
-                className="form-input"
+                className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 required
                 value={form.saas_role_id}
                 onChange={e => setForm({ ...form, saas_role_id: e.target.value })}
@@ -347,11 +403,11 @@ export default function Admins() {
                 ))}
               </select>
             </div>
-            <div className="modal__actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2.5">
               <button
                 id="btn-cancel-admin"
                 type="button"
-                className="btn btn-secondary"
+                className="h-[38px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-xs font-semibold"
                 onClick={() => setShow(false)}
               >
                 Batal
@@ -359,7 +415,7 @@ export default function Admins() {
               <button
                 id="btn-save-admin"
                 type="submit"
-                className="btn btn-primary"
+                className="h-[38px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all disabled:opacity-50"
                 disabled={saving}
               >
                 {saving ? 'Menyimpan...' : 'Simpan Admin'}
@@ -368,6 +424,6 @@ export default function Admins() {
           </form>
         </Modal>
       )}
-    </>
+    </div>
   )
 }

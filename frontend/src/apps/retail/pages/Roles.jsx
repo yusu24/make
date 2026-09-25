@@ -3,10 +3,12 @@ import '../retail.css';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import { useConfirm } from '../../../components/ConfirmDialog';
+import { useToast } from '../../../components/Toast';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import RetailPagination from '../components/RetailPagination';
 import usePagination from '../../../hooks/usePagination';
-import { Pencil, Trash2, RefreshCw, Plus, ShieldCheck, CheckSquare, Square } from '@/constants/icons';
+import { Pencil, Trash2, RefreshCw, Plus, ShieldCheck, CheckSquare, Square, Shield, KeyRound } from '@/constants/icons';
 
 export const GRANULAR_PERMISSION_GROUPS = [
   {
@@ -92,6 +94,7 @@ export const ALL_PERMISSIONS_FLAT = GRANULAR_PERMISSION_GROUPS.flatMap(g => g.pe
 
 export default function Roles() {
   const confirm = useConfirm();
+  const toast = useToast();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -147,13 +150,18 @@ export default function Roles() {
   };
 
   const handleDelete = async (id) => {
-    const ok = await confirm('Yakin ingin menghapus jabatan ini? Pegawai dengan jabatan ini akan kehilangan hak akses kustom.');
+    const ok = await confirm('Yakin ingin menghapus jabatan ini? Pegawai dengan jabatan ini akan kehilangan hak akses kustom.', {
+      title: 'Hapus Jabatan',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
     if (ok) {
       try {
         await api.delete(`/retail/roles/${id}`);
+        toast.success('Jabatan berhasil dihapus');
         fetchRoles();
       } catch (err) {
-        alert(err.response?.data?.message || 'Gagal menghapus role');
+        toast.error(err.response?.data?.message || 'Gagal menghapus role');
       }
     }
   };
@@ -171,8 +179,10 @@ export default function Roles() {
     try {
       if (editingRole) {
         await api.put(`/retail/roles/${editingRole.id}`, payload);
+        toast.success('Hak akses jabatan berhasil diperbarui');
       } else {
         await api.post('/retail/roles', payload);
+        toast.success('Jabatan baru berhasil didaftarkan');
       }
       setShowModal(false);
       fetchRoles();
@@ -199,6 +209,42 @@ export default function Roles() {
 
   return (
     <div className="retail-page-classic">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Jabatan / Role"
+          value={roles.length}
+          suffix=" Jabatan"
+          subtitle="Tingkat wewenang staf toko"
+          icon={Shield}
+          badgeText="RBAC"
+          badgeVariant="indigo"
+          progress={100}
+          progressVariant="indigo"
+        />
+        <StatScoreCard
+          title="Izin Akses Granular"
+          value={ALL_PERMISSIONS_FLAT.length}
+          suffix=" Modul"
+          subtitle="Titik kontrol otoritas operasional"
+          icon={KeyRound}
+          badgeText="Keamanan"
+          badgeVariant="emerald"
+          progress={100}
+          progressVariant="emerald"
+        />
+        <StatScoreCard
+          title="Proteksi Wewenang"
+          value="100%"
+          subtitle="Tervalidasi anti-tamper server"
+          icon={ShieldCheck}
+          badgeText="Aktif"
+          badgeVariant="blue"
+          progress={100}
+          progressVariant="blue"
+        />
+      </div>
+
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../../../lib/api';
 import {
   Search,
@@ -16,33 +16,23 @@ import {
   ExternalLink,
   Sparkles,
   Clock,
-  User,
-  Folder,
-  FolderOpen,
-  HelpCircle,
   ThumbsUp,
   ThumbsDown,
   ArrowLeft,
   ArrowRight,
   Menu,
   X,
-  Share2,
   Store,
-  TrendingUp,
   Coins,
   Settings,
   ShieldCheck,
   Layers,
   Lightbulb,
-  Info,
-  ListTree,
   Tag,
-  Hash,
   Compass,
   CheckCircle2,
   MessageSquare
 } from '@/constants/icons';
-import { motion, AnimatePresence } from 'framer-motion';
 
 // Helper to pick category icon based on name or module
 function getCategoryIcon(name = '', module = '') {
@@ -80,44 +70,13 @@ function getEstimatedReadTime(htmlContent = '') {
   return `${minutes} menit baca`;
 }
 
-// Extract H2 & H3 headings and inject matching IDs into HTML
-function processArticleContent(htmlContent = '') {
-  if (!htmlContent) return { processedHtml: '', headings: [] };
-
-  const headings = [];
-  let counter = 0;
-
-  const processedHtml = htmlContent.replace(/<(h[23])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, text) => {
-    counter++;
-    const plainText = text.replace(/<[^>]*>/g, '').trim();
-    const slugId = 'sec-' + counter + '-' + plainText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    
-    headings.push({
-      id: slugId,
-      text: plainText,
-      level: tag.toLowerCase() === 'h2' ? 2 : 3
-    });
-
-    return `<${tag}${attrs} id="${slugId}" class="doc-heading group relative">${text}<a href="#${slugId}" class="heading-anchor opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-indigo-400 hover:text-indigo-600 inline-block font-normal" title="Tautan langsung bagian ini">#</a></${tag}>`;
-  });
-
-  return { processedHtml, headings };
-}
-
 export default function DocumentationCenter() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [articleLoading, setArticleLoading] = useState(false);
-
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchFocused, setSearchFocused] = useState(false);
-  const searchContainerRef = useRef(null);
 
   // Sidebar & Navigation states
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -126,24 +85,12 @@ export default function DocumentationCenter() {
 
   // Reader UX states
   const [copied, setCopied] = useState(false);
-  const [fontSize, setFontSize] = useState('normal'); // 'normal' | 'large'
   const [feedbackState, setFeedbackState] = useState(null); // 'helpful' | 'unhelpful' | null
-  const [activeHeadingId, setActiveHeadingId] = useState('');
   const articleContainerRef = useRef(null);
-
-  const initialArticleSlug = searchParams.get('article');
 
   // Load Categories on mount
   useEffect(() => {
     fetchCategories();
-
-    const handleClickOutside = (e) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
-        setSearchFocused(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Sync with URL query parameter
@@ -161,32 +108,6 @@ export default function DocumentationCenter() {
       }
     }
   }, [searchParams, categories]);
-
-  // Scroll spy for Table of Contents
-  useEffect(() => {
-    if (!selectedArticle) return;
-
-    const handleScroll = () => {
-      const headingElements = document.querySelectorAll('.doc-heading');
-      if (!headingElements.length) return;
-
-      const scrollPosition = window.scrollY + 140;
-      let currentId = '';
-
-      headingElements.forEach((el) => {
-        if (el.offsetTop <= scrollPosition) {
-          currentId = el.getAttribute('id');
-        }
-      });
-
-      if (currentId) {
-        setActiveHeadingId(currentId);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [selectedArticle]);
 
   const fetchCategories = async () => {
     try {
@@ -226,9 +147,6 @@ export default function DocumentationCenter() {
       const res = await api.get(`/documentation/article/${slug}`);
       setSelectedArticle(res.data);
       setFeedbackState(null);
-      setSearchFocused(false);
-      setSearchQuery('');
-      setSearchResults([]);
       setMobileSidebarOpen(false);
 
       if (updateUrl) {
@@ -241,22 +159,6 @@ export default function DocumentationCenter() {
       console.error('Gagal mengambil artikel:', err);
     } finally {
       setArticleLoading(false);
-    }
-  };
-
-  // Live search handler
-  const handleSearchChange = async (e) => {
-    const q = e.target.value;
-    setSearchQuery(q);
-    if (q.trim().length >= 2) {
-      try {
-        const res = await api.get(`/documentation/search?q=${encodeURIComponent(q.trim())}`);
-        setSearchResults(res.data || []);
-      } catch (err) {
-        console.error('Gagal mencari panduan:', err);
-      }
-    } else {
-      setSearchResults([]);
     }
   };
 
@@ -328,163 +230,15 @@ export default function DocumentationCenter() {
       .filter(Boolean);
   }, [categories, sidebarFilter]);
 
-  // Processed HTML & TOC
-  const { processedHtml, headings } = useMemo(() => {
-    if (!selectedArticle?.content) return { processedHtml: '', headings: [] };
-    return processArticleContent(selectedArticle.content);
-  }, [selectedArticle?.content]);
-
   // Total article count
   const totalArticles = useMemo(() => {
     return categories.reduce((sum, c) => sum + (c.articles?.length || 0), 0);
   }, [categories]);
 
   return (
-    <div className="doc-center-wrapper font-sans text-slate-800 -mt-2 -mx-2 sm:-mx-4 md:-mx-6 min-h-[calc(100vh-140px)] flex flex-col">
-      {/* Top Banner & Universal Search Header */}
-      <div className="bg-white border-b border-slate-200/80 sticky top-0 z-30 shadow-xs backdrop-blur-md bg-white/95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row items-center justify-between gap-3">
-          
-          {/* Left Brand / Breadcrumb Identity */}
-          <div className="w-full md:w-auto flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <button
-                onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-                className="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors"
-                title="Buka Menu Panduan"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-
-              <div 
-                onClick={() => {
-                  setSelectedArticle(null);
-                  setSearchParams({});
-                }}
-                className="cursor-pointer group flex items-center gap-2.5"
-              >
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-600/20 group-hover:scale-105 transition-transform">
-                  <BookOpen className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                      Pusat Dokumentasi
-                    </span>
-                    <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
-                      v2.4
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
-                    {totalArticles} Panduan Resmi & SOP Operasional
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Mobile Action to Home */}
-            {selectedArticle && (
-              <button
-                onClick={() => {
-                  setSelectedArticle(null);
-                  setSearchParams({});
-                }}
-                className="md:hidden text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
-              >
-                <span>Semua Panduan</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Center/Right Global Search Bar */}
-          <div className="relative w-full md:w-96" ref={searchContainerRef}>
-            <div className="relative flex items-center">
-              <Search className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Cari topik, rumus, modul..."
-                value={searchQuery}
-                onFocus={() => setSearchFocused(true)}
-                onChange={handleSearchChange}
-                className="w-full bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-800 placeholder-slate-400 pl-10 pr-9 py-2 rounded-xl text-sm border border-slate-200 focus:border-indigo-500 focus:ring-3 focus:ring-indigo-100 transition-all outline-none"
-              />
-              {searchQuery ? (
-                <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSearchResults([]);
-                  }}
-                  className="absolute right-3 p-0.5 text-slate-400 hover:text-slate-600 rounded-full"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <span className="absolute right-3 hidden sm:flex items-center text-[10px] font-semibold text-slate-400 bg-slate-200/70 border border-slate-300/60 px-1.5 py-0.5 rounded pointer-events-none">
-                  /
-                </span>
-              )}
-            </div>
-
-            {/* Instant Search Dropdown */}
-            <AnimatePresence>
-              {searchFocused && (searchQuery.trim().length >= 2 || searchResults.length > 0) && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 4 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden max-h-[380px] overflow-y-auto custom-scrollbar"
-                >
-                  {searchResults.length > 0 ? (
-                    <div className="divide-y divide-slate-100">
-                      <div className="p-2.5 bg-slate-50/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-                        <span>Hasil Pencarian ({searchResults.length})</span>
-                        <span>Klik untuk membuka</span>
-                      </div>
-                      {searchResults.map((res) => (
-                        <button
-                          key={res.id}
-                          onClick={() => fetchArticle(res.slug)}
-                          className="w-full text-left p-3 hover:bg-indigo-50/70 transition-colors flex items-start gap-3 group"
-                        >
-                          <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors shrink-0 mt-0.5">
-                            <FileText className="w-4 h-4" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
-                              {res.title}
-                            </div>
-                            {res.short_description && (
-                              <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
-                                {res.short_description}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                                {res.category?.name || 'Dokumentasi'}
-                              </span>
-                            </div>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0 mt-2" />
-                        </button>
-                      ))}
-                    </div>
-                  ) : searchQuery.trim().length >= 2 ? (
-                    <div className="p-8 text-center">
-                      <HelpCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-slate-700">Tidak ada artikel yang cocok</p>
-                      <p className="text-xs text-slate-400 mt-1">Coba gunakan kata kunci umum seperti 'pos', 'stok', atau 'hpp'</p>
-                    </div>
-                  ) : null}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </div>
-
+    <div className="doc-center-wrapper font-sans text-slate-800 min-h-[calc(100vh-140px)] flex flex-col">
       {/* Main Container Layout */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col">
+      <div className="w-full py-2 flex-1 flex flex-col">
         {loading ? (
           <div className="flex-1 flex flex-col items-center justify-center py-24 text-center">
             <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mb-4 animate-bounce">
@@ -494,7 +248,7 @@ export default function DocumentationCenter() {
             <p className="text-xs text-slate-500 mt-1">Mengambil index panduan dan materi sistem</p>
           </div>
         ) : (
-          <div className="flex-1 flex gap-8 items-start relative">
+          <div className="flex-1 flex gap-6 lg:gap-8 items-start relative">
             
             {/* Left Sidebar Navigation (Desktop Fixed, Mobile Drawer) */}
             <aside
@@ -505,7 +259,10 @@ export default function DocumentationCenter() {
             >
               {/* Mobile Close Button */}
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 lg:hidden">
-                <span className="font-bold text-slate-800 text-sm">Daftar Panduan</span>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-indigo-600" />
+                  <span className="font-bold text-slate-800 text-sm">Daftar Panduan</span>
+                </div>
                 <button
                   onClick={() => setMobileSidebarOpen(false)}
                   className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg"
@@ -515,7 +272,7 @@ export default function DocumentationCenter() {
               </div>
 
               {/* Sidebar Content Card */}
-              <div className="lg:bg-white lg:rounded-2xl lg:border lg:border-slate-200/80 lg:shadow-xs p-3.5 flex flex-col max-h-[calc(100vh-160px)] lg:sticky lg:top-24">
+              <div className="lg:bg-white lg:rounded-2xl lg:border lg:border-slate-200/80 lg:shadow-xs p-3.5 flex flex-col max-h-[calc(100vh-140px)] lg:sticky lg:top-20">
                 
                 {/* Search / Filter within Sidebar */}
                 <div className="relative mb-3">
@@ -525,14 +282,14 @@ export default function DocumentationCenter() {
                     placeholder="Saring daftar panduan..."
                     value={sidebarFilter}
                     onChange={(e) => setSidebarFilter(e.target.value)}
-                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-lg focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+                    className="w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-lg focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
                   />
                   {sidebarFilter && (
                     <button
                       onClick={() => setSidebarFilter('')}
                       className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
@@ -644,16 +401,6 @@ export default function DocumentationCenter() {
                     </span>
                     <ExternalLink className="w-3 h-3 text-slate-400" />
                   </a>
-                  <a
-                    href="/support"
-                    className="flex items-center justify-between px-2.5 py-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-lg transition-colors font-medium"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-                      Pusat Dukungan & Tiket
-                    </span>
-                    <ChevronRight className="w-3 h-3 text-slate-400" />
-                  </a>
                 </div>
               </div>
             </aside>
@@ -680,8 +427,16 @@ export default function DocumentationCenter() {
                     
                     {/* Top Breadcrumb & Action Toolbar */}
                     <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-6 border-b border-slate-100 hide-on-print">
-                      {/* Breadcrumbs */}
+                      {/* Breadcrumbs with Mobile Drawer Trigger */}
                       <div className="flex items-center gap-2 text-xs font-medium text-slate-500 flex-wrap">
+                        <button
+                          onClick={() => setMobileSidebarOpen(true)}
+                          className="lg:hidden p-1.5 rounded-lg border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors flex items-center gap-1.5 text-xs font-semibold mr-1"
+                          title="Buka Daftar Panduan"
+                        >
+                          <Menu className="w-4 h-4 text-indigo-600" />
+                          <span>Daftar Panduan</span>
+                        </button>
                         <button
                           onClick={() => {
                             setSelectedArticle(null);
@@ -690,38 +445,20 @@ export default function DocumentationCenter() {
                           className="hover:text-indigo-600 transition-colors flex items-center gap-1"
                         >
                           <BookOpen className="w-3.5 h-3.5" />
-                          <span>Pusat Bantuan</span>
+                          <span>Pusat Panduan</span>
                         </button>
                         <ChevronRight className="w-3 h-3 text-slate-300" />
                         <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-semibold text-[11px]">
                           {selectedArticle.category?.name || 'Umum'}
                         </span>
                         <ChevronRight className="w-3 h-3 text-slate-300" />
-                        <span className="text-slate-800 font-semibold truncate max-w-[200px] sm:max-w-xs">
+                        <span className="text-slate-800 font-semibold truncate max-w-[160px] sm:max-w-xs">
                           {selectedArticle.title}
                         </span>
                       </div>
 
                       {/* Reading Controls & Export Actions */}
                       <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
-                        {/* Font size toggle */}
-                        <div className="flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 text-[11px] font-semibold text-slate-600">
-                          <button
-                            onClick={() => setFontSize('normal')}
-                            className={`px-2 py-1 rounded transition-colors ${fontSize === 'normal' ? 'bg-white text-indigo-600 shadow-xs' : 'hover:text-slate-900'}`}
-                            title="Ukuran teks normal"
-                          >
-                            A
-                          </button>
-                          <button
-                            onClick={() => setFontSize('large')}
-                            className={`px-2 py-1 rounded transition-colors text-xs ${fontSize === 'large' ? 'bg-white text-indigo-600 shadow-xs' : 'hover:text-slate-900'}`}
-                            title="Ukuran teks lebih besar"
-                          >
-                            A+
-                          </button>
-                        </div>
-
                         {/* Copy Link */}
                         <button
                           onClick={handleCopyLink}
@@ -819,131 +556,103 @@ export default function DocumentationCenter() {
                       )}
                     </header>
 
-                    {/* Table of Contents & Article Body Layout */}
-                    <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-                      {/* Main Prose Text (3 cols on XL) */}
-                      <div className="xl:col-span-3">
-                        <div
-                          className={`article-content ${fontSize === 'large' ? 'text-lg leading-relaxed' : 'text-base leading-normal'}`}
-                          dangerouslySetInnerHTML={{ __html: processedHtml }}
-                        />
+                    {/* Article Body */}
+                    <div
+                      className="article-content text-base leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+                    />
 
-                        {/* Article Footer & Was it helpful? */}
-                        <div className="mt-12 pt-8 border-t border-slate-100 hide-on-print">
-                          {/* Helpful Rating */}
-                          <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div>
-                              <h4 className="text-sm font-bold text-slate-900">
-                                Apakah artikel panduan ini membantu Anda?
-                              </h4>
-                              <p className="text-xs text-slate-500 mt-0.5">
-                                Masukan Anda sangat berarti bagi penyempurnaan panduan kami.
-                              </p>
-                            </div>
-
-                            {feedbackState ? (
-                              <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-100 animate-fade-in">
-                                <CheckCircle2 className="w-4 h-4" />
-                                <span>Terima kasih atas tanggapan Anda!</span>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => setFeedbackState('helpful')}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-indigo-400 hover:text-indigo-600 text-slate-700 text-xs font-semibold transition-all shadow-xs"
-                                >
-                                  <ThumbsUp className="w-3.5 h-3.5" />
-                                  <span>Ya, Membantu</span>
-                                </button>
-                                <button
-                                  onClick={() => setFeedbackState('unhelpful')}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-rose-400 hover:text-rose-600 text-slate-700 text-xs font-semibold transition-all shadow-xs"
-                                >
-                                  <ThumbsDown className="w-3.5 h-3.5" />
-                                  <span>Perlu Perbaikan</span>
-                                </button>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Previous / Next Article Navigation Cards */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                            {prevArticle ? (
-                              <button
-                                onClick={() => fetchArticle(prevArticle.slug)}
-                                className="text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group flex flex-col justify-between"
-                              >
-                                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold mb-1 group-hover:text-indigo-600 transition-colors">
-                                  <ArrowLeft className="w-3.5 h-3.5" />
-                                  <span>Panduan Sebelumnya</span>
-                                </div>
-                                <div className="text-sm font-bold text-slate-800 group-hover:text-indigo-700 transition-colors line-clamp-1">
-                                  {prevArticle.title}
-                                </div>
-                              </button>
-                            ) : (
-                              <div />
-                            )}
-
-                            {nextArticle ? (
-                              <button
-                                onClick={() => fetchArticle(nextArticle.slug)}
-                                className="text-right p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group flex flex-col justify-between ml-auto w-full sm:w-auto"
-                              >
-                                <div className="flex items-center justify-end gap-1.5 text-xs text-slate-400 font-semibold mb-1 group-hover:text-indigo-600 transition-colors">
-                                  <span>Panduan Selanjutnya</span>
-                                  <ArrowRight className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="text-sm font-bold text-slate-800 group-hover:text-indigo-700 transition-colors line-clamp-1">
-                                  {nextArticle.title}
-                                </div>
-                              </button>
-                            ) : (
-                              <div />
-                            )}
-                          </div>
+                    {/* Article Footer & Was it helpful? */}
+                    <div className="mt-12 pt-8 border-t border-slate-100 hide-on-print">
+                      {/* Helpful Rating */}
+                      <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900">
+                            Apakah artikel panduan ini membantu Anda?
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Masukan Anda sangat berarti bagi penyempurnaan panduan kami.
+                          </p>
                         </div>
+
+                        {feedbackState ? (
+                          <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-100 animate-fade-in">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Terima kasih atas tanggapan Anda!</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setFeedbackState('helpful')}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-indigo-400 hover:text-indigo-600 text-slate-700 text-xs font-semibold transition-all shadow-xs"
+                            >
+                              <ThumbsUp className="w-3.5 h-3.5" />
+                              <span>Ya, Membantu</span>
+                            </button>
+                            <button
+                              onClick={() => setFeedbackState('unhelpful')}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-rose-400 hover:text-rose-600 text-slate-700 text-xs font-semibold transition-all shadow-xs"
+                            >
+                              <ThumbsDown className="w-3.5 h-3.5" />
+                              <span>Perlu Perbaikan</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Right Sidebar: Table of Contents / On this page (XL screens) */}
-                      {headings.length > 0 && (
-                        <div className="hidden xl:block xl:col-span-1 hide-on-print">
-                          <div className="sticky top-24 p-3.5 rounded-xl bg-slate-50 border border-slate-100 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar">
-                            <div className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">
-                              <ListTree className="w-4 h-4 text-indigo-600" />
-                              <span>Di Halaman Ini</span>
+                      {/* Previous / Next Article Navigation Cards */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                        {prevArticle ? (
+                          <button
+                            onClick={() => fetchArticle(prevArticle.slug)}
+                            className="text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group flex flex-col justify-between"
+                          >
+                            <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold mb-1 group-hover:text-indigo-600 transition-colors">
+                              <ArrowLeft className="w-3.5 h-3.5" />
+                              <span>Panduan Sebelumnya</span>
                             </div>
-                            <nav className="space-y-1 text-xs">
-                              {headings.map((h) => {
-                                const isActive = activeHeadingId === h.id;
-                                return (
-                                  <a
-                                    key={h.id}
-                                    href={`#${h.id}`}
-                                    className={`
-                                      block py-1.5 transition-colors leading-snug
-                                      ${h.level === 3 ? 'pl-4 text-[11px]' : 'pl-1 font-medium'}
-                                      ${
-                                        isActive
-                                          ? 'text-indigo-600 font-bold border-l-2 border-indigo-600 pl-2 bg-indigo-50/50 rounded-r'
-                                          : 'text-slate-600 hover:text-indigo-600 hover:bg-white rounded'
-                                      }
-                                    `}
-                                  >
-                                    {h.text}
-                                  </a>
-                                );
-                              })}
-                            </nav>
-                          </div>
-                        </div>
-                      )}
+                            <div className="text-sm font-bold text-slate-800 group-hover:text-indigo-700 transition-colors line-clamp-1">
+                              {prevArticle.title}
+                            </div>
+                          </button>
+                        ) : (
+                          <div />
+                        )}
+
+                        {nextArticle ? (
+                          <button
+                            onClick={() => fetchArticle(nextArticle.slug)}
+                            className="text-right p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group flex flex-col justify-between ml-auto w-full sm:w-auto"
+                          >
+                            <div className="flex items-center justify-end gap-1.5 text-xs text-slate-400 font-semibold mb-1 group-hover:text-indigo-600 transition-colors">
+                              <span>Panduan Selanjutnya</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="text-sm font-bold text-slate-800 group-hover:text-indigo-700 transition-colors line-clamp-1">
+                              {nextArticle.title}
+                            </div>
+                          </button>
+                        ) : (
+                          <div />
+                        )}
+                      </div>
                     </div>
                   </article>
                 </div>
               ) : (
                 /* Overview / Welcome Landing View */
                 <div className="space-y-8 animate-fade-in">
+                  {/* Mobile Trigger for Drawer */}
+                  <div className="lg:hidden">
+                    <button
+                      onClick={() => setMobileSidebarOpen(true)}
+                      className="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-white shadow-xs text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
+                    >
+                      <Menu className="w-4 h-4 text-indigo-600" />
+                      <span>Buka Daftar Panduan & Kategori</span>
+                    </button>
+                  </div>
+
                   {/* Hero Header */}
                   <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden">
                     {/* Background Glow */}
@@ -970,9 +679,8 @@ export default function DocumentationCenter() {
                           <button
                             key={topic}
                             onClick={() => {
-                              setSearchQuery(topic);
-                              handleSearchChange({ target: { value: topic } });
-                              setSearchFocused(true);
+                              setSidebarFilter(topic);
+                              if (window.innerWidth < 1024) setMobileSidebarOpen(true);
                             }}
                             className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-colors"
                           >
@@ -1118,7 +826,6 @@ export default function DocumentationCenter() {
           letter-spacing: -0.025em;
           padding-bottom: 0.4rem;
           border-bottom: 1px solid #f1f5f9;
-          scroll-margin-top: 5rem;
         }
 
         .article-content h3 {
@@ -1128,7 +835,6 @@ export default function DocumentationCenter() {
           margin-top: 1.75rem;
           margin-bottom: 0.65rem;
           letter-spacing: -0.015em;
-          scroll-margin-top: 5rem;
         }
 
         .article-content h4 {
@@ -1160,14 +866,12 @@ export default function DocumentationCenter() {
           list-style-type: disc;
           padding-left: 1.5rem;
           margin-bottom: 1.5rem;
-          space-y: 0.4rem;
         }
 
         .article-content ol {
           list-style-type: decimal;
           padding-left: 1.5rem;
           margin-bottom: 1.5rem;
-          space-y: 0.4rem;
         }
 
         .article-content li {

@@ -20,6 +20,9 @@ import { Wallet,
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import { 
   RetailPrintHeader, 
   RetailPrintSectionHeader, 
@@ -32,6 +35,8 @@ import {
 
 export default function Receivables() {
   const { user } = useAuth();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [receivables, setReceivables] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [summary, setSummary] = useState({});
@@ -116,20 +121,27 @@ export default function Receivables() {
         due_date: fd.get('due_date') || null,
         note: fd.get('note'),
       });
+      toast.success('Catatan piutang berhasil disimpan');
       setShowModal(false); 
       fetchData();
     } catch (e) { 
-      alert(e.response?.data?.message || 'Gagal menyimpan'); 
+      toast.error(e.response?.data?.message || 'Gagal menyimpan catatan piutang'); 
     }
   };
 
   const handleDelete = async (receivable) => {
-    if (!confirm(`Hapus catatan piutang dari "${receivable.customer?.name || 'pelanggan ini'}"?`)) return;
+    const ok = await confirm(`Hapus catatan piutang dari "${receivable.customer?.name || 'pelanggan ini'}"?`, {
+      title: 'Hapus Piutang',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/retail/receivables/${receivable.id}`);
+      toast.success('Catatan piutang berhasil dihapus');
       fetchData();
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menghapus catatan piutang');
+      toast.error(e.response?.data?.message || 'Gagal menghapus catatan piutang');
     }
   };
 
@@ -137,11 +149,12 @@ export default function Receivables() {
     e.preventDefault();
     try {
       await api.post(`/retail/receivables/${payModal.id}/payments`, { amount_paid: payAmount, payment_method: 'CASH' });
+      toast.success('Pembayaran piutang berhasil dicatat');
       setPayModal(null); 
       setPayAmount(0); 
       fetchData();
     } catch (e) { 
-      alert(e.response?.data?.message || 'Gagal mencatat pembayaran'); 
+      toast.error(e.response?.data?.message || 'Gagal mencatat pembayaran'); 
     }
   };
 
@@ -415,41 +428,36 @@ export default function Receivables() {
         {/* ========================================================= */}
         <div className="no-print">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {/* Total Piutang Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                <TrendingUp size={22} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Piutang</span>
-                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{formatRp(summary.total_credit)}</p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total piutang dari pelanggan</p>
-              </div>
-            </div>
-
-            {/* Sudah Diterima Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <CheckCircle2 size={22} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Sudah Diterima</span>
-                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight">{formatRp(summary.total_paid)}</p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total pembayaran telah diterima</p>
-              </div>
-            </div>
-
-            {/* Sisa Piutang Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                <AlertCircle size={22} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Sisa Piutang</span>
-                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-rose-600 tracking-tight leading-tight">{formatRp(summary.total_outstanding)}</p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Piutang yang belum dilunasi</p>
-              </div>
-            </div>
+            <StatScoreCard
+              title="Total Piutang"
+              value={formatRp(summary.total_credit || 0)}
+              subtitle="Total tagihan piutang ke pelanggan"
+              icon={TrendingUp}
+              badgeText="Aset Lancar"
+              badgeVariant="indigo"
+              progress={100}
+              progressVariant="indigo"
+            />
+            <StatScoreCard
+              title="Sudah Diterima"
+              value={formatRp(summary.total_paid || 0)}
+              subtitle="Total pembayaran yang telah diterima"
+              icon={CheckCircle2}
+              badgeText="Tertagih"
+              badgeVariant="emerald"
+              progress={summary.total_credit > 0 ? Math.min(100, Math.round(((summary.total_paid || 0) / summary.total_credit) * 100)) : 0}
+              progressVariant="emerald"
+            />
+            <StatScoreCard
+              title="Sisa Piutang"
+              value={formatRp(summary.total_outstanding || 0)}
+              subtitle="Piutang aktif yang belum dilunasi"
+              icon={AlertCircle}
+              badgeText={summary.total_outstanding > 0 ? "Tertunda" : "Lunas"}
+              badgeVariant={summary.total_outstanding > 0 ? "rose" : "emerald"}
+              progress={summary.total_credit > 0 ? Math.min(100, Math.round(((summary.total_outstanding || 0) / summary.total_credit) * 100)) : 0}
+              progressVariant="rose"
+            />
           </div>
 
           <div className="card table-wrap animate-fade-in">

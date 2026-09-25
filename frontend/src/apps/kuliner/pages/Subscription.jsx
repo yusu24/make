@@ -46,11 +46,6 @@ export default function Subscription() {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Paket Langganan & Upgrade</h1>
-        <div className="kd-topbar-actions" />
-      </div>
-
       <div className="kd-content">
         <div className="w-full">
           <UniversalSubscriptionView

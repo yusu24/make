@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { api } from '../../../lib/api';
-import { Users, Plus, Edit2, Trash2, Shield } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, Shield, Lock, Layers } from '@/constants/icons';
 import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 
 const CulinaryRoles = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
+  const toast = useToast();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -61,17 +65,17 @@ const CulinaryRoles = () => {
     try {
       if (editingRole) {
         await api.put(`/kuliner/admin/roles/${editingRole.id}`, form);
-        alert('Role berhasil diperbarui');
+        toast.success('Role berhasil diperbarui');
       } else {
         await api.post('/kuliner/admin/roles', form);
-        alert('Role baru berhasil ditambahkan');
+        toast.success('Role baru berhasil ditambahkan');
       }
       setShowModal(false);
       setEditingRole(null);
       setForm({ name: '', permissions: [] });
       fetchRoles();
     } catch (err) {
-      alert('Gagal menyimpan role');
+      toast.error('Gagal menyimpan role');
     }
   };
 
@@ -102,9 +106,10 @@ const CulinaryRoles = () => {
     if (ok) {
       try {
         await api.delete(`/kuliner/admin/roles/${id}`);
+        toast.success('Role berhasil dihapus');
         fetchRoles();
       } catch (err) {
-        alert('Gagal menghapus role');
+        toast.error('Gagal menghapus role');
       }
     }
   };
@@ -192,11 +197,35 @@ const CulinaryRoles = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Kelola Role & Hak Akses</h1>
-      </div>
-
       <div className="kd-content">
+        {/* Modern KPI Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <StatScoreCard
+            title="Total Role Terdaftar"
+            value={roles.length}
+            icon={Shield}
+            color="amber"
+            badgeText="Role Master"
+            sublabel="Grup wewenang operasional"
+          />
+          <StatScoreCard
+            title="Modul Sistem"
+            value={availablePermissions.length}
+            icon={Layers}
+            color="indigo"
+            badgeText="13 Modul"
+            sublabel="Hak akses granular per modul"
+          />
+          <StatScoreCard
+            title="Keamanan Akses"
+            value="RBAC Aktif"
+            icon={Lock}
+            color="emerald"
+            badgeText="Terkontrol"
+            sublabel="Role-Based Access Control"
+          />
+        </div>
+
         <div className="kd-page-actions">
           <button 
             className="kd-btn kd-btn-primary flex items-center gap-2"
@@ -206,7 +235,7 @@ const CulinaryRoles = () => {
               setShowModal(true);
             }}
           >
-            <Plus /> Tambah Role Baru
+            <Plus size={16} /> Tambah Role Baru
           </button>
         </div>
         <div className="kd-panel">
@@ -221,7 +250,7 @@ const CulinaryRoles = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="3" className="text-center py-10">{t('kulinerCommon.loadingData') || 'Memuat data...'}</td></tr>
+                  <KulinerTableSkeleton cols={3} rows={5} />
                 ) : roles.length === 0 ? (
                   <tr><td colSpan="3" className="text-center py-10">{t('kulinerCommon.emptyData') || 'Belum ada role terdaftar.'}</td></tr>
                 ) : (
@@ -230,7 +259,7 @@ const CulinaryRoles = () => {
                       <td style={{ verticalAlign: 'top', paddingTop: '16px' }}>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
-                            <Shield />
+                            <Shield size={20} />
                           </div>
                           <span style={{ color: '#1e293b', fontWeight: 400, fontSize: 12 }}>{role.name}</span>
                         </div>
@@ -242,8 +271,8 @@ const CulinaryRoles = () => {
                       </td>
                       <td style={{ verticalAlign: 'top', paddingTop: '16px' }}>
                         <div className="flex justify-end gap-2">
-                          <button className="kd-icon-btn" onClick={() => handleEdit(role)}><Edit2 /></button>
-                          <button className="kd-icon-btn text-red-500" onClick={() => handleDelete(role.id)}><Trash2 /></button>
+                          <button className="kd-icon-btn" title="Edit Role" onClick={() => handleEdit(role)}><Pencil size={16} /></button>
+                          <button className="kd-icon-btn text-red-500" title="Hapus Role" onClick={() => handleDelete(role.id)}><Trash2 size={16} /></button>
                         </div>
                       </td>
                     </tr>

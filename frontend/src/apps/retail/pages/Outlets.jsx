@@ -5,9 +5,14 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import { Pencil, Trash2, Store, MapPin, Phone, Star, RefreshCw } from '@/constants/icons';
 
 export default function Outlets() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -48,8 +53,10 @@ export default function Outlets() {
     try {
       if (editingOutlet) {
         await api.put(`/retail/outlets/${editingOutlet.id}`, payload);
+        toast.success('Outlet cabang berhasil diperbarui');
       } else {
         await api.post('/retail/outlets', payload);
+        toast.success('Outlet cabang baru berhasil ditambahkan');
       }
       fetchOutlets();
       setShowModal(false);
@@ -58,7 +65,7 @@ export default function Outlets() {
       if (e.response?.status === 422) {
         setErrors(e.response.data.errors);
       } else {
-        alert(e.response?.data?.message || 'Gagal menyimpan outlet');
+        toast.error(e.response?.data?.message || 'Gagal menyimpan outlet');
       }
     }
   };
@@ -69,13 +76,18 @@ export default function Outlets() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Hapus outlet ini? Peringatan: Data yang berhubungan dengan outlet ini (seperti stok dan riwayat transaksi cabang) dapat terhapus.')) {
-      try {
-        await api.delete(`/retail/outlets/${id}`);
-        fetchOutlets();
-      } catch (e) {
-        alert(e.response?.data?.message || 'Gagal menghapus outlet. Pastikan tidak ada transaksi terkait.');
-      }
+    const ok = await confirm('Hapus outlet ini? Peringatan: Data yang berhubungan dengan outlet ini (seperti stok dan riwayat transaksi cabang) dapat terhapus.', {
+      title: 'Hapus Outlet Cabang',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/retail/outlets/${id}`);
+      toast.success('Outlet cabang berhasil dihapus');
+      fetchOutlets();
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Gagal menghapus outlet. Pastikan tidak ada transaksi terkait.');
     }
   };
 
@@ -83,6 +95,9 @@ export default function Outlets() {
     o.name.toLowerCase().includes(search.toLowerCase()) ||
     (o.address && o.address.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const primaryCount = outlets.filter(o => o.is_primary).length;
+  const secondaryCount = outlets.length - primaryCount;
 
   const {
     currentPage,
@@ -98,6 +113,43 @@ export default function Outlets() {
 
   return (
     <div className="retail-page-classic">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Cabang"
+          value={outlets.length}
+          suffix=" Outlet"
+          subtitle="Jaringan gerai retail terdaftar"
+          icon={Store}
+          badgeText="Jaringan"
+          badgeVariant="indigo"
+          progress={100}
+          progressVariant="indigo"
+        />
+        <StatScoreCard
+          title="Cabang Utama (Pusat)"
+          value={primaryCount}
+          suffix=" Gerai"
+          subtitle="Pusat distribusi dan master inventory"
+          icon={Star}
+          badgeText="HQ"
+          badgeVariant="emerald"
+          progress={outlets.length > 0 ? Math.min(100, Math.round((primaryCount / outlets.length) * 100)) : 100}
+          progressVariant="emerald"
+        />
+        <StatScoreCard
+          title="Cabang Reguler"
+          value={secondaryCount}
+          suffix=" Gerai"
+          subtitle="Titik penjualan cabang aktif"
+          icon={MapPin}
+          badgeText="Cabang"
+          badgeVariant="blue"
+          progress={outlets.length > 0 ? Math.min(100, Math.round((secondaryCount / outlets.length) * 100)) : 0}
+          progressVariant="blue"
+        />
+      </div>
+
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button 

@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import api from '../../../services/api';
 import { PageLoader } from '../../../routes/guards';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useToast } from '../../../components/Toast';
 import './CategoryStorefront.css';
 
 const CategoryStorefront = () => {
@@ -11,6 +12,7 @@ const CategoryStorefront = () => {
                  new URLSearchParams(location.search).get('tenant');
   
   const { t } = useTranslation();
+  const toast = useToast();
   const [activeCat, setActiveCat] = useState(t('storefront.all'));
   const [settings, setSettings] = useState({
     store_name: 'Loading...',
@@ -113,7 +115,7 @@ const CategoryStorefront = () => {
         tenant_id: settings.tenant_id
       };
       await api.post('/kuliner/public/testimonials', payload);
-      alert(t('storefront.reviewSuccess'));
+      toast.success(t('storefront.reviewSuccess') || 'Terima kasih atas ulasan Anda!');
       setShowReviewModal(false);
       setReviewForm({ customer_name: '', rating: 5, comment: '', customer_role: '' });
       
@@ -130,7 +132,7 @@ const CategoryStorefront = () => {
         })));
       }
     } catch (error) {
-      alert(t('storefront.reviewFail'));
+      toast.error(t('storefront.reviewFail') || 'Gagal mengirim ulasan.');
     } finally {
       setSubmittingReview(false);
     }

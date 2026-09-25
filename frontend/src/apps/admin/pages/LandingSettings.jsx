@@ -347,12 +347,7 @@ export default function LandingSettings({ defaultTab = 'general' }) {
         }
       `}</style>
       
-      {/* Page Header (Matching standard admin page style) */}
-      <div className="page-header">
-        <h2 className="page-title">Pengaturan Konten Landing Page</h2>
-      </div>
-
-      {/* Action Bar Below Title on the Right */}
+      {/* Action Bar */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
         <a
           href="/"

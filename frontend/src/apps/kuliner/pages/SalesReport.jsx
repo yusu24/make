@@ -5,6 +5,8 @@ import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import api from '../../../services/api';
 import ClientPagination from '../components/ClientPagination';
 import KulinerLoading from '../components/KulinerLoading';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useReactToPrint } from 'react-to-print';
 import { 
@@ -193,76 +195,62 @@ const SalesReport = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerSales.title') || 'Laporan Penjualan'}</h1>
-      </div>
-
       <div className="kd-content">
-        {loading ? (
-          <KulinerLoading message={t('kulinerSales.loading') || 'Memproses data laporan...'} />
-        ) : (
-          <>
-            {/* Action Bar */}
-            <div className="kd-page-actions no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>Periode:</span>
-                {['today', 'week', 'month', 'all'].map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => { setDateFilter(filter); setCurrentPage(1); }}
-                    className={`kd-btn kd-btn-sm ${dateFilter === filter ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
-                    style={{ textTransform: 'capitalize', fontSize: 11, padding: '6px 12px' }}
-                  >
-                    {filter === 'today' ? t('kulinerSales.filterToday') || 'Hari Ini' : filter === 'week' ? t('kulinerSales.filterWeek') || '7 Hari Terakhir' : filter === 'month' ? t('kulinerSales.filterMonth') || 'Bulan Ini' : t('kulinerSales.filterAll') || 'Semua'}
-                  </button>
-                ))}
-              </div>
-              
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="kd-btn kd-btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={fetchSalesReport}>
-                  <RefreshCw size={14} /> {t('kulinerSales.refreshData') || 'Segarkan Data'}
-                </button>
-                <button className="kd-btn kd-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={handlePrint}>
-                  <Printer size={14} /> {t('kulinerSales.printReport') || 'Cetak Laporan'}
-                </button>
-              </div>
-            </div>
+        {/* Action Bar */}
+        <div className="kd-page-actions no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>Periode:</span>
+            {['today', 'week', 'month', 'all'].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => { setDateFilter(filter); setCurrentPage(1); }}
+                className={`kd-btn kd-btn-sm ${dateFilter === filter ? 'kd-btn-primary' : 'kd-btn-secondary'}`}
+                style={{ textTransform: 'capitalize', fontSize: 11, padding: '6px 12px' }}
+              >
+                {filter === 'today' ? t('kulinerSales.filterToday') || 'Hari Ini' : filter === 'week' ? t('kulinerSales.filterWeek') || '7 Hari Terakhir' : filter === 'month' ? t('kulinerSales.filterMonth') || 'Bulan Ini' : t('kulinerSales.filterAll') || 'Semua'}
+              </button>
+            ))}
+          </div>
+          
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="kd-btn kd-btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={fetchSalesReport} disabled={loading}>
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> {t('kulinerSales.refreshData') || 'Segarkan Data'}
+            </button>
+            <button className="kd-btn kd-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={handlePrint} disabled={loading}>
+              <Printer size={14} /> {t('kulinerSales.printReport') || 'Cetak Laporan'}
+            </button>
+          </div>
+        </div>
 
-            <div ref={printRef}>
+        <div ref={printRef}>
 
-            {/* SUMMARY CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 no-print mb-6">
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">{t('kulinerSales.summaryTotalSales') || 'Total Pendapatan'}</div>
-                  <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{formatRp(summary.totalSales)}</div>
-                  <div className="text-xs text-slate-400 mt-1 font-['Inter']">Performa periode ini</div>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                  <TrendingUp size={22} />
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">{t('kulinerSales.summaryTotalOrders') || 'Total Pesanan'}</div>
-                  <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{summary.totalOrders} <span className="text-sm font-medium text-slate-400">Pesanan</span></div>
-                  <div className="text-xs text-slate-400 mt-1 font-['Inter']">Terhitung dari semua channel</div>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                  <ShoppingBag size={22} />
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 font-['Inter']">{t('kulinerSales.summaryAvgOrder') || 'Rata-rata Per Pesanan'}</div>
-                  <div className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{formatRp(summary.avgOrderValue)}</div>
-                  <div className="text-xs text-slate-400 mt-1 font-['Inter']">Efisiensi penjualan per transaksi</div>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                  <DollarSign size={22} />
-                </div>
-              </div>
-            </div>
+        {/* SUMMARY CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 no-print mb-6">
+          <StatScoreCard
+            title={t('kulinerSales.summaryTotalSales') || 'Total Pendapatan'}
+            value={loading ? '...' : formatRp(summary.totalSales)}
+            icon={TrendingUp}
+            status="Pendapatan"
+            statusVariant="amber"
+            desc="Performa penjualan pada periode ini"
+          />
+          <StatScoreCard
+            title={t('kulinerSales.summaryTotalOrders') || 'Total Pesanan'}
+            value={loading ? '...' : `${summary.totalOrders} Pesanan`}
+            icon={ShoppingBag}
+            status="Order"
+            statusVariant="blue"
+            desc="Terhitung dari semua channel transaksi"
+          />
+          <StatScoreCard
+            title={t('kulinerSales.summaryAvgOrder') || 'Rata-rata Per Pesanan'}
+            value={loading ? '...' : formatRp(summary.avgOrderValue)}
+            icon={DollarSign}
+            status="Rata-rata"
+            statusVariant="emerald"
+            desc="Efisiensi nilai penjualan per transaksi"
+          />
+        </div>
 
             {/* CHARTS CONTAINER */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6 no-print">
@@ -369,7 +357,9 @@ const SalesReport = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredSales.length === 0 ? (
+                    {loading ? (
+                      <KulinerTableSkeleton cols={7} rows={itemsPerPage > 5 ? 5 : itemsPerPage} />
+                    ) : filteredSales.length === 0 ? (
                       <tr>
                         <td colSpan="7" style={{ textAlign: 'center', padding: '36px', color: '#94A3B8' }}>
                           {t('kulinerSales.emptyHistory') || 'Belum ada transaksi pada periode ini.'}
@@ -588,8 +578,6 @@ const SalesReport = () => {
 
               </div>
             </div>
-          </>
-        )}
       </div>
     </KulinerAdminLayout>
   );

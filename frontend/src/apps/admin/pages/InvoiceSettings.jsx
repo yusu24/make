@@ -1,6 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { api } from '../../../lib/api'
-import { RefreshCw } from '@/constants/icons'
+import {
+  RefreshCw,
+  Building,
+  CreditCard,
+  Mail,
+  Download,
+  Save,
+  Image,
+  FileText,
+  Upload,
+  Trash2,
+  Eye,
+  CheckCircle2,
+  Store
+} from '@/constants/icons'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 export default function InvoiceSettings() {
@@ -45,7 +60,7 @@ export default function InvoiceSettings() {
   }, [])
 
   const handleSaveSettings = async (e) => {
-    e.preventDefault()
+    if (e) e.preventDefault()
     setSavingSettings(true)
     try {
       const res = await api.post('/admin/finance/settings', invoiceSettings)
@@ -125,681 +140,605 @@ export default function InvoiceSettings() {
     }
   }
 
+  const bankCount = ((invoiceSettings?.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [1]).length
+
   return (
-    <div className="animate-fade-in">
-      <div className="page-header">
-        <div>
-          <h2 className="page-title">Pengaturan Invoice &amp; Template Email</h2>
-          <p className="page-sub">Kelola identitas faktur, instruksi rekening bank, logo, dan templat email tagihan (Sebelum &amp; Sesudah Bayar)</p>
-        </div>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Top Actions Toolbar ── */}
+      <div className="flex items-center justify-end gap-2.5">
+        <button
+          onClick={fetchInvoiceSettings}
+          disabled={loading}
+          className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+          title="Muat ulang pengaturan"
+        >
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <span>Muat Ulang</span>
+        </button>
+          <button
+            onClick={() => handleDownloadDemoPdf(povStatus)}
+            disabled={downloadingDemo || !invoiceSettings}
+            className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+          >
+            <Download size={14} className="text-indigo-600 dark:text-indigo-400" />
+            <span>{downloadingDemo ? 'Mengunduh...' : 'Unduh Demo PDF'}</span>
+          </button>
+          <button
+            onClick={handleSaveSettings}
+            disabled={savingSettings || loading || !invoiceSettings}
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all disabled:opacity-50"
+          >
+            <Save size={15} />
+            <span>{savingSettings ? 'Menyimpan...' : 'Simpan Pengaturan'}</span>
+          </button>
       </div>
 
       {loading || !invoiceSettings ? (
-        <div className="card card-pad" style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-sm">
+          <div className="flex flex-col items-center justify-center gap-3">
             <RefreshCw size={28} className="animate-spin text-indigo-600" />
-            <span style={{ fontSize: 13.5, fontWeight: 500 }}>Memuat pengaturan invoice &amp; template email...</span>
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Memuat pengaturan invoice &amp; template email...
+            </span>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
-          {/* ═══════════════════════════════════════════════════════════════
-              LEFT COLUMN: Form Settings
-             ═══════════════════════════════════════════════════════════════ */}
-          <form onSubmit={handleSaveSettings} className="lg:col-span-7 flex flex-col gap-5">
-            
-            {/* Section 0: Upload Logo */}
-            <div className="card card-pad" style={{ padding: 20 }}>
-              <h4 style={{ margin: '0 0 14px 0', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                🖼️ Logo Faktur / Invoice PDF
-              </h4>
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{
-                  width: 120, height: 70,
-                  borderRadius: 10,
-                  border: '2px dashed var(--border-color)',
-                  background: 'var(--bg-base)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 6,
-                  overflow: 'hidden'
-                }}>
-                  {logoPreview ? (
-                    <img
-                      src={logoPreview}
-                      alt="Logo Invoice"
-                      style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
-                    />
-                  ) : (
-                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 10 }}>
-                      <span style={{ fontSize: 18, display: 'block', marginBottom: 2 }}>🏢</span>
-                      <span>Tanpa Logo</span>
-                    </div>
-                  )}
-                </div>
+        <>
+          {/* ── KPI Metric Cards ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatScoreCard
+              title="PENERBIT FAKTUR"
+              value={invoiceSettings.company_name || 'BIZORA'}
+              icon={Store}
+              statusBadge={{ text: "Penerbit", color: "blue" }}
+              subtitle="Entitas legal faktur resmi"
+              progressBar={{ value: 100, color: "bg-blue-500" }}
+            />
+            <StatScoreCard
+              title="LOGO DOKUMEN"
+              value={logoPreview ? "Terpasang" : "Default"}
+              icon={Image}
+              statusBadge={{ text: logoPreview ? "Kustom" : "Default", color: logoPreview ? "emerald" : "slate" }}
+              subtitle="Kop PDF invoice & kuitansi"
+              progressBar={{ value: logoPreview ? 100 : 40, color: logoPreview ? "bg-emerald-500" : "bg-slate-400" }}
+            />
+            <StatScoreCard
+              title="REKENING PEMBAYARAN"
+              value={`${bankCount} Rekening`}
+              icon={CreditCard}
+              statusBadge={{ text: "Transfer Bank", color: "violet" }}
+              subtitle="Tujuan transfer pembayaran"
+              progressBar={{ value: 85, color: "bg-violet-500" }}
+            />
+            <StatScoreCard
+              title="TEMPLATE NOTIFIKASI"
+              value="2 Status"
+              icon={Mail}
+              statusBadge={{ text: "Unpaid & Paid", color: "amber" }}
+              subtitle="Tagihan & kuitansi lunas"
+              progressBar={{ value: 100, color: "bg-amber-500" }}
+            />
+          </div>
 
-                <div style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                    Format: PNG, JPG, SVG (maks. 5MB). Logo ini otomatis muncul pada sudut kiri atas dokumen <strong>PDF Invoice &amp; Kuitansi</strong>.
-                  </p>
-                  
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleLogoFileChange}
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                  />
-
-                  <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
-                    <button
-                      type="button"
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadingLogo}
-                    >
-                      {uploadingLogo ? 'Mengunggah...' : '📁 Pilih Logo'}
-                    </button>
-                    {logoPreview && (
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--danger-400)' }}
-                        onClick={handleResetLogo}
-                        disabled={resettingLogo}
-                      >
-                        {resettingLogo ? 'Mereset...' : '🗑️ Hapus'}
-                      </button>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* ═══════════════════════════════════════════════════════════════
+                LEFT COLUMN: Form Settings
+               ═══════════════════════════════════════════════════════════════ */}
+            <form onSubmit={handleSaveSettings} className="lg:col-span-7 flex flex-col gap-5">
+              
+              {/* Section 0: Upload Logo */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3">
+                <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                  <Image size={16} className="text-indigo-600 dark:text-indigo-400" />
+                  <span>Logo Faktur / Invoice PDF</span>
+                </h4>
+                <div className="flex gap-4 items-center flex-wrap">
+                  <div className="w-28 h-16 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-1.5 overflow-hidden">
+                    {logoPreview ? (
+                      <img
+                        src={logoPreview}
+                        alt="Logo Invoice"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    ) : (
+                      <div className="text-center text-slate-400 text-[10px]">
+                        <span className="text-base block mb-0.5">🏢</span>
+                        <span>Tanpa Logo</span>
+                      </div>
                     )}
                   </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Section 1: Identitas Perusahaan */}
-            <div className="card card-pad" style={{ padding: 20 }}>
-              <h4 style={{ margin: '0 0 14px 0', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                🏢 Identitas Perusahaan / Penerbit Faktur
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Nama Perusahaan</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={invoiceSettings.company_name || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, company_name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Tagline Perusahaan</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={invoiceSettings.company_tagline || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, company_tagline: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Email Resmi Billing</label>
-                  <input
-                    type="email"
-                    className="form-input"
-                    value={invoiceSettings.company_email || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, company_email: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>No. Telepon / CS</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={invoiceSettings.company_phone || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, company_phone: e.target.value })}
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Alamat Kantor Perusahaan</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={invoiceSettings.company_address || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, company_address: e.target.value })}
-                  />
-                </div>
-              </div>
-            </div>
+                  <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Format: PNG, JPG, SVG (maks. 5MB). Logo ini otomatis muncul pada sudut kiri atas dokumen <strong>PDF Invoice &amp; Kuitansi</strong>.
+                    </p>
+                    
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleLogoFileChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
 
-            {/* Section 2: Rekening Bank (Multi-Bank Support) */}
-            <div className="card card-pad" style={{ padding: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  💳 Rekening Bank Pembayaran ({((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [1]).length} Rekening)
-                </h4>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const current = (invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0)
-                      ? invoiceSettings.bank_accounts
-                      : [{ bank_name: invoiceSettings.bank_name || 'Bank BCA', bank_account_number: invoiceSettings.bank_account_number || '', bank_account_name: invoiceSettings.bank_account_name || '' }];
-                    setInvoiceSettings({
-                      ...invoiceSettings,
-                      bank_accounts: [
-                        ...current,
-                        { bank_name: 'Bank Mandiri', bank_account_number: '', bank_account_name: invoiceSettings.bank_account_name || 'PT BIZORA' }
-                      ]
-                    });
-                  }}
-                  className="btn btn-secondary btn-sm"
-                  style={{ fontSize: 11, padding: '4px 10px', borderRadius: 8 }}
-                >
-                  + Tambah Rekening Lain
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0)
-                  ? invoiceSettings.bank_accounts
-                  : [{ bank_name: invoiceSettings.bank_name || 'Bank BCA', bank_account_number: invoiceSettings.bank_account_number || '', bank_account_name: invoiceSettings.bank_account_name || '' }]
-                ).map((acc, idx) => (
-                  <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, position: 'relative' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#4338ca' }}>
-                        ● Rekening #{idx + 1} {idx === 0 ? '(Utama)' : ''}
-                      </span>
-                      {((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [1]).length > 1 && (
+                    <div className="flex gap-2 mt-1">
+                      <button
+                        type="button"
+                        className="h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-xs font-semibold shadow-xs"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingLogo}
+                      >
+                        {uploadingLogo ? 'Mengunggah...' : '📁 Pilih Logo'}
+                      </button>
+                      {logoPreview && (
                         <button
                           type="button"
-                          onClick={() => {
-                            const list = invoiceSettings.bank_accounts || [];
-                            const filtered = list.filter((_, i) => i !== idx);
-                            setInvoiceSettings({
-                              ...invoiceSettings,
-                              bank_accounts: filtered,
-                              ...(filtered[0] ? { bank_name: filtered[0].bank_name, bank_account_number: filtered[0].bank_account_number, bank_account_name: filtered[0].bank_account_name } : {})
-                            });
-                          }}
-                          style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}
+                          className="h-8 px-3 rounded-lg border border-rose-200 dark:border-rose-800/60 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold shadow-xs"
+                          onClick={handleResetLogo}
+                          disabled={resettingLogo}
                         >
-                          Hapus
+                          {resettingLogo ? 'Mereset...' : '🗑️ Hapus'}
                         </button>
                       )}
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label style={{ fontSize: 10.5, fontWeight: 600, display: 'block', marginBottom: 3, color: '#475569' }}>Nama Bank</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="BCA / Mandiri / BRI / BNI / BSI"
-                          value={acc.bank_name || ''}
-                          onChange={e => {
-                            const list = [...((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [{ bank_name: invoiceSettings.bank_name, bank_account_number: invoiceSettings.bank_account_number, bank_account_name: invoiceSettings.bank_account_name }])];
-                            list[idx] = { ...list[idx], bank_name: e.target.value };
-                            setInvoiceSettings({
-                              ...invoiceSettings,
-                              bank_accounts: list,
-                              ...(idx === 0 ? { bank_name: e.target.value } : {})
-                            });
-                          }}
-                          required
-                        />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 1: Identitas Perusahaan */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3.5">
+                <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                  <Store size={16} className="text-indigo-600 dark:text-indigo-400" />
+                  <span>Identitas Perusahaan / Penerbit Faktur</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Perusahaan</label>
+                    <input
+                      type="text"
+                      className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
+                      value={invoiceSettings.company_name || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, company_name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tagline Perusahaan</label>
+                    <input
+                      type="text"
+                      className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
+                      value={invoiceSettings.company_tagline || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, company_tagline: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email Resmi Billing</label>
+                    <input
+                      type="email"
+                      className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
+                      value={invoiceSettings.company_email || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, company_email: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">No. Telepon / CS</label>
+                    <input
+                      type="text"
+                      className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
+                      value={invoiceSettings.company_phone || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, company_phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Alamat Kantor Perusahaan</label>
+                    <input
+                      type="text"
+                      className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
+                      value={invoiceSettings.company_address || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, company_address: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Rekening Bank */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3.5">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                    <CreditCard size={16} className="text-indigo-600 dark:text-indigo-400" />
+                    <span>Rekening Bank Pembayaran ({bankCount} Rekening)</span>
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = (invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0)
+                        ? invoiceSettings.bank_accounts
+                        : [{ bank_name: invoiceSettings.bank_name || 'Bank BCA', bank_account_number: invoiceSettings.bank_account_number || '', bank_account_name: invoiceSettings.bank_account_name || '' }];
+                      setInvoiceSettings({
+                        ...invoiceSettings,
+                        bank_accounts: [
+                          ...current,
+                          { bank_name: 'Bank Mandiri', bank_account_number: '', bank_account_name: invoiceSettings.bank_account_name || 'PT BIZORA' }
+                        ]
+                      });
+                    }}
+                    className="h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 text-xs font-semibold shadow-xs"
+                  >
+                    + Tambah Rekening
+                  </button>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  {((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0)
+                    ? invoiceSettings.bank_accounts
+                    : [{ bank_name: invoiceSettings.bank_name || 'Bank BCA', bank_account_number: invoiceSettings.bank_account_number || '', bank_account_name: invoiceSettings.bank_account_name || '' }]
+                  ).map((acc, idx) => (
+                    <div key={idx} className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 space-y-2.5">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                          ● Rekening #{idx + 1} {idx === 0 ? '(Utama)' : ''}
+                        </span>
+                        {bankCount > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const list = invoiceSettings.bank_accounts || [];
+                              const filtered = list.filter((_, i) => i !== idx);
+                              setInvoiceSettings({
+                                ...invoiceSettings,
+                                bank_accounts: filtered,
+                                ...(filtered[0] ? { bank_name: filtered[0].bank_name, bank_account_number: filtered[0].bank_account_number, bank_account_name: filtered[0].bank_account_name } : {})
+                              });
+                            }}
+                            className="text-xs font-semibold text-rose-500 hover:text-rose-600"
+                          >
+                            Hapus
+                          </button>
+                        )}
                       </div>
-                      <div>
-                        <label style={{ fontSize: 10.5, fontWeight: 600, display: 'block', marginBottom: 3, color: '#475569' }}>Nomor Rekening</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="Nomor Rekening"
-                          value={acc.bank_account_number || acc.bank_account_no || ''}
-                          onChange={e => {
-                            const list = [...((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [{ bank_name: invoiceSettings.bank_name, bank_account_number: invoiceSettings.bank_account_number, bank_account_name: invoiceSettings.bank_account_name }])];
-                            list[idx] = { ...list[idx], bank_account_number: e.target.value, bank_account_no: e.target.value };
-                            setInvoiceSettings({
-                              ...invoiceSettings,
-                              bank_accounts: list,
-                              ...(idx === 0 ? { bank_account_number: e.target.value } : {})
-                            });
-                          }}
-                          required
-                        />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <label style={{ fontSize: 10.5, fontWeight: 600, display: 'block', marginBottom: 3, color: '#475569' }}>Atas Nama (A.N.)</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          placeholder="Nama Pemilik Rekening"
-                          value={acc.bank_account_name || ''}
-                          onChange={e => {
-                            const list = [...((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [{ bank_name: invoiceSettings.bank_name, bank_account_number: invoiceSettings.bank_account_number, bank_account_name: invoiceSettings.bank_account_name }])];
-                            list[idx] = { ...list[idx], bank_account_name: e.target.value };
-                            setInvoiceSettings({
-                              ...invoiceSettings,
-                              bank_accounts: list,
-                              ...(idx === 0 ? { bank_account_name: e.target.value } : {})
-                            });
-                          }}
-                          required
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Nama Bank</label>
+                          <input
+                            type="text"
+                            className="w-full h-9 px-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100"
+                            placeholder="BCA / Mandiri / BRI / BNI / BSI"
+                            value={acc.bank_name || ''}
+                            onChange={e => {
+                              const list = [...((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [{ bank_name: invoiceSettings.bank_name, bank_account_number: invoiceSettings.bank_account_number, bank_account_name: invoiceSettings.bank_account_name }])];
+                              list[idx] = { ...list[idx], bank_name: e.target.value };
+                              setInvoiceSettings({
+                                ...invoiceSettings,
+                                bank_accounts: list,
+                                ...(idx === 0 ? { bank_name: e.target.value } : {})
+                              });
+                            }}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Nomor Rekening</label>
+                          <input
+                            type="text"
+                            className="w-full h-9 px-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100"
+                            placeholder="Nomor Rekening"
+                            value={acc.bank_account_number || acc.bank_account_no || ''}
+                            onChange={e => {
+                              const list = [...((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [{ bank_name: invoiceSettings.bank_name, bank_account_number: invoiceSettings.bank_account_number, bank_account_name: invoiceSettings.bank_account_name }])];
+                              list[idx] = { ...list[idx], bank_account_number: e.target.value, bank_account_no: e.target.value };
+                              setInvoiceSettings({
+                                ...invoiceSettings,
+                                bank_accounts: list,
+                                ...(idx === 0 ? { bank_account_number: e.target.value } : {})
+                              });
+                            }}
+                            required
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Atas Nama (A.N.)</label>
+                          <input
+                            type="text"
+                            className="w-full h-9 px-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100"
+                            placeholder="Nama Pemilik Rekening"
+                            value={acc.bank_account_name || ''}
+                            onChange={e => {
+                              const list = [...((invoiceSettings.bank_accounts && invoiceSettings.bank_accounts.length > 0) ? invoiceSettings.bank_accounts : [{ bank_name: invoiceSettings.bank_name, bank_account_number: invoiceSettings.bank_account_number, bank_account_name: invoiceSettings.bank_account_name }])];
+                              list[idx] = { ...list[idx], bank_account_name: e.target.value };
+                              setInvoiceSettings({
+                                ...invoiceSettings,
+                                bank_accounts: list,
+                                ...(idx === 0 ? { bank_account_name: e.target.value } : {})
+                              });
+                            }}
+                            required
+                          />
+                        </div>
                       </div>
                     </div>
+                  ))}
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Catatan Instruksi Pembayaran</label>
+                    <input
+                      type="text"
+                      className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      value={invoiceSettings.payment_notes || ''}
+                      onChange={e => setInvoiceSettings({ ...invoiceSettings, payment_notes: e.target.value })}
+                      placeholder="Contoh: Sertakan ID Tenant saat transfer."
+                    />
                   </div>
-                ))}
+                </div>
+              </div>
+
+              {/* Section 3: Template Email */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3.5">
+                <div className="flex justify-between items-center flex-wrap gap-2">
+                  <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                    <Mail size={16} className="text-indigo-600 dark:text-indigo-400" />
+                    <span>Templat Email Notifikasi Otomatis</span>
+                  </h4>
+                  <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => { setEmailTemplateTab('unpaid'); setPovStatus('unpaid') }}
+                      className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                        emailTemplateTab === 'unpaid'
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : 'text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      1. Tagihan Baru
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setEmailTemplateTab('paid'); setPovStatus('paid') }}
+                      className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                        emailTemplateTab === 'paid'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      2. Kuitansi Lunas
+                    </button>
+                  </div>
+                </div>
+
+                {emailTemplateTab === 'unpaid' ? (
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300">
+                      📢 <strong>Email Tagihan:</strong> Dikirim saat invoice baru diterbitkan atau saat tenant perlu melakukan perpanjangan paket langganan.
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Subjek Email Tagihan</label>
+                      <input
+                        type="text"
+                        className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100"
+                        value={invoiceSettings.email_subject_unpaid || ''}
+                        onChange={e => setInvoiceSettings({ ...invoiceSettings, email_subject_unpaid: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Isi Pesan Email Tagihan</label>
+                      <textarea
+                        className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 font-mono resize-y"
+                        rows={5}
+                        value={invoiceSettings.email_body_unpaid_template || ''}
+                        onChange={e => setInvoiceSettings({ ...invoiceSettings, email_body_unpaid_template: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-800 dark:text-emerald-300">
+                      ✅ <strong>Email Kuitansi Lunas:</strong> Dikirim setelah pembayaran diverifikasi oleh admin sebagai bukti pembayaran resmi &amp; aktivasi paket.
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Subjek Email Kuitansi Lunas</label>
+                      <input
+                        type="text"
+                        className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100"
+                        value={invoiceSettings.email_subject_paid || ''}
+                        onChange={e => setInvoiceSettings({ ...invoiceSettings, email_subject_paid: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Isi Pesan Email Kuitansi Lunas</label>
+                      <textarea
+                        className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 font-mono resize-y"
+                        rows={5}
+                        value={invoiceSettings.email_body_paid_template || ''}
+                        onChange={e => setInvoiceSettings({ ...invoiceSettings, email_body_paid_template: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-[11px] text-slate-400">
+                  Variabel dinamis: <code>{'{tenant_id}'}</code>, <code>{'{tenant_name}'}</code>, <code>{'{plan}'}</code>, <code>{'{amount}'}</code>, <code>{'{status}'}</code>
+                </p>
 
                 <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Catatan Instruksi Pembayaran</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Catatan Footer / Syarat Faktur</label>
                   <input
                     type="text"
-                    className="form-input"
-                    value={invoiceSettings.payment_notes || ''}
-                    onChange={e => setInvoiceSettings({ ...invoiceSettings, payment_notes: e.target.value })}
-                    placeholder="Contoh: Sertakan ID Tenant saat transfer."
+                    className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100"
+                    value={invoiceSettings.invoice_terms || ''}
+                    onChange={e => setInvoiceSettings({ ...invoiceSettings, invoice_terms: e.target.value })}
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Section 3: Template Email (Sebelum & Sesudah Bayar) */}
-            <div className="card card-pad" style={{ padding: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
-                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  ✉️ Templat Email Otomatis
-                </h4>
-                {/* Tab Switcher for Email Templates */}
-                <div style={{ display: 'flex', background: 'var(--bg-base)', border: '1px solid var(--border-color)', borderRadius: 8, padding: 2 }}>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="submit"
+                  className="h-[38px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all disabled:opacity-50"
+                  disabled={savingSettings}
+                >
+                  {savingSettings ? 'Menyimpan...' : '💾 Simpan Pengaturan Invoice'}
+                </button>
+              </div>
+            </form>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                RIGHT COLUMN: Realtime Live PDF POV Preview (Unpaid vs Paid)
+               ═══════════════════════════════════════════════════════════════ */}
+            <div className="lg:col-span-5 lg:sticky lg:top-6 space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Eye size={15} /> POV Realtime Dokumen
+                </div>
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={() => { setEmailTemplateTab('unpaid'); setPovStatus('unpaid') }}
-                    style={{
-                      padding: '4px 10px',
-                      fontSize: 11,
-                      fontWeight: 600,
-                      borderRadius: 6,
-                      border: 'none',
-                      cursor: 'pointer',
-                      background: emailTemplateTab === 'unpaid' ? 'var(--primary-500)' : 'transparent',
-                      color: emailTemplateTab === 'unpaid' ? '#fff' : 'var(--text-muted)'
-                    }}
+                    onClick={() => setPovStatus('unpaid')}
+                    className={`h-7 px-2.5 rounded-lg text-[11px] font-bold border transition-all ${
+                      povStatus === 'unpaid'
+                        ? 'border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:border-amber-700 dark:text-amber-300'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-500'
+                    }`}
                   >
-                    1. Sebelum Bayar (Tagihan)
+                    Tagihan
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setEmailTemplateTab('paid'); setPovStatus('paid') }}
-                    style={{
-                      padding: '4px 10px',
-                      fontSize: 11,
-                      fontWeight: 600,
-                      borderRadius: 6,
-                      border: 'none',
-                      cursor: 'pointer',
-                      background: emailTemplateTab === 'paid' ? '#10b981' : 'transparent',
-                      color: emailTemplateTab === 'paid' ? '#fff' : 'var(--text-muted)'
-                    }}
+                    onClick={() => setPovStatus('paid')}
+                    className={`h-7 px-2.5 rounded-lg text-[11px] font-bold border transition-all ${
+                      povStatus === 'paid'
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-700 dark:text-emerald-300'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-500'
+                    }`}
                   >
-                    2. Sesudah Bayar (Kuitansi Lunas)
+                    Kuitansi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadDemoPdf(povStatus)}
+                    disabled={downloadingDemo}
+                    className="h-7 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                  >
+                    {downloadingDemo ? '...' : '📥 PDF'}
                   </button>
                 </div>
               </div>
 
-              {/* Sub-template: Sebelum Bayar */}
-              {emailTemplateTab === 'unpaid' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#d97706' }}>
-                    📢 <strong>Email Tagihan:</strong> Dikirim saat invoice baru diterbitkan atau saat tenant perlu melakukan perpanjangan paket langganan.
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Subjek Email Tagihan</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={invoiceSettings.email_subject_unpaid || ''}
-                      onChange={e => setInvoiceSettings({ ...invoiceSettings, email_subject_unpaid: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Isi Pesan Email Tagihan</label>
-                    <textarea
-                      className="form-input"
-                      rows={5}
-                      value={invoiceSettings.email_body_unpaid_template || ''}
-                      onChange={e => setInvoiceSettings({ ...invoiceSettings, email_body_unpaid_template: e.target.value })}
-                      style={{ fontFamily: 'monospace', fontSize: 11 }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                /* Sub-template: Sesudah Bayar */
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#059669' }}>
-                    ✅ <strong>Email Kuitansi Lunas:</strong> Dikirim setelah pembayaran diverifikasi oleh admin sebagai bukti pembayaran resmi &amp; aktivasi paket.
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Subjek Email Kuitansi Lunas</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={invoiceSettings.email_subject_paid || ''}
-                      onChange={e => setInvoiceSettings({ ...invoiceSettings, email_subject_paid: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Isi Pesan Email Kuitansi Lunas</label>
-                    <textarea
-                      className="form-input"
-                      rows={5}
-                      value={invoiceSettings.email_body_paid_template || ''}
-                      onChange={e => setInvoiceSettings({ ...invoiceSettings, email_body_paid_template: e.target.value })}
-                      style={{ fontFamily: 'monospace', fontSize: 11 }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <small style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
-                Variabel dinamis: <code>{'{tenant_id}'}</code>, <code>{'{tenant_name}'}</code>, <code>{'{plan}'}</code>, <code>{'{amount}'}</code>, <code>{'{status}'}</code>
-              </small>
-
-              <div style={{ marginTop: 10 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Catatan Footer / Syarat Faktur</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={invoiceSettings.invoice_terms || ''}
-                  onChange={e => setInvoiceSettings({ ...invoiceSettings, invoice_terms: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-              <button type="submit" className="btn btn-primary" disabled={savingSettings}>
-                {savingSettings ? 'Menyimpan...' : '💾 Simpan Pengaturan Invoice'}
-              </button>
-            </div>
-          </form>
-
-          {/* ═══════════════════════════════════════════════════════════════
-              RIGHT COLUMN: Realtime Live PDF POV Preview (Unpaid vs Paid)
-             ═══════════════════════════════════════════════════════════════ */}
-          <div className="lg:col-span-5 lg:sticky lg:top-6">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
-              <div>
-                <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>👁️</span> POV Realtime Dokumen
-                </h3>
-              </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                {/* Status Toggle */}
-                <button
-                  type="button"
-                  onClick={() => setPovStatus('unpaid')}
-                  style={{
-                    padding: '3px 8px',
-                    fontSize: 10,
-                    fontWeight: 700,
-                    borderRadius: 6,
-                    border: '1px solid',
-                    cursor: 'pointer',
-                    borderColor: povStatus === 'unpaid' ? '#f59e0b' : 'var(--border-color)',
-                    background: povStatus === 'unpaid' ? '#fef3c7' : 'transparent',
-                    color: povStatus === 'unpaid' ? '#b45309' : 'var(--text-muted)'
-                  }}
-                >
-                  Belum Bayar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPovStatus('paid')}
-                  style={{
-                    padding: '3px 8px',
-                    fontSize: 10,
-                    fontWeight: 700,
-                    borderRadius: 6,
-                    border: '1px solid',
-                    cursor: 'pointer',
-                    borderColor: povStatus === 'paid' ? '#10b981' : 'var(--border-color)',
-                    background: povStatus === 'paid' ? '#d1fae5' : 'transparent',
-                    color: povStatus === 'paid' ? '#065f46' : 'var(--text-muted)'
-                  }}
-                >
-                  Lunas (Paid)
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => handleDownloadDemoPdf(povStatus)}
-                  disabled={downloadingDemo}
-                  style={{ fontSize: 10, padding: '3px 8px' }}
-                  title="Download file PDF hasil render dari server"
-                >
-                  {downloadingDemo ? '...' : '📥 PDF'}
-                </button>
-              </div>
-            </div>
-
-            {/* A4 Paper Mockup Container */}
-            <div style={{
-              background: '#ffffff',
-              color: '#1e293b',
-              borderRadius: 12,
-              padding: '24px 22px',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.08)',
-              border: '1px solid #e2e8f0',
-              fontSize: 11,
-              lineHeight: 1.4,
-              fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif'
-            }}>
-              
-              {/* Header: Logo + Company Info & Title */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                borderBottom: povStatus === 'paid' ? '2px solid #10b981' : '2px solid #6366f1',
-                paddingBottom: 12,
-                marginBottom: 14
-              }}>
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  {logoPreview ? (
-                    <img
-                      src={logoPreview}
-                      alt="Logo"
-                      style={{ maxHeight: 66, maxWidth: 66, objectFit: 'contain', display: 'block' }}
-                    />
-                  ) : null}
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: povStatus === 'paid' ? '#059669' : '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.3px', lineHeight: 1.1 }}>
-                      {invoiceSettings.company_name || 'BIZORA SaaS'}
-                    </h4>
-                    <p style={{ margin: '2px 0 0 0', fontSize: 9.5, fontWeight: 600, color: '#475569' }}>
-                      {invoiceSettings.company_tagline || 'Sistem Manajemen Usaha & Kasir'}
-                    </p>
-                    <p style={{ margin: '3px 0 0 0', fontSize: 9, color: '#64748b', lineHeight: 1.35 }}>
-                      {invoiceSettings.company_address || 'Jl. Jendral Sudirman No. 123, Jakarta'}<br />
-                      Email: {invoiceSettings.company_email || 'billing@bizora.id'} | Telp: {invoiceSettings.company_phone || '0812-3456-7890'}
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{
-                    fontSize: 15,
-                    fontWeight: 900,
-                    color: povStatus === 'paid' ? '#15803d' : '#0f172a',
-                    letterSpacing: '0.5px'
-                  }}>
-                    {povStatus === 'paid' ? 'KUITANSI LUNAS' : 'INVOICE / TAGIHAN'}
-                  </div>
-                  <div style={{ fontSize: 10, color: '#475569', margin: '2px 0 0' }}>No: <strong>INV-2026-001</strong></div>
-                </div>
-              </div>
-
-
-              {/* Billed To / Info Section */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 10, marginBottom: 14 }}>
-                <div>
-                  <div style={{ fontSize: 8.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Ditagihkan Kepada:</div>
-                  <div style={{ fontWeight: 700, fontSize: 11, color: '#0f172a', marginTop: 2 }}>Toko Berkah Sejahtera</div>
-                  <div style={{ fontSize: 9, color: '#475569' }}>ID Tenant: TN-001 · Toko Retail</div>
-                  <div style={{ fontSize: 9, color: '#475569' }}>ahmad@retail.com</div>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 8.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Rincian Tanggal:</div>
-                  <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>Tanggal Terbit: <strong>23 Agu 2026</strong></div>
-                  {povStatus === 'paid' ? (
-                    <div style={{ fontSize: 9, color: '#15803d', marginTop: 2 }}>Status: <strong>Lunas Terverifikasi</strong></div>
-                  ) : (
-                    <div style={{ fontSize: 9, color: '#dc2626', marginTop: 2 }}>Jatuh Tempo: <strong>30 Agu 2026</strong></div>
-                  )}
-                  <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>Metode: <strong>Transfer Bank</strong></div>
-                </div>
-              </div>
-
-              {/* Itemized Table */}
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 12 }}>
-                <thead>
-                  <tr style={{ background: povStatus === 'paid' ? '#059669' : '#4f46e5', color: '#ffffff' }}>
-                    <th style={{ padding: '6px 8px', textAlign: 'left', fontSize: 9.5, borderRadius: '4px 0 0 0' }}>Deskripsi Layanan</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: 9.5 }}>Paket</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', fontSize: 9.5 }}>Tarif</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', fontSize: 9.5, borderRadius: '0 4px 0 0' }}>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '8px 8px' }}>
-                      <strong style={{ color: '#0f172a' }}>Langganan BIZORA SaaS (Pro)</strong>
-                      <div style={{ fontSize: 8.5, color: '#64748b' }}>Akses penuh POS Kasir, Multi-Outlet, Laporan Keuangan</div>
-                    </td>
-                    <td style={{ padding: '8px 8px', textAlign: 'center' }}>Pro</td>
-                    <td style={{ padding: '8px 8px', textAlign: 'right' }}>Rp 299.000</td>
-                    <td style={{ padding: '8px 8px', textAlign: 'right', fontWeight: 700 }}>Rp 299.000</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {/* Stamp (Left/Next to Total) + Total Calculation (Right) */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 14, marginBottom: 14 }}>
-                {/* Official Stamp (Transparent & Close to Total) */}
-                <div>
-                  {povStatus === 'paid' ? (
-                    <div style={{
-                      display: 'inline-block',
-                      padding: '3px 10px',
-                      border: '2.5px double #16a34a',
-                      borderRadius: 6,
-                      color: '#15803d',
-                      fontSize: 11.5,
-                      fontWeight: 900,
-                      textTransform: 'uppercase',
-                      letterSpacing: '1.5px',
-                      textAlign: 'center',
-                      background: 'transparent',
-                      transform: 'rotate(-6deg)',
-                      opacity: 0.92,
-                      userSelect: 'none'
-                    }}>
-                      <div style={{ fontSize: 6.5, letterSpacing: '0.8px', fontWeight: 700, color: '#166534' }}>• RESMI &amp; TERVERIFIKASI •</div>
-                      <div style={{ padding: '1px 0', letterSpacing: '2px' }}>L U N A S</div>
-                      <div style={{ fontSize: 6.5, letterSpacing: '0.8px', fontWeight: 700, color: '#166534' }}>OFFICIAL RECEIPT</div>
-                    </div>
-                  ) : (
-                    <div style={{
-                      display: 'inline-block',
-                      padding: '3px 8px',
-                      border: '2px dashed #d97706',
-                      borderRadius: 6,
-                      color: '#b45309',
-                      fontSize: 9.5,
-                      fontWeight: 800,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.8px',
-                      textAlign: 'center',
-                      background: 'transparent',
-                      transform: 'rotate(-4deg)',
-                      opacity: 0.92,
-                      userSelect: 'none'
-                    }}>
-                      <div style={{ fontSize: 6, letterSpacing: '0.5px' }}>MENUNGGU PEMBAYARAN</div>
-                      <div style={{ padding: '1px 0' }}>BELUM BAYAR</div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right: Total Summary Card */}
-                <div style={{ width: 180, background: '#f8fafc', borderRadius: 6, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', fontSize: 9.5, color: '#64748b' }}>
-                    <span>Subtotal</span>
-                    <span>Rp 299.000</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', fontSize: 9.5, color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>
-                    <span>PPN (0%)</span>
-                    <span>Rp 0</span>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    padding: '6px 8px',
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: povStatus === 'paid' ? '#15803d' : '#4f46e5',
-                    background: povStatus === 'paid' ? '#dcfce7' : '#e0e7ff'
-                  }}>
-                    <span>{povStatus === 'paid' ? 'Total Dibayar' : 'Total Tagihan'}</span>
-                    <span>Rp 299.000</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bank Payment Instructions / Receipt Box */}
-              {povStatus === 'paid' ? (
-                <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: '#15803d', textTransform: 'uppercase', marginBottom: 4 }}>
-                    ✅ STATUS: TELAH DIBAYAR LUNAS (OFFICIAL RECEIPT)
-                  </div>
-                  <div style={{ fontSize: 10, color: '#166534' }}>
-                    Diterima pada Rekening: <strong>{invoiceSettings.bank_name || 'Bank Mandiri'} ({invoiceSettings.bank_account_number || '123-00-9988776-5'})</strong>
-                  </div>
-                  <div style={{ fontSize: 9, color: '#15803d', fontWeight: 600, marginTop: 2 }}>
-                    Pembayaran telah diverifikasi. Paket aktif dan dapat digunakan.
-                  </div>
-                </div>
-              ) : (
-                <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: '#334155', textTransform: 'uppercase', marginBottom: 4 }}>
-                    💳 Instruksi Transfer Rekening Bank:
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* A4 Paper Mockup Container */}
+              <div className="bg-white text-slate-900 rounded-2xl p-5 shadow-xl border border-slate-200 text-xs font-sans">
+                {/* Header: Logo + Company Info & Title */}
+                <div className={`flex justify-between pb-3 mb-3 border-b-2 ${povStatus === 'paid' ? 'border-emerald-500' : 'border-indigo-600'}`}>
+                  <div className="flex gap-2.5 items-center">
+                    {logoPreview ? (
+                      <img
+                        src={logoPreview}
+                        alt="Logo"
+                        className="max-h-12 max-w-12 object-contain"
+                      />
+                    ) : null}
                     <div>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: '#0f172a' }}>
-                        {invoiceSettings.bank_name || 'Bank Mandiri'} · {invoiceSettings.bank_account_number || '123-00-9988776-5'}
-                      </div>
-                      <div style={{ fontSize: 9, color: '#64748b' }}>
-                        a.n. <strong>{invoiceSettings.bank_account_name || 'PT BIZORA TEKNOLOGI INDONESIA'}</strong>
-                      </div>
+                      <h4 className={`text-sm font-extrabold uppercase tracking-wide leading-none ${povStatus === 'paid' ? 'text-emerald-700' : 'text-indigo-600'}`}>
+                        {invoiceSettings.company_name || 'BIZORA SaaS'}
+                      </h4>
+                      <p className="text-[10px] font-semibold text-slate-600 mt-0.5">
+                        {invoiceSettings.company_tagline || 'Sistem Manajemen Usaha & Kasir'}
+                      </p>
+                      <p className="text-[9px] text-slate-500 leading-tight mt-0.5">
+                        {invoiceSettings.company_address || 'Jl. Jendral Sudirman No. 123, Jakarta'}<br />
+                        {invoiceSettings.company_email || 'billing@bizora.id'} | {invoiceSettings.company_phone || '0812-3456-7890'}
+                      </p>
                     </div>
                   </div>
-                  {invoiceSettings.payment_notes && (
-                    <p style={{ margin: '6px 0 0 0', fontSize: 8.5, color: '#64748b', fontStyle: 'italic' }}>
-                      * {invoiceSettings.payment_notes}
-                    </p>
-                  )}
+
+                  <div className="text-right">
+                    <div className={`text-xs font-black tracking-wide ${povStatus === 'paid' ? 'text-emerald-700' : 'text-slate-900'}`}>
+                      {povStatus === 'paid' ? 'KUITANSI LUNAS' : 'INVOICE / TAGIHAN'}
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">No: <strong>INV-2026-001</strong></div>
+                  </div>
                 </div>
-              )}
 
-              {/* Footer Note / Terms */}
-              <div style={{ textAlign: 'center', fontSize: 8.5, color: '#64748b', borderTop: '1px solid #e2e8f0', paddingTop: 8 }}>
-                {invoiceSettings.invoice_terms || 'Terima kasih atas kepercayaan Anda menggunakan BIZORA SaaS. Faktur ini sah secara elektronik.'}
+                {/* Billed To */}
+                <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2.5 mb-3 text-[10px]">
+                  <div>
+                    <div className="font-bold text-slate-400 uppercase text-[8px]">Ditagihkan Kepada:</div>
+                    <div className="font-bold text-slate-900 text-xs mt-0.5">Toko Berkah Sejahtera</div>
+                    <div className="text-slate-600">ID: TN-001 · Toko Retail</div>
+                    <div className="text-slate-500">ahmad@retail.com</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-slate-400 uppercase text-[8px]">Rincian Transaksi:</div>
+                    <div className="text-slate-600 mt-0.5">Tgl: 24 Sep 2026</div>
+                    <div className="text-slate-600">Tempo: 01 Okt 2026</div>
+                    <div className={`font-bold mt-0.5 ${povStatus === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {povStatus === 'paid' ? 'STATUS: LUNAS' : 'STATUS: MENUNGGU PEMBAYARAN'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Line Items Table */}
+                <table className="w-full text-[10px] mb-3 border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500 text-left">
+                      <th className="py-1">Deskripsi Layanan</th>
+                      <th className="py-1 text-center">Durasi</th>
+                      <th className="py-1 text-right">Harga</th>
+                      <th className="py-1 text-right">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-slate-100">
+                      <td className="py-1.5 font-medium">Langganan Paket Pro (Toko Retail)</td>
+                      <td className="py-1.5 text-center">1 Bulan</td>
+                      <td className="py-1.5 text-right">Rp 299.000</td>
+                      <td className="py-1.5 text-right font-semibold">Rp 299.000</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Total */}
+                <div className="flex justify-end mb-3">
+                  <div className={`flex justify-between gap-6 px-3 py-1.5 rounded-lg text-xs font-bold ${povStatus === 'paid' ? 'bg-emerald-50 text-emerald-800' : 'bg-indigo-50 text-indigo-900'}`}>
+                    <span>{povStatus === 'paid' ? 'Total Dibayar:' : 'Total Tagihan:'}</span>
+                    <span>Rp 299.000</span>
+                  </div>
+                </div>
+
+                {/* Payment Instructions / Receipt */}
+                {povStatus === 'paid' ? (
+                  <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[10px] space-y-0.5 mb-2.5">
+                    <div className="font-bold text-emerald-800 uppercase text-[9px]">
+                      ✅ STATUS: TELAH DIBAYAR LUNAS (OFFICIAL RECEIPT)
+                    </div>
+                    <div className="text-emerald-700">
+                      Diterima via: <strong>{invoiceSettings.bank_name || 'Bank Mandiri'} ({invoiceSettings.bank_account_number || '123-00-9988776-5'})</strong>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-dashed border-slate-300 text-[10px] space-y-0.5 mb-2.5">
+                    <div className="font-bold text-slate-700 uppercase text-[9px]">
+                      💳 Instruksi Transfer Bank:
+                    </div>
+                    <div className="font-bold text-slate-900">
+                      {invoiceSettings.bank_name || 'Bank Mandiri'} · {invoiceSettings.bank_account_number || '123-00-9988776-5'}
+                    </div>
+                    <div className="text-slate-500">
+                      a.n. <strong>{invoiceSettings.bank_account_name || 'PT BIZORA TEKNOLOGI INDONESIA'}</strong>
+                    </div>
+                    {invoiceSettings.payment_notes && (
+                      <div className="text-slate-500 italic mt-1 text-[9px]">
+                        * {invoiceSettings.payment_notes}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="text-center text-[9px] text-slate-400 border-t border-slate-100 pt-2">
+                  {invoiceSettings.invoice_terms || 'Terima kasih atas kepercayaan Anda menggunakan BIZORA SaaS. Faktur ini sah secara elektronik.'}
+                </div>
               </div>
-
             </div>
           </div>
-
-        </div>
+        </>
       )}
     </div>
   )

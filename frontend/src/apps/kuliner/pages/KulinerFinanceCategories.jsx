@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Tag, X } from '@/constants/icons';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import './KulinerDashboard.css';
@@ -94,10 +95,6 @@ export default function KulinerFinanceCategories() {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Master Kategori Keuangan</h1>
-      </div>
-
       <div className="kd-content">
         <div className="kd-page-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 12 }}>
           <div className="kd-tabs" style={{ display: 'flex', gap: 8 }}>
@@ -127,7 +124,7 @@ export default function KulinerFinanceCategories() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: '#94A3B8' }}>Memuat data kategori...</td></tr>
+                  <KulinerTableSkeleton cols={4} rows={5} />
                 ) : filtered.length === 0 ? (
                   <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: '#94A3B8' }}>Belum ada kategori keuangan.</td></tr>
                 ) : (

@@ -21,6 +21,9 @@ import { Plus,
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import { 
   RetailPrintHeader, 
   RetailPrintSectionHeader, 
@@ -33,6 +36,8 @@ import {
 
 export default function Payables() {
   const { user } = useAuth();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [payables, setPayables] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [summary, setSummary] = useState({});
@@ -117,20 +122,27 @@ export default function Payables() {
         due_date: fd.get('due_date') || null,
         note: fd.get('note'),
       });
+      toast.success('Catatan hutang berhasil disimpan');
       setShowModal(false); 
       fetchData();
     } catch (e) { 
-      alert(e.response?.data?.message || 'Gagal menyimpan'); 
+      toast.error(e.response?.data?.message || 'Gagal menyimpan catatan hutang'); 
     }
   };
 
   const handleDelete = async (payable) => {
-    if (!confirm(`Hapus catatan hutang ke "${payable.supplier?.name || 'supplier ini'}"?`)) return;
+    const ok = await confirm(`Hapus catatan hutang ke "${payable.supplier?.name || 'supplier ini'}"?`, {
+      title: 'Hapus Hutang',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/retail/payables/${payable.id}`);
+      toast.success('Catatan hutang berhasil dihapus');
       fetchData();
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menghapus catatan hutang');
+      toast.error(e.response?.data?.message || 'Gagal menghapus catatan hutang');
     }
   };
 
@@ -138,11 +150,12 @@ export default function Payables() {
     e.preventDefault();
     try {
       await api.post(`/retail/payables/${payModal.id}/payments`, { amount_paid: payAmount, payment_method: 'CASH' });
+      toast.success('Pembayaran hutang berhasil dicatat');
       setPayModal(null); 
       setPayAmount(0); 
       fetchData();
     } catch (e) { 
-      alert(e.response?.data?.message || 'Gagal mencatat pembayaran'); 
+      toast.error(e.response?.data?.message || 'Gagal mencatat pembayaran'); 
     }
   };
 
@@ -416,41 +429,36 @@ export default function Payables() {
         {/* ========================================================= */}
         <div className="no-print">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {/* Total Hutang Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                <TrendingDown size={22} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Hutang</span>
-                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{formatRp(summary.total_debt)}</p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total hutang ke supplier</p>
-              </div>
-            </div>
-
-            {/* Sudah Dibayar Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <CheckCircle2 size={22} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Sudah Dibayar</span>
-                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight">{formatRp(summary.total_paid)}</p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total pembayaran telah dilunasi</p>
-              </div>
-            </div>
-
-            {/* Sisa Hutang Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                <AlertCircle size={22} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Sisa Hutang</span>
-                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-amber-600 tracking-tight leading-tight">{formatRp(summary.total_outstanding)}</p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Hutang yang belum dilunasi</p>
-              </div>
-            </div>
+            <StatScoreCard
+              title="Total Hutang"
+              value={formatRp(summary.total_debt || 0)}
+              subtitle="Total hutang tercatat ke supplier"
+              icon={TrendingDown}
+              badgeText="Kewajiban"
+              badgeVariant="rose"
+              progress={100}
+              progressVariant="rose"
+            />
+            <StatScoreCard
+              title="Sudah Dibayar"
+              value={formatRp(summary.total_paid || 0)}
+              subtitle="Total pembayaran telah dilunasi"
+              icon={CheckCircle2}
+              badgeText="Terbayar"
+              badgeVariant="emerald"
+              progress={summary.total_debt > 0 ? Math.min(100, Math.round(((summary.total_paid || 0) / summary.total_debt) * 100)) : 0}
+              progressVariant="emerald"
+            />
+            <StatScoreCard
+              title="Sisa Hutang"
+              value={formatRp(summary.total_outstanding || 0)}
+              subtitle="Sisa hutang berjalan yang belum lunas"
+              icon={AlertCircle}
+              badgeText={summary.total_outstanding > 0 ? "Pending" : "Lunas"}
+              badgeVariant={summary.total_outstanding > 0 ? "amber" : "emerald"}
+              progress={summary.total_debt > 0 ? Math.min(100, Math.round(((summary.total_outstanding || 0) / summary.total_debt) * 100)) : 0}
+              progressVariant="amber"
+            />
           </div>
 
           <div className="card table-wrap animate-fade-in">

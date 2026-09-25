@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Pencil, Trash2, Plus, Search, X, UtensilsCrossed, Utensils, Folder } from '@/constants/icons';
+import { Pencil, Trash2, Plus, Search, X, UtensilsCrossed, Utensils, Folder, CheckCircle2, AlertCircle } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import { useConfirm } from '../../../components/ConfirmDialog';
+import { useToast } from '../../../components/Toast';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import KulinerLoading from '../components/KulinerLoading';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import ClientPagination from '../components/ClientPagination';
 import './KulinerDashboard.css';
 
 const AdminMenu = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -159,11 +163,11 @@ const AdminMenu = () => {
       } else {
         await api.post('/kuliner/admin/products', payload);
       }
-      alert(t('adminMenu.alertSaveMenuSuccess'));
+      toast.success(t('adminMenu.alertSaveMenuSuccess'));
       fetchData();
       setShowProductModal(false);
     } catch (error) {
-      alert(t('adminMenu.alertSaveMenuFail') + (error.response?.data?.message || error.message));
+      toast.error(t('adminMenu.alertSaveMenuFail') + (error.response?.data?.message || error.message));
     } finally {
       setSaving(false);
     }
@@ -174,10 +178,10 @@ const AdminMenu = () => {
     if (ok) {
       try {
         await api.delete(`/kuliner/admin/products/${id}`);
-        alert(t('adminMenu.alertDeleteMenuSuccess'));
+        toast.success(t('adminMenu.alertDeleteMenuSuccess'));
         fetchData();
       } catch (error) {
-        alert(t('adminMenu.alertDeleteMenuFail'));
+        toast.error(t('adminMenu.alertDeleteMenuFail'));
       }
     }
   };
@@ -203,10 +207,10 @@ const AdminMenu = () => {
     try {
       if (editingItem) {
         await api.put(`/kuliner/admin/categories/${editingItem.id}`, categoryForm);
-        alert(t('adminMenu.alertSaveCategorySuccess'));
+        toast.success(t('adminMenu.alertSaveCategorySuccess'));
       } else {
         await api.post('/kuliner/admin/categories', categoryForm);
-        alert(t('adminMenu.alertSaveCategorySuccess'));
+        toast.success(t('adminMenu.alertSaveCategorySuccess'));
       }
       setShowCategoryModal(false);
       setCategoryForm({ name: '', description: '', image_url: '📁' });
@@ -214,7 +218,7 @@ const AdminMenu = () => {
     } catch (error) {
       console.error('Failed to save category:', error);
       const msg = error.response?.data?.message || t('adminMenu.alertSaveCategoryFail');
-      alert(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -225,19 +229,60 @@ const AdminMenu = () => {
     if (ok) {
       try {
         await api.delete(`/kuliner/admin/categories/${id}`);
+        toast.success('Kategori berhasil dihapus');
         fetchData();
       } catch (error) {
-        alert(t('adminMenu.alertDeleteCategoryFail'));
+        toast.error(t('adminMenu.alertDeleteCategoryFail'));
       }
     }
   };
 
+  const totalProducts = products.length;
+  const availableProducts = products.filter((p) => p.is_available === true || p.is_available === 1).length;
+  const outOfStockProducts = totalProducts - availableProducts;
+  const totalCategories = categories.length;
+
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('adminMenu.pageTitle')}</h1>
-      </div>
       <div className="kd-content">
+        {/* KPI Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatScoreCard
+            title="Total Menu Hidangan"
+            value={totalProducts}
+            status="Katalog Resto"
+            statusVariant="blue"
+            desc="Total item menu makanan & minuman"
+            icon={Utensils}
+          />
+          <StatScoreCard
+            title="Menu Tersedia (Ready)"
+            value={availableProducts}
+            status="Siap Dipesan"
+            statusVariant="emerald"
+            desc="Menu aktif di kasir & QR self-order"
+            icon={CheckCircle2}
+            progress={totalProducts > 0 ? Math.round((availableProducts / totalProducts) * 100) : 0}
+            progressVariant="emerald"
+          />
+          <StatScoreCard
+            title="Menu Habis / Kosong"
+            value={outOfStockProducts}
+            status={outOfStockProducts > 0 ? "Sold Out" : "Semua Ready"}
+            statusVariant={outOfStockProducts > 0 ? "rose" : "slate"}
+            desc="Menu dinonaktifkan sementara"
+            icon={AlertCircle}
+          />
+          <StatScoreCard
+            title="Kategori Hidangan"
+            value={totalCategories}
+            status="Kategori"
+            statusVariant="purple"
+            desc="Pengelompokan menu restoran"
+            icon={Folder}
+          />
+        </div>
+
         <div className="kd-page-actions">
           {activeTab === 'products' ? (
             <button className="kd-btn kd-btn-primary" onClick={() => handleOpenProductModal()}>
@@ -357,7 +402,7 @@ const AdminMenu = () => {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan="6" className="text-center py-10 text-slate-400">{t('adminMenu.loadingMenu')}</td></tr>
+                    <KulinerTableSkeleton rows={5} cols={6} />
                   ) : filteredProducts.length === 0 ? (
                     <tr>
                       <td colSpan="6" style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
@@ -421,7 +466,7 @@ const AdminMenu = () => {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan="4" className="text-center py-10 text-slate-400">Sedang mengambil daftar kategori...</td></tr>
+                    <KulinerTableSkeleton rows={4} cols={4} />
                   ) : categories.length === 0 ? (
                     <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerCommon.emptyData') || 'Belum ada kategori yang dibuat.'}</td></tr>
                   ) : (

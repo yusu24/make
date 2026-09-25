@@ -7,11 +7,14 @@ import {
   CheckCircle2,
   AlertTriangle,
   AlertCircle,
-  Settings
+  Settings,
+  Shield,
+  FileText
 } from '@/constants/icons'
 import { api } from '../../../lib/api'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 const DUMMY_LOGS = [
@@ -57,6 +60,11 @@ export default function ActivityLogs() {
     fetchLogs()
   }, [])
 
+  const successCount = logs.filter(l => l.level === 'success').length
+  const infoCount = logs.filter(l => l.level === 'info').length
+  const warningCount = logs.filter(l => l.level === 'warning').length
+  const dangerCount = logs.filter(l => l.level === 'danger').length
+
   const filtered = logs.filter(l => {
     const q = search.toLowerCase()
     const matchSearch =
@@ -76,65 +84,98 @@ export default function ActivityLogs() {
   } = usePagination(filtered, 10)
 
   return (
-    <div>
-      <div className="page-header">
-        <h2 className="page-title">Log Aktivitas &amp; Audit</h2>
+    <div className="animate-fade-in space-y-6">
+      {/* ── Top Actions Toolbar ── */}
+      <div className="flex items-center justify-end gap-2.5">
+        <button
+          onClick={fetchLogs}
+          disabled={loading}
+          className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+          title="Muat ulang log aktivitas"
+        >
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <span>Refresh</span>
+        </button>
+        <button
+          onClick={() => alert('Export CSV audit trail sedang di-generate...')}
+          className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+        >
+          <Download size={14} className="text-slate-500 dark:text-slate-400" />
+          <span>Export CSV</span>
+        </button>
       </div>
 
-      {/* Table Card Container */}
-      <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
-        
+      {/* ── KPI Metric Cards ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatScoreCard
+          title="TOTAL AUDIT EVENT"
+          value={logs.length}
+          icon={FileText}
+          statusBadge={{ text: "Terekam", color: "blue" }}
+          subtitle="Seluruh catatan audit aktif"
+          progressBar={{ value: 100, color: "bg-blue-500" }}
+          onClick={() => setLevel('all')}
+        />
+        <StatScoreCard
+          title="OPERASI SUKSES"
+          value={successCount + infoCount}
+          icon={CheckCircle2}
+          statusBadge={{ text: "Normal", color: "emerald" }}
+          subtitle="Aktivitas tervalidasi sukses"
+          progressBar={{ value: Math.min(100, Math.round(((successCount + infoCount) / (logs.length || 1)) * 100)), color: "bg-emerald-500" }}
+          onClick={() => setLevel('success')}
+        />
+        <StatScoreCard
+          title="PERINGATAN & ANOMALI"
+          value={warningCount}
+          icon={AlertTriangle}
+          statusBadge={{ text: warningCount > 0 ? "Perhatian" : "Nihil", color: "amber" }}
+          subtitle="Percobaan login atau gagal akses"
+          progressBar={{ value: Math.min(100, warningCount * 25), color: "bg-amber-500" }}
+          onClick={() => setLevel('warning')}
+        />
+        <StatScoreCard
+          title="MUTASI KRITIS (DANGER)"
+          value={dangerCount}
+          icon={Shield}
+          statusBadge={{ text: dangerCount > 0 ? "Insiden" : "Aman", color: dangerCount > 0 ? "red" : "emerald" }}
+          subtitle="Penghapusan tenant/user platform"
+          progressBar={{ value: Math.min(100, dangerCount * 30), color: dangerCount > 0 ? "bg-red-500" : "bg-emerald-500" }}
+          onClick={() => setLevel('danger')}
+        />
+      </div>
+
+      {/* ── Unified Table Card Container ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         {/* Toolbar Header */}
-        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div className="search-wrap" style={{ minWidth: 220, maxWidth: 320, flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex gap-2.5 items-center flex-wrap flex-1 min-w-[260px]">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
                 id="input-search-logs"
-                className="form-input search-input"
-                style={{ paddingLeft: 34 }}
+                className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
                 placeholder="Cari aktivitas, pengguna, IP..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
+            <select 
+              id="log-filter-select"
+              className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
+              value={level} 
+              onChange={e => setLevel(e.target.value)}
+            >
+              <option value="all">Semua Level</option>
+              <option value="info">Info</option>
+              <option value="success">Success</option>
+              <option value="warning">Warning</option>
+              <option value="danger">Danger</option>
+            </select>
+          </div>
 
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ minWidth: 150 }}>
-                <select 
-                  id="log-filter-select"
-                  className="form-input" 
-                  value={level} 
-                  onChange={e => setLevel(e.target.value)}
-                  style={{
-                    padding: '8px 12px',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    outline: 'none',
-                    height: 38
-                  }}
-                >
-                  <option value="all">Semua Level</option>
-                  <option value="info">Info</option>
-                  <option value="success">Success</option>
-                  <option value="warning">Warning</option>
-                  <option value="danger">Danger</option>
-                </select>
-              </div>
-              <button 
-                id="btn-refresh-logs" 
-                className="btn btn-secondary btn-sm" 
-                style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                onClick={fetchLogs}
-                disabled={loading}
-              >
-                <RefreshCw size={14} /> Refresh
-              </button>
-              <button id="btn-export-logs" className="btn btn-secondary btn-sm" style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <Download size={14} /> Export CSV
-              </button>
-            </div>
+          <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Menampilkan <span className="font-bold text-slate-700 dark:text-slate-200">{filtered.length}</span> log
           </div>
         </div>
 
@@ -143,25 +184,31 @@ export default function ActivityLogs() {
           <table className="table">
             <thead>
               <tr>
-                <th>Waktu</th>
-                <th>Pengguna</th>
-                <th>Level</th>
-                <th>Aksi</th>
-                <th>Detail / Target</th>
+                <th>Waktu Kejadian</th>
+                <th>Aktor / Pelaku</th>
+                <th>Tingkat Keparahan</th>
+                <th>Aksi Dilakukan</th>
+                <th>Objek Target</th>
                 <th>Alamat IP</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                    Memuat log aktivitas...
+                  <td colSpan={6} className="text-center py-12">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <RefreshCw size={24} className="animate-spin text-indigo-600" />
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Memuat log aktivitas &amp; audit...</span>
+                    </div>
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                    Tidak ada log aktivitas yang cocok
+                  <td colSpan={6} className="text-center py-12 text-slate-400 dark:text-slate-500">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <FileText size={32} className="opacity-40" />
+                      <span className="text-xs">Tidak ada log aktivitas yang cocok dengan filter.</span>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -169,47 +216,41 @@ export default function ActivityLogs() {
                   const LevelIcon = LEVEL_ICON[log.level] || Info;
                   return (
                     <tr key={log.id}>
-                      <td style={{ fontSize: 12.5, color: '#64748b', whiteSpace: 'nowrap' }}>
-                        <code style={{ fontSize: 12, color: 'var(--text-primary)', background: '#f1f5f9', padding: '3px 7px', borderRadius: 4 }}>
+                      <td className="whitespace-nowrap">
+                        <code className="text-[11px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200/60 dark:border-slate-700/60">
                           {log.time}
                         </code>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                          <div style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: '50%',
-                            background: log.user === 'System' ? '#f1f5f9' : '#eaeaff',
-                            color: log.user === 'System' ? '#64748b' : '#696cff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 700,
-                            fontSize: 11
-                          }}>
-                            {log.user === 'System' ? <Settings size={14} /> : log.user.slice(0, 2).toUpperCase()}
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] shrink-0 ${
+                            log.user === 'System'
+                              ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                              : 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/40'
+                          }`}>
+                            {log.user === 'System' ? <Settings size={13} /> : log.user.slice(0, 2).toUpperCase()}
                           </div>
-                          <span style={{ fontWeight: 600, fontSize: 13, color: '#32475c' }}>
+                          <span className="font-semibold text-xs text-slate-800 dark:text-slate-200">
                             {log.user}
                           </span>
                         </div>
                       </td>
                       <td>
-                        <span className={`badge ${LEVEL_BADGE[log.level] || 'badge-secondary'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                          <LevelIcon size={11} /> {log.level}
+                        <span className={`badge ${LEVEL_BADGE[log.level] || 'badge-secondary'} inline-flex items-center gap-1.5`}>
+                          <LevelIcon size={12} />
+                          <span className="capitalize">{log.level}</span>
                         </span>
                       </td>
                       <td>
-                        <span className="badge badge-secondary" style={{ textTransform: 'none', fontWeight: 600 }}>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 font-mono">
                           {log.action.replace(/_/g, ' ')}
                         </span>
                       </td>
-                      <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                      <td className="text-xs text-slate-600 dark:text-slate-300 font-medium">
                         {log.target}
                       </td>
                       <td>
-                        <code style={{ fontSize: 11.5, color: '#475569', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2px 6px', borderRadius: 4 }}>
+                        <code className="text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 px-2 py-0.5 rounded border border-slate-200/60 dark:border-slate-700/60">
                           {log.ip || '-'}
                         </code>
                       </td>

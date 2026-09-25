@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { api } from '../../../lib/api'
 import CurrencyInput from '../../../components/CurrencyInput'
-import { Plus, Trash2, Pencil } from '@/constants/icons'
+import { Plus, Trash2, Pencil, Layers, Package, CheckCircle2, Sparkles } from '@/constants/icons'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 // ─── Per-category feature definitions (Extremely Granular) ────────────────────
@@ -717,24 +718,55 @@ export default function PackagesFeatures() {
         </div>
       )}
 
-      {/* ── Page Header ── */}
-      <div className="page-header mb-2">
-        <h2 className="page-title">Paket &amp; Fitur Langganan</h2>
+      {/* ── Top Metrics with StatScoreCard ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatScoreCard
+          title="Sektor Industri"
+          value={categoriesList.length}
+          status="5 Sektor"
+          statusVariant="indigo"
+          icon={Layers}
+          desc="Katalog sektor UMKM terintegrasi Bizora"
+          progress={100}
+          progressVariant="indigo"
+        />
+
+        <StatScoreCard
+          title="Paket Sektor Ini"
+          value={plans.length}
+          status={`${plans.filter(p => p.is_active).length} Aktif`}
+          statusVariant="emerald"
+          icon={CheckCircle2}
+          desc="Tier paket langganan pada sektor terpilih"
+          progress={100}
+          progressVariant="emerald"
+        />
+
+        <StatScoreCard
+          title="Fitur Granular"
+          value={Object.keys(FEATURES_BY_CATEGORY[activeCategory] || {}).length}
+          status="Modul Aktif"
+          statusVariant="indigo"
+          icon={Package}
+          desc="Kontrol izin akses fitur operasional"
+          progress={100}
+          progressVariant="indigo"
+        />
+
+        <StatScoreCard
+          title="Mode Tampilan"
+          value={activeView === 'cards' ? 'Katalog Kartu' : 'Matriks Banding'}
+          status="Interaktif"
+          statusVariant="amber"
+          icon={Sparkles}
+          desc="Klik tab filter untuk berganti tampilan"
+          progress={100}
+          progressVariant="amber"
+        />
       </div>
 
-      {/* ── Action Button below title, aligned to the right ── */}
-      <div className="flex justify-end mb-4">
-        <button 
-          className="btn btn-primary flex items-center gap-1.5"
-          onClick={() => setShowCreateModal(true)}
-        >
-          <Plus size={16} />
-          <span>Tambah Paket Baru</span>
-        </button>
-      </div>
-
-      {/* Category Tabs */}
-      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+      {/* Category Tabs & Action Bar */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm mb-6 flex justify-between items-center flex-wrap gap-3">
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {categoriesList.map(cat => {
             const isActive = activeCategory === cat.slug
@@ -770,15 +802,29 @@ export default function PackagesFeatures() {
           })}
         </div>
 
-        <div className="filter-tabs">
-          <button
-            className={`filter-tab ${activeView === 'cards' ? 'filter-tab--active' : ''}`}
-            onClick={() => setActiveView('cards')}
-          >📦 Kartu Paket</button>
-          <button
-            className={`filter-tab ${activeView === 'matrix' ? 'filter-tab--active' : ''}`}
-            onClick={() => setActiveView('matrix')}
-          >📋 Matriks Fitur</button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            <button
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeView === 'cards' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+              onClick={() => setActiveView('cards')}
+            >
+              📦 Kartu Paket
+            </button>
+            <button
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeView === 'matrix' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+              onClick={() => setActiveView('matrix')}
+            >
+              📋 Matriks Fitur
+            </button>
+          </div>
+
+          <button 
+            className="h-[38px] px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <Plus size={16} />
+            <span>Tambah Paket Baru</span>
+          </button>
         </div>
       </div>
 

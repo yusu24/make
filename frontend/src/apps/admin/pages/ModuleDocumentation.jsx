@@ -3797,11 +3797,6 @@ export default function ModuleDocumentation() {
 
   return (
     <div className="animate-fade-in">
-      {/* Header Section */}
-      <div className="page-header">
-        <h2 className="page-title">Dokumentasi Modul &amp; Arsitektur</h2>
-      </div>
-
       {/* Module Selector Toolbar */}
       <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>

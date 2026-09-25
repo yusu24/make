@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Lightbulb, X, Search, Tag, Check, Ban } from '@/constants/icons';
+import { Plus, Pencil, Trash2, Lightbulb, X, Search, Tag, Check, Ban, Percent, CheckCircle2, XCircle } from '@/constants/icons';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
 import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import { useConfirm } from '../../../components/ConfirmDialog';
+import { useToast } from '../../../components/Toast';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import './KulinerDashboard.css';
 
 const CulinaryPromos = () => {
   const confirm = useConfirm();
+  const toast = useToast();
   const [promos, setPromos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -73,14 +77,16 @@ const CulinaryPromos = () => {
     try {
       if (editingItem) {
         await api.put(`/kuliner/admin/promos/${editingItem.id}`, promoForm);
+        toast.success('Promo berhasil diperbarui');
       } else {
         await api.post('/kuliner/admin/promos', promoForm);
+        toast.success('Promo baru berhasil ditambahkan');
       }
       await fetchPromos();
       setShowModal(false);
     } catch (error) {
       console.error('Failed to save promo:', error);
-      alert('Gagal menyimpan promo. Kode promo mungkin sudah digunakan.');
+      toast.error('Gagal menyimpan promo. Kode promo mungkin sudah digunakan.');
     } finally {
       setSaving(false);
     }
@@ -92,8 +98,10 @@ const CulinaryPromos = () => {
     try {
       await api.delete(`/kuliner/admin/promos/${id}`);
       setPromos(promos.filter(p => p.id !== id));
+      toast.success('Promo berhasil dihapus');
     } catch (error) {
       console.error('Failed to delete promo:', error);
+      toast.error('Gagal menghapus promo');
     }
   };
 
@@ -101,9 +109,11 @@ const CulinaryPromos = () => {
     try {
       const newStatus = promo.status === 'active' ? 'inactive' : 'active';
       await api.put(`/kuliner/admin/promos/${promo.id}`, { ...promo, status: newStatus });
+      toast.success(`Promo dinonaktifkan / diaktifkan`);
       fetchPromos();
     } catch (error) {
       console.error('Failed to toggle status:', error);
+      toast.error('Gagal mengubah status promo');
     }
   };
 
@@ -118,6 +128,9 @@ const CulinaryPromos = () => {
     });
   }, [promos, searchTerm, statusFilter]);
 
+  const activeCount = promos.filter(p => p.status === 'active').length;
+  const inactiveCount = promos.filter(p => p.status === 'inactive').length;
+
   const totalPages = Math.ceil(filteredPromos.length / itemsPerPage) || 1;
   const paginatedPromos = useMemo(() => {
     return filteredPromos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -125,11 +138,34 @@ const CulinaryPromos = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Promo & Kupon Diskon</h1>
-      </div>
-
       <div className="kd-content">
+        {/* KPI Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <StatScoreCard
+            title="Total Kupon Promo"
+            value={promos.length}
+            icon={Tag}
+            color="amber"
+            badgeText="Semua Promo"
+            sublabel="Voucher & diskon menu"
+          />
+          <StatScoreCard
+            title="Promo Aktif"
+            value={activeCount}
+            icon={CheckCircle2}
+            color="emerald"
+            badgeText="Berjalan"
+            sublabel="Siap digunakan pelanggan"
+          />
+          <StatScoreCard
+            title="Promo Non-aktif / Expired"
+            value={inactiveCount}
+            icon={XCircle}
+            color="rose"
+            badgeText="Non-aktif"
+            sublabel="Tidak berlaku di kasir"
+          />
+        </div>
         <div className="kd-page-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ position: 'relative', minWidth: 240 }}>
@@ -177,12 +213,7 @@ const CulinaryPromos = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan="8" className="text-center py-10">
-                      <div className="spinner" style={{ margin: '0 auto 10px' }} />
-                      <span className="text-slate-400 text-xs">Memuat data promo...</span>
-                    </td>
-                  </tr>
+                  <KulinerTableSkeleton cols={8} rows={5} />
                 ) : paginatedPromos.length === 0 ? (
                   <tr>
                     <td colSpan="8" className="text-center py-12 text-slate-400 text-xs italic">

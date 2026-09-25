@@ -9,6 +9,7 @@ import { Pencil, Trash2, Scale, RefreshCw } from '@/constants/icons';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import EmptyTableState from '../../../components/EmptyTableState';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 
 export default function Units() {
   const toast = useToast();
@@ -78,7 +79,42 @@ export default function Units() {
 
   return (
     <div className="retail-page-classic">
-      {/* Page Title Handled by Navtop */}
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Satuan Ukur"
+          value={units.length}
+          suffix=" Unit"
+          subtitle="Standar pengukuran unit barang"
+          icon={Scale}
+          badgeText="Metrik"
+          badgeVariant="indigo"
+          progress={100}
+          progressVariant="indigo"
+        />
+        <StatScoreCard
+          title="Standarisasi Kuantitas"
+          value="100%"
+          subtitle="Seluruh satuan aktif dapat digunakan"
+          icon={Scale}
+          badgeText="Siap Pakai"
+          badgeVariant="emerald"
+          progress={100}
+          progressVariant="emerald"
+        />
+        <StatScoreCard
+          title="Hasil Pencarian"
+          value={filteredUnits.length}
+          suffix=" Unit"
+          subtitle="Sesuai kata kunci pencarian"
+          icon={Scale}
+          badgeText={search ? "Filtered" : "Semua"}
+          badgeVariant={search ? "blue" : "slate"}
+          progress={units.length > 0 ? Math.min(100, Math.round((filteredUnits.length / units.length) * 100)) : 100}
+          progressVariant="blue"
+        />
+      </div>
+
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="p-6 flex justify-between items-center gap-3 flex-wrap">
@@ -102,7 +138,7 @@ export default function Units() {
                   required
                 />
              </div>
-             <button type="submit" className="btn btn-primary h-[42px] px-6 whitespace-nowrap">
+             <button type="submit" className="btn btn-primary h-[38px] px-5 whitespace-nowrap">
                 Tambah
              </button>
           </form>

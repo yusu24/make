@@ -7,6 +7,7 @@ import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import Modal from '../../../components/Modal'
 import TenantDetailDrawer from '../components/TenantDetailDrawer'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import {
   Store,
   Users,
@@ -283,79 +284,86 @@ export default function Tenants() {
     paginatedData, startIndex, endIndex,
   } = usePagination(filtered)
 
+  const totalTenantsCount = tenants.length
+  const activeTenantsCount = tenants.filter(t => t.status === 'active' && !t.is_demo).length
+  const activePercent = totalTenantsCount > 0 ? Math.round((activeTenantsCount / totalTenantsCount) * 100) : 0
+  const demoTenantsCount = tenants.filter(t => t.is_demo).length
+  const demoPercent = totalTenantsCount > 0 ? Math.round((demoTenantsCount / totalTenantsCount) * 100) : 0
+  const inactiveTenantsCount = tenants.filter(t => t.status === 'inactive').length
+  const inactivePercent = totalTenantsCount > 0 ? Math.round((inactiveTenantsCount / totalTenantsCount) * 100) : 0
+
   return (
     <div className="animate-fade-in">
-      {/* ── Page Header ── */}
-      <div className="page-header mb-4">
-        <div>
-          <h2 className="page-title">Manajemen Tenant</h2>
-        </div>
-      </div>
+      {/* ── Stats row with StatScoreCard ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Tenant"
+          value={totalTenantsCount}
+          status="Terdaftar"
+          statusVariant="indigo"
+          icon={Store}
+          desc="Seluruh entitas bisnis pada ekosistem SaaS"
+          progress={100}
+          progressVariant="indigo"
+          onClick={() => { setStatusFilter('all'); setHealthFilter('all'); }}
+        />
 
-      {/* ── Stats row ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-            <Store size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Tenant</p>
-            <p className="text-2xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans']">{tenants.length}</p>
-          </div>
-        </div>
+        <StatScoreCard
+          title="Tenant Aktif"
+          value={activeTenantsCount}
+          status={`${activePercent}% Aktif`}
+          statusVariant="emerald"
+          icon={CheckCircle2}
+          desc="Berlangganan & aktif melakukan transaksi"
+          progress={activePercent}
+          progressVariant="emerald"
+          onClick={() => setStatusFilter('active')}
+        />
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <CheckCircle2 size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tenant Aktif</p>
-            <p className="text-2xl font-extrabold text-emerald-600 tracking-tight font-['Plus_Jakarta_Sans']">{tenants.filter(t => t.status === 'active' && !t.is_demo).length}</p>
-          </div>
-        </div>
+        <StatScoreCard
+          title="Akun Demo Sandbox"
+          value={demoTenantsCount}
+          status={`${demoPercent}% Sandbox`}
+          statusVariant="amber"
+          icon={Sparkles}
+          desc="Uji coba mandiri tanpa komitmen billing"
+          progress={demoPercent}
+          progressVariant="amber"
+          onClick={() => setStatusFilter('demo')}
+        />
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <Sparkles size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Akun Demo Sandbox</p>
-            <p className="text-2xl font-extrabold text-amber-600 tracking-tight font-['Plus_Jakarta_Sans']">{tenants.filter(t => t.is_demo).length}</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-            <AlertTriangle size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nonaktif / Kadaluarsa</p>
-            <p className="text-2xl font-extrabold text-rose-600 tracking-tight font-['Plus_Jakarta_Sans']">{tenants.filter(t => t.status === 'inactive').length}</p>
-          </div>
-        </div>
+        <StatScoreCard
+          title="Nonaktif / Kadaluarsa"
+          value={inactiveTenantsCount}
+          status={inactiveTenantsCount > 0 ? `${inactivePercent}% Review` : 'Nihil'}
+          statusVariant={inactiveTenantsCount > 0 ? "rose" : "slate"}
+          icon={AlertTriangle}
+          desc="Masa aktif berakhir atau akun di-suspend"
+          progress={inactivePercent}
+          progressVariant="rose"
+          onClick={() => setStatusFilter('inactive')}
+        />
       </div>
 
       {/* ── Table Card ── */}
-      <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div className="search-wrap" style={{ minWidth: 220, maxWidth: 280, flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[220px] max-w-sm">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
                 id="input-search-tenants"
-                className="form-input search-input"
-                style={{ paddingLeft: 34 }}
+                className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
                 placeholder="Cari ID, nama bisnis, email..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
 
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="flex gap-2 items-center flex-wrap">
               <select
                 id="select-filter-status"
-                className="form-input"
-                style={{ width: 'auto', minWidth: 135, height: 38, padding: '0 32px 0 12px', fontSize: 13 }}
+                className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
               >
@@ -368,8 +376,7 @@ export default function Tenants() {
 
               <select
                 id="select-filter-health"
-                className="form-input"
-                style={{ width: 'auto', minWidth: 165, height: 38, padding: '0 32px 0 12px', fontSize: 13 }}
+                className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 value={healthFilter}
                 onChange={e => {
                   setHealthFilter(e.target.value)
@@ -389,8 +396,7 @@ export default function Tenants() {
 
               <select
                 id="select-filter-category"
-                className="form-input"
-                style={{ width: 'auto', minWidth: 145, height: 38, padding: '0 32px 0 12px', fontSize: 13 }}
+                className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 value={categoryFilter}
                 onChange={e => setCategoryFilter(e.target.value)}
               >
@@ -402,11 +408,10 @@ export default function Tenants() {
 
               {tenants.some(t => t.is_demo) && (
                 <button
-                  className="btn btn-secondary btn-sm"
+                  className="h-[38px] px-3 rounded-xl border border-amber-300 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center gap-1.5 hover:bg-amber-100 transition-colors"
                   onClick={handleCleanupDemo}
                   disabled={isCleaningDemo}
                   title="Bersihkan akun demo yang sudah kadaluarsa"
-                  style={{ height: 38, color: '#d97706', borderColor: '#fde68a' }}
                 >
                   <Sparkles size={14} className={isCleaningDemo ? 'animate-spin' : ''} />
                   <span>{isCleaningDemo ? 'Membersihkan...' : 'Bersihkan Demo'}</span>
@@ -414,19 +419,17 @@ export default function Tenants() {
               )}
 
               <button
-                className="btn btn-secondary btn-sm"
+                className="h-[38px] w-[38px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                 onClick={fetchTenants}
                 disabled={loading}
                 title="Muat ulang data"
-                style={{ height: 38 }}
               >
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
               </button>
 
               <button
                 id="btn-add-tenant"
-                className="btn btn-primary"
-                style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                className="h-[38px] px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors"
                 onClick={() => setShowAddModal(true)}
               >
                 <Plus size={16} />
@@ -546,9 +549,9 @@ export default function Tenants() {
                     </span>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                    <div className="flex gap-1.5 justify-end">
                       <button
-                        className="btn btn-secondary btn-sm"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition-colors"
                         onClick={() => handleOpenDetail(t)}
                         title="Buka Detail Tenant"
                       >
@@ -556,26 +559,24 @@ export default function Tenants() {
                       </button>
 
                       <button
-                        className="btn btn-secondary btn-sm"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50"
                         onClick={() => handleImpersonate(t)}
                         disabled={impersonatingId === t.tenant_id}
                         title={`Login Langsung sebagai ${t.name}`}
-                        style={{ color: 'var(--primary-500)' }}
                       >
                         <KeyRound size={13} />
                       </button>
 
                       <button 
-                        className="btn btn-secondary btn-sm" 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors" 
                         onClick={() => handleOpenResetModal(t)}
                         title={`Reset Password ${t.name}`}
-                        style={{ color: '#d97706' }}
                       >
                         <Key size={13} />
                       </button>
 
                       <button 
-                        className="btn btn-secondary btn-sm" 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" 
                         onClick={() => openModuleModal(t.tenant_id)}
                         title="Atur Modul Ekstra Tenant"
                       >
@@ -583,7 +584,7 @@ export default function Tenants() {
                       </button>
 
                       <button 
-                        className="btn btn-secondary btn-sm" 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" 
                         onClick={() => setEditTenant(t)}
                         title="Edit Data Tenant"
                       >
@@ -591,8 +592,7 @@ export default function Tenants() {
                       </button>
 
                       <button 
-                        className="btn btn-secondary btn-sm"
-                        style={{ color: 'var(--danger-500)' }}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-rose-200 dark:border-rose-800/60 bg-rose-50/60 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
                         onClick={() => setDeleteTarget(t)}
                         title="Hapus Tenant"
                       >

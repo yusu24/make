@@ -44,6 +44,7 @@ import {
   Activity
 } from '@/constants/icons';
 import { useToast } from '../../../components/Toast';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 
 export default function CardDictionary() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -113,6 +114,38 @@ export default function CardDictionary() {
 
   // Standard Card Catalog Items
   const CARD_ITEMS = useMemo(() => [
+    {
+      id: 'kpi-stat-scorecard',
+      category: 'kpi',
+      title: 'Enterprise Metric ScoreCard (Bizora Signature)',
+      description: 'Kartu metrik standar Bizora dengan micro progress bar, badge status pastel, angka besar 2xl/3xl, dan dark mode ready.',
+      tags: ['kpi', 'metrik', 'scorecard', 'mcp-audit', 'saas', 'enterprise', 'progress'],
+      tailwindClass: 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all',
+      codeSnippet: `<StatScoreCard
+  title="Kelayakan Enterprise"
+  value="98%"
+  status="Siap Digunakan"
+  statusVariant="emerald"
+  desc="Audit 4 pilar arsitektur sistem lolos uji"
+  progress={98}
+  progressVariant="emerald"
+  icon={ShieldCheck}
+/>`,
+      renderPreview: () => (
+        <div className="w-full max-w-sm">
+          <StatScoreCard
+            title="Kelayakan Enterprise"
+            value="98%"
+            status="Siap Digunakan"
+            statusVariant="emerald"
+            desc="Audit 4 pilar arsitektur sistem lolos uji"
+            progress={98}
+            progressVariant="emerald"
+            icon={ShieldCheck}
+          />
+        </div>
+      )
+    },
     {
       id: 'kpi-stat-trend',
       category: 'kpi',

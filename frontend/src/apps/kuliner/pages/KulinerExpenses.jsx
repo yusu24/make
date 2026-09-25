@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../../lib/api';
-import { Pencil, Trash2, Plus, Printer, Calendar, Search, X } from '@/constants/icons';
+import { Pencil, Trash2, Plus, Printer, Calendar, Search, X, TrendingUp, TrendingDown, Wallet } from '@/constants/icons';
 import { useReactToPrint } from 'react-to-print';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import Modal from '../../../components/Modal';
@@ -9,7 +9,11 @@ import usePagination from '../../../hooks/usePagination';
 import ClientPagination from '../components/ClientPagination';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import { useToast } from '../../../components/Toast';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import './KulinerDashboard.css';
 import '../kuliner-print.css';
 import {
@@ -24,6 +28,8 @@ import {
 
 export default function KulinerExpenses() {
   const { user } = useAuth();
+  const confirm = useConfirm();
+  const toast = useToast();
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -47,7 +53,7 @@ export default function KulinerExpenses() {
       setExpenses(res.data);
     } catch (e) {
       console.error(e);
-      alert('Gagal mengambil data pengeluaran');
+      toast.error('Gagal mengambil data pengeluaran');
     } finally {
       setLoading(false);
     }
@@ -101,14 +107,16 @@ export default function KulinerExpenses() {
     try {
       if (editingExpense) {
         await api.put(`/kuliner/admin/expenses/${editingExpense.id}`, data);
+        toast.success('Pencatatan kas berhasil diperbarui');
       } else {
         await api.post('/kuliner/admin/expenses', data);
+        toast.success('Pencatatan kas baru berhasil ditambahkan');
       }
       fetchExpenses(startDate, endDate);
       setShowModal(false);
       setEditingExpense(null);
     } catch (e) {
-      alert('Terjadi kesalahan saat menyimpan data');
+      toast.error('Terjadi kesalahan saat menyimpan data');
     }
   };
 
@@ -200,7 +208,17 @@ export default function KulinerExpenses() {
             <button 
               className="kd-btn" 
               style={{ width: 32, height: 32, padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#FEF2F2', border: '1px solid #FEE2E2', borderRadius: 8, color: '#EF4444', cursor: 'pointer' }} 
-              onClick={async () => { if (confirm('Hapus pencatatan kas ini?')) { await api.delete(`/kuliner/admin/expenses/${ex.id}`); fetchExpenses(startDate, endDate); } }} 
+              onClick={async () => {
+                if (await confirm('Hapus pencatatan kas ini?')) {
+                  try {
+                    await api.delete(`/kuliner/admin/expenses/${ex.id}`);
+                    toast.success('Pencatatan kas berhasil dihapus');
+                    fetchExpenses(startDate, endDate);
+                  } catch (err) {
+                    toast.error('Gagal menghapus data transaksi');
+                  }
+                }
+              }} 
               title="Hapus"
             >
               <Trash2 size={14} />
@@ -223,19 +241,37 @@ export default function KulinerExpenses() {
     endIndex
   } = usePagination(filteredExpenses);
 
-  // Remove PREDEFINED_CATEGORIES, we use financeCategories now
-
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Pencatatan Kas</h1>
-      </div>
-
       <div className="kd-content">
-        {loading ? (
-          <KulinerLoading message="Memuat pengeluaran operasional..." />
-        ) : (
-          <>
+        {/* KPI STATS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 no-print">
+          <StatScoreCard
+            title="Total Pemasukan Kas"
+            value={loading ? '...' : formatRp(totalIncome)}
+            icon={TrendingUp}
+            status="Kas Masuk"
+            statusVariant="emerald"
+            desc="Berdasarkan filter aktif"
+          />
+          <StatScoreCard
+            title="Total Pengeluaran Kas"
+            value={loading ? '...' : formatRp(totalExpense)}
+            icon={TrendingDown}
+            status="Kas Keluar"
+            statusVariant="rose"
+            desc="Berdasarkan filter aktif"
+          />
+          <StatScoreCard
+            title="Saldo Bersih Operasional"
+            value={loading ? '...' : formatRp(totalBalance)}
+            icon={Wallet}
+            status={totalBalance >= 0 ? "Surplus" : "Defisit"}
+            statusVariant={totalBalance >= 0 ? "blue" : "rose"}
+            desc="Selisih pemasukan & pengeluaran"
+          />
+        </div>
+
             {/* RESPONSIVE ACTION & FILTER BAR */}
             <div className="no-print" style={{ 
               display: 'flex', 
@@ -413,7 +449,9 @@ export default function KulinerExpenses() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredExpenses.length === 0 ? (
+                      {loading ? (
+                        <KulinerTableSkeleton cols={6} rows={pageSize > 5 ? 5 : pageSize} />
+                      ) : filteredExpenses.length === 0 ? (
                         <tr>
                           <td colSpan="6" style={{ textAlign: 'center', padding: '36px', color: '#94A3B8' }}>
                             Belum ada pencatatan kas.
@@ -597,8 +635,6 @@ export default function KulinerExpenses() {
 
               </div>
             </div>
-          </>
-        )}
 
         {showModal && (
           <div className="kd-modal-overlay visible" onClick={handleClose}>

@@ -11,6 +11,7 @@ import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import EmptyTableState from '../../../components/EmptyTableState';
 import FormLabel from '../../../components/FormLabel';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 
 export default function Suppliers() {
   const toast = useToast();
@@ -62,14 +63,16 @@ export default function Suppliers() {
     try {
       if (editingSupplier) {
         await api.put(`/retail/suppliers/${editingSupplier.id}`, data);
+        toast.success('Data supplier berhasil diperbarui');
       } else {
         await api.post('/retail/suppliers', data);
+        toast.success('Data supplier baru berhasil ditambahkan');
       }
       fetchSuppliers();
       setShowModal(false);
       setEditingSupplier(null);
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menyimpan data supplier');
+      toast.error(e.response?.data?.message || 'Gagal menyimpan data supplier');
     }
   };
 
@@ -98,7 +101,43 @@ export default function Suppliers() {
 
   return (
     <div className="retail-page-classic">
-      {/* Page Title Handled by Navtop */}
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Mitra Supplier"
+          value={suppliers.length}
+          suffix=" Vendor"
+          subtitle="Distributor & vendor terdaftar"
+          icon={Truck}
+          badgeText="Mitra"
+          badgeVariant="indigo"
+          progress={100}
+          progressVariant="indigo"
+        />
+        <StatScoreCard
+          title="Supplier Aktif"
+          value={suppliers.length}
+          suffix=" Vendor"
+          subtitle="Vendor dengan rantai pasok aktif"
+          icon={PackageCheck}
+          badgeText="Aktif"
+          badgeVariant="emerald"
+          progress={100}
+          progressVariant="emerald"
+        />
+        <StatScoreCard
+          title="Hasil Pencarian"
+          value={filteredSuppliers.length}
+          suffix=" Vendor"
+          subtitle="Sesuai filter pencarian aktif"
+          icon={Truck}
+          badgeText={search ? "Filtered" : "Semua"}
+          badgeVariant={search ? "blue" : "slate"}
+          progress={suppliers.length > 0 ? Math.min(100, Math.round((filteredSuppliers.length / suppliers.length) * 100)) : 100}
+          progressVariant="blue"
+        />
+      </div>
+
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button title="Registrasi Supplier" className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }} onClick={() => { setEditingSupplier(null); setShowModal(true); }}>

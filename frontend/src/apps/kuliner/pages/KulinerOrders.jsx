@@ -8,21 +8,27 @@ import {
   Printer,
   ChefHat,
   X,
-  RefreshCw
+  RefreshCw,
+  ShoppingBag,
+  Clock
 } from '@/constants/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useToast } from '../../../components/Toast';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
 import KulinerReceiptModal from '../components/KulinerReceiptModal';
 import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import './KulinerDashboard.css';
 
 import { useAuth } from '../../../contexts/AuthContext';
 
 const KulinerOrders = () => {
   const { t } = useTranslation();
+  const toast = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -63,8 +69,9 @@ const KulinerOrders = () => {
       if (selectedOrder?.id === id) {
         setSelectedOrder(prev => ({ ...prev, status }));
       }
+      toast.success('Status pesanan berhasil diperbarui');
     } catch (error) {
-      alert('Gagal memperbarui status pesanan');
+      toast.error('Gagal memperbarui status pesanan');
     }
   };
 
@@ -279,77 +286,112 @@ const KulinerOrders = () => {
     }, 250);
   };
 
+  const totalOrderCount = orders.length;
+  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+  const processingOrders = orders.filter(o => o.status === 'processing').length;
+  const totalRevenue = orders
+    .filter(o => o.status === 'completed' || o.payment_status === 'paid')
+    .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+
   return (
     <KulinerAdminLayout>
-      {/* Topbar selalu tampil, tidak ikut loading */}
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerOrders.ordersTitle')}</h1>
-      </div>
-
-      {/* Hanya konten yang loading */}
       <div className="kd-content">
-        {loading ? (
-          <KulinerLoading message={t('kulinerOrders.loadingOrders') || 'Memuat Pesanan...'} />
-        ) : (
-          <>
-            <div className="kd-page-actions" style={{ marginBottom: 16 }}>
-              <button 
-                className="h-[38px] px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
-                onClick={() => navigate(`/kuliner/menu?mode=cashier&tenant_id=${user?.tenant_id}`)}
+        {/* KPI Scorecards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+          <StatScoreCard
+            title={t('kulinerOrders.totalOrders') || 'Total Pesanan'}
+            value={loading ? '...' : totalOrderCount}
+            status="Semua"
+            statusVariant="blue"
+            icon={ShoppingBag}
+            desc="Total seluruh pesanan masuk"
+          />
+          <StatScoreCard
+            title={t('kulinerOrders.pendingOrders') || 'Pesanan Baru'}
+            value={loading ? '...' : pendingOrders}
+            status={pendingOrders > 0 ? "Perlu Diproses" : "Selesai"}
+            statusVariant="amber"
+            icon={Clock}
+            desc="Menunggu konfirmasi / dapur"
+          />
+          <StatScoreCard
+            title={t('kulinerOrders.processingOrders') || 'Sedang Dimasak'}
+            value={loading ? '...' : processingOrders}
+            status="Dapur"
+            statusVariant="yellow"
+            icon={ChefHat}
+            desc="Pesanan dalam proses memasak"
+          />
+          <StatScoreCard
+            title={t('kulinerOrders.totalRevenue') || 'Total Omzet Terbayar'}
+            value={loading ? '...' : `Rp ${totalRevenue.toLocaleString('id-ID')}`}
+            status="Omzet"
+            statusVariant="emerald"
+            icon={Banknote}
+            desc="Akumulasi pembayaran pesanan sah"
+          />
+        </div>
+
+        <div className="kd-page-actions" style={{ marginBottom: 16 }}>
+          <button 
+            className="h-[38px] px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+            onClick={() => navigate(`/kuliner/menu?mode=cashier&tenant_id=${user?.tenant_id}`)}
+          >
+            <span>+ Buat Pesanan Manual</span>
+          </button>
+        </div>
+        <div className="kd-panel">
+          <div className="kd-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                className={`h-[38px] px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${filterStatus === 'all' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
+                onClick={() => { setFilterStatus('all'); setCurrentPage(1); }}
               >
-                <span>+ Buat Pesanan Manual</span>
+                {t('kulinerOrders.tabAll')}
+              </button>
+              <button
+                className={`h-[38px] px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${filterStatus === 'pending' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
+                onClick={() => { setFilterStatus('pending'); setCurrentPage(1); }}
+              >
+                {t('kulinerOrders.tabNew') || 'Baru / Menunggu'}
+              </button>
+              <button
+                className={`h-[38px] px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${filterStatus === 'processing' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
+                onClick={() => { setFilterStatus('processing'); setCurrentPage(1); }}
+              >
+                {t('kulinerOrders.tabProcess') || 'Dalam Proses'}
               </button>
             </div>
-            <div className="kd-panel">
-              <div className="kd-panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button
-                    className={`h-[38px] px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${filterStatus === 'all' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
-                    onClick={() => { setFilterStatus('all'); setCurrentPage(1); }}
-                  >
-                    {t('kulinerOrders.tabAll')}
-                  </button>
-                  <button
-                    className={`h-[38px] px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${filterStatus === 'pending' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
-                    onClick={() => { setFilterStatus('pending'); setCurrentPage(1); }}
-                  >
-                    {t('kulinerOrders.tabNew') || 'Baru / Menunggu'}
-                  </button>
-                  <button
-                    className={`h-[38px] px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${filterStatus === 'processing' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
-                    onClick={() => { setFilterStatus('processing'); setCurrentPage(1); }}
-                  >
-                    {t('kulinerOrders.tabProcess') || 'Dalam Proses'}
-                  </button>
-                </div>
-                <button 
-                  className="h-[38px] px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer" 
-                  onClick={() => fetchOrders(false)}
-                >
-                  <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> 
-                  <span>{t('kulinerOrders.refreshData') || 'Refresh Data'}</span>
-                </button>
-              </div>
+            <button 
+              className="h-[38px] px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer" 
+              onClick={() => fetchOrders(false)}
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> 
+              <span>{t('kulinerOrders.refreshData') || 'Refresh Data'}</span>
+            </button>
+          </div>
 
-              <div className="kd-table-container" style={{ overflowX: 'auto' }}>
-                <table className="kd-table">
-                  <thead>
-                    <tr>
-                      <th className="pl-6">{t('kulinerOrders.headerId') || 'Order ID'}</th>
-                      <th>{t('kulinerOrders.headerDate') || 'Tanggal'}</th>
-                      <th>{t('kulinerOrders.headerCustomer') || 'Pelanggan'}</th>
-                      <th>No HP</th>
-                      <th>Tipe</th>
-                      <th className="text-right">{t('kulinerOrders.headerTotal') || 'Total Tagihan'}</th>
-                      <th>{t('kulinerOrders.headerStatus') || 'Status'}</th>
-                      <th>{t('kulinerCommon.paymentMethod') || 'Metode Bayar'}</th>
-                      <th className="pr-6 text-right">{t('kulinerOrders.headerAction') || 'Aksi'}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentOrders.length === 0 ? (
-                      <tr><td colSpan="9" className="text-center py-10 text-slate-400">{t('kulinerOrders.emptyOrders') || 'Belum ada pesanan.'}</td></tr>
-                    ) : currentOrders.map(order => (
+          <div className="kd-table-container" style={{ overflowX: 'auto' }}>
+            <table className="kd-table">
+              <thead>
+                <tr>
+                  <th className="pl-6">{t('kulinerOrders.headerId') || 'Order ID'}</th>
+                  <th>{t('kulinerOrders.headerDate') || 'Tanggal'}</th>
+                  <th>{t('kulinerOrders.headerCustomer') || 'Pelanggan'}</th>
+                  <th>No HP</th>
+                  <th>Tipe</th>
+                  <th className="text-right">{t('kulinerOrders.headerTotal') || 'Total Tagihan'}</th>
+                  <th>{t('kulinerOrders.headerStatus') || 'Status'}</th>
+                  <th>{t('kulinerCommon.paymentMethod') || 'Metode Bayar'}</th>
+                  <th className="pr-6 text-right">{t('kulinerOrders.headerAction') || 'Aksi'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <KulinerTableSkeleton cols={9} rows={itemsPerPage > 5 ? 5 : itemsPerPage} />
+                ) : currentOrders.length === 0 ? (
+                  <tr><td colSpan="9" className="text-center py-10 text-slate-400">{t('kulinerOrders.emptyOrders') || 'Belum ada pesanan.'}</td></tr>
+                ) : currentOrders.map(order => (
                       <tr key={order.id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="pl-6">
                           <code className="text-slate-800 font-mono text-[12px] font-normal">
@@ -567,8 +609,6 @@ const KulinerOrders = () => {
                 </div>
               </div>
             )}
-          </>
-        )}
       </div>
       <KulinerReceiptModal
         isOpen={!!receiptOrder}

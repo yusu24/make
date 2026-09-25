@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import ClientPagination from '../components/ClientPagination';
 import './KulinerDashboard.css';
 import '../kuliner-print.css';
@@ -146,21 +147,19 @@ export default function KulinerReports() {
 
   return (
     <KulinerAdminLayout>
-      {/* Topbar Header */}
-      <div className="kd-topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="kd-page-title">Laba & Margin Menu</h1>
-        <button
-          onClick={handlePrint}
-          className="kd-btn kd-btn-secondary"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', fontSize: 13, fontWeight: 600, border: '1px solid #CBD5E1', borderRadius: 8 }}
-          title="Cetak atau Simpan sebagai Dokumen PDF"
-        >
-          <Printer size={16} />
-          <span>Export PDF / Cetak</span>
-        </button>
-      </div>
-
       <div className="kd-content">
+        {/* Action Header */}
+        <div className="flex justify-end items-center mb-4 no-print">
+          <button
+            onClick={handlePrint}
+            className="kd-btn kd-btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', fontSize: 13, fontWeight: 600, border: '1px solid #CBD5E1', borderRadius: 8 }}
+            title="Cetak atau Simpan sebagai Dokumen PDF"
+          >
+            <Printer size={16} />
+            <span>Export PDF / Cetak</span>
+          </button>
+        </div>
         {/* Filter Panel */}
         <div className="kd-panel" style={{ padding: 16, marginBottom: 20, background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -377,7 +376,9 @@ export default function KulinerReports() {
                   </tr>
                 </thead>
                 <tbody>
-                  {margin.length === 0 ? (
+                  {loading ? (
+                    <KulinerTableSkeleton cols={6} rows={5} />
+                  ) : margin.length === 0 ? (
                     <tr>
                       <td colSpan="6" style={{ textAlign: 'center', padding: '36px', color: '#94A3B8' }}>
                         {t('kulinerReports.emptyData') || 'Tidak ada data penjualan pada periode ini.'}

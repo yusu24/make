@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { History, Pencil, Trash2, X } from '@/constants/icons';
+import { History, Pencil, Trash2, X, Boxes, AlertTriangle, DollarSign, Building2 } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import useServerTable from '../../../hooks/useServerTable';
 import ServerPagination from '../../../components/ServerPagination';
 import { useToast } from '../../../components/Toast';
@@ -129,12 +131,52 @@ export default function BahanBaku() {
 
   const formatRp = (v) => `Rp ${Math.round(Number(v || 0)).toLocaleString('id-ID')}`;
 
+  const totalIngredients = table.meta?.total || table.rows.length;
+  const lowStockCount = table.rows.filter((i) => i.is_low_stock).length;
+  const totalValue = table.rows.reduce((acc, i) => acc + (Number(i.stock || 0) * Number(i.last_price || 0)), 0);
+  const totalSuppliers = suppliers.length;
+
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerInventory.bahanBakuTitle')}</h1>
-      </div>
       <div className="kd-content">
+        {/* KPI Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatScoreCard
+            title="Total Bahan Baku"
+            value={totalIngredients}
+            status="Master Data"
+            statusVariant="blue"
+            desc="Item bahan baku terdaftar di dapur"
+            icon={Boxes}
+          />
+          <StatScoreCard
+            title="Stok Kritis / Menipis"
+            value={lowStockCount}
+            status={lowStockCount > 0 ? "Perlu Restock" : "Aman"}
+            statusVariant={lowStockCount > 0 ? "rose" : "slate"}
+            desc="Bahan di bawah batas minimum"
+            icon={AlertTriangle}
+            progress={totalIngredients > 0 ? Math.round((lowStockCount / totalIngredients) * 100) : 0}
+            progressVariant="rose"
+          />
+          <StatScoreCard
+            title="Estimasi Valuasi Stok"
+            value={formatRp(totalValue)}
+            status="Aset Bahan"
+            statusVariant="emerald"
+            desc="Nilai total persediaan bahan di dapur"
+            icon={DollarSign}
+          />
+          <StatScoreCard
+            title="Supplier Bahan"
+            value={totalSuppliers}
+            status="Vendor"
+            statusVariant="purple"
+            desc="Distributor & supplier terdaftar"
+            icon={Building2}
+          />
+        </div>
+
         <div className="kd-page-actions" style={{ flexWrap: 'wrap', gap: 10 }}>
           <input
             className="kd-form-input"
@@ -167,7 +209,7 @@ export default function BahanBaku() {
               </thead>
               <tbody>
                 {table.loading ? (
-                  <tr><td colSpan="7" className="text-center py-10 text-slate-400">{t('kulinerInventory.loadingBahan')}</td></tr>
+                  <KulinerTableSkeleton cols={7} rows={table.pageSize > 5 ? 5 : table.pageSize} />
                 ) : table.rows.length === 0 ? (
                   <tr><td colSpan="7" className="text-center py-10 text-slate-400">{t('kulinerInventory.emptyBahan')}</td></tr>
                 ) : (

@@ -3,11 +3,13 @@ import { Link, useLocation } from 'react-router-dom';
 import api from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useToast } from '../../../components/Toast';
 import { PageLoader } from '../../../routes/guards';
 import './CategoryStorefront.css';
 
 const FullMenu = () => {
   const { user } = useAuth();
+  const toast = useToast();
   const location = useLocation();
   const isCashierMode = new URLSearchParams(location.search).get('mode') === 'cashier';
   const isSelfOrderMode = new URLSearchParams(location.search).get('mode') === 'selforder';
@@ -242,10 +244,11 @@ const FullMenu = () => {
       setLastOrder(response.data);
       setCheckoutStep('success');
       setCartItems([]);
+      toast.success('Pesanan berhasil dikirim!');
     } catch (error) {
       console.error('Order failed:', error);
       const msg = error.response?.data?.message || t('fullMenu.orderFail');
-      alert(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }

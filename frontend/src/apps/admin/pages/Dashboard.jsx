@@ -15,6 +15,7 @@ import {
 import './Dashboard.css'
 import './Shared.css'
 import { CardSkeleton, ListSkeleton } from '../../../components/Skeleton'
+import StatScoreCard from '../../../components/ui/StatScoreCard'
 
 const fmt = (n) => new Intl.NumberFormat('id-ID').format(n)
 const fmtRp = (n) => 'Rp ' + new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 }).format(n)
@@ -249,73 +250,52 @@ export default function Dashboard() {
 
         {/* 2 Mini KPI Cards beside Hero: MRR & ARR */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-5">
-          {/* MRR Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-full">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                  <TrendingUp size={20} />
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider leading-tight">MRR (Monthly Recurring)</div>
-                  <div className="text-[11px] text-slate-400 font-medium">Pendapatan Berulang / Bulan</div>
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-1 text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded-full text-[10px] shrink-0">Bulan Ini</span>
-            </div>
-            <div>
-              <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans']">{fmtRp(stats.mrr || 0)}</h3>
-              <span className="text-xs text-indigo-600 font-semibold block mt-1">
-                ARPU: {fmtRp(stats.arpu || 0)} / tenant
-              </span>
-            </div>
-          </div>
+          <StatScoreCard
+            title="MRR (Monthly Recurring)"
+            value={fmtRp(stats.mrr || 0)}
+            status="Bulan Ini"
+            statusVariant="indigo"
+            icon={<TrendingUp size={20} />}
+            desc={`ARPU: ${fmtRp(stats.arpu || 0)} / tenant aktif`}
+            progress={84}
+            progressVariant="indigo"
+            className="h-full"
+          />
 
-          {/* ARR Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-full">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                  <DollarSign size={20} />
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider leading-tight whitespace-nowrap">ARR (Annual Run Rate)</div>
-                  <div className="text-[11px] text-slate-400 font-medium">Proyeksi Tahunan (12x MRR)</div>
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-1 text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full text-[10px] shrink-0">Tahunan</span>
-            </div>
-            <div>
-              <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans']">{fmtRp(stats.arr || (stats.mrr * 12) || 0)}</h3>
-              <span className="text-xs text-emerald-600 font-semibold block mt-1">
-                {stats.active_subscriptions || 0} Langganan Aktif
-              </span>
-            </div>
-          </div>
+          <StatScoreCard
+            title="ARR (Annual Run Rate)"
+            value={fmtRp(stats.arr || (stats.mrr * 12) || 0)}
+            status="Tahunan"
+            statusVariant="emerald"
+            icon={<DollarSign size={20} />}
+            desc={`${stats.active_subscriptions || 0} Langganan Tenant Aktif`}
+            progress={92}
+            progressVariant="emerald"
+            className="h-full"
+          />
         </div>
       </div>
 
       {/* ── 2. Tenant Health & Churn Risk Radar ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-sm">
-              <Activity size={18} className="text-indigo-600" />
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+              <Activity size={18} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 font-['Plus_Jakarta_Sans']">Radar Kesehatan Tenant & Risiko Churn</h3>
-              <p className="text-xs text-slate-500">Klasifikasi tingkat keaktifan seluruh tenant berdasarkan riwayat transaksi &amp; login terakhir.</p>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white font-['Plus_Jakarta_Sans']">Radar Kesehatan Tenant &amp; Risiko Churn</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Klasifikasi tingkat keaktifan seluruh tenant berdasarkan riwayat transaksi &amp; login terakhir.</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate('/tenants')}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors cursor-pointer"
-            >
-              Lihat Semua Tenant →
-            </button>
-          </div>
+          <button
+            onClick={() => navigate('/tenants')}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer border border-indigo-100 dark:border-indigo-800/40 flex items-center gap-1.5"
+          >
+            <span>Lihat Semua Tenant</span>
+            <ArrowRight size={13} />
+          </button>
         </div>
 
         {/* 3 Health Cards Grid */}
@@ -323,20 +303,20 @@ export default function Dashboard() {
           {/* Healthy */}
           <div 
             onClick={() => navigate('/tenants?health_status=healthy')}
-            className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 cursor-pointer transition-all flex items-center justify-between"
+            className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer transition-all flex items-center justify-between"
           >
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold text-emerald-900">Sehat &amp; Aktif</span>
+                <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300">Sehat &amp; Aktif</span>
               </div>
-              <div className="text-2xl font-extrabold text-emerald-950 mt-1 font-['Plus_Jakarta_Sans']">
+              <div className="text-2xl font-extrabold text-emerald-950 dark:text-emerald-100 mt-1 font-['Plus_Jakarta_Sans']">
                 {stats.tenant_health?.healthy || 0}
               </div>
-              <p className="text-[11px] text-emerald-700 mt-0.5">Ada transaksi &lt; 3 hari terakhir</p>
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">Ada transaksi &lt; 3 hari terakhir</p>
             </div>
             <div className="text-right">
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-md">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-1 rounded-lg">
                 {Math.round(((stats.tenant_health?.healthy || 0) / (stats.total_tenants || 1)) * 100)}%
               </span>
             </div>
@@ -345,20 +325,20 @@ export default function Dashboard() {
           {/* Warning */}
           <div 
             onClick={() => navigate('/tenants?health_status=warning')}
-            className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 hover:bg-amber-50 cursor-pointer transition-all flex items-center justify-between"
+            className="p-4 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer transition-all flex items-center justify-between"
           >
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                <span className="text-xs font-bold text-amber-900">Perhatian (Mulai Pasif)</span>
+                <span className="text-xs font-bold text-amber-900 dark:text-amber-300">Perhatian (Mulai Pasif)</span>
               </div>
-              <div className="text-2xl font-extrabold text-amber-950 mt-1 font-['Plus_Jakarta_Sans']">
+              <div className="text-2xl font-extrabold text-amber-950 dark:text-amber-100 mt-1 font-['Plus_Jakarta_Sans']">
                 {stats.tenant_health?.warning || 0}
               </div>
-              <p className="text-[11px] text-amber-700 mt-0.5">Inaktif 4 – 14 hari terakhir</p>
+              <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">Inaktif 4 – 14 hari terakhir</p>
             </div>
             <div className="text-right">
-              <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-md">
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/60 px-2 py-1 rounded-lg">
                 {Math.round(((stats.tenant_health?.warning || 0) / (stats.total_tenants || 1)) * 100)}%
               </span>
             </div>
@@ -367,20 +347,20 @@ export default function Dashboard() {
           {/* At-Risk */}
           <div 
             onClick={() => navigate('/tenants?health_status=at_risk')}
-            className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 hover:bg-rose-50 cursor-pointer transition-all flex items-center justify-between"
+            className="p-4 rounded-xl border border-rose-200 dark:border-rose-800/50 bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-all flex items-center justify-between"
           >
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                <span className="text-xs font-bold text-rose-900">Berisiko Churn</span>
+                <span className="text-xs font-bold text-rose-900 dark:text-rose-300">Berisiko Churn</span>
               </div>
-              <div className="text-2xl font-extrabold text-rose-950 mt-1 font-['Plus_Jakarta_Sans']">
+              <div className="text-2xl font-extrabold text-rose-950 dark:text-rose-100 mt-1 font-['Plus_Jakarta_Sans']">
                 {stats.tenant_health?.at_risk || 0}
               </div>
-              <p className="text-[11px] text-rose-700 mt-0.5">Inaktif &gt; 14 hari / Tidak bayar</p>
+              <p className="text-[11px] text-rose-700 dark:text-rose-400 mt-0.5">Inaktif &gt; 14 hari / Tidak bayar</p>
             </div>
             <div className="text-right">
-              <span className="text-xs font-bold text-rose-700 bg-rose-100 px-2 py-1 rounded-md">
+              <span className="text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-900/60 px-2 py-1 rounded-lg">
                 {Math.round(((stats.tenant_health?.at_risk || 0) / (stats.total_tenants || 1)) * 100)}%
               </span>
             </div>
@@ -390,100 +370,68 @@ export default function Dashboard() {
 
       {/* ── 3. Core 4-Column Metric Grid ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        
-        {/* Total Users */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
-                <Users size={20} />
-              </div>
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider leading-tight">Total Pengguna</div>
-            </div>
-            <span className="inline-flex items-center gap-0.5 text-sky-700 font-bold bg-sky-50 px-2 py-0.5 rounded-full text-[11px] shrink-0">+12%</span>
-          </div>
-          <div>
-            <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] mb-1">{fmt(stats.total_users || 0)}</h3>
-            <span className="text-xs text-slate-400 font-medium block">
-              +{stats.new_users_this_week || 0} pendaftar baru minggu ini
-            </span>
-          </div>
-        </div>
+        <StatScoreCard
+          title="Total Pengguna"
+          value={fmt(stats.total_users || 0)}
+          status="+12% bln ini"
+          statusVariant="sky"
+          icon={<Users size={20} />}
+          desc={`+${stats.new_users_this_week || 0} pendaftar baru minggu ini`}
+          progress={82}
+          progressVariant="sky"
+        />
 
-        {/* Total Tenants */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                <Building2 size={20} />
-              </div>
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider leading-tight whitespace-nowrap">Total Tenant Aktif</div>
-            </div>
-            <span className="inline-flex items-center gap-0.5 text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded-full text-[11px] shrink-0">+8%</span>
-          </div>
-          <div>
-            <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] mb-1">{fmt(stats.total_tenants || 0)}</h3>
-            <span className="text-xs text-slate-400 font-medium block">
-              Tersebar di seluruh modul BIZORA
-            </span>
-          </div>
-        </div>
+        <StatScoreCard
+          title="Total Tenant Aktif"
+          value={fmt(stats.total_tenants || 0)}
+          status="+8% tumbuh"
+          statusVariant="indigo"
+          icon={<Building2 size={20} />}
+          desc="Tersebar di seluruh modul BIZORA"
+          progress={91}
+          progressVariant="indigo"
+          onClick={() => navigate('/tenants')}
+        />
 
-        {/* Active Subscriptions */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                <CreditCard size={20} />
-              </div>
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider leading-tight whitespace-nowrap">Langganan Aktif</div>
-            </div>
-            <span className="inline-flex items-center gap-0.5 text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-full text-[11px] shrink-0">{stats.active_subscriptions || 0} Paket</span>
-          </div>
-          <div>
-            <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] mb-1">{stats.active_subscriptions || 0} Tenant</h3>
-            <span className="text-xs text-slate-400 font-medium block">
-              Paket Basic &amp; Pro Aktif
-            </span>
-          </div>
-        </div>
+        <StatScoreCard
+          title="Langganan Aktif"
+          value={`${stats.active_subscriptions || 0} Tenant`}
+          status={`${stats.active_subscriptions || 0} Paket`}
+          statusVariant="amber"
+          icon={<CreditCard size={20} />}
+          desc="Paket Basic, Pro & Enterprise Aktif"
+          progress={75}
+          progressVariant="amber"
+          onClick={() => navigate('/subscriptions')}
+        />
 
-        {/* Churn Rate */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                <Activity size={20} />
-              </div>
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider leading-tight">Tingkat Churn</div>
-            </div>
-            <span className="inline-flex items-center gap-0.5 text-rose-700 font-bold bg-rose-50 px-2 py-0.5 rounded-full text-[11px] shrink-0">{stats.churn_rate || 0}%</span>
-          </div>
-          <div>
-            <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans'] mb-1">{stats.churn_rate || 0}%</h3>
-            <span className="text-xs text-slate-400 font-medium block">
-              Tingkat retensi tenant {100 - (stats.churn_rate || 0)}%
-            </span>
-          </div>
-        </div>
+        <StatScoreCard
+          title="Tingkat Churn"
+          value={`${stats.churn_rate || 0}%`}
+          status="Stabil Rendah"
+          statusVariant="emerald"
+          icon={<ShieldCheck size={20} />}
+          desc={`Tingkat retensi tenant ${100 - (stats.churn_rate || 0)}% (Aman)`}
+          progress={96}
+          progressVariant="emerald"
+        />
       </div>
 
       {/* ── 3. Charts & Analytics Section ── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         {/* Area Chart: Revenue & Growth */}
-        <div className="card min-w-0" style={{ padding: '20px' }}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
             <div>
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 m-0">
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 dark:text-white m-0">
                 Tren Pertumbuhan Platform
               </h3>
-              <p style={{ fontSize: 12, color: '#8592a3', margin: '2px 0 0 0' }}>
-                Aktivitas pengguna & revenue · {periodLabel}
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Aktivitas pengguna &amp; estimasi pendapatan &bull; {periodLabel}
               </p>
             </div>
             <select
-              className="form-input"
-              style={{ width: 'auto', minWidth: 120, fontSize: 12, padding: '6px 10px' }}
+              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               value={period}
               onChange={e => setPeriod(e.target.value)}
             >
@@ -498,176 +446,175 @@ export default function Dashboard() {
               <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorUsersSneat" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#696cff" stopOpacity={0.35}/>
-                    <stop offset="95%" stopColor="#696cff" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: '#a1acb8', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#a1acb8', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="users" name="Pengguna" stroke="#696cff" strokeWidth={2.5}
-                  fill="url(#colorUsersSneat)" dot={false} activeDot={{ r: 5, fill: '#696cff', stroke: '#fff', strokeWidth: 2 }} />
+                <Area type="monotone" dataKey="users" name="Pengguna" stroke="#6366f1" strokeWidth={2.5}
+                  fill="url(#colorUsersSneat)" dot={false} activeDot={{ r: 5, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Business Category Composition & Progress */}
-        <div className="card min-w-0" style={{ padding: '20px' }}>
-          <div className="flex items-center justify-between gap-2 mb-4">
-            <div>
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 m-0">
-                Distribusi Kategori Bisnis
-              </h3>
-              <p style={{ fontSize: 12, color: '#8592a3', margin: '2px 0 0 0' }}>
-                Komposisi tenant terdaftar
-              </p>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm min-w-0 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-5">
+              <div>
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 dark:text-white m-0">
+                  Distribusi Kategori Bisnis
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Komposisi tenant terdaftar per sektor UMKM
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/categories')}
+                className="px-3 py-1 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <span>Kelola Kategori</span>
+                <ArrowRight size={13} />
+              </button>
             </div>
-            <button
-              onClick={() => navigate('/categories')}
-              className="btn btn-ghost btn-sm shrink-0"
-              style={{ fontSize: 12, color: '#696cff' }}
-            >
-              Kelola Kategori →
-            </button>
+
+            <div className="space-y-3.5">
+              {catData.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-xs">
+                  Memuat data distribusi kategori...
+                </div>
+              ) : (
+                catData.map((cat, idx) => {
+                  const percent = Math.round((cat.value / totalTenantCount) * 100) || 0
+                  return (
+                    <div key={idx} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: cat.color || '#6366f1' }} />
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{cat.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                          <span>{fmt(cat.value)} Tenant</span>
+                          <span className="font-bold text-slate-900 dark:text-white w-9 text-right">
+                            {percent}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${Math.max(percent, 4)}%`,
+                            background: cat.color || '#6366f1'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {catData.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '30px 0', color: '#8592a3', fontSize: 13 }}>
-                Memuat data kategori...
-              </div>
-            ) : (
-              catData.map((cat, idx) => {
-                const percent = Math.round((cat.value / totalTenantCount) * 100) || 0
-                return (
-                  <div key={idx} className="cat-progress-item">
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12.5 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 10, height: 10, borderRadius: 3, background: cat.color || '#696cff' }} />
-                        <span style={{ fontWeight: 600, color: '#32475c' }}>{cat.name}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ color: '#8592a3' }}>{fmt(cat.value)} Tenant</span>
-                        <span style={{ fontWeight: 700, color: '#32475c', minWidth: 35, textAlign: 'right' }}>
-                          {percent}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="cat-progress-bar-bg">
-                      <div
-                        className="cat-progress-bar-fill"
-                        style={{
-                          width: `${Math.max(percent, 4)}%`,
-                          background: cat.color || '#696cff'
-                        }}
-                      />
-                    </div>
-                  </div>
-                )
-              })
-            )}
+          <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+            <span>Total Tenant Aktif: <strong>{totalTenantCount}</strong></span>
+            <span className="text-indigo-500 font-medium">100% Tercakup</span>
           </div>
         </div>
       </div>
 
       {/* ── 4. Recent Users / Tenants Table ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div>
-            <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 m-0">
-              Pendaftar & Pengguna Terbaru
+            <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 dark:text-white m-0">
+              Pendaftar &amp; Pengguna Terbaru
             </h3>
-            <p style={{ fontSize: 12, color: '#8592a3', margin: '2px 0 0 0' }}>
-              5 pengguna yang baru bergabung ke platform BIZORA
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              5 Pengguna yang baru bergabung ke ekosistem BIZORA SaaS
             </p>
           </div>
           <button
             onClick={() => navigate('/users')}
-            className="btn btn-outline-primary btn-sm"
-            style={{ fontSize: 12 }}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer border border-indigo-100 dark:border-indigo-800/40 flex items-center gap-1.5 w-fit"
           >
-            Lihat Semua Pengguna →
+            <span>Lihat Semua Pengguna</span>
+            <ArrowRight size={13} />
           </button>
         </div>
 
-        <div className="table-responsive" style={{ margin: 0, border: 'none', boxShadow: 'none' }}>
-          <table className="table" style={{ width: '100%' }}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
             <thead>
-              <tr>
-                <th style={{ paddingLeft: 8, fontWeight: 700 }}>Pengguna</th>
-                <th style={{ fontWeight: 700 }}>Role / Akses</th>
-                <th style={{ fontWeight: 700 }}>Status</th>
-                <th style={{ fontWeight: 700 }}>Waktu Bergabung</th>
-                <th style={{ textAlign: 'right', paddingRight: 8, fontWeight: 700 }}>Aksi</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
+                <th className="pb-3 pl-2">Pengguna</th>
+                <th className="pb-3">Role / Akses</th>
+                <th className="pb-3">Status</th>
+                <th className="pb-3">Waktu Bergabung</th>
+                <th className="pb-3 pr-2 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
               {loading ? (
                 <tr>
-                  <td colSpan={5} style={{ padding: 24, textAlign: 'center', fontWeight: 400 }}>
+                  <td colSpan={5} className="py-6 text-center">
                     <ListSkeleton count={4} />
                   </td>
                 </tr>
               ) : recentUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ padding: 24, textAlign: 'center', color: '#8592a3', fontWeight: 400 }}>
+                  <td colSpan={5} className="py-8 text-center text-slate-400">
                     Belum ada data pendaftar baru
                   </td>
                 </tr>
               ) : (
                 recentUsers.map(u => (
-                  <tr key={u.id}>
-                    <td style={{ paddingLeft: 8, fontWeight: 400 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 8,
-                          background: u.role === 'admin' ? '#eaeaff' : '#f0f2f5',
-                          color: u.role === 'admin' ? '#696cff' : '#566a7f',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 400,
-                          fontSize: 12.5
-                        }}>
+                  <tr key={u.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 pl-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold ${
+                          u.role === 'admin'
+                            ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                        }`}>
                           {u.name?.slice(0, 2).toUpperCase() || 'US'}
                         </div>
                         <div>
-                          <div style={{ fontWeight: 400, color: '#32475c', fontSize: 13.5 }}>{u.name}</div>
-                          <div style={{ fontSize: 11.5, color: '#8592a3', fontWeight: 400 }}>{u.email}</div>
+                          <div className="font-semibold text-slate-900 dark:text-white text-xs">{u.name}</div>
+                          <div className="text-[11px] text-slate-400 font-normal">{u.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td style={{ fontWeight: 400 }}>
-                      <span className={`badge ${u.role === 'admin' ? 'badge-primary' : 'badge-secondary'}`} style={{ fontWeight: 400 }}>
+                    <td className="py-3.5">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                        u.role === 'admin'
+                          ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                      }`}>
                         {u.role === 'admin' ? '⭐ Super Admin' : '👤 Customer'}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 400 }}>
-                      <span className={`badge ${u.status === 'active' ? 'badge-success' : 'badge-warning'}`} style={{ fontWeight: 400 }}>
-                        {u.status === 'active' ? '● Aktif' : '● Pending'}
+                    <td className="py-3.5">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                        u.status === 'active'
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40'
+                          : 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                        {u.status === 'active' ? 'Aktif' : 'Pending'}
                       </span>
                     </td>
-                    <td style={{ fontSize: 12.5, color: '#8592a3', fontWeight: 400 }}>
+                    <td className="py-3.5 text-slate-500 dark:text-slate-400 text-xs">
                       {u.joined || 'Baru Saja'}
                     </td>
-                    <td style={{ textAlign: 'right', paddingRight: 8, fontWeight: 400 }}>
+                    <td className="py-3.5 pr-2 text-right">
                       <button
                         onClick={() => navigate('/users')}
-                        className="btn btn-secondary btn-sm"
-                        style={{
-                          width: 30,
-                          height: 30,
-                          padding: 0,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderRadius: 8,
-                          color: '#696cff'
-                        }}
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         title="Buka Detail Pengguna"
                       >
                         <Eye size={14} />

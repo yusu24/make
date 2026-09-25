@@ -4,9 +4,10 @@ import '../retail-print.css';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useReactToPrint } from 'react-to-print';
-import { FileText, Calendar, Printer } from '@/constants/icons';
+import { FileText, Calendar, Printer, Receipt } from '@/constants/icons';
 import { useToast } from '../../../components/Toast';
 import Skeleton from '../../../components/Skeleton';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
   RetailPrintHeader, 
@@ -298,23 +299,31 @@ export default function TaxReport() {
             <div className="space-y-6">
               {/* Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                  <p className="text-gray-500 text-sm font-semibold mb-1">Total Penjualan (Termasuk Pajak)</p>
-                  <h3 className="text-2xl font-bold text-gray-800">{formatRp(data.summary?.total_sales_with_tax)}</h3>
-                </div>
-                
-                <div className="bg-blue-50 p-5 rounded-xl shadow-sm border border-blue-100 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <FileText size={64} className="text-blue-600" />
-                  </div>
-                  <p className="text-blue-600 text-sm font-semibold mb-1">Total Pajak Terkumpul</p>
-                  <h3 className="text-2xl font-bold text-blue-700">{formatRp(data.summary?.total_tax)}</h3>
-                </div>
+                <StatScoreCard
+                  title="Total Penjualan (Inc. Pajak)"
+                  value={formatRp(data.summary?.total_sales_with_tax || 0)}
+                  subtitle="Akumulasi omzet kotor termasuk komponen pajak"
+                  icon={Receipt}
+                  badgeText="Omzet Bruto"
+                  badgeVariant="emerald"
+                  progress={100}
+                  progressVariant="emerald"
+                />
+                <StatScoreCard
+                  title="Total Pajak Terkumpul (PPN)"
+                  value={formatRp(data.summary?.total_tax || 0)}
+                  subtitle="Estimasi liabilitas PPN Keluaran periode ini"
+                  icon={FileText}
+                  badgeText="Pajak Terhimpun"
+                  badgeVariant="blue"
+                  progress={data.summary?.total_sales_with_tax > 0 ? Math.min(100, Math.round(((data.summary?.total_tax || 0) / data.summary?.total_sales_with_tax) * 100)) : 0}
+                  progressVariant="blue"
+                />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col">
-                  <h3 className="text-lg font-bold text-gray-800 mb-4">Grafik Pajak Harian</h3>
+                <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all p-5 flex flex-col">
+                  <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900 dark:text-white mb-4">Grafik Pajak Harian</h3>
                   {chartData.length > 0 ? (
                     <div className="flex-1 min-h-[250px]">
                       <ResponsiveContainer width="100%" height="100%">
@@ -334,9 +343,9 @@ export default function TaxReport() {
                   )}
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                  <div className="p-4 border-b border-gray-100 bg-gray-50">
-                    <h3 className="font-bold text-gray-800">Rincian Transaksi Pajak</h3>
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
+                  <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                    <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 dark:text-white text-sm">Rincian Transaksi Pajak</h3>
                   </div>
                   <div className="overflow-auto max-h-[300px]">
                     <table className="w-full text-left text-sm">

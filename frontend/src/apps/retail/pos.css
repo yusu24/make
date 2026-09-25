@@ -12,6 +12,8 @@
   --pos-text: #1A1A1A;
   --pos-text-muted: #6B7280;
   --pos-card-bg: #ffffff;
+  --pos-top-bg: #f8fafc;
+  --pos-hover-bg: #f1f5f9;
 
   position: absolute;
   top: 0;
@@ -20,7 +22,23 @@
   bottom: 0;
   display: flex;
   background: var(--pos-gray-bg);
+  color: var(--pos-text);
   overflow: hidden;
+}
+
+/* ── Dark Mode Support ── */
+.dark .pos-container,
+[data-theme='dark'] .pos-container {
+  --pos-teal: #10b981;
+  --pos-teal-light: rgba(16, 185, 129, 0.15);
+  --pos-teal-mid: #059669;
+  --pos-gray-bg: #090d16;
+  --pos-gray-border: #1e293b;
+  --pos-text: #f8fafc;
+  --pos-text-muted: #94a3b8;
+  --pos-card-bg: #0f172a;
+  --pos-top-bg: #0f172a;
+  --pos-hover-bg: #1e293b;
 }
 
 /* ── Main cashier catalog area ── */
@@ -33,7 +51,7 @@
 }
 
 .pos-top-bar {
-  background: #f8fafc;
+  background: var(--pos-top-bg);
   padding: 12px 20px;
   display: flex;
   align-items: center;
@@ -49,7 +67,7 @@
   height: 38px;
   border-radius: 12px;
   border: 1px solid var(--pos-gray-border);
-  background: #ffffff;
+  background: var(--pos-card-bg);
   color: var(--pos-text-muted);
   cursor: pointer;
   flex-shrink: 0;
@@ -57,7 +75,7 @@
 }
 
 .pos-menu-toggle-btn:hover {
-  background: #f1f5f9;
+  background: var(--pos-hover-bg);
   color: var(--pos-text);
   border-color: #cbd5e1;
 }

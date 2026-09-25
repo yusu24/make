@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useToast } from '../../../components/Toast';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import api from '../../../services/api';
 import './KulinerDashboard.css';
 import { 
@@ -23,6 +27,7 @@ import {
 
 const CulinaryReviews = () => {
   const { t } = useTranslation();
+  const toast = useToast();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -119,8 +124,9 @@ const CulinaryReviews = () => {
       if (selectedReview && selectedReview.id === id) {
         setSelectedReview(prev => ({ ...prev, is_displayed: !currentStatus }));
       }
+      toast.success(currentStatus ? 'Ulasan disembunyikan' : 'Ulasan ditampilkan ke publik');
     } catch (error) {
-      alert('Gagal memperbarui status ulasan.');
+      toast.error('Gagal memperbarui status ulasan.');
     }
   };
 
@@ -132,8 +138,9 @@ const CulinaryReviews = () => {
         setSelectedReview(null);
       }
       setDeleteConfirmId(null);
+      toast.success('Ulasan berhasil dihapus.');
     } catch (error) {
-      alert('Gagal menghapus ulasan.');
+      toast.error('Gagal menghapus ulasan.');
     }
   };
 
@@ -174,63 +181,41 @@ const CulinaryReviews = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <div>
-          <h1 className="kd-page-title">Ulasan & Feedback Pelanggan</h1>
-          <p className="text-xs text-slate-500" style={{ marginTop: 2 }}>
-            Kelola dan moderasi testimoni dari pembeli dan pengunjung storefront resto.
-          </p>
-        </div>
-      </div>
-
       <div className="kd-content">
         {/* ── Stat Cards Row ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 18 }}>
-          <div className="kd-panel" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <MessageSquare size={20} />
-            </div>
-            <div>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Ulasan</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a' }}>{stats.total}</div>
-            </div>
-          </div>
-
-          <div className="kd-panel" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fef3c7', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Star size={20} style={{ fill: '#d97706' }} />
-            </div>
-            <div>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Rata-rata Rating</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a' }}>
-                {stats.averageRating} <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>/ 5.0</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="kd-panel" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kepuasan Positif</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#059669' }}>{stats.positiveRate}%</div>
-            </div>
-          </div>
-
-          <div className="kd-panel" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: stats.complaints > 0 ? '#fff1f2' : '#f8fafc', color: stats.complaints > 0 ? '#e11d48' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {stats.complaints > 0 ? <AlertTriangle size={20} /> : <CheckCircle2 size={20} />}
-            </div>
-            <div>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {stats.complaints > 0 ? 'Perlu Ditangani' : 'Menunggu Moderasi'}
-              </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: stats.complaints > 0 ? '#e11d48' : '#0f172a' }}>
-                {stats.complaints > 0 ? `${stats.complaints} Keluhan` : `${stats.pending} Ulasan`}
-              </div>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+          <StatScoreCard
+            title="Total Ulasan"
+            value={loading ? '...' : stats.total}
+            status="Semua"
+            statusVariant="blue"
+            icon={MessageSquare}
+            desc="Ulasan dari seluruh pelanggan"
+          />
+          <StatScoreCard
+            title="Rata-rata Rating"
+            value={loading ? '...' : `${stats.averageRating} / 5.0`}
+            status="Kepuasan"
+            statusVariant="amber"
+            icon={Star}
+            desc="Skor rata-rata pengalaman bersantap"
+          />
+          <StatScoreCard
+            title="Kepuasan Positif"
+            value={loading ? '...' : `${stats.positiveRate}%`}
+            status="Rating 4-5"
+            statusVariant="emerald"
+            icon={Sparkles}
+            desc="Persentase ulasan bernada sangat puas"
+          />
+          <StatScoreCard
+            title={stats.complaints > 0 ? "Perlu Ditangani" : "Menunggu Moderasi"}
+            value={loading ? '...' : (stats.complaints > 0 ? `${stats.complaints} Keluhan` : `${stats.pending} Ulasan`)}
+            status={stats.complaints > 0 ? "Keluhan" : "Moderasi"}
+            statusVariant={stats.complaints > 0 ? "rose" : "slate"}
+            icon={stats.complaints > 0 ? AlertTriangle : CheckCircle2}
+            desc={stats.complaints > 0 ? "Ulasan bintang 1-2 butuh respon" : "Ulasan baru siap dipublikasikan"}
+          />
         </div>
 
         {/* ── Table Panel & Filters ── */}
@@ -329,40 +314,38 @@ const CulinaryReviews = () => {
             </div>
           </div>
 
-          {/* Table */}
-          {loading ? (
-            <div style={{ padding: '50px 20px', textAlign: 'center' }}>
-              <div className="spinner" style={{ width: 34, height: 34, margin: '0 auto 14px' }}></div>
-              <p className="text-slate-400" style={{ fontSize: 13 }}>{t('kulinerCommon.loadingData') || 'Memuat data ulasan...'}</p>
-            </div>
-          ) : filteredReviews.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '50px 20px' }}>
-              <MessageSquare size={36} className="text-slate-300 mx-auto mb-2" />
-              <h4 style={{ fontWeight: 700, color: '#1e293b', fontSize: 15 }}>
-                {searchTerm || statusFilter !== 'all' || ratingFilter !== 'all' 
-                  ? 'Tidak ada ulasan yang cocok dengan filter' 
-                  : 'Belum ada ulasan pelanggan'}
-              </h4>
-              <p style={{ fontSize: 12.5, color: '#94a3b8', marginTop: 4 }}>
-                Ulasan yang dikirimkan pelanggan dari storefront akan otomatis muncul di tabel ini.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="kd-table-container" style={{ overflowX: 'auto' }}>
-                <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: 44, textAlign: 'center' }}>#</th>
-                      <th style={{ minWidth: 190 }}>Pelanggan</th>
-                      <th style={{ width: 130 }}>Rating</th>
-                      <th style={{ minWidth: 260 }}>Ulasan / Komentar</th>
-                      <th style={{ width: 140 }}>Status</th>
-                      <th style={{ width: 130, textAlign: 'right' }}>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedReviews.map((review, index) => {
+          {/* Table Container */}
+          <div className="kd-table-container" style={{ overflowX: 'auto' }}>
+            <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ width: 44, textAlign: 'center' }}>#</th>
+                  <th style={{ minWidth: 190 }}>Pelanggan</th>
+                  <th style={{ width: 130 }}>Rating</th>
+                  <th style={{ minWidth: 260 }}>Ulasan / Komentar</th>
+                  <th style={{ width: 140 }}>Status</th>
+                  <th style={{ width: 130, textAlign: 'right' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <KulinerTableSkeleton cols={6} rows={5} />
+                ) : filteredReviews.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '50px 20px' }}>
+                      <MessageSquare size={36} className="text-slate-300 mx-auto mb-2" />
+                      <h4 style={{ fontWeight: 700, color: '#1e293b', fontSize: 15 }}>
+                        {searchTerm || statusFilter !== 'all' || ratingFilter !== 'all' 
+                          ? 'Tidak ada ulasan yang cocok dengan filter' 
+                          : 'Belum ada ulasan pelanggan'}
+                      </h4>
+                      <p style={{ fontSize: 12.5, color: '#94a3b8', marginTop: 4 }}>
+                        Ulasan yang dikirimkan pelanggan dari storefront akan otomatis muncul di tabel ini.
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedReviews.map((review, index) => {
                       const isLowRating = Number(review.rating) <= 2;
                       const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
 
@@ -561,88 +544,20 @@ const CulinaryReviews = () => {
                           </td>
                         </tr>
                       );
-                    })}
+                    }))}
                   </tbody>
                 </table>
               </div>
 
               {/* Pagination Bar */}
-              <div 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between', 
-                  flexWrap: 'wrap', 
-                  gap: 12, 
-                  marginTop: 16, 
-                  paddingTop: 14, 
-                  borderTop: '1px solid #f1f5f9' 
-                }}
-              >
-                <div style={{ fontSize: 12, color: '#64748b' }}>
-                  Menampilkan <b>{Math.min(filteredReviews.length, (currentPage - 1) * itemsPerPage + 1)}</b>-<b>{Math.min(filteredReviews.length, currentPage * itemsPerPage)}</b> dari <b>{filteredReviews.length}</b> ulasan
-                </div>
-
-                {totalPages > 1 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      style={{
-                        padding: '5px 8px',
-                        borderRadius: 6,
-                        border: '1px solid #cbd5e1',
-                        background: '#fff',
-                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                        opacity: currentPage === 1 ? 0.5 : 1,
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <ChevronLeft size={14} />
-                    </button>
-                    
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 6,
-                          border: page === currentPage ? 'none' : '1px solid #e2e8f0',
-                          background: page === currentPage ? '#2563eb' : '#ffffff',
-                          color: page === currentPage ? '#ffffff' : '#475569',
-                          fontWeight: page === currentPage ? 700 : 500,
-                          fontSize: 11.5,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {page}
-                      </button>
-                    ))}
-
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      style={{
-                        padding: '5px 8px',
-                        borderRadius: 6,
-                        border: '1px solid #cbd5e1',
-                        background: '#fff',
-                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                        opacity: currentPage === totalPages ? 0.5 : 1,
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <ChevronRight size={14} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+              <ClientPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                totalItems={filteredReviews.length}
+                itemsPerPage={itemsPerPage}
+                showSizeSelector={false}
+              />
         </div>
 
         {/* ── Reputation Tip Card ── */}

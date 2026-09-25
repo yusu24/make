@@ -25,7 +25,7 @@ class RetailOrderService
             $requestedItems = collect($data['items']);
             $productIds = $requestedItems->pluck('product_id')->unique();
 
-            $products = RetailProduct::whereIn('id', $productIds)->get()->keyBy('id');
+            $products = RetailProduct::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
             if ($products->count() !== $productIds->count()) {
                 throw new \RuntimeException('Salah satu produk tidak ditemukan.');
             }
@@ -68,6 +68,7 @@ class RetailOrderService
                 if ($serialNumber) {
                     $serial = \App\Models\RetailProductSerial::where('product_id', $product->id)
                         ->where('serial_number', $serialNumber)
+                        ->lockForUpdate()
                         ->first();
                     if (!$serial || $serial->status !== 'available') {
                         throw new \RuntimeException("Serial Number '{$serialNumber}' untuk produk '{$product->name}' tidak tersedia.");
@@ -77,6 +78,7 @@ class RetailOrderService
                 if ($batchNo) {
                     $batch = \App\Models\RetailProductBatch::where('product_id', $product->id)
                         ->where('batch_no', $batchNo)
+                        ->lockForUpdate()
                         ->first();
                     if (!$batch || $batch->stock < $deductQty) {
                         throw new \RuntimeException("Stok batch '{$batchNo}' untuk produk '{$product->name}' tidak mencukupi.");
@@ -205,6 +207,7 @@ class RetailOrderService
                 if ($item['batch_no']) {
                     $batch = \App\Models\RetailProductBatch::where('product_id', $item['product']->id)
                         ->where('batch_no', $item['batch_no'])
+                        ->lockForUpdate()
                         ->first();
                     if ($batch) {
                         $batch->stock -= $item['deduct_qty'];
@@ -216,6 +219,7 @@ class RetailOrderService
                 if ($item['serial_number']) {
                     $serial = \App\Models\RetailProductSerial::where('product_id', $item['product']->id)
                         ->where('serial_number', $item['serial_number'])
+                        ->lockForUpdate()
                         ->first();
                     if ($serial) {
                         $serial->status = 'sold';

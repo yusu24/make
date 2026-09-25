@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../../contexts/I18nContext';
-import { Eye } from 'lucide-react';
+import { Eye, TrendingUp, TrendingDown, Wallet, X } from '@/constants/icons';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import ClientPagination from '../components/ClientPagination';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
+import { useToast } from '../../../components/Toast';
 import api from '../../../services/api';
 import KulinerLoading from '../components/KulinerLoading';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import './KulinerDashboard.css';
 
 const CulinaryTransactions = () => {
   const { t } = useTranslation();
+  const toast = useToast();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -72,9 +76,10 @@ const CulinaryTransactions = () => {
       await api.post('/kuliner/admin/expenses', expenseForm);
       setIsExpenseModalOpen(false);
       setExpenseForm({ date: new Date().toISOString().split('T')[0], category: 'Bahan Baku', description: '', amount: '' });
+      toast.success('Pengeluaran berhasil dicatat');
       fetchTransactions();
     } catch (error) {
-      alert(t('kulinerTransactions.alertExpenseFail') || 'Gagal mencatat pengeluaran.');
+      toast.error(t('kulinerTransactions.alertExpenseFail') || 'Gagal mencatat pengeluaran.');
     } finally {
       setIsSaving(false);
     }
@@ -110,33 +115,38 @@ const CulinaryTransactions = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerTransactions.title') || 'Buku Kas & Transaksi'}</h1>
-      </div>
-
       <div className="kd-content">
-        {loading ? (
-          <KulinerLoading message={t('kulinerTransactions.loading') || 'Menyiapkan buku kas...'} />
-        ) : (
-          <>
+        {/* KPI Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <StatScoreCard
+            title={t('kulinerTransactions.summaryTotalIncome') || 'Total Kas Masuk'}
+            value={loading ? '...' : formatRp(balanceSummary.totalIncome)}
+            status="Pemasukan"
+            statusVariant="emerald"
+            desc="Arus kas masuk dari pesanan & penjualan"
+            icon={TrendingUp}
+          />
+          <StatScoreCard
+            title={t('kulinerTransactions.summaryTotalExpense') || 'Total Kas Keluar'}
+            value={loading ? '...' : formatRp(balanceSummary.totalExpense)}
+            status="Pengeluaran"
+            statusVariant="rose"
+            desc="Arus kas keluar operasional & belanja bahan"
+            icon={TrendingDown}
+          />
+          <StatScoreCard
+            title={t('kulinerTransactions.summaryNetBalance') || 'Saldo Bersih (Profit)'}
+            value={loading ? '...' : formatRp(balanceSummary.netBalance)}
+            status={balanceSummary.netBalance >= 0 ? "Surplus" : "Defisit"}
+            statusVariant={balanceSummary.netBalance >= 0 ? "emerald" : "rose"}
+            desc="Selisih kas masuk dikurangi kas keluar"
+            icon={Wallet}
+          />
+        </div>
+
             <div className="kd-page-actions">
               <button className="kd-btn kd-btn-secondary" onClick={() => setIsExpenseModalOpen(true)}>{t('kulinerTransactions.addExpenseBtn') || '+ Catat Pengeluaran'}</button>
               <button className="kd-btn kd-btn-primary" onClick={() => setIsReconModalOpen(true)}>{t('kulinerTransactions.reconBtn') || '📊 Rekonsiliasi Kas'}</button>
-            </div>
-            {/* LEDGER CARDS */}
-            <div className="kd-ledger-grid" style={{ marginBottom: 32 }}>
-              <div className="kd-panel" style={{ background: '#f0fdf4', borderColor: '#22c55e' }}>
-                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerTransactions.summaryTotalIncome') || 'Total Kas Masuk'}</div>
-                <div className="text-3xl font-black text-green-800">{formatRp(balanceSummary.totalIncome)}</div>
-              </div>
-              <div className="kd-panel" style={{ background: '#fef2f2', borderColor: '#ef4444' }}>
-                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerTransactions.summaryTotalExpense') || 'Total Kas Keluar'}</div>
-                <div className="text-3xl font-black text-red-700">{formatRp(balanceSummary.totalExpense)}</div>
-              </div>
-              <div className="kd-panel" style={{ background: '#f8fafc', borderLeft: '4px solid #1e293b' }}>
-                <div className="text-xs text-slate-900 font-bold uppercase tracking-wider mb-2">{t('kulinerTransactions.summaryNetBalance') || 'Saldo Bersih (Profit)'}</div>
-                <div className="text-3xl font-black text-slate-800">{formatRp(balanceSummary.netBalance)}</div>
-              </div>
             </div>
             
             <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', marginTop: 20 }}>
@@ -222,7 +232,9 @@ const CulinaryTransactions = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTransactions.length === 0 ? (
+                    {loading ? (
+                      <KulinerTableSkeleton cols={7} rows={itemsPerPage > 5 ? 5 : itemsPerPage} />
+                    ) : filteredTransactions.length === 0 ? (
                       <tr>
                         <td colSpan="7" style={{ textAlign: 'center', padding: '36px', color: '#94A3B8' }}>
                           {t('kulinerTransactions.emptyTransactions') || 'Tidak ada transaksi yang cocok dengan filter.'}
@@ -459,8 +471,6 @@ const CulinaryTransactions = () => {
                 </div>
               </div>
             )}
-          </>
-        )}
       </div>
     </KulinerAdminLayout>
   );

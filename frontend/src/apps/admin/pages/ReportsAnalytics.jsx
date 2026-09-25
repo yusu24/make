@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../../lib/api'
 import './Shared.css'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import {
   BarChart2,
   TrendingUp,
@@ -155,24 +156,15 @@ export default function ReportsAnalytics({ defaultTab = 'overview' }) {
   const totalTenants = planDist.reduce((s, p) => s + (Number(p.value) || 0), 0);
   const avgRevPerTenant = totalTenants ? Math.round(totalRevenue / totalTenants) : 0;
 
-
-  const titleMap = {
-    overview: 'Laporan Overview Platform',
-    revenue: 'Laporan Pendapatan & Omzet',
-    tenants: 'Analitik & Performa Tenant',
-  }
-
   return (
-    <div className="animate-fade-in">
-      {/* ── Header ── */}
-      <div className="page-header mb-2">
-        <h2 className="page-title">{titleMap[activeTab] || 'Laporan & Analitik'}</h2>
-      </div>
-
-      {/* ── Action Bar below title ── */}
-      <div className="flex justify-end mb-4">
-        <button className="btn btn-secondary flex items-center gap-1.5" onClick={() => alert('Export segera hadir!')}>
-          <Download size={15} />
+    <div className="animate-fade-in space-y-6">
+      {/* ── Top Actions Toolbar ── */}
+      <div className="flex items-center justify-end gap-2.5">
+        <button
+          onClick={() => alert('Export format Excel/CSV sedang diproses!')}
+          className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+        >
+          <Download size={15} className="text-slate-500 dark:text-slate-400" />
           <span>Export Data</span>
         </button>
       </div>
@@ -180,28 +172,40 @@ export default function ReportsAnalytics({ defaultTab = 'overview' }) {
       {/* ── OVERVIEW TAB ── */}
       {activeTab === 'overview' && (
         <>
-          {/* KPI cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-            {[
-              { label: 'Total Tenant', value: stats?.total_tenants ?? totalTenants, icon: Store, color: '#3b82f6', bg: 'bg-blue-50 text-blue-600', sub: 'Terdaftar' },
-              { label: 'Total Revenue', value: fmtRp(totalRevenue), icon: DollarSign, color: '#10b981', bg: 'bg-emerald-50 text-emerald-600', sub: 'Akumulasi' },
-              { label: 'Avg Revenue/Tenant', value: fmtRp(avgRevPerTenant), icon: TrendingUp, color: '#8b5cf6', bg: 'bg-violet-50 text-violet-600', sub: 'Per bulan' },
-              { label: 'Pengguna Aktif', value: stats?.total_users ?? 0, icon: Users, color: '#f59e0b', bg: 'bg-amber-50 text-amber-600', sub: 'User terdaftar' },
-            ].map(card => {
-              const IconComp = card.icon;
-              return (
-                <div key={card.label} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-                  <div className={`w-11 h-11 rounded-xl ${card.bg} flex items-center justify-center shrink-0`}>
-                    <IconComp size={22} strokeWidth={2} />
-                  </div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{card.label}</p>
-                    <div className="text-2xl md:text-3xl font-extrabold tracking-tight font-['Plus_Jakarta_Sans'] truncate" style={{ color: card.color }}>{card.value}</div>
-                    <p className="text-xs text-slate-400 mt-0.5">{card.sub}</p>
-                  </div>
-                </div>
-              );
-            })}
+          {/* KPI cards with StatScoreCard */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatScoreCard
+              title="TOTAL TENANT"
+              value={stats?.total_tenants ?? totalTenants}
+              icon={Store}
+              statusBadge={{ text: "Terdaftar", color: "blue" }}
+              subtitle="Basis tenant platform aktif"
+              progressBar={{ value: 88, color: "bg-blue-500" }}
+            />
+            <StatScoreCard
+              title="TOTAL REVENUE"
+              value={fmtRp(totalRevenue)}
+              icon={DollarSign}
+              statusBadge={{ text: "Akumulasi", color: "emerald" }}
+              subtitle="Omzet agregat seluruh tenant"
+              progressBar={{ value: 94, color: "bg-emerald-500" }}
+            />
+            <StatScoreCard
+              title="AVG REVENUE/TENANT"
+              value={fmtRp(avgRevPerTenant)}
+              icon={TrendingUp}
+              statusBadge={{ text: "Per Bulan", color: "violet" }}
+              subtitle="ARPU rata-rata operasional"
+              progressBar={{ value: 76, color: "bg-violet-500" }}
+            />
+            <StatScoreCard
+              title="PENGGUNA TERDAFTAR"
+              value={stats?.total_users ?? 0}
+              icon={Users}
+              statusBadge={{ text: "Aktif", color: "amber" }}
+              subtitle="Pengguna & staff platform"
+              progressBar={{ value: 92, color: "bg-amber-500" }}
+            />
           </div>
 
           <div className="reports-overview-grid">
@@ -237,155 +241,218 @@ export default function ReportsAnalytics({ defaultTab = 'overview' }) {
       )}
 
       {/* ── REVENUE TAB ── */}
-      {activeTab === 'revenue' && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-            {[
-              { label: 'Total Revenue', value: fmtRp(totalRevenue), icon: DollarSign, color: '#10b981', bg: 'bg-emerald-50 text-emerald-600' },
-              { label: 'Bulan Terbaik', value: monthlyRevenue.length > 0 ? monthlyRevenue.reduce((max, m) => m.revenue > max.revenue ? m : max, monthlyRevenue[0]).month : '—', icon: Trophy, color: '#f59e0b', bg: 'bg-amber-50 text-amber-600' },
-              { label: 'Pertumbuhan MoM', value: (() => {
-                  if (monthlyRevenue.length < 2) return '—';
-                  const last = monthlyRevenue[monthlyRevenue.length - 1].revenue;
-                  const prev = monthlyRevenue[monthlyRevenue.length - 2].revenue;
-                  if (prev === 0) return '—';
-                  const growth = ((last - prev) / prev * 100).toFixed(1);
-                  return `${growth > 0 ? '+' : ''}${growth}%`;
-              })(), icon: TrendingUp, color: '#3b82f6', bg: 'bg-blue-50 text-blue-600' },
-              { label: 'Proyeksi Bulan Depan', value: (() => {
-                  if (monthlyRevenue.length === 0) return '—';
-                  const avg = totalRevenue / monthlyRevenue.length;
-                  return fmtRp(Math.round(avg * 1.1));
-              })(), icon: Target, color: '#8b5cf6', bg: 'bg-violet-50 text-violet-600' },
-            ].map(c => {
-              const IconComp = c.icon;
-              return (
-                <div key={c.label} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-                  <div className={`w-11 h-11 rounded-xl ${c.bg} flex items-center justify-center shrink-0`}>
-                    <IconComp size={22} strokeWidth={2} />
-                  </div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{c.label}</p>
-                    <div className="text-2xl md:text-3xl font-extrabold tracking-tight font-['Plus_Jakarta_Sans'] truncate" style={{ color: c.color }}>{c.value}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      {activeTab === 'revenue' && (() => {
+        const bestMonth = monthlyRevenue.length > 0 ? monthlyRevenue.reduce((max, m) => m.revenue > max.revenue ? m : max, monthlyRevenue[0]).month : '—';
+        const momGrowth = (() => {
+          if (monthlyRevenue.length < 2) return { text: '—', val: 50, positive: true };
+          const last = monthlyRevenue[monthlyRevenue.length - 1].revenue;
+          const prev = monthlyRevenue[monthlyRevenue.length - 2].revenue;
+          if (prev === 0) return { text: '—', val: 50, positive: true };
+          const growth = ((last - prev) / prev * 100);
+          return {
+            text: `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`,
+            val: Math.min(100, Math.max(15, Math.round(Math.abs(growth)))),
+            positive: growth >= 0
+          };
+        })();
+        const nextMonthProjection = (() => {
+          if (monthlyRevenue.length === 0) return '—';
+          const avg = totalRevenue / monthlyRevenue.length;
+          return fmtRp(Math.round(avg * 1.1));
+        })();
 
-          <div className="card card-pad chart-card-wrapper min-w-0" style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <TrendingUp size={18} className="text-primary" />
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>Grafik Revenue Bulanan (Rp)</h3>
+        return (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatScoreCard
+                title="TOTAL REVENUE"
+                value={fmtRp(totalRevenue)}
+                icon={DollarSign}
+                statusBadge={{ text: "YTD", color: "emerald" }}
+                subtitle="Akumulasi omzet platform"
+                progressBar={{ value: 94, color: "bg-emerald-500" }}
+              />
+              <StatScoreCard
+                title="BULAN TERBAIK"
+                value={bestMonth}
+                icon={Trophy}
+                statusBadge={{ text: "Puncak", color: "amber" }}
+                subtitle="Rekor penerimaan tertinggi"
+                progressBar={{ value: 100, color: "bg-amber-500" }}
+              />
+              <StatScoreCard
+                title="PERTUMBUHAN MOM"
+                value={momGrowth.text}
+                icon={TrendingUp}
+                statusBadge={{ text: momGrowth.positive ? "Naik" : "Defisit", color: momGrowth.positive ? "blue" : "red" }}
+                subtitle="Dibandingkan bulan lalu"
+                progressBar={{ value: momGrowth.val, color: momGrowth.positive ? "bg-blue-500" : "bg-red-500" }}
+              />
+              <StatScoreCard
+                title="PROYEKSI BULAN DEPAN"
+                value={nextMonthProjection}
+                icon={Target}
+                statusBadge={{ text: "Estimasi", color: "violet" }}
+                subtitle="Target pertumbuhan +10%"
+                progressBar={{ value: 85, color: "bg-violet-500" }}
+              />
             </div>
-            <BarChart data={monthlyRevenue} keyX="month" keyY="revenue" color="#10b981" height={240} loading={loading} />
-          </div>
 
-          <div className="card card-pad" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <FileSpreadsheet size={18} className="text-primary" />
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>Rincian per Bulan</h3>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp size={18} className="text-emerald-500" />
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 dark:text-white m-0">Grafik Revenue Bulanan (Rp)</h3>
+              </div>
+              <BarChart data={monthlyRevenue} keyX="month" keyY="revenue" color="#10b981" height={240} loading={loading} />
             </div>
-            <div className="table-responsive">
-              <table className="table">
-                <thead><tr><th>Bulan</th><th>Revenue</th><th>Jumlah Tenant</th><th>Avg/Tenant</th><th>Growth</th></tr></thead>
-                <tbody>
-                  {monthlyRevenue.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-muted)' }}>
-                        Belum ada data revenue bulanan.
-                      </td>
-                    </tr>
-                  ) : (
-                    monthlyRevenue.map((m, i) => {
-                      const prev = monthlyRevenue[i - 1]
-                      const growth = prev ? (((m.revenue - prev.revenue) / prev.revenue) * 100).toFixed(1) : null
-                      return (
-                        <tr key={m.month}>
-                          <td style={{ fontWeight: 600 }}>{m.month}</td>
-                          <td style={{ fontWeight: 600, color: '#10b981' }}>{fmtRp(m.revenue)}</td>
-                          <td>{m.tenants}</td>
-                          <td>{fmtRp(Math.round(m.revenue / (m.tenants || 1)))}</td>
-                          <td>{growth ? <span style={{ color: Number(growth) > 0 ? '#10b981' : '#ef4444', fontWeight: 600 }}>{growth > 0 ? '+' : ''}{growth}%</span> : '—'}</td>
-                        </tr>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
+
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-2">
+                <FileSpreadsheet size={18} className="text-indigo-600 dark:text-indigo-400" />
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 dark:text-white m-0">Rincian Finansial per Bulan</h3>
+              </div>
+              <div className="table-responsive">
+                <table className="table">
+                  <thead><tr><th>Bulan</th><th>Revenue</th><th>Jumlah Tenant</th><th>Avg/Tenant</th><th>Growth</th></tr></thead>
+                  <tbody>
+                    {monthlyRevenue.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-muted)' }}>
+                          Belum ada data revenue bulanan.
+                        </td>
+                      </tr>
+                    ) : (
+                      monthlyRevenue.map((m, i) => {
+                        const prev = monthlyRevenue[i - 1]
+                        const growth = prev ? (((m.revenue - prev.revenue) / prev.revenue) * 100).toFixed(1) : null
+                        return (
+                          <tr key={m.month}>
+                            <td style={{ fontWeight: 600 }}>{m.month}</td>
+                            <td style={{ fontWeight: 600, color: '#10b981' }}>{fmtRp(m.revenue)}</td>
+                            <td>{m.tenants}</td>
+                            <td>{fmtRp(Math.round(m.revenue / (m.tenants || 1)))}</td>
+                            <td>{growth ? <span style={{ color: Number(growth) > 0 ? '#10b981' : '#ef4444', fontWeight: 600 }}>{growth > 0 ? '+' : ''}{growth}%</span> : '—'}</td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        );
+      })()}
 
       {/* ── TENANTS TAB ── */}
-      {activeTab === 'tenants' && (
-        <>
-          <div className="reports-two-col-grid">
-            <div className="card card-pad chart-card-wrapper min-w-0">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <Users size={18} className="text-indigo-600" />
-                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 m-0">Pertumbuhan Tenant</h3>
-              </div>
-              <BarChart data={monthlyRevenue} keyX="month" keyY="tenants" color="#8b5cf6" height={220} loading={loading} />
+      {activeTab === 'tenants' && (() => {
+        const topCategory = categoryDist.length > 0 ? categoryDist.reduce((max, c) => c.value > max.value ? c : max, categoryDist[0]).label : '—';
+        const topPlan = planDist.length > 0 ? planDist.reduce((max, p) => p.value > max.value ? p : max, planDist[0]).label : '—';
+
+        return (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatScoreCard
+                title="TOTAL TENANT"
+                value={stats?.total_tenants ?? totalTenants}
+                icon={Store}
+                statusBadge={{ text: "Terdaftar", color: "blue" }}
+                subtitle="Populasi tenant aktif"
+                progressBar={{ value: 88, color: "bg-blue-500" }}
+              />
+              <StatScoreCard
+                title="KATEGORI DOMINAN"
+                value={topCategory}
+                icon={Layers}
+                statusBadge={{ text: "Terbanyak", color: "violet" }}
+                subtitle="Sektor bisnis utama"
+                progressBar={{ value: 75, color: "bg-violet-500" }}
+              />
+              <StatScoreCard
+                title="PAKET FAVORIT"
+                value={topPlan}
+                icon={Award}
+                statusBadge={{ text: "Populer", color: "amber" }}
+                subtitle="Paket langganan dominan"
+                progressBar={{ value: 85, color: "bg-amber-500" }}
+              />
+              <StatScoreCard
+                title="TOTAL PENGGUNA"
+                value={stats?.total_users ?? 0}
+                icon={Users}
+                statusBadge={{ text: "Aktif", color: "emerald" }}
+                subtitle="Akun operator & staf"
+                progressBar={{ value: 92, color: "bg-emerald-500" }}
+              />
             </div>
 
-            <div className="card card-pad chart-card-wrapper min-w-0">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <Layers size={18} className="text-indigo-600" />
-                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 m-0">Distribusi Kategori</h3>
+            <div className="reports-two-col-grid">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm min-w-0">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <Users size={18} className="text-indigo-600 dark:text-indigo-400" />
+                  <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 dark:text-white m-0">Pertumbuhan Tenant</h3>
+                </div>
+                <BarChart data={monthlyRevenue} keyX="month" keyY="tenants" color="#8b5cf6" height={220} loading={loading} />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {categoryDist.map(c => {
-                  const pct = Math.round((c.value / (categoryDist.reduce((s, x) => s + Number(x.value), 0) || 1)) * 100)
-                  return (
-                    <div key={c.label}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: 13 }}>{c.label}</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: c.color }}>{c.value} ({pct}%)</span>
-                      </div>
-                      <div style={{ height: 8, borderRadius: 99, background: 'var(--bg-elevated)', overflow: 'hidden' }}>
-                        <div style={{ width: `${pct}%`, height: '100%', borderRadius: 99, background: c.color, transition: 'width 0.8s ease' }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
 
-          <div className="card card-pad" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Award size={18} className="text-indigo-600" />
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 m-0">Top Tenant berdasarkan Revenue</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm min-w-0">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <Layers size={18} className="text-indigo-600 dark:text-indigo-400" />
+                  <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 dark:text-white m-0">Distribusi Kategori</h3>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {categoryDist.map(c => {
+                    const pct = Math.round((c.value / (categoryDist.reduce((s, x) => s + Number(x.value), 0) || 1)) * 100)
+                    return (
+                      <div key={c.label}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 13 }} className="text-slate-700 dark:text-slate-300">{c.label}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: c.color }}>{c.value} ({pct}%)</span>
+                        </div>
+                        <div style={{ height: 8, borderRadius: 99, background: 'var(--bg-elevated)', overflow: 'hidden' }}>
+                          <div style={{ width: `${pct}%`, height: '100%', borderRadius: 99, background: c.color, transition: 'width 0.8s ease' }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
-            <div className="table-responsive">
-              <table className="table">
-                <thead><tr><th>#</th><th>Nama</th><th>Paket</th><th>Kategori</th><th>Revenue/bln</th><th>Bergabung</th></tr></thead>
-                <tbody>
-                  {topTenants.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-muted)' }}>
-                        Belum ada data tenant.
-                      </td>
-                    </tr>
-                  ) : (
-                    topTenants.map((t, i) => (
-                      <tr key={t.name}>
-                        <td style={{ fontWeight: 600, color: i < 3 ? '#f59e0b' : 'var(--text-muted)' }}>{i + 1}</td>
-                        <td style={{ fontWeight: 600 }}>{t.name}</td>
-                        <td><span className={`badge ${t.plan === 'Pro' ? 'badge-violet' : 'badge-blue'}`}>{t.plan}</span></td>
-                        <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{t.category}</td>
-                        <td style={{ fontWeight: 600, color: '#10b981' }}>{fmtRp(t.revenue)}</td>
-                        <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.joined}</td>
+
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-2">
+                <Award size={18} className="text-indigo-600 dark:text-indigo-400" />
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 dark:text-white m-0">Top Tenant berdasarkan Revenue</h3>
+              </div>
+              <div className="table-responsive">
+                <table className="table">
+                  <thead><tr><th>#</th><th>Nama</th><th>Paket</th><th>Kategori</th><th>Revenue/bln</th><th>Bergabung</th></tr></thead>
+                  <tbody>
+                    {topTenants.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-muted)' }}>
+                          Belum ada data tenant.
+                        </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      topTenants.map((t, i) => (
+                        <tr key={t.name}>
+                          <td style={{ fontWeight: 600, color: i < 3 ? '#f59e0b' : 'var(--text-muted)' }}>{i + 1}</td>
+                          <td style={{ fontWeight: 600 }}>{t.name}</td>
+                          <td><span className={`badge ${t.plan === 'Pro' ? 'badge-violet' : 'badge-blue'}`}>{t.plan}</span></td>
+                          <td style={{ fontSize: 13, color: 'var(--text-primary)' }}>{t.category}</td>
+                          <td style={{ fontWeight: 600, color: '#10b981' }}>{fmtRp(t.revenue)}</td>
+                          <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.joined}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        );
+      })()}
     </div>
   )
 }

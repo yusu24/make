@@ -3,12 +3,15 @@ import { useOutletContext } from 'react-router-dom';
 import { ShoppingCart } from '@/constants/icons';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useToast } from '../../../components/Toast';
 import RetailLoading from '../components/RetailLoading';
 import ProductGrid from '../components/pos/ProductGrid';
 import CartPanel from '../components/pos/CartPanel';
 import PaymentModal from '../components/pos/PaymentModal';
 import ReceiptModal from '../components/pos/ReceiptModal';
 import HoldBillModal from '../components/pos/HoldBillModal';
+import SaveHoldModal from '../components/pos/SaveHoldModal';
+import { playPosSound } from '../utils/posAudio';
 import { useOfflinePos } from '../hooks/useOfflinePos';
 import {
   cacheMasterData,
@@ -23,6 +26,7 @@ import '../pos.css';
 export default function Pos() {
   const { user } = useAuth();
   const { onMenuToggle } = useOutletContext() || {};
+  const toast = useToast();
   const searchRef = useRef(null);
 
   const [products, setProducts] = useState([]);
@@ -40,6 +44,8 @@ export default function Pos() {
 
   const [showPayModal, setShowPayModal] = useState(false);
   const [showHoldModal, setShowHoldModal] = useState(false);
+  const [showSaveHoldModal, setShowSaveHoldModal] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
 
@@ -120,13 +126,16 @@ export default function Pos() {
     const baseStock = Number(product.stock) || 0;
     const conversion = unitOverride ? Number(unitOverride.conversion || 1) : 1;
     if (baseStock < conversion) {
-       alert('Stok tidak cukup');
+       toast.error('Stok produk tidak mencukupi');
+       playPosSound('error', soundEnabled);
        return;
     }
     
     const cartItemId = unitOverride ? `${product.id}-${unitOverride.unit}` : product.id;
     const itemName = unitOverride ? `${product.name} (${unitOverride.unit})` : product.name;
     const price = unitOverride ? Number(unitOverride.price_sell) : Number(product.price_sell);
+
+    let stockOk = true;
 
     setCart((prev) => {
       // Calculate how much base stock is currently taken by this real_product_id across all variations in cart
@@ -135,14 +144,14 @@ export default function Pos() {
       const existing = prev.find((item) => item.product_id === cartItemId);
       if (existing) {
         if (currentTakenBase + conversion > baseStock) {
-           alert('Stok tidak cukup');
+           stockOk = false;
            return prev;
         }
         return prev.map((item) => item.product_id === cartItemId ? { ...item, qty: item.qty + 1 } : item);
       }
 
       if (currentTakenBase + conversion > baseStock) {
-         alert('Stok tidak cukup');
+         stockOk = false;
          return prev;
       }
 
@@ -156,6 +165,13 @@ export default function Pos() {
          max_stock: baseStock // Keep reference to baseStock
       }];
     });
+
+    if (stockOk) {
+      playPosSound('beep', soundEnabled);
+    } else {
+      toast.error('Stok produk tidak mencukupi untuk ditambah lagi');
+      playPosSound('error', soundEnabled);
+    }
   };
 
   const updateQty = (productId, qty) => {
@@ -216,11 +232,12 @@ export default function Pos() {
 
   const removeDiscount = () => setDiscount(null);
 
-  const handleHoldBill = async () => {
+  const handleHoldBill = () => {
     if (cart.length === 0) return;
-    const refName = prompt('Masukkan nama/keterangan untuk pesanan ini:');
-    if (!refName) return;
+    setShowSaveHoldModal(true);
+  };
 
+  const saveHoldBillConfirm = async (refName) => {
     try {
       await api.post('/retail/hold-transactions', {
         reference_name: refName,
@@ -229,10 +246,13 @@ export default function Pos() {
         total_amount: total
       });
       clearCart();
-      alert('Pesanan berhasil disimpan!');
+      setShowSaveHoldModal(false);
+      toast.success('Pesanan berhasil disimpan ke antrean!');
+      playPosSound('beep', soundEnabled);
     } catch (e) {
       console.error(e);
-      alert('Gagal menyimpan pesanan.');
+      toast.error('Gagal menyimpan pesanan antrean.');
+      playPosSound('error', soundEnabled);
     }
   };
 
@@ -244,9 +264,11 @@ export default function Pos() {
       }
       setShowHoldModal(false);
       await api.delete(`/retail/hold-transactions/${hold.id}`);
+      toast.success('Pesanan antrean berhasil dimuat!');
+      playPosSound('beep', soundEnabled);
     } catch (e) {
       console.error(e);
-      alert('Gagal membuka pesanan');
+      toast.error('Gagal membuka pesanan');
     }
   };
 
@@ -325,6 +347,8 @@ export default function Pos() {
 
       setLastOrder(offlineReceipt);
       setShowPayModal(false);
+      toast.success('Transaksi offline berhasil disimpan!');
+      playPosSound('success', soundEnabled);
     };
 
     if (navigator.onLine) {
@@ -332,6 +356,8 @@ export default function Pos() {
         const res = await api.post('/retail/transactions', payload);
         setLastOrder(res.data);
         setShowPayModal(false);
+        toast.success('Transaksi berhasil diselesaikan!');
+        playPosSound('success', soundEnabled);
         fetchData();
         return;
       } catch (err) {
@@ -360,8 +386,8 @@ export default function Pos() {
   // ── Keyboard Shortcuts Listener ─────────────────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // F1: Focus search / barcode scanner
-      if (e.key === 'F1') {
+      // F1 or F2: Focus search / barcode scanner
+      if (e.key === 'F1' || e.key === 'F2') {
         e.preventDefault();
         searchRef.current?.focus();
         searchRef.current?.select();
@@ -387,7 +413,8 @@ export default function Pos() {
       }
       // Escape: Close modals or blur search
       else if (e.key === 'Escape') {
-        if (showPayModal) setShowPayModal(false);
+        if (showSaveHoldModal) setShowSaveHoldModal(false);
+        else if (showPayModal) setShowPayModal(false);
         else if (showHoldModal) setShowHoldModal(false);
         else if (lastOrder) setLastOrder(null);
         else if (mobileCartOpen) setMobileCartOpen(false);
@@ -399,7 +426,7 @@ export default function Pos() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [cart, showPayModal, showHoldModal, lastOrder, mobileCartOpen, handleHoldBill]);
+  }, [cart, showPayModal, showHoldModal, showSaveHoldModal, lastOrder, mobileCartOpen, handleHoldBill]);
 
   if (loading) return <div className="pos-container"><RetailLoading text="Menyiapkan kasir..." /></div>;
 
@@ -413,6 +440,8 @@ export default function Pos() {
         onAddItem={addToCart}
         onMenuToggle={onMenuToggle}
         searchRef={searchRef}
+        soundEnabled={soundEnabled}
+        onToggleSound={() => setSoundEnabled((prev) => !prev)}
         offlineBadgeProps={{
           isOnline,
           isSyncing,
@@ -472,6 +501,13 @@ export default function Pos() {
           onRestore={handleRestoreBill} 
         />
       )}
+
+      <SaveHoldModal
+        isOpen={showSaveHoldModal}
+        defaultName={`Antrean #${(pendingTransactions?.length || 0) + 1}`}
+        onClose={() => setShowSaveHoldModal(false)}
+        onSave={saveHoldBillConfirm}
+      />
 
       <PaymentModal
         isOpen={showPayModal}

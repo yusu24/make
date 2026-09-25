@@ -15,6 +15,7 @@ import { api } from '../../../lib/api'
 import Modal from '../../../components/Modal'
 import SaasPagination from '../../../components/SaasPagination'
 import usePagination from '../../../hooks/usePagination'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
@@ -203,82 +204,104 @@ export default function TenantVerifications() {
     }
   }
 
+  const totalKycs = kycs.length
+  const pendingPercent = totalKycs > 0 ? Math.round((pendingCount / totalKycs) * 100) : 0
+  const verifiedPercent = totalKycs > 0 ? Math.round((verifiedCount / totalKycs) * 100) : 0
+  const rejectedPercent = totalKycs > 0 ? Math.round((rejectedCount / totalKycs) * 100) : 0
+
   return (
     <div className="animate-fade-in">
-      <div className="page-header">
-        <h2 className="page-title">Verifikasi KYC</h2>
+      {/* ── KPI Stat Cards with StatScoreCard ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Pengajuan"
+          value={totalKycs}
+          status="Tercatat"
+          statusVariant="indigo"
+          icon={FileText}
+          desc="Seluruh berkas legalitas diajukan tenant"
+          progress={100}
+          progressVariant="indigo"
+          onClick={() => setFilter('all')}
+        />
+
+        <StatScoreCard
+          title="Menunggu Review"
+          value={pendingCount}
+          status={pendingCount > 0 ? `${pendingPercent}% Pending` : "Nihil"}
+          statusVariant={pendingCount > 0 ? "amber" : "slate"}
+          icon={Clock}
+          desc="Perlu pemeriksaan KTP &amp; NIB segera"
+          progress={pendingPercent}
+          progressVariant="amber"
+          onClick={() => setFilter('pending')}
+        />
+
+        <StatScoreCard
+          title="Terverifikasi"
+          value={verifiedCount}
+          status={`${verifiedPercent}% Sah`}
+          statusVariant="emerald"
+          icon={CheckCircle2}
+          desc="Legalitas resmi &amp; lolos uji KYC"
+          progress={verifiedPercent}
+          progressVariant="emerald"
+          onClick={() => setFilter('verified')}
+        />
+
+        <StatScoreCard
+          title="Ditolak / Revisi"
+          value={rejectedCount}
+          status={rejectedCount > 0 ? `${rejectedPercent}% Revisi` : "Nihil"}
+          statusVariant={rejectedCount > 0 ? "rose" : "slate"}
+          icon={XCircle}
+          desc="Dokumen buram atau tidak sesuai data"
+          progress={rejectedPercent}
+          progressVariant="rose"
+          onClick={() => setFilter('rejected')}
+        />
       </div>
 
-      {/* ── KPI Stat Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        {[
-          { label: 'Total Pengajuan', value: kycs.length, icon: FileText, color: '#4f46e5', bg: 'bg-indigo-50 text-indigo-600' },
-          { label: 'Menunggu Review', value: pendingCount, icon: Clock, color: '#d97706', bg: 'bg-amber-50 text-amber-600' },
-          { label: 'Terverifikasi', value: verifiedCount, icon: CheckCircle2, color: '#16a34a', bg: 'bg-emerald-50 text-emerald-600' },
-          { label: 'Ditolak / Perlu Revisi', value: rejectedCount, icon: XCircle, color: '#dc2626', bg: 'bg-rose-50 text-rose-600' },
-        ].map((s, i) => {
-          const IconComp = s.icon;
-          return (
-            <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className={`w-11 h-11 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
-                <IconComp size={22} strokeWidth={2} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{s.label}</p>
-                <div className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans']" style={{ color: s.color }}>
-                  {s.value}
-                </div>
-              </div>
+      {/* ── Table KYC Card ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-6">
+        {/* Table Toolbar */}
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[220px] max-w-sm">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                id="input-search-kyc"
+                className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
+                placeholder="Cari tenant, NIK, atau pemilik..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
             </div>
-          );
-        })}
-      </div>
 
-      {/* ── Toolbar: Search + Filter Tabs + Action ── */}
-      <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
-          <div className="search-wrap" style={{ minWidth: 220, maxWidth: 360, position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
-            <input
-              id="input-search-kyc"
-              className="form-input search-input"
-              style={{ paddingLeft: 34 }}
-              placeholder="Cari tenant, NIK, atau pemilik..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-          <div style={{ minWidth: 150 }}>
-            <select
-              id="select-filter-kyc-status"
-              className="form-input"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              style={{
-                width: 'auto',
-                minWidth: 150,
-                height: 38,
-                padding: '0 32px 0 12px',
-                fontSize: 13,
-                cursor: 'pointer',
-                outline: 'none'
-              }}
-            >
-              <option value="all">Semua Status</option>
-              <option value="pending">Menunggu</option>
-              <option value="verified">Terverifikasi</option>
-              <option value="rejected">Ditolak</option>
-            </select>
+            <div className="flex gap-2 items-center flex-wrap">
+              <select
+                id="select-filter-kyc-status"
+                className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+              >
+                <option value="all">Semua Status</option>
+                <option value="pending">🟡 Menunggu Review</option>
+                <option value="verified">🟢 Terverifikasi Sah</option>
+                <option value="rejected">🔴 Ditolak / Perlu Revisi</option>
+              </select>
+
+              <button
+                className="h-[38px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                onClick={fetchKycs}
+                disabled={loading}
+              >
+                <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                <span>Refresh</span>
+              </button>
+            </div>
           </div>
         </div>
-
-        <button className="btn btn-secondary" onClick={fetchKycs} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <RefreshCw size={14} /> Refresh
-        </button>
-      </div>
-
-      {/* ── Table KYC ── */}
-      <div className="table-wrap">
         <div className="table-responsive">
           <table className="table">
             <thead>
@@ -333,8 +356,9 @@ export default function TenantVerifications() {
                     </span>
                   </td>
                   <td>
-                    <button className="btn btn-secondary btn-sm" onClick={() => setSelected(k)} style={{ fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      <Eye size={13} /> Tinjau
+                    <button className="h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onClick={() => setSelected(k)}>
+                      <Eye size={13} />
+                      <span>Tinjau</span>
                     </button>
                   </td>
                 </tr>

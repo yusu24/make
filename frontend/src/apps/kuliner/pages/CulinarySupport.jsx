@@ -7,10 +7,6 @@ export default function CulinarySupport() {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Pusat Bantuan</h1>
-        <div className="kd-topbar-actions" />
-      </div>
       <div className="kd-content" style={{ padding: '24px 32px' }}>
         <TenantSupportCenter hideAction={true} ref={supportRef} />
       </div>

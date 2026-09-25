@@ -7,6 +7,7 @@ import { useReactToPrint } from 'react-to-print';
 import { Activity, Calendar, Printer } from '@/constants/icons';
 import { useToast } from '../../../components/Toast';
 import Skeleton from '../../../components/Skeleton';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { 
   RetailPrintHeader, 
@@ -341,80 +342,81 @@ export default function CashFlow() {
             <div className="space-y-6">
               {/* Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total Kas Masuk</span>
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                      <Activity size={18} />
-                    </div>
-                  </div>
-                  <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-emerald-700 tracking-tight leading-tight">{formatRp(data.inflow?.total)}</h3>
-                </div>
-                
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Total Kas Keluar</span>
-                    <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                      <Activity size={18} />
-                    </div>
-                  </div>
-                  <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-rose-700 tracking-tight leading-tight">{formatRp(data.outflow?.total)}</h3>
-                </div>
-                
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter']">Arus Kas Bersih (Net)</span>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${netCash >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>
-                      <Activity size={18} />
-                    </div>
-                  </div>
-                  <h3 className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${netCash >= 0 ? 'text-blue-700' : 'text-amber-700'}`}>{formatRp(netCash)}</h3>
-                </div>
+                <StatScoreCard
+                  title="Total Kas Masuk"
+                  value={formatRp(data.inflow?.total || 0)}
+                  subtitle="Akumulasi penerimaan kas riil"
+                  icon={Activity}
+                  badgeText="Inflow"
+                  badgeVariant="emerald"
+                  progress={100}
+                  progressVariant="emerald"
+                />
+                <StatScoreCard
+                  title="Total Kas Keluar"
+                  value={formatRp(data.outflow?.total || 0)}
+                  subtitle="Akumulasi pengeluaran kas riil"
+                  icon={Activity}
+                  badgeText="Outflow"
+                  badgeVariant="rose"
+                  progress={data.inflow?.total > 0 ? Math.min(100, Math.round(((data.outflow?.total || 0) / data.inflow?.total) * 100)) : 0}
+                  progressVariant="rose"
+                />
+                <StatScoreCard
+                  title="Arus Kas Bersih (Net)"
+                  value={formatRp(netCash)}
+                  subtitle={netCash >= 0 ? "Surplus kas positif" : "Defisit kas operasional"}
+                  icon={Activity}
+                  badgeText={netCash >= 0 ? "Surplus" : "Defisit"}
+                  badgeVariant={netCash >= 0 ? "blue" : "amber"}
+                  progress={netCash >= 0 ? 100 : 35}
+                  progressVariant={netCash >= 0 ? "blue" : "amber"}
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Breakdowns */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-5">
-                  <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900 mb-4">Rincian Kas Masuk</h3>
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all p-5">
+                  <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900 dark:text-white mb-4">Rincian Kas Masuk</h3>
                   <div className="space-y-3 font-['Inter']">
-                    <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                      <span className="text-slate-600">Penjualan (Lunas)</span>
-                      <span className="font-bold text-slate-900">{formatRp(data.inflow?.sales)}</span>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 text-sm">
+                      <span className="text-slate-600 dark:text-slate-400">Penjualan (Lunas)</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{formatRp(data.inflow?.sales)}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                      <span className="text-slate-600">Pembayaran Piutang</span>
-                      <span className="font-bold text-slate-900">{formatRp(data.inflow?.receivable_payments)}</span>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 text-sm">
+                      <span className="text-slate-600 dark:text-slate-400">Pembayaran Piutang</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{formatRp(data.inflow?.receivable_payments)}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                      <span className="text-slate-600">Pemasukan Lain</span>
-                      <span className="font-bold text-slate-900">{formatRp(data.inflow?.other_incomes)}</span>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 text-sm">
+                      <span className="text-slate-600 dark:text-slate-400">Pemasukan Lain</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{formatRp(data.inflow?.other_incomes)}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 mt-4 text-sm">
-                      <span className="text-slate-900 font-bold">Total Inflow</span>
-                      <span className="font-extrabold font-['Plus_Jakarta_Sans'] text-emerald-600 text-base">{formatRp(data.inflow?.total)}</span>
+                      <span className="text-slate-900 dark:text-white font-bold">Total Inflow</span>
+                      <span className="font-extrabold font-['Plus_Jakarta_Sans'] text-emerald-600 dark:text-emerald-400 text-base">{formatRp(data.inflow?.total)}</span>
                     </div>
                   </div>
 
-                  <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900 mt-8 mb-4">Rincian Kas Keluar</h3>
+                  <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900 dark:text-white mt-8 mb-4">Rincian Kas Keluar</h3>
                   <div className="space-y-3 font-['Inter']">
-                    <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                      <span className="text-slate-600">Pembayaran Hutang (Supplier)</span>
-                      <span className="font-bold text-slate-900">{formatRp(data.outflow?.payable_payments)}</span>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 text-sm">
+                      <span className="text-slate-600 dark:text-slate-400">Pembayaran Hutang (Supplier)</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{formatRp(data.outflow?.payable_payments)}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                      <span className="text-slate-600">Pengeluaran Operasional</span>
-                      <span className="font-bold text-slate-900">{formatRp(data.outflow?.other_expenses)}</span>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 text-sm">
+                      <span className="text-slate-600 dark:text-slate-400">Pengeluaran Operasional</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{formatRp(data.outflow?.other_expenses)}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 mt-4 text-sm">
-                      <span className="text-slate-900 font-bold">Total Outflow</span>
-                      <span className="font-extrabold font-['Plus_Jakarta_Sans'] text-rose-600 text-base">{formatRp(data.outflow?.total)}</span>
+                      <span className="text-slate-900 dark:text-white font-bold">Total Outflow</span>
+                      <span className="font-extrabold font-['Plus_Jakarta_Sans'] text-rose-600 dark:text-rose-400 text-base">{formatRp(data.outflow?.total)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Chart */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-5 flex flex-col">
-                  <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900 mb-2">Grafik Proporsi Kas</h3>
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all p-5 flex flex-col">
+                  <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900 dark:text-white mb-2">Grafik Proporsi Kas</h3>
                   {chartData.length > 0 ? (
                     <div className="flex-1 min-h-[300px]">
                       <ResponsiveContainer width="100%" height="100%">

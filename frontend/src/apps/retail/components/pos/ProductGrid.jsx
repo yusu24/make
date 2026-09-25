@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Clock, Menu, Sparkles } from '@/constants/icons';
+import { Search, Clock, Menu, Sparkles, Volume2, VolumeX, Star } from '@/constants/icons';
 import OfflineStatusBadge from './OfflineStatusBadge';
 
 const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
@@ -27,7 +27,9 @@ export default function ProductGrid({
   onAddItem,
   onMenuToggle,
   offlineBadgeProps,
-  searchRef
+  searchRef,
+  soundEnabled = true,
+  onToggleSound
 }) {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -41,14 +43,25 @@ export default function ProductGrid({
     return () => clearTimeout(handler);
   }, [search]);
 
-  const filteredProducts = useMemo(() => products.filter((p) => {
-    const matchCategory = activeCategory === null ? true : p.category_id === activeCategory;
+  const filteredProducts = useMemo(() => {
+    let list = products;
+    if (activeCategory === 'popular') {
+      // Prioritize top items in stock
+      list = [...products]
+        .filter((p) => (Number(p.stock) || 0) > 0)
+        .sort((a, b) => (Number(b.stock) || 0) - (Number(a.stock) || 0))
+        .slice(0, 24);
+    } else if (activeCategory !== null) {
+      list = list.filter((p) => p.category_id === activeCategory);
+    }
+
     const q = debouncedSearch.trim().toLowerCase();
-    const matchSearch = q === '' ? true :
+    if (!q) return list;
+    return list.filter((p) =>
       p.name.toLowerCase().includes(q) ||
-      (p.sku && p.sku.toLowerCase().includes(q));
-    return matchCategory && matchSearch;
-  }), [products, activeCategory, debouncedSearch]);
+      (p.sku && p.sku.toLowerCase().includes(q))
+    );
+  }, [products, activeCategory, debouncedSearch]);
 
   const getCartQty = (productId) => cart.find((item) => item.product_id === productId)?.qty || 0;
   const totalCartQty = cart.reduce((sum, item) => sum + item.qty, 0);
@@ -73,7 +86,7 @@ export default function ProductGrid({
           <input
             ref={searchRef}
             type="text"
-            placeholder="Cari produk (nama/SKU/barcode)... [F1]"
+            placeholder="Cari produk (nama/SKU/barcode)... [F1 / F2]"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => {
@@ -126,6 +139,23 @@ export default function ProductGrid({
 
         <PosClock />
 
+        {/* Cashier Sound Feedback Toggle */}
+        {onToggleSound && (
+          <button
+            type="button"
+            onClick={onToggleSound}
+            className={`flex items-center justify-center w-8 h-8 rounded-xl border transition-colors shrink-0 select-none ${
+              soundEnabled
+                ? 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 hover:bg-rose-100'
+            }`}
+            title={soundEnabled ? 'Suara Kasir: Aktif (Klik untuk mute)' : 'Suara Kasir: Hening (Klik untuk aktifkan)'}
+            aria-label="Toggle Sound"
+          >
+            {soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+          </button>
+        )}
+
         {/* Offline / Online Status Badge */}
         {offlineBadgeProps && (
           <OfflineStatusBadge {...offlineBadgeProps} />
@@ -141,6 +171,13 @@ export default function ProductGrid({
       <div className="pos-cat-tabs select-none" role="tablist">
         <button onClick={() => setActiveCategory(null)} className={`pos-cat-tab ${activeCategory === null ? 'active' : ''}`}>
           Semua
+        </button>
+        <button
+          onClick={() => setActiveCategory('popular')}
+          className={`pos-cat-tab flex items-center gap-1.5 ${activeCategory === 'popular' ? 'active' : ''}`}
+        >
+          <Star size={12} className={activeCategory === 'popular' ? 'text-amber-300 fill-amber-300' : 'text-amber-500'} />
+          <span>Terlaris</span>
         </button>
         {categories.map((cat) => (
           <button key={cat.id} onClick={() => setActiveCategory(cat.id)} className={`pos-cat-tab ${activeCategory === cat.id ? 'active' : ''}`}>
@@ -199,7 +236,7 @@ export default function ProductGrid({
           ⌨️ Shortcuts:
         </span>
         <div className="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-md border border-slate-700/60">
-          <kbd className="px-1.5 py-0.5 bg-slate-700 text-white rounded text-[10px] font-mono font-bold shadow-xs">F1</kbd>
+          <kbd className="px-1.5 py-0.5 bg-slate-700 text-white rounded text-[10px] font-mono font-bold shadow-xs">F1 / F2</kbd>
           <span className="text-slate-300">Cari Produk</span>
         </div>
         <div className="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded-md border border-slate-700/60">

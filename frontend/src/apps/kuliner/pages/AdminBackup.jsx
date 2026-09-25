@@ -146,11 +146,6 @@ const AdminBackup = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Backup & Keamanan Data</h1>
-        <div className="kd-topbar-actions" />
-      </div>
-
       <div className="kd-content">
         {loading ? (
           <KulinerLoading message="Memuat Pengaturan Backup..." />

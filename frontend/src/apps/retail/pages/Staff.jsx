@@ -8,7 +8,13 @@ import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import { Pencil, Trash2, RefreshCw, Plus, LogIn, Users, Shield, UserCheck, AlertCircle } from '@/constants/icons';
 import { useAuth } from '../../../contexts/AuthContext';
 
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import StatScoreCard from '@/components/ui/StatScoreCard';
+
 export default function Staff() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const { user, impersonateUser } = useAuth();
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,13 +52,17 @@ export default function Staff() {
   }, []);
 
   const handleImpersonate = async (targetId) => {
-    if (window.confirm('Login sebagai pegawai ini untuk menguji batasan hak akses kasir/staf?')) {
-      try {
-        const redirectPath = await impersonateUser(targetId);
-        window.location.href = redirectPath || '/retail/dashboard';
-      } catch (err) {
-        alert(err.response?.data?.message || 'Gagal login sebagai pegawai');
-      }
+    const ok = await confirm('Login sebagai pegawai ini untuk menguji batasan hak akses kasir/staf?', {
+      title: 'Impersonasi Staf',
+      confirmLabel: 'Ya, Masuk',
+      danger: false,
+    });
+    if (!ok) return;
+    try {
+      const redirectPath = await impersonateUser(targetId);
+      window.location.href = redirectPath || '/retail/dashboard';
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal login sebagai pegawai');
     }
   };
 
@@ -65,8 +75,10 @@ export default function Staff() {
     try {
       if (editingUser) {
         await api.put(`/retail/staff/${editingUser.id}`, data);
+        toast.success('Data pegawai berhasil diperbarui');
       } else {
         await api.post('/retail/staff', data);
+        toast.success('Pegawai baru berhasil didaftarkan');
       }
       fetchStaff();
       setShowModal(false);
@@ -87,13 +99,18 @@ export default function Staff() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Hapus akun pegawai ini? Pegawai tidak akan bisa login lagi ke sistem kasir toko.')) {
-      try {
-        await api.delete(`/retail/staff/${id}`);
-        fetchStaff();
-      } catch (err) {
-        alert(err.response?.data?.message || 'Gagal menghapus pegawai');
-      }
+    const ok = await confirm('Hapus akun pegawai ini? Pegawai tidak akan bisa login lagi ke sistem kasir toko.', {
+      title: 'Hapus Pegawai',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/retail/staff/${id}`);
+      toast.success('Akun pegawai berhasil dihapus');
+      fetchStaff();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal menghapus pegawai');
     }
   };
 
@@ -115,47 +132,44 @@ export default function Staff() {
   } = usePagination(filteredStaff);
 
   const maxQuota = user?.subscription_plan === 'pro' ? 'Tak Terbatas' : user?.subscription_plan === 'basic' ? '5 Pegawai' : '1 Pegawai (Owner)';
+  const activeCount = staff.filter(s => s.status !== 'inactive').length;
 
   return (
     <div className="retail-page-classic animate-fade-in">
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-            <Users size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Pegawai</span>
-            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
-              {staff.length} <span className="text-xs text-slate-400 font-bold ml-1 font-['Inter']">AKUN</span>
-            </p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Pegawai terdaftar di sistem</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <UserCheck size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Pengguna Aktif</span>
-            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-emerald-600 tracking-tight leading-tight">
-              {staff.filter(s => s.status !== 'inactive').length} <span className="text-xs text-emerald-600/70 font-bold ml-1 font-['Inter']">AKTIF</span>
-            </p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Staf aktif bekerja saat ini</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <Shield size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Kuota Paket ({user?.subscription_plan?.toUpperCase() || 'FREE'})</span>
-            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{maxQuota}</p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Batas akun diperbolehkan</p>
-          </div>
-        </div>
+        <StatScoreCard
+          title="Total Pegawai"
+          value={staff.length}
+          suffix=" Akun"
+          subtitle="Pegawai terdaftar di sistem toko"
+          icon={Users}
+          badgeText="Akun"
+          badgeVariant="indigo"
+          progress={100}
+          progressVariant="indigo"
+        />
+        <StatScoreCard
+          title="Pengguna Aktif"
+          value={activeCount}
+          suffix=" Staf"
+          subtitle="Staf aktif bertugas saat ini"
+          icon={UserCheck}
+          badgeText="Aktif"
+          badgeVariant="emerald"
+          progress={staff.length > 0 ? Math.min(100, Math.round((activeCount / staff.length) * 100)) : 100}
+          progressVariant="emerald"
+        />
+        <StatScoreCard
+          title={`Kuota Paket (${user?.subscription_plan?.toUpperCase() || 'FREE'})`}
+          value={maxQuota}
+          subtitle="Batas alokasi akun staf retail"
+          icon={Shield}
+          badgeText="Lisensi"
+          badgeVariant="amber"
+          progress={100}
+          progressVariant="amber"
+        />
       </div>
 
       <div className="card table-wrap animate-fade-in">

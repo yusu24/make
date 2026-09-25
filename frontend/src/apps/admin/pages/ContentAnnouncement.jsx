@@ -29,6 +29,7 @@ import {
 } from '@/constants/icons'
 import Modal from '../../../components/Modal'
 import { api } from '../../../lib/api'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 const TYPE_CONFIG = {
@@ -169,280 +170,262 @@ export default function ContentAnnouncement() {
     return matchCategory && matchSearch
   })
 
+  const publishedCount = items.filter(i => i.status === 'published').length
+  const draftCount = items.filter(i => i.status === 'draft').length
+
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in space-y-6">
       {/* ── Toast Alert ── */}
       {toast && (
-        <div style={{
-          position: 'fixed', top: 20, right: 24, zIndex: 9999,
-          background: toast.type === 'error' ? '#ef4444' : '#10b981',
-          color: '#fff', padding: '12px 20px', borderRadius: 12,
-          fontWeight: 600, fontSize: 13, boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
-          display: 'flex', alignItems: 'center', gap: 10,
-          animation: 'fadeIn 0.2s ease'
-        }}>
-          {toast.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle2 size={18} />}
+        <div className={`fixed top-5 right-5 z-[9999] px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 text-xs font-semibold text-white ${
+          toast.type === 'error' ? 'bg-rose-600' : 'bg-emerald-600'
+        }`}>
+          {toast.type === 'error' ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
           <span>{toast.msg}</span>
         </div>
       )}
 
-      {/* ── Page Header ── */}
-      <div className="page-header mb-2">
-        <h2 className="page-title">
-          In-App Broadcast &amp; Push Notification Engine
-        </h2>
-      </div>
-
-      {/* ── Action Bar below title ── */}
-      <div className="flex justify-end gap-2.5 mb-4">
+      {/* ── Top Actions Toolbar ── */}
+      <div className="flex items-center justify-end gap-2.5">
         <button
-          className="btn btn-secondary flex items-center gap-1.5"
           onClick={fetchAnnouncements}
           disabled={loading}
-          title="Muat ulang data siaran"
+          className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 font-medium text-xs shadow-xs transition-colors"
+          title="Muat ulang siaran"
         >
-          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           <span>Muat Ulang</span>
         </button>
-        <button className="btn btn-primary flex items-center gap-1.5" onClick={openAdd}>
-          <Plus size={16} />
-          <span>Buat Broadcast Baru</span>
-        </button>
+          <button
+            onClick={openAdd}
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all"
+          >
+            <Plus size={15} />
+            <span>Buat Broadcast Baru</span>
+          </button>
       </div>
 
       {loading ? (
-        <div className="card" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-sm">
+          <div className="flex flex-col items-center justify-center gap-3">
             <RefreshCw size={28} className="animate-spin text-indigo-600" />
-            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Memuat data siaran pengumuman &amp; broadcast...
             </span>
           </div>
         </div>
       ) : (
         <>
-      {/* ── Executive Metric Cards ── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
-            <Megaphone size={20} />
+          {/* ── KPI Metric Cards ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatScoreCard
+              title="TOTAL BROADCAST"
+              value={items.length}
+              icon={Megaphone}
+              statusBadge={{ text: "Siaran", color: "blue" }}
+              subtitle="Seluruh arsip pesan siaran"
+              progressBar={{ value: 100, color: "bg-blue-500" }}
+              onClick={() => setFilter('all')}
+            />
+            <StatScoreCard
+              title="SIARAN AKTIF (LIVE)"
+              value={publishedCount}
+              icon={Radio}
+              statusBadge={{ text: "On-Air", color: "emerald" }}
+              subtitle="Sedang tampil di tenant"
+              progressBar={{ value: Math.min(100, Math.round((publishedCount / (items.length || 1)) * 100)), color: "bg-emerald-500" }}
+              onClick={() => setFilter('published')}
+            />
+            <StatScoreCard
+              title="KONSEP & DRAFT"
+              value={draftCount}
+              icon={FileEdit}
+              statusBadge={{ text: "Draft", color: "amber" }}
+              subtitle="Belum disiarkan ke publik"
+              progressBar={{ value: Math.min(100, Math.round((draftCount / (items.length || 1)) * 100)), color: "bg-amber-500" }}
+              onClick={() => setFilter('draft')}
+            />
+            <StatScoreCard
+              title="JANGKAUAN AUDIENS"
+              value={`${totalTenants} Merchant`}
+              icon={Users}
+              statusBadge={{ text: "Potensi", color: "violet" }}
+              subtitle="Total populasi merchant aktif"
+              progressBar={{ value: 95, color: "bg-violet-500" }}
+            />
           </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium">Total Broadcast</p>
-            <p className="text-xl font-bold text-slate-800">{items.length}</p>
-          </div>
-        </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
-            <Radio size={20} className="animate-pulse" />
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium">Siaran Aktif (Live)</p>
-            <p className="text-xl font-bold text-emerald-600">{items.filter(i => i.status === 'published').length}</p>
-          </div>
-        </div>
+          {/* ── Table Card ── */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            {/* Toolbar Header */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex items-center justify-between flex-wrap gap-3">
+              <div className="flex gap-2.5 items-center flex-wrap flex-1 min-w-[260px]">
+                <div className="relative flex-1 min-w-[200px] max-w-sm">
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <input
+                    className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
+                    placeholder="Cari judul broadcast, pesan, atau target..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-amber-50 text-amber-600 border border-amber-100">
-            <FileEdit size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium">Konsep / Draft</p>
-            <p className="text-xl font-bold text-amber-600">{items.filter(i => i.status === 'draft').length}</p>
-          </div>
-        </div>
+                <select 
+                  id="select-filter-announcement-type"
+                  className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
+                  value={filter} 
+                  onChange={e => setFilter(e.target.value)}
+                >
+                  <option value="all">Semua Tipe &amp; Status</option>
+                  <option value="published">🟢 Siaran Aktif (Published)</option>
+                  <option value="draft">🟡 Draft Saja</option>
+                  <option value="feature">🚀 Fitur Baru</option>
+                  <option value="maintenance">🛠️ Maintenance</option>
+                  <option value="promo">🎁 Promo</option>
+                  <option value="security">🛡️ Keamanan</option>
+                  <option value="urgent">🚨 Penting / Kritis</option>
+                </select>
+              </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-purple-50 text-purple-600 border border-purple-100">
-            <Users size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium">Total Jangkauan Tenant</p>
-            <p className="text-xl font-bold text-purple-600">{totalTenants} Merchant</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Toolbar: Search + Filter ── */}
-      <div className="card card-pad mb-4" style={{ padding: '14px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flex: 1 }}>
-            <div className="search-wrap" style={{ minWidth: 240, maxWidth: 360, position: 'relative' }}>
-              <Search size={15} style={{ position: 'absolute', left: 12, top: 12, color: 'var(--text-muted)' }} />
-              <input
-                className="form-input search-input"
-                style={{ paddingLeft: 34 }}
-                placeholder="Cari judul broadcast, pesan, atau target..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+              <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Menampilkan <span className="font-bold text-slate-700 dark:text-slate-200">{filtered.length}</span> broadcast
+              </div>
             </div>
 
-            <select 
-              id="select-filter-announcement-type"
-              className="form-input" 
-              value={filter} 
-              onChange={e => setFilter(e.target.value)}
-              style={{ width: 'auto', minWidth: 170, height: 38, padding: '0 32px 0 12px', fontSize: 13, cursor: 'pointer', outline: 'none' }}
-            >
-              <option value="all">Semua Tipe &amp; Status</option>
-              <option value="published">🟢 Siaran Aktif (Published)</option>
-              <option value="draft">🟡 Draft Saja</option>
-              <option value="feature">🚀 Fitur Baru</option>
-              <option value="maintenance">🛠️ Maintenance</option>
-              <option value="promo">🎁 Promo</option>
-              <option value="security">🛡️ Keamanan</option>
-              <option value="urgent">🚨 Penting / Kritis</option>
-            </select>
-          </div>
-
-          <button className="btn btn-secondary btn-sm" onClick={fetchAnnouncements} disabled={loading}>
-            Muat Ulang
-          </button>
-        </div>
-      </div>
-
-      {/* ── Table Announcements List ── */}
-      <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none' }}>
-        <div className="table-responsive">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Pengumuman &amp; Pesan Siaran</th>
-                <th>Tipe &amp; Format</th>
-                <th>Target Audiens &amp; Estimasi Reach</th>
-                <th>Status Siaran</th>
-                <th>Masa Aktif</th>
-                <th style={{ textAlign: 'right' }}>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                    Memuat daftar siaran pengumuman...
-                  </td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                    <Inbox size={32} className="text-slate-400 mx-auto mb-2" />
-                    <span>Tidak ada broadcast yang cocok dengan kriteria pencarian.</span>
-                  </td>
-                </tr>
-              ) : filtered.map(item => {
-                const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG.feature
-                const TypeIcon = cfg.icon
-
-                return (
-                  <tr key={item.id}>
-                    <td style={{ maxWidth: 380 }}>
-                      <div className="flex items-start gap-3">
-                        <div style={{
-                          width: 38, height: 38, borderRadius: 10,
-                          background: cfg.bg, border: `1px solid ${cfg.border}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: cfg.color, flexShrink: 0, marginTop: 2
-                        }}>
-                          <TypeIcon size={18} strokeWidth={2} />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-semibold text-slate-800 text-sm mb-0.5 flex items-center gap-2">
-                            <span>{item.title}</span>
-                            {item.action_url && (
-                              <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 flex items-center gap-0.5">
-                                CTA <ExternalLink size={9} />
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-500 line-clamp-2 m-0 leading-relaxed">
-                            {item.content}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex flex-col gap-1.5">
-                        <span className={`badge ${cfg.badge} inline-flex items-center gap-1 w-fit text-[11px]`}>
-                          <TypeIcon size={11} /> {cfg.label}
-                        </span>
-                        <span className="text-[11px] text-slate-500 font-medium capitalize">
-                          Tampilan: <strong>{item.display_type === 'banner' ? 'Banner Top Bar' : item.display_type === 'toast' ? 'In-App Toast' : 'Modal Popup'}</strong>
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold text-slate-800">
-                          {TARGET_LABEL[item.target] || item.target || 'Semua Tenant'}
-                        </span>
-                        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                          <span>Estimasi Reach:</span>
-                          <span className="font-bold text-indigo-600">
-                            {item.estimated_reach ?? totalTenants} Toko ({item.reach_percentage ?? 100}%)
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <span className={`badge ${item.status === 'published' ? 'badge-green' : 'badge-yellow'}`}>
-                          {item.status === 'published' ? '🟢 Live' : '🟡 Draft'}
-                        </span>
-                        <button
-                          className={`btn btn-xs ${item.status === 'published' ? 'btn-secondary' : 'btn-primary'}`}
-                          style={{ fontSize: 11, padding: '3px 8px' }}
-                          onClick={() => handleTogglePublish(item)}
-                          title={item.status === 'published' ? 'Tarik siaran kembali ke draft' : 'Terbitkan siaran seketika'}
-                        >
-                          {item.status === 'published' ? 'Tarik' : '🚀 Siarkan'}
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="text-xs text-slate-600 flex flex-col gap-0.5">
-                        <span>Dibuat: {item.date || item.created_at?.slice(0, 10)}</span>
-                        {item.expires_at && (
-                          <span className="text-[11px] text-rose-600 font-medium flex items-center gap-1">
-                            <Clock size={10} /> Exp: {item.expires_at.slice(0, 16)}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => setPreviewModal(item)}
-                          title="Preview Tampilan Broadcast Tenant"
-                        >
-                          <Eye size={13} />
-                        </button>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => openEdit(item)}
-                          title="Edit Broadcast"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          style={{ color: 'var(--danger-500)' }}
-                          onClick={() => handleDelete(item.id)}
-                          title="Hapus Broadcast"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
+            <div className="table-responsive">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Pengumuman &amp; Pesan Siaran</th>
+                    <th>Tipe &amp; Format</th>
+                    <th>Target Audiens &amp; Estimasi Reach</th>
+                    <th>Status Siaran</th>
+                    <th>Masa Aktif</th>
+                    <th className="text-right">Aksi</th>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-12 text-slate-400 dark:text-slate-500">
+                        <Inbox size={32} className="opacity-40 mx-auto mb-2" />
+                        <span className="text-xs">Tidak ada broadcast yang cocok dengan kriteria pencarian.</span>
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map(item => {
+                      const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG.feature
+                      const TypeIcon = cfg.icon
+
+                      return (
+                        <tr key={item.id}>
+                          <td style={{ maxWidth: 360 }}>
+                            <div className="flex items-start gap-3">
+                              <div
+                                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+                                style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}
+                              >
+                                <TypeIcon size={17} strokeWidth={2} />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs mb-1 flex items-center gap-1.5">
+                                  <span className="truncate">{item.title}</span>
+                                  {item.action_url && (
+                                    <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 shrink-0 inline-flex items-center gap-0.5">
+                                      CTA <ExternalLink size={8} />
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                  {item.content}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="flex flex-col gap-1">
+                              <span className={`badge ${cfg.badge} inline-flex items-center gap-1 w-fit text-[10px]`}>
+                                <TypeIcon size={10} /> {cfg.label}
+                              </span>
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                                {item.display_type === 'banner' ? 'Banner Top' : item.display_type === 'toast' ? 'In-App Toast' : 'Modal Popup'}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                                {TARGET_LABEL[item.target] || item.target || 'Semua Tenant'}
+                              </span>
+                              <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                                <span>Reach:</span>
+                                <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                                  {item.estimated_reach ?? totalTenants} Toko ({item.reach_percentage ?? 100}%)
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`badge ${item.status === 'published' ? 'badge-green' : 'badge-yellow'}`}>
+                                {item.status === 'published' ? '🟢 Live' : '🟡 Draft'}
+                              </span>
+                              <button
+                                onClick={() => handleTogglePublish(item)}
+                                title={item.status === 'published' ? 'Tarik siaran kembali ke draft' : 'Terbitkan siaran seketika'}
+                                className={`h-7 px-2 rounded-lg text-[11px] font-semibold transition-colors border ${
+                                  item.status === 'published'
+                                    ? 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                                    : 'border-indigo-200 dark:border-indigo-800/60 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100'
+                                }`}
+                              >
+                                {item.status === 'published' ? 'Tarik' : '🚀 Siarkan'}
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="text-xs text-slate-600 dark:text-slate-400 flex flex-col gap-0.5">
+                              <span>Dibuat: {item.date || item.created_at?.slice(0, 10)}</span>
+                              {item.expires_at && (
+                                <span className="text-[10px] text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+                                  <Clock size={10} /> Exp: {item.expires_at.slice(0, 16)}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => setPreviewModal(item)}
+                                title="Preview Tampilan Broadcast Tenant"
+                                className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-xs transition-colors"
+                              >
+                                <Eye size={13} />
+                              </button>
+                              <button
+                                onClick={() => openEdit(item)}
+                                title="Edit Broadcast"
+                                className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-xs transition-colors"
+                              >
+                                <Pencil size={13} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(item.id)}
+                                title="Hapus Broadcast"
+                                className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-rose-200 dark:border-rose-800/60 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 shadow-xs transition-colors"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
 
@@ -454,11 +437,11 @@ export default function ContentAnnouncement() {
           title={modal === 'add' ? '📢 Buat Siaran In-App Broadcast Baru' : '✏️ Edit Siaran Broadcast'}
           maxWidth="640px"
         >
-          <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4 text-slate-700">
+          <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
             <div>
-              <label className="form-label font-semibold">Judul Broadcast <span className="text-rose-500">*</span></label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Judul Broadcast <span className="text-rose-500">*</span></label>
               <input
-                className="form-input"
+                className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="contoh: 🎉 Update Fitur Baru: Integrasi Pengiriman Otomatis"
@@ -466,10 +449,10 @@ export default function ContentAnnouncement() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="form-label font-semibold">Kategori Pesan</label>
-                <select className="form-input" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Kategori Pesan</label>
+                <select className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
                   {Object.entries(TYPE_CONFIG).map(([k, v]) => (
                     <option key={k} value={k}>{v.label}</option>
                   ))}
@@ -477,8 +460,8 @@ export default function ContentAnnouncement() {
               </div>
 
               <div>
-                <label className="form-label font-semibold">Format Tampilan</label>
-                <select className="form-input" value={form.display_type} onChange={e => setForm(f => ({ ...f, display_type: e.target.value }))}>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Format Tampilan</label>
+                <select className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" value={form.display_type} onChange={e => setForm(f => ({ ...f, display_type: e.target.value }))}>
                   <option value="modal">🪟 Popup Interstitial (Prioritas Tinggi)</option>
                   <option value="banner">📌 Sticky Top Banner (Header Dashboard)</option>
                   <option value="toast">🔔 In-App Toast Notification</option>
@@ -487,21 +470,21 @@ export default function ContentAnnouncement() {
             </div>
 
             <div>
-              <label className="form-label font-semibold">Target Audiens Merchant</label>
-              <select className="form-input" value={form.target} onChange={e => setForm(f => ({ ...f, target: e.target.value }))}>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Target Audiens Merchant</label>
+              <select className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" value={form.target} onChange={e => setForm(f => ({ ...f, target: e.target.value }))}>
                 {TARGET_OPTIONS.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {TARGET_OPTIONS.find(o => o.value === form.target)?.desc}
               </p>
             </div>
 
             <div>
-              <label className="form-label font-semibold">Isi Pesan Broadcast <span className="text-rose-500">*</span></label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Isi Pesan Broadcast <span className="text-rose-500">*</span></label>
               <textarea
-                className="form-input"
+                className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 resize-y"
                 rows={5}
                 value={form.content}
                 onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
@@ -510,11 +493,11 @@ export default function ContentAnnouncement() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="form-label font-semibold">Tombol Aksi / CTA Label (Opsional)</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tombol Aksi / CTA Label (Opsional)</label>
                 <input
-                  className="form-input"
+                  className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
                   value={form.action_text}
                   onChange={e => setForm(f => ({ ...f, action_text: e.target.value }))}
                   placeholder="contoh: Coba Fitur Sekarang"
@@ -522,9 +505,9 @@ export default function ContentAnnouncement() {
               </div>
 
               <div>
-                <label className="form-label font-semibold">Link Aksi / URL Tujuan (Opsional)</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Link Aksi / URL Tujuan (Opsional)</label>
                 <input
-                  className="form-input"
+                  className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900"
                   value={form.action_url}
                   onChange={e => setForm(f => ({ ...f, action_url: e.target.value }))}
                   placeholder="contoh: /retail/pos atau https://..."
@@ -532,31 +515,31 @@ export default function ContentAnnouncement() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="form-label font-semibold">Status Publikasi</label>
-                <select className="form-input" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Status Publikasi</label>
+                <select className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
                   <option value="draft">🟡 Simpan Sebagai Draft</option>
                   <option value="published">🟢 Langsung Siarkan (Published)</option>
                 </select>
               </div>
 
               <div>
-                <label className="form-label font-semibold">Batas Waktu Tayang (Opsional)</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Batas Waktu Tayang (Opsional)</label>
                 <input
                   type="datetime-local"
-                  className="form-input"
+                  className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   value={form.expires_at}
                   onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
                 />
               </div>
             </div>
 
-            <div className="modal__actions pt-3 border-t border-slate-200">
-              <button type="button" className="btn btn-secondary" onClick={() => setModal(null)} disabled={saving}>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2.5">
+              <button type="button" className="h-[38px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-xs font-semibold" onClick={() => setModal(null)} disabled={saving}>
                 Batal
               </button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>
+              <button type="submit" className="h-[38px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all disabled:opacity-50" disabled={saving}>
                 {saving ? 'Menyimpan...' : modal === 'add' ? '🚀 Buat Broadcast' : 'Simpan Perubahan'}
               </button>
             </div>
@@ -573,7 +556,7 @@ export default function ContentAnnouncement() {
           maxWidth="560px"
         >
           <div className="p-2">
-            <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-lg bg-white">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg bg-white dark:bg-slate-900">
               <div style={{
                 background: TYPE_CONFIG[previewModal.type]?.color || '#4f46e5',
                 padding: '20px 24px',
@@ -590,19 +573,19 @@ export default function ContentAnnouncement() {
                 </p>
               </div>
 
-              <div className="p-5 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+              <div className="p-5 text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
                 {previewModal.content}
 
-                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                   <span className="text-xs text-slate-400">Pratinjau tampilan merchant</span>
                   <div className="flex gap-2">
                     {previewModal.action_url && (
-                      <button className="btn btn-primary btn-sm flex items-center gap-1.5" type="button">
+                      <button className="h-8 px-3 rounded-lg bg-indigo-600 text-white font-semibold text-xs inline-flex items-center gap-1.5" type="button">
                         <span>{previewModal.action_text || 'Pelajari Selengkapnya'}</span>
                         <ExternalLink size={12} />
                       </button>
                     )}
-                    <button className="btn btn-secondary btn-sm" type="button" onClick={() => setPreviewModal(null)}>
+                    <button className="h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold" type="button" onClick={() => setPreviewModal(null)}>
                       Tutup
                     </button>
                   </div>

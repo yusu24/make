@@ -154,16 +154,8 @@ export default function KulinerFinanceSummary() {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Laporan Laba Rugi</h1>
-      </div>
-
       <div className="kd-content">
-        {loading ? (
-          <KulinerLoading message="Memproses laporan keuangan..." />
-        ) : (
-          <>
-            {/* Filter Section */}
+        {/* Filter Section */}
             <div className="kd-page-actions no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <Calendar size={18} color="#64748b" style={{ marginRight: 4 }} />
@@ -642,8 +634,6 @@ export default function KulinerFinanceSummary() {
 
               </div>
             </div>
-          </>
-        )}
       </div>
     </KulinerAdminLayout>
   );

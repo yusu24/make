@@ -17,7 +17,7 @@ import {
 import { useCore } from '../../../hooks/useCore';
 import { useAuth } from '../../../contexts/AuthContext';
 import RetailLoading from '../components/RetailLoading';
-import KpiCard from '../../../components/KpiCard';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 
 function QuickAction({ icon: Icon, title, desc, href, color = 'indigo' }) {
   const colors = {
@@ -166,41 +166,45 @@ export default function RetailDashboard() {
 
       {/* Stats Grid - only for owner */}
       {isOwnerOrManager && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-          <KpiCard
-            icon={Receipt}
-            label="Transaksi Hari Ini"
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatScoreCard
+            title="TRANSAKSI HARI INI"
             value={data.today_transactions}
-            sub="total transaksi"
-            color="indigo"
+            icon={Receipt}
+            statusBadge={{ text: "Realtime", color: "indigo" }}
+            subtitle="Total pesanan kasir hari ini"
+            progressBar={{ value: Math.min(100, Math.max(15, data.today_transactions * 8)), color: "bg-indigo-500" }}
           />
-          <KpiCard
-            icon={TrendingUp}
-            label="Omzet Hari Ini"
+          <StatScoreCard
+            title="OMZET HARI INI"
             value={fmtRp(data.today_income)}
-            sub="total penjualan"
-            color="emerald"
+            icon={TrendingUp}
+            statusBadge={{ text: "Penjualan", color: "emerald" }}
+            subtitle="Total pendapatan bruto harian"
+            progressBar={{ value: 85, color: "bg-emerald-500" }}
           />
-          <KpiCard
-            icon={Package}
-            label="Produk Aktif"
+          <StatScoreCard
+            title="PRODUK AKTIF"
             value={data.active_products}
-            sub="produk tersedia"
-            color="amber"
+            icon={Package}
+            statusBadge={{ text: "Katalog", color: "amber" }}
+            subtitle="Barang siap jual dalam sistem"
+            progressBar={{ value: 92, color: "bg-amber-500" }}
           />
-          <KpiCard
-            icon={Users}
-            label="Kasir Aktif"
+          <StatScoreCard
+            title="KASIR & STAF"
             value={data.active_staff}
-            sub="pengguna terdaftar"
-            color="rose"
+            icon={Users}
+            statusBadge={{ text: "Operator", color: "blue" }}
+            subtitle="Akun staf & kasir terdaftar"
+            progressBar={{ value: 100, color: "bg-blue-500" }}
           />
         </div>
       )}
 
       {/* Quick Actions */}
       <div>
-        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 font-['Inter']">Akses Cepat</h3>
+        <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 font-['Inter']">Akses Cepat</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
           <QuickAction icon={ShoppingCart} title="Kasir POS" desc="Mulai sesi penjualan" href="/retail/pos" color="indigo" />
           {isOwnerOrManager && (
@@ -217,27 +221,27 @@ export default function RetailDashboard() {
       {isOwnerOrManager && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Recent Transactions */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-sm md:text-base m-0">Transaksi Terbaru</h3>
-              <Link to="/retail/transactions" className="text-xs text-indigo-600 hover:underline font-semibold flex items-center gap-1 font-['Inter']">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800/80">
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 dark:text-white text-sm md:text-base m-0">Transaksi Terbaru</h3>
+              <Link to="/retail/transactions" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold flex items-center gap-1 font-['Inter']">
                 Lihat semua <ArrowRight size={13} />
               </Link>
             </div>
-            <div className="divide-y divide-slate-50">
+            <div className="divide-y divide-slate-50 dark:divide-slate-800/60">
               {data.recent_transactions.length > 0 ? data.recent_transactions.slice(0, 5).map((t) => (
-                <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/80 transition-colors">
-                  <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                  <div className="w-9 h-9 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shrink-0">
                     <Receipt size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-mono font-bold text-slate-800 truncate">#{t.invoice_no}</p>
+                    <p className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 truncate">#{t.invoice_no}</p>
                     <p className="text-xs text-slate-400 mt-0.5 font-['Inter']">{t.cashier_name || 'Kasir'}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs md:text-sm font-['Plus_Jakarta_Sans'] font-extrabold text-slate-900">{fmtRp(t.total_amount)}</p>
+                    <p className="text-xs md:text-sm font-['Plus_Jakarta_Sans'] font-extrabold text-slate-900 dark:text-white">{fmtRp(t.total_amount)}</p>
                     <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full mt-0.5 ${
-                      t.status === 'paid' ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50'
+                      t.status === 'paid' ? 'text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/60' : 'text-rose-700 bg-rose-50 dark:text-rose-300 dark:bg-rose-950/60'
                     }`}>
                       {t.status === 'paid' ? <><CheckCircle2 size={10} /> Lunas</> : t.status}
                     </span>
@@ -253,29 +257,29 @@ export default function RetailDashboard() {
           </div>
 
           {/* Low Stock Products */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-sm md:text-base flex items-center gap-2 m-0">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800/80">
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 dark:text-white text-sm md:text-base flex items-center gap-2 m-0">
                 <AlertTriangle size={16} className="text-amber-500" />
                 Stok Menipis &amp; Buffer Minimum
               </h3>
-              <Link to="/retail/inventory" className="text-xs text-indigo-600 hover:underline font-semibold flex items-center gap-1 font-['Inter']">
+              <Link to="/retail/inventory" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold flex items-center gap-1 font-['Inter']">
                 Kelola stok <ArrowRight size={13} />
               </Link>
             </div>
-            <div className="divide-y divide-slate-50">
+            <div className="divide-y divide-slate-50 dark:divide-slate-800/60">
               {data.low_stock.length > 0 ? data.low_stock.slice(0, 5).map((p) => (
-                <div key={p.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/80 transition-colors">
-                  <div className="w-9 h-9 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+                <div key={p.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                  <div className="w-9 h-9 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center shrink-0">
                     <Package size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-semibold text-slate-800 truncate font-['Plus_Jakarta_Sans']">{p.name}</p>
+                    <p className="text-xs md:text-sm font-semibold text-slate-800 dark:text-slate-200 truncate font-['Plus_Jakarta_Sans']">{p.name}</p>
                     <p className="text-xs text-slate-400 mt-0.5 font-['Inter']">{p.category || 'Tanpa Kategori'}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <span className={`inline-block text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-md ${
-                      p.stock <= 0 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+                      p.stock <= 0 ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
                     }`}>
                       Sisa: {Math.round(p.stock)}
                     </span>

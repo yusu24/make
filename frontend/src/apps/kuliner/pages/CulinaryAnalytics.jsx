@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useToast } from '../../../components/Toast';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
@@ -8,6 +9,7 @@ import './KulinerDashboard.css';
 
 const CulinaryAnalytics = () => {
   const { t } = useTranslation();
+  const toast = useToast();
   // Real data state
   const [topProducts, setTopProducts] = useState([]);
   const [peakHours, setPeakHours] = useState([]);
@@ -73,7 +75,7 @@ const CulinaryAnalytics = () => {
       setAiData(response.data.insights || null);
     } catch (error) {
       console.error('Failed to generate AI insights:', error);
-      alert(t('kulinerAnalytics.alertAiFail') || 'Gagal menghasilkan analisis AI.');
+      toast.error(t('kulinerAnalytics.alertAiFail') || 'Gagal menghasilkan analisis AI.');
     } finally {
       clearInterval(interval);
       setAiLoading(false);
@@ -82,10 +84,6 @@ const CulinaryAnalytics = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerAnalytics.title') || 'Analitik Bisnis'}</h1>
-      </div>
-
       <div className="kd-content">
         {loading ? (
           <KulinerLoading message={t('kulinerAnalytics.loading') || 'Menganalisis data transaksi Anda...'} />

@@ -56,7 +56,7 @@ const kulinerRoutes = (
     <Route path="menu" element={<KulinerFullMenu />} />
     
     {/* Protected Culinary Admin / Operational Routes */}
-    <Route element={<ProtectedRoute><CategoryRoute allowedCategory="Kuliner"><Outlet /></CategoryRoute></ProtectedRoute>}>
+    <Route element={<ProtectedRoute><CategoryRoute allowedCategory="Kuliner"><KulinerAdminLayout /></CategoryRoute></ProtectedRoute>}>
       <Route path="admin" element={<KulinerDashboard />} />
       <Route path="admin/orders" element={<KulinerOrders />} />
       <Route path="admin/categories" element={<KulinerAdminMenu />} />

@@ -3,6 +3,7 @@ import { api } from '../../../lib/api'
 import Modal from '../../../components/Modal'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 import {
@@ -214,12 +215,7 @@ export default function Finance() {
 
   return (
     <div className="animate-fade-in">
-      {/* ── Page Header ── */}
-      <div className="page-header mb-2">
-        <h2 className="page-title">Finansial &amp; Faktur</h2>
-      </div>
-
-      {/* ── Action Bar below title ── */}
+      {/* ── Action Bar ── */}
       <div className="flex justify-end mb-4">
         <button
           className="btn btn-secondary flex items-center gap-1.5"
@@ -233,44 +229,67 @@ export default function Finance() {
       </div>
 
       {loading ? (
-        <div className="card" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-sm">
+          <div className="flex flex-col items-center gap-3">
             <RefreshCw size={28} className="animate-spin text-indigo-600" />
-            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Memuat data faktur &amp; laporan keuangan...
             </span>
           </div>
         </div>
       ) : (
         <>
-          {/* ── Summary Cards ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
-            {[
-              { label: 'Total Pendapatan', value: fmtRp(statsData.total_revenue), icon: DollarSign, color: '#10b981', bg: 'bg-emerald-50 text-emerald-600', sub: 'Semua invoice lunas' },
-              { label: 'Invoice Lunas',    value: statsData.paid_count,           icon: CheckCircle2, color: '#10b981', bg: 'bg-emerald-50 text-emerald-600', sub: `Dari ${invoices.length} invoice` },
-              { label: 'Belum / Jatuh Tempo', value: statsData.unpaid_count,     icon: AlertTriangle, color: '#f59e0b', bg: 'bg-amber-50 text-amber-600', sub: 'Perlu tindakan segera' },
-            ].map(card => {
-              const IconComp = card.icon;
-              return (
-                <div key={card.label} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-                  <div className={`w-11 h-11 rounded-xl ${card.bg} flex items-center justify-center shrink-0`}>
-                    <IconComp size={22} strokeWidth={2} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{card.label}</p>
-                    <p className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans']" style={{ color: card.color }}>{card.value}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{card.sub}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {/* ── Summary Cards with StatScoreCard ── */}
+          {(() => {
+            const totalInvoices = invoices.length;
+            const paidPercent = totalInvoices > 0 ? Math.round((statsData.paid_count / totalInvoices) * 100) : 0;
+            const unpaidPercent = totalInvoices > 0 ? Math.round((statsData.unpaid_count / totalInvoices) * 100) : 0;
+
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <StatScoreCard
+                  title="Total Pendapatan"
+                  value={fmtRp(statsData.total_revenue)}
+                  status="Terbayar Lunas"
+                  statusVariant="emerald"
+                  icon={DollarSign}
+                  desc="Akumulasi pendapatan riil dari invoice lunas"
+                  progress={100}
+                  progressVariant="emerald"
+                />
+
+                <StatScoreCard
+                  title="Invoice Lunas"
+                  value={statsData.paid_count}
+                  status={`${paidPercent}% Sukses`}
+                  statusVariant="emerald"
+                  icon={CheckCircle2}
+                  desc={`Dari total ${totalInvoices} invoice tercatat`}
+                  progress={paidPercent}
+                  progressVariant="emerald"
+                  onClick={() => setFilter('paid')}
+                />
+
+                <StatScoreCard
+                  title="Belum / Jatuh Tempo"
+                  value={statsData.unpaid_count}
+                  status={statsData.unpaid_count > 0 ? `${unpaidPercent}% Menunggu` : 'Nihil'}
+                  statusVariant={statsData.unpaid_count > 0 ? 'amber' : 'slate'}
+                  icon={AlertTriangle}
+                  desc="Invoice pending atau lewat jatuh tempo"
+                  progress={unpaidPercent}
+                  progressVariant="amber"
+                  onClick={() => setFilter('unpaid')}
+                />
+              </div>
+            );
+          })()}
 
           {/* ── Revenue Chart ── */}
-          <div className="card card-pad chart-card-wrapper min-w-0" style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-              <TrendingUp size={18} className="text-indigo-600" />
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-base text-slate-900 m-0">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm mb-6 min-w-0">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp size={18} className="text-indigo-600 dark:text-indigo-400" />
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-800 dark:text-slate-100 m-0">
                 Tren Pendapatan Bulanan (6 Bulan Terakhir)
               </h3>
             </div>
@@ -278,43 +297,43 @@ export default function Finance() {
           </div>
 
           {/* Card tabel transaksi */}
-          <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
-            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <FileText size={18} className="text-primary" />
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 15, margin: 0 }}>Daftar Invoice</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-6">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-2">
+                  <FileText size={18} className="text-indigo-600 dark:text-indigo-400" />
+                  <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-slate-800 dark:text-slate-100 m-0">
+                    Daftar Invoice
+                  </h3>
                 </div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div className="search-wrap" style={{ minWidth: 180, maxWidth: 240, position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
-                    <input className="form-input search-input" style={{ paddingLeft: 34 }} placeholder="Cari tenant / invoice..." value={search} onChange={e => setSearch(e.target.value)} />
+                <div className="flex gap-2 items-center flex-wrap">
+                  <div className="relative min-w-[200px] max-w-xs">
+                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input
+                      className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
+                      placeholder="Cari tenant / invoice..."
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                    />
                   </div>
-                  <div style={{ minWidth: 150 }}>
-                    <select
-                      id="select-filter-invoice-status"
-                      className="form-input"
-                      value={filter}
-                      onChange={e => setFilter(e.target.value)}
-                      style={{
-                        padding: '8px 12px',
-                        fontSize: '13px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        outline: 'none',
-                        height: 38,
-                        width: 'auto',
-                        minWidth: 150
-                      }}
-                    >
-                      <option value="all">Semua Status</option>
-                      <option value="paid">Lunas</option>
-                      <option value="unpaid">Belum Bayar</option>
-                      <option value="overdue">Jatuh Tempo</option>
-                    </select>
-                  </div>
-                  <button className="btn btn-secondary" onClick={fetchData} disabled={loading} style={{ height: 38, padding: '0 14px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <RefreshCw size={14} /> Refresh
+                  <select
+                    id="select-filter-invoice-status"
+                    className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    value={filter}
+                    onChange={e => setFilter(e.target.value)}
+                  >
+                    <option value="all">Semua Status</option>
+                    <option value="paid">Lunas</option>
+                    <option value="unpaid">Belum Bayar</option>
+                    <option value="overdue">Jatuh Tempo</option>
+                  </select>
+                  <button
+                    className="h-[38px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    onClick={fetchData}
+                    disabled={loading}
+                  >
+                    <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                    <span>Refresh</span>
                   </button>
                 </div>
               </div>
@@ -351,22 +370,29 @@ export default function Finance() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleViewInvoice(inv)} title="Lihat Detail">
+                        <div className="flex gap-1.5 justify-end">
+                          <button
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition-colors"
+                            onClick={() => handleViewInvoice(inv)}
+                            title="Lihat Detail Invoice"
+                          >
                             <Eye size={13} />
                           </button>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleDownloadPdf(inv.id)} title="Unduh PDF Invoice">
+                          <button
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            onClick={() => handleDownloadPdf(inv.id)}
+                            title="Unduh PDF Invoice"
+                          >
                             <Download size={13} />
                           </button>
                           {inv.status !== 'paid' && (
                             <button
-                              className="btn btn-primary btn-sm"
-                              style={{ fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                              className="h-8 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 transition-colors disabled:opacity-50"
                               disabled={markingPaid === inv.id}
                               onClick={() => handleMarkAsPaid(inv.id)}
                               title="Tandai Lunas"
                             >
-                              {markingPaid === inv.id ? '...' : <Check size={12} />}
+                              {markingPaid === inv.id ? '...' : <><Check size={12} /> Lunas</>}
                             </button>
                           )}
                         </div>

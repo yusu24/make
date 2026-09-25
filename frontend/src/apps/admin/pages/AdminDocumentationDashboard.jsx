@@ -145,12 +145,7 @@ export default function AdminDocumentationDashboard() {
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: 40 }}>
-      {/* ── Page Header ── */}
-      <div className="page-header mb-2">
-        <h2 className="page-title">Manajemen Dokumentasi</h2>
-      </div>
-
-      {/* ── Action Bar below title ── */}
+      {/* ── Action Bar ── */}
       <div className="flex justify-end gap-2.5 mb-4">
         <button
           className="btn btn-secondary flex items-center gap-1.5"

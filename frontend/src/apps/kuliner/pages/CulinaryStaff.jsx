@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { KeyRound, Pencil, Trash2, Shield, Plus, X, Loader2 } from '@/constants/icons';
+import { KeyRound, Pencil, Trash2, Shield, Plus, X, Loader2, Users, Utensils, CreditCard, BadgeCheck } from '@/constants/icons';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTranslation } from '../../../contexts/I18nContext';
+import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import { useNavigate } from 'react-router-dom';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import './KulinerDashboard.css';
 
 const CulinaryStaff = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
+  const toast = useToast();
   const { impersonateUser } = useAuth();
   const navigate = useNavigate();
   const [staff, setStaff] = useState([]);
@@ -34,6 +38,10 @@ const CulinaryStaff = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const totalPages = Math.ceil(staff.length / itemsPerPage);
   const currentStaff = staff.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const cashierCount = staff.filter(s => s.role === 'cashier').length;
+  const kitchenCount = staff.filter(s => s.role === 'chef' || s.role === 'kitchen').length;
+  const customRoleCount = staff.filter(s => s.kuliner_role_id || s.kuliner_role).length;
 
   useEffect(() => {
     fetchStaff();
@@ -66,10 +74,10 @@ const CulinaryStaff = () => {
     try {
       if (editingStaff) {
         await api.put(`/kuliner/admin/staff/${editingStaff.id}`, form);
-        alert('Data staff berhasil diperbarui');
+        toast.success('Data staff berhasil diperbarui');
       } else {
         await api.post('/kuliner/admin/staff', form);
-        alert('Staff baru berhasil ditambahkan');
+        toast.success('Staff baru berhasil ditambahkan');
       }
       setShowModal(false);
       setEditingStaff(null);
@@ -92,7 +100,7 @@ const CulinaryStaff = () => {
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       }
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -115,7 +123,7 @@ const CulinaryStaff = () => {
       const redirect = await impersonateUser(id);
       navigate(redirect);
     } catch (err) {
-      alert('Gagal impersonate: ' + (err.response?.data?.message || err.message));
+      toast.error('Gagal impersonate: ' + (err.response?.data?.message || err.message));
     } finally {
       setImpersonating(null);
     }
@@ -125,20 +133,53 @@ const CulinaryStaff = () => {
     if (await confirm('Hapus staff ini?')) {
       try {
         await api.delete(`/kuliner/admin/staff/${id}`);
+        toast.success('Staff berhasil dihapus');
         fetchStaff();
       } catch (err) {
-        alert('Gagal menghapus staff');
+        toast.error('Gagal menghapus staff');
       }
     }
   };
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Kelola Staff Karyawan</h1>
-      </div>
-
       <div className="kd-content">
+        {/* Modern KPI Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatScoreCard
+            title="Total Karyawan"
+            value={staff.length}
+            icon={Users}
+            color="amber"
+            badgeText="Aktif"
+            sublabel="Semua akun staf terdaftar"
+          />
+          <StatScoreCard
+            title="Staf Kasir"
+            value={cashierCount}
+            icon={CreditCard}
+            color="emerald"
+            badgeText="Front of House"
+            sublabel="Akses operasional POS"
+          />
+          <StatScoreCard
+            title="Tim Dapur / Koki"
+            value={kitchenCount}
+            icon={Utensils}
+            color="violet"
+            badgeText="Back of House"
+            sublabel="Akses antrean dapur (KDS)"
+          />
+          <StatScoreCard
+            title="Jabatan Khusus"
+            value={customRoleCount}
+            icon={BadgeCheck}
+            color="sky"
+            badgeText={`${roles.length} Role Master`}
+            sublabel="Memiliki penugasan role kustom"
+          />
+        </div>
+
         <div className="kd-page-actions">
           <a href="/kuliner/admin/roles" className="kd-btn kd-btn-secondary flex items-center gap-2">
             <Shield size={15} /> Atur Role & Izin
@@ -165,12 +206,7 @@ const CulinaryStaff = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan="5" className="text-center py-10">
-                      <div className="spinner" style={{ margin: '0 auto 10px' }} />
-                      <span className="text-slate-400 text-xs">{t('kulinerCommon.loadingData') || 'Memuat data staff...'}</span>
-                    </td>
-                  </tr>
+                  <KulinerTableSkeleton cols={5} rows={5} />
                 ) : staff.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="text-center py-10 text-slate-400 text-xs italic">

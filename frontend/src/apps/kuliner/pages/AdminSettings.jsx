@@ -33,12 +33,14 @@ import {
 } from '@/constants/icons';
 import api from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useConfirm } from '../../../components/ConfirmDialog';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
 import './KulinerDashboard.css';
 
 const AdminSettings = () => {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const { updateUser } = useAuth();
   const [settings, setSettings] = useState({
     store_name: '',
@@ -108,7 +110,7 @@ const AdminSettings = () => {
   };
 
   const handleLogoDelete = async () => {
-    if (!window.confirm('Hapus logo toko dan gunakan logo default?')) return;
+    if (!await confirm('Hapus logo toko dan gunakan logo default?')) return;
     setLogoUploading(true);
     setMessage(null);
     try {
@@ -149,11 +151,6 @@ const AdminSettings = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Pengaturan Toko</h1>
-        <div className="kd-topbar-actions" />
-      </div>
-
       <div className="kd-content">
         {loading ? (
           <KulinerLoading message="Memuat Pengaturan..." />

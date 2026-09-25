@@ -33,6 +33,7 @@ const CardDictionary = lazy(() => import('../apps/admin/pages/CardDictionary'));
 const FontDictionary = lazy(() => import('../apps/admin/pages/FontDictionary'));
 const UiConsistencyReport = lazy(() => import('../apps/admin/pages/UiConsistencyReport'));
 const RetailStandardsDictionary = lazy(() => import('../apps/admin/pages/RetailStandardsDictionary'));
+const McpSkillsAudit = lazy(() => import('../apps/admin/pages/McpSkillsAudit'));
 
 const adminRoutes = (
   <>
@@ -119,6 +120,8 @@ const adminRoutes = (
     <Route path="admin/retail-standards" element={<ProtectedRoute adminOnly><RetailStandardsDictionary /></ProtectedRoute>} />
     <Route path="customer-onboarding" element={<ProtectedRoute adminOnly><CustomerOnboardingGuide /></ProtectedRoute>} />
     <Route path="admin/customer-onboarding" element={<ProtectedRoute adminOnly><CustomerOnboardingGuide /></ProtectedRoute>} />
+    <Route path="mcp-audit" element={<ProtectedRoute adminOnly><McpSkillsAudit /></ProtectedRoute>} />
+    <Route path="admin/mcp-audit" element={<ProtectedRoute adminOnly><McpSkillsAudit /></ProtectedRoute>} />
     <Route path="profile" element={<Profile />} />
     <Route path="admin/profile" element={<Profile />} />
   </>

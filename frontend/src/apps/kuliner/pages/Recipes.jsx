@@ -106,11 +106,19 @@ export default function Recipes() {
     }
   };
 
+  const calculatedFoodCost = recipeItems.reduce((acc, row) => {
+    const ing = ingredients.find((i) => String(i.id) === String(row.ingredient_id));
+    const price = Number(ing?.last_price || 0);
+    const qty = Number(row.quantity || 0);
+    return acc + (qty * price);
+  }, 0);
+  const sellPrice = Number(selectedProduct?.price || selectedProduct?.price_sell || 0);
+  const grossMarginRp = Math.max(0, sellPrice - calculatedFoodCost);
+  const foodCostPct = sellPrice > 0 ? ((calculatedFoodCost / sellPrice) * 100).toFixed(1) : '0';
+  const grossMarginPct = sellPrice > 0 ? ((grossMarginRp / sellPrice) * 100).toFixed(1) : '0';
+
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerInventory.recipesTitle')}</h1>
-      </div>
       <div className="kd-content">
         <style>{`
           .kr-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: flex-start; }
@@ -195,7 +203,7 @@ export default function Recipes() {
                     style={{ fontSize: 12, padding: '8px 12px' }}
                   >
                     <option value="">Semua Kategori</option>
-                    {categories.map(c => (
+                    {categories.map((c) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
@@ -223,7 +231,8 @@ export default function Recipes() {
               </div>
               {filteredProducts.length > itemsPerPage && (
                 <div style={{ borderTop: '1px solid #f1f5f9' }}>
-                  <ClientPagination setItemsPerPage={setItemsPerPage} 
+                  <ClientPagination
+                    setItemsPerPage={setItemsPerPage} 
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
                     totalPages={totalPages}
@@ -241,38 +250,92 @@ export default function Recipes() {
               <div className="text-center py-10 text-slate-400">{t('kulinerInventory.formRecipeMenuInfo')}</div>
             ) : (
               <div style={{ padding: 16 }}>
-                <h3 style={{ fontWeight: 700, marginBottom: 12 }}>Resep: {selectedProduct.name}</h3>
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">Resep: {selectedProduct.name}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Komposisi takaran bahan baku (BOM) & kalkulasi HPP otomatis</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700">
+                      Harga Jual: Rp {Math.round(sellPrice).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Live Food Cost & Margin Dashboard */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/80">
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Food Cost (HPP)</span>
+                    <span className="text-base font-extrabold text-slate-900">
+                      Rp {Math.round(calculatedFoodCost).toLocaleString('id-ID')}
+                    </span>
+                    <span className="text-[11px] text-amber-600 font-semibold ml-1.5">({foodCostPct}% dari jual)</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Laba Kotor Porsi</span>
+                    <span className="text-base font-extrabold text-emerald-600">
+                      Rp {Math.round(grossMarginRp).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Gross Margin %</span>
+                    <span className={`text-base font-extrabold ${Number(grossMarginPct) >= 50 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {grossMarginPct}%
+                    </span>
+                  </div>
+                </div>
+
                 <div className="kd-table-container" style={{ marginBottom: 16 }}>
                   <table className="kd-table">
                     <thead>
                       <tr>
                         <th>{t('kulinerInventory.headerRecipeItem') || 'Bahan Baku'}</th>
-                        <th style={{ width: 150 }}>{t('kulinerInventory.headerWasteQty') || 'Jumlah'}</th>
-                        <th style={{ width: 60 }} className="text-center">{t('kulinerInventory.headerAction') || 'Aksi'}</th>
+                        <th style={{ width: 140 }}>Jumlah</th>
+                        <th style={{ width: 120 }}>Satuan</th>
+                        <th style={{ width: 130 }} className="text-right">Biaya/Unit</th>
+                        <th style={{ width: 140 }} className="text-right">Subtotal HPP</th>
+                        <th style={{ width: 50 }} className="text-center">{t('kulinerInventory.headerAction') || 'Aksi'}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {recipeItems.map((row, idx) => (
-                        <tr key={idx}>
-                          <td style={{ padding: '6px 12px' }}>
-                            <select className="kd-form-select" style={{ marginBottom: 0, padding: '6px 10px', fontSize: 13, height: 'auto' }} value={row.ingredient_id} onChange={(e) => updateRow(idx, 'ingredient_id', e.target.value)}>
-                              <option value="">{t('kulinerInventory.formRecipeIngredient')}</option>
-                              {ingredients.map((ing) => <option key={ing.id} value={ing.id}>{ing.name} ({ing.unit})</option>)}
-                            </select>
-                          </td>
-                          <td style={{ padding: '6px 12px' }}>
-                            <input type="number" step="0.001" className="kd-form-input" style={{ marginBottom: 0, padding: '6px 10px', fontSize: 13, height: 'auto' }} placeholder={t('kulinerInventory.formRecipeQty') || 'Jumlah'} value={row.quantity} onChange={(e) => updateRow(idx, 'quantity', e.target.value)} />
-                          </td>
-                          <td style={{ padding: '6px 12px' }} className="text-center">
-                            <button type="button" className="kd-icon-btn text-red-500 mx-auto" style={{ padding: 6 }} onClick={() => removeRow(idx)}>
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                      {recipeItems.map((row, idx) => {
+                        const ing = ingredients.find((i) => String(i.id) === String(row.ingredient_id));
+                        const unitCost = Number(ing?.last_price || 0);
+                        const subCost = (Number(row.quantity) || 0) * unitCost;
+
+                        return (
+                          <tr key={idx}>
+                            <td style={{ padding: '6px 12px' }}>
+                              <select className="kd-form-select" style={{ marginBottom: 0, padding: '6px 10px', fontSize: 13, height: 'auto' }} value={row.ingredient_id} onChange={(e) => updateRow(idx, 'ingredient_id', e.target.value)}>
+                                <option value="">{t('kulinerInventory.formRecipeIngredient')}</option>
+                                {ingredients.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                              </select>
+                            </td>
+                            <td style={{ padding: '6px 12px' }}>
+                              <input type="number" step="0.001" className="kd-form-input" style={{ marginBottom: 0, padding: '6px 10px', fontSize: 13, height: 'auto' }} placeholder="0" value={row.quantity} onChange={(e) => updateRow(idx, 'quantity', e.target.value)} />
+                            </td>
+                            <td style={{ padding: '6px 12px' }}>
+                              <span className="text-xs font-semibold text-slate-600 px-2 py-1 bg-slate-100 rounded-md">
+                                {ing?.unit || '-'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '6px 12px' }} className="text-right text-xs text-slate-500 font-mono">
+                              Rp {Math.round(unitCost).toLocaleString('id-ID')}
+                            </td>
+                            <td style={{ padding: '6px 12px' }} className="text-right text-xs font-bold text-slate-900 font-mono">
+                              Rp {Math.round(subCost).toLocaleString('id-ID')}
+                            </td>
+                            <td style={{ padding: '6px 12px' }} className="text-center">
+                              <button type="button" className="kd-icon-btn text-red-500 mx-auto" style={{ padding: 6 }} onClick={() => removeRow(idx)}>
+                                <Trash2 size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                       {recipeItems.length === 0 && (
                         <tr>
-                          <td colSpan="3" className="text-center py-6 text-slate-400 text-sm">
+                          <td colSpan="6" className="text-center py-6 text-slate-400 text-sm">
                             {t('kulinerInventory.emptyRecipeItems') || 'Belum ada bahan baku ditambahkan.'}
                           </td>
                         </tr>

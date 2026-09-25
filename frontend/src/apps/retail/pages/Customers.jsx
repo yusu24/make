@@ -7,7 +7,7 @@ import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
-import KpiCard from '../../../components/KpiCard';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import EmptyTableState from '../../../components/EmptyTableState';
 import FormLabel from '../../../components/FormLabel';
 import '../retail.css';
@@ -103,33 +103,43 @@ export default function Customers() {
     <div className="retail-page-classic">
       {/* Page Title Handled by Navtop */}
       {/* CRM Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <KpiCard
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="TOTAL PELANGGAN"
+          value={customers.length}
           icon={User}
-          label="Total Member"
-          value={`${customers.length} User`}
-          sub="Total pelanggan terdaftar dalam sistem"
-          color="indigo"
+          statusBadge={{ text: "Member", color: "indigo" }}
+          subtitle="Total basis pelanggan toko terdaftar"
+          progressBar={{ value: 100, color: "bg-indigo-500" }}
         />
-        <KpiCard
-          icon={RefreshCw}
-          label="Database Status"
+        <StatScoreCard
+          title="STATUS DATABASE"
           value="Aktif & Sinkron"
-          sub="Integritas data pelanggan terverifikasi"
-          color="emerald"
+          icon={RefreshCw}
+          statusBadge={{ text: "Terverifikasi", color: "emerald" }}
+          subtitle="Integritas data pelanggan offline & online"
+          progressBar={{ value: 100, color: "bg-emerald-500" }}
+        />
+        <StatScoreCard
+          title="HASIL PENCARIAN"
+          value={filtered.length}
+          icon={User}
+          statusBadge={{ text: "Tersaring", color: "blue" }}
+          subtitle="Pelanggan aktif pada filter saat ini"
+          progressBar={{ value: customers.length > 0 ? Math.round((filtered.length / customers.length) * 100) : 100, color: "bg-blue-500" }}
         />
       </div>
 
       {/* Table Section (Unified Style) */}
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button title="Tambah pelanggan"
-            className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
+          <button 
+            title="Tambah pelanggan"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0"
             onClick={() => { setEditingCustomer(null); setShowModal(true); }}
           >
-            <User size={15} className="mr-2 mobile-no-margin" />
-            <span className="btn-text-mobile-hide">Tambah pelanggan</span>
+            <User size={15} className="mobile-no-margin" />
+            <span className="btn-text-mobile-hide">Tambah Pelanggan</span>
           </button>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input 

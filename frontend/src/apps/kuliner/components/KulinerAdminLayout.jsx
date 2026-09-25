@@ -1,8 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, createContext, useContext } from 'react';
 import {
   Link,
   useLocation,
-  useNavigate } from 'react-router-dom';
+  useNavigate,
+  Outlet } from 'react-router-dom';
+
+const KulinerLayoutContext = createContext(false);
+
+// Module-level caches to prevent redundant network requests during layout navigation
+let cachedSubscriptionFeatures = null;
+let cachedSubscriptionTimestamp = 0;
+let cachedNotifications = null;
+let cachedNotificationsTimestamp = 0;
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTranslation } from '../../../contexts/I18nContext';
 import { 
@@ -384,6 +393,11 @@ function CollapsedGroupFlyout({ section, anchorY, onClose, pathname }) {
 }
 
 const KulinerAdminLayout = ({ children, title }) => {
+  const isAlreadyInLayout = useContext(KulinerLayoutContext);
+  if (isAlreadyInLayout) {
+    return <>{children}</>;
+  }
+
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isImpersonating, exitImpersonate, logout, updateUser } = useAuth();
@@ -520,12 +534,18 @@ const KulinerAdminLayout = ({ children, title }) => {
     setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState(() => cachedNotifications || []);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (force = false) => {
+    if (!force && cachedNotifications && (Date.now() - cachedNotificationsTimestamp < 60000)) {
+      setNotifications(cachedNotifications);
+      return;
+    }
     try {
       const res = await api.get('/notifications');
-      setNotifications(res.data || []);
+      cachedNotifications = res.data || [];
+      cachedNotificationsTimestamp = Date.now();
+      setNotifications(cachedNotifications);
     } catch (err) {
       console.error('Failed to fetch notifications');
     }
@@ -540,7 +560,7 @@ const KulinerAdminLayout = ({ children, title }) => {
   const handleMarkAllRead = async () => {
     try {
       await api.post('/notifications/read-all');
-      fetchNotifications();
+      fetchNotifications(true);
     } catch (err) {}
   };
 
@@ -553,12 +573,18 @@ const KulinerAdminLayout = ({ children, title }) => {
     }
   }, [user?.tenant_name]);
 
-  const [planFeatures, setPlanFeatures] = useState(null);
+  const [planFeatures, setPlanFeatures] = useState(() => cachedSubscriptionFeatures);
 
   useEffect(() => {
+    if (cachedSubscriptionFeatures && (Date.now() - cachedSubscriptionTimestamp < 300000)) {
+      setPlanFeatures(cachedSubscriptionFeatures);
+      return;
+    }
     api.get('/subscription/current')
       .then(res => {
         if (res.data?.features) {
+          cachedSubscriptionFeatures = res.data.features;
+          cachedSubscriptionTimestamp = Date.now();
           setPlanFeatures(res.data.features);
         }
       })
@@ -705,7 +731,8 @@ const KulinerAdminLayout = ({ children, title }) => {
   ].filter(sec => sec.items.length > 0);
 
   return (
-    <div className="kd-body">
+    <KulinerLayoutContext.Provider value={true}>
+      <div className="kd-body">
 
       <div className={`kd-dashboard ${collapsed ? 'kd-dashboard--collapsed' : ''}`}>
         {/* OVERLAY */}
@@ -716,7 +743,7 @@ const KulinerAdminLayout = ({ children, title }) => {
           <Link 
             to="/kuliner/admin" 
             className="kd-brand" 
-            style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 0', width: '100%', minHeight: 68, borderBottom: '1px solid var(--border-default, #e2e8f0)' }}
+            style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 0', width: '100%', minHeight: 68 }}
             onClick={(e) => {
               if (location.pathname === '/kuliner/admin') {
                 e.preventDefault();
@@ -1261,7 +1288,16 @@ const KulinerAdminLayout = ({ children, title }) => {
           </div>
           </header>
 
-          {children}
+          <Suspense fallback={
+            <div className="p-8 flex justify-center items-center min-h-[350px]">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-amber-200 border-t-amber-600 rounded-full animate-spin" />
+                <span className="text-xs text-slate-500 font-medium">Memuat halaman...</span>
+              </div>
+            </div>
+          }>
+            {children || <Outlet />}
+          </Suspense>
 
           {/* Mobile Bottom Clearance Spacer so bottom-most content is never covered by bottom nav */}
           <div
@@ -1293,6 +1329,7 @@ const KulinerAdminLayout = ({ children, title }) => {
         onClose={() => setIsBottomSheetOpen(false)}
       />
     </div>
+    </KulinerLayoutContext.Provider>
   );
 };
 

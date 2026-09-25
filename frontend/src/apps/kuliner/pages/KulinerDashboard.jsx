@@ -20,6 +20,7 @@ import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import './KulinerDashboard.css';
 
 import { useAuth } from '../../../contexts/AuthContext';
@@ -101,11 +102,6 @@ const KulinerDashboard = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title font-['Plus_Jakarta_Sans'] font-semibold text-slate-900">{t('kulinerDashboard.dashboardOverview')}</h1>
-        <div className="kd-topbar-actions" />
-      </div>
-
       <div className="kd-content">
         {loading ? (
           <KulinerLoading message={t('kulinerDashboard.preparingKitchen')} />
@@ -155,45 +151,41 @@ const KulinerDashboard = () => {
               </div>
             </div>
 
-            {/* STATS */}
-            <div className="kd-stats-grid">
-              <div className="kd-stat-card">
-                <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-revenue"><DollarSign size={20} /></div>
-                  <span className="kd-stat-label">{t('kulinerDashboard.todaysRevenue')}</span>
-                </div>
-                <div className="kd-stat-value">{formatRp(stats?.revenue_today)}</div>
-                <div className={`kd-stat-change ${revenueChange.up === false ? 'kd-change-down' : 'kd-change-up'}`}>{revenueChange.label}</div>
-              </div>
-
-              <div className="kd-stat-card">
-                <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-orders"><ShoppingBag size={20} /></div>
-                  <span className="kd-stat-label">{t('kulinerDashboard.todaysOrders')}</span>
-                </div>
-                <div className="kd-stat-value">{stats?.orders_today || 0}</div>
-                <div className="kd-stat-change kd-change-up">↑ {stats?.orders_today || 0} {t('kulinerDashboard.newOrders')}</div>
-              </div>
-
-              <div className="kd-stat-card">
-                <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-menu"><Award size={20} /></div>
-                  <span className="kd-stat-label">{t('kulinerDashboard.bestSellingMenu')}</span>
-                </div>
-                <div className="kd-stat-value" style={{ fontSize: 20 }}>{stats?.top_menu || '-'}</div>
-                <div className="kd-stat-change kd-change-up">{t('kulinerDashboard.positiveTrend')}</div>
-              </div>
-
-              <div className="kd-stat-card" style={{ cursor: 'pointer' }} onClick={() => navigate('/kuliner/admin/ingredients')}>
-                <div className="kd-stat-header">
-                  <div className="kd-stat-icon kd-icon-users"><AlertTriangle size={20} /></div>
-                  <span className="kd-stat-label">{t('kulinerDashboard.lowStockIngredients')}</span>
-                </div>
-                <div className="kd-stat-value">{stats?.low_stock_ingredients?.length || 0}</div>
-                <div className="kd-stat-change" style={{ color: '#94a3b8' }}>
-                  {(stats?.low_stock_ingredients || []).slice(0, 3).map((i) => i.name).join(', ') || t('kulinerDashboard.allStockSafe')}
-                </div>
-              </div>
+            {/* Modern Unified KPI Stat Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <StatScoreCard
+                title={t('kulinerDashboard.todaysRevenue')}
+                value={formatRp(stats?.revenue_today)}
+                icon={DollarSign}
+                color="emerald"
+                badgeText={revenueChange.label}
+                sublabel="Penjualan hari ini"
+              />
+              <StatScoreCard
+                title={t('kulinerDashboard.todaysOrders')}
+                value={stats?.orders_today || 0}
+                icon={ShoppingBag}
+                color="amber"
+                badgeText={`${stats?.orders_today || 0} ${t('kulinerDashboard.newOrders')}`}
+                sublabel="Transaksi sukses"
+              />
+              <StatScoreCard
+                title={t('kulinerDashboard.bestSellingMenu')}
+                value={stats?.top_menu || '-'}
+                icon={Award}
+                color="violet"
+                badgeText={t('kulinerDashboard.positiveTrend')}
+                sublabel="Menu terfavorit"
+              />
+              <StatScoreCard
+                title={t('kulinerDashboard.lowStockIngredients')}
+                value={stats?.low_stock_ingredients?.length || 0}
+                icon={AlertTriangle}
+                color={stats?.low_stock_ingredients?.length > 0 ? "rose" : "slate"}
+                badgeText={stats?.low_stock_ingredients?.length > 0 ? "Perlu Restock" : "Stok Aman"}
+                sublabel={(stats?.low_stock_ingredients || []).slice(0, 2).map((i) => i.name).join(', ') || t('kulinerDashboard.allStockSafe')}
+                onClick={() => navigate('/kuliner/admin/ingredients')}
+              />
             </div>
 
             {/* CHART & WIDGETS */}

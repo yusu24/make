@@ -3,11 +3,16 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Plus, Pencil, Trash2, RefreshCw } from '@/constants/icons';
+import { Plus, Pencil, Trash2, RefreshCw, Calendar, Layers, AlertTriangle } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 
 export default function Batches() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -74,23 +79,31 @@ export default function Batches() {
     try {
       if (form.id) {
         await api.put(`/retail/batches/${form.id}`, form);
+        toast.success('Data batch berhasil diperbarui');
       } else {
         await api.post('/retail/batches', form);
+        toast.success('Batch baru berhasil ditambahkan');
       }
       setShowModal(false);
       fetchData();
     } catch (err) {
-      alert(err?.response?.data?.message || 'Gagal menyimpan Batch');
+      toast.error(err?.response?.data?.message || 'Gagal menyimpan batch');
     }
   };
 
-  const deleteBatch = async (id) => {
-    if (!window.confirm("Hapus Batch ini?")) return;
+  const deleteBatch = async (batch) => {
+    const ok = await confirm(`Hapus batch "${batch.batch_no}" untuk produk ${batch.product?.name || 'ini'}?`, {
+      title: 'Hapus Batch',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
     try {
-      await api.delete(`/retail/batches/${id}`);
+      await api.delete(`/retail/batches/${batch.id}`);
+      toast.success('Batch berhasil dihapus');
       fetchData();
     } catch (err) {
-      alert(err?.response?.data?.message || 'Gagal menghapus');
+      toast.error(err?.response?.data?.message || 'Gagal menghapus batch');
     }
   };
 
@@ -99,11 +112,49 @@ export default function Batches() {
     b.batch_no?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const totalStockInBatches = batches.reduce((acc, b) => acc + Number(b.stock || 0), 0);
+
   const p = usePagination(filtered, 15);
 
   return (
     <div className="retail-page-classic">
-      {/* Page Title Handled by Navtop */}
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Nomor Batch"
+          value={batches.length}
+          suffix=" Batch"
+          subtitle="Identitas kelompok produksi/kedatangan"
+          icon={Layers}
+          badgeText="Lot/Batch"
+          badgeVariant="indigo"
+          progress={100}
+          progressVariant="indigo"
+        />
+        <StatScoreCard
+          title="Total Stok dalam Batch"
+          value={totalStockInBatches.toLocaleString('id-ID')}
+          suffix=" Unit"
+          subtitle="Akumulasi kuantitas stok ber-batch"
+          icon={Calendar}
+          badgeText="Stok Fisik"
+          badgeVariant="emerald"
+          progress={100}
+          progressVariant="emerald"
+        />
+        <StatScoreCard
+          title="Hasil Pencarian"
+          value={filtered.length}
+          suffix=" Batch"
+          subtitle="Sesuai filter kata kunci pencarian"
+          icon={Layers}
+          badgeText={search ? "Filtered" : "Semua"}
+          badgeVariant={search ? "blue" : "slate"}
+          progress={batches.length > 0 ? Math.min(100, Math.round((filtered.length / batches.length) * 100)) : 100}
+          progressVariant="blue"
+        />
+      </div>
+
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button className="btn btn-primary" onClick={openAdd} style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}>
@@ -158,7 +209,7 @@ export default function Batches() {
                     <td><div className="text-sm retail-text-primary">{b.stock}</div></td>
                     <td className="text-right pr-6 flex items-center justify-end gap-2">
                       <button onClick={() => openEdit(b)} className="btn btn-sm btn-ghost" title="Edit Data"><Pencil size={15} /></button>
-                      <button onClick={() => deleteBatch(b.id)} className="btn btn-sm btn-ghost retail-text-danger" title="Hapus Data"><Trash2 size={15} /></button>
+                      <button onClick={() => deleteBatch(b)} className="btn btn-sm btn-ghost retail-text-danger" title="Hapus Data"><Trash2 size={15} /></button>
                     </td>
                   </tr>
                 );

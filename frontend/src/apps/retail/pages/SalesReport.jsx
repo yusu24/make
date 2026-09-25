@@ -12,6 +12,7 @@ import {
 import RetailLoading from '../components/RetailLoading';
 import '../retail.css';
 import '../retail-print.css';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import { 
   RetailPrintHeader, 
   RetailPrintSectionHeader, 
@@ -243,55 +244,45 @@ export default function SalesReport() {
         <div className="no-print">
           {/* Finance KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {/* Total Omzet Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <TrendingUp size={22} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Omzet</span>
-                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
-                  {formatRp(data.total_sales || 0)}
-                </p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Akumulasi pendapatan kotor bulan ini</p>
-              </div>
-            </div>
-
-            {/* Total Transaksi Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                <Target size={22} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Transaksi</span>
-                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
-                  {data.total_transactions} <span className="text-sm text-slate-400 font-bold ml-1 font-['Inter']">TRX</span>
-                </p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Volume penjualan berhasil diproses</p>
-              </div>
-            </div>
-
-            {/* Rata-rata Transaksi */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                <ArrowUpRight size={22} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Rata-rata Transaksi</span>
-                <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
-                  {formatRp(data.total_transactions > 0 ? (Number(data.total_sales || 0) / data.total_transactions) : 0)}
-                </p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter']">Estimasi belanja per konsumen</p>
-              </div>
-            </div>
+            <StatScoreCard
+              title="Total Omzet"
+              value={formatRp(data.total_sales || 0)}
+              subtitle="Akumulasi pendapatan kotor bulan ini"
+              icon={TrendingUp}
+              badgeText="Bulan Ini"
+              badgeVariant="emerald"
+              progress={100}
+              progressVariant="emerald"
+            />
+            <StatScoreCard
+              title="Total Transaksi"
+              value={data.total_transactions}
+              suffix=" TRX"
+              subtitle="Volume penjualan berhasil diproses"
+              icon={Target}
+              badgeText="Volume"
+              badgeVariant="indigo"
+              progress={Math.min(100, Math.round(((data.total_transactions || 0) / 100) * 100))}
+              progressVariant="indigo"
+            />
+            <StatScoreCard
+              title="Rata-rata Transaksi"
+              value={formatRp(data.total_transactions > 0 ? (Number(data.total_sales || 0) / data.total_transactions) : 0)}
+              subtitle="Estimasi belanja per konsumen (AOV)"
+              icon={ArrowUpRight}
+              badgeText="AOV"
+              badgeVariant="blue"
+              progress={75}
+              progressVariant="blue"
+            />
           </div>
 
           {/* Daily Sales Chart */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all mb-6">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-md transition-all mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-base">Tren Penjualan Harian</h3>
-                <p className="text-xs text-slate-400 mt-0.5 font-['Inter']">Grafik dinamika omzet harian pada periode berjalan.</p>
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 dark:text-white text-base">Tren Penjualan Harian</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-400 mt-0.5 font-['Inter']">Grafik dinamika omzet harian pada periode berjalan.</p>
               </div>
             </div>
             <div style={{ height: 260, width: '100%' }}>

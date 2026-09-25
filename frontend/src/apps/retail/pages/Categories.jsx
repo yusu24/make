@@ -5,9 +5,14 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
-import { Pencil, Trash2, Plus, Search, Tag, RefreshCw } from '@/constants/icons';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import StatScoreCard from '@/components/ui/StatScoreCard';
+import { Pencil, Trash2, Plus, Search, Tag, RefreshCw, FolderTree, Layers } from '@/constants/icons';
 
 export default function Categories() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -35,11 +40,12 @@ export default function Categories() {
     setAdding(true);
     try {
       await api.post('/retail/categories', { name: newName.trim() });
+      toast.success('Kategori baru berhasil ditambahkan');
       fetchCategories();
       setNewName('');
       setShowAddModal(false);
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menambah kategori');
+      toast.error(e.response?.data?.message || 'Gagal menambah kategori');
     }
     finally { setAdding(false); }
   };
@@ -49,10 +55,27 @@ export default function Categories() {
     const fd = new FormData(e.target);
     try {
       await api.put(`/retail/categories/${editingCategory.id}`, { name: fd.get('name') });
+      toast.success('Kategori berhasil diperbarui');
       fetchCategories();
       setEditingCategory(null);
     } catch (e) {
-      alert(e.response?.data?.message || 'Gagal menyimpan perubahan kategori');
+      toast.error(e.response?.data?.message || 'Gagal menyimpan perubahan kategori');
+    }
+  };
+
+  const handleDelete = async (category) => {
+    const ok = await confirm(`Hapus kategori "${category.name}"? Produk dalam kategori ini akan menjadi unassigned.`, {
+      title: 'Hapus Kategori',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/retail/categories/${category.id}`);
+      toast.success('Kategori berhasil dihapus');
+      fetchCategories();
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Gagal menghapus kategori');
     }
   };
 
@@ -69,7 +92,42 @@ export default function Categories() {
 
   return (
     <div className="retail-page-classic">
-      {/* Page Title Handled by Navtop */}
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Kategori"
+          value={categories.length}
+          suffix=" Kategori"
+          subtitle="Grup pengelompokan produk aktif"
+          icon={FolderTree}
+          badgeText="Struktur"
+          badgeVariant="indigo"
+          progress={100}
+          progressVariant="indigo"
+        />
+        <StatScoreCard
+          title="Status Klasifikasi"
+          value="100%"
+          subtitle="Semua kategori siap dipetakan ke produk"
+          icon={Layers}
+          badgeText="Terverifikasi"
+          badgeVariant="emerald"
+          progress={100}
+          progressVariant="emerald"
+        />
+        <StatScoreCard
+          title="Hasil Pencarian"
+          value={filteredCategories.length}
+          suffix=" Kategori"
+          subtitle="Sesuai filter kata kunci pencarian"
+          icon={Tag}
+          badgeText={search ? "Filtered" : "Semua"}
+          badgeVariant={search ? "blue" : "slate"}
+          progress={categories.length > 0 ? Math.min(100, Math.round((filteredCategories.length / categories.length) * 100)) : 100}
+          progressVariant="blue"
+        />
+      </div>
+
       <div className="card table-wrap animate-fade-in">
 
         {/* Toolbar — responsive */}
@@ -158,12 +216,7 @@ export default function Categories() {
                           className="btn btn-sm btn-ghost"
                           title="Hapus"
                           style={{ color: 'var(--danger-600)' }}
-                          onClick={async () => {
-                            if (confirm('Hapus kategori ini?')) {
-                              await api.delete(`/retail/categories/${c.id}`);
-                              fetchCategories();
-                            }
-                          }}
+                          onClick={() => handleDelete(c)}
                         >
                           <Trash2 size={14} />
                         </button>

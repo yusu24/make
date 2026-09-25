@@ -6,7 +6,7 @@ import {
   LogOut, Inbox, ClipboardList, Database, Wallet, Settings, User,
   HelpCircle, ServerCog, FileText, Zap, Shield, ChevronDown, ChevronRight,
   Receipt, Tag, Archive, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight,
-  Store, Globe, Box, Printer, ArrowRightLeft, BookOpen, BellRing, Sparkles, Sliders, Type
+  Store, Globe, Box, Printer, ArrowRightLeft, BookOpen, BellRing, Sparkles, Sliders, Type, Cpu
 } from '@/constants/icons'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
@@ -102,6 +102,7 @@ const NAV_ITEMS = [
       { path: '/saas-roles',             icon: <Shield size={18} />,    label: 'Role & Hak Akses' },
       { path: '/system-monitoring',      icon: <ServerCog size={18} />, label: 'Monitoring Sistem' },
       { path: '/developer-integrations', icon: <Zap size={18} />,       label: 'Integrasi & Webhook' },
+      { path: '/admin/mcp-audit',        icon: <Cpu size={18} />,       label: 'Audit MCP & AI Skills' },
       { path: '/backups',                icon: <Archive size={18} />,   label: 'Cadangan Data (Backup)' },
       { path: '/profile',                icon: <User size={18} />,      label: 'Profil Saya' },
     ]

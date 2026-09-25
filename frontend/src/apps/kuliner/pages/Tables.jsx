@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { QrCode, Pencil, Trash2, LayoutGrid, Users, X, Printer, Copy, Check } from '@/constants/icons';
+import { QrCode, Pencil, Trash2, LayoutGrid, Users, X, Printer, Copy, Check, Clock, Sparkles } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import './KulinerDashboard.css';
@@ -25,6 +26,7 @@ export default function Tables() {
   const confirm = useConfirm();
 
   const [tables, setTables] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [dineInEnabled, setDineInEnabled] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -90,21 +92,117 @@ export default function Tables() {
 
   const handlePrintQr = () => window.print();
 
+  const totalTables = tables.length;
+  const occupiedTables = tables.filter((t) => t.status === 'occupied').length;
+  const emptyTables = tables.filter((t) => t.status === 'empty').length;
+  const totalCapacity = tables.reduce((acc, t) => acc + Number(t.capacity || 0), 0);
+
+  const filteredTables = tables.filter((t) => statusFilter === 'all' || t.status === statusFilter);
+
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerOrders.tablesTitle') || 'Manajemen Meja & QR Self Order'}</h1>
-      </div>
       <div className="kd-content">
+        {/* KPI Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatScoreCard
+            title="Total Meja"
+            value={totalTables}
+            status="Kapasitas Resto"
+            statusVariant="blue"
+            desc="Total meja terdaftar di denah"
+            icon={LayoutGrid}
+          />
+          <StatScoreCard
+            title="Meja Terisi (Occupied)"
+            value={occupiedTables}
+            status={occupiedTables > 0 ? "Tamu Aktif" : "Kosong"}
+            statusVariant={occupiedTables > 0 ? "amber" : "slate"}
+            desc="Meja yang sedang melayani pesanan"
+            icon={Users}
+            progress={totalTables > 0 ? Math.round((occupiedTables / totalTables) * 100) : 0}
+            progressVariant="amber"
+          />
+          <StatScoreCard
+            title="Meja Siap Digunakan"
+            value={emptyTables}
+            status="Ready"
+            statusVariant="emerald"
+            desc="Meja kosong siap terima pelanggan baru"
+            icon={Check}
+          />
+          <StatScoreCard
+            title="Total Kapasitas Kursi"
+            value={`${totalCapacity} Orang`}
+            status="Dine-in"
+            statusVariant="purple"
+            desc="Daya tampung pengunjung restoran"
+            icon={Users}
+          />
+        </div>
+
         {!dineInEnabled && (
           <div className="kd-panel" style={{ padding: 16, marginBottom: 16, borderLeft: '4px solid #f59e0b' }}>
             Mode Dine-In belum diaktifkan di Pengaturan Toko. Anda tetap bisa mengelola meja, tapi aktifkan Dine-In agar QR Self Order berjalan optimal.
           </div>
         )}
 
-        <div className="kd-page-actions" style={{ marginBottom: 16 }}>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          {/* Quick status tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <button
+              onClick={() => setStatusFilter('all')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'all'
+                  ? 'bg-amber-600 text-white shadow-xs font-bold'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+              }`}
+            >
+              Semua ({tables.length})
+            </button>
+            <button
+              onClick={() => setStatusFilter('empty')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'empty'
+                  ? 'bg-emerald-600 text-white shadow-xs font-bold'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+              }`}
+            >
+              Kosong ({emptyTables})
+            </button>
+            <button
+              onClick={() => setStatusFilter('occupied')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'occupied'
+                  ? 'bg-rose-600 text-white shadow-xs font-bold'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+              }`}
+            >
+              Terisi ({occupiedTables})
+            </button>
+            <button
+              onClick={() => setStatusFilter('reserved')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'reserved'
+                  ? 'bg-amber-500 text-white shadow-xs font-bold'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+              }`}
+            >
+              Dipesan ({tables.filter((t) => t.status === 'reserved').length})
+            </button>
+            <button
+              onClick={() => setStatusFilter('cleaning')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'cleaning'
+                  ? 'bg-slate-700 text-white shadow-xs font-bold'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+              }`}
+            >
+              Dibersihkan ({tables.filter((t) => t.status === 'cleaning').length})
+            </button>
+          </div>
+
           <button 
-            className="h-[38px] px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5" 
+            className="h-[38px] px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 shrink-0" 
             onClick={openCreate}
           >
             <span>{t('kulinerOrders.addTableBtn') || '+ Tambah Meja'}</span>
@@ -113,12 +211,26 @@ export default function Tables() {
 
         <div className="kd-panel">
           {loading ? (
-            <div className="text-center py-10 text-slate-400">{t('kulinerCommon.loadingData') || 'Memuat...'}</div>
-          ) : tables.length === 0 ? (
-            <div className="text-center py-10 text-slate-400">{t('kulinerCommon.emptyData') || 'Belum ada meja. Tambahkan meja pertama Anda.'}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 14, padding: 16 }}>
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="animate-pulse bg-slate-100 rounded-xl" style={{ height: 120 }}>
+                  <div className="h-full flex flex-col items-center justify-center gap-2">
+                    <div className="w-10 h-10 bg-slate-200 rounded-full" />
+                    <div className="h-3 w-16 bg-slate-200 rounded" />
+                    <div className="h-2 w-10 bg-slate-100 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredTables.length === 0 ? (
+            <div className="text-center py-10 text-slate-400">
+              {tables.length === 0
+                ? t('kulinerCommon.emptyData') || 'Belum ada meja. Tambahkan meja pertama Anda.'
+                : 'Tidak ada meja dengan filter status ini.'}
+            </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 14, padding: 16 }}>
-              {tables.map((t) => (
+              {filteredTables.map((t) => (
                 <div
                   key={t.id}
                   style={{

@@ -3,11 +3,16 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Plus, Pencil, Trash2, RefreshCw } from '@/constants/icons';
+import { Plus, Pencil, Trash2, RefreshCw, Hash, CheckCircle2, PackageCheck } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import { useToast } from '../../../components/Toast';
+import { useConfirm } from '../../../components/ConfirmDialog';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 
 export default function Serials() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [serials, setSerials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -71,23 +76,31 @@ export default function Serials() {
     try {
       if (form.id) {
         await api.put(`/retail/serials/${form.id}`, form);
+        toast.success('Serial number berhasil diperbarui');
       } else {
         await api.post('/retail/serials', form);
+        toast.success('Serial number baru berhasil ditambahkan');
       }
       setShowModal(false);
       fetchData();
     } catch (err) {
-      alert(err?.response?.data?.message || 'Gagal menyimpan Serial Number');
+      toast.error(err?.response?.data?.message || 'Gagal menyimpan serial number');
     }
   };
 
-  const deleteSerial = async (id) => {
-    if (!window.confirm("Hapus Serial Number ini?")) return;
+  const deleteSerial = async (serial) => {
+    const ok = await confirm(`Hapus serial number "${serial.serial_number}" untuk produk ${serial.product?.name || 'ini'}?`, {
+      title: 'Hapus Serial Number',
+      confirmLabel: 'Ya, Hapus',
+      danger: true,
+    });
+    if (!ok) return;
     try {
-      await api.delete(`/retail/serials/${id}`);
+      await api.delete(`/retail/serials/${serial.id}`);
+      toast.success('Serial number berhasil dihapus');
       fetchData();
     } catch (err) {
-      alert(err?.response?.data?.message || 'Gagal menghapus');
+      toast.error(err?.response?.data?.message || 'Gagal menghapus serial number');
     }
   };
 
@@ -98,11 +111,50 @@ export default function Serials() {
     s.serial_number?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const availableCount = serials.filter(s => s.status === 'available').length;
+  const soldCount = serials.filter(s => s.status === 'sold').length;
+
   const p = usePagination(filtered, 15);
 
   return (
     <div className="retail-page-classic">
-      {/* Page Title Handled by Navtop */}
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <StatScoreCard
+          title="Total Serial Number"
+          value={serials.length}
+          suffix=" Unit"
+          subtitle="Identitas unik unit fisik terdata"
+          icon={Hash}
+          badgeText="IMEI / Serial"
+          badgeVariant="indigo"
+          progress={100}
+          progressVariant="indigo"
+        />
+        <StatScoreCard
+          title="Serial Tersedia (Stok)"
+          value={availableCount}
+          suffix=" Unit"
+          subtitle="Unit siap dijual di etalase/gudang"
+          icon={CheckCircle2}
+          badgeText="Available"
+          badgeVariant="emerald"
+          progress={serials.length > 0 ? Math.min(100, Math.round((availableCount / serials.length) * 100)) : 100}
+          progressVariant="emerald"
+        />
+        <StatScoreCard
+          title="Serial Terjual"
+          value={soldCount}
+          suffix=" Unit"
+          subtitle="Unit telah berhasil ditransaksikan"
+          icon={PackageCheck}
+          badgeText="Sold Out"
+          badgeVariant="blue"
+          progress={serials.length > 0 ? Math.min(100, Math.round((soldCount / serials.length) * 100)) : 0}
+          progressVariant="blue"
+        />
+      </div>
+
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button className="btn btn-primary" onClick={openAdd} style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}>
@@ -156,7 +208,7 @@ export default function Serials() {
                   </td>
                   <td className="text-right pr-6 flex items-center justify-end gap-2">
                     <button onClick={() => openEdit(s)} className="btn btn-sm btn-ghost" title="Edit Data"><Pencil size={15} /></button>
-                    <button onClick={() => deleteSerial(s.id)} className="btn btn-sm btn-ghost retail-text-danger" title="Hapus Data"><Trash2 size={15} /></button>
+                    <button onClick={() => deleteSerial(s)} className="btn btn-sm btn-ghost retail-text-danger" title="Hapus Data"><Trash2 size={15} /></button>
                   </td>
                 </tr>
               ))}

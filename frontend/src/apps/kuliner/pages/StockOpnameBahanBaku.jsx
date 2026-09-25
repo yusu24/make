@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Eye, X } from '@/constants/icons';
+import { Eye, X, ClipboardCheck, Clock, CheckCircle2, XCircle } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import './KulinerDashboard.css';
 
 const STATUS_LABEL = {
@@ -107,12 +109,59 @@ export default function StockOpnameBahanBaku() {
     }
   };
 
+  const totalOpnames = opnames.length;
+  const pendingOpnames = opnames.filter((o) => o.status === 'pending_approval').length;
+  const approvedOpnames = opnames.filter((o) => o.status === 'approved').length;
+  const rejectedOpnames = opnames.filter((o) => o.status === 'rejected').length;
+
+  const getBadgeClass = (status) => {
+    switch (status) {
+      case 'approved': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'pending_approval': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'rejected': return 'bg-rose-50 text-rose-700 border-rose-200';
+      default: return 'bg-slate-100 text-slate-600 border-slate-200';
+    }
+  };
+
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerInventory.stockOpnameTitle')}</h1>
-      </div>
       <div className="kd-content">
+        {/* KPI Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatScoreCard
+            title="Total Stock Opname"
+            value={totalOpnames}
+            status="Audit Fisik"
+            statusVariant="blue"
+            desc="Sesi pemeriksaan stok bahan fisik"
+            icon={ClipboardCheck}
+          />
+          <StatScoreCard
+            title="Menunggu Persetujuan"
+            value={pendingOpnames}
+            status={pendingOpnames > 0 ? "Perlu Review" : "Selesai"}
+            statusVariant={pendingOpnames > 0 ? "amber" : "slate"}
+            desc="Hasil hitung staf dapur siap disetujui"
+            icon={Clock}
+          />
+          <StatScoreCard
+            title="Opname Disetujui"
+            value={approvedOpnames}
+            status="Approved"
+            statusVariant="emerald"
+            desc="Stok sistem telah disesuaikan"
+            icon={CheckCircle2}
+          />
+          <StatScoreCard
+            title="Opname Ditolak"
+            value={rejectedOpnames}
+            status="Ditolak"
+            statusVariant="rose"
+            desc="Hasil hitung ditolak manajer"
+            icon={XCircle}
+          />
+        </div>
+
         <div className="kd-page-actions">
           <button className="kd-btn kd-btn-primary" onClick={startOpname}>{t('kulinerInventory.addOpnameBtn')}</button>
         </div>
@@ -130,7 +179,7 @@ export default function StockOpnameBahanBaku() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerInventory.loadingOpname')}</td></tr>
+                  <KulinerTableSkeleton cols={4} rows={5} />
                 ) : opnames.length === 0 ? (
                   <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerInventory.emptyOpname')}</td></tr>
                 ) : (
@@ -138,7 +187,11 @@ export default function StockOpnameBahanBaku() {
                     <tr key={o.id}>
                       <td>{new Date(o.created_at).toLocaleString('id-ID')}</td>
                       <td>{o.user?.name || '-'}</td>
-                      <td><span className="kd-status-badge kd-status-active">{STATUS_LABEL[o.status] || o.status}</span></td>
+                      <td>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getBadgeClass(o.status)}`}>
+                          {STATUS_LABEL[o.status] || o.status}
+                        </span>
+                      </td>
                       <td className="text-right">
                         <button className="kd-icon-btn" title="Lihat" onClick={() => openDetail(o.id)}><Eye size={16} /></button>
                       </td>

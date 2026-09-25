@@ -5,6 +5,8 @@ import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import KulinerLoading from '../components/KulinerLoading';
 import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import './KulinerDashboard.css';
@@ -103,58 +105,84 @@ export default function KulinerSuppliers() {
   const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
   const paginatedSuppliers = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  const totalSuppliers = suppliers.length;
+  const suppliersWithContact = suppliers.filter(s => s.contact).length;
+  const suppliersWithAddress = suppliers.filter(s => s.address).length;
+
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Manajemen Supplier</h1>
-      </div>
-      
       <div className="kd-content">
-        {loading ? (
-          <KulinerLoading message="Memuat data supplier..." />
-        ) : (
-          <>
-            <div className="kd-page-actions" style={{ flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
-              <input
-                className="kd-form-input"
-                style={{ maxWidth: 260, height: 38, fontSize: 13, border: '1px solid #CBD5E1', borderRadius: 8, padding: '0 12px' }}
-                placeholder="Cari nama supplier..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-              <div style={{ flex: 1 }}></div>
-              <button 
-                onClick={openAdd} 
-                className="kd-btn kd-btn-primary"
-                style={{ height: 38, padding: '0 16px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, background: '#B45309', color: '#fff', border: 'none', cursor: 'pointer' }}
-              >
-                <Plus size={18} />
-                <span>Tambah Supplier</span>
-              </button>
-            </div>
+        {/* KPI Scorecards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+          <StatScoreCard
+            title="Total Mitra Supplier"
+            value={loading ? '...' : totalSuppliers}
+            status="Mitra Aktif"
+            statusVariant="amber"
+            icon={Truck}
+            desc="Seluruh pemasok bahan baku kuliner"
+          />
+          <StatScoreCard
+            title="Supplier Berkontak"
+            value={loading ? '...' : suppliersWithContact}
+            status="Terhubung"
+            statusVariant="emerald"
+            icon={Phone}
+            desc="Memiliki nomor telepon / WhatsApp aktif"
+          />
+          <StatScoreCard
+            title="Alamat Terdata"
+            value={loading ? '...' : suppliersWithAddress}
+            status="Alamat Jelas"
+            statusVariant="blue"
+            icon={MapPin}
+            desc="Pemasok dengan lokasi gudang terdaftar"
+          />
+        </div>
 
-            <div className="kd-panel" style={{ background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', padding: 0 }}>
-              <div className="kd-table-container" style={{ overflowX: 'auto', marginBottom: 0, border: 'none', borderRadius: 0 }}>
-                <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                      <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Nama Supplier</th>
-                      <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Kontak</th>
-                      <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Alamat</th>
-                      <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.length === 0 ? (
-                      <tr>
-                        <td colSpan="4" style={{ textAlign: 'center', padding: '40px 20px', color: '#94A3B8' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                            <Truck size={36} color="#CBD5E1" />
-                            <span style={{ fontSize: 12, fontWeight: 400 }}>{search ? 'Tidak ada supplier yang sesuai pencarian.' : 'Belum ada data supplier.'}</span>
-                          </div>
+        <div className="kd-page-actions" style={{ flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+          <input
+            className="kd-form-input"
+            style={{ maxWidth: 260, height: 38, fontSize: 13, border: '1px solid #CBD5E1', borderRadius: 8, padding: '0 12px' }}
+            placeholder="Cari nama supplier..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+          <div style={{ flex: 1 }}></div>
+          <button 
+            onClick={openAdd} 
+            className="kd-btn kd-btn-primary"
+            style={{ height: 38, padding: '0 16px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, background: '#B45309', color: '#fff', border: 'none', cursor: 'pointer' }}
+          >
+            <Plus size={18} />
+            <span>Tambah Supplier</span>
+          </button>
+        </div>
+
+        <div className="kd-panel" style={{ background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', overflow: 'hidden', padding: 0 }}>
+          <div className="kd-table-container" style={{ overflowX: 'auto', marginBottom: 0, border: 'none', borderRadius: 0 }}>
+            <table className="kd-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Nama Supplier</th>
+                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Kontak</th>
+                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Alamat</th>
+                  <th style={{ padding: '10px 16px', fontSize: 11.5, color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <KulinerTableSkeleton cols={4} rows={itemsPerPage > 5 ? 5 : itemsPerPage} />
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '40px 20px', color: '#94A3B8' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                        <Truck size={36} color="#CBD5E1" />
+                        <span style={{ fontSize: 12, fontWeight: 400 }}>{search ? 'Tidak ada supplier yang sesuai pencarian.' : 'Belum ada data supplier.'}</span>
+                      </div>
                         </td>
                       </tr>
                     ) : (
@@ -210,8 +238,6 @@ export default function KulinerSuppliers() {
                 totalItems={filtered.length}
               />
             </div>
-          </>
-        )}
       </div>
 
       {/* MODAL TAMBAH / EDIT SUPPLIER */}

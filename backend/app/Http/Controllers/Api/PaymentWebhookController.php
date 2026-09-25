@@ -43,6 +43,50 @@ class PaymentWebhookController extends Controller
             return response()->json(['success' => false, 'message' => 'Invalid payload: missing invoice/order ID.'], 400);
         }
 
+        // --- CRYPTOGRAPHIC SIGNATURE VERIFICATION ---
+        $settings = LandingSetting::first();
+        $isProduction = (bool) ($settings?->payment_is_production ?? false);
+        $serverKey = $settings?->payment_server_key ?: config('services.midtrans.server_key', env('MIDTRANS_SERVER_KEY', ''));
+
+        if ($request->has('signature_key')) {
+            // Midtrans SHA-512 Verification
+            $orderId = $invoiceNumber;
+            $statusCode = (string) ($request->status_code ?? '200');
+            $grossAmount = (string) ($request->gross_amount ?? '');
+            $incomingSignature = (string) $request->signature_key;
+
+            if (!empty($serverKey)) {
+                $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+                if (!hash_equals($expectedSignature, $incomingSignature)) {
+                    Log::warning("Fraud Webhook Attempt Detected: Invalid Midtrans signature for invoice {$invoiceNumber}");
+                    return response()->json(['success' => false, 'message' => 'Unauthorized: Invalid cryptographic signature.'], 403);
+                }
+            }
+        } elseif ($request->hasHeader('x-callback-signature') || $request->hasHeader('X-Callback-Signature')) {
+            // Tripay HMAC SHA-256 Verification
+            $incomingSignature = (string) ($request->header('x-callback-signature') ?? $request->header('X-Callback-Signature'));
+            if (!empty($serverKey)) {
+                $expectedSignature = hash_hmac('sha256', $request->getContent(), $serverKey);
+                if (!hash_equals($expectedSignature, $incomingSignature)) {
+                    Log::warning("Fraud Webhook Attempt Detected: Invalid Tripay signature for invoice {$invoiceNumber}");
+                    return response()->json(['success' => false, 'message' => 'Unauthorized: Invalid callback signature.'], 403);
+                }
+            }
+        } elseif ($request->hasHeader('x-callback-token') || $request->hasHeader('X-Callback-Token')) {
+            // Xendit Callback Token Verification
+            $incomingToken = (string) ($request->header('x-callback-token') ?? $request->header('X-Callback-Token'));
+            if (!empty($serverKey) && !hash_equals((string) $serverKey, $incomingToken)) {
+                Log::warning("Fraud Webhook Attempt Detected: Invalid Xendit token for invoice {$invoiceNumber}");
+                return response()->json(['success' => false, 'message' => 'Unauthorized: Invalid callback token.'], 403);
+            }
+        } elseif ($isProduction) {
+            // Enforce fail-closed policy in production environment
+            Log::warning("Unauthorized Webhook Attempt: Missing signature header in production for invoice {$invoiceNumber}");
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Missing required signature verification headers in production.'], 403);
+        } else {
+            Log::info("Sandbox webhook accepted without signature for invoice {$invoiceNumber}");
+        }
+
         if (in_array(strtolower($transactionStatus), ['capture', 'settlement', 'paid', 'success'])) {
             $result = PaymentGatewayService::processSettlement($invoiceNumber, $paymentType);
             return response()->json($result);

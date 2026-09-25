@@ -6,6 +6,7 @@ import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 import CurrencyInput from '../../../components/CurrencyInput';
 import './KulinerDashboard.css';
 
@@ -94,9 +95,6 @@ export default function Bundles() {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerExtra.bundlesTitle')}</h1>
-      </div>
       <div className="kd-content">
         <div className="kd-page-actions">
           <button className="kd-btn kd-btn-primary" onClick={openCreate}>{t('kulinerExtra.addBundleBtn')}</button>
@@ -115,7 +113,7 @@ export default function Bundles() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerExtra.loadingData')}</td></tr>
+                  <KulinerTableSkeleton cols={4} rows={5} />
                 ) : bundles.length === 0 ? (
                   <tr><td colSpan="4" className="text-center py-10 text-slate-400">{t('kulinerExtra.emptyBundle')}</td></tr>
                 ) : (

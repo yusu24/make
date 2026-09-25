@@ -63,13 +63,6 @@ export default function Profile() {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header">
-        <div>
-          <h2 className="page-title">Profil Saya</h2>
-          <p className="page-sub">Kelola informasi akun Anda</p>
-        </div>
-      </div>
-
       {/* Profile card */}
       <div className="card card-pad" style={{marginBottom:20}}>
         <div style={{display:'flex', alignItems:'center', gap:20, marginBottom:24}}>

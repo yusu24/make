@@ -128,10 +128,8 @@ export default function KitchenQueue() {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <h1 className="kd-page-title">{t('kulinerOrders.kitchenTitle')}</h1>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="kd-content">
+        <div className="flex justify-end items-center gap-2 mb-4">
           <button
             type="button"
             onClick={() => {
@@ -158,9 +156,6 @@ export default function KitchenQueue() {
             <span>{soundEnabled ? 'Audio ON' : 'Audio OFF'}</span>
           </button>
         </div>
-      </div>
-
-      <div className="kd-content">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
           {columns.map((col) => {
             const list = orders.filter((o) => col.statuses.includes(o.status));
@@ -176,7 +171,14 @@ export default function KitchenQueue() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {loading ? (
-                    <div className="text-center text-slate-400 py-10">{t('kulinerOrders.loadingOrders') || 'Memuat...'}</div>
+                    <div className="flex flex-col gap-3">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="bg-white rounded-xl p-4 border border-slate-100 animate-pulse">
+                          <div className="h-3 bg-slate-200 rounded w-2/3 mb-2" />
+                          <div className="h-2 bg-slate-100 rounded w-1/3" />
+                        </div>
+                      ))}
+                    </div>
                   ) : list.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8', fontSize: 12 }}>
                       Tidak ada pesanan

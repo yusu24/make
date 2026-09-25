@@ -4,6 +4,7 @@ import { CreditCard, RefreshCw, Printer, Percent, Calendar } from '@/constants/i
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import RetailLoading from '../components/RetailLoading';
+import StatScoreCard from '@/components/ui/StatScoreCard';
 import { api } from '../../../lib/api';
 import '../retail.css';
 
@@ -85,37 +86,32 @@ export default function PaymentReport() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-               <CreditCard size={22} />
-            </div>
-            <div className="flex-1 min-w-0">
-               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Pendapatan Terbayar</span>
-               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
-                  Rp {Math.round(data.total_payments).toLocaleString('id-ID')}
-               </p>
-               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Akumulasi penerimaan kas kotor bulan ini</p>
-            </div>
-         </div>
-
-         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-               <Percent size={22} />
-            </div>
-            <div className="flex-1 min-w-0">
-               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Pajak Terpungut (PPN)</span>
-               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
-                  Rp {Math.round(data.total_tax).toLocaleString('id-ID')}
-               </p>
-               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Estimasi PPN Keluaran yang harus dilaporkan</p>
-            </div>
-         </div>
+        <StatScoreCard
+          title="Total Pendapatan Terbayar"
+          value={`Rp ${Math.round(data.total_payments || 0).toLocaleString('id-ID')}`}
+          subtitle="Akumulasi penerimaan kas kotor terbayar"
+          icon={CreditCard}
+          badgeText="Kas Masuk"
+          badgeVariant="blue"
+          progress={100}
+          progressVariant="blue"
+        />
+        <StatScoreCard
+          title="Total Pajak Terpungut (PPN)"
+          value={`Rp ${Math.round(data.total_tax || 0).toLocaleString('id-ID')}`}
+          subtitle="Estimasi liabilitas PPN yang harus disetor"
+          icon={Percent}
+          badgeText="PPN Keluaran"
+          badgeVariant="emerald"
+          progress={data.total_payments > 0 ? Math.min(100, Math.round(((data.total_tax || 0) / data.total_payments) * 100)) : 0}
+          progressVariant="emerald"
+        />
       </div>
 
       {/* Chart Section */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all mb-12">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-md transition-all mb-12">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900">Komposisi Metode Pembayaran</h3>
+          <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-slate-900 dark:text-white">Komposisi Metode Pembayaran</h3>
         </div>
         <div style={{ height: 350, width: '100%' }}>
            <ResponsiveContainer width="100%" height="100%">

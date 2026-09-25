@@ -24,6 +24,7 @@ import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 const PRIORITY_BADGE = { high: 'badge-red', medium: 'badge-yellow', low: 'badge-gray' }
@@ -171,126 +172,131 @@ export default function SupportCenter() {
 
   return (
     <div className="animate-fade-in">
-      {/* ── Page Header ── */}
-      <div className="page-header mb-2">
-        <h2 className="page-title">Support Center</h2>
-      </div>
-
-      {/* ── Action Bar below title ── */}
-      <div className="flex justify-end mb-4">
-        <button
-          className="btn btn-secondary flex items-center gap-1.5"
-          onClick={fetchData}
-          disabled={loading}
-          title="Muat ulang tiket bantuan"
-        >
-          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-          <span>Muat Ulang</span>
-        </button>
-      </div>
-
       {loading ? (
-        <div className="card" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: 12 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-sm">
+          <div className="flex flex-col items-center gap-3">
             <RefreshCw size={28} className="animate-spin text-indigo-600" />
-            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Memuat tiket dukungan &amp; layanan bantuan...
             </span>
           </div>
         </div>
       ) : (
         <>
-          {/* ── Stats (5 Compact Cards in 1 Row) ── */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-            gap: 12,
-            marginBottom: 20
-          }}>
-            {[
-              { label: 'Total Tiket', value: tickets.length, Icon: Ticket, color: '#3b82f6', desc: 'Semua tiket' },
-              { label: 'Tiket Baru', value: openCount, Icon: Mail, color: '#6366f1', desc: 'Belum diproses' },
-              { label: 'Diproses', value: inProgressCount, Icon: Clock, color: '#f59e0b', desc: 'Ditangani staf' },
-              { label: 'Selesai', value: resolvedCount, Icon: CheckCircle2, color: '#10b981', desc: 'Tiket ditutup' },
-              { label: 'Prioritas Tinggi', value: highPriorityCount, Icon: AlertTriangle, color: '#ef4444', desc: 'Tindakan segera' },
-            ].map(card => {
-              const CardIcon = card.Icon;
-              return (
-                <div
-                  key={card.label}
-                  className="card"
-                  style={{
-                    padding: '14px 16px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                    minWidth: 0
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 10,
-                      background: card.color + '18',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: card.color, flexShrink: 0
-                    }}>
-                      <CardIcon size={18} />
-                    </div>
-                    <div style={{ minWidth: 0, overflow: 'hidden' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{card.label}</div>
-                      <div style={{ fontSize: 10.5, color: 'var(--text-muted)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{card.desc}</div>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 22, fontWeight: 600, color: card.color, lineHeight: 1 }}>
-                    {card.value}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {/* ── Stats with StatScoreCard ── */}
+          {(() => {
+            const totalTickets = tickets.length
+            const openPercent = totalTickets > 0 ? Math.round((openCount / totalTickets) * 100) : 0
+            const inProgPercent = totalTickets > 0 ? Math.round((inProgressCount / totalTickets) * 100) : 0
+            const resolvedPercent = totalTickets > 0 ? Math.round((resolvedCount / totalTickets) * 100) : 0
+            const highPercent = totalTickets > 0 ? Math.round((highPriorityCount / totalTickets) * 100) : 0
 
-          {/* ── Filters + Table ── */}
-          <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none', transform: 'none', transition: 'none' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1, minWidth: 260 }}>
-                <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, position: 'relative' }}>
-                  <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input className="form-input search-input" style={{ paddingLeft: 34 }} placeholder="Cari tiket..." value={search} onChange={e => setSearch(e.target.value)} />
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 mb-6">
+                <StatScoreCard
+                  title="Total Tiket"
+                  value={totalTickets}
+                  status="Semua"
+                  statusVariant="indigo"
+                  icon={Ticket}
+                  desc="Seluruh aduan tenant masuk"
+                  progress={100}
+                  progressVariant="indigo"
+                  onClick={() => setFilter('all')}
+                />
+
+                <StatScoreCard
+                  title="Tiket Baru"
+                  value={openCount}
+                  status={openCount > 0 ? `${openPercent}% Baru` : "Nihil"}
+                  statusVariant={openCount > 0 ? "indigo" : "slate"}
+                  icon={Mail}
+                  desc="Menunggu respon tim CS"
+                  progress={openPercent}
+                  progressVariant="indigo"
+                  onClick={() => setFilter('open')}
+                />
+
+                <StatScoreCard
+                  title="Diproses"
+                  value={inProgressCount}
+                  status={inProgressCount > 0 ? `${inProgPercent}% Aktif` : "Nihil"}
+                  statusVariant={inProgressCount > 0 ? "amber" : "slate"}
+                  icon={Clock}
+                  desc="Ditangani teknisi / staf"
+                  progress={inProgPercent}
+                  progressVariant="amber"
+                  onClick={() => setFilter('in_progress')}
+                />
+
+                <StatScoreCard
+                  title="Selesai"
+                  value={resolvedCount}
+                  status={`${resolvedPercent}% Selesai`}
+                  statusVariant="emerald"
+                  icon={CheckCircle2}
+                  desc="Kendala teratasi penuh"
+                  progress={resolvedPercent}
+                  progressVariant="emerald"
+                  onClick={() => setFilter('resolved')}
+                />
+
+                <StatScoreCard
+                  title="Prioritas Tinggi"
+                  value={highPriorityCount}
+                  status={highPriorityCount > 0 ? "Urgent" : "Aman"}
+                  statusVariant={highPriorityCount > 0 ? "rose" : "slate"}
+                  icon={AlertTriangle}
+                  desc="Butuh eskalasi darurat"
+                  progress={highPercent}
+                  progressVariant="rose"
+                />
+              </div>
+            )
+          })()}
+
+          {/* ── Filters + Table Card ── */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-6">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex items-center justify-between flex-wrap gap-3">
+              <div className="flex gap-2.5 items-center flex-wrap flex-1 min-w-[260px]">
+                <div className="relative flex-1 min-w-[200px] max-w-sm">
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <input
+                    className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
+                    placeholder="Cari tiket, tenant, subjek..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
                 </div>
-                <div style={{ minWidth: 150 }}>
-                  <select
-                    id="select-filter-ticket-status"
-                    className="form-input"
-                    value={filter}
-                    onChange={e => setFilter(e.target.value)}
-                    style={{
-                      padding: '8px 12px',
-                      fontSize: '13px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      outline: 'none',
-                      height: 38,
-                      width: 'auto',
-                      minWidth: 150
-                    }}
-                  >
-                    <option value="all">Semua Status</option>
-                    <option value="open">Baru (Open)</option>
-                    <option value="in_progress">Diproses (In Progress)</option>
-                    <option value="resolved">Selesai (Resolved)</option>
-                  </select>
-                </div>
+                <select
+                  id="select-filter-ticket-status"
+                  className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  value={filter}
+                  onChange={e => setFilter(e.target.value)}
+                >
+                  <option value="all">Semua Status</option>
+                  <option value="open">🔵 Baru / Belum Ditangani</option>
+                  <option value="in_progress">🟡 Sedang Diproses</option>
+                  <option value="resolved">🟢 Selesai / Ditutup</option>
+                </select>
               </div>
 
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <button className="btn btn-secondary" onClick={fetchData} disabled={loading} style={{ height: 38, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <RotateCcw size={14} />
+              <div className="flex gap-2 items-center">
+                <button
+                  className="h-[38px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  onClick={fetchData}
+                  disabled={loading}
+                  title="Muat ulang tiket bantuan"
+                >
+                  <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
                   <span>Refresh</span>
                 </button>
-                <button className="btn btn-primary" onClick={() => setCreateOpen(true)} style={{ height: 38, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button
+                  className="h-[38px] px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors"
+                  onClick={() => setCreateOpen(true)}
+                >
                   <Plus size={15} />
-                  <span>Buat Tiket</span>
+                  <span>Buat Tiket Baru</span>
                 </button>
               </div>
             </div>
@@ -326,30 +332,44 @@ export default function SupportCenter() {
                         <td><span className={`badge ${PRIORITY_BADGE[t.priority]}`}>{PRIORITY_LABEL[t.priority]}</span></td>
                         <td><span className={`badge ${STATUS_BADGE[t.status]}`}>{STATUS_LABEL[t.status]}</span></td>
                         <td style={{ fontSize: 12, color: 'var(--text-primary)' }}>{t.date}</td>
-                        <td>
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            <button className="btn btn-secondary btn-sm" onClick={() => setSelected(t)} title="Lihat Detail">
-                              <Eye size={13} />
+                        <td className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => setSelected(t)}
+                              title="Lihat Detail Tiket"
+                              className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors shadow-xs"
+                            >
+                              <Eye size={14} />
                             </button>
                             {t.tenant_id && (
                               <button
-                                className="btn btn-primary btn-sm"
                                 onClick={() => handleImpersonate(t.tenant_id)}
                                 disabled={impersonating === t.tenant_id}
-                                title="Login Sebagai Tenant Ini"
-                                style={{ padding: '0 8px' }}
+                                title="Login Sebagai Tenant Ini (Impersonate)"
+                                className="h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors text-xs font-semibold shadow-xs disabled:opacity-50"
                               >
                                 {impersonating === t.tenant_id ? <Clock size={13} className="animate-spin" /> : <Key size={13} />}
+                                <span>Masuk</span>
                               </button>
                             )}
                             {t.status === 'open' && (
-                              <button className="btn btn-primary btn-sm" style={{ fontSize: 11 }} onClick={() => handleUpdateStatus(t.id, 'in_progress')} title="Proses Tiket">
+                              <button
+                                onClick={() => handleUpdateStatus(t.id, 'in_progress')}
+                                title="Proses Tiket"
+                                className="h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-xs font-semibold shadow-xs"
+                              >
                                 <Clock size={13} />
+                                <span>Proses</span>
                               </button>
                             )}
                             {t.status === 'in_progress' && (
-                              <button className="btn btn-primary btn-sm" style={{ fontSize: 11, background: 'var(--success-500)', border: 'none' }} onClick={() => handleUpdateStatus(t.id, 'resolved')} title="Tandai Selesai">
+                              <button
+                                onClick={() => handleUpdateStatus(t.id, 'resolved')}
+                                title="Tandai Selesai"
+                                className="h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors text-xs font-semibold shadow-xs"
+                              >
                                 <Check size={13} />
+                                <span>Selesai</span>
                               </button>
                             )}
                           </div>

@@ -6,16 +6,22 @@ import {
   X,
   CheckCircle2,
   Clock,
-  Trash2
+  Trash2,
+  ShoppingCart,
+  DollarSign,
+  AlertCircle,
+  XCircle
 } from '@/constants/icons';
 import { useTranslation } from '../../../contexts/I18nContext';
 import api from '../../../services/api';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
+import StatScoreCard from '../../../components/ui/StatScoreCard';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import './KulinerDashboard.css';
 
 import ClientPagination from '../components/ClientPagination';
+import KulinerTableSkeleton from '../components/KulinerTableSkeleton';
 
 const emptyForm = { 
   supplier_id: '', 
@@ -162,22 +168,24 @@ export default function KulinerPurchases() {
     }
   };
 
-  const handleMarkReceived = (purchase) => {
-    confirm.show({
-      title: 'Terima Barang',
-      message: 'Anda yakin barang sudah diterima? Stok bahan baku akan otomatis bertambah.',
-      onConfirm: () => updateStatus(purchase.id, 'received', 'paid')
+  const handleMarkReceived = async (purchase) => {
+    const ok = await confirm('Anda yakin barang sudah diterima? Stok bahan baku akan otomatis bertambah ke sistem dapur.', {
+      title: 'Terima Barang Pembelian',
+      danger: false,
+      confirmLabel: 'Ya, Terima Barang'
     });
+    if (!ok) return;
+    updateStatus(purchase.id, 'received', 'paid');
   };
 
-  const handleCancel = (purchase) => {
-    confirm.show({
+  const handleCancel = async (purchase) => {
+    const ok = await confirm('Anda yakin ingin membatalkan transaksi pembelian ini?', {
       title: 'Batalkan Pembelian',
-      message: 'Anda yakin ingin membatalkan transaksi ini?',
-      confirmText: 'Batalkan Transaksi',
-      confirmColor: '#dc2626',
-      onConfirm: () => updateStatus(purchase.id, 'cancelled', 'unpaid')
+      danger: true,
+      confirmLabel: 'Batalkan Transaksi'
     });
+    if (!ok) return;
+    updateStatus(purchase.id, 'cancelled', 'unpaid');
   };
 
   const getStatusBadge = (status) => {
@@ -191,12 +199,50 @@ export default function KulinerPurchases() {
     }
   };
 
+  const totalSpending = purchases.reduce((acc, p) => p.status === 'received' ? acc + Number(p.total_amount || 0) : acc, 0);
+  const pendingCount = purchases.filter(p => p.status === 'pending').length;
+  const receivedCount = purchases.filter(p => p.status === 'received').length;
+  const cancelledCount = purchases.filter(p => p.status === 'cancelled').length;
+
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Pembelian Bahan Baku</h1>
-      </div>
       <div className="kd-content">
+        {/* KPI Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatScoreCard
+            title="Total Belanja Diterima"
+            value={`Rp ${Math.round(totalSpending).toLocaleString('id-ID')}`}
+            status="Lunas"
+            statusVariant="emerald"
+            desc="Total pengeluaran bahan baku diterima"
+            icon={DollarSign}
+          />
+          <StatScoreCard
+            title="PO Menunggu (Pending)"
+            value={pendingCount}
+            status={pendingCount > 0 ? "Perlu Tindakan" : "Aman"}
+            statusVariant={pendingCount > 0 ? "amber" : "slate"}
+            desc="Pesanan bahan belum tiba di resto"
+            icon={Clock}
+          />
+          <StatScoreCard
+            title="Total Diterima"
+            value={receivedCount}
+            status="Selesai"
+            statusVariant="emerald"
+            desc="Bahan masuk ke inventori dapur"
+            icon={CheckCircle2}
+          />
+          <StatScoreCard
+            title="Dibatalkan"
+            value={cancelledCount}
+            status="Batal"
+            statusVariant="rose"
+            desc="Transaksi PO yang di-cancel"
+            icon={XCircle}
+          />
+        </div>
+
         <div className="kd-page-actions">
           <button className="kd-btn kd-btn-primary flex items-center gap-2" onClick={handleOpenForm}>
             <Plus size={16} />
@@ -219,9 +265,7 @@ export default function KulinerPurchases() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan="6" className="text-center py-10 text-slate-400">Memuat data pembelian...</td>
-                  </tr>
+                  <KulinerTableSkeleton cols={6} rows={5} />
                 ) : purchases.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="text-center py-10 text-slate-400">Belum ada data pembelian.</td>

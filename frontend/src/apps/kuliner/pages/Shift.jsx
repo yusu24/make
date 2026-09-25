@@ -83,13 +83,13 @@ export default function Shift() {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">{t('kulinerShift.title') || 'Shift Kasir'}</h1>
-      </div>
       <div className="kd-content">
         <div className="kd-panel" style={{ padding: 24, marginBottom: 16 }}>
           {loading ? (
-            <div className="text-slate-400">{t('kulinerShift.loading') || 'Memuat status shift...'}</div>
+            <div className="animate-pulse flex items-center gap-4">
+              <div className="h-6 w-28 bg-slate-200 rounded" />
+              <div className="h-4 w-48 bg-slate-100 rounded" />
+            </div>
           ) : current?.id ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
               <div>

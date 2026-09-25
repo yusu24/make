@@ -26,6 +26,7 @@ import { getAvatarStyle, getInitials } from '../../../lib/avatar'
 import usePagination from '../../../hooks/usePagination'
 import SaasPagination from '../../../components/SaasPagination'
 import Modal from '../../../components/Modal'
+import StatScoreCard from '@/components/ui/StatScoreCard'
 import './Shared.css'
 
 export default function Subscriptions({ defaultTab = 'list' }) {
@@ -194,78 +195,81 @@ export default function Subscriptions({ defaultTab = 'list' }) {
     paginatedData: rPaginatedData, startIndex: rStart, endIndex: rEnd,
   } = usePagination(requests)
 
+  const totalTenantsCount = tenants.length
+  const activeSafeCount = tenants.filter(t => t.lifecycle_status === 'active').length
+  const activePercent = totalTenantsCount > 0 ? Math.round((activeSafeCount / totalTenantsCount) * 100) : 0
+  const expiringCount = tenants.filter(t => t.lifecycle_status === 'expiring_soon').length
+  const expiringPercent = totalTenantsCount > 0 ? Math.round((expiringCount / totalTenantsCount) * 100) : 0
+  const graceCount = tenants.filter(t => t.lifecycle_status === 'grace_period').length
+  const gracePercent = totalTenantsCount > 0 ? Math.round((graceCount / totalTenantsCount) * 100) : 0
+  const overdueCount = tenants.filter(t => t.lifecycle_status === 'overdue').length
+  const overduePercent = totalTenantsCount > 0 ? Math.round((overdueCount / totalTenantsCount) * 100) : 0
+
   return (
     <>
       <div className="animate-fade-in">
-        <div className="page-header mb-4">
-          <div>
-            <h2 className="page-title">Siklus &amp; Manajemen Langganan</h2>
-          </div>
-        </div>
+        {/* ── Lifecycle Metric Cards with StatScoreCard ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatScoreCard
+            title="Langganan Aktif Aman"
+            value={activeSafeCount}
+            status={`${activePercent}% Aman`}
+            statusVariant="emerald"
+            icon={CheckCircle2}
+            desc="Masa aktif lebih dari 7 hari ke depan"
+            progress={activePercent}
+            progressVariant="emerald"
+            onClick={() => setLifecycleFilter('active')}
+          />
 
-        {/* ── Lifecycle Metric Cards ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <CheckCircle2 size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Langganan Aktif Aman</p>
-              <p className="text-2xl font-extrabold text-emerald-600 tracking-tight font-['Plus_Jakarta_Sans']">
-                {tenants.filter(t => t.lifecycle_status === 'active').length}
-              </p>
-            </div>
-          </div>
+          <StatScoreCard
+            title="Segera Jatuh Tempo"
+            value={expiringCount}
+            status={expiringCount > 0 ? `${expiringPercent}% Segera Expire` : 'Nihil'}
+            statusVariant={expiringCount > 0 ? 'amber' : 'slate'}
+            icon={Clock}
+            desc="Masa aktif tersisa kurang dari 7 hari"
+            progress={expiringPercent}
+            progressVariant="amber"
+            onClick={() => setLifecycleFilter('expiring_soon')}
+          />
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <Clock size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Segera Jatuh Tempo (&le;7 Hari)</p>
-              <p className="text-2xl font-extrabold text-amber-600 tracking-tight font-['Plus_Jakarta_Sans']">
-                {tenants.filter(t => t.lifecycle_status === 'expiring_soon').length}
-              </p>
-            </div>
-          </div>
+          <StatScoreCard
+            title="Masa Tenggang (Grace)"
+            value={graceCount}
+            status={graceCount > 0 ? `${graceCount} Tenant` : 'Nihil'}
+            statusVariant={graceCount > 0 ? 'amber' : 'slate'}
+            icon={AlertTriangle}
+            desc="Toleransi pembayaran &le;3 hari grace period"
+            progress={gracePercent}
+            progressVariant="amber"
+            onClick={() => setLifecycleFilter('grace_period')}
+          />
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
-              <AlertTriangle size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Masa Tenggang (Grace Period)</p>
-              <p className="text-2xl font-extrabold text-orange-600 tracking-tight font-['Plus_Jakarta_Sans']">
-                {tenants.filter(t => t.lifecycle_status === 'grace_period').length}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-              <X size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Overdue / Kadaluarsa</p>
-              <p className="text-2xl font-extrabold text-rose-600 tracking-tight font-['Plus_Jakarta_Sans']">
-                {tenants.filter(t => t.lifecycle_status === 'overdue').length}
-              </p>
-            </div>
-          </div>
+          <StatScoreCard
+            title="Overdue / Kadaluarsa"
+            value={overdueCount}
+            status={overdueCount > 0 ? `${overduePercent}% Terkunci` : 'Nihil'}
+            statusVariant={overdueCount > 0 ? 'rose' : 'slate'}
+            icon={X}
+            desc="Masa aktif habis, akses fitur ditangguhkan"
+            progress={overduePercent}
+            progressVariant="rose"
+            onClick={() => setLifecycleFilter('overdue')}
+          />
         </div>
 
         {/* ── Table Card ── */}
-        <div className="card card-pad table-card" style={{ padding: 0, boxShadow: 'none' }}>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
           {/* Card header toolbar */}
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               {activeTab === 'list' ? (
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
-                  <div className="search-wrap" style={{ minWidth: 200, maxWidth: 280, flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <Search size={15} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                <div className="flex gap-2.5 items-center flex-wrap flex-1">
+                  <div className="relative flex-1 min-w-[200px] max-w-sm">
+                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     <input
-                      className="form-input search-input"
-                      style={{ paddingLeft: 34 }}
+                      className="w-full h-[38px] pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all"
                       placeholder="Cari tenant, ID, email..."
                       value={search}
                       onChange={e => setSearch(e.target.value)}
@@ -274,8 +278,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
 
                   <select
                     id="select-filter-subscription-lifecycle"
-                    className="form-input"
-                    style={{ width: 'auto', minWidth: 170, height: 38, padding: '0 32px 0 12px', fontSize: 13, cursor: 'pointer', outline: 'none' }}
+                    className="h-[38px] rounded-xl px-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     value={lifecycleFilter}
                     onChange={e => setLifecycleFilter(e.target.value)}
                   >
@@ -286,40 +289,38 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                     <option value="overdue">🔴 Overdue / Kadaluarsa</option>
                   </select>
                 </div>
-              ) : <div style={{ flex: 1 }} />}
+              ) : <div className="flex-1" />}
 
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div className="filter-tabs">
+              <div className="flex gap-2.5 items-center flex-wrap">
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                   <button
-                    className={`filter-tab ${activeTab === 'list' ? 'filter-tab--active' : ''}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'list' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
                     onClick={() => setActiveTab('list')}
                   >
                     Pelanggan Aktif ({tenants.length})
                   </button>
                   <button
-                    className={`filter-tab ${activeTab === 'requests' ? 'filter-tab--active' : ''}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === 'requests' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
                     onClick={() => setActiveTab('requests')}
                   >
                     Permintaan Langganan
                     {requests.length > 0 && (
-                      <span style={{
-                        marginLeft: 6, background: '#ef4444', color: '#fff',
-                        borderRadius: 10, fontSize: 10, fontWeight: 700,
-                        padding: '1px 6px', lineHeight: '16px', display: 'inline-block',
-                      }}>{requests.length}</span>
+                      <span className="bg-rose-500 text-white rounded-full text-[10px] font-bold px-1.5 py-0.2">
+                        {requests.length}
+                      </span>
                     )}
                   </button>
                 </div>
                 <button
-                  className="btn btn-secondary btn-sm"
-                  style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  className="h-[38px] px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   onClick={() => {
                     setLoading(true)
                     Promise.all([fetchTenants(), fetchRequests()]).finally(() => setLoading(false))
                   }}
                   disabled={loading}
                 >
-                  <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
+                  <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                  <span>Refresh</span>
                 </button>
               </div>
             </div>
@@ -419,7 +420,7 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                         </td>
                         <td>
                           <button
-                            className="btn btn-secondary btn-sm"
+                            className="h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                             onClick={() => handleOpenBilling(t)}
                             title="Lihat Riwayat Tagihan / Invoice"
                           >
@@ -428,22 +429,21 @@ export default function Subscriptions({ defaultTab = 'list' }) {
                           </button>
                         </td>
                         <td>
-                          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                          <div className="flex gap-1.5 justify-end">
                             <button
-                              className="btn btn-secondary btn-sm"
+                              className="h-8 px-3 rounded-lg border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/60 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-1.5 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
                               onClick={() => {
                                 setExtendTarget(t)
                                 setExtendDays(7)
                               }}
                               title="Beri Grace Period / Perpanjang Masa Aktif"
-                              style={{ color: '#4f46e5', borderColor: '#c7d2fe', background: '#eef2ff' }}
                             >
                               <Sparkles size={13} />
                               <span>+ Perpanjang / Grace</span>
                             </button>
 
                             <button
-                              className="btn btn-secondary btn-sm"
+                              className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                               onClick={() => handleResendInvoice(t)}
                               title="Kirim Ulang Email Tagihan"
                             >

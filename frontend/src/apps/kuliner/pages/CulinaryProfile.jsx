@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import KulinerAdminLayout from '../components/KulinerAdminLayout';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useToast } from '../../../components/Toast';
 import { api } from '../../../lib/api';
 import { UserCheck, User, Mail, Phone, ShieldCheck, Key, Check, Save, ShieldAlert } from '@/constants/icons';
 import './KulinerDashboard.css';
 
 const CulinaryProfile = () => {
   const { user } = useAuth();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: user?.name || '',
@@ -21,10 +23,10 @@ const CulinaryProfile = () => {
     setLoading(true);
     try {
       await api.put('/profile', form);
-      alert('Profil Anda berhasil diperbarui!');
+      toast.success('Profil Anda berhasil diperbarui!');
       // Refresh user data would be good here, or just let them re-login
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal memperbarui profil');
+      toast.error(err.response?.data?.message || 'Gagal memperbarui profil');
     } finally {
       setLoading(false);
     }
@@ -32,10 +34,6 @@ const CulinaryProfile = () => {
 
   return (
     <KulinerAdminLayout>
-      <div className="kd-topbar">
-        <h1 className="kd-page-title">Profil Pengguna</h1>
-      </div>
-      
       <div className="kd-content">
         <div>
           {/* PROFILE PREVIEW HEADER */}
