@@ -9,6 +9,7 @@ import { useBudidayaTerms } from '../hooks/useBudidayaTerms';
 import usePagination from '../../../hooks/usePagination';
 import BudidayaPagination from '../components/BudidayaPagination';
 import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton';
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton';
 import '../budidaya.css';
 
 export default function BudidayaMasterData() {
@@ -195,6 +196,10 @@ export default function BudidayaMasterData() {
   const paginationFinance = usePagination(filteredFinanceCategories, 10);
   const paginationUnits = usePagination(filteredUnits, 10);
   const paginationFeedCats = usePagination(filteredFeedCategories, 10);
+
+  if (loading && financeCategories.length === 0 && units.length === 0) {
+    return <BudidayaPageSkeleton variant="table" kpiCount={3} cols={5} message="Memuat master data budidaya..." />;
+  }
 
   return (
     <div className="aq-container" style={{ animation: 'kd-fadeIn 0.3s ease' }}>

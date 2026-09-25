@@ -796,3 +796,106 @@
   }
 }
 
+/* ════════════════════════════════════════════════
+   BUDIDAYA HIGH-FIDELITY SHIMMER & SKELETON ENGINE
+   ════════════════════════════════════════════════ */
+
+@keyframes aq-shimmer-sweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes aq-top-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(30%);
+  }
+  100% {
+    transform: translateX(110%);
+  }
+}
+
+@keyframes aq-pulse-glow {
+  0%, 100% {
+    opacity: 0.9;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+  }
+  50% {
+    opacity: 0.4;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
+  }
+}
+
+/* Emerald-tinted shimmer wave (Platform Signature) */
+.aq-shimmer {
+  background: linear-gradient(
+    90deg,
+    #F1F5F9 0%,
+    #E2E8F0 20%,
+    #D1FAE5 45%,
+    #E2E8F0 70%,
+    #F1F5F9 100%
+  ) !important;
+  background-size: 250% 100% !important;
+  animation: aq-shimmer-sweep 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  will-change: background-position;
+}
+
+/* Subtle neutral shimmer for lighter background elements */
+.aq-shimmer-subtle {
+  background: linear-gradient(
+    90deg,
+    #F8FAFC 0%,
+    #EEF2F6 25%,
+    #E2E8F0 50%,
+    #EEF2F6 75%,
+    #F8FAFC 100%
+  ) !important;
+  background-size: 250% 100% !important;
+  animation: aq-shimmer-sweep 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  will-change: background-position;
+}
+
+/* Dark shimmer for dark banners (e.g. Dashboard banner) */
+.aq-shimmer-dark {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.12) 25%,
+    rgba(52, 211, 153, 0.22) 50%,
+    rgba(255, 255, 255, 0.12) 75%,
+    rgba(255, 255, 255, 0.06) 100%
+  ) !important;
+  background-size: 250% 100% !important;
+  animation: aq-shimmer-sweep 2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  will-change: background-position;
+}
+
+/* Top Progress Glider (Linear / Vercel style) */
+.aq-top-loader-container {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: #E2E8F0;
+  overflow: hidden;
+  z-index: 60;
+}
+
+.aq-top-loader-bar {
+  height: 100%;
+  width: 45%;
+  background: linear-gradient(90deg, #059669, #10B981, #34D399, #10B981);
+  border-radius: 9999px;
+  animation: aq-top-indeterminate 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+

@@ -8,6 +8,7 @@ import {
  import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
  import { LoadingButton } from '../components/UXComponents'
  import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
+ import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
  import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
  import usePagination from '../../../hooks/usePagination'
  import BudidayaPagination from '../components/BudidayaPagination'
@@ -79,6 +80,10 @@ import {
   const activeCycles = cycles.filter(c => c.status !== 'panen').length;
   const harvestedCycles = cycles.filter(c => c.status === 'panen').length;
   const totalCostAll = cycles.reduce((acc, c) => acc + (Number(c.total_cost) || 0), 0);
+
+  if (loading && cycles.length === 0) {
+    return <BudidayaPageSkeleton variant="table" kpiCount={4} cols={6} message="Memuat histori & monitoring siklus..." />
+  }
 
   return (
      <div className="aq-container">

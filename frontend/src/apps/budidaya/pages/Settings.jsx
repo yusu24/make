@@ -132,7 +132,7 @@ export default function Settings() {
     </div>
   )
 
-  if (loading) return <BudidayaPageSkeleton />
+  if (loading) return <BudidayaPageSkeleton variant="settings" message="Memuat pengaturan farm budidaya..." />
 
   return (
     <div className="aq-container">

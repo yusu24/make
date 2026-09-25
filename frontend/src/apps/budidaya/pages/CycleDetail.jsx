@@ -159,7 +159,7 @@ export default function CycleDetail() {
     finally { setSaving(false) }
   }
 
-  if (loading) return <BudidayaPageSkeleton />
+  if (loading) return <BudidayaPageSkeleton variant="detail" message="Memuat detail siklus & monitoring..." />
 
   const cycle = data?.cycle
   const stats = data?.stats || { total_cost: 0, total_revenue: 0, profit: 0, current_population: 0, survival_rate: 0, total_feed_kg: 0, fcr: 0 }

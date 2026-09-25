@@ -7,6 +7,7 @@ import CurrencyInput from '../../../components/CurrencyInput';
 import usePagination from '../../../hooks/usePagination';
 import BudidayaPagination from '../components/BudidayaPagination';
 import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton';
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms';
 import '../budidaya.css';
@@ -316,6 +317,10 @@ export default function BudidayaExpenses() {
     link.click();
     document.body.removeChild(link);
   };
+
+  if (loading && expenses.length === 0) {
+    return <BudidayaPageSkeleton variant="reports" message="Memuat pencatatan pengeluaran & operasional..." />
+  }
 
   return (
     <div className="aq-container" style={{ animation: 'kd-fadeIn 0.3s ease' }}>

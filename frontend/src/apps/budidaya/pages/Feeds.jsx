@@ -5,6 +5,7 @@ import Modal from '../../../components/Modal'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
 import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 import usePagination from '../../../hooks/usePagination'
 import BudidayaPagination from '../components/BudidayaPagination'
 
@@ -90,6 +91,10 @@ export default function Feeds() {
 
   const totalStok = feeds.reduce((acc, f) => acc + Number(f.stock_kg), 0)
   const lowStockCount = feeds.filter(f => Number(f.stock_kg) < 50).length
+
+  if (loading && feeds.length === 0) {
+    return <BudidayaPageSkeleton variant="table" kpiCount={3} cols={4} message="Memuat inventaris pakan..." />
+  }
 
   return (
     <div className="aq-container">

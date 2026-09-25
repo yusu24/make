@@ -28,7 +28,7 @@ export default function Dashboard() {
     }
   }
 
-  if (loading) return <BudidayaPageSkeleton />
+  if (loading) return <BudidayaPageSkeleton variant="dashboard" />
 
   const rawChartData = stats?.charts?.[chartRange] || []
   const chartItems = rawChartData.length > 0 ? rawChartData : [

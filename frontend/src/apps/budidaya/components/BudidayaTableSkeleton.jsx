@@ -2,143 +2,150 @@ import React from 'react'
 
 /**
  * BudidayaTableSkeleton
- * Non-blocking, beautiful shimmer rows designed specifically for Budidaya Hewan & Tanaman module.
+ * Non-blocking, emerald-branded shimmer table skeleton for Budidaya Hewan & Tanaman module.
  * Can be rendered directly inside a <tbody> without breaking HTML table structure,
  * or as a standalone card shimmer when standalone={true}.
  */
 export function BudidayaTableSkeleton({
   rows = 5,
-  cols = 5,
+  cols = 6,
   standalone = false,
   message = null,
 }) {
+  // Realistic column width variations for natural table appearance
+  const cellWidths = [
+    ['70%', '45%', '60%', '85%', '50%', '30%'],
+    ['85%', '60%', '75%', '55%', '40%', '30%'],
+    ['60%', '40%', '85%', '70%', '65%', '30%'],
+    ['75%', '55%', '65%', '90%', '45%', '30%'],
+    ['90%', '50%', '80%', '60%', '55%', '30%'],
+    ['65%', '45%', '70%', '75%', '60%', '30%'],
+  ]
+
   if (standalone) {
     return (
-      <div style={{
-        background: '#FFFFFF',
-        borderRadius: '16px',
-        border: '1px solid #E2E8F0',
-        padding: '20px',
-        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
-      }}>
-        {/* Header Shimmer */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingBottom: '16px',
-          borderBottom: '1px solid #F1F5F9',
-          marginBottom: '16px'
-        }}>
-          <div style={{
-            height: '20px',
-            width: '180px',
-            background: '#E2E8F0',
-            borderRadius: '6px',
-            animation: 'aq-pulse 1.5s ease-in-out infinite'
-          }} />
-          <div style={{
-            height: '32px',
-            width: '100px',
-            background: '#F1F5F9',
-            borderRadius: '10px',
-            animation: 'aq-pulse 1.5s ease-in-out infinite'
-          }} />
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        {/* Table Top Controls Placeholder */}
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
+          <div className="h-10 w-72 rounded-xl aq-shimmer-subtle" />
+          <div className="flex items-center gap-2">
+            <div className="h-10 w-24 rounded-xl aq-shimmer-subtle" />
+            <div className="h-10 w-28 rounded-xl aq-shimmer-subtle" />
+          </div>
         </div>
 
-        {/* Rows Shimmer */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {[...Array(rows)].map((_, i) => (
+        {/* Table Header Placeholder */}
+        <div className="bg-slate-50 border-b border-slate-200/80 px-4 py-3 flex items-center gap-4">
+          {[...Array(cols)].map((_, cIdx) => (
             <div
-              key={i}
+              key={cIdx}
+              className="h-3.5 rounded-md aq-shimmer"
               style={{
-                height: '42px',
-                background: '#F8FAFC',
-                borderRadius: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0 16px',
-                gap: '16px',
-                animation: 'aq-pulse 1.5s ease-in-out infinite',
-                animationDelay: `${i * 0.1}s`
+                width: cIdx === 0 ? '60px' : cIdx === cols - 1 ? '50px' : `${Math.max(60, 120 - cIdx * 12)}px`,
+                marginLeft: cIdx === cols - 1 ? 'auto' : 0
               }}
-            >
-              {[...Array(cols)].map((_, j) => (
-                <div
-                  key={j}
-                  style={{
-                    height: '14px',
-                    borderRadius: '4px',
-                    background: '#E2E8F0',
-                    width: `${Math.max(25, 80 - j * 12)}%`,
-                    opacity: 0.9 - j * 0.08
-                  }}
-                />
-              ))}
-            </div>
+            />
           ))}
         </div>
 
+        {/* Table Rows */}
+        <div className="divide-y divide-slate-100">
+          {[...Array(rows)].map((_, rIdx) => {
+            const rowWidths = cellWidths[rIdx % cellWidths.length]
+            return (
+              <div
+                key={rIdx}
+                className="px-4 py-3.5 flex items-center gap-4 hover:bg-slate-50/50 transition-colors"
+                style={{ animationDelay: `${rIdx * 0.08}s` }}
+              >
+                {[...Array(cols)].map((_, cIdx) => (
+                  <div
+                    key={cIdx}
+                    style={{
+                      flex: cIdx === 0 ? '0 0 60px' : cIdx === cols - 1 ? '0 0 70px' : '1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginLeft: cIdx === cols - 1 ? 'auto' : 0,
+                      justifyContent: cIdx === cols - 1 ? 'flex-end' : 'flex-start'
+                    }}
+                  >
+                    {cIdx === cols - 1 ? (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-7 h-7 rounded-lg aq-shimmer-subtle" />
+                        <div className="w-7 h-7 rounded-lg aq-shimmer-subtle" />
+                      </div>
+                    ) : cIdx === 2 ? (
+                      <div className="h-6 w-20 rounded-full aq-shimmer" />
+                    ) : (
+                      <div
+                        className="h-4 rounded-md aq-shimmer"
+                        style={{ width: rowWidths[cIdx % rowWidths.length] || '70%' }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Footer Pagination Placeholder */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between flex-wrap gap-3">
+          <div className="h-4 w-44 rounded-md aq-shimmer-subtle" />
+          <div className="flex items-center gap-1.5">
+            <div className="w-8 h-8 rounded-lg aq-shimmer-subtle" />
+            <div className="w-8 h-8 rounded-lg aq-shimmer" />
+            <div className="w-8 h-8 rounded-lg aq-shimmer-subtle" />
+            <div className="w-8 h-8 rounded-lg aq-shimmer-subtle" />
+          </div>
+        </div>
+
         {message && (
-          <p style={{
-            textAlign: 'center',
-            fontSize: '12px',
-            color: '#94A3B8',
-            marginTop: '16px',
-            marginBottom: 0
-          }}>
+          <p className="text-center text-xs text-slate-400 py-2 border-t border-slate-100">
             {message}
           </p>
         )}
-
-        <style>{`
-          @keyframes aq-pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.45; }
-          }
-        `}</style>
       </div>
     )
   }
 
+  // Inside <tbody>
   return (
     <>
-      {[...Array(rows)].map((_, rIdx) => (
-        <tr
-          key={rIdx}
-          style={{
-            borderBottom: '1px solid #F1F5F9',
-            animation: 'aq-pulse 1.5s ease-in-out infinite',
-            animationDelay: `${rIdx * 0.08}s`
-          }}
-        >
-          {[...Array(cols)].map((_, cIdx) => (
-            <td
-              key={cIdx}
-              style={{
-                padding: '14px 16px',
-                verticalAlign: 'middle'
-              }}
-            >
-              <div
-                style={{
-                  height: '14px',
-                  background: '#E2E8F0',
-                  borderRadius: '6px',
-                  width: cIdx === 0 ? '60%' : cIdx === cols - 1 ? '45%' : '75%',
-                  marginLeft: cIdx === cols - 1 ? 'auto' : 0
-                }}
-              />
-            </td>
-          ))}
-        </tr>
-      ))}
-      <style>{`
-        @keyframes aq-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.45; }
-        }
-      `}</style>
+      {[...Array(rows)].map((_, rIdx) => {
+        const rowWidths = cellWidths[rIdx % cellWidths.length]
+        return (
+          <tr
+            key={rIdx}
+            className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
+          >
+            {[...Array(cols)].map((_, cIdx) => (
+              <td
+                key={cIdx}
+                className="py-3.5 px-4 align-middle"
+              >
+                {cIdx === cols - 1 ? (
+                  <div className="flex items-center justify-end gap-1.5">
+                    <div className="w-7 h-7 rounded-lg aq-shimmer-subtle" />
+                    <div className="w-7 h-7 rounded-lg aq-shimmer-subtle" />
+                  </div>
+                ) : cIdx === 2 ? (
+                  <div className="h-6 w-20 rounded-full aq-shimmer" />
+                ) : (
+                  <div
+                    className="h-4 rounded-md aq-shimmer"
+                    style={{
+                      width: cIdx === 0 ? '55%' : rowWidths[cIdx % rowWidths.length] || '70%',
+                      maxWidth: '180px'
+                    }}
+                  />
+                )}
+              </td>
+            ))}
+          </tr>
+        )
+      })}
     </>
   )
 }
+export default BudidayaTableSkeleton

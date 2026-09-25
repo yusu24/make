@@ -5,6 +5,7 @@ import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton, EmptyState } from '../components/UXComponents'
 import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 
 import usePagination from '../../../hooks/usePagination'
@@ -177,6 +178,10 @@ export default function Ponds() {
       />
     </div>
   )
+
+  if (loading && ponds.length === 0) {
+    return <BudidayaPageSkeleton variant="table" kpiCount={4} cols={7} message="Memuat daftar kolam budidaya..." />
+  }
 
   return (
     <div className="aq-container">

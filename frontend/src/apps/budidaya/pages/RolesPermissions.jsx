@@ -6,6 +6,7 @@ import '../budidaya.css'
 import usePagination from '../../../hooks/usePagination'
 import BudidayaPagination from '../components/BudidayaPagination'
 import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 
 const getPermissions = (terms) => {
   const opCategory = terms.isTanaman ? 'Operasi Kebun' : (terms.category === 'aquaculture' ? 'Operasi Tambak' : 'Operasi Peternakan')
@@ -133,6 +134,10 @@ export default function RolesPermissions() {
     startIndex,
     endIndex
   } = usePagination(roles)
+
+  if (loading && roles.length === 0) {
+    return <BudidayaPageSkeleton variant="table" kpiCount={2} cols={4} message="Memuat peran & hak akses..." />
+  }
 
   return (
     <div className="aq-container">

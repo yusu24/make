@@ -5,6 +5,7 @@ import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton } from '../components/UXComponents'
 import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import BudidayaPagination from '../components/BudidayaPagination'
 
@@ -80,6 +81,10 @@ export default function UserManagement() {
   })
 
   const totalPages = Math.ceil(total / PER_PAGE) || 1
+
+  if (loading && staff.length === 0) {
+    return <BudidayaPageSkeleton variant="table" kpiCount={4} cols={6} message="Memuat manajemen tim & staf..." />
+  }
 
   return (
     <div className="aq-container">

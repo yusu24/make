@@ -572,7 +572,7 @@ export default function PondDetail() {
   // Siklus sudah selesai (panen total) — batasi aksi yang tersedia
   const isCycleDone = cycle?.status === 'panen'
 
-  if (loading) return <BudidayaPageSkeleton />;
+  if (loading) return <BudidayaPageSkeleton variant="detail" message="Memuat detail kolam & parameter air..." />;
 
   return (
     <div className="aq-container">

@@ -4,6 +4,7 @@ import '../budidaya.css'
 import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../components/Table'
 import { LoadingButton, EmptyState } from '../components/UXComponents'
 import { BudidayaTableSkeleton } from '../components/BudidayaTableSkeleton'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 import { useBudidayaTerms } from '../hooks/useBudidayaTerms'
 import CurrencyInput from '../../../components/CurrencyInput'
 import usePagination from '../../../hooks/usePagination'
@@ -120,6 +121,10 @@ export default function Inventory() {
     if (item.stock <= 0) return { label: 'Habis', color: '#EF4444', bg: '#FEE2E2' }
     if (item.stock <= item.min_stock) return { label: 'Menipis', color: '#F59E0B', bg: '#FEF3C7' }
     return { label: 'Aman', color: '#059669', bg: '#D1FAE5' }
+  }
+
+  if (loading && items.length === 0) {
+    return <BudidayaPageSkeleton variant="table" kpiCount={4} cols={6} message="Memuat inventaris & sarana budidaya..." />
   }
 
   return (

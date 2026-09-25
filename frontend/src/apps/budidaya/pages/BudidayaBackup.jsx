@@ -7,6 +7,7 @@ import {
 } from '@/constants/icons'
 import { api } from '../../../lib/api'
 import '../budidaya.css'
+import { BudidayaPageSkeleton } from '../components/BudidayaPageSkeleton'
 
 const CATEGORIES = [
   {
@@ -153,18 +154,7 @@ export default function BudidayaBackup() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="aq-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
-        <div style={{
-          width: 32, height: 32,
-          border: '3px solid #E2E8F0', borderTopColor: '#1B4332',
-          borderRadius: '50%', animation: 'spin 0.8s linear infinite',
-        }} />
-        <p style={{ color: '#64748b', fontSize: 13, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>Memuat pengaturan backup...</p>
-      </div>
-    )
-  }
+  if (loading) return <BudidayaPageSkeleton variant="settings" message="Memuat konfigurasi backup otomatis..." />
 
   const cardStyle = {
     background: '#ffffff',

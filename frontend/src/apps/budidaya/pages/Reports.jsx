@@ -93,7 +93,7 @@ export default function Reports() {
     return map[status] || map.kosong
   }
 
-  if (loading) return <BudidayaPageSkeleton />
+  if (loading) return <BudidayaPageSkeleton variant="reports" message="Memuat analitik & laporan budidaya..." />
 
   if (error) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', flexDirection: 'column', gap: 12 }}>
