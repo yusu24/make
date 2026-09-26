@@ -24,26 +24,34 @@ import { SellerMobileBottomSheet } from './components/SellerMobileBottomSheet';
 
 // Pure, one-directional URL <-> tab mapping.
 export const pathToTab = (p: string): ActiveTab => {
-  // POS
-  if (p.includes('/pos')) return 'toko-offline';
-
-  // Orders
-  if (p.includes('/orders')) return 'pesanan';
-
-  // Omnichannel Marketplace
+  // 1. Omnichannel Marketplace
   if (p.includes('/marketplace/connected')) return 'marketplace-connected';
   if (p.includes('/marketplace/mapping')) return 'marketplace-mapping';
   if (p.includes('/marketplace/sync')) return 'marketplace-sync';
   if (p.includes('/marketplace/history')) return 'marketplace-history';
   if (p.includes('/marketplace')) return 'marketplace-dashboard';
 
-  // Shipping
+  // 2. Shipping & Notifikasi
   if (p.includes('/shipping/dashboard')) return 'shipping-dashboard';
   if (p.includes('/shipping/management')) return 'shipping-management';
   if (p.includes('/shipping/packing')) return 'shipping-packing';
   if (p.includes('/notifications')) return 'notification-center';
 
-  // Katalog & Harga
+  // 3. POS & Pesanan
+  if (p.includes('/pos')) return 'toko-offline';
+  if (p.includes('/orders')) return 'pesanan';
+
+  // 4. Laporan Bisnis (Harus diperiksa sebelum /products, /customers, /shifts)
+  if (p.includes('/reports/products')) return 'laporan-produk';
+  if (p.includes('/reports/margins')) return 'laporan-margin';
+  if (p.includes('/reports/customers')) return 'laporan-pelanggan';
+  if (p.includes('/reports/consignment')) return 'laporan-konsinyasi';
+  if (p.includes('/reports/shifts')) return 'laporan-shift';
+  if (p.includes('/reports/payments')) return 'laporan-pembayaran';
+  if (p.includes('/reports/sales') || p.includes('/sales-report')) return 'keuangan-laporan';
+  if (p.includes('/reports')) return 'keuangan-laporan';
+
+  // 5. Katalog & Harga
   if (p.includes('/categories')) return 'katalog-kategori';
   if (p.includes('/units')) return 'katalog-satuan';
   if (p.includes('/batches')) return 'katalog-batch';
@@ -53,7 +61,7 @@ export const pathToTab = (p: string): ActiveTab => {
   if (p.includes('/pricelists')) return 'katalog-harga';
   if (p.includes('/products')) return 'katalog';
 
-  // Inventori & Gudang
+  // 6. Inventori & Gudang
   if (p.includes('/warehouses')) return 'gudang-multi';
   if (p.includes('/purchase-orders') || p.includes('/purchases')) return 'gudang-po';
   if (p.includes('/stock-movements')) return 'gudang-mutasi';
@@ -63,43 +71,34 @@ export const pathToTab = (p: string): ActiveTab => {
   if (p.includes('/stock')) return 'penerimaan-barang';
   if (p.includes('/inventory')) return 'gudang';
 
-  // Transaksi
+  // 7. Transaksi & Kasir
   if (p.includes('/transactions')) return 'transaksi-riwayat';
   if (p.includes('/shifts')) return 'transaksi-shift';
   if (p.includes('/customer-returns')) return 'transaksi-retur-pelanggan';
 
-  // Pelanggan & Mitra
+  // 8. Pelanggan & Mitra (CRM)
   if (p.includes('/customers')) return 'pelanggan';
   if (p.includes('/suppliers')) return 'crm-supplier';
   if (p.includes('/outlets')) return 'crm-cabang';
 
-  // Keuangan
+  // 9. Keuangan (/finance/cash-flow harus sebelum /finance/cash)
+  if (p.includes('/finance/cash-flow')) return 'keuangan-arus-kas';
   if (p.includes('/finance/cash') || p.includes('/incomes') || p.includes('/expenses')) return 'keuangan-kas';
   if (p.includes('/finance/payables')) return 'keuangan-hutang';
   if (p.includes('/finance/receivables')) return 'keuangan-piutang';
   if (p.includes('/finance/transfers')) return 'keuangan-mutasi';
-  if (p.includes('/finance/cash-flow')) return 'keuangan-arus-kas';
   if (p.includes('/finance/tax-report')) return 'keuangan-pajak';
   if (p.includes('/finance-categories')) return 'keuangan-kategori';
-  if (p.includes('/finance')) return 'keuangan-laba-rugi';
+  if (p.includes('/finance/summary') || p.includes('/finance')) return 'keuangan-laba-rugi';
 
-  // Laporan
-  if (p.includes('/reports/products')) return 'laporan-produk';
-  if (p.includes('/reports/margins')) return 'laporan-margin';
-  if (p.includes('/reports/customers')) return 'laporan-pelanggan';
-  if (p.includes('/reports/consignment')) return 'laporan-konsinyasi';
-  if (p.includes('/reports/shifts')) return 'laporan-shift';
-  if (p.includes('/reports/payments')) return 'laporan-pembayaran';
-  if (p.includes('/reports') || p.includes('/sales-report')) return 'keuangan-laporan';
-
-  // Pengaturan & Akses
+  // 10. Pengaturan & Akses
   if (p.includes('/staff') || p.includes('/settings/users')) return 'setting-staff';
   if (p.includes('/roles') || p.includes('/settings/roles')) return 'setting-roles';
   if (p.includes('/settings/app')) return 'settings-app';
   if (p.includes('/settings/account')) return 'settings-account';
   if (p.includes('/settings')) return 'setting-store';
 
-  // Sistem & Langganan
+  // 11. Sistem & Langganan
   if (p.includes('/subscription') || p.includes('/langganan')) return 'langganan';
   if (p.includes('/support')) return 'support';
   if (p.includes('/developer-api') || p.includes('/api')) return 'developer-api';
@@ -236,7 +235,7 @@ export default function App() {
       'transaksi-shift': 'Shift & Laci Kasir',
       'transaksi-retur-pelanggan': 'Retur dari Pelanggan',
       'crm-supplier': 'Data Supplier',
-      'crm-cabang': 'Daftar Cabang & Gudang',
+      'crm-cabang': 'Daftar Cabang & Gerai Toko',
       'pelanggan': 'Data Pelanggan CRM',
       'keuangan-pemasukan': 'Pemasukan Lainnya',
       'keuangan-pengeluaran': 'Biaya Operasional',
