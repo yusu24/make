@@ -4,7 +4,9 @@ import {
   Globe, Link, Layers, RefreshCw, History, Building2,
   Truck, ClipboardCheck, Send, Box, Wallet, TrendingUp,
   TrendingDown, BarChart2, Users, Settings, UserCheck,
-  ShieldCheck, Zap, BookOpen, Database, Sparkles
+  ShieldCheck, Zap, BookOpen, Database, Sparkles, Tag,
+  Archive, Printer, ArrowRightLeft, ArrowDownLeft, ArrowUpRight,
+  FileText, Store, HelpCircle, QrCode
 } from '@/constants/icons'
 import '../../../../apps/admin/components/AdminMobileNav.css'
 import { ActiveTab } from '../types'
@@ -28,57 +30,107 @@ export const SELLER_MODULE_SECTIONS: SellerModuleSection[] = [
       { id: 'menu-utama', icon: <Home size={20} />, label: 'Dashboard Seller', code: 'S01' },
       { id: 'toko-offline', icon: <CreditCard size={20} />, label: 'Kasir POS (Toko Fisik)', code: 'S02' },
       { id: 'pesanan', icon: <ShoppingBag size={20} />, label: 'Pesanan Masuk', code: 'S03' },
-      { id: 'katalog', icon: <Package size={20} />, label: 'Katalog Produk', code: 'S04' },
     ]
   },
   {
     group: 'MARKETPLACE & OMNICHANNEL',
     items: [
-      { id: 'marketplace-dashboard', icon: <Globe size={20} />, label: 'Dashboard Marketplace', code: 'M01' },
+      { id: 'marketplace-dashboard', icon: <Globe size={20} />, label: 'Dashboard Multi-Channel', code: 'M01' },
       { id: 'marketplace-connected', icon: <Link size={20} />, label: 'Toko Terhubung', code: 'M02' },
-      { id: 'marketplace-mapping', icon: <Layers size={20} />, label: 'Mapping Produk', code: 'M03' },
-      { id: 'marketplace-sync', icon: <RefreshCw size={20} />, label: 'Sinkronisasi Stok', code: 'M04' },
+      { id: 'marketplace-mapping', icon: <Layers size={20} />, label: 'Mapping Master SKU', code: 'M03' },
+      { id: 'marketplace-sync', icon: <RefreshCw size={20} />, label: 'Sinkronisasi Stok Real-Time', code: 'M04' },
       { id: 'marketplace-history', icon: <History size={20} />, label: 'Riwayat Sinkronisasi', code: 'M05' },
     ]
   },
   {
-    group: 'GUDANG & INVENTORI',
-    items: [
-      { id: 'gudang', icon: <Building2 size={20} />, label: 'Stok & Gudang', code: 'G01' },
-      { id: 'penerimaan-barang', icon: <Truck size={20} />, label: 'Penerimaan Barang', code: 'G02' },
-      { id: 'stock-opname', icon: <ClipboardCheck size={20} />, label: 'Stock Opname', code: 'G03' },
-    ]
-  },
-  {
-    group: 'LOGISTIK & PENGIRIMAN',
+    group: 'PENGIRIMAN & EKSPEDISI',
     items: [
       { id: 'shipping-dashboard', icon: <Truck size={20} />, label: 'Dashboard Pengiriman', code: 'L01' },
       { id: 'shipping-management', icon: <Send size={20} />, label: 'Manajemen Resi & Kurir', code: 'L02' },
-      { id: 'shipping-packing', icon: <Box size={20} />, label: 'Rekomendasi Packing', code: 'L03' },
+      { id: 'shipping-packing', icon: <Box size={20} />, label: 'Packing Station & Cetak AWB', code: 'L03' },
+      { id: 'notification-center', icon: <Sparkles size={20} />, label: 'Pusat Notifikasi', code: 'L04' },
+    ]
+  },
+  {
+    group: 'KATALOG & HARGA',
+    items: [
+      { id: 'katalog', icon: <Package size={20} />, label: 'Daftar Produk', code: 'K01' },
+      { id: 'katalog-kategori', icon: <Layers size={20} />, label: 'Kategori Produk', code: 'K02' },
+      { id: 'katalog-satuan', icon: <Tag size={20} />, label: 'Satuan Barang', code: 'K03' },
+      { id: 'katalog-batch', icon: <Archive size={20} />, label: 'Batch & Kadaluwarsa', code: 'K04' },
+      { id: 'katalog-serial', icon: <QrCode size={20} />, label: 'Serial Number / IMEI', code: 'K05' },
+      { id: 'katalog-label', icon: <Printer size={20} />, label: 'Cetak Label Barcode', code: 'K06' },
+      { id: 'katalog-diskon', icon: <Tag size={20} />, label: 'Kode Diskon & Promo', code: 'K07' },
+      { id: 'katalog-harga', icon: <Layers size={20} />, label: 'Harga Grosir & Member', code: 'K08' },
+    ]
+  },
+  {
+    group: 'INVENTORI & GUDANG',
+    items: [
+      { id: 'gudang', icon: <Building2 size={20} />, label: 'Stok Barang & Gudang', code: 'G01' },
+      { id: 'gudang-multi', icon: <Store size={20} />, label: 'Multi-Gudang Seller', code: 'G02' },
+      { id: 'gudang-po', icon: <ShoppingBag size={20} />, label: 'Purchase Order (PO)', code: 'G03' },
+      { id: 'penerimaan-barang', icon: <Truck size={20} />, label: 'Penerimaan Barang Masuk', code: 'G04' },
+      { id: 'gudang-mutasi', icon: <RefreshCw size={20} />, label: 'Riwayat Mutasi Stok', code: 'G05' },
+      { id: 'gudang-transfer', icon: <ArrowRightLeft size={20} />, label: 'Transfer Stok Antar Gudang', code: 'G06' },
+      { id: 'stock-opname', icon: <ClipboardCheck size={20} />, label: 'Stock Opname Fisik', code: 'G07' },
+      { id: 'gudang-retur-supplier', icon: <Truck size={20} />, label: 'Retur ke Supplier', code: 'G08' },
+    ]
+  },
+  {
+    group: 'TRANSAKSI & KASIR',
+    items: [
+      { id: 'transaksi-riwayat', icon: <FileText size={20} />, label: 'Riwayat Transaksi POS', code: 'T01' },
+      { id: 'transaksi-shift', icon: <Wallet size={20} />, label: 'Shift & Laci Kasir', code: 'T02' },
+      { id: 'transaksi-retur-pelanggan', icon: <RefreshCw size={20} />, label: 'Retur dari Pelanggan', code: 'T03' },
+    ]
+  },
+  {
+    group: 'PELANGGAN & SUPPLIER',
+    items: [
+      { id: 'pelanggan', icon: <Users size={20} />, label: 'Data Pelanggan (CRM)', code: 'C01' },
+      { id: 'crm-supplier', icon: <Truck size={20} />, label: 'Data Supplier', code: 'C02' },
+      { id: 'crm-cabang', icon: <Store size={20} />, label: 'Daftar Cabang / Outlet', code: 'C03' },
     ]
   },
   {
     group: 'KEUANGAN & KAS',
     items: [
-      { id: 'keuangan-kas', icon: <Wallet size={20} />, label: 'Kas & Bank', code: 'F01' },
-      { id: 'keuangan-pemasukan', icon: <TrendingUp size={20} />, label: 'Pemasukan Lain', code: 'F02' },
-      { id: 'keuangan-pengeluaran', icon: <TrendingDown size={20} />, label: 'Catatan Pengeluaran', code: 'F03' },
-      { id: 'keuangan-laporan', icon: <BarChart2 size={20} />, label: 'Laporan Penjualan', code: 'F04' },
+      { id: 'keuangan-laba-rugi', icon: <BarChart2 size={20} />, label: 'Laba Rugi', code: 'F01' },
+      { id: 'keuangan-kas', icon: <Wallet size={20} />, label: 'Catatan Kas & Bank', code: 'F02' },
+      { id: 'keuangan-hutang', icon: <ArrowDownLeft size={20} />, label: 'Hutang ke Supplier', code: 'F03' },
+      { id: 'keuangan-piutang', icon: <ArrowUpRight size={20} />, label: 'Piutang Pelanggan', code: 'F04' },
+      { id: 'keuangan-mutasi', icon: <ArrowRightLeft size={20} />, label: 'Mutasi Antar Kas', code: 'F05' },
+      { id: 'keuangan-arus-kas', icon: <RefreshCw size={20} />, label: 'Arus Kas', code: 'F06' },
+      { id: 'keuangan-pajak', icon: <FileText size={20} />, label: 'Laporan Pajak PPN', code: 'F07' },
+      { id: 'keuangan-kategori', icon: <Tag size={20} />, label: 'Kategori Keuangan', code: 'F08' },
+    ]
+  },
+  {
+    group: 'LAPORAN BISNIS',
+    items: [
+      { id: 'keuangan-laporan', icon: <BarChart2 size={20} />, label: 'Laporan Penjualan', code: 'R01' },
+      { id: 'laporan-produk', icon: <ShoppingBag size={20} />, label: 'Laporan Produk Terlaris', code: 'R02' },
+      { id: 'laporan-margin', icon: <TrendingUp size={20} />, label: 'Laporan Margin Keuntungan', code: 'R03' },
+      { id: 'laporan-pelanggan', icon: <Users size={20} />, label: 'Laporan Analitik Pelanggan', code: 'R04' },
+      { id: 'laporan-konsinyasi', icon: <Package size={20} />, label: 'Laporan Konsinyasi', code: 'R05' },
+      { id: 'laporan-shift', icon: <Users size={20} />, label: 'Laporan Kasir & Shift', code: 'R06' },
+      { id: 'laporan-pembayaran', icon: <CreditCard size={20} />, label: 'Laporan Metode Pembayaran', code: 'R07' },
     ]
   },
   {
     group: 'PENGATURAN & SISTEM',
     items: [
-      { id: 'pelanggan', icon: <Users size={20} />, label: 'Data Pelanggan', code: 'P01' },
-      { id: 'master-data', icon: <Building2 size={20} />, label: 'Master Supplier', code: 'P02' },
-      { id: 'settings-app', icon: <Settings size={20} />, label: 'Pengaturan Aplikasi', code: 'P03' },
-      { id: 'settings-account', icon: <UserCheck size={20} />, label: 'Akun & Profil', code: 'P04' },
-      { id: 'settings-roles', icon: <ShieldCheck size={20} />, label: 'Role & Izin Akses', code: 'P05' },
-      { id: 'settings-users', icon: <Users size={20} />, label: 'Kelola Pengguna', code: 'P06' },
-      { id: 'developer-api', icon: <Zap size={20} />, label: 'Integrasi API & Webhook', code: 'P07' },
-      { id: 'panduan', icon: <BookOpen size={20} />, label: 'Buku Panduan', code: 'P08' },
-      { id: 'langganan', icon: <CreditCard size={20} />, label: 'Paket Langganan', code: 'P09' },
-      { id: 'backup', icon: <Database size={20} />, label: 'Backup Data', code: 'P10' },
+      { id: 'setting-staff', icon: <Users size={20} />, label: 'Data Staf Pegawai', code: 'P01' },
+      { id: 'setting-roles', icon: <ShieldCheck size={20} />, label: 'Role & Izin Akses', code: 'P02' },
+      { id: 'setting-store', icon: <Settings size={20} />, label: 'Pengaturan Toko', code: 'P03' },
+      { id: 'settings-app', icon: <Settings size={20} />, label: 'Pengaturan Aplikasi', code: 'P04' },
+      { id: 'settings-account', icon: <UserCheck size={20} />, label: 'Akun & Profil', code: 'P05' },
+      { id: 'developer-api', icon: <Zap size={20} />, label: 'Integrasi API & Webhook', code: 'P06' },
+      { id: 'panduan', icon: <BookOpen size={20} />, label: 'Panduan SOP Toko', code: 'P07' },
+      { id: 'langganan', icon: <CreditCard size={20} />, label: 'Paket Langganan', code: 'P08' },
+      { id: 'support', icon: <HelpCircle size={20} />, label: 'Pusat Bantuan', code: 'P09' },
+      { id: 'backup', icon: <Database size={20} />, label: 'Backup & Restore Data', code: 'P10' },
     ]
   }
 ]

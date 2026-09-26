@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -32,7 +32,15 @@ import {
   CreditCard,
   Archive,
   BookOpen,
-  Code2
+  Code2,
+  Tag,
+  Printer,
+  ArrowRightLeft,
+  ArrowDownLeft,
+  ArrowUpRight,
+  HelpCircle,
+  FileText,
+  BarChart2
 } from '@/constants/icons';
 import { ActiveTab, StoreChannel } from '../types';
 import { useTranslation } from '../../../../contexts/I18nContext';
@@ -92,9 +100,11 @@ const CollapsedGroupFlyout: React.FC<{
       style={{
         position: 'fixed',
         left: 72,
-        top: Math.max(8, Math.min(anchorY, window.innerHeight - 320)),
+        top: Math.max(8, Math.min(anchorY, window.innerHeight - 360)),
         zIndex: 1100,
-        minWidth: 210,
+        minWidth: 220,
+        maxHeight: '80vh',
+        overflowY: 'auto',
         background: '#ffffff',
         border: '1px solid #e2e8f0',
         borderRadius: 12,
@@ -153,21 +163,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { user } = useAuth();
   const i18n = useTranslation();
-  const t = i18n?.t || ((key: string) => key);
+  const t = i18n?.t || ((key: string, def?: string) => def || key);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [flyoutAnchorY, setFlyoutAnchorY] = useState(60);
-
-  const isKeuanganActive = activeTab.startsWith('keuangan-');
-  const [keuanganOpen, setKeuanganOpen] = useState(isKeuanganActive);
-
-  const isSettingsActive = activeTab.startsWith('settings-');
-  const [settingsOpen, setSettingsOpen] = useState(isSettingsActive);
-
-  const isGudangActive = ['gudang', 'penerimaan-barang', 'stock-opname'].includes(activeTab);
-  const [gudangOpen, setGudangOpen] = useState(isGudangActive);
-
-  const isMasterActive = ['master-data', 'pelanggan'].includes(activeTab);
-  const [masterOpen, setMasterOpen] = useState(isMasterActive);
 
   const isMarketplaceActive = activeTab.startsWith('marketplace-');
   const [marketplaceOpen, setMarketplaceOpen] = useState(isMarketplaceActive);
@@ -175,14 +173,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isShippingActive = activeTab.startsWith('shipping-');
   const [shippingOpen, setShippingOpen] = useState(isShippingActive);
 
-  // Auto-close accordions if navigating to a different section
+  const isKatalogActive = activeTab.startsWith('katalog');
+  const [katalogOpen, setKatalogOpen] = useState(isKatalogActive);
+
+  const isGudangActive = ['gudang', 'gudang-multi', 'penerimaan-barang', 'gudang-po', 'gudang-mutasi', 'gudang-transfer', 'gudang-retur-supplier', 'stock-opname'].includes(activeTab);
+  const [gudangOpen, setGudangOpen] = useState(isGudangActive);
+
+  const isTransaksiActive = activeTab.startsWith('transaksi-');
+  const [transaksiOpen, setTransaksiOpen] = useState(isTransaksiActive);
+
+  const isCrmActive = ['pelanggan', 'crm-supplier', 'crm-cabang', 'master-data'].includes(activeTab);
+  const [crmOpen, setCrmOpen] = useState(isCrmActive);
+
+  const isKeuanganActive = activeTab.startsWith('keuangan-') && !['keuangan-laporan'].includes(activeTab);
+  const [keuanganOpen, setKeuanganOpen] = useState(isKeuanganActive);
+
+  const isLaporanActive = activeTab.startsWith('laporan-') || activeTab === 'keuangan-laporan';
+  const [laporanOpen, setLaporanOpen] = useState(isLaporanActive);
+
+  const isSettingsActive = activeTab.startsWith('settings-') || activeTab.startsWith('setting-') || ['backup', 'developer-api', 'panduan', 'langganan', 'support'].includes(activeTab);
+  const [settingsOpen, setSettingsOpen] = useState(isSettingsActive);
+
+  // Auto-manage accordions when activeTab changes
   useEffect(() => {
-    setKeuanganOpen(activeTab.startsWith('keuangan-'));
-    setSettingsOpen(activeTab.startsWith('settings-'));
-    setGudangOpen(['gudang', 'penerimaan-barang', 'stock-opname'].includes(activeTab));
-    setMasterOpen(['master-data', 'pelanggan'].includes(activeTab));
-    setMarketplaceOpen(activeTab.startsWith('marketplace-'));
-    setShippingOpen(activeTab.startsWith('shipping-'));
+    if (activeTab.startsWith('marketplace-')) setMarketplaceOpen(true);
+    if (activeTab.startsWith('shipping-')) setShippingOpen(true);
+    if (activeTab.startsWith('katalog')) setKatalogOpen(true);
+    if (['gudang', 'gudang-multi', 'penerimaan-barang', 'gudang-po', 'gudang-mutasi', 'gudang-transfer', 'gudang-retur-supplier', 'stock-opname'].includes(activeTab)) setGudangOpen(true);
+    if (activeTab.startsWith('transaksi-')) setTransaksiOpen(true);
+    if (['pelanggan', 'crm-supplier', 'crm-cabang', 'master-data'].includes(activeTab)) setCrmOpen(true);
+    if (activeTab.startsWith('keuangan-') && activeTab !== 'keuangan-laporan') setKeuanganOpen(true);
+    if (activeTab.startsWith('laporan-') || activeTab === 'keuangan-laporan') setLaporanOpen(true);
+    if (activeTab.startsWith('settings-') || activeTab.startsWith('setting-') || ['backup', 'developer-api', 'panduan', 'langganan', 'support'].includes(activeTab)) setSettingsOpen(true);
     setOpenSection(null);
   }, [activeTab]);
 
@@ -195,60 +217,110 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const flyoutGroups: Record<string, FlyoutGroup> = {
     marketplace: {
       id: 'marketplace',
-      label: t('seller.marketplace'),
+      label: 'Marketplace & Omnichannel',
       items: [
-        { id: 'marketplace-dashboard', label: t('seller.dashboardMarketplace'), icon: <Globe className="w-3.5 h-3.5 text-indigo-500" /> },
-        { id: 'marketplace-connected', label: t('seller.tokoTerhubung'), icon: <Link className="w-3.5 h-3.5 text-emerald-500" /> },
-        { id: 'marketplace-mapping', label: t('seller.mappingProduk'), icon: <Layers className="w-3.5 h-3.5 text-blue-500" /> },
-        { id: 'marketplace-sync', label: t('seller.sinkronisasi'), icon: <RefreshCw className="w-3.5 h-3.5 text-amber-500" /> },
-        { id: 'marketplace-history', label: t('seller.riwayatSync'), icon: <History className="w-3.5 h-3.5 text-purple-500" /> },
+        { id: 'marketplace-dashboard', label: 'Dashboard Multi-Channel', icon: <Globe className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'marketplace-connected', label: 'Toko Terhubung', icon: <Link className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'marketplace-mapping', label: 'Mapping Master SKU', icon: <Layers className="w-3.5 h-3.5 text-blue-500" /> },
+        { id: 'marketplace-sync', label: 'Pusat Sinkronisasi', icon: <RefreshCw className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'marketplace-history', label: 'Riwayat Sync', icon: <History className="w-3.5 h-3.5 text-purple-500" /> },
       ]
     },
     shipping: {
       id: 'shipping',
-      label: t('seller.pengiriman'),
+      label: 'Pengiriman & Logistik',
       items: [
-        { id: 'shipping-dashboard', label: t('seller.dashboardPengiriman', 'Dashboard Pengiriman'), icon: <Truck className="w-3.5 h-3.5 text-indigo-500" /> },
-        { id: 'shipping-management', label: t('seller.kurirEkspedisi'), icon: <Package className="w-3.5 h-3.5 text-emerald-500" /> },
-        { id: 'shipping-packing', label: t('seller.packingResi'), icon: <ClipboardCheck className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'shipping-dashboard', label: 'Dashboard Pengiriman', icon: <Truck className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'shipping-management', label: 'Kurir & Ekspedisi', icon: <Package className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'shipping-packing', label: 'Packing Station & AWB', icon: <ClipboardCheck className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'notification-center', label: 'Pusat Notifikasi', icon: <Bell className="w-3.5 h-3.5 text-rose-500" /> },
+      ]
+    },
+    katalog: {
+      id: 'katalog',
+      label: 'Katalog & Harga',
+      items: [
+        { id: 'katalog', label: 'Daftar Produk', icon: <Package className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'katalog-kategori', label: 'Kategori Produk', icon: <Layers className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'katalog-satuan', label: 'Satuan Barang', icon: <Tag className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'katalog-batch', label: 'Batch & Kadaluwarsa', icon: <Archive className="w-3.5 h-3.5 text-purple-500" /> },
+        { id: 'katalog-serial', label: 'Serial Number / IMEI', icon: <QrCode className="w-3.5 h-3.5 text-cyan-500" /> },
+        { id: 'katalog-label', label: 'Cetak Barcode Label', icon: <Printer className="w-3.5 h-3.5 text-slate-500" /> },
+        { id: 'katalog-diskon', label: 'Kode Diskon & Promo', icon: <Tag className="w-3.5 h-3.5 text-rose-500" /> },
+        { id: 'katalog-harga', label: 'Harga Grosir & Member', icon: <Layers className="w-3.5 h-3.5 text-blue-500" /> },
       ]
     },
     gudang: {
       id: 'gudang',
-      label: t('seller.inventoriGudang'),
+      label: 'Inventori & Gudang',
       items: [
-        { id: 'gudang', label: t('seller.stokGudang'), icon: <Box className="w-3.5 h-3.5 text-indigo-500" /> },
-        { id: 'penerimaan-barang', label: t('seller.penerimaanBarang'), icon: <Package className="w-3.5 h-3.5 text-emerald-500" /> },
-        { id: 'stock-opname', label: t('seller.stockOpname'), icon: <ClipboardCheck className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'gudang', label: 'Stok Barang & Gudang', icon: <Box className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'gudang-multi', label: 'Multi-Gudang Seller', icon: <Store className="w-3.5 h-3.5 text-sky-500" /> },
+        { id: 'gudang-po', label: 'Purchase Order (PO)', icon: <ShoppingBag className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'penerimaan-barang', label: 'Penerimaan Barang', icon: <Truck className="w-3.5 h-3.5 text-blue-500" /> },
+        { id: 'gudang-mutasi', label: 'Riwayat Mutasi Stok', icon: <RefreshCw className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'gudang-transfer', label: 'Transfer Antar Gudang', icon: <ArrowRightLeft className="w-3.5 h-3.5 text-violet-500" /> },
+        { id: 'stock-opname', label: 'Stock Opname Fisik', icon: <ClipboardCheck className="w-3.5 h-3.5 text-teal-500" /> },
+        { id: 'gudang-retur-supplier', label: 'Retur ke Supplier', icon: <Truck className="w-3.5 h-3.5 text-rose-500" /> },
+      ]
+    },
+    transaksi: {
+      id: 'transaksi',
+      label: 'Penjualan & Kasir',
+      items: [
+        { id: 'transaksi-riwayat', label: 'Riwayat Transaksi POS', icon: <FileText className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'transaksi-shift', label: 'Shift & Laci Kasir', icon: <Wallet className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'transaksi-retur-pelanggan', label: 'Retur dari Pelanggan', icon: <RefreshCw className="w-3.5 h-3.5 text-amber-500" /> },
+      ]
+    },
+    crm: {
+      id: 'crm',
+      label: 'Pelanggan & Supplier',
+      items: [
+        { id: 'pelanggan', label: 'Data Pelanggan (CRM)', icon: <Users className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'crm-supplier', label: 'Data Supplier', icon: <Truck className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'crm-cabang', label: 'Daftar Cabang / Toko', icon: <Store className="w-3.5 h-3.5 text-amber-500" /> },
       ]
     },
     keuangan: {
       id: 'keuangan',
-      label: t('seller.keuanganLaporan'),
+      label: 'Keuangan & Buku Kas',
       items: [
-        { id: 'keuangan-pengeluaran', label: t('seller.pengeluaran'), icon: <TrendingDown className="w-3.5 h-3.5 text-rose-500" /> },
-        { id: 'keuangan-pemasukan', label: t('seller.pemasukanLain'), icon: <TrendingUp className="w-3.5 h-3.5 text-emerald-500" /> },
-        { id: 'keuangan-kas', label: t('seller.bukuKas'), icon: <Coins className="w-3.5 h-3.5 text-amber-500" /> },
-        { id: 'keuangan-laporan', label: t('seller.labaRugi'), icon: <FileSpreadsheet className="w-3.5 h-3.5 text-blue-500" /> },
+        { id: 'keuangan-laba-rugi', label: 'Ringkasan Laba Rugi', icon: <BarChart2 className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'keuangan-kas', label: 'Catatan Kas & Bank', icon: <Coins className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'keuangan-hutang', label: 'Hutang ke Supplier', icon: <ArrowDownLeft className="w-3.5 h-3.5 text-rose-500" /> },
+        { id: 'keuangan-piutang', label: 'Piutang Pelanggan', icon: <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'keuangan-mutasi', label: 'Mutasi Antar Kas', icon: <ArrowRightLeft className="w-3.5 h-3.5 text-blue-500" /> },
+        { id: 'keuangan-arus-kas', label: 'Laporan Arus Kas', icon: <RefreshCw className="w-3.5 h-3.5 text-purple-500" /> },
+        { id: 'keuangan-pajak', label: 'Laporan Pajak PPN', icon: <FileText className="w-3.5 h-3.5 text-slate-500" /> },
+        { id: 'keuangan-kategori', label: 'Kategori Keuangan', icon: <Tag className="w-3.5 h-3.5 text-cyan-500" /> },
       ]
     },
-    master: {
-      id: 'master',
-      label: t('seller.masterData'),
+    laporan: {
+      id: 'laporan',
+      label: 'Laporan Bisnis',
       items: [
-        { id: 'master-data', label: t('seller.masterKategori'), icon: <Database className="w-3.5 h-3.5 text-indigo-500" /> },
-        { id: 'pelanggan', label: t('seller.dataPelanggan'), icon: <Users className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'keuangan-laporan', label: 'Laporan Penjualan', icon: <BarChart2 className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'laporan-produk', label: 'Produk Terlaris', icon: <ShoppingBag className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'laporan-margin', label: 'Margin Keuntungan', icon: <TrendingUp className="w-3.5 h-3.5 text-blue-500" /> },
+        { id: 'laporan-pelanggan', label: 'Analitik Pelanggan', icon: <Users className="w-3.5 h-3.5 text-purple-500" /> },
+        { id: 'laporan-konsinyasi', label: 'Laporan Konsinyasi', icon: <Package className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'laporan-shift', label: 'Laporan Kasir & Shift', icon: <Wallet className="w-3.5 h-3.5 text-teal-500" /> },
+        { id: 'laporan-pembayaran', label: 'Metode Pembayaran', icon: <CreditCard className="w-3.5 h-3.5 text-rose-500" /> },
       ]
     },
     settings: {
       id: 'settings',
-      label: t('seller.pengaturanSistem'),
+      label: 'Pengaturan & Sistem',
       items: [
-        { id: 'settings-app', label: t('seller.pengaturanAplikasi'), icon: <Store className="w-3.5 h-3.5 text-orange-500" /> },
-        { id: 'settings-account', label: t('seller.akunSaya'), icon: <User className="w-3.5 h-3.5 text-sky-500" /> },
-        { id: 'settings-roles', label: t('seller.hakAksesPeran'), icon: <Shield className="w-3.5 h-3.5 text-violet-500" /> },
-        { id: 'settings-users', label: t('seller.manajemenUser'), icon: <Users className="w-3.5 h-3.5 text-teal-500" /> },
-        { id: 'backup', label: 'Backup Data Toko', icon: <Archive className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'setting-staff', label: 'Data Pegawai & Staf', icon: <Users className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'setting-roles', label: 'Hak Akses & Peran', icon: <Shield className="w-3.5 h-3.5 text-emerald-500" /> },
+        { id: 'setting-store', label: 'Pengaturan Toko', icon: <Store className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'backup', label: 'Backup Data Toko', icon: <Archive className="w-3.5 h-3.5 text-purple-500" /> },
+        { id: 'developer-api', label: 'Integrasi API & Webhook', icon: <Zap className="w-3.5 h-3.5 text-blue-500" /> },
+        { id: 'panduan', label: 'Panduan SOP Toko', icon: <BookOpen className="w-3.5 h-3.5 text-teal-500" /> },
+        { id: 'langganan', label: 'Paket Langganan', icon: <CreditCard className="w-3.5 h-3.5 text-rose-500" /> },
+        { id: 'support', label: 'Pusat Bantuan', icon: <HelpCircle className="w-3.5 h-3.5 text-cyan-500" /> },
       ]
     }
   };
@@ -256,95 +328,91 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
     <aside
-      className={`fixed top-0 left-0 z-40 h-screen bg-white dark:bg-[#101828] transition-all duration-300 flex flex-col 
+      className={`fixed top-0 left-0 z-40 h-screen bg-white dark:bg-[#101828] transition-all duration-300 flex flex-col border-r border-slate-100 dark:border-slate-800
       ${collapsed ? 'md:w-[68px]' : 'md:w-64'} 
       w-64 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
     >
       {/* Brand Header */}
-      <div className="h-16 px-4 relative flex items-center justify-center">
-        <div className="flex items-center justify-center">
-          <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 p-1.5 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
+      <div className="h-16 px-4 relative flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-slate-800 p-1.5 border border-indigo-100 dark:border-slate-700 flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
             <img 
               src={user?.store_icon_url || bizoraLogo} 
               alt="Logo" 
               className="w-full h-full object-contain"
             />
           </div>
+          {!collapsed && (
+            <div className="flex flex-col min-w-0">
+              <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 truncate tracking-tight font-['Plus_Jakarta_Sans']">
+                {user?.store_name || 'Bizora Seller'}
+              </span>
+              <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                Omnichannel POS
+              </span>
+            </div>
+          )}
         </div>
         
         {/* Mobile close button */}
         <button 
-          className="md:hidden absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          className="md:hidden p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           onClick={() => setMobileMenuOpen?.(false)}
         >
-           <ChevronRight className="w-5 h-5 rotate-180" />
+          <ChevronRight className="w-5 h-5 rotate-180" />
         </button>
       </div>
 
       {/* Navigation Links */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1 custom-scrollbar">
-        {/* Dashboard */}
+      <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-1 custom-scrollbar">
+        {/* ── 1. Dashboard Utama ── */}
         <button
           onClick={() => setActiveTab('menu-utama')}
-          title={collapsed ? t('seller.dashboard') : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13.5px] transition-all duration-200 group ${
+          title={collapsed ? 'Dashboard' : ''}
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
             activeTab === 'menu-utama'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
-          <LayoutDashboard className={`w-5 h-5 shrink-0 ${activeTab === 'menu-utama' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.dashboard')}</span>}
+          <LayoutDashboard className={`w-4 h-4 shrink-0 ${activeTab === 'menu-utama' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+          {!collapsed && <span className="flex-1 text-left truncate">Dashboard</span>}
         </button>
 
-        {/* Kasir POS (Offline / Toko Fisik) */}
+        {/* ── 2. Kasir POS Toko Fisik ── */}
         <button
           onClick={() => setActiveTab('toko-offline')}
           title={collapsed ? 'Kasir (POS)' : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13.5px] transition-all duration-200 group ${
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
             activeTab === 'toko-offline'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold shadow-xs'
+              ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-semibold shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
-          <CreditCard className={`w-5 h-5 shrink-0 ${activeTab === 'toko-offline' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Kasir (POS)</span>}
+          <CreditCard className={`w-4 h-4 shrink-0 ${activeTab === 'toko-offline' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+          {!collapsed && <span className="flex-1 text-left truncate">Kasir POS (Offline)</span>}
           {!collapsed && (
-            <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+            <span className="text-[9.5px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded">
               POS
             </span>
           )}
         </button>
 
-        {/* Pesanan & E-Commerce */}
+        {/* ── 3. Pesanan Masuk ── */}
         <button
           onClick={() => setActiveTab('pesanan')}
-          title={collapsed ? t('seller.allOrders') : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
+          title={collapsed ? 'Semua Pesanan' : ''}
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
             activeTab === 'pesanan'
               ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
-          <ShoppingBag className={`w-5 h-5 shrink-0 ${activeTab === 'pesanan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.allOrders')}</span>}
+          <ShoppingBag className={`w-4 h-4 shrink-0 ${activeTab === 'pesanan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+          {!collapsed && <span className="flex-1 text-left truncate">Pesanan Masuk</span>}
         </button>
 
-        {/* Katalog Produk */}
-        <button
-          onClick={() => setActiveTab('katalog')}
-          title={collapsed ? t('seller.katalog') : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-            activeTab === 'katalog'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
-          }`}
-        >
-          <Package className={`w-5 h-5 shrink-0 ${activeTab === 'katalog' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.katalog')}</span>}
-        </button>
-
-        {/* Marketplace & Sync Section */}
+        {/* ── 4. Marketplace & Omnichannel ── */}
         <div>
           <button
             onClick={(e) => {
@@ -354,156 +422,86 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setMarketplaceOpen(!marketplaceOpen);
               }
             }}
-            title={collapsed ? t('seller.marketplace') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
+            title={collapsed ? 'Marketplace' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
               isMarketplaceActive || openSection === 'marketplace'
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
-            <Globe className={`w-5 h-5 shrink-0 ${isMarketplaceActive || openSection === 'marketplace' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.marketplace')}</span>}
+            <Globe className={`w-4 h-4 shrink-0 ${isMarketplaceActive || openSection === 'marketplace' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">Marketplace</span>}
             {!collapsed && (
               marketplaceOpen ? (
-                <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               )
             )}
           </button>
 
           {(!collapsed && marketplaceOpen) && (
-            <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('marketplace-dashboard')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'marketplace-dashboard'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Globe className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                <span>{t('seller.dashboardMarketplace')}</span>
+                <Globe className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Dashboard Multi-Channel</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-connected')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'marketplace-connected'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Link className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                <span>{t('seller.tokoTerhubung')}</span>
+                <Link className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Toko Terhubung</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-mapping')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'marketplace-mapping'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Layers className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
-                <span>{t('seller.mappingProduk')}</span>
+                <Layers className="w-3 h-3 text-blue-500 shrink-0" />
+                <span className="truncate">Mapping Master SKU</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-sync')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'marketplace-sync'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <RefreshCw className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                <span>{t('seller.sinkronisasi')}</span>
+                <RefreshCw className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Sinkronisasi Real-Time</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-history')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'marketplace-history'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <History className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
-                <span>{t('seller.riwayatSync')}</span>
+                <History className="w-3 h-3 text-purple-500 shrink-0" />
+                <span className="truncate">Riwayat Sync</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Gudang & Stok Section (Accordion) */}
-        <div>
-          <button
-            onClick={(e) => {
-              if (collapsed) {
-                handleGroupIconClick('gudang', e);
-              } else {
-                setGudangOpen(!gudangOpen);
-              }
-            }}
-            title={collapsed ? t('seller.inventoriGudang') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-              isGudangActive || openSection === 'gudang'
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-            }`}
-          >
-            <WarehouseIcon className={`w-5 h-5 shrink-0 ${isGudangActive || openSection === 'gudang' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.inventoriGudang')}</span>}
-            {!collapsed && (
-              gudangOpen ? (
-                <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              )
-            )}
-          </button>
-
-          {/* Gudang & Stok Sub-menu */}
-          {(!collapsed && gudangOpen) && (
-            <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
-              <button
-                onClick={() => setActiveTab('gudang')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
-                  activeTab === 'gudang'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Box className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                <span>{t('seller.stokGudang')}</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('penerimaan-barang')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
-                  activeTab === 'penerimaan-barang'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Package className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                <span>{t('seller.penerimaanBarang')}</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('stock-opname')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
-                  activeTab === 'stock-opname'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <ClipboardCheck className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                <span>{t('seller.stockOpname')}</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Shipping & Fulfillment */}
+        {/* ── 5. Pengiriman & Logistik ── */}
         <div>
           <button
             onClick={(e) => {
@@ -513,65 +511,453 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setShippingOpen(!shippingOpen);
               }
             }}
-            title={collapsed ? t('seller.pengiriman') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
+            title={collapsed ? 'Pengiriman' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
               isShippingActive || openSection === 'shipping'
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
-            <Truck className={`w-5 h-5 shrink-0 ${isShippingActive || openSection === 'shipping' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pengiriman')}</span>}
+            <Truck className={`w-4 h-4 shrink-0 ${isShippingActive || openSection === 'shipping' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">Pengiriman & Resi</span>}
             {!collapsed && (
               shippingOpen ? (
-                <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               )
             )}
           </button>
 
           {(!collapsed && shippingOpen) && (
-            <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('shipping-dashboard')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'shipping-dashboard'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Truck className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                <span>{t('seller.dashboardPengiriman', 'Dashboard Pengiriman')}</span>
+                <Truck className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Dashboard Pengiriman</span>
               </button>
               <button
                 onClick={() => setActiveTab('shipping-management')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'shipping-management'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Package className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                <span>{t('seller.kurirEkspedisi')}</span>
+                <Package className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Ekspedisi & Kurir</span>
               </button>
               <button
                 onClick={() => setActiveTab('shipping-packing')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'shipping-packing'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <ClipboardCheck className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                <span>{t('seller.packingResi')}</span>
+                <ClipboardCheck className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Packing Station & Cetak AWB</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('notification-center')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'notification-center'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Bell className="w-3 h-3 text-rose-500 shrink-0" />
+                <span className="truncate">Pusat Notifikasi</span>
               </button>
             </div>
           )}
         </div>
 
+        {/* ── 6. Katalog & Harga ── */}
+        <div>
+          <button
+            onClick={(e) => {
+              if (collapsed) {
+                handleGroupIconClick('katalog', e);
+              } else {
+                setKatalogOpen(!katalogOpen);
+              }
+            }}
+            title={collapsed ? 'Katalog' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
+              isKatalogActive || openSection === 'katalog'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <Package className={`w-4 h-4 shrink-0 ${isKatalogActive || openSection === 'katalog' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">Katalog & Harga</span>}
+            {!collapsed && (
+              katalogOpen ? (
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              )
+            )}
+          </button>
 
-        {/* Keuangan Section (Accordion) */}
+          {(!collapsed && katalogOpen) && (
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
+              <button
+                onClick={() => setActiveTab('katalog')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Package className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Daftar Produk</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-kategori')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-kategori'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Layers className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Kategori Produk</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-satuan')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-satuan'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Tag className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Satuan Barang</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-batch')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-batch'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Archive className="w-3 h-3 text-purple-500 shrink-0" />
+                <span className="truncate">Batch & Kadaluwarsa</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-serial')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-serial'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <QrCode className="w-3 h-3 text-cyan-500 shrink-0" />
+                <span className="truncate">Serial Number / IMEI</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-label')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-label'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Printer className="w-3 h-3 text-slate-500 shrink-0" />
+                <span className="truncate">Cetak Label Barcode</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-diskon')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-diskon'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Tag className="w-3 h-3 text-rose-500 shrink-0" />
+                <span className="truncate">Kode Diskon & Promo</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-harga')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-harga'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Layers className="w-3 h-3 text-blue-500 shrink-0" />
+                <span className="truncate">Harga Grosir & Member</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── 7. Inventori & Gudang ── */}
+        <div>
+          <button
+            onClick={(e) => {
+              if (collapsed) {
+                handleGroupIconClick('gudang', e);
+              } else {
+                setGudangOpen(!gudangOpen);
+              }
+            }}
+            title={collapsed ? 'Inventori' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
+              isGudangActive || openSection === 'gudang'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <WarehouseIcon className={`w-4 h-4 shrink-0 ${isGudangActive || openSection === 'gudang' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">Inventori & Gudang</span>}
+            {!collapsed && (
+              gudangOpen ? (
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              )
+            )}
+          </button>
+
+          {(!collapsed && gudangOpen) && (
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
+              <button
+                onClick={() => setActiveTab('gudang')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'gudang'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Box className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Stok Barang & Nilai</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('gudang-multi')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'gudang-multi'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Store className="w-3 h-3 text-sky-500 shrink-0" />
+                <span className="truncate">Multi-Gudang Seller</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('gudang-po')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'gudang-po'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <ShoppingBag className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Purchase Order (PO)</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('penerimaan-barang')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'penerimaan-barang'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Truck className="w-3 h-3 text-blue-500 shrink-0" />
+                <span className="truncate">Penerimaan Barang</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('gudang-mutasi')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'gudang-mutasi'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <RefreshCw className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Riwayat Mutasi Stok</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('gudang-transfer')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'gudang-transfer'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <ArrowRightLeft className="w-3 h-3 text-violet-500 shrink-0" />
+                <span className="truncate">Transfer Antar Gudang</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('stock-opname')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'stock-opname'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <ClipboardCheck className="w-3 h-3 text-teal-500 shrink-0" />
+                <span className="truncate">Stock Opname Fisik</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('gudang-retur-supplier')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'gudang-retur-supplier'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Truck className="w-3 h-3 text-rose-500 shrink-0" />
+                <span className="truncate">Retur ke Supplier</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── 8. Penjualan & Kasir POS ── */}
+        <div>
+          <button
+            onClick={(e) => {
+              if (collapsed) {
+                handleGroupIconClick('transaksi', e);
+              } else {
+                setTransaksiOpen(!transaksiOpen);
+              }
+            }}
+            title={collapsed ? 'Transaksi' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
+              isTransaksiActive || openSection === 'transaksi'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <FileText className={`w-4 h-4 shrink-0 ${isTransaksiActive || openSection === 'transaksi' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">Transaksi & Kasir</span>}
+            {!collapsed && (
+              transaksiOpen ? (
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              )
+            )}
+          </button>
+
+          {(!collapsed && transaksiOpen) && (
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
+              <button
+                onClick={() => setActiveTab('transaksi-riwayat')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'transaksi-riwayat'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <FileText className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Riwayat Transaksi POS</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('transaksi-shift')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'transaksi-shift'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Wallet className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Shift & Laci Kasir</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('transaksi-retur-pelanggan')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'transaksi-retur-pelanggan'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <RefreshCw className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Retur dari Pelanggan</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── 9. Pelanggan & Supplier CRM ── */}
+        <div>
+          <button
+            onClick={(e) => {
+              if (collapsed) {
+                handleGroupIconClick('crm', e);
+              } else {
+                setCrmOpen(!crmOpen);
+              }
+            }}
+            title={collapsed ? 'Mitra' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
+              isCrmActive || openSection === 'crm'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <Users className={`w-4 h-4 shrink-0 ${isCrmActive || openSection === 'crm' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">Pelanggan & Supplier</span>}
+            {!collapsed && (
+              crmOpen ? (
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              )
+            )}
+          </button>
+
+          {(!collapsed && crmOpen) && (
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
+              <button
+                onClick={() => setActiveTab('pelanggan')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'pelanggan'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Users className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Data Pelanggan (CRM)</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('crm-supplier')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'crm-supplier'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Truck className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Data Supplier</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('crm-cabang')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'crm-cabang'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Store className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Daftar Cabang & Toko</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── 10. Keuangan & Kas ── */}
         <div>
           <button
             onClick={(e) => {
@@ -581,193 +967,230 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setKeuanganOpen(!keuanganOpen);
               }
             }}
-            title={collapsed ? t('seller.keuanganLaporan') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
+            title={collapsed ? 'Keuangan' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
               isKeuanganActive || openSection === 'keuangan'
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`}
           >
-            <Wallet className={`w-5 h-5 shrink-0 ${isKeuanganActive || openSection === 'keuangan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.keuanganLaporan')}</span>}
+            <Wallet className={`w-4 h-4 shrink-0 ${isKeuanganActive || openSection === 'keuangan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">Keuangan & Kas</span>}
             {!collapsed && (
               keuanganOpen ? (
-                <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               )
             )}
           </button>
 
-          {/* Keuangan Sub-menu */}
           {(!collapsed && keuanganOpen) && (
-            <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
-                onClick={() => setActiveTab('keuangan-pengeluaran')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
-                  activeTab === 'keuangan-pengeluaran'
+                onClick={() => setActiveTab('keuangan-laba-rugi')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'keuangan-laba-rugi'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <TrendingDown className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
-                <span>{t('seller.pengeluaran')}</span>
+                <BarChart2 className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Ringkasan Laba Rugi</span>
               </button>
-
-              <button
-                onClick={() => setActiveTab('keuangan-pemasukan')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
-                  activeTab === 'keuangan-pemasukan'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                <span>{t('seller.pemasukanLain')}</span>
-              </button>
-
               <button
                 onClick={() => setActiveTab('keuangan-kas')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'keuangan-kas'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Coins className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                <span>{t('seller.bukuKas')}</span>
+                <Coins className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Catatan Kas & Bank</span>
               </button>
+              <button
+                onClick={() => setActiveTab('keuangan-hutang')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'keuangan-hutang'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <ArrowDownLeft className="w-3 h-3 text-rose-500 shrink-0" />
+                <span className="truncate">Hutang ke Supplier</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('keuangan-piutang')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'keuangan-piutang'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <ArrowUpRight className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Piutang Pelanggan</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('keuangan-mutasi')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'keuangan-mutasi'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <ArrowRightLeft className="w-3 h-3 text-blue-500 shrink-0" />
+                <span className="truncate">Mutasi Antar Kas</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('keuangan-arus-kas')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'keuangan-arus-kas'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <RefreshCw className="w-3 h-3 text-purple-500 shrink-0" />
+                <span className="truncate">Laporan Arus Kas</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('keuangan-pajak')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'keuangan-pajak'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <FileText className="w-3 h-3 text-slate-500 shrink-0" />
+                <span className="truncate">Laporan Pajak PPN</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('keuangan-kategori')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'keuangan-kategori'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Tag className="w-3 h-3 text-cyan-500 shrink-0" />
+                <span className="truncate">Kategori Keuangan</span>
+              </button>
+            </div>
+          )}
+        </div>
 
+        {/* ── 11. Laporan & Analitik Bisnis ── */}
+        <div>
+          <button
+            onClick={(e) => {
+              if (collapsed) {
+                handleGroupIconClick('laporan', e);
+              } else {
+                setLaporanOpen(!laporanOpen);
+              }
+            }}
+            title={collapsed ? 'Laporan' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
+              isLaporanActive || openSection === 'laporan'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <BarChart2 className={`w-4 h-4 shrink-0 ${isLaporanActive || openSection === 'laporan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">Laporan Bisnis</span>}
+            {!collapsed && (
+              laporanOpen ? (
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              )
+            )}
+          </button>
+
+          {(!collapsed && laporanOpen) && (
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('keuangan-laporan')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'keuangan-laporan'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
-                <span>{t('seller.labaRugi')}</span>
+                <BarChart2 className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Laporan Penjualan</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('laporan-produk')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'laporan-produk'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <ShoppingBag className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Produk Terlaris</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('laporan-margin')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'laporan-margin'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <TrendingUp className="w-3 h-3 text-blue-500 shrink-0" />
+                <span className="truncate">Margin Keuntungan</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('laporan-pelanggan')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'laporan-pelanggan'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Users className="w-3 h-3 text-purple-500 shrink-0" />
+                <span className="truncate">Analitik Pelanggan</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('laporan-konsinyasi')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'laporan-konsinyasi'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Package className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Laporan Konsinyasi</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('laporan-shift')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'laporan-shift'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Wallet className="w-3 h-3 text-teal-500 shrink-0" />
+                <span className="truncate">Laporan Kasir & Shift</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('laporan-pembayaran')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'laporan-pembayaran'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <CreditCard className="w-3 h-3 text-rose-500 shrink-0" />
+                <span className="truncate">Metode Pembayaran</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Data Master Section (Accordion) */}
-        <div>
-          <button
-            onClick={(e) => {
-              if (collapsed) {
-                handleGroupIconClick('master', e);
-              } else {
-                setMasterOpen(!masterOpen);
-              }
-            }}
-            title={collapsed ? t('seller.dataMaster') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-              isMasterActive || openSection === 'master'
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-            }`}
-          >
-            <Database className={`w-5 h-5 shrink-0 ${isMasterActive || openSection === 'master' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.dataMaster')}</span>}
-            {!collapsed && (
-              masterOpen ? (
-                <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              )
-            )}
-          </button>
-
-          {/* Data Master Sub-menu */}
-          {(!collapsed && masterOpen) && (
-            <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
-              <button
-                onClick={() => setActiveTab('master-data')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
-                  activeTab === 'master-data'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Database className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                <span>{t('seller.masterKategori')}</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('pelanggan')}
-                className={`w-full flex items-start gap-2 px-3 py-2 rounded-full text-[12.5px] font-medium transition-all duration-150 text-left ${
-                  activeTab === 'pelanggan'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Users className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                <span>{t('seller.dataPelanggan')}</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Notification Center */}
-        <button
-          onClick={() => setActiveTab('notification-center')}
-          title={collapsed ? t('seller.pusatNotifikasi') : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-            activeTab === 'notification-center'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
-          }`}
-        >
-          <Bell className={`w-5 h-5 shrink-0 ${activeTab === 'notification-center' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pusatNotifikasi')}</span>}
-        </button>
-
-        {/* Buku Panduan & SOP */}
-        <button
-          onClick={() => setActiveTab('panduan')}
-          title={collapsed ? 'Buku Panduan & SOP' : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-            activeTab === 'panduan'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
-          }`}
-        >
-          <BookOpen className={`w-5 h-5 shrink-0 ${activeTab === 'panduan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Buku Panduan & SOP</span>}
-        </button>
-
-        {/* Integrasi API & Webhook */}
-        <button
-          onClick={() => setActiveTab('developer-api')}
-          title={collapsed ? 'Integrasi API & Webhook' : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-            activeTab === 'developer-api'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
-          }`}
-        >
-          <Code2 className={`w-5 h-5 shrink-0 ${activeTab === 'developer-api' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Integrasi API & Webhook</span>}
-        </button>
-
-        {/* Paket & Langganan */}
-        <button
-          onClick={() => setActiveTab('langganan')}
-          title={collapsed ? 'Paket & Langganan' : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-            activeTab === 'langganan'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
-          }`}
-        >
-          <CreditCard className={`w-5 h-5 shrink-0 ${activeTab === 'langganan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Paket & Langganan</span>}
-        </button>
-
-        {/* Pengaturan Sistem */}
+        {/* ── 12. Pengaturan & Sistem ── */}
         <div>
           <button
             onClick={(e) => {
@@ -777,99 +1200,117 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setSettingsOpen(!settingsOpen);
               }
             }}
-            title={collapsed ? t('seller.pengaturanSistem') : ''}
-            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
+            title={collapsed ? 'Pengaturan' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
               isSettingsActive || openSection === 'settings'
-                ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
+                ? 'bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
-            <Settings className={`w-5 h-5 shrink-0 ${isSettingsActive || openSection === 'settings' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">{t('seller.pengaturanSistem')}</span>}
+            <Settings className={`w-4 h-4 shrink-0 ${isSettingsActive || openSection === 'settings' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate">Pengaturan & Sistem</span>}
             {!collapsed && (
               settingsOpen ? (
-                <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               )
             )}
           </button>
 
-          {/* Settings Sub-menu */}
           {(!collapsed && settingsOpen) && (
-            <div className="ml-4 pl-3 border-l-2 border-indigo-100 dark:border-indigo-900/40 my-1 space-y-1">
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
-                onClick={() => setActiveTab('settings-app')}
-                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
-                  activeTab === 'settings-app'
-                    ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
+                onClick={() => setActiveTab('setting-staff')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'setting-staff' || activeTab === 'settings-users'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Store className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
-                <span>{t('seller.pengaturanAplikasi')}</span>
+                <Users className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Data Pegawai & Staf</span>
               </button>
               <button
-                onClick={() => setActiveTab('settings-account')}
-                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
-                  activeTab === 'settings-account'
-                    ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
+                onClick={() => setActiveTab('setting-roles')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'setting-roles' || activeTab === 'settings-roles'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <User className="w-3.5 h-3.5 text-sky-500 shrink-0 mt-0.5" />
-                <span>{t('seller.akunSaya')}</span>
+                <Shield className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Hak Akses & Peran</span>
               </button>
               <button
-                onClick={() => setActiveTab('settings-roles')}
-                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
-                  activeTab === 'settings-roles'
-                    ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
+                onClick={() => setActiveTab('setting-store')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'setting-store' || activeTab === 'settings-app'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Shield className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />
-                <span>{t('seller.hakAksesPeran')}</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('settings-users')}
-                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
-                  activeTab === 'settings-users'
-                    ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Users className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
-                <span>{t('seller.manajemenUser')}</span>
+                <Store className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Pengaturan Toko</span>
               </button>
               <button
                 onClick={() => setActiveTab('backup')}
-                className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-full text-[12.5px] font-semibold transition-all duration-200 text-left ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'backup'
-                    ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/30'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <Archive className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                <span>Backup Data Toko</span>
+                <Archive className="w-3 h-3 text-purple-500 shrink-0" />
+                <span className="truncate">Backup Data Toko</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('developer-api')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'developer-api'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Zap className="w-3 h-3 text-blue-500 shrink-0" />
+                <span className="truncate">Integrasi API & Webhook</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('panduan')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'panduan'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <BookOpen className="w-3 h-3 text-teal-500 shrink-0" />
+                <span className="truncate">Panduan SOP Toko</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('langganan')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'langganan'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <CreditCard className="w-3 h-3 text-rose-500 shrink-0" />
+                <span className="truncate">Paket Langganan</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('support')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'support'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <HelpCircle className="w-3 h-3 text-cyan-500 shrink-0" />
+                <span className="truncate">Pusat Bantuan</span>
               </button>
             </div>
           )}
         </div>
-
-        {/* Backup Data Toko (Direct Menu Item) */}
-        <button
-          onClick={() => setActiveTab('backup')}
-          title={collapsed ? 'Backup Data Toko' : ''}
-          className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-full font-medium text-[13.5px] transition-all duration-200 group ${
-            activeTab === 'backup'
-              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
-          }`}
-        >
-          <Archive className={`w-5 h-5 shrink-0 ${activeTab === 'backup' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-          {!collapsed && <span className="flex-1 text-left truncate">Backup Data Toko</span>}
-        </button>
       </div>
     </aside>
 

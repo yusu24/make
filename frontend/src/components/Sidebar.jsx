@@ -340,54 +340,101 @@ const SELLER_NAV_ITEMS = [
     section: 'Menu Utama',
     icon: <LayoutDashboard size={20} />,
     items: [
-      { path: '/seller/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard' },
+      { path: '/seller/dashboard', icon: <LayoutDashboard size={24} />, label: 'Dashboard Seller' },
       { path: '/seller/pos', icon: <CreditCard size={24} />, label: 'Kasir POS (Offline)' },
     ]
   },
   {
-    section: 'Pesanan & E-Commerce',
-    icon: <ShoppingCart size={20} />,
+    section: 'Omnichannel & Pesanan',
+    icon: <Globe size={20} />,
     items: [
-      { path: '/seller/orders', icon: <ShoppingCart size={24} />, label: 'Semua Pesanan' },
+      { path: '/seller/orders', icon: <ShoppingCart size={24} />, label: 'Pesanan Omnichannel' },
+      { path: '/seller/marketplace', icon: <Globe size={24} />, label: 'Marketplace Integration' },
+      { path: '/seller/shipping', icon: <Truck size={24} />, label: 'Pengiriman & Resi AWB' },
     ]
   },
   {
-    section: 'Katalog & Gudang',
+    section: 'Katalog & Harga',
     icon: <Package size={20} />,
     items: [
-      { path: '/seller/products', icon: <Package size={24} />, label: 'Katalog Produk' },
-      { path: '/seller/inventory', icon: <Box size={24} />, label: 'Manajemen Gudang' },
+      { path: '/seller/products', icon: <Package size={24} />, label: 'Daftar Produk & Varian' },
+      { path: '/seller/categories', icon: <Layers size={24} />, label: 'Kategori Produk' },
+      { path: '/seller/units', icon: <Tag size={24} />, label: 'Satuan Barang' },
+      { path: '/seller/batches', icon: <Archive size={24} />, label: 'Batch & Kadaluwarsa' },
+      { path: '/seller/print-labels', icon: <Printer size={24} />, label: 'Cetak Barcode' },
+      { path: '/seller/discounts', icon: <Tag size={24} />, label: 'Kode Diskon & Promo' },
+      { path: '/seller/pricelists', icon: <Layers size={24} />, label: 'Harga Grosir & Member' },
     ]
   },
   {
-    section: 'Keuangan',
+    section: 'Inventori & Gudang',
+    icon: <Box size={20} />,
+    items: [
+      { path: '/seller/inventory', icon: <Box size={24} />, label: 'Stok Multi-Gudang' },
+      { path: '/seller/purchase-orders', icon: <ShoppingCart size={24} />, label: 'Purchase Order (PO)' },
+      { path: '/seller/stock', icon: <Inbox size={24} />, label: 'Penerimaan Barang' },
+      { path: '/seller/stock-movements', icon: <RefreshCw size={24} />, label: 'Riwayat Mutasi Stok' },
+      { path: '/seller/stock-transfers', icon: <ArrowRightLeft size={24} />, label: 'Transfer Antar Cabang' },
+      { path: '/seller/stock-opname', icon: <ClipboardList size={24} />, label: 'Stock Opname' },
+      { path: '/seller/supplier-returns', icon: <Truck size={24} />, label: 'Retur ke Supplier' },
+    ]
+  },
+  {
+    section: 'Penjualan & Kasir',
+    icon: <Receipt size={20} />,
+    items: [
+      { path: '/seller/transactions', icon: <ClipboardList size={24} />, label: 'Riwayat Transaksi POS' },
+      { path: '/seller/shifts', icon: <Wallet size={24} />, label: 'Shift & Laci Kasir' },
+      { path: '/seller/customer-returns', icon: <RefreshCw size={24} />, label: 'Retur Pelanggan' },
+    ]
+  },
+  {
+    section: 'Pelanggan & Cabang',
+    icon: <Users size={20} />,
+    items: [
+      { path: '/seller/customers', icon: <Users size={24} />, label: 'Data Pelanggan' },
+      { path: '/seller/suppliers', icon: <Truck size={24} />, label: 'Data Supplier' },
+      { path: '/seller/outlets', icon: <Store size={24} />, label: 'Daftar Cabang / Outlet' },
+    ]
+  },
+  {
+    section: 'Keuangan & Kas',
     icon: <Wallet size={20} />,
     items: [
-      { path: '/seller/incomes', icon: <TrendingUp size={24} />, label: 'Pemasukan Lain' },
-      { path: '/seller/expenses', icon: <TrendingDown size={24} />, label: 'Pengeluaran' },
-      { path: '/seller/finance', icon: <BarChart2 size={24} />, label: 'Ringkasan Kas' },
-      { path: '/seller/sales-report', icon: <FileText size={24} />, label: 'Laporan Penjualan' },
+      { path: '/seller/finance/summary', icon: <BarChart2 size={24} />, label: 'Laba Rugi' },
+      { path: '/seller/finance/cash', icon: <TrendingUp size={24} />, label: 'Catatan Kas' },
+      { path: '/seller/finance/payables', icon: <ArrowDownLeft size={24} />, label: 'Hutang Supplier' },
+      { path: '/seller/finance/receivables', icon: <ArrowUpRight size={24} />, label: 'Piutang Pelanggan' },
+      { path: '/seller/finance/transfers', icon: <ArrowRightLeft size={24} />, label: 'Mutasi Kas' },
+      { path: '/seller/finance/cash-flow', icon: <RefreshCw size={24} />, label: 'Arus Kas' },
+      { path: '/seller/finance/tax-report', icon: <FileText size={24} />, label: 'Laporan Pajak' },
     ]
   },
   {
-    section: 'Master Data',
-    icon: <Database size={20} />,
+    section: 'Laporan Bisnis',
+    icon: <BarChart2 size={20} />,
     items: [
-      { path: '/seller/suppliers', icon: <Truck size={24} />, label: 'Master Data Supplier' },
-      { path: '/seller/customers', icon: <Users size={24} />, label: 'Data Pelanggan' },
-      { path: '/seller/purchases', icon: <Truck size={24} />, label: 'Penerimaan Barang' },
-      { path: '/seller/stock-opname', icon: <ClipboardList size={24} />, label: 'Stock Opname' },
+      { path: '/seller/reports/sales', icon: <BarChart2 size={24} />, label: 'Laporan Penjualan' },
+      { path: '/seller/reports/products', icon: <ShoppingCart size={24} />, label: 'Laporan Produk Terlaris' },
+      { path: '/seller/reports/margins', icon: <TrendingUp size={24} />, label: 'Laporan Margin' },
+      { path: '/seller/reports/customers', icon: <Users size={24} />, label: 'Laporan Pelanggan' },
+      { path: '/seller/reports/consignment', icon: <Package size={24} />, label: 'Laporan Konsinyasi' },
+      { path: '/seller/reports/shifts', icon: <Wallet size={24} />, label: 'Laporan Kasir & Shift' },
+      { path: '/seller/reports/payments', icon: <CreditCard size={24} />, label: 'Laporan Pembayaran' },
     ]
   },
   {
-    section: 'Pengaturan',
+    section: 'Pengaturan & Sistem',
     icon: <Settings size={20} />,
     items: [
-      { path: '/seller/settings/app', icon: <Store size={24} />, label: 'Pengaturan Aplikasi' },
-      { path: '/seller/settings/account', icon: <User size={24} />, label: 'Akun Saya' },
-      { path: '/seller/settings/roles', icon: <Shield size={24} />, label: 'Hak Akses & Peran' },
-      { path: '/seller/settings/users', icon: <Users size={24} />, label: 'Manajemen User' },
-      { path: '/seller/backup', icon: <Archive size={24} />, label: 'Backup Data Toko' },
+      { path: '/seller/staff', icon: <Users size={24} />, label: 'Data Pegawai' },
+      { path: '/seller/roles', icon: <Shield size={24} />, label: 'Jabatan & Hak Akses' },
+      { path: '/seller/settings', icon: <Settings size={24} />, label: 'Pengaturan Toko' },
+      { path: '/seller/backup', icon: <Archive size={24} />, label: 'Cadangan Data (Backup)' },
+      { path: '/seller/developer-api', icon: <Zap size={24} />, label: 'Integrasi API & Webhook' },
+      { path: '/seller/guide', icon: <BookOpen size={24} />, label: 'Panduan & SOP Toko' },
+      { path: '/seller/subscription', icon: <CreditCard size={24} />, label: 'Paket Langganan' },
+      { path: '/seller/support', icon: <HelpCircle size={24} />, label: 'Pusat Bantuan' },
     ]
   }
 ]

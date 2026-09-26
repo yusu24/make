@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { Menu } from '@/constants/icons';
 import { ActiveTab, Expense, Income, Order, Product, Warehouse, StockMovement, CashSummaryItem, StoreChannel } from './types';
 import '../seller.css';
 import { useAuth } from '../../../contexts/AuthContext';
+import { PageLoader } from '../../../routes/guards';
 import {
   INITIAL_WAREHOUSES,
   INITIAL_STOCK_MOVEMENTS,
@@ -19,38 +20,6 @@ import { api } from '../../../lib/api';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 
-import { MainDashboardView } from './components/views/MainDashboardView';
-import { ExpensesView } from './components/views/ExpensesView';
-import { OrdersView } from './components/views/OrdersView';
-import { CatalogView } from './components/views/CatalogView';
-import { WarehouseView } from './components/views/WarehouseView';
-import { PurchaseHistoryView } from './components/views/PurchaseHistoryView';
-import { StockOpnameView } from './components/views/StockOpnameView';
-import { PosOfflineView } from './components/views/PosOfflineView';
-import { OtherIncomeView } from './components/views/OtherIncomeView';
-import { CashSummaryView } from './components/views/CashSummaryView';
-import { SalesReportView } from './components/views/SalesReportView';
-import { MasterDataView } from './components/views/MasterDataView';
-import { CustomerView } from './components/views/CustomerView';
-import { AppSettingsView } from './components/views/AppSettingsView';
-import { AccountSettingsView } from './components/views/AccountSettingsView';
-import { RolesPermissionsView } from './components/views/RolesPermissionsView';
-import { UserManagementView } from './components/views/UserManagementView';
-
-import { MarketplaceDashboardView } from './components/omnichannel/MarketplaceDashboardView';
-import { ConnectedAccountsView } from './components/omnichannel/ConnectedAccountsView';
-import { ProductMappingView } from './components/omnichannel/ProductMappingView';
-import { SyncCenterView } from './components/omnichannel/SyncCenterView';
-import { SyncHistoryView } from './components/omnichannel/SyncHistoryView';
-import { ShippingDashboardView } from './components/omnichannel/ShippingDashboardView';
-import { ShippingManagementView } from './components/omnichannel/ShippingManagementView';
-import { PackingImprovementView } from './components/omnichannel/PackingImprovementView';
-import { NotificationCenterView } from './components/omnichannel/NotificationCenterView';
-import { GuideView } from './components/views/GuideView';
-import { SellerSubscriptionView } from './components/views/SellerSubscriptionView';
-import { BackupView } from './components/views/BackupView';
-import { TenantDeveloperPortal } from '../../../components/TenantDeveloperPortal';
-
 import { AddExpenseModal } from './components/modals/AddExpenseModal';
 import { AddIncomeModal } from './components/modals/AddIncomeModal';
 import { AddWarehouseModal } from './components/modals/AddWarehouseModal';
@@ -64,65 +33,141 @@ import { SellerAiFab } from './components/SellerAiFab';
 import { SellerMobileBottomNav } from './components/SellerMobileBottomNav';
 import { SellerMobileBottomSheet } from './components/SellerMobileBottomSheet';
 
-// Pure, one-directional URL <-> tab mapping. activeTab is derived FROM the
-// URL on every render (see below) instead of being separate React state kept
-// in sync via two competing effects — that older two-effect setup could
-// navigate() in response to a tab change, which changed the URL, which
-// re-ran the path-watching effect, which could set the tab again, bouncing
-// between whatever tab was clicked and the default 'menu-utama' before it
-// settled. Deriving the tab straight from the URL each render makes that
-// class of bug impossible: there's only one source of truth.
-const pathToTab = (p: string): ActiveTab => {
+// Pure, one-directional URL <-> tab mapping.
+export const pathToTab = (p: string): ActiveTab => {
+  // POS
   if (p.includes('/pos')) return 'toko-offline';
+
+  // Orders
   if (p.includes('/orders')) return 'pesanan';
+
+  // Omnichannel Marketplace
   if (p.includes('/marketplace/connected')) return 'marketplace-connected';
   if (p.includes('/marketplace/mapping')) return 'marketplace-mapping';
   if (p.includes('/marketplace/sync')) return 'marketplace-sync';
   if (p.includes('/marketplace/history')) return 'marketplace-history';
   if (p.includes('/marketplace')) return 'marketplace-dashboard';
+
+  // Shipping
   if (p.includes('/shipping/dashboard')) return 'shipping-dashboard';
   if (p.includes('/shipping/management')) return 'shipping-management';
   if (p.includes('/shipping/packing')) return 'shipping-packing';
   if (p.includes('/notifications')) return 'notification-center';
+
+  // Katalog & Harga
+  if (p.includes('/categories')) return 'katalog-kategori';
+  if (p.includes('/units')) return 'katalog-satuan';
+  if (p.includes('/batches')) return 'katalog-batch';
+  if (p.includes('/serials')) return 'katalog-serial';
+  if (p.includes('/print-labels')) return 'katalog-label';
+  if (p.includes('/discounts')) return 'katalog-diskon';
+  if (p.includes('/pricelists')) return 'katalog-harga';
   if (p.includes('/products')) return 'katalog';
-  if (p.includes('/purchases')) return 'penerimaan-barang';
+
+  // Inventori & Gudang
+  if (p.includes('/warehouses')) return 'gudang-multi';
+  if (p.includes('/purchase-orders') || p.includes('/purchases')) return 'gudang-po';
+  if (p.includes('/stock-movements')) return 'gudang-mutasi';
+  if (p.includes('/stock-transfers')) return 'gudang-transfer';
+  if (p.includes('/supplier-returns')) return 'gudang-retur-supplier';
   if (p.includes('/stock-opname')) return 'stock-opname';
-  if (p.includes('/inventory') || p.includes('/stock')) return 'gudang';
-  if (p.includes('/incomes')) return 'keuangan-pemasukan';
-  if (p.includes('/expenses')) return 'keuangan-pengeluaran';
-  if (p.includes('/finance')) return 'keuangan-kas';
-  if (p.includes('/sales-report')) return 'keuangan-laporan';
-  if (p.includes('/suppliers')) return 'master-data';
+  if (p.includes('/stock')) return 'penerimaan-barang';
+  if (p.includes('/inventory')) return 'gudang';
+
+  // Transaksi
+  if (p.includes('/transactions')) return 'transaksi-riwayat';
+  if (p.includes('/shifts')) return 'transaksi-shift';
+  if (p.includes('/customer-returns')) return 'transaksi-retur-pelanggan';
+
+  // Pelanggan & Mitra
   if (p.includes('/customers')) return 'pelanggan';
+  if (p.includes('/suppliers')) return 'crm-supplier';
+  if (p.includes('/outlets')) return 'crm-cabang';
+
+  // Keuangan
+  if (p.includes('/finance/cash') || p.includes('/incomes') || p.includes('/expenses')) return 'keuangan-kas';
+  if (p.includes('/finance/payables')) return 'keuangan-hutang';
+  if (p.includes('/finance/receivables')) return 'keuangan-piutang';
+  if (p.includes('/finance/transfers')) return 'keuangan-mutasi';
+  if (p.includes('/finance/cash-flow')) return 'keuangan-arus-kas';
+  if (p.includes('/finance/tax-report')) return 'keuangan-pajak';
+  if (p.includes('/finance-categories')) return 'keuangan-kategori';
+  if (p.includes('/finance')) return 'keuangan-laba-rugi';
+
+  // Laporan
+  if (p.includes('/reports/products')) return 'laporan-produk';
+  if (p.includes('/reports/margins')) return 'laporan-margin';
+  if (p.includes('/reports/customers')) return 'laporan-pelanggan';
+  if (p.includes('/reports/consignment')) return 'laporan-konsinyasi';
+  if (p.includes('/reports/shifts')) return 'laporan-shift';
+  if (p.includes('/reports/payments')) return 'laporan-pembayaran';
+  if (p.includes('/reports') || p.includes('/sales-report')) return 'keuangan-laporan';
+
+  // Pengaturan & Akses
+  if (p.includes('/staff') || p.includes('/settings/users')) return 'setting-staff';
+  if (p.includes('/roles') || p.includes('/settings/roles')) return 'setting-roles';
   if (p.includes('/settings/app')) return 'settings-app';
   if (p.includes('/settings/account')) return 'settings-account';
-  if (p.includes('/settings/roles')) return 'settings-roles';
-  if (p.includes('/settings/users')) return 'settings-users';
+  if (p.includes('/settings')) return 'setting-store';
+
+  // Sistem & Langganan
   if (p.includes('/subscription') || p.includes('/langganan')) return 'langganan';
+  if (p.includes('/support')) return 'support';
   if (p.includes('/developer-api') || p.includes('/api')) return 'developer-api';
   if (p.includes('/guide') || p.includes('/panduan')) return 'panduan';
   if (p.includes('/backup')) return 'backup';
+
   return 'menu-utama';
 };
 
-const tabToPath = (tab: ActiveTab): string => {
+export const tabToPath = (tab: ActiveTab): string => {
   switch (tab) {
     case 'pesanan': return '/seller/orders';
-    case 'katalog': return '/seller/products';
-    case 'gudang': return '/seller/inventory';
-    case 'penerimaan-barang': return '/seller/purchases';
-    case 'stock-opname': return '/seller/stock-opname';
     case 'toko-offline': return '/seller/pos';
-    case 'keuangan-pemasukan': return '/seller/incomes';
-    case 'keuangan-pengeluaran': return '/seller/expenses';
-    case 'keuangan-kas': return '/seller/finance';
-    case 'keuangan-laporan': return '/seller/sales-report';
-    case 'master-data': return '/seller/suppliers';
+    case 'katalog': return '/seller/products';
+    case 'katalog-kategori': return '/seller/categories';
+    case 'katalog-satuan': return '/seller/units';
+    case 'katalog-batch': return '/seller/batches';
+    case 'katalog-serial': return '/seller/serials';
+    case 'katalog-label': return '/seller/print-labels';
+    case 'katalog-diskon': return '/seller/discounts';
+    case 'katalog-harga': return '/seller/pricelists';
+    case 'gudang': return '/seller/inventory';
+    case 'gudang-multi': return '/seller/warehouses';
+    case 'penerimaan-barang': return '/seller/stock';
+    case 'gudang-po': return '/seller/purchase-orders';
+    case 'gudang-mutasi': return '/seller/stock-movements';
+    case 'gudang-transfer': return '/seller/stock-transfers';
+    case 'gudang-retur-supplier': return '/seller/supplier-returns';
+    case 'stock-opname': return '/seller/stock-opname';
+    case 'transaksi-riwayat': return '/seller/transactions';
+    case 'transaksi-shift': return '/seller/shifts';
+    case 'transaksi-retur-pelanggan': return '/seller/customer-returns';
     case 'pelanggan': return '/seller/customers';
+    case 'crm-supplier': return '/seller/suppliers';
+    case 'crm-cabang': return '/seller/outlets';
+    case 'keuangan-kas': return '/seller/finance/cash';
+    case 'keuangan-hutang': return '/seller/finance/payables';
+    case 'keuangan-piutang': return '/seller/finance/receivables';
+    case 'keuangan-mutasi': return '/seller/finance/transfers';
+    case 'keuangan-arus-kas': return '/seller/finance/cash-flow';
+    case 'keuangan-pajak': return '/seller/finance/tax-report';
+    case 'keuangan-kategori': return '/seller/finance-categories';
+    case 'keuangan-laba-rugi': return '/seller/finance/summary';
+    case 'keuangan-laporan': return '/seller/reports/sales';
+    case 'laporan-produk': return '/seller/reports/products';
+    case 'laporan-margin': return '/seller/reports/margins';
+    case 'laporan-pelanggan': return '/seller/reports/customers';
+    case 'laporan-konsinyasi': return '/seller/reports/consignment';
+    case 'laporan-shift': return '/seller/reports/shifts';
+    case 'laporan-pembayaran': return '/seller/reports/payments';
+    case 'setting-staff': return '/seller/staff';
+    case 'setting-roles': return '/seller/roles';
+    case 'setting-store': return '/seller/settings';
     case 'settings-app': return '/seller/settings/app';
     case 'settings-account': return '/seller/settings/account';
-    case 'settings-roles': return '/seller/settings/roles';
-    case 'settings-users': return '/seller/settings/users';
+    case 'settings-roles': return '/seller/roles';
+    case 'settings-users': return '/seller/staff';
     case 'marketplace-dashboard': return '/seller/marketplace';
     case 'marketplace-connected': return '/seller/marketplace/connected';
     case 'marketplace-mapping': return '/seller/marketplace/mapping';
@@ -133,6 +178,7 @@ const tabToPath = (tab: ActiveTab): string => {
     case 'shipping-packing': return '/seller/shipping/packing';
     case 'notification-center': return '/seller/notifications';
     case 'langganan': return '/seller/subscription';
+    case 'support': return '/seller/support';
     case 'developer-api': return '/seller/developer-api';
     case 'panduan': return '/seller/guide';
     case 'backup': return '/seller/backup';
@@ -181,20 +227,54 @@ export default function App() {
       'menu-utama': 'Dashboard Seller Marketplace',
       'pesanan': 'Pesanan Masuk Marketplace',
       'katalog': 'Katalog Produk & Stok',
+      'katalog-kategori': 'Kategori Produk',
+      'katalog-satuan': 'Satuan Barang',
+      'katalog-batch': 'Batch & Kadaluwarsa',
+      'katalog-serial': 'Serial Number & IMEI',
+      'katalog-label': 'Cetak Label Barcode',
+      'katalog-diskon': 'Kode Diskon & Promo',
+      'katalog-harga': 'Harga Grosir & Member',
       'gudang': 'Stok Gudang Multi-Channel',
+      'gudang-multi': 'Multi-Gudang Seller',
       'penerimaan-barang': 'Penerimaan Barang Masuk',
+      'gudang-po': 'Purchase Order (PO)',
+      'gudang-mutasi': 'Riwayat Mutasi Stok',
+      'gudang-transfer': 'Transfer Antar Gudang',
+      'gudang-retur-supplier': 'Retur ke Supplier',
       'stock-opname': 'Stock Opname Fisik',
       'toko-offline': 'Kasir POS Toko Offline',
+      'transaksi-riwayat': 'Riwayat Transaksi POS',
+      'transaksi-shift': 'Shift & Laci Kasir',
+      'transaksi-retur-pelanggan': 'Retur dari Pelanggan',
+      'crm-supplier': 'Data Supplier',
+      'crm-cabang': 'Daftar Cabang & Gudang',
+      'pelanggan': 'Data Pelanggan CRM',
       'keuangan-pemasukan': 'Pemasukan Lainnya',
       'keuangan-pengeluaran': 'Biaya Operasional',
       'keuangan-kas': 'Buku Kas & Saldo',
-      'keuangan-laporan': 'Laporan Omzet Penjualan',
+      'keuangan-laporan': 'Laporan Penjualan',
+      'keuangan-laba-rugi': 'Ringkasan Laba Rugi',
+      'keuangan-hutang': 'Hutang ke Supplier',
+      'keuangan-piutang': 'Piutang Pelanggan',
+      'keuangan-mutasi': 'Mutasi Antar Kas',
+      'keuangan-arus-kas': 'Laporan Arus Kas',
+      'keuangan-pajak': 'Laporan Pajak PPN',
+      'keuangan-kategori': 'Kategori Keuangan',
+      'laporan-penjualan': 'Laporan Penjualan Detail',
+      'laporan-produk': 'Laporan Produk Terlaris',
+      'laporan-margin': 'Laporan Margin Keuntungan',
+      'laporan-pelanggan': 'Laporan Analitik Pelanggan',
+      'laporan-konsinyasi': 'Laporan Konsinyasi Titip Jual',
+      'laporan-shift': 'Laporan Kasir & Shift',
+      'laporan-pembayaran': 'Laporan Metode Pembayaran',
       'master-data': 'Data Supplier & Master Data',
-      'pelanggan': 'Data Pelanggan CRM',
       'settings-app': 'Pengaturan Aplikasi',
       'settings-account': 'Pengaturan Akun & Toko',
       'settings-roles': 'Hak Akses & Role',
       'settings-users': 'Manajemen Tim & Staf',
+      'setting-staff': 'Data Pegawai & Staf',
+      'setting-roles': 'Hak Akses & Peran',
+      'setting-store': 'Pengaturan Toko',
       'marketplace-dashboard': 'Dashboard Multi-Channel',
       'marketplace-connected': 'Akun Marketplace Terhubung',
       'marketplace-mapping': 'Mapping Master SKU',
@@ -207,6 +287,7 @@ export default function App() {
       'panduan': 'Buku Panduan Seller',
       'developer-api': 'Integrasi API & Webhook',
       'langganan': 'Paket Langganan Seller',
+      'support': 'Pusat Bantuan Tenant',
       'backup': 'Backup Data Toko',
     };
     const title = SELLER_TAB_TITLES[activeTab] || 'Dashboard Seller';
@@ -752,6 +833,59 @@ export default function App() {
     fetchStockMovements();
   };
 
+  const contextValue = {
+    orders,
+    setOrders,
+    products,
+    setProducts,
+    stores,
+    setStores,
+    warehouses,
+    setWarehouses,
+    stockMovements,
+    setStockMovements,
+    expenses,
+    setExpenses,
+    incomes,
+    setIncomes,
+    cashSummaries,
+    selectedStoreId,
+    setSelectedStoreId,
+    onPrintAwb: handlePrintAwb,
+    onUpdateOrderStatus: handleUpdateOrderStatus,
+    onAddWarehouse: () => {
+      setWarehouseToEdit(null);
+      setIsAddWarehouseModalOpen(true);
+    },
+    onEditWarehouse: (wh: Warehouse) => {
+      setWarehouseToEdit(wh);
+      setIsAddWarehouseModalOpen(true);
+    },
+    onDeleteWarehouse: handleDeleteWarehouse,
+    onMenuToggle: () => {
+      if (window.innerWidth < 768) {
+        setIsBottomSheetOpen(prev => !prev);
+      } else {
+        setCollapsed(prev => !prev);
+      }
+    },
+    onOpenAddExpense: () => {
+      setExpenseToEdit(null);
+      setIsAddExpenseModalOpen(true);
+    },
+    onOpenAddIncome: () => {
+      setIncomeToEdit(null);
+      setIsAddIncomeModalOpen(true);
+    },
+    onOpenAddProduct: () => {
+      setProductToEdit(null);
+      setIsAddProductOpen(true);
+    },
+    onOpenImportModal: () => setIsImportProductsOpen(true),
+    onOpenPdfExport: () => setIsPdfExportOpen(true),
+    onOpenAiAdvisor: () => setIsAiAdvisorOpen(true),
+  };
+
   // Handler for Sync Marketplace
   return (
     <div className="seller-scope min-h-screen max-w-full overflow-x-hidden bg-[#F2F4F7] dark:bg-[#0B0F19] text-[#101828] dark:text-slate-100 antialiased flex flex-col selection:bg-indigo-500 selection:text-white">
@@ -804,164 +938,9 @@ export default function App() {
 
         {/* Dynamic View Body */}
         <main className={`flex-1 w-full min-w-0 ${activeTab === 'toko-offline' ? 'p-0 h-[100dvh] overflow-hidden relative' : 'px-2.5 pb-4 sm:px-4 md:px-6 md:pb-6 lg:px-8 lg:pb-8 pt-20 md:pt-24'}`}>
-          {activeTab === 'menu-utama' && (
-            <MainDashboardView
-              orders={orders}
-              products={products}
-              stores={stores}
-              setActiveTab={setActiveTab}
-              onPrintAwb={handlePrintAwb}
-            />
-          )}
-
-          {activeTab === 'pesanan' && (
-            <OrdersView
-              orders={orders}
-              onPrintAwb={handlePrintAwb}
-              selectedStoreId={selectedStoreId}
-            />
-          )}
-
-          {activeTab === 'katalog' && (
-            <CatalogView
-              products={products}
-              onAddProductClick={() => {
-                setProductToEdit(null);
-                setIsAddProductOpen(true);
-              }}
-              onOpenImportModal={() => setIsImportProductsOpen(true)}
-              onEditProduct={handleEditProductClick}
-              onDeleteProduct={handleDeleteProduct}
-              onRestockClick={(prod) => {
-                setProductToRestock(prod);
-                setIsAddStockOpen(true);
-              }}
-            />
-          )}
-
-          {activeTab === 'gudang' && (
-            <WarehouseView
-              warehouses={warehouses}
-              stockMovements={stockMovements}
-              onAddWarehouse={() => {
-                setWarehouseToEdit(null);
-                setIsAddWarehouseModalOpen(true);
-              }}
-              onEditWarehouse={(wh) => {
-                setWarehouseToEdit(wh);
-                setIsAddWarehouseModalOpen(true);
-              }}
-              onDeleteWarehouse={handleDeleteWarehouse}
-            />
-          )}
-
-          {activeTab === 'penerimaan-barang' && (
-            <PurchaseHistoryView />
-          )}
-
-          {activeTab === 'stock-opname' && (
-            <StockOpnameView />
-          )}
-
-          {activeTab === 'toko-offline' && (
-            <PosOfflineView
-              products={products}
-              orders={orders}
-              onAddNewOfflineOrder={handleAddNewOfflineOrder}
-              onDeductStock={handleDeductStock}
-              onMenuToggle={() => {
-                if (window.innerWidth < 768) {
-                  setIsBottomSheetOpen(prev => !prev);
-                } else {
-                  setCollapsed(prev => !prev);
-                }
-              }}
-            />
-          )}
-
-          {activeTab === 'keuangan-pengeluaran' && (
-            <ExpensesView
-              expenses={expenses}
-              onAddExpenseClick={() => {
-                setExpenseToEdit(null);
-                setIsAddExpenseModalOpen(true);
-              }}
-              onEditExpense={handleEditExpenseClick}
-              onDeleteExpense={handleDeleteExpense}
-              stores={stores}
-              selectedStoreId={selectedStoreId}
-            />
-          )}
-
-          {activeTab === 'keuangan-pemasukan' && (
-            <OtherIncomeView
-              incomes={incomes}
-              onAddIncomeClick={() => {
-                setIncomeToEdit(null);
-                setIsAddIncomeModalOpen(true);
-              }}
-              onEditIncome={handleEditIncomeClick}
-              onDeleteIncome={handleDeleteIncome}
-            />
-          )}
-
-          {activeTab === 'keuangan-kas' && (
-            <CashSummaryView cashSummaries={cashSummaries} />
-          )}
-
-          {activeTab === 'keuangan-laporan' && (
-            <SalesReportView orders={orders} expenses={expenses} products={products} />
-          )}
-
-          {activeTab === 'master-data' && (
-            <MasterDataView
-              stores={stores}
-            />
-          )}
-
-          {activeTab === 'pelanggan' && (
-            <CustomerView />
-          )}
-
-          {activeTab === 'settings-app' && (
-            <AppSettingsView />
-          )}
-
-          {activeTab === 'settings-account' && (
-            <AccountSettingsView />
-          )}
-
-          {activeTab === 'settings-roles' && (
-            <RolesPermissionsView />
-          )}
-
-          {activeTab === 'settings-users' && (
-            <UserManagementView />
-          )}
-
-          {activeTab === 'marketplace-dashboard' && (
-            <MarketplaceDashboardView onNavigateToConnected={() => setActiveTab('marketplace-connected')} />
-          )}
-          {activeTab === 'marketplace-connected' && <ConnectedAccountsView />}
-          {activeTab === 'marketplace-mapping' && <ProductMappingView />}
-          {activeTab === 'marketplace-sync' && <SyncCenterView />}
-          {activeTab === 'marketplace-history' && <SyncHistoryView />}
-          {activeTab === 'shipping-dashboard' && <ShippingDashboardView />}
-          {activeTab === 'shipping-management' && <ShippingManagementView />}
-          {activeTab === 'shipping-packing' && <PackingImprovementView />}
-          {activeTab === 'notification-center' && <NotificationCenterView />}
-          {activeTab === 'panduan' && <GuideView />}
-          {activeTab === 'developer-api' && (
-            <div className="w-full pb-16">
-              <TenantDeveloperPortal
-                moduleName="Seller Omnichannel"
-                accentColor="teal"
-                subscriptionLink="/seller/subscription"
-              />
-            </div>
-          )}
-          {activeTab === 'langganan' && <SellerSubscriptionView />}
-          {activeTab === 'backup' && <BackupView />}
+          <Suspense fallback={<PageLoader />}>
+            <Outlet context={contextValue} />
+          </Suspense>
 
           {/* Mobile Bottom Clearance Spacer so bottom-most content is never covered by bottom nav */}
           {activeTab !== 'toko-offline' && (
