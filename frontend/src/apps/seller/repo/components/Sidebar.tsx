@@ -167,46 +167,56 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [flyoutAnchorY, setFlyoutAnchorY] = useState(60);
 
-  const isMarketplaceActive = activeTab.startsWith('marketplace-');
-  const [marketplaceOpen, setMarketplaceOpen] = useState(isMarketplaceActive);
+  const getActiveGroup = (tab: string): string | null => {
+    if (tab.startsWith('marketplace-')) return 'marketplace';
+    if (tab.startsWith('shipping-') || tab === 'notification-center') return 'shipping';
+    if (tab.startsWith('katalog')) return 'katalog';
+    if (['gudang', 'gudang-multi', 'penerimaan-barang', 'gudang-po', 'gudang-mutasi', 'gudang-transfer', 'gudang-retur-supplier', 'stock-opname'].includes(tab)) return 'gudang';
+    if (tab.startsWith('transaksi-')) return 'transaksi';
+    if (['pelanggan', 'crm-supplier', 'crm-cabang', 'master-data'].includes(tab)) return 'crm';
+    if (tab.startsWith('keuangan-') && tab !== 'keuangan-laporan') return 'keuangan';
+    if (tab.startsWith('laporan-') || tab === 'keuangan-laporan') return 'laporan';
+    if (tab.startsWith('settings-') || tab.startsWith('setting-') || ['backup', 'developer-api', 'panduan', 'langganan', 'support'].includes(tab)) return 'settings';
+    return null;
+  };
 
-  const isShippingActive = activeTab.startsWith('shipping-');
-  const [shippingOpen, setShippingOpen] = useState(isShippingActive);
+  const activeGroupId = getActiveGroup(activeTab);
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+  const [closedGroup, setClosedGroup] = useState<string | null>(null);
 
-  const isKatalogActive = activeTab.startsWith('katalog');
-  const [katalogOpen, setKatalogOpen] = useState(isKatalogActive);
-
-  const isGudangActive = ['gudang', 'gudang-multi', 'penerimaan-barang', 'gudang-po', 'gudang-mutasi', 'gudang-transfer', 'gudang-retur-supplier', 'stock-opname'].includes(activeTab);
-  const [gudangOpen, setGudangOpen] = useState(isGudangActive);
-
-  const isTransaksiActive = activeTab.startsWith('transaksi-');
-  const [transaksiOpen, setTransaksiOpen] = useState(isTransaksiActive);
-
-  const isCrmActive = ['pelanggan', 'crm-supplier', 'crm-cabang', 'master-data'].includes(activeTab);
-  const [crmOpen, setCrmOpen] = useState(isCrmActive);
-
-  const isKeuanganActive = activeTab.startsWith('keuangan-') && !['keuangan-laporan'].includes(activeTab);
-  const [keuanganOpen, setKeuanganOpen] = useState(isKeuanganActive);
-
-  const isLaporanActive = activeTab.startsWith('laporan-') || activeTab === 'keuangan-laporan';
-  const [laporanOpen, setLaporanOpen] = useState(isLaporanActive);
-
-  const isSettingsActive = activeTab.startsWith('settings-') || activeTab.startsWith('setting-') || ['backup', 'developer-api', 'panduan', 'langganan', 'support'].includes(activeTab);
-  const [settingsOpen, setSettingsOpen] = useState(isSettingsActive);
-
-  // Auto-manage accordions when activeTab changes
+  // Auto-collapse inactive accordions on route change so only the active group is open
   useEffect(() => {
-    if (activeTab.startsWith('marketplace-')) setMarketplaceOpen(true);
-    if (activeTab.startsWith('shipping-')) setShippingOpen(true);
-    if (activeTab.startsWith('katalog')) setKatalogOpen(true);
-    if (['gudang', 'gudang-multi', 'penerimaan-barang', 'gudang-po', 'gudang-mutasi', 'gudang-transfer', 'gudang-retur-supplier', 'stock-opname'].includes(activeTab)) setGudangOpen(true);
-    if (activeTab.startsWith('transaksi-')) setTransaksiOpen(true);
-    if (['pelanggan', 'crm-supplier', 'crm-cabang', 'master-data'].includes(activeTab)) setCrmOpen(true);
-    if (activeTab.startsWith('keuangan-') && activeTab !== 'keuangan-laporan') setKeuanganOpen(true);
-    if (activeTab.startsWith('laporan-') || activeTab === 'keuangan-laporan') setLaporanOpen(true);
-    if (activeTab.startsWith('settings-') || activeTab.startsWith('setting-') || ['backup', 'developer-api', 'panduan', 'langganan', 'support'].includes(activeTab)) setSettingsOpen(true);
+    setExpandedGroup(null);
+    setClosedGroup(null);
     setOpenSection(null);
   }, [activeTab]);
+
+  const isGroupExpanded = (groupId: string): boolean => {
+    if (closedGroup === groupId) return false;
+    if (expandedGroup === groupId) return true;
+    return activeGroupId === groupId;
+  };
+
+  const toggleGroup = (groupId: string) => {
+    const isCurrentlyOpen = isGroupExpanded(groupId);
+    if (isCurrentlyOpen) {
+      setClosedGroup(groupId);
+      setExpandedGroup(prev => prev === groupId ? null : prev);
+    } else {
+      setExpandedGroup(groupId);
+      setClosedGroup(prev => prev === groupId ? null : prev);
+    }
+  };
+
+  const isMarketplaceActive = activeGroupId === 'marketplace';
+  const isShippingActive = activeGroupId === 'shipping';
+  const isKatalogActive = activeGroupId === 'katalog';
+  const isGudangActive = activeGroupId === 'gudang';
+  const isTransaksiActive = activeGroupId === 'transaksi';
+  const isCrmActive = activeGroupId === 'crm';
+  const isKeuanganActive = activeGroupId === 'keuangan';
+  const isLaporanActive = activeGroupId === 'laporan';
+  const isSettingsActive = activeGroupId === 'settings';
 
   const handleGroupIconClick = (sectionId: string, e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -419,7 +429,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (collapsed) {
                 handleGroupIconClick('marketplace', e);
               } else {
-                setMarketplaceOpen(!marketplaceOpen);
+                toggleGroup('marketplace');
               }
             }}
             title={collapsed ? 'Marketplace' : ''}
@@ -432,7 +442,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Globe className={`w-4 h-4 shrink-0 ${isMarketplaceActive || openSection === 'marketplace' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Marketplace</span>}
             {!collapsed && (
-              marketplaceOpen ? (
+              isGroupExpanded('marketplace') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -440,7 +450,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {(!collapsed && marketplaceOpen) && (
+          {(!collapsed && isGroupExpanded('marketplace')) && (
             <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('marketplace-dashboard')}
@@ -508,7 +518,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (collapsed) {
                 handleGroupIconClick('shipping', e);
               } else {
-                setShippingOpen(!shippingOpen);
+                toggleGroup('shipping');
               }
             }}
             title={collapsed ? 'Pengiriman' : ''}
@@ -521,7 +531,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Truck className={`w-4 h-4 shrink-0 ${isShippingActive || openSection === 'shipping' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Pengiriman & Resi</span>}
             {!collapsed && (
-              shippingOpen ? (
+              isGroupExpanded('shipping') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -529,7 +539,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {(!collapsed && shippingOpen) && (
+          {(!collapsed && isGroupExpanded('shipping')) && (
             <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('shipping-dashboard')}
@@ -586,7 +596,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (collapsed) {
                 handleGroupIconClick('katalog', e);
               } else {
-                setKatalogOpen(!katalogOpen);
+                toggleGroup('katalog');
               }
             }}
             title={collapsed ? 'Katalog' : ''}
@@ -599,7 +609,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Package className={`w-4 h-4 shrink-0 ${isKatalogActive || openSection === 'katalog' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Katalog & Harga</span>}
             {!collapsed && (
-              katalogOpen ? (
+              isGroupExpanded('katalog') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -607,7 +617,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {(!collapsed && katalogOpen) && (
+          {(!collapsed && isGroupExpanded('katalog')) && (
             <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('katalog')}
@@ -708,7 +718,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (collapsed) {
                 handleGroupIconClick('gudang', e);
               } else {
-                setGudangOpen(!gudangOpen);
+                toggleGroup('gudang');
               }
             }}
             title={collapsed ? 'Inventori' : ''}
@@ -721,7 +731,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <WarehouseIcon className={`w-4 h-4 shrink-0 ${isGudangActive || openSection === 'gudang' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Inventori & Gudang</span>}
             {!collapsed && (
-              gudangOpen ? (
+              isGroupExpanded('gudang') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -729,7 +739,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {(!collapsed && gudangOpen) && (
+          {(!collapsed && isGroupExpanded('gudang')) && (
             <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('gudang')}
@@ -830,7 +840,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (collapsed) {
                 handleGroupIconClick('transaksi', e);
               } else {
-                setTransaksiOpen(!transaksiOpen);
+                toggleGroup('transaksi');
               }
             }}
             title={collapsed ? 'Transaksi' : ''}
@@ -843,7 +853,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <FileText className={`w-4 h-4 shrink-0 ${isTransaksiActive || openSection === 'transaksi' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Transaksi & Kasir</span>}
             {!collapsed && (
-              transaksiOpen ? (
+              isGroupExpanded('transaksi') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -851,7 +861,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {(!collapsed && transaksiOpen) && (
+          {(!collapsed && isGroupExpanded('transaksi')) && (
             <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('transaksi-riwayat')}
@@ -897,7 +907,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (collapsed) {
                 handleGroupIconClick('crm', e);
               } else {
-                setCrmOpen(!crmOpen);
+                toggleGroup('crm');
               }
             }}
             title={collapsed ? 'Mitra' : ''}
@@ -910,7 +920,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Users className={`w-4 h-4 shrink-0 ${isCrmActive || openSection === 'crm' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Pelanggan & Supplier</span>}
             {!collapsed && (
-              crmOpen ? (
+              isGroupExpanded('crm') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -918,7 +928,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {(!collapsed && crmOpen) && (
+          {(!collapsed && isGroupExpanded('crm')) && (
             <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('pelanggan')}
@@ -964,7 +974,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (collapsed) {
                 handleGroupIconClick('keuangan', e);
               } else {
-                setKeuanganOpen(!keuanganOpen);
+                toggleGroup('keuangan');
               }
             }}
             title={collapsed ? 'Keuangan' : ''}
@@ -977,7 +987,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Wallet className={`w-4 h-4 shrink-0 ${isKeuanganActive || openSection === 'keuangan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Keuangan & Kas</span>}
             {!collapsed && (
-              keuanganOpen ? (
+              isGroupExpanded('keuangan') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -985,7 +995,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {(!collapsed && keuanganOpen) && (
+          {(!collapsed && isGroupExpanded('keuangan')) && (
             <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('keuangan-laba-rugi')}
@@ -1086,7 +1096,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (collapsed) {
                 handleGroupIconClick('laporan', e);
               } else {
-                setLaporanOpen(!laporanOpen);
+                toggleGroup('laporan');
               }
             }}
             title={collapsed ? 'Laporan' : ''}
@@ -1099,7 +1109,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <BarChart2 className={`w-4 h-4 shrink-0 ${isLaporanActive || openSection === 'laporan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Laporan Bisnis</span>}
             {!collapsed && (
-              laporanOpen ? (
+              isGroupExpanded('laporan') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -1107,7 +1117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {(!collapsed && laporanOpen) && (
+          {(!collapsed && isGroupExpanded('laporan')) && (
             <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('keuangan-laporan')}
@@ -1197,7 +1207,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (collapsed) {
                 handleGroupIconClick('settings', e);
               } else {
-                setSettingsOpen(!settingsOpen);
+                toggleGroup('settings');
               }
             }}
             title={collapsed ? 'Pengaturan' : ''}
@@ -1210,7 +1220,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Settings className={`w-4 h-4 shrink-0 ${isSettingsActive || openSection === 'settings' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Pengaturan & Sistem</span>}
             {!collapsed && (
-              settingsOpen ? (
+              isGroupExpanded('settings') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -1218,7 +1228,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {(!collapsed && settingsOpen) && (
+          {(!collapsed && isGroupExpanded('settings')) && (
             <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
               <button
                 onClick={() => setActiveTab('setting-staff')}
