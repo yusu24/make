@@ -333,34 +333,34 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Dark High-Contrast Bento Block: Marketplace Connections */}
-        <div className="lg:col-span-4 bg-[#101828] rounded-2xl p-6 md:p-8 text-white flex flex-col justify-between shadow-md border border-slate-800">
+        {/* Bento Block: Marketplace Connections */}
+        <div className="lg:col-span-4 bg-white dark:bg-[#101828] rounded-2xl p-6 md:p-8 text-slate-900 dark:text-white flex flex-col justify-between shadow-xs border border-gray-200 dark:border-slate-800">
           <div>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-gray-400 text-xs font-semibold uppercase tracking-wider font-['Inter']">
+              <h2 className="text-[#667085] dark:text-gray-400 text-xs font-semibold uppercase tracking-wider font-['Inter']">
                 {t('seller.salesChannels')}
               </h2>
-              <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-['Inter']">
+              <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/30 font-['Inter']">
                 {stores.filter((s) => s.connected).length} Terhubung
               </span>
             </div>
 
             <div className="space-y-3">
               {stores.map((st) => (
-                <div key={st.id} className="flex items-center justify-between p-3.5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all font-['Inter']">
+                <div key={st.id} className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200/80 dark:border-white/10 hover:bg-slate-100/80 dark:hover:bg-white/10 transition-all font-['Inter']">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-indigo-500 rounded-xl flex items-center justify-center text-xs font-semibold text-white shadow-xs font-['Plus_Jakarta_Sans']">
                       {st.platform === 'Manual/Offline' ? 'PO' : st.platform.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-xs font-semibold">{st.name}</p>
-                      <p className="text-[10px] text-gray-400 uppercase">{st.connected ? 'Terhubung' : 'Belum Terhubung'}</p>
+                      <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{st.name}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-gray-400 uppercase">{st.connected ? 'Terhubung' : 'Belum Terhubung'}</p>
                     </div>
                   </div>
-                  <div className={`w-2.5 h-2.5 rounded-full ${st.connected ? 'bg-emerald-400' : 'bg-slate-500'}`} />
+                  <div className={`w-2.5 h-2.5 rounded-full ${st.connected ? 'bg-emerald-500' : 'bg-slate-400'}`} />
                 </div>
               ))}
-              <p className="text-[10px] text-gray-500 leading-relaxed pt-1 font-['Inter']">
+              <p className="text-[10px] text-slate-400 dark:text-gray-400 leading-relaxed pt-1 font-['Inter']">
                 Integrasi Shopee/Tokopedia/TikTok Shop belum tersedia — saat ini hanya transaksi kasir offline yang tercatat otomatis.
               </p>
             </div>
@@ -368,7 +368,7 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
 
           <button
             onClick={() => setActiveTab('master-data')}
-            className="w-full mt-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold text-xs text-white transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-2 font-['Inter']"
+            className="w-full mt-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold text-xs text-white transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-2 font-['Inter']"
           >
             <span>Kelola Channel Penjualan</span>
             <ChevronRight className="w-4 h-4" />
@@ -440,26 +440,32 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Metric 4: Solid Indigo Bento Card - Stok Menipis Alert */}
-        <div className="bg-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-xs flex flex-col justify-between">
-          <div className="relative z-10">
-            <span className="text-xs font-semibold uppercase tracking-wider opacity-80 block mb-1 font-['Inter']">
-              {i18n?.language === 'en' ? 'Low Stock SKUs' : 'Stok SKU Menipis'}
-            </span>
-            <div className="text-2xl md:text-3xl font-semibold mb-2 font-['Plus_Jakarta_Sans'] tracking-tight">{lowStockProducts.length} SKU</div>
-            <p className="text-xs opacity-85 leading-relaxed font-['Inter']">
-              {i18n?.language === 'en' ? 'Main warehouse restock required immediately.' : 'Diperlukan restock gudang utama segera.'}
-            </p>
+        {/* Metric 4: Stok SKU Menipis Alert */}
+        <div className="bg-white dark:bg-[#101828] rounded-2xl border border-gray-200 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Low Stock SKUs' : 'Stok SKU Menipis'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-semibold text-[#101828] dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {lowStockProducts.length} <span className="text-sm font-normal text-slate-400 font-['Inter']">SKU</span>
+            </div>
           </div>
-          <div className="relative z-10 pt-3 font-['Inter']">
+          <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs font-['Inter']">
+            <span className={`font-semibold ${lowStockProducts.length > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+              {lowStockProducts.length > 0 ? (i18n?.language === 'en' ? 'Restock required' : 'Perlu restock segera') : (i18n?.language === 'en' ? 'Stock optimal' : 'Stok aman terkendali')}
+            </span>
             <button
               onClick={() => setActiveTab('katalog')}
-              className="text-xs font-semibold underline hover:opacity-80 transition-opacity cursor-pointer"
+              className="text-indigo-600 font-semibold hover:underline cursor-pointer"
             >
-              {i18n?.language === 'en' ? 'Restock Stock Now →' : 'Atur Restock Stok Sekarang →'}
+              {i18n?.language === 'en' ? 'Restock Now →' : 'Atur Stok →'}
             </button>
           </div>
-          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full pointer-events-none" />
         </div>
       </div>
 

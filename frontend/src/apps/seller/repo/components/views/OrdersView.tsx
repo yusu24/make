@@ -111,6 +111,105 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      {/* KPI Summary Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          onClick={() => setActiveStatusTab('Semua')}
+          className={`bg-white dark:bg-slate-800 rounded-2xl border p-5 shadow-xs flex flex-col justify-between transition-all cursor-pointer ${
+            activeStatusTab === 'Semua' ? 'border-indigo-500 ring-2 ring-indigo-500/10' : 'border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300'
+          }`}
+        >
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Total Orders' : 'Total Pesanan'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <ShoppingBag className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-[#101828] dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {orders.length} <span className="text-xs font-normal text-slate-400 font-['Inter']">{i18n?.language === 'en' ? 'Orders' : 'Pesanan'}</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+            {i18n?.language === 'en' ? 'All channels & platforms' : 'Semua kanal & platform'}
+          </div>
+        </div>
+
+        <div
+          onClick={() => setActiveStatusTab('Perlu Diproses')}
+          className={`bg-white dark:bg-slate-800 rounded-2xl border p-5 shadow-xs flex flex-col justify-between transition-all cursor-pointer ${
+            activeStatusTab === 'Perlu Diproses' ? 'border-amber-500 ring-2 ring-amber-500/10' : 'border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300'
+          }`}
+        >
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Needs Process' : 'Perlu Diproses'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <Clock className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {orders.filter(o => o.status === 'Perlu Diproses').length} <span className="text-xs font-normal text-slate-400 font-['Inter']">{i18n?.language === 'en' ? 'Orders' : 'Pesanan'}</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-amber-600 dark:text-amber-400 font-semibold font-['Inter']">
+            {i18n?.language === 'en' ? 'Awaiting AWB label print' : 'Menunggu cetak resi AWB'}
+          </div>
+        </div>
+
+        <div
+          onClick={() => setActiveStatusTab('Dalam Pengiriman')}
+          className={`bg-white dark:bg-slate-800 rounded-2xl border p-5 shadow-xs flex flex-col justify-between transition-all cursor-pointer ${
+            activeStatusTab === 'Dalam Pengiriman' ? 'border-blue-500 ring-2 ring-blue-500/10' : 'border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300'
+          }`}
+        >
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'In Delivery' : 'Dalam Pengiriman'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <Truck className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {orders.filter(o => o.status === 'Dalam Pengiriman').length} <span className="text-xs font-normal text-slate-400 font-['Inter']">{i18n?.language === 'en' ? 'Orders' : 'Pesanan'}</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-blue-600 dark:text-blue-400 font-semibold font-['Inter']">
+            {i18n?.language === 'en' ? 'In courier transit' : 'Sedang transit / kurir'}
+          </div>
+        </div>
+
+        <div
+          onClick={() => setActiveStatusTab('Selesai')}
+          className={`bg-white dark:bg-slate-800 rounded-2xl border p-5 shadow-xs flex flex-col justify-between transition-all cursor-pointer ${
+            activeStatusTab === 'Selesai' ? 'border-emerald-500 ring-2 ring-emerald-500/10' : 'border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300'
+          }`}
+        >
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                {i18n?.language === 'en' ? 'Completed' : 'Selesai Diterima'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {orders.filter(o => o.status === 'Selesai').length} <span className="text-xs font-normal text-slate-400 font-['Inter']">{i18n?.language === 'en' ? 'Orders' : 'Pesanan'}</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold font-['Inter']">
+            {i18n?.language === 'en' ? 'Successfully received' : 'Pesanan sukses diterima'}
+          </div>
+        </div>
+      </div>
+
       {/* Main Orders Card */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
         {/* Filters Bar: Search, Status Dropdown, Marketplace, & Action Buttons */}

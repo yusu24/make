@@ -173,45 +173,60 @@ export const ProductMappingView: React.FC = () => {
 
       {/* Analytics Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between">
           <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-1">
-              Total Produk Katalog
-            </p>
-            <h4 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-              {items.length} Produk
-            </h4>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Total Produk Katalog
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <Layers className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {items.length} <span className="text-xs font-normal text-slate-400 font-['Inter']">Produk</span>
+            </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-100 dark:border-purple-800/40">
-            <Layers className="w-5 h-5" />
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+            Katalog master toko lokal
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between">
           <div>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider mb-1">
-              Ter-mapping Sempurna
-            </p>
-            <h4 className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-              {totalMapped} SKU
-            </h4>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Ter-mapping Sempurna
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {totalMapped} <span className="text-xs font-normal text-slate-400 font-['Inter']">SKU</span>
+            </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-800/40">
-            <CheckCircle2 className="w-5 h-5" />
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold font-['Inter']">
+            Sinkron 100% di semua channel
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between">
           <div>
-            <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold uppercase tracking-wider mb-1">
-              Unmapped / Konflik
-            </p>
-            <h4 className="text-2xl font-extrabold text-amber-600 dark:text-amber-400">
-              {totalUnmappedOrConflict} SKU
-            </h4>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Unmapped / Konflik
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <AlertCircle className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-bold text-amber-600 dark:text-amber-400 mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {totalUnmappedOrConflict} <span className="text-xs font-normal text-slate-400 font-['Inter']">SKU</span>
+            </div>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-800/40">
-            <AlertCircle className="w-5 h-5" />
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-amber-600 dark:text-amber-400 font-semibold font-['Inter']">
+            Perlu pemetaan SKU manual
           </div>
         </div>
       </div>

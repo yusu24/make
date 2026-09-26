@@ -145,49 +145,96 @@ export const MarketplaceDashboardView: React.FC<{ onNavigateToConnected?: () => 
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
-              <LinkIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Toko Terhubung
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <LinkIcon className="w-4 h-4" />
+              </div>
             </div>
-            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded-lg">Aktif</span>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {stores.length} <span className="text-xs font-normal text-slate-400 font-['Inter']">Toko</span>
+            </div>
           </div>
-          <h3 className="text-3xl font-bold text-slate-800 dark:text-white mb-1">{stores.length}</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Toko Terhubung</p>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+            <span className="text-slate-400 font-['Inter']">Integrasi channel</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+              {stores.filter(s => s.status === 'Connected').length} Aktif
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-              <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Produk Ter-mapping
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <Layers className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {isDemo ? '1,245' : '0'} <span className="text-xs font-normal text-slate-400 font-['Inter']">SKU</span>
             </div>
           </div>
-          <h3 className="text-3xl font-bold text-slate-800 dark:text-white mb-1">{isDemo ? '1,245' : '0'}</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Produk Ter-mapping</p>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+            <span className="text-slate-400 font-['Inter']">Sinkron katalog</span>
+            <span className="text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full">
+              Multi-Channel
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Sync Berhasil
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
             </div>
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-lg">Hari Ini</span>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {isDemo ? '128' : '0'} <span className="text-xs font-normal text-slate-400 font-['Inter']">Event</span>
+            </div>
           </div>
-          <h3 className="text-3xl font-bold text-slate-800 dark:text-white mb-1">{isDemo ? '128' : '0'}</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Sync Berhasil</p>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+            <span className="text-slate-400 font-['Inter']">Hari ini</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+              100% Berhasil
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Status Koneksi
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
             </div>
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-lg">Perlu Perhatian</span>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
+              {stores.filter((s) => s.status !== 'Connected').length} <span className="text-xs font-normal text-slate-400 font-['Inter']">Isu</span>
+            </div>
           </div>
-          <h3 className="text-3xl font-bold text-slate-800 dark:text-white mb-1">
-            {stores.filter((s) => s.status !== 'Connected').length}
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Masalah Koneksi/Sync</p>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+            <span className="text-slate-400 font-['Inter']">Token & Sync</span>
+            <span className={`font-semibold px-2 py-0.5 rounded-full ${
+              stores.filter((s) => s.status !== 'Connected').length > 0
+                ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40'
+                : 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
+            }`}>
+              {stores.filter((s) => s.status !== 'Connected').length > 0 ? 'Perlu Perhatian' : 'Semua Normal'}
+            </span>
+          </div>
         </div>
       </div>
 
