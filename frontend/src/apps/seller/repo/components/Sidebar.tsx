@@ -343,30 +343,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       w-64 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
     >
       {/* Brand Header */}
-      <div className="h-16 px-4 relative flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-slate-800 p-1.5 border border-indigo-100 dark:border-slate-700 flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
-            <img 
-              src={user?.store_icon_url || bizoraLogo} 
-              alt="Logo" 
-              className="w-full h-full object-contain"
-            />
-          </div>
-          {!collapsed && (
-            <div className="flex flex-col min-w-0">
-              <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 truncate tracking-tight font-['Plus_Jakarta_Sans']">
-                {user?.store_name || 'Bizora Seller'}
-              </span>
-              <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-                Omnichannel POS
-              </span>
-            </div>
-          )}
+      <div className="h-16 px-4 relative flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-slate-800 p-1.5 border border-indigo-100 dark:border-slate-700 flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
+          <img 
+            src={user?.store_icon_url || bizoraLogo} 
+            alt="Logo" 
+            className="w-full h-full object-contain"
+          />
         </div>
         
         {/* Mobile close button */}
         <button 
-          className="md:hidden p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          className="md:hidden absolute right-3 p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           onClick={() => setMobileMenuOpen?.(false)}
         >
           <ChevronRight className="w-5 h-5 rotate-180" />
