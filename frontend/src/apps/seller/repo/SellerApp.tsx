@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { Menu } from '@/constants/icons';
-import { ActiveTab, Expense, Income, Order, Product, Warehouse, StockMovement, CashSummaryItem, StoreChannel } from './types';
+import { ActiveTab, Expense, Income, Order, OrderStatus, Product, Warehouse, StockMovement, CashSummaryItem, StoreChannel } from './types';
 import '../seller.css';
 import { useAuth } from '../../../contexts/AuthContext';
 import { PageLoader } from '../../../routes/guards';
@@ -756,6 +756,12 @@ export default function App() {
     );
   };
 
+  const handleUpdateOrderStatus = (orderId: string, status: OrderStatus) => {
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, status } : o))
+    );
+  };
+
 
   // Handlers for Product Catalog (Create, Edit, Delete)
   // RetailProduct's real columns are name/sku/unit/category_id/price_buy/
@@ -884,6 +890,8 @@ export default function App() {
     onOpenImportModal: () => setIsImportProductsOpen(true),
     onOpenPdfExport: () => setIsPdfExportOpen(true),
     onOpenAiAdvisor: () => setIsAiAdvisorOpen(true),
+    onAddNewOfflineOrder: handleAddNewOfflineOrder,
+    onDeductStock: handleDeductStock,
   };
 
   // Handler for Sync Marketplace
