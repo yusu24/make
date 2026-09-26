@@ -1,16 +1,11 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { Menu } from '@/constants/icons';
-import { ActiveTab, Expense, Income, Order, OrderStatus, Product, Warehouse, StockMovement, CashSummaryItem, StoreChannel } from './types';
+import { ActiveTab, Expense, Order, OrderStatus, Product, StoreChannel } from './types';
 import '../seller.css';
 import { useAuth } from '../../../contexts/AuthContext';
 import { PageLoader } from '../../../routes/guards';
 import {
-  INITIAL_WAREHOUSES,
-  INITIAL_STOCK_MOVEMENTS,
-  INITIAL_CASH_SUMMARIES,
-  INITIAL_INCOMES,
-  INITIAL_EXPENSES,
   INITIAL_STORES,
   INITIAL_ORDERS,
   INITIAL_PRODUCTS,
@@ -20,14 +15,8 @@ import { api } from '../../../lib/api';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 
-import { AddExpenseModal } from './components/modals/AddExpenseModal';
-import { AddIncomeModal } from './components/modals/AddIncomeModal';
-import { AddWarehouseModal } from './components/modals/AddWarehouseModal';
 import { PdfExportModal } from './components/modals/PdfExportModal';
 import { AwbPrintModal } from './components/modals/AwbPrintModal';
-import { AddProductModal } from './components/modals/AddProductModal';
-import { ImportProductsModal } from './components/modals/ImportProductsModal';
-import { AddStockModal } from './components/modals/AddStockModal';
 import { AiAdvisorDrawer } from './components/AiAdvisorDrawer';
 import { SellerAiFab } from './components/SellerAiFab';
 import { SellerMobileBottomNav } from './components/SellerMobileBottomNav';
@@ -133,7 +122,7 @@ export const tabToPath = (tab: ActiveTab): string => {
     case 'katalog-diskon': return '/seller/discounts';
     case 'katalog-harga': return '/seller/pricelists';
     case 'gudang': return '/seller/inventory';
-    case 'gudang-multi': return '/seller/warehouses';
+    case 'gudang-multi': return '/seller/outlets';
     case 'penerimaan-barang': return '/seller/stock';
     case 'gudang-po': return '/seller/purchase-orders';
     case 'gudang-mutasi': return '/seller/stock-movements';
@@ -300,50 +289,29 @@ export default function App() {
   const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
 
   const [stores, setStores] = useState<StoreChannel[]>(isDemo ? INITIAL_STORES : []);
-  const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [cashSummaries, setCashSummaries] = useState<CashSummaryItem[]>(isDemo ? INITIAL_CASH_SUMMARIES : []);
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [warehouseToEdit, setWarehouseToEdit] = useState<Warehouse | null>(null);
+  const [orders, setOrders] = useState<Order[]>(isDemo ? INITIAL_ORDERS : []);
+  const [products, setProducts] = useState<Product[]>(isDemo ? INITIAL_PRODUCTS : []);
+  const [isPdfExportOpen, setIsPdfExportOpen] = useState(false);
+  const [isAwbPrintOpen, setIsAwbPrintOpen] = useState(false);
+  const [selectedOrderForAwb, setSelectedOrderForAwb] = useState<Order | null>(null);
+  const [isAiAdvisorOpen, setIsAiAdvisorOpen] = useState(false);
 
-  // Backend rows are snake_case and don't track per-warehouse stock counts yet
-  // (no stock-by-warehouse table exists) — map to the camelCase shape the
-  // views expect and default the not-yet-tracked stock fields to 0.
-  const mapWarehouse = (w: any): Warehouse => ({
-    id: w.id?.toString(),
-    name: w.name,
-    code: w.code || '',
-    city: w.city || '',
-    address: w.address || '',
-    picName: w.pic_name || '',
-    picPhone: w.pic_phone || '',
-    totalSKUs: w.totalSKUs ?? 0,
-    totalItems: w.totalItems ?? 0,
-    isDefault: !!w.is_default,
-  });
-
-  // Field names below match RetailProduct's real DB columns
-  // (price_sell/price_buy/stock/stock_min), not the Product type's
-  // per-marketplace fields, since Retail has no marketplace integration:
-  // every marketplace price is set to the one real selling price rather
-  // than fabricating distinct values. Shared by the initial catalog fetch
-  // and the create/update product handlers below.
+  // Field names match RetailProduct DB columns (price_sell/price_buy/stock/stock_min)
   const mapProduct = (p: any): Product => {
     const stock = parseFloat(p.stock) || 0;
-    const stockMin = parseFloat(p.stock_min) || 0;
-    const priceSell = parseFloat(p.price_sell) || 0;
+    const stockMin = parseFloat(p.stock_min || p.min_stock) || 0;
+    const priceSell = parseFloat(p.price_sell || p.price) || 0;
     return {
       id: p.id?.toString(),
       sku: p.sku || `SKU-${p.id}`,
       name: p.name,
-      category: p.category?.name || 'Uncategorized',
+      category: p.category?.name || p.category || 'Umum',
       categoryId: p.category_id?.toString() || '',
       unit: p.unit || 'Pcs',
       image: p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30',
       rawImageUrl: p.image_url || null,
-      hpp: parseFloat(p.price_buy) || 0,
+      hpp: parseFloat(p.price_buy || p.cost_price) || 0,
       priceOffline: priceSell,
       priceShopee: parseFloat(p.price_shopee) || priceSell,
       priceTokopedia: parseFloat(p.price_tokopedia) || priceSell,
@@ -353,62 +321,9 @@ export default function App() {
       stockMin,
       warehouseStock: {},
       status: stock <= 0 ? 'Habis' : stock <= stockMin ? 'Stok Menipis' : 'Aktif',
-      connectedChannels: [],
+      connectedChannels: ['Shopee', 'Tokopedia', 'TikTok Shop'],
     };
   };
-
-  // Fetch real warehouses from backend
-  useEffect(() => {
-    const fetchWarehouses = async () => {
-      try {
-        const response = await api.get('/seller/warehouses');
-        if (response.data.success) {
-          setWarehouses(response.data.data.length > 0 ? response.data.data.map(mapWarehouse) : INITIAL_WAREHOUSES);
-        }
-      } catch (error) {
-        console.error("Failed to fetch warehouses", error);
-      }
-    };
-
-    fetchWarehouses();
-  }, []);
-
-  const handleDeleteWarehouse = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus gudang ini?')) return;
-    try {
-      await api.delete(`/seller/warehouses/${id}`);
-      setWarehouses((prev) => {
-        const remaining = prev.filter((w) => w.id !== id);
-        // Mirror the backend's auto-promote-next-as-default behavior locally
-        // so the UI doesn't show zero defaults until the next full refetch.
-        if (!remaining.some((w) => w.isDefault) && remaining.length > 0) {
-          remaining[0] = { ...remaining[0], isDefault: true };
-        }
-        return remaining;
-      });
-    } catch (err) {
-      console.error('Failed to delete warehouse', err);
-      alert('Gagal menghapus gudang.');
-    }
-  };
-
-  const [stockMovements, setStockMovements] = useState<StockMovement[]>(INITIAL_STOCK_MOVEMENTS);
-
-  // Modals & Drawers States
-  const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
-  const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
-  const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
-  const [incomeToEdit, setIncomeToEdit] = useState<Income | null>(null);
-  const [isPdfExportOpen, setIsPdfExportOpen] = useState(false);
-  const [isAwbPrintOpen, setIsAwbPrintOpen] = useState(false);
-  const [selectedOrderForAwb, setSelectedOrderForAwb] = useState<Order | null>(null);
-  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
-  const [isImportProductsOpen, setIsImportProductsOpen] = useState(false);
-  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
-  const [isAddStockOpen, setIsAddStockOpen] = useState(false);
-  const [productToRestock, setProductToRestock] = useState<Product | null>(null);
-  const [isAddWarehouseModalOpen, setIsAddWarehouseModalOpen] = useState(false);
-  const [isAiAdvisorOpen, setIsAiAdvisorOpen] = useState(false);
 
   // Apply dark mode class to html element
   useEffect(() => {
@@ -419,49 +334,28 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Fetch initial data from Laravel backend (Seller API + fallback)
+  // Fetch initial data from Laravel backend (Seller API + fallback to Retail)
   useEffect(() => {
     const fetchSellerData = async () => {
       try {
-        const [sellerProdRes, sellerOrderRes, sellerChannelRes, expRes, incRes] = await Promise.all([
+        const [sellerProdRes, sellerOrderRes, sellerChannelRes] = await Promise.all([
           api.get('/seller/products').catch(() => ({ data: { data: [] } })),
           api.get('/seller/orders').catch(() => ({ data: { data: [] } })),
           api.get('/seller/channels').catch(() => ({ data: { data: [] } })),
-          api.get('/retail/finance/expenses').catch(() => ({ data: [] })),
-          api.get('/retail/finance/incomes').catch(() => ({ data: [] }))
         ]);
 
-        // 1. Products
-        const rawProds = sellerProdRes.data?.data || sellerProdRes.data || [];
+        // 1. Products (Omnichannel or fallback to Retail products)
+        let rawProds = sellerProdRes.data?.data || sellerProdRes.data || [];
+        if (!Array.isArray(rawProds) || rawProds.length === 0) {
+          try {
+            const retailProdRes = await api.get('/retail/products');
+            rawProds = retailProdRes.data?.data || retailProdRes.data || [];
+          } catch (e) {
+            // fallback
+          }
+        }
         if (Array.isArray(rawProds) && rawProds.length > 0) {
-          const mapped = rawProds.map((p: any) => {
-            const stock = parseFloat(p.stock) || 0;
-            const stockMin = parseFloat(p.min_stock || p.stock_min) || 0;
-            const price = parseFloat(p.price || p.price_sell) || 0;
-            const costPrice = parseFloat(p.cost_price || p.price_buy) || 0;
-            return {
-              id: p.id?.toString(),
-              sku: p.sku || `SKU-${p.id}`,
-              name: p.name,
-              category: p.category || p.category?.name || 'Umum',
-              categoryId: p.category_id?.toString() || '',
-              unit: p.unit || 'Pcs',
-              image: p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30',
-              rawImageUrl: p.image_url || null,
-              hpp: costPrice,
-              priceOffline: price,
-              priceShopee: price,
-              priceTokopedia: price,
-              priceTiktok: price,
-              priceLazada: price,
-              totalStock: stock,
-              stockMin: stockMin,
-              warehouseStock: {},
-              status: stock <= 0 ? 'Habis' : stock <= stockMin ? 'Stok Menipis' : 'Aktif',
-              connectedChannels: ['Shopee', 'Tokopedia', 'TikTok Shop'],
-            };
-          });
-          setProducts(mapped);
+          setProducts(rawProds.map(mapProduct));
         }
 
         // 2. Orders
@@ -530,10 +424,20 @@ export default function App() {
           });
           setStores(mappedChannels);
         }
+      } catch (err) {
+        console.error('Failed to fetch backend data for seller:', err);
+      }
+    };
+    fetchSellerData();
+  }, []);
 
-        // 4. Expenses
+  // Lazy load expenses only when PDF export or AI advisor is opened
+  const fetchExpensesIfNeeded = async () => {
+    if (expenses.length === 0) {
+      try {
+        const expRes = await api.get('/retail/finance/expenses').catch(() => ({ data: [] }));
         if (Array.isArray(expRes.data) && expRes.data.length > 0) {
-          const mappedExpenses = expRes.data.map((e: any) => ({
+          setExpenses(expRes.data.map((e: any) => ({
             id: e.id?.toString(),
             date: e.tanggal || new Date().toISOString().substring(0, 10),
             category: e.category?.name || 'Lain-lain',
@@ -542,215 +446,28 @@ export default function App() {
             storeId: 'all',
             paymentMethod: '-',
             createdByName: e.user?.name || '-',
-          }));
-          setExpenses(mappedExpenses);
+          })));
         }
-
-        // 5. Incomes
-        if (Array.isArray(incRes.data) && incRes.data.length > 0) {
-          const mappedIncomes = incRes.data.map((inc: any) => ({
-            id: inc.id?.toString(),
-            date: inc.tanggal || new Date().toISOString().substring(0, 10),
-            category: inc.category?.name || 'Lain-lain',
-            amount: parseFloat(inc.nominal) || 0,
-            description: inc.keterangan || '',
-            storeName: 'Toko Offline',
-          }));
-          setIncomes(mappedIncomes);
-        }
-
-      } catch (err) {
-        console.error('Failed to fetch backend data for seller:', err);
-      }
-    };
-    fetchSellerData();
-  }, []);
-
-
-  // Fetch real stock movement history — WarehouseView labels this section
-  // "Real-Time" but it was reading purely from mock data until now. There's
-  // no warehouse_id on retail_products/retail_stock_movements (stock isn't
-  // tracked per-warehouse at all), so warehouseName is left honestly blank
-  // rather than attributed to a specific warehouse that isn't actually known.
-  // Pulled out as a function (not inline in the effect) so a successful
-  // restock can re-trigger it and show up immediately, not just on load.
-  const fetchStockMovements = () => {
-    api.get('/retail/stock/movements')
-      .then((res) => {
-        const rows = res.data?.data;
-        if (!Array.isArray(rows)) return;
-        const mappedMovements: StockMovement[] = rows.map((m: any) => {
-          const qty = parseFloat(m.quantity) || 0;
-          return {
-            id: m.id?.toString(),
-            date: m.created_at?.replace('T', ' ').substring(0, 16) || '-',
-            sku: m.product?.sku || '-',
-            productName: m.product?.name || `Produk #${m.product_id}`,
-            warehouseName: '-',
-            type: m.type === 'adjustment' ? 'Opname Adjust' : (qty >= 0 ? 'Masuk' : 'Keluar'),
-            qty,
-            notes: m.note || '-',
-            user: m.user?.name || '-',
-          };
-        });
-        setStockMovements(mappedMovements);
-      })
-      .catch((err) => console.error('Failed to fetch stock movements', err));
-  };
-
-  useEffect(() => { fetchStockMovements(); }, []);
-
-  // Handlers for Expenses (Create, Edit, Delete)
-  // RetailExpense's real columns/validation require tanggal/keterangan/nominal
-  // (not amount/expense_date/description) — sending the wrong names made
-  // every save fail validation (422) with no expense ever actually persisted.
-  // finance_category_id is left null: the modal's category field is a fixed
-  // display label, not a real retail_finance_categories id, so passing one
-  // here would either fail validation or silently attach the wrong tenant's
-  // category. The backend then stores kategori as 'Lainnya' until this
-  // dropdown is backed by real category ids.
-  const handleSaveExpense = async (newExpenseData: Omit<Expense, 'id'>, idToEdit?: string) => {
-    try {
-      const payload = {
-        tanggal: newExpenseData.date,
-        keterangan: newExpenseData.description,
-        nominal: newExpenseData.amount,
-        finance_category_id: null,
-      };
-      if (idToEdit) {
-        await api.put(`/retail/finance/expenses/${idToEdit}`, payload);
-        setExpenses((prev) =>
-          prev.map((exp) => (exp.id === idToEdit ? { ...exp, ...newExpenseData } : exp))
-        );
-      } else {
-        const res = await api.post('/retail/finance/expenses', payload);
-        const createdExpense: Expense = {
-          id: res.data?.data?.id?.toString() || `EXP-${Date.now()}`,
-          ...newExpenseData,
-        };
-        setExpenses((prev) => [createdExpense, ...prev]);
-      }
-    } catch (e) {
-      console.error('Failed to save expense', e);
-      alert('Gagal menyimpan pengeluaran ke server');
-    }
-  };
-
-  // Handlers for Other Incomes (Create, Edit, Delete)
-  const handleSaveIncome = async (newIncomeData: Omit<Income, 'id'>, financeCategoryId: string | null, idToEdit?: string) => {
-    try {
-      const payload = {
-        tanggal: newIncomeData.date,
-        keterangan: newIncomeData.description,
-        nominal: newIncomeData.amount,
-        finance_category_id: financeCategoryId ? Number(financeCategoryId) : null,
-      };
-      if (idToEdit) {
-        await api.put(`/retail/finance/incomes/${idToEdit}`, payload);
-        setIncomes((prev) =>
-          prev.map((inc) => (inc.id === idToEdit ? { ...inc, ...newIncomeData } : inc))
-        );
-      } else {
-        const res = await api.post('/retail/finance/incomes', payload);
-        const createdIncome: Income = {
-          id: res.data?.data?.id?.toString() || `INC-${Date.now()}`,
-          ...newIncomeData,
-        };
-        setIncomes((prev) => [createdIncome, ...prev]);
-      }
-    } catch (e) {
-      console.error('Failed to save income', e);
-      alert('Gagal menyimpan pemasukan ke server');
-    }
-  };
-
-  const handleDeleteIncome = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus catatan pemasukan ini?')) return;
-    try {
-      await api.delete(`/retail/finance/incomes/${id}`);
-      setIncomes((prev) => prev.filter((inc) => inc.id !== id));
-    } catch (e) {
-      console.error('Failed to delete income', e);
-      alert('Gagal menghapus pemasukan.');
-    }
-  };
-
-  const handleEditIncomeClick = (inc: Income) => {
-    setIncomeToEdit(inc);
-    setIsAddIncomeModalOpen(true);
-  };
-
-  const handleAddNewOfflineOrder = async (newOrder: Order) => {
-    try {
-      const payload = {
-        customer_id: null,
-        payment_method: newOrder.paymentMethod,
-        payment_amount: newOrder.totalAmount,
-        discount_code: null,
-        note: 'Offline POS Transaction (Omnichannel)',
-        items: newOrder.items.map((item) => ({
-          product_id: item.productId || item.sku,
-          qty: item.quantity
-        }))
-      };
-
-      await api.post('/retail/transactions', payload);
-      
-      setOrders((prev) => [newOrder, ...prev]);
-      setStores((prev) =>
-        prev.map((st) =>
-          st.platform === 'Manual/Offline'
-            ? {
-                ...st,
-                revenueToday: st.revenueToday + newOrder.totalAmount,
-                totalOrdersToday: st.totalOrdersToday + 1,
-              }
-            : st
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      alert("Gagal menyimpan transaksi kasir ke server.");
-    }
-  };
-
-  const handleDeductStock = (sku: string, qty: number) => {
-    setProducts((prev) =>
-      prev.map((p) => {
-        if (p.sku === sku) {
-          const newStock = Math.max(0, p.totalStock - qty);
-          return {
-            ...p,
-            totalStock: newStock,
-            status: newStock <= 0 ? 'Habis' : newStock <= p.stockMin ? 'Stok Menipis' : 'Aktif',
-          };
-        }
-        return p;
-      })
-    );
-  };
-
-  const handleDeleteExpense = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus catatan pengeluaran ini?')) {
-      try {
-        await api.delete(`/retail/finance/expenses/${id}`);
-        setExpenses((prev) => prev.filter((exp) => exp.id !== id));
       } catch (e) {
-        console.error('Failed to delete expense', e);
+        // ignore
       }
     }
   };
 
-  const handleEditExpenseClick = (exp: Expense) => {
-    setExpenseToEdit(exp);
-    setIsAddExpenseModalOpen(true);
+  const handleOpenPdfExport = async () => {
+    await fetchExpensesIfNeeded();
+    setIsPdfExportOpen(true);
   };
 
-  // Handlers for Orders
+  const handleOpenAiAdvisor = async () => {
+    await fetchExpensesIfNeeded();
+    setIsAiAdvisorOpen(true);
+  };
+
+  // Handlers for Orders & Shipping
   const handlePrintAwb = (order: Order) => {
     setSelectedOrderForAwb(order);
     setIsAwbPrintOpen(true);
-    // Mark AWB as printed
     setOrders((prev) =>
       prev.map((o) => (o.id === order.id ? { ...o, isPrintedAWB: true } : o))
     );
@@ -762,83 +479,6 @@ export default function App() {
     );
   };
 
-
-  // Handlers for Product Catalog (Create, Edit, Delete)
-  // RetailProduct's real columns are name/sku/unit/category_id/price_buy/
-  // price_sell/stock/stock_min — the old version sent sell_price/stock/
-  // category_id:1/unit_id (none of which the backend reads), so every
-  // product ever added here saved with a null price and null stock.
-  const handleSaveProduct = async (
-    data: { sku: string; name: string; unit: string; categoryId: string; hpp: number; priceOffline: number; priceShopee: number; priceTokopedia: number; priceTiktok: number; stockMin: number; totalStock?: number },
-    idToEdit?: string
-  ) => {
-    try {
-      const payload: any = {
-        name: data.name,
-        sku: data.sku,
-        unit: data.unit,
-        category_id: data.categoryId || null,
-        price_buy: data.hpp,
-        price_sell: data.priceOffline, // Currently acts as the master offline price
-        price_shopee: data.priceShopee,
-        price_tokopedia: data.priceTokopedia,
-        price_tiktok: data.priceTiktok,
-        stock_min: data.stockMin,
-      };
-      if (idToEdit) {
-        const res = await api.put(`/retail/products/${idToEdit}`, payload);
-        const updated = mapProduct(res.data);
-        setProducts((prev) => prev.map((p) => (p.id === idToEdit ? updated : p)));
-      } else {
-        const res = await api.post('/retail/products', { ...payload, stock: data.totalStock ?? 0 });
-        const created = mapProduct(res.data);
-        setProducts((prev) => [created, ...prev]);
-      }
-    } catch (e) {
-      console.error('Failed to save product', e);
-      alert('Gagal menyimpan produk ke server');
-    }
-  };
-
-  const handleEditProductClick = (prod: Product) => {
-    setProductToEdit(prod);
-    setIsAddProductOpen(true);
-  };
-
-  const handleDeleteProduct = async (prod: Product) => {
-    if (!confirm(`Hapus produk "${prod.name}"?`)) return;
-    try {
-      await api.delete(`/retail/products/${prod.id}`);
-      setProducts((prev) => prev.filter((p) => p.id !== prod.id));
-    } catch (e) {
-      console.error('Failed to delete product', e);
-      alert('Gagal menghapus produk. Produk mungkin masih terpakai di transaksi.');
-    }
-  };
-
-  const handleProductImageUploaded = (productId: string, imageUrl: string) => {
-    const fallback = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30';
-    const patch = { image: imageUrl || fallback, rawImageUrl: imageUrl || null };
-    setProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, ...patch } : p)));
-    setProductToEdit((prev) => (prev && prev.id === productId ? { ...prev, ...patch } : prev));
-  };
-
-  // Called after AddStockModal successfully records a purchase (see its own
-  // comment for why a Purchase, not a direct stock edit, is used — it's the
-  // one write path that keeps retail_stock_movements as an honest audit trail).
-  const handleStockAdded = (productId: string, qtyAdded: number) => {
-    setProducts((prev) => prev.map((p) => {
-      if (p.id !== productId) return p;
-      const newStock = p.totalStock + qtyAdded;
-      return {
-        ...p,
-        totalStock: newStock,
-        status: newStock <= 0 ? 'Habis' : newStock <= p.stockMin ? 'Stok Menipis' : 'Aktif',
-      };
-    }));
-    fetchStockMovements();
-  };
-
   const contextValue = {
     orders,
     setOrders,
@@ -846,28 +486,10 @@ export default function App() {
     setProducts,
     stores,
     setStores,
-    warehouses,
-    setWarehouses,
-    stockMovements,
-    setStockMovements,
-    expenses,
-    setExpenses,
-    incomes,
-    setIncomes,
-    cashSummaries,
     selectedStoreId,
     setSelectedStoreId,
     onPrintAwb: handlePrintAwb,
     onUpdateOrderStatus: handleUpdateOrderStatus,
-    onAddWarehouse: () => {
-      setWarehouseToEdit(null);
-      setIsAddWarehouseModalOpen(true);
-    },
-    onEditWarehouse: (wh: Warehouse) => {
-      setWarehouseToEdit(wh);
-      setIsAddWarehouseModalOpen(true);
-    },
-    onDeleteWarehouse: handleDeleteWarehouse,
     onMenuToggle: () => {
       if (window.innerWidth < 768) {
         setIsBottomSheetOpen(prev => !prev);
@@ -875,23 +497,8 @@ export default function App() {
         setCollapsed(prev => !prev);
       }
     },
-    onOpenAddExpense: () => {
-      setExpenseToEdit(null);
-      setIsAddExpenseModalOpen(true);
-    },
-    onOpenAddIncome: () => {
-      setIncomeToEdit(null);
-      setIsAddIncomeModalOpen(true);
-    },
-    onOpenAddProduct: () => {
-      setProductToEdit(null);
-      setIsAddProductOpen(true);
-    },
-    onOpenImportModal: () => setIsImportProductsOpen(true),
-    onOpenPdfExport: () => setIsPdfExportOpen(true),
-    onOpenAiAdvisor: () => setIsAiAdvisorOpen(true),
-    onAddNewOfflineOrder: handleAddNewOfflineOrder,
-    onDeductStock: handleDeductStock,
+    onOpenPdfExport: handleOpenPdfExport,
+    onOpenAiAdvisor: handleOpenAiAdvisor,
   };
 
   // Handler for Sync Marketplace
@@ -967,27 +574,6 @@ export default function App() {
       </div>
 
       {/* Global Modals & Drawers */}
-      <AddExpenseModal
-        isOpen={isAddExpenseModalOpen}
-        onClose={() => {
-          setIsAddExpenseModalOpen(false);
-          setExpenseToEdit(null);
-        }}
-        onSaveExpense={handleSaveExpense}
-        expenseToEdit={expenseToEdit}
-        stores={stores}
-      />
-
-      <AddIncomeModal
-        isOpen={isAddIncomeModalOpen}
-        onClose={() => {
-          setIsAddIncomeModalOpen(false);
-          setIncomeToEdit(null);
-        }}
-        onSaveIncome={handleSaveIncome}
-        incomeToEdit={incomeToEdit}
-      />
-
       <PdfExportModal
         isOpen={isPdfExportOpen}
         onClose={() => setIsPdfExportOpen(false)}
@@ -1002,58 +588,6 @@ export default function App() {
         order={selectedOrderForAwb}
       />
 
-      <AddProductModal
-        isOpen={isAddProductOpen}
-        onClose={() => {
-          setIsAddProductOpen(false);
-          setProductToEdit(null);
-        }}
-        onSaveProduct={handleSaveProduct}
-        productToEdit={productToEdit}
-        onImageUploaded={handleProductImageUploaded}
-      />
-
-      <ImportProductsModal
-        isOpen={isImportProductsOpen}
-        onClose={() => setIsImportProductsOpen(false)}
-        onImportSuccess={(newProducts) => {
-          setProducts((prev) => [...newProducts, ...prev]);
-        }}
-      />
-
-      <AddStockModal
-        isOpen={isAddStockOpen}
-        onClose={() => {
-          setIsAddStockOpen(false);
-          setProductToRestock(null);
-        }}
-        product={productToRestock}
-        onSaved={handleStockAdded}
-      />
-
-      {isAddWarehouseModalOpen && (
-        <AddWarehouseModal
-          warehouseToEdit={warehouseToEdit}
-          onClose={() => {
-            setIsAddWarehouseModalOpen(false);
-            setWarehouseToEdit(null);
-          }}
-          onSuccess={(savedWarehouse) => {
-            const mapped = mapWarehouse(savedWarehouse);
-            setWarehouses(prev => {
-              const isEdit = prev.some(w => w.id === mapped.id);
-              const updated = isEdit
-                ? prev.map(w => w.id === mapped.id ? mapped : w)
-                : [...prev, mapped];
-              return mapped.isDefault
-                ? updated.map(w => w.id === mapped.id ? w : { ...w, isDefault: false })
-                : updated;
-            });
-            setWarehouseToEdit(null);
-          }}
-        />
-      )}
-
       <AiAdvisorDrawer
         isOpen={isAiAdvisorOpen}
         onClose={() => setIsAiAdvisorOpen(false)}
@@ -1063,7 +597,7 @@ export default function App() {
       />
 
       <SellerAiFab
-        onOpen={() => setIsAiAdvisorOpen(true)}
+        onOpen={handleOpenAiAdvisor}
         isPosView={activeTab === 'toko-offline'}
       />
 
