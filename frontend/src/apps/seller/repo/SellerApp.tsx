@@ -122,7 +122,7 @@ export const tabToPath = (tab: ActiveTab): string => {
     case 'katalog-diskon': return '/seller/discounts';
     case 'katalog-harga': return '/seller/pricelists';
     case 'gudang': return '/seller/inventory';
-    case 'gudang-multi': return '/seller/outlets';
+    case 'gudang-multi': return '/seller/warehouses';
     case 'penerimaan-barang': return '/seller/stock';
     case 'gudang-po': return '/seller/purchase-orders';
     case 'gudang-mutasi': return '/seller/stock-movements';

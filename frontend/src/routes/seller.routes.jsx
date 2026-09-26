@@ -8,6 +8,7 @@ const SellerLayout = lazy(() => import('../apps/seller/repo/SellerApp'));
 // Omnichannel Pages
 const SellerDashboard = lazy(() => import('../apps/seller/repo/pages/SellerDashboardPage'));
 const SellerOrders = lazy(() => import('../apps/seller/repo/pages/SellerOrdersPage'));
+const SellerWarehouse = lazy(() => import('../apps/seller/repo/pages/SellerWarehousePage'));
 const MarketplaceDashboard = lazy(() => import('../apps/seller/repo/pages/SellerMarketplaceDashboardPage'));
 const ConnectedAccounts = lazy(() => import('../apps/seller/repo/components/omnichannel/ConnectedAccountsView').then(m => ({ default: m.ConnectedAccountsView })));
 const ProductMapping = lazy(() => import('../apps/seller/repo/components/omnichannel/ProductMappingView').then(m => ({ default: m.ProductMappingView })));
@@ -112,7 +113,7 @@ const sellerRoutes = (
 
     {/* LOGISTIK & GUDANG */}
     <Route path="inventory" element={<RetailInventory />} />
-    <Route path="warehouses" element={<Navigate to="/seller/outlets" replace />} />
+    <Route path="warehouses" element={<SellerWarehouse />} />
     <Route path="purchase-orders" element={<RetailPurchaseOrders />} />
     <Route path="stock" element={<RetailStockEntry />} />
     <Route path="stock-movements" element={<RetailStockMovements />} />
