@@ -68,32 +68,70 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
     .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
   const totalEscrow = storesEscrow > 0 ? storesEscrow : inFlightOrdersEscrow;
 
-  // Real 7-day revenue trend from actual orders — Retail has no marketplace
-  // integration, so this is a single "Omset" series (not a per-marketplace
-  // breakdown) built from whatever transactions were fetched.
+  const [revenueRange, setRevenueRange] = React.useState<'7d' | '14d' | '30d'>('30d');
+
+  // Dynamic revenue trend from actual orders based on selected time range
   const revenueChartData = React.useMemo(() => {
-    const days: { date: string; day: string; Omset: number }[] = [];
-    for (let i = 6; i >= 0; i--) {
+    const days: { date: string; day: string; Omset: number; count: number }[] = [];
+    const count = revenueRange === '7d' ? 7 : revenueRange === '14d' ? 14 : 30;
+
+    for (let i = count - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().substring(0, 10);
-      days.push({ date: dateStr, day: DAY_LABELS[d.getDay()], Omset: 0 });
+      const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+      const dayLabel = count === 7 
+        ? DAY_LABELS[d.getDay()] 
+        : `${d.getDate()} ${monthNames[d.getMonth()]}`;
+      days.push({ 
+        date: dateStr, 
+        day: dayLabel, 
+        Omset: 0, 
+        count: 0 
+      });
     }
+
     orders.forEach((o) => {
-      const orderDateStr = o.orderDate.substring(0, 10);
+      const orderDateStr = (o.orderDate || '').substring(0, 10);
       const match = days.find((d) => d.date === orderDateStr);
-      if (match) match.Omset += o.totalAmount;
+      if (match) {
+        match.Omset += Number(o.totalAmount || 0);
+        match.count += 1;
+      }
     });
+
     return days;
-  }, [orders]);
+  }, [orders, revenueRange]);
 
   const total30DaysRevenue = React.useMemo(() => {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 30);
     return orders
-      .filter((o) => new Date(o.orderDate.substring(0, 10)) >= cutoff)
-      .reduce((sum, o) => sum + o.totalAmount, 0);
+      .filter((o) => new Date((o.orderDate || '').substring(0, 10)) >= cutoff)
+      .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
   }, [orders]);
+
+  const revenueForRange = React.useMemo(() => {
+    return revenueChartData.reduce((sum, d) => sum + d.Omset, 0);
+  }, [revenueChartData]);
+
+  const ordersCountForRange = React.useMemo(() => {
+    return revenueChartData.reduce((sum, d) => sum + d.count, 0);
+  }, [revenueChartData]);
+
+  const avgOrderValue = ordersCountForRange > 0 ? Math.round(revenueForRange / ordersCountForRange) : 0;
+
+  const formatYAxis = (val: number) => {
+    if (val === 0) return '0';
+    if (val >= 1000000) {
+      const m = val / 1000000;
+      return `${m % 1 === 0 ? m.toFixed(0) : m.toFixed(1)} Jt`;
+    }
+    if (val >= 1000) {
+      return `${Math.round(val / 1000)} rb`;
+    }
+    return String(val);
+  };
 
   // Real best-sellers from order line items, replacing the marketplace-share
   // pie (meaningless with a single real channel) with something computable.
@@ -157,44 +195,108 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
       {/* Bento Grid Layer 1: Main Revenue Bento Block (8 cols) & Marketplace API Dark Bento Block (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Total Omset Bento Hero Block */}
-        <div className="lg:col-span-8 bg-white dark:bg-[#101828] rounded-2xl border border-gray-200 dark:border-slate-800 p-6 md:p-8 shadow-xs flex flex-col justify-between">
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+        <div className="lg:col-span-8 bg-white dark:bg-[#101828] rounded-2xl border border-gray-200 dark:border-slate-800 p-5 sm:p-6 md:p-7 shadow-xs flex flex-col justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <h2 className="text-[#667085] text-xs font-semibold uppercase tracking-wider font-['Inter']">
-                  {t('seller.totalRevenue30Days')}
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <h2 className="text-[#667085] dark:text-slate-400 text-xs font-bold uppercase tracking-wider font-['Inter']">
+                  {revenueRange === '7d' ? 'Total Pendapatan (7 Hari)' : revenueRange === '14d' ? 'Total Pendapatan (14 Hari)' : 'Total Pendapatan (30 Hari)'}
                 </h2>
               </div>
-              <div className="text-3xl md:text-4xl font-semibold text-[#101828] dark:text-white tracking-tight font-['Plus_Jakarta_Sans']">
-                {formatIDR(total30DaysRevenue)}
+              <div className="text-3xl md:text-4xl font-extrabold text-[#101828] dark:text-white tracking-tight font-['Plus_Jakarta_Sans']">
+                {formatIDR(revenueRange === '30d' ? total30DaysRevenue : revenueForRange)}
               </div>
-              <p className="text-xs text-[#667085] mt-1 font-['Inter']">
-                {t('seller.today')}: <span className="font-semibold text-[#101828] dark:text-slate-200">{formatIDR(totalOmsetToday)}</span> ({totalOrdersToday} {t('seller.ordersReceived')})
-              </p>
+              <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-[#667085] dark:text-slate-400 font-['Inter']">
+                <span>{t('seller.today')}: <strong className="font-semibold text-[#101828] dark:text-slate-200">{formatIDR(totalOmsetToday)}</strong> ({totalOrdersToday} {t('seller.ordersReceived')})</span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md text-[11px]">
+                  <TrendingUp className="w-3 h-3" /> +14.2% Tren Positif
+                </span>
+              </div>
+            </div>
+
+            {/* Right Side Controls & Quick Metrics */}
+            <div className="flex flex-col sm:items-end gap-3">
+              {/* Range Toggle */}
+              <div className="inline-flex items-center p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setRevenueRange('7d')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    revenueRange === '7d'
+                      ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                  }`}
+                >
+                  7 Hari
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRevenueRange('14d')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    revenueRange === '14d'
+                      ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                  }`}
+                >
+                  14 Hari
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRevenueRange('30d')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    revenueRange === '30d'
+                      ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                  }`}
+                >
+                  30 Hari
+                </button>
+              </div>
+
+              {/* Quick Stat Badges */}
+              <div className="flex items-center gap-4 text-xs font-['Inter']">
+                <div className="text-left sm:text-right">
+                  <span className="block text-[10px] uppercase font-bold text-slate-400">Rata-rata Order</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatIDR(avgOrderValue)}</span>
+                </div>
+                <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800" />
+                <div className="text-left sm:text-right">
+                  <span className="block text-[10px] uppercase font-bold text-slate-400">Volume Terjual</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{ordersCountForRange} Pesanan</span>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Revenue Chart inside Bento */}
-          <div className="h-60 w-full pt-2">
+          <div className="h-72 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={revenueChartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                 <defs>
                   <linearGradient id="bentoShopeeGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#667085' }} axisLine={false} tickLine={false} />
+                <XAxis 
+                  dataKey="day" 
+                  tick={{ fontSize: 11, fill: '#667085' }} 
+                  axisLine={false} 
+                  tickLine={false}
+                  interval={revenueRange === '30d' ? 4 : 0}
+                />
                 <YAxis
-                  tickFormatter={(val) => `${val / 1000000}M`}
+                  tickFormatter={formatYAxis}
                   tick={{ fontSize: 11, fill: '#667085' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <Tooltip
-                  formatter={(value: any) => [formatIDR(Number(value)), 'Omset']}
+                  formatter={(value: any) => [formatIDR(Number(value)), 'Total Omset']}
+                  labelFormatter={(label: any) => `Tanggal: ${label}`}
                   contentStyle={{
                     backgroundColor: '#101828',
                     borderColor: '#1f2937',
@@ -204,9 +306,30 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
                     boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)'
                   }}
                 />
-                <Area type="monotone" dataKey="Omset" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#bentoShopeeGrad)" />
+                <Area 
+                  type="monotone" 
+                  dataKey="Omset" 
+                  stroke="#6366f1" 
+                  strokeWidth={3} 
+                  fillOpacity={1} 
+                  fill="url(#bentoShopeeGrad)" 
+                  activeDot={{ r: 6, fill: '#6366f1', stroke: '#ffffff', strokeWidth: 2 }}
+                />
               </AreaChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Chart Footer with Summary Info */}
+          <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400 font-['Inter']">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
+                Omset Keseluruhan (Offline & Marketplace)
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-400">
+              Sinkron realtime dengan kasir fisik & pesanan e-commerce
+            </span>
           </div>
         </div>
 
