@@ -7,8 +7,8 @@ const NAV_LINKS = [
   { name: 'Beranda', href: '#beranda' },
   { name: 'Fitur', href: '#fitur' },
   { name: 'Cara Kerja', href: '#cara-kerja' },
-  { name: 'API & Developer', href: '/developers', isRoute: true },
   { name: 'Testimoni', href: '#testimoni' },
+  { name: 'API & Developer', href: '#developer' },
 ]
 
 export default function Navbar({ user, onLogout, onScrollTo, logoUrl }) {
@@ -76,7 +76,7 @@ export default function Navbar({ user, onLogout, onScrollTo, logoUrl }) {
               </Link>
               <Link
                 to="/register"
-                className="bg-[#10b981] hover:bg-[#059669] text-[#03110e] text-sm font-bold px-5 py-2.5 rounded-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-200 flex items-center gap-2"
+                className="bg-[#10b981] hover:bg-[#059669] text-[#03110e] text-sm font-bold px-5 py-2.5 rounded-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-200 flex items-center gap-2 bizora-btn-glow"
               >
                 <span>Daftar Gratis</span>
                 <ArrowRight className="w-4 h-4" />

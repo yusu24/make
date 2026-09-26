@@ -13,6 +13,7 @@ import FeaturesSection from './landing/FeaturesSection'
 import HowItWorks from './landing/HowItWorks'
 import RoiCalculator from './landing/RoiCalculator'
 import Testimonials from './landing/Testimonials'
+import DeveloperSection from './landing/DeveloperSection'
 import FaqSection from './landing/FaqSection'
 import Footer from './landing/Footer'
 import PromoBanner from './landing/PromoBanner'
@@ -178,6 +179,8 @@ export default function Landing() {
           onSubmit={handleSubmitTestimonial}
         />
       )}
+
+      <DeveloperSection />
 
       <FaqSection faqs={settings.faq_items} />
 
