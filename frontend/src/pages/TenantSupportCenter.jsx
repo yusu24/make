@@ -1,8 +1,8 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   Plus, Search, MessageSquare, Tag, AlertCircle, Clock, CheckCircle2,
-  HelpCircle, Phone, Mail, ChevronDown, ChevronRight, X, ExternalLink,
-  Shield, Check, ArrowRight, RefreshCw, Send, LifeBuoy, AlertTriangle,
+  HelpCircle, Phone, ChevronRight, X, ExternalLink,
+  Shield, Check, RefreshCw, Send, AlertTriangle,
   Building2, Users, FileText, CheckCircle, Info, Sparkles
 } from '@/constants/icons';
 import { api } from '../lib/api';
@@ -21,45 +21,9 @@ const PRIORITY_MAP = {
   low: { label: 'Rendah', badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-300/60', sla: '< 24 Jam' },
 };
 
-const FAQS = [
-  {
-    q: 'Bagaimana cara mengaktifkan sinkronisasi otomatis stok antar marketplace?',
-    a: 'Buka menu Marketplace > Toko Terhubung, pastikan status integrasi toko Anda "Connected". Aktifkan tombol toggle "Auto-Sync" pada masing-masing channel toko (Shopee, Tokopedia, TikTok Shop). Sistem Bizora akan otomatis menyelaraskan kuantitas stok saat terjadi transaksi di channel manapun.'
-  },
-  {
-    q: 'Printer kasir thermal Bluetooth tidak mau mencetak struk?',
-    a: '1. Pastikan Bluetooth di perangkat POS aktif dan terhubung (paired) dengan printer thermal 58mm/80mm.\n2. Buka menu Pengaturan Toko > Struk & Print, periksa ukuran kertas dan pilih template printer default.\n3. Lakukan "Test Print". Jika masih hening, nyalakan ulang printer dan pastikan kertas thermal tidak terpasang terbalik.'
-  },
-  {
-    q: 'Mengapa nomor resi (AWB) kurir tidak muncul otomatis di Station Packing?',
-    a: 'Nomor resi (AWB/Tracking Number) ditarik otomatis dari server API ekspedisi melalui integrasi webhook. Pastikan pesanan sudah dikonfirmasi statusnya menjadi "Perlu Diproses". Untuk pengiriman tipe COD atau kurir pickup, pastikan jam cut-off request pickup kurir belum terlewat.'
-  },
-  {
-    q: 'Bagaimana membatasi staf kasir agar tidak bisa melihat laporan laba rugi?',
-    a: 'Buka menu Pengaturan & Sistem > Hak Akses & Peran. Pilih peran "Kasir Toko Offline", lalu nonaktifkan izin "Laporan Keuangan (Laba Rugi)" dan "Pengaturan Toko". Staf kasir hanya akan memiliki akses ke register kasir POS dan shift.'
-  },
-  {
-    q: 'Apa yang harus dilakukan jika pembeli membatalkan pesanan marketplace saat barang sudah dikemas?',
-    a: 'Masuk ke menu Pesanan Masuk, cari nomor pesanan yang dibatalkan. Sistem akan menampilkan status "Dibatalkan oleh Pembeli". Klik tombol "Batalkan & Kembalikan Stok Gudang" agar saldo inventaris otomatis kembali ke rak penyimpanan.'
-  },
-  {
-    q: 'Bagaimana cara memindahkan stok dari Gudang Pusat ke Cabang Toko Fisik?',
-    a: 'Masuk ke menu Stok & Inventaris > Transfer Antar Gudang. Klik tombol "Buat Transfer Stok Baru", pilih gudang asal dan toko tujuan, masukkan SKU produk serta jumlah unit, lalu simpan. Staf di cabang tujuan cukup menekan tombol "Terima Barang" saat kiriman fisik tiba.'
-  },
-  {
-    q: 'Bagaimana sistem mencatat selisih uang kas laci saat tutup shift?',
-    a: 'Saat kasir menutup shift di POS Kasir, kasir memasukkan jumlah uang fisik yang dihitung di laci (Setoran Kasir / Actual Balance). Sistem membandingkan nominal tersebut dengan omzet tunai sistem (Expected Balance). Jika ada kelebihan atau kekurangan, selisih tercatat di Laporan Shift untuk proses audit harian pemilik toko.'
-  },
-  {
-    q: 'Kapan backup data toko otomatis dijalankan dan dikirimkan ke mana?',
-    a: 'Pencadangan database toko berjalan otomatis sesuai frekuensi yang Anda atur di menu Backup Data Toko (harian pada jam 02:00 WIB, mingguan, atau bulanan). Seluruh data master produk, transaksi, dan buku kas dikompres dalam format Excel (.xlsx) atau JSON dan dikirimkan langsung ke alamat email pemilik toko.'
-  }
-];
-
 const TenantSupportCenter = forwardRef(({ hideAction }, ref) => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('tickets'); // 'tickets' | 'faq'
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [search, setSearch] = useState('');
@@ -69,9 +33,6 @@ const TenantSupportCenter = forwardRef(({ hideAction }, ref) => {
   const [submitting, setSubmitting] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [resolvingId, setResolvingId] = useState(null);
-  
-  // FAQ accordion state
-  const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   const [formData, setFormData] = useState({
     subject: '',
@@ -300,363 +261,195 @@ const TenantSupportCenter = forwardRef(({ hideAction }, ref) => {
         </div>
       </div>
 
-      {/* ── 3. FAST SUPPORT CHANNELS (3-Card Section) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Card 1: WhatsApp Priority */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold">
-                <Phone size={20} />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">WhatsApp Helpdesk</h4>
-                <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Respon Cepat &lt; 5 Menit</span>
-              </div>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed pt-1">
-              Jalur khusus untuk kendala kasir POS macet, sinkronisasi stok kritis, atau pencetakan resi mendesak.
-            </p>
-          </div>
-          <a
-            href="https://wa.me/6281234567890?text=Halo%20CS%20Bizora,%20saya%20butuh%20bantuan%20cepat."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs transition-colors"
-          >
-            <span>Hubungi via WhatsApp</span>
-            <ExternalLink size={13} />
-          </a>
-        </div>
-
-        {/* Card 2: Email Technical Support */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold">
-                <Mail size={20} />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Email Dukungan Teknis</h4>
-                <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">support@bizora.id</span>
-              </div>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed pt-1">
-              Untuk eskalasi data invoice resmi perpajakan, integrasi kustom API, atau konsultasi migrasi database.
-            </p>
-          </div>
-          <a
-            href="mailto:support@bizora.id?subject=Bantuan%20Teknis%20Tenant%20Bizora"
-            className="mt-4 inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs transition-colors"
-          >
-            <span>Kirim Email Dukungan</span>
-            <ExternalLink size={13} />
-          </a>
-        </div>
-
-        {/* Card 3: SLA & Hours */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 flex items-center justify-center font-bold">
-                <LifeBuoy size={20} />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Jam Operasional Tim</h4>
-                <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">07:00 – 23:00 WIB (Setiap Hari)</span>
-              </div>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed pt-1">
-              Tim support siaga 7 hari seminggu. Layanan server cloud & pemantauan database berjalan otomatis 24 jam nonstop.
-            </p>
-          </div>
-          <div className="mt-4 flex items-center justify-between text-xs px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-            <span>Target Respon Tiket:</span>
-            <span className="font-bold text-indigo-600 dark:text-indigo-400">Maks. 2 Jam</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 4. TABS NAVIGATION (shadcn Tabs style) ── */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800">
-        <button
-          onClick={() => setActiveTab('tickets')}
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-            activeTab === 'tickets'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
-          }`}
-        >
-          <MessageSquare size={16} />
-          <span>Daftar Tiket Kendala</span>
-          <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-            {totalCount}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('faq')}
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-            activeTab === 'faq'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
-          }`}
-        >
-          <HelpCircle size={16} />
-          <span>Pusat Solusi Mandiri & FAQ</span>
-          <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-semibold">
-            {FAQS.length} Solusi
-          </span>
-        </button>
-      </div>
-
-      {/* ── TAB 1: DAFTAR TIKET ── */}
-      {activeTab === 'tickets' && (
-        <div className="space-y-4">
-          {/* Toolbar Search & Filter */}
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3">
-            <form onSubmit={handleSearchSubmit} className="flex-1 min-w-[260px] max-w-md relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Cari ID tiket, subjek kendala, atau pesan..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-9 py-2 text-xs md:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-100"
-              />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => { setSearch(''); fetchTickets(); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </form>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Filter Status */}
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
-              >
-                <option value="all">Semua Status</option>
-                <option value="open">Menunggu Respon (Open)</option>
-                <option value="in_progress">Sedang Ditangani (In Progress)</option>
-                <option value="resolved">Selesai (Resolved)</option>
-              </select>
-
-              {/* Filter Kategori */}
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
-              >
-                <option value="all">Semua Kategori</option>
-                <option value="bug">Bug / Kendala Sistem</option>
-                <option value="question">Pertanyaan Fitur</option>
-                <option value="feature">Usulan Fitur</option>
-                <option value="billing">Tagihan & Billing</option>
-              </select>
-
+      {/* ── 3. DAFTAR TIKET KENDALA ── */}
+      <div className="space-y-4">
+        {/* Toolbar Search & Filter */}
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3">
+          <form onSubmit={handleSearchSubmit} className="flex-1 min-w-[260px] max-w-md relative">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari ID tiket, subjek kendala, atau pesan..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-9 py-2 text-xs md:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-100"
+            />
+            {search && (
               <button
-                onClick={fetchTickets}
-                title="Segarkan Tiket"
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                type="button"
+                onClick={() => { setSearch(''); fetchTickets(); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+                <X size={14} />
+              </button>
+            )}
+          </form>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Filter Status */}
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
+            >
+              <option value="all">Semua Status</option>
+              <option value="open">Menunggu Respon (Open)</option>
+              <option value="in_progress">Sedang Ditangani (In Progress)</option>
+              <option value="resolved">Selesai (Resolved)</option>
+            </select>
+
+            {/* Filter Kategori */}
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
+            >
+              <option value="all">Semua Kategori</option>
+              <option value="bug">Bug / Kendala Sistem</option>
+              <option value="question">Pertanyaan Fitur</option>
+              <option value="feature">Usulan Fitur</option>
+              <option value="billing">Tagihan & Billing</option>
+            </select>
+
+            <button
+              onClick={fetchTickets}
+              title="Segarkan Tiket"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+            >
+              <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
+        </div>
+
+        {/* Table Container */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+          {loading ? (
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-500">
+              <RefreshCw size={28} className="animate-spin text-indigo-600" />
+              <span className="text-sm font-semibold">Memuat riwayat tiket bantuan...</span>
+            </div>
+          ) : filteredTickets.length === 0 ? (
+            <div className="py-16 px-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-4">
+                <MessageSquare size={30} />
+              </div>
+              <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1">
+                {tickets.length === 0 ? 'Belum Ada Tiket Bantuan' : 'Tidak Ada Tiket yang Cocok'}
+              </h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto mb-6">
+                {tickets.length === 0
+                  ? 'Jika mengalami kendala operasional, error sistem, atau butuh panduan, silakan buat tiket baru.'
+                  : 'Coba ubah kata kunci pencarian atau sesuaikan filter status dan kategori tiket.'}
+              </p>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus size={15} />
+                <span>Buat Tiket Baru Sekarang</span>
               </button>
             </div>
-          </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/75 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="py-3 px-5">ID & Waktu</th>
+                    <th className="py-3 px-5">Subjek Kendala</th>
+                    <th className="py-3 px-4">Prioritas & SLA</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-5">Petugas CS</th>
+                    <th className="py-3 px-5 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  {filteredTickets.map((t) => {
+                    const cat = CATEGORY_MAP[t.category] || CATEGORY_MAP.question;
+                    const priority = PRIORITY_MAP[t.priority] || PRIORITY_MAP.low;
+                    const IconComponent = cat.icon;
 
-          {/* Table Container */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-            {loading ? (
-              <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-500">
-                <RefreshCw size={28} className="animate-spin text-indigo-600" />
-                <span className="text-sm font-semibold">Memuat riwayat tiket bantuan...</span>
-              </div>
-            ) : filteredTickets.length === 0 ? (
-              <div className="py-16 px-6 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare size={30} />
-                </div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1">
-                  {tickets.length === 0 ? 'Belum Ada Tiket Bantuan' : 'Tidak Ada Tiket yang Cocok'}
-                </h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto mb-6">
-                  {tickets.length === 0
-                    ? 'Jika mengalami kendala operasional, error sistem, atau butuh panduan, silakan buat tiket baru.'
-                    : 'Coba ubah kata kunci pencarian atau sesuaikan filter status dan kategori tiket.'}
-                </p>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
-                >
-                  <Plus size={15} />
-                  <span>Buat Tiket Baru Sekarang</span>
-                </button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/75 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                      <th className="py-3 px-5">ID & Waktu</th>
-                      <th className="py-3 px-5">Subjek Kendala</th>
-                      <th className="py-3 px-4">Prioritas & SLA</th>
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-5">Petugas CS</th>
-                      <th className="py-3 px-5 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                    {filteredTickets.map((t) => {
-                      const cat = CATEGORY_MAP[t.category] || CATEGORY_MAP.question;
-                      const priority = PRIORITY_MAP[t.priority] || PRIORITY_MAP.low;
-                      const IconComponent = cat.icon;
+                    return (
+                      <tr
+                        key={t.id}
+                        onClick={() => setSelectedTicket(t)}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+                      >
+                        {/* ID & Date */}
+                        <td className="py-4 px-5 align-top whitespace-nowrap">
+                          <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 group-hover:underline block">
+                            {t.id}
+                          </span>
+                          <span className="text-[11px] text-slate-400 block mt-0.5">
+                            {t.date ? new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Hari Ini'}
+                          </span>
+                        </td>
 
-                      return (
-                        <tr
-                          key={t.id}
-                          onClick={() => setSelectedTicket(t)}
-                          className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
-                        >
-                          {/* ID & Date */}
-                          <td className="py-4 px-5 align-top whitespace-nowrap">
-                            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 group-hover:underline block">
-                              {t.id}
+                        {/* Subject & Category */}
+                        <td className="py-4 px-5 align-top max-w-md">
+                          <div className="font-bold text-slate-800 dark:text-slate-100 line-clamp-1 mb-1 group-hover:text-indigo-600 transition-colors">
+                            {t.subject}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border ${cat.color}`}>
+                              <IconComponent size={11} />
+                              <span>{cat.label}</span>
                             </span>
-                            <span className="text-[11px] text-slate-400 block mt-0.5">
-                              {t.date ? new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Hari Ini'}
-                            </span>
-                          </td>
+                          </div>
+                        </td>
 
-                          {/* Subject & Category */}
-                          <td className="py-4 px-5 align-top max-w-md">
-                            <div className="font-bold text-slate-800 dark:text-slate-100 line-clamp-1 mb-1 group-hover:text-indigo-600 transition-colors">
-                              {t.subject}
-                            </div>
+                        {/* Priority */}
+                        <td className="py-4 px-4 align-top whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold ${priority.badge}`}>
+                            {priority.label}
+                          </span>
+                          <span className="text-[10px] text-slate-400 block mt-1">SLA: {priority.sla}</span>
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-4 px-4 align-top whitespace-nowrap">
+                          {getStatusBadge(t.status)}
+                        </td>
+
+                        {/* Assigned Agent */}
+                        <td className="py-4 px-5 align-top whitespace-nowrap">
+                          {t.assigned && t.assigned !== '—' ? (
                             <div className="flex items-center gap-2">
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border ${cat.color}`}>
-                                <IconComponent size={11} />
-                                <span>{cat.label}</span>
+                              <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] flex items-center justify-center shrink-0">
+                                {t.assigned.charAt(0)}
+                              </div>
+                              <span className="font-medium text-slate-700 dark:text-slate-300">
+                                {t.assigned}
                               </span>
                             </div>
-                          </td>
+                          ) : (
+                            <span className="text-slate-400 italic text-[11px]">Belum ditugaskan</span>
+                          )}
+                        </td>
 
-                          {/* Priority */}
-                          <td className="py-4 px-4 align-top whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold ${priority.badge}`}>
-                              {priority.label}
-                            </span>
-                            <span className="text-[10px] text-slate-400 block mt-1">SLA: {priority.sla}</span>
-                          </td>
-
-                          {/* Status */}
-                          <td className="py-4 px-4 align-top whitespace-nowrap">
-                            {getStatusBadge(t.status)}
-                          </td>
-
-                          {/* Assigned Agent */}
-                          <td className="py-4 px-5 align-top whitespace-nowrap">
-                            {t.assigned && t.assigned !== '—' ? (
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] flex items-center justify-center shrink-0">
-                                  {t.assigned.charAt(0)}
-                                </div>
-                                <span className="font-medium text-slate-700 dark:text-slate-300">
-                                  {t.assigned}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-slate-400 italic text-[11px]">Belum ditugaskan</span>
-                            )}
-                          </td>
-
-                          {/* Action Button */}
-                          <td className="py-4 px-5 align-top text-right whitespace-nowrap">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedTicket(t);
-                              }}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors font-semibold"
-                            >
-                              <span>Detail</span>
-                              <ChevronRight size={13} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB 2: PUSAT FAQ & SOLUSI MANDIRI (Accordion) ── */}
-      {activeTab === 'faq' && (
-        <div className="space-y-4">
-          <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-5 rounded-2xl border border-indigo-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <HelpCircle size={18} className="text-indigo-600" />
-                <span>Solusi Mandiri & FAQ Pengguna Toko</span>
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                Kumpulan jawaban tercepat untuk pertanyaan dan kendala teknis yang paling sering dialami seller.
-              </p>
+                        {/* Action Button */}
+                        <td className="py-4 px-5 align-top text-right whitespace-nowrap">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedTicket(t);
+                            }}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors font-semibold"
+                          >
+                            <span>Detail</span>
+                            <ChevronRight size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-            <a
-              href="https://wa.me/6281234567890?text=Halo%20Tim%20Bizora,%20saya%20punya%20pertanyaan%20di%20luar%20FAQ."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-indigo-600 font-semibold text-xs shadow-xs hover:bg-indigo-50 transition-colors shrink-0"
-            >
-              <span>Pertanyaan Tidak Ada di Sini?</span>
-              <ArrowRight size={13} />
-            </a>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
-            {FAQS.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <div key={idx} className="transition-colors">
-                  <button
-                    onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
-                    className="w-full py-4 px-6 flex items-center justify-between text-left gap-4 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
-                  >
-                    <span className="text-xs md:text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 text-xs font-bold flex items-center justify-center shrink-0">
-                        {idx + 1}
-                      </span>
-                      <span>{faq.q}</span>
-                    </span>
-                    <ChevronDown
-                      size={18}
-                      className={`text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-indigo-600' : ''}`}
-                    />
-                  </button>
-                  {isOpen && (
-                    <div className="px-6 pb-5 pt-1 text-xs text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line pl-15 animate-fade-in">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* ── 5. MODAL DETAIL TIKET ── */}
+      {/* ── 4. MODAL DETAIL TIKET ── */}
       {selectedTicket && (
         <Modal
           isOpen={!!selectedTicket}
@@ -788,7 +581,7 @@ const TenantSupportCenter = forwardRef(({ hideAction }, ref) => {
         </Modal>
       )}
 
-      {/* ── 6. MODAL BUAT TIKET BARU ── */}
+      {/* ── 5. MODAL BUAT TIKET BARU ── */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
