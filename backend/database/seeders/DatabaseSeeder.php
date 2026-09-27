@@ -164,9 +164,10 @@ class DatabaseSeeder extends Seeder
         foreach ($sellerTenants as $st) {
             $this->createDemoTenant($st['email'], $st['name'], 'seller', $st['tenant_id']);
         }
-        $this->command->info('Ã¢Å“â€¦ Seller demo accounts seeded.');
+        $this->call(SellerFullDummySeeder::class);
+        $this->command->info('✅ Seller demo accounts & dummy data seeded.');
 
-        $this->command->info('Ã°Å¸Å¡â‚¬ All Category Demo Accounts Seeded Successfully!');
+        $this->command->info('🚀 All Category Demo Accounts Seeded Successfully!');
         
         // --- SAAS ADMIN & DOCUMENTATION DATA ---
         $this->call(SaasAdminDummySeeder::class);

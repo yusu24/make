@@ -17,6 +17,56 @@ class SellerWarehouseController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
+        if ($warehouses->isEmpty()) {
+            $defaultWarehouses = [
+                [
+                    'name' => 'Gudang Utama Jakarta',
+                    'code' => 'WH-JKT-01',
+                    'city' => 'Jakarta Barat',
+                    'address' => 'Kawasan Industri Pergudangan Daan Mogot Km 14 No. 8',
+                    'pic_name' => 'Rahmat Hidayat',
+                    'pic_phone' => '081299881122',
+                    'is_default' => true,
+                ],
+                [
+                    'name' => 'Gudang Hub Surabaya',
+                    'code' => 'WH-SBY-02',
+                    'city' => 'Surabaya',
+                    'address' => 'Rungkut Industri III No. 45, Surabaya',
+                    'pic_name' => 'Ahmad Subagyo',
+                    'pic_phone' => '085611223344',
+                    'is_default' => false,
+                ],
+                [
+                    'name' => 'Gudang Transit Bandung',
+                    'code' => 'WH-BDG-03',
+                    'city' => 'Bandung',
+                    'address' => 'Jl. Soekarno Hatta No. 512, Bandung',
+                    'pic_name' => 'Dedi Mulyadi',
+                    'pic_phone' => '081399887766',
+                    'is_default' => false,
+                ],
+                [
+                    'name' => 'Gudang Fulfillment Medan',
+                    'code' => 'WH-MDN-04',
+                    'city' => 'Medan',
+                    'address' => 'KIM II Kavling 18 Mabar, Medan Deli, Medan',
+                    'pic_name' => 'Zulkifli Harahap',
+                    'pic_phone' => '082155443322',
+                    'is_default' => false,
+                ],
+            ];
+
+            foreach ($defaultWarehouses as $wh) {
+                SellerWarehouse::create(array_merge($wh, ['tenant_id' => $tenantId]));
+            }
+
+            $warehouses = SellerWarehouse::where('tenant_id', $tenantId)
+                ->orderBy('is_default', 'desc')
+                ->orderBy('created_at', 'asc')
+                ->get();
+        }
+
         return response()->json([
             'success' => true,
             'data' => $warehouses

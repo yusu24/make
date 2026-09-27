@@ -872,32 +872,44 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     Route::get('announcements/active', [\App\Http\Controllers\Api\AnnouncementController::class, 'activeForTenant']);
 
     // =========================================================================
-    // SELLER MODULE ROUTES (Protected by Tenant Isolation)
+    // SELLER MODULE ROUTES (Protected by Tenant Isolation & RBAC Permissions)
     // =========================================================================
     Route::prefix('seller')->middleware('tenant')->group(function () {
-        // Warehouses
-        Route::get('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'index']);
-        Route::post('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'store']);
-        Route::put('warehouses/{id}', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'update']);
-        Route::delete('warehouses/{id}', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'destroy']);
+        // Warehouses (Multi-Gudang)
+        Route::middleware('seller_permission:seller_warehouses')->group(function () {
+            Route::get('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'index']);
+            Route::post('warehouses', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'store']);
+            Route::put('warehouses/{id}', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'update']);
+            Route::delete('warehouses/{id}', [\App\Http\Controllers\Api\SellerWarehouseController::class, 'destroy']);
+        });
 
-        // Products
-        Route::get('products', [\App\Http\Controllers\Api\SellerProductController::class, 'index']);
-        Route::post('products', [\App\Http\Controllers\Api\SellerProductController::class, 'store']);
-        Route::put('products/{id}', [\App\Http\Controllers\Api\SellerProductController::class, 'update']);
-        Route::patch('products/{id}/stock', [\App\Http\Controllers\Api\SellerProductController::class, 'updateStock']);
-        Route::delete('products/{id}', [\App\Http\Controllers\Api\SellerProductController::class, 'destroy']);
+        // Products & SKU Mapping
+        Route::middleware('seller_permission:seller_mapping')->group(function () {
+            Route::get('products', [\App\Http\Controllers\Api\SellerProductController::class, 'index']);
+            Route::post('products', [\App\Http\Controllers\Api\SellerProductController::class, 'store']);
+            Route::put('products/{id}', [\App\Http\Controllers\Api\SellerProductController::class, 'update']);
+            Route::patch('products/{id}/stock', [\App\Http\Controllers\Api\SellerProductController::class, 'updateStock']);
+            Route::delete('products/{id}', [\App\Http\Controllers\Api\SellerProductController::class, 'destroy']);
+        });
 
         // Orders
-        Route::get('orders', [\App\Http\Controllers\Api\SellerOrderController::class, 'index']);
-        Route::post('orders', [\App\Http\Controllers\Api\SellerOrderController::class, 'store']);
-        Route::patch('orders/{id}/status', [\App\Http\Controllers\Api\SellerOrderController::class, 'updateStatus']);
+        Route::middleware('seller_permission:seller_orders')->group(function () {
+            Route::get('orders', [\App\Http\Controllers\Api\SellerOrderController::class, 'index']);
+            Route::post('orders', [\App\Http\Controllers\Api\SellerOrderController::class, 'store']);
+            Route::patch('orders/{id}/status', [\App\Http\Controllers\Api\SellerOrderController::class, 'updateStatus']);
+        });
 
         // Channels & Sync
-        Route::get('channels', [\App\Http\Controllers\Api\SellerChannelController::class, 'index']);
-        Route::patch('channels/{id}/toggle', [\App\Http\Controllers\Api\SellerChannelController::class, 'toggle']);
-        Route::post('sync', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncNow']);
-        Route::get('sync-logs', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncLogs']);
+        Route::middleware('seller_permission:seller_marketplace')->group(function () {
+            Route::get('channels', [\App\Http\Controllers\Api\SellerChannelController::class, 'index']);
+            Route::patch('channels/{id}/toggle', [\App\Http\Controllers\Api\SellerChannelController::class, 'toggle']);
+        });
+
+        // Sync Trigger & Logs
+        Route::middleware('seller_permission:seller_sync')->group(function () {
+            Route::post('sync', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncNow']);
+            Route::get('sync-logs', [\App\Http\Controllers\Api\SellerChannelController::class, 'syncLogs']);
+        });
     });
 });
 

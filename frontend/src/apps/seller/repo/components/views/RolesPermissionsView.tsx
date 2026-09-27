@@ -10,18 +10,43 @@ interface RetailRole {
   permissions: string[];
 }
 
-const MODULE_PERMISSIONS = [
-  { id: 'pos', label: 'Kasir (POS), Retur Pelanggan & Diskon Checkout' },
-  { id: 'catalog', label: 'Katalog Produk' },
-  { id: 'inventory', label: 'Manajemen Stok, Logistik & Stock Opname' },
-  { id: 'master', label: 'Data Master (Kategori, Satuan, Supplier, Pelanggan, Pengaturan)' },
-  { id: 'staff', label: 'Data Pegawai' },
-  { id: 'roles', label: 'Manajemen Hak Akses' },
-  { id: 'purchasing', label: 'Pembelian & Retur Supplier' },
-  { id: 'discounts', label: 'Kode Diskon & Pricelist' },
-  { id: 'reports', label: 'Laporan Analitik' },
-  { id: 'finance', label: 'Keuangan (Pengeluaran, Hutang, Piutang)' },
+export interface PermissionGroup {
+  group: string;
+  permissions: { id: string; label: string }[];
+}
+
+export const MODULE_PERMISSION_GROUPS: PermissionGroup[] = [
+  {
+    group: '🌐 Omnichannel & Marketplace Seller',
+    permissions: [
+      { id: 'seller_marketplace', label: 'Dashboard Marketplace & Hubungkan Akun (Shopee, Tokopedia, TikTok, Lazada)' },
+      { id: 'seller_orders', label: 'Pesanan Omnichannel (Proses, Batalkan, Update Status Pengiriman)' },
+      { id: 'seller_mapping', label: 'Pemetaan SKU (Product Mapping) & Multi-Channel Pricing' },
+      { id: 'seller_sync', label: 'Pusat Sinkronisasi Stok & Riwayat Log Sinkronisasi' },
+      { id: 'seller_shipping', label: 'Logistik & Pengiriman (Request Pickup, Ekspedisi, Cetak Resi AWB)' },
+      { id: 'seller_packing', label: 'Peningkatan Quality Packing & Scan Barcode Pesanan' },
+      { id: 'seller_warehouses', label: 'Multi-Gudang Seller & Alokasi Stok Antar Gudang' },
+      { id: 'seller_notifications', label: 'Pusat Notifikasi Toko & Resolusi Konflik Stok' },
+    ],
+  },
+  {
+    group: '🏪 Toko Retail, Kasir & Inventori',
+    permissions: [
+      { id: 'pos', label: 'Kasir POS & Transaksi Kasir Offline' },
+      { id: 'catalog', label: 'Katalog Master Produk & Stok' },
+      { id: 'inventory', label: 'Manajemen Stok Fisik & Stock Opname' },
+      { id: 'purchasing', label: 'Pembelian & Retur Supplier' },
+      { id: 'discounts', label: 'Kode Diskon Promo & Daftar Harga' },
+      { id: 'finance', label: 'Keuangan & Pencairan Saldo (Kas, Hutang, Piutang)' },
+      { id: 'reports', label: 'Laporan Penjualan & Analitik Margin' },
+      { id: 'master', label: 'Data Master (Supplier, Cabang, Satuan, Kategori)' },
+      { id: 'staff', label: 'Data Pegawai & Manajemen Staf' },
+      { id: 'roles', label: 'Manajemen Hak Akses & Peran' },
+    ],
+  },
 ];
+
+export const MODULE_PERMISSIONS = MODULE_PERMISSION_GROUPS.flatMap((g) => g.permissions);
 
 export const RolesPermissionsView: React.FC = () => {
   const [roles, setRoles] = useState<RetailRole[]>([]);
@@ -191,17 +216,26 @@ export const RolesPermissionsView: React.FC = () => {
               </div>
               <div>
                 <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-2">Modul yang Boleh Diakses</label>
-                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                  {MODULE_PERMISSIONS.map((m) => (
-                    <label key={m.id} className="flex items-start gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={rolePermissions.includes(m.id)}
-                        onChange={() => togglePermission(m.id)}
-                        className="mt-0.5 cursor-pointer"
-                      />
-                      <span className="text-slate-700 dark:text-slate-300">{m.label}</span>
-                    </label>
+                <div className="space-y-4 max-h-64 overflow-y-auto pr-1">
+                  {MODULE_PERMISSION_GROUPS.map((group) => (
+                    <div key={group.group} className="space-y-2">
+                      <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider bg-indigo-50/70 dark:bg-indigo-950/40 px-2.5 py-1 rounded-lg">
+                        {group.group}
+                      </div>
+                      <div className="space-y-1.5 pl-1">
+                        {group.permissions.map((m) => (
+                          <label key={m.id} className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 p-1 rounded-lg transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={rolePermissions.includes(m.id)}
+                              onChange={() => togglePermission(m.id)}
+                              className="mt-0.5 cursor-pointer accent-indigo-600 rounded"
+                            />
+                            <span className="text-slate-700 dark:text-slate-300 text-xs">{m.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>

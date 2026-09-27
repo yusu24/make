@@ -80,6 +80,19 @@ export const GRANULAR_PERMISSION_GROUPS = [
     ]
   },
   {
+    group: '🌐 Omnichannel & Marketplace Seller',
+    permissions: [
+      { id: 'seller_marketplace', label: 'Akses Dashboard Marketplace & Hubungkan Akun Toko' },
+      { id: 'seller_orders', label: 'Proses Pesanan Masuk Marketplace & Update Status Pengiriman' },
+      { id: 'seller_mapping', label: 'Pemetaan SKU (Product Mapping) & Multi-Channel Pricing' },
+      { id: 'seller_sync', label: 'Pusat Sinkronisasi Stok & Riwayat Log Sinkronisasi' },
+      { id: 'seller_shipping', label: 'Manajemen Ekspedisi, Request Pickup & Cetak Resi (AWB)' },
+      { id: 'seller_packing', label: 'Pemeriksaan Quality Packing & Scan Barcode Pesanan' },
+      { id: 'seller_warehouses', label: 'Kelola Multi-Gudang Seller & Alokasi Stok Antar Cabang' },
+      { id: 'seller_notifications', label: 'Pusat Notifikasi Toko & Resolusi Konflik Stok Marketplace' },
+    ]
+  },
+  {
     group: '⚙️ Tim, Hak Akses & Pengaturan',
     permissions: [
       { id: 'staff', label: 'Tambah & Kelola Akun Karyawan / Kasir' },

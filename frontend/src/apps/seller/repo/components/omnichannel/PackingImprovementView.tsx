@@ -12,20 +12,20 @@ interface PackingQueueItem {
 }
 
 const INITIAL_PACKING_QUEUE: PackingQueueItem[] = [
-  { id: '1', orderId: 'INV-12008', courier: 'J&T Express', items: '2x SKU-001, 1x SKU-003', printed: true },
-  { id: '2', orderId: 'INV-12009', courier: 'SiCepat Halu', items: '1x SKU-002', printed: false },
-  { id: '3', orderId: 'INV-12010', courier: 'GoSend Instant', items: '3x SKU-004', printed: true },
-  { id: '4', orderId: 'INV-12011', courier: 'JNE Reguler', items: '1x SKU-005', printed: false },
-  { id: '5', orderId: 'INV-12012', courier: 'Ninja Xpress', items: '2x SKU-006', printed: true },
-  { id: '6', orderId: 'INV-12013', courier: 'Anteraja Reg', items: '1x SKU-007', printed: false },
+  { id: '1', orderId: '260804SHP88219A', courier: 'J&T Express', items: '2x GLOW-SERUM-30, 1x GLOW-SUNSCREEN-50', printed: true },
+  { id: '2', orderId: 'TKP-20260804-99821', courier: 'SiCepat REG', items: '1x TZ-HEADSET-PRO', printed: true },
+  { id: '3', orderId: '260805SHP99212C', courier: 'J&T Express', items: '1x TZ-POWERBANK-20K', printed: false },
+  { id: '4', orderId: '260805SHP99999A', courier: 'SPX Standard', items: '2x GLOW-CLEANSER-100, 1x GLOW-TONER-120', printed: false },
+  { id: '5', orderId: '99018273645123901', courier: 'J&T Cargo', items: '1x ST-DENIM-JACKET', printed: false },
+  { id: '6', orderId: '260805SHP11111A', courier: 'Anteraja Reg', items: '1x GLOW-SERUM-30', printed: false },
 ];
 
 export const PackingImprovementView: React.FC = () => {
   const [scannedResi, setScannedResi] = useState('');
   const [scanHistory, setScanHistory] = useState<Array<{ resi: string; status: 'valid' | 'invalid'; time: string }>>([
-    { resi: 'JP1234567890', status: 'valid', time: '10:42 AM' },
-    { resi: '01234567891234', status: 'valid', time: '10:40 AM' },
-    { resi: 'INVALID-9921', status: 'invalid', time: '10:35 AM' },
+    { resi: 'JX9821039821', status: 'valid', time: '10:42' },
+    { resi: '003291083921', status: 'valid', time: '10:40' },
+    { resi: 'INVALID-9921', status: 'invalid', time: '10:35' },
   ]);
   const [queue, setQueue] = useState<PackingQueueItem[]>(INITIAL_PACKING_QUEUE);
   const [searchTerm, setSearchTerm] = useState('');

@@ -16,13 +16,16 @@ interface ShipmentItem {
 }
 
 const INITIAL_SHIPMENTS: ShipmentItem[] = [
-  { id: '1', orderId: 'INV-12003', buyer: 'Budi Santoso', courier: 'J&T Express', awb: 'JP1234567890', schedule: 'Hari ini, 14:00', status: 'Ready Pickup', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
-  { id: '2', orderId: 'INV-12004', buyer: 'Siti Aminah', courier: 'JNE Reguler', awb: '01234567891234', schedule: 'Hari ini, 15:00', status: 'Sedang Dikirim', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-  { id: '3', orderId: 'INV-12005', buyer: 'Ahmad Dahlan', courier: 'SiCepat Halu', awb: '001234567890', schedule: 'Kemarin', status: 'Terkirim', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  { id: '4', orderId: 'INV-12006', buyer: 'Dewi Sartika', courier: 'GoSend Instant', awb: 'GOSEND-998822', schedule: 'Hari ini, 10:00', status: 'Terkirim', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  { id: '5', orderId: 'INV-12007', buyer: 'Rizky Febian', courier: 'Ninja Xpress', awb: 'NJX-88771122', schedule: 'Kemarin', status: 'Retur', color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-500/10' },
-  { id: '6', orderId: 'INV-12008', buyer: 'Hendra Setiawan', courier: 'J&T Express', awb: 'JP9988112233', schedule: 'Hari ini, 16:30', status: 'Ready Pickup', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
-  { id: '7', orderId: 'INV-12009', buyer: 'Clarissa Putri', courier: 'Anteraja Reg', awb: 'ANT-99001122', schedule: 'Hari ini, 17:00', status: 'Sedang Dikirim', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+  { id: '1', orderId: '260804SHP88219A', buyer: 'Anisa Rahmawati', courier: 'J&T Express', awb: 'JX9821039821', schedule: 'Hari ini, 14:00', status: 'Ready Pickup', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+  { id: '2', orderId: 'TKP-20260804-99821', buyer: 'Budi Santoso', courier: 'SiCepat REG', awb: '003291083921', schedule: 'Hari ini, 15:00', status: 'Ready Pickup', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+  { id: '3', orderId: '57821903819203819', buyer: 'Dina Permata', courier: 'Ninja Xpress', awb: 'NJX882910382', schedule: 'Hari ini, 10:30', status: 'Sedang Dikirim', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+  { id: '4', orderId: 'LZD-882190283', buyer: 'Eko Prasetyo', courier: 'Lazada Express (LEL)', awb: 'LEL992019283', schedule: 'Kemarin', status: 'Terkirim', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+  { id: '5', orderId: '260803SHP1102A', buyer: 'Fiona Lestari', courier: 'Anteraja Reg', awb: 'ANT0092102931', schedule: 'Kemarin', status: 'Retur', color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-500/10' },
+  { id: '6', orderId: 'TKP-20260805-77312', buyer: 'Siti Aminah', courier: 'SiCepat BEST', awb: '004291083921', schedule: 'Hari ini, 16:30', status: 'Sedang Dikirim', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+  { id: '7', orderId: 'TKP-20260805-11122', buyer: 'Gilang Dirga', courier: 'GoSend Instant', awb: 'GOSEND-111222333', schedule: 'Hari ini, 11:45', status: 'Terkirim', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+  { id: '8', orderId: '260805SHP99999A', buyer: 'Dewi Lestari', courier: 'SPX Standard', awb: 'SPXID029182910', schedule: 'Hari ini, 17:00', status: 'Ready Pickup', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+  { id: '9', orderId: 'TKP-20260805-33441', buyer: 'Ferry Salim', courier: 'JNE YES', awb: 'JNE992819203', schedule: 'Hari ini, 13:00', status: 'Sedang Dikirim', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+  { id: '10', orderId: 'LZD-882190333', buyer: 'Gunawan Prasetya', courier: 'Ninja Xpress', awb: 'NJX992019482', schedule: 'Hari ini, 14:40', status: 'Sedang Dikirim', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
 ];
 
 export const ShippingManagementView: React.FC = () => {

@@ -25,11 +25,11 @@ interface ConnectedAccount {
 }
 
 const INITIAL_ACCOUNTS: ConnectedAccount[] = [
-  { id: 1, platform: 'Shopee', shop: 'Toko Elektronik Budi', shopId: 'SH-992312', status: 'Connected', autoSync: true, lastSync: '10 mins ago', color: 'bg-orange-500' },
-  { id: 2, platform: 'Tokopedia', shop: 'Budi Gadget Official', shopId: 'TK-12003', status: 'Connected', autoSync: true, lastSync: '12 mins ago', color: 'bg-emerald-500' },
-  { id: 3, platform: 'TikTok Shop', shop: 'Budi Gadget Live', shopId: 'TT-550112', status: 'Token Expired', autoSync: false, lastSync: '5 hours ago', color: 'bg-black dark:bg-slate-600' },
-  { id: 4, platform: 'Lazada', shop: 'Budi Elektronik Mall', shopId: 'LZ-88123', status: 'Connected', autoSync: true, lastSync: '15 mins ago', color: 'bg-blue-600' },
-  { id: 5, platform: 'Blibli', shop: 'Budi Store Official', shopId: 'BL-9912', status: 'Disconnected', autoSync: false, lastSync: 'Never', color: 'bg-sky-500' },
+  { id: 1, platform: 'Shopee', shop: 'GlowUp Official Store (Shopee)', shopId: 'SH-992312', status: 'Connected', autoSync: true, lastSync: '2 menit lalu', color: 'bg-orange-500' },
+  { id: 2, platform: 'Tokopedia', shop: 'TechZone ID Tokopedia', shopId: 'TK-12003', status: 'Connected', autoSync: true, lastSync: '5 menit lalu', color: 'bg-emerald-500' },
+  { id: 3, platform: 'TikTok Shop', shop: 'StyleStudio Shop (TikTok)', shopId: 'TT-550112', status: 'Connected', autoSync: true, lastSync: '12 menit lalu', color: 'bg-black dark:bg-slate-600' },
+  { id: 4, platform: 'Lazada', shop: 'Bizora Official Store (Lazada)', shopId: 'LZ-88123', status: 'Connected', autoSync: true, lastSync: '25 menit lalu', color: 'bg-blue-600' },
+  { id: 5, platform: 'Blibli', shop: 'Bizora Official Mall (Blibli)', shopId: 'BL-9912', status: 'Disconnected', autoSync: false, lastSync: 'Belum Sinkron', color: 'bg-sky-500' },
 ];
 
 export const ConnectedAccountsView: React.FC = () => {
