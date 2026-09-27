@@ -170,14 +170,14 @@ export const ShippingManagementView: React.FC = () => {
                 paginatedItems.map((row) => (
                   <tr key={row.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="py-3.5 px-4">
-                      <p className="font-bold text-sm text-slate-800 dark:text-slate-100">{row.orderId}</p>
+                      <p className="font-normal text-sm text-slate-800 dark:text-slate-100">{row.orderId}</p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{row.buyer}</p>
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-sm text-slate-700 dark:text-slate-300">{row.courier}</td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-slate-600 dark:text-slate-300 font-bold">{row.awb}</td>
+                    <td className="py-3.5 px-4 font-normal text-sm text-slate-700 dark:text-slate-300">{row.courier}</td>
+                    <td className="py-3.5 px-4 font-mono text-xs text-slate-600 dark:text-slate-300 font-normal">{row.awb}</td>
                     <td className="py-3.5 px-4 text-xs text-slate-500">{row.schedule}</td>
                     <td className="py-3.5 px-4 text-center">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${row.bg} ${row.color}`}>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${row.bg} ${row.color}`}>
                         {row.status}
                       </span>
                     </td>

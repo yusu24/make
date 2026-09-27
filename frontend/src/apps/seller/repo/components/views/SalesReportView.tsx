@@ -395,7 +395,7 @@ export const SalesReportView: React.FC<SalesReportViewProps> = ({ orders, expens
                   return (
                     <tr key={o.id || idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
                       <td style={{ padding: '5px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
-                      <td style={{ padding: '5px 4px', fontWeight: 600, color: '#000000', fontFamily: 'monospace' }}>
+                      <td style={{ padding: '5px 4px', color: '#000000', fontFamily: 'monospace' }}>
                         {o.orderNumber}
                       </td>
                       <td style={{ padding: '5px 4px', color: '#000000', whiteSpace: 'nowrap' }}>

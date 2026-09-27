@@ -151,7 +151,7 @@ export const StockOpnameView: React.FC = () => {
                 paginatedOpnames.map((o) => (
                   <tr key={o.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
                     <td className="px-4 py-3.5 font-mono text-xs text-slate-500">{new Date(o.created_at).toLocaleString('id-ID')}</td>
-                    <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-slate-100">{o.user?.name || '-'}</td>
+                    <td className="px-4 py-3.5 font-normal text-slate-900 dark:text-slate-100">{o.user?.name || '-'}</td>
                     <td className="px-4 py-3.5 text-center">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                         o.status === 'finalized'
@@ -223,7 +223,7 @@ export const StockOpnameView: React.FC = () => {
                       const diff = (Number(physicalVal) || 0) - Number(item.system_qty);
                       return (
                         <tr key={item.id}>
-                          <td className="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-100">{item.product?.name || `#${item.product_id}`}</td>
+                          <td className="py-2.5 px-3 font-normal text-slate-800 dark:text-slate-100">{item.product?.name || `#${item.product_id}`}</td>
                           <td className="py-2.5 px-3 text-center text-slate-500">{item.system_qty}</td>
                           <td className="py-2.5 px-3 text-center">
                             <input
@@ -231,10 +231,10 @@ export const StockOpnameView: React.FC = () => {
                               disabled={detail.status === 'finalized'}
                               value={physicalVal}
                               onChange={(e) => setCounts((prev) => ({ ...prev, [item.product_id]: e.target.value }))}
-                              className="w-20 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-center font-semibold disabled:opacity-60"
+                              className="w-20 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-center font-normal disabled:opacity-60"
                             />
                           </td>
-                          <td className={`py-2.5 px-3 text-center font-semibold ${diff !== 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`}>
+                          <td className={`py-2.5 px-3 text-center font-normal ${diff !== 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`}>
                             {diff > 0 ? `+${diff}` : diff}
                           </td>
                         </tr>

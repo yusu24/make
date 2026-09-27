@@ -598,7 +598,7 @@ export const NotificationCenterView: React.FC = () => {
                       <td className="py-3.5 px-4 align-top">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h4 className={`text-[13px] text-slate-900 dark:text-slate-100 ${!notif.isRead ? 'font-bold' : 'font-semibold'}`}>
+                            <h4 className={`text-[13px] text-slate-900 dark:text-slate-100 ${!notif.isRead ? 'font-medium' : 'font-normal'}`}>
                               {notif.title}
                             </h4>
                           </div>
@@ -610,7 +610,7 @@ export const NotificationCenterView: React.FC = () => {
 
                       {/* Waktu */}
                       <td className="py-3.5 px-4 align-top text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                        <div className="font-medium text-slate-700 dark:text-slate-300">{notif.time}</div>
+                        <div className="font-normal text-slate-700 dark:text-slate-300">{notif.time}</div>
                         <div className="text-[10px] text-slate-400 mt-0.5">{notif.date}</div>
                       </td>
 

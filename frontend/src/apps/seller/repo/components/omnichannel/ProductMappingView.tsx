@@ -304,10 +304,10 @@ export const ProductMappingView: React.FC = () => {
                     className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors group"
                   >
                     <td className="py-3.5 px-4">
-                      <p className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400">
+                      <p className="font-mono font-normal text-sm text-indigo-600 dark:text-indigo-400">
                         {row.sku}
                       </p>
-                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-1 mt-0.5">
+                      <p className="text-sm font-normal text-slate-800 dark:text-slate-100 line-clamp-1 mt-0.5">
                         {row.name}
                       </p>
                     </td>

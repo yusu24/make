@@ -260,16 +260,16 @@ export const PackingImprovementView: React.FC = () => {
                     <td className="py-3.5 px-4">
                       <input type="checkbox" className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-sm text-slate-800 dark:text-slate-100">{row.orderId}</td>
-                    <td className="py-3.5 px-4 font-semibold text-sm text-slate-700 dark:text-slate-300">{row.courier}</td>
-                    <td className="py-3.5 px-4 font-medium text-sm text-slate-600 dark:text-slate-300">{row.items}</td>
+                    <td className="py-3.5 px-4 font-normal text-sm text-slate-800 dark:text-slate-100">{row.orderId}</td>
+                    <td className="py-3.5 px-4 font-normal text-sm text-slate-700 dark:text-slate-300">{row.courier}</td>
+                    <td className="py-3.5 px-4 font-normal text-sm text-slate-600 dark:text-slate-300">{row.items}</td>
                     <td className="py-3.5 px-4 text-center">
                       {row.printed ? (
-                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
                           Sudah Dicetak
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
                           Belum Dicetak
                         </span>
                       )}

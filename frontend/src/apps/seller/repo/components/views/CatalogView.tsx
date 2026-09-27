@@ -148,7 +148,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                     <div className="flex items-center gap-3">
                       <img src={prod.image} alt={prod.name} className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0" />
                       <div>
-                        <div className="font-semibold text-sm text-slate-800 dark:text-slate-100 line-clamp-1">
+                        <div className="font-normal text-sm text-slate-800 dark:text-slate-100 line-clamp-1">
                           {prod.name}
                         </div>
                         <div className="font-mono text-xs text-slate-400 mt-0.5">
@@ -158,28 +158,28 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                     </div>
                   </td>
 
-                  <td className="py-3.5 px-4 font-bold text-sm text-slate-700 dark:text-slate-200">
+                  <td className="py-3.5 px-4 font-normal text-sm text-slate-700 dark:text-slate-200">
                     {formatIDR(prod.hpp)}
                   </td>
 
                   <td className="py-3.5 px-4">
                     <div className="space-y-1 text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-orange-600 bg-orange-50 dark:bg-orange-950/50 px-1.5 py-0.5 rounded text-[11px]">Shopee</span>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">{formatIDR(prod.priceShopee)}</span>
+                        <span className="font-medium text-orange-600 bg-orange-50 dark:bg-orange-950/50 px-1.5 py-0.5 rounded text-[11px]">Shopee</span>
+                        <span className="font-normal text-slate-800 dark:text-slate-200">{formatIDR(prod.priceShopee)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded text-[11px]">Tokopedia</span>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">{formatIDR(prod.priceTokopedia)}</span>
+                        <span className="font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded text-[11px]">Tokopedia</span>
+                        <span className="font-normal text-slate-800 dark:text-slate-200">{formatIDR(prod.priceTokopedia)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-[11px]">TikTok</span>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">{formatIDR(prod.priceTiktok)}</span>
+                        <span className="font-medium text-slate-900 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-[11px]">TikTok</span>
+                        <span className="font-normal text-slate-800 dark:text-slate-200">{formatIDR(prod.priceTiktok)}</span>
                       </div>
                     </div>
                   </td>
 
-                  <td className="py-3.5 px-4 font-black text-sm text-slate-900 dark:text-slate-100">
+                  <td className="py-3.5 px-4 font-normal text-sm text-slate-900 dark:text-slate-100">
                     {prod.totalStock} unit
                   </td>
 

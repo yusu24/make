@@ -542,17 +542,17 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
                           <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold ${badge.bg} ${badge.text} mb-1`}>
                             {ord.platform}
                           </span>
-                          <div className="font-mono font-bold text-sm text-[#101828] dark:text-slate-200">
+                          <div className="font-mono font-normal text-sm text-[#101828] dark:text-slate-200">
                             {ord.orderNumber}
                           </div>
                         </td>
-                        <td className="py-3 px-4 font-semibold text-sm text-slate-700 dark:text-slate-200">
+                        <td className="py-3 px-4 font-normal text-sm text-slate-700 dark:text-slate-200">
                           {ord.customerName}
                         </td>
                         <td className="py-3 px-4 max-w-xs truncate text-xs text-slate-600 dark:text-slate-300">
                           {ord.items.map((it) => (
                             <div key={it.sku} className="truncate">
-                              <span className="font-semibold text-slate-800 dark:text-slate-100">{it.quantity}x</span> {it.productName}
+                              <span className="font-normal text-slate-800 dark:text-slate-100">{it.quantity}x</span> {it.productName}
                             </div>
                           ))}
                         </td>

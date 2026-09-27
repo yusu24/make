@@ -117,7 +117,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({ stores }) => {
               ) : (
                 paginatedSuppliers.map((sup) => (
                   <tr key={sup.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
-                    <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-slate-100">{sup.name}</td>
+                    <td className="px-4 py-3.5 font-normal text-slate-900 dark:text-slate-100">{sup.name}</td>
                     <td className="px-4 py-3.5">{sup.contact || '-'}</td>
                     <td className="px-4 py-3.5 max-w-xs truncate">{sup.address || '-'}</td>
                     <td className="px-4 py-3.5 text-right whitespace-nowrap">

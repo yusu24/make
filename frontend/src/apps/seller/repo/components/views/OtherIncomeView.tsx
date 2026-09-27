@@ -73,13 +73,13 @@ export const OtherIncomeView: React.FC<OtherIncomeViewProps> = ({ incomes, onAdd
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-[13.5px]">
               {paginatedIncomes.map((inc) => (
                 <tr key={inc.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors group">
-                  <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-200">{inc.date}</td>
+                  <td className="py-3.5 px-4 font-normal text-slate-700 dark:text-slate-200">{inc.date}</td>
                   <td className="py-3.5 px-4">
                     <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
                       {inc.category}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4 font-semibold text-sm text-slate-800 dark:text-slate-100">{inc.description}</td>
+                  <td className="py-3.5 px-4 font-normal text-sm text-slate-800 dark:text-slate-100">{inc.description}</td>
                   <td className="py-3.5 px-4 font-bold text-sm text-emerald-600 dark:text-emerald-400">{formatIDR(inc.amount)}</td>
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     <div className="flex items-center justify-center gap-1.5 opacity-90 group-hover:opacity-100">

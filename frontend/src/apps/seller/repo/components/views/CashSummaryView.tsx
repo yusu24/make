@@ -233,7 +233,7 @@ export const CashSummaryView: React.FC<CashSummaryViewProps> = ({ cashSummaries 
                 {cashSummaries.map((cs, idx) => (
                   <tr key={cs.id || idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
                     <td style={{ padding: '6px 4px', textAlign: 'center', color: '#000000' }}>{idx + 1}</td>
-                    <td style={{ padding: '6px 6px', fontWeight: 600, color: '#000000' }}>{cs.platform}</td>
+                    <td style={{ padding: '6px 6px', color: '#000000' }}>{cs.platform}</td>
                     <td style={{ padding: '6px 6px', color: '#000000' }}>{cs.storeName}</td>
                     <td style={{ padding: '6px 6px', color: '#000000' }}>{cs.bankAccount}</td>
                     <td style={{ padding: '6px 6px', textAlign: 'right', fontWeight: 500, color: '#000000', whiteSpace: 'nowrap' }}>

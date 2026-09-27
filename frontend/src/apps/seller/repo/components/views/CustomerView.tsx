@@ -132,7 +132,7 @@ export const CustomerView: React.FC = () => {
               ) : (
                 paginatedCustomers.map((cus) => (
                   <tr key={cus.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
-                    <td className="py-3.5 px-4 pl-6 font-semibold text-slate-900 dark:text-slate-100">{cus.name}</td>
+                    <td className="py-3.5 px-4 pl-6 font-normal text-slate-900 dark:text-slate-100">{cus.name}</td>
                     <td className="py-3.5 px-4">{cus.contact || '-'}</td>
                     <td className="py-3.5 px-4">{cus.email || '-'}</td>
                     <td className="py-3.5 px-4 max-w-xs truncate">{cus.address || '-'}</td>

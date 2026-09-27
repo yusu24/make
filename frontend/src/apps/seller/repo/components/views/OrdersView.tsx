@@ -318,11 +318,11 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                       {/* Pesanan & Waktu */}
                       <td className="py-3.5 px-4 pl-6 align-top">
                         <div className="flex flex-col gap-1.5">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold w-fit ${badge.bg} ${badge.text}`}>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium w-fit ${badge.bg} ${badge.text}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                             {ord.platform}
                           </span>
-                          <span className="font-mono font-bold text-[13px] text-slate-800 dark:text-slate-100">
+                          <span className="font-mono text-[13px] text-slate-800 dark:text-slate-100 font-normal">
                             {ord.orderNumber}
                           </span>
                           <span className="text-xs text-slate-400 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {ord.orderDate}</span>
@@ -331,7 +331,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
                       {/* Pembeli */}
                       <td className="py-3.5 px-4 align-top whitespace-normal min-w-[180px] max-w-[220px]">
-                        <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">
+                        <div className="font-normal text-sm text-slate-800 dark:text-slate-100">
                           {ord.customerName}
                         </div>
                         <div className="text-xs text-slate-500 mt-0.5">
@@ -351,7 +351,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                                 <img src={it.image} alt={it.productName} className="w-9 h-9 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0 mt-0.5" />
                               )}
                               <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-[13px] text-slate-800 dark:text-slate-100 truncate" title={it.productName}>
+                                <div className="font-normal text-[13px] text-slate-800 dark:text-slate-100 truncate" title={it.productName}>
                                   {it.productName}
                                 </div>
                                 <div className="text-xs text-slate-400 mt-0.5">
@@ -369,7 +369,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
                       {/* Pengiriman */}
                       <td className="py-3.5 px-4 align-top">
-                        <div className="text-[13px] text-slate-700 dark:text-slate-200 font-semibold">
+                        <div className="text-[13px] text-slate-700 dark:text-slate-200 font-normal">
                           {ord.courier}
                         </div>
                         {ord.trackingNumber && (

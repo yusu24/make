@@ -271,7 +271,7 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
                     className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors group"
                   >
                     {/* Tanggal */}
-                    <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-normal text-slate-700 dark:text-slate-200 whitespace-nowrap">
                       {exp.date}
                     </td>
 
@@ -284,7 +284,7 @@ export const ExpensesView: React.FC<ExpensesViewProps> = ({
 
                     {/* Keterangan & Store Tag */}
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">
+                      <div className="font-normal text-sm text-slate-800 dark:text-slate-100">
                         {exp.description}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">

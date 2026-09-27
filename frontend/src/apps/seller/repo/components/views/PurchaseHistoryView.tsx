@@ -96,8 +96,8 @@ export const PurchaseHistoryView: React.FC = () => {
               ) : (
                 paginatedPurchases.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors align-top">
-                    <td className="px-4 py-3.5 font-mono text-xs font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">{p.purchase_date}</td>
-                    <td className="px-4 py-3.5 font-semibold text-sm whitespace-nowrap">{p.supplier?.name || '-'}</td>
+                    <td className="px-4 py-3.5 font-mono text-xs font-normal text-slate-900 dark:text-slate-100 whitespace-nowrap">{p.purchase_date}</td>
+                    <td className="px-4 py-3.5 font-normal text-sm whitespace-nowrap">{p.supplier?.name || '-'}</td>
                     <td className="px-4 py-3.5 font-bold text-sm text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
                       {formatIDR(Number(p.total_cost))}
                     </td>

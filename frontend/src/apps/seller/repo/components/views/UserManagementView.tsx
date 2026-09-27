@@ -145,7 +145,7 @@ export const UserManagementView: React.FC = () => {
               ) : (
                 paginatedStaff.map((member) => (
                   <tr key={member.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
-                    <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-slate-100">{member.name}</td>
+                    <td className="px-5 py-3.5 font-normal text-slate-900 dark:text-slate-100">{member.name}</td>
                     <td className="px-5 py-3.5">{member.email}</td>
                     <td className="px-5 py-3.5">
                       <span className="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 font-semibold text-xs border border-indigo-200 dark:border-indigo-800">

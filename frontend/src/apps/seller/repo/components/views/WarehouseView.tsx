@@ -138,7 +138,7 @@ export const WarehouseView: React.FC<WarehouseViewProps> = ({ warehouses, stockM
                 <tr key={mov.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors">
                   <td className="py-3.5 px-4 font-mono text-xs text-slate-500 whitespace-nowrap">{mov.date}</td>
                   <td className="py-3.5 px-4">
-                    <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">{mov.productName}</div>
+                    <div className="font-normal text-sm text-slate-800 dark:text-slate-100">{mov.productName}</div>
                     <div className="text-xs text-slate-400 mt-0.5">SKU: {mov.sku}</div>
                   </td>
                   <td className="py-3.5 px-4">
@@ -153,7 +153,7 @@ export const WarehouseView: React.FC<WarehouseViewProps> = ({ warehouses, stockM
                       {mov.type === 'Masuk' ? (i18n?.language === 'en' ? 'Stock In' : 'Masuk') : mov.type === 'Keluar' ? (i18n?.language === 'en' ? 'Stock Out' : 'Keluar') : mov.type}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4 font-black text-sm text-slate-900 dark:text-slate-100">
+                  <td className="py-3.5 px-4 font-normal text-sm text-slate-900 dark:text-slate-100">
                     {mov.qty > 0 ? `+${mov.qty}` : mov.qty} unit
                   </td>
                   <td className="py-3.5 px-4 text-xs text-slate-500">{mov.notes}</td>

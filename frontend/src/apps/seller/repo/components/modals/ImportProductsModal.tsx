@@ -236,12 +236,12 @@ export const ImportProductsModal: React.FC<ImportProductsModalProps> = ({
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 bg-white dark:bg-slate-900">
                     {parsedData.slice(0, 10).map((item, idx) => (
                       <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                        <td className="p-2 font-mono font-semibold text-slate-800 dark:text-slate-200">{item.sku}</td>
-                        <td className="p-2 font-medium text-slate-900 dark:text-slate-100">{item.name}</td>
+                        <td className="p-2 font-mono font-normal text-slate-800 dark:text-slate-200">{item.sku}</td>
+                        <td className="p-2 font-normal text-slate-900 dark:text-slate-100">{item.name}</td>
                         <td className="p-2 text-slate-500">{item.category}</td>
                         <td className="p-2 text-right font-mono text-slate-600 dark:text-slate-400">Rp {item.costPrice?.toLocaleString('id-ID')}</td>
                         <td className="p-2 text-right font-mono font-semibold text-indigo-600 dark:text-indigo-400">Rp {item.price?.toLocaleString('id-ID')}</td>
-                        <td className="p-2 text-center font-bold text-slate-800 dark:text-slate-200">{item.totalStock} {item.unit}</td>
+                        <td className="p-2 text-center font-normal text-slate-800 dark:text-slate-200">{item.totalStock} {item.unit}</td>
                       </tr>
                     ))}
                   </tbody>

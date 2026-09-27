@@ -167,40 +167,40 @@ export const SyncHistoryView: React.FC = () => {
                 paginatedItems.map((row) => (
                   <tr key={row.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="py-3.5 px-4">
-                      <p className="font-mono font-bold text-sm text-slate-800 dark:text-slate-200">{row.id}</p>
+                      <p className="font-mono font-normal text-sm text-slate-800 dark:text-slate-200">{row.id}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{row.time}</p>
                     </td>
 
-                    <td className="py-3.5 px-4 font-semibold text-sm text-slate-700 dark:text-slate-300">
+                    <td className="py-3.5 px-4 font-normal text-sm text-slate-700 dark:text-slate-300">
                       {row.type}
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">{row.shop}</p>
-                      <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">{row.platform}</p>
+                      <p className="font-normal text-sm text-slate-800 dark:text-slate-100">{row.shop}</p>
+                      <p className="text-xs font-normal text-indigo-600 dark:text-indigo-400 mt-0.5">{row.platform}</p>
                     </td>
 
                     <td className="py-3.5 px-4 text-center">
                       {row.status === 'Success' ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Success
                         </span>
                       ) : row.status === 'Partial' ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           Partial
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40">
                           <XCircle className="w-3.5 h-3.5" />
                           Failed
                         </span>
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-center font-bold text-emerald-600 dark:text-emerald-400">{row.success}</td>
-                    <td className="py-3.5 px-4 text-center font-bold text-rose-600 dark:text-rose-400">{row.failed}</td>
+                    <td className="py-3.5 px-4 text-center font-normal text-emerald-600 dark:text-emerald-400">{row.success}</td>
+                    <td className="py-3.5 px-4 text-center font-normal text-rose-600 dark:text-rose-400">{row.failed}</td>
                     <td className="py-3.5 px-4 text-center font-mono text-xs text-slate-500">{row.duration}</td>
 
                     <td className="py-3.5 px-4 text-right">

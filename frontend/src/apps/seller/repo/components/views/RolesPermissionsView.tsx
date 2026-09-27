@@ -148,7 +148,7 @@ export const RolesPermissionsView: React.FC = () => {
               ) : (
                 paginatedRoles.map((role) => (
                   <tr key={role.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors align-top">
-                    <td className="px-5 py-3.5 font-semibold text-sm text-slate-900 dark:text-slate-100 whitespace-nowrap">{role.name}</td>
+                    <td className="px-5 py-3.5 font-normal text-sm text-slate-900 dark:text-slate-100 whitespace-nowrap">{role.name}</td>
                     <td className="px-5 py-3.5">
                       <div className="flex flex-wrap gap-1.5 max-w-xl">
                         {(role.permissions || []).length === 0 ? (
