@@ -89,7 +89,7 @@ const TAB_TITLES: Record<string, string> = {
   'panduan': 'Panduan & SOP Toko',
   'langganan': 'Paket Langganan',
   'support': 'Pusat Bantuan Tenant',
-  'backup': 'Backup & Restore Data',
+  'backup': 'Backup Data Toko',
   'developer-api': 'Integrasi API & Webhook',
   'settings-app': 'Pengaturan Aplikasi',
   'settings-account': 'Pengaturan Akun',

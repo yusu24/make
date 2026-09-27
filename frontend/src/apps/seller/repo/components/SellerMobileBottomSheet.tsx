@@ -130,7 +130,7 @@ export const SELLER_MODULE_SECTIONS: SellerModuleSection[] = [
       { id: 'panduan', icon: <BookOpen size={20} />, label: 'Panduan SOP Toko', code: 'P07' },
       { id: 'langganan', icon: <CreditCard size={20} />, label: 'Paket Langganan', code: 'P08' },
       { id: 'support', icon: <HelpCircle size={20} />, label: 'Pusat Bantuan', code: 'P09' },
-      { id: 'backup', icon: <Database size={20} />, label: 'Backup & Restore Data', code: 'P10' },
+      { id: 'backup', icon: <Database size={20} />, label: 'Backup Data Toko', code: 'P10' },
     ]
   }
 ]
