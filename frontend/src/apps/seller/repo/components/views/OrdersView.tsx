@@ -36,15 +36,20 @@ import {
 
 interface OrdersViewProps {
   orders: Order[];
-  onOpenAwbModal: (order: Order) => void;
+  onOpenAwbModal?: (order: Order) => void;
+  onPrintAwb?: (order: Order) => void;
   onUpdateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  selectedStoreId?: string;
 }
 
 export const OrdersView: React.FC<OrdersViewProps> = ({
   orders,
   onOpenAwbModal,
+  onPrintAwb,
   onUpdateOrderStatus,
+  selectedStoreId = 'all',
 }) => {
+  const handleAwbPrint = onPrintAwb || onOpenAwbModal || (() => {});
   const { user } = useAuth();
   const i18n = useTranslation();
   const t = i18n?.t || ((key: string) => key);
@@ -410,7 +415,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                       {/* Aksi */}
                       <td className="py-3.5 px-4 pr-6 align-top text-center">
                         <button
-                          onClick={() => onPrintAwb(ord)}
+                          onClick={() => handleAwbPrint(ord)}
                           className="inline-flex items-center justify-center gap-1.5 px-3 h-[32px] rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-xs transition-colors cursor-pointer w-full whitespace-nowrap"
                         >
                           <Printer className="w-3.5 h-3.5" />
