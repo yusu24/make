@@ -40,11 +40,15 @@ import {
   ArrowUpRight,
   HelpCircle,
   FileText,
-  BarChart2
+  BarChart2,
+  Lock,
+  ArrowRight
 } from '@/constants/icons';
 import { ActiveTab, StoreChannel } from '../types';
 import { useTranslation } from '../../../../contexts/I18nContext';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { useOmnichannelAccess } from '../hooks/useOmnichannelAccess';
+import { OmnichannelUpgradeModal } from './modals/OmnichannelUpgradeModal';
 import bizoraLogo from '../../../../assets/bizora-logo.png';
 
 interface SidebarProps {
@@ -76,7 +80,9 @@ const CollapsedGroupFlyout: React.FC<{
   onClose: () => void;
   activeTab: ActiveTab;
   onSelect: (tab: ActiveTab) => void;
-}> = ({ group, anchorY, onClose, activeTab, onSelect }) => {
+  isOmnichannelUnlocked?: boolean;
+  onUpgradePrompt?: (feature: string) => void;
+}> = ({ group, anchorY, onClose, activeTab, onSelect, isOmnichannelUnlocked = true, onUpgradePrompt }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -117,11 +123,17 @@ const CollapsedGroupFlyout: React.FC<{
       </div>
       {group.items.map(item => {
         const isActive = activeTab === item.id;
+        const isItemLocked = !isOmnichannelUnlocked && (group.id === 'marketplace' || group.id === 'shipping' || item.id === 'gudang-multi');
         return (
           <button
             key={item.id}
             type="button"
             onClick={() => {
+              if (isItemLocked) {
+                onClose();
+                onUpgradePrompt?.(item.label);
+                return;
+              }
               onSelect(item.id);
               onClose();
             }}
@@ -143,7 +155,12 @@ const CollapsedGroupFlyout: React.FC<{
             }}
           >
             {item.icon && <span style={{ display: 'flex', color: isActive ? '#4f46e5' : '#64748b' }}>{item.icon}</span>}
-            <span style={{ flex: 1 }}>{item.label}</span>
+            <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
+            {isItemLocked && (
+              <span style={{ fontSize: 9.5, fontWeight: 700, color: '#b45309', background: '#fef3c7', padding: '1px 5px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Lock size={10} /> PRO
+              </span>
+            )}
           </button>
         );
       })}
@@ -218,7 +235,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isLaporanActive = activeGroupId === 'laporan';
   const isSettingsActive = activeGroupId === 'settings';
 
+  const { isUnlocked: isOmnichannelUnlocked } = useOmnichannelAccess();
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeFeatureName, setUpgradeFeatureName] = useState('Marketplace & Omnichannel');
+
   const handleGroupIconClick = (sectionId: string, e: React.MouseEvent) => {
+    if (!isOmnichannelUnlocked && (sectionId === 'marketplace' || sectionId === 'shipping')) {
+      setUpgradeFeatureName(sectionId === 'marketplace' ? 'Integrasi Marketplace' : 'Pengiriman & Ekspedisi');
+      setUpgradeModalOpen(true);
+      return;
+    }
     const rect = e.currentTarget.getBoundingClientRect();
     setFlyoutAnchorY(rect.top);
     setOpenSection(prev => prev === sectionId ? null : sectionId);
@@ -398,7 +424,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* ── 3. Pesanan Masuk ── */}
         <button
-          onClick={() => setActiveTab('pesanan')}
+          onClick={() => {
+            if (!isOmnichannelUnlocked) {
+              setUpgradeFeatureName('Pesanan Marketplace');
+              setUpgradeModalOpen(true);
+              return;
+            }
+            setActiveTab('pesanan');
+          }}
           title={collapsed ? 'Semua Pesanan' : ''}
           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
             activeTab === 'pesanan'
@@ -408,12 +441,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <ShoppingBag className={`w-4 h-4 shrink-0 ${activeTab === 'pesanan' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
           {!collapsed && <span className="flex-1 text-left truncate">Pesanan Masuk</span>}
+          {!collapsed && !isOmnichannelUnlocked && (
+            <span className="text-[9.5px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-900/60 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+              <Lock className="w-2.5 h-2.5" /> PRO
+            </span>
+          )}
         </button>
 
         {/* ── 4. Marketplace & Omnichannel ── */}
         <div>
           <button
             onClick={(e) => {
+              if (!isOmnichannelUnlocked) {
+                setUpgradeFeatureName('Integrasi Marketplace');
+                setUpgradeModalOpen(true);
+                return;
+              }
               if (collapsed) {
                 handleGroupIconClick('marketplace', e);
               } else {
@@ -429,6 +472,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Globe className={`w-4 h-4 shrink-0 ${isMarketplaceActive || openSection === 'marketplace' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Marketplace</span>}
+            {!collapsed && !isOmnichannelUnlocked && (
+              <span className="text-[9.5px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-900/60 px-1.5 py-0.5 rounded flex items-center gap-0.5 mr-1">
+                <Lock className="w-2.5 h-2.5" /> PRO
+              </span>
+            )}
             {!collapsed && (
               isGroupExpanded('marketplace') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
@@ -503,6 +551,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <button
             onClick={(e) => {
+              if (!isOmnichannelUnlocked) {
+                setUpgradeFeatureName('Pengiriman & Ekspedisi');
+                setUpgradeModalOpen(true);
+                return;
+              }
               if (collapsed) {
                 handleGroupIconClick('shipping', e);
               } else {
@@ -518,6 +571,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Truck className={`w-4 h-4 shrink-0 ${isShippingActive || openSection === 'shipping' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
             {!collapsed && <span className="flex-1 text-left truncate">Pengiriman & Resi</span>}
+            {!collapsed && !isOmnichannelUnlocked && (
+              <span className="text-[9.5px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-900/60 px-1.5 py-0.5 rounded flex items-center gap-0.5 mr-1">
+                <Lock className="w-2.5 h-2.5" /> PRO
+              </span>
+            )}
             {!collapsed && (
               isGroupExpanded('shipping') ? (
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
@@ -741,7 +799,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="truncate">Stok Barang & Nilai</span>
               </button>
               <button
-                onClick={() => setActiveTab('gudang-multi')}
+                onClick={() => {
+                  if (!isOmnichannelUnlocked) {
+                    setUpgradeFeatureName('Multi-Gudang Online');
+                    setUpgradeModalOpen(true);
+                    return;
+                  }
+                  setActiveTab('gudang-multi');
+                }}
                 className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
                   activeTab === 'gudang-multi'
                     ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
@@ -749,7 +814,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Store className="w-3 h-3 text-sky-500 shrink-0" />
-                <span className="truncate">Multi-Gudang Seller</span>
+                <span className="truncate flex-1">Multi-Gudang Seller</span>
+                {!isOmnichannelUnlocked && (
+                  <span className="text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-900/60 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                    <Lock className="w-2 h-2" /> PRO
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('gudang-po')}
@@ -1309,6 +1379,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </div>
+
+        {/* ── Promo Banner to Upgrade to Omnichannel (Retail Basic Only) ── */}
+        {!collapsed && !isOmnichannelUnlocked && (
+          <div className="mx-1 my-3 p-3 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-900/90 to-sky-950/80 border border-sky-500/30 text-left shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-sky-500/10 rounded-full blur-xl pointer-events-none" />
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-sky-400">
+              <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+              <span>Paket Retail Toko Fisik</span>
+            </div>
+            <p className="text-[11.5px] font-bold text-white mt-1">
+              Ingin jualan di Shopee &amp; TikTok?
+            </p>
+            <p className="text-[10.5px] text-slate-300 mt-0.5 leading-snug">
+              Buka sinkronisasi stok otomatis &amp; stasiun cetak AWB thermal.
+            </p>
+            <button
+              onClick={() => {
+                setUpgradeFeatureName('Paket Omnichannel');
+                setUpgradeModalOpen(true);
+              }}
+              className="mt-2.5 w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white text-[11px] font-extrabold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>Buka Omnichannel</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+        )}
       </div>
     </aside>
 
@@ -1319,12 +1416,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
         anchorY={flyoutAnchorY}
         onClose={() => setOpenSection(null)}
         activeTab={activeTab}
+        isOmnichannelUnlocked={isOmnichannelUnlocked}
+        onUpgradePrompt={(feature) => {
+          setUpgradeFeatureName(feature);
+          setUpgradeModalOpen(true);
+        }}
         onSelect={(tab) => {
           setActiveTab(tab);
           setMobileMenuOpen?.(false);
         }}
       />
     )}
+
+    {/* ── Omnichannel Upgrade Modal ── */}
+    <OmnichannelUpgradeModal
+      isOpen={upgradeModalOpen}
+      onClose={() => setUpgradeModalOpen(false)}
+      featureName={upgradeFeatureName}
+    />
     </>
   );
 };

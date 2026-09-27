@@ -6,10 +6,12 @@ import {
   TrendingDown, BarChart2, Users, Settings, UserCheck,
   ShieldCheck, Zap, BookOpen, Database, Sparkles, Tag,
   Archive, Printer, ArrowRightLeft, ArrowDownLeft, ArrowUpRight,
-  FileText, Store, HelpCircle, QrCode
+  FileText, Store, HelpCircle, QrCode, Lock
 } from '@/constants/icons'
 import '../../../../apps/admin/components/AdminMobileNav.css'
 import { ActiveTab } from '../types'
+import { useOmnichannelAccess } from '../hooks/useOmnichannelAccess'
+import { OmnichannelUpgradeModal } from './modals/OmnichannelUpgradeModal'
 
 export interface SellerModuleItem {
   id: ActiveTab
@@ -135,6 +137,20 @@ export const SELLER_MODULE_SECTIONS: SellerModuleSection[] = [
   }
 ]
 
+const OMNICHANNEL_TABS: ActiveTab[] = [
+  'marketplace-dashboard',
+  'marketplace-connected',
+  'marketplace-mapping',
+  'marketplace-sync',
+  'marketplace-history',
+  'shipping-dashboard',
+  'shipping-management',
+  'shipping-packing',
+  'notification-center',
+  'pesanan',
+  'gudang-multi'
+];
+
 interface SellerMobileBottomSheetProps {
   isOpen: boolean
   onClose: () => void
@@ -149,6 +165,9 @@ export const SellerMobileBottomSheet: React.FC<SellerMobileBottomSheetProps> = (
   onSelectTab,
 }) => {
   const [searchQuery, setSearchQuery] = useState('')
+  const { isUnlocked: isOmnichannelUnlocked } = useOmnichannelAccess()
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+  const [upgradeFeatureName, setUpgradeFeatureName] = useState('Fitur Omnichannel')
 
   // Close on ESC key
   useEffect(() => {
@@ -250,11 +269,17 @@ export const SellerMobileBottomSheet: React.FC<SellerMobileBottomSheetProps> = (
                 <div className="admin-sheet-group-label">{section.group}</div>
                 {section.items.map(item => {
                   const isActive = activeTab === item.id
+                  const isLocked = !isOmnichannelUnlocked && OMNICHANNEL_TABS.includes(item.id)
                   return (
                     <button
                       key={item.id}
                       type="button"
                       onClick={() => {
+                        if (isLocked) {
+                          setUpgradeFeatureName(item.label)
+                          setUpgradeModalOpen(true)
+                          return
+                        }
                         onSelectTab(item.id)
                         onClose()
                       }}
@@ -268,9 +293,16 @@ export const SellerMobileBottomSheet: React.FC<SellerMobileBottomSheetProps> = (
                           {item.label}
                         </span>
                       </div>
-                      <span className="admin-sheet-item-code">
-                        {item.code}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {isLocked && (
+                          <span style={{ fontSize: 9.5, fontWeight: 700, background: '#fef3c7', color: '#b45309', padding: '2px 6px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                            <Lock size={10} /> PRO
+                          </span>
+                        )}
+                        <span className="admin-sheet-item-code">
+                          {item.code}
+                        </span>
+                      </div>
                     </button>
                   )
                 })}
@@ -297,6 +329,13 @@ export const SellerMobileBottomSheet: React.FC<SellerMobileBottomSheetProps> = (
           </button>
         </div>
       </div>
+
+      {/* Upgrade Modal for Omnichannel features */}
+      <OmnichannelUpgradeModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        featureName={upgradeFeatureName}
+      />
     </>
   )
 }

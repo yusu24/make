@@ -21,7 +21,7 @@ class SeedAllCategoryPlansSeeder extends Seeder
         $data = [
             'seller' => [
                 ['plan_key' => 'free', 'name' => 'Free', 'price' => null, 'max_products' => 50, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>false,'marketplace'=>false,'sync'=>false,'shipments'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'prioritySupport'=>false]],
-                ['plan_key' => 'basic', 'name' => 'Basic', 'price' => 79000, 'max_products' => 500, 'max_staff' => 3, 'sort_order' => 1, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>true,'marketplace'=>true,'sync'=>true,'shipments'=>true,'reports'=>true,'multiUser'=>false,'exportExcel'=>true,'prioritySupport'=>false]],
+                ['plan_key' => 'basic', 'name' => 'Basic', 'price' => 79000, 'max_products' => 500, 'max_staff' => 3, 'sort_order' => 1, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>true,'marketplace'=>false,'sync'=>false,'shipments'=>false,'reports'=>true,'multiUser'=>false,'exportExcel'=>true,'prioritySupport'=>false]],
                 ['plan_key' => 'pro', 'name' => 'Pro', 'price' => 149000, 'max_products' => null, 'max_staff' => null, 'sort_order' => 2, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>true,'marketplace'=>true,'sync'=>true,'shipments'=>true,'reports'=>true,'multiUser'=>true,'exportExcel'=>true,'prioritySupport'=>true]],
             ],
             'budidaya-hewan' => [

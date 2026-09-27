@@ -21,6 +21,8 @@ import { AiAdvisorDrawer } from './components/AiAdvisorDrawer';
 import { SellerAiFab } from './components/SellerAiFab';
 import { SellerMobileBottomNav } from './components/SellerMobileBottomNav';
 import { SellerMobileBottomSheet } from './components/SellerMobileBottomSheet';
+import { useOmnichannelAccess } from './hooks/useOmnichannelAccess';
+import { OmnichannelLockedView } from './components/omnichannel/OmnichannelLockedView';
 
 // Pure, one-directional URL <-> tab mapping.
 export const pathToTab = (p: string): ActiveTab => {
@@ -180,6 +182,22 @@ export default function App() {
 
   // Derived directly from the URL — see pathToTab/tabToPath above.
   const activeTab = pathToTab(location.pathname);
+  const { isUnlocked: isOmnichannelUnlocked } = useOmnichannelAccess();
+  const isCurrentTabOmnichannel = [
+    'marketplace-dashboard',
+    'marketplace-connected',
+    'marketplace-mapping',
+    'marketplace-sync',
+    'marketplace-history',
+    'shipping-dashboard',
+    'shipping-management',
+    'shipping-packing',
+    'notification-center',
+    'pesanan',
+    'gudang-multi'
+  ].includes(activeTab);
+  const isLockedForUser = !isOmnichannelUnlocked && isCurrentTabOmnichannel;
+
   const setActiveTab = (tab: ActiveTab) => {
     const targetPath = tabToPath(tab);
     if (!location.pathname.startsWith(targetPath)) {
@@ -553,7 +571,11 @@ export default function App() {
         {/* Dynamic View Body */}
         <main className={`flex-1 w-full min-w-0 ${activeTab === 'toko-offline' ? 'p-0 h-[100dvh] overflow-hidden relative' : 'px-2.5 pb-4 sm:px-4 md:px-6 md:pb-6 lg:px-8 lg:pb-8 pt-20 md:pt-24'}`}>
           <Suspense fallback={<PageLoader />}>
-            <Outlet context={contextValue} />
+            {isLockedForUser ? (
+              <OmnichannelLockedView />
+            ) : (
+              <Outlet context={contextValue} />
+            )}
           </Suspense>
 
           {/* Mobile Bottom Clearance Spacer so bottom-most content is never covered by bottom nav */}
