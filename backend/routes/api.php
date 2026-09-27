@@ -173,6 +173,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::prefix('support')->group(function () {
             Route::get('tickets', [\App\Http\Controllers\Api\TenantSupportController::class, 'index']);
             Route::post('tickets', [\App\Http\Controllers\Api\TenantSupportController::class, 'store']);
+            Route::patch('tickets/{id}/status', [\App\Http\Controllers\Api\TenantSupportController::class, 'updateStatus']);
         });
 
         // ─── CORE FINANCE ENDPOINTS (Agnostic / Core Module) ──────────────────

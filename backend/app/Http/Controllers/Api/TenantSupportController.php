@@ -85,4 +85,30 @@ class TenantSupportController extends Controller
 
         return response()->json(['success' => true, 'data' => $ticket, 'message' => 'Tiket berhasil dibuat.'], 201);
     }
+
+    /**
+     * PATCH /support/tickets/{id}/status
+     * Update status of a tenant's own ticket (e.g. resolve).
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        if (!$tenantId) {
+            return response()->json(['success' => false, 'message' => 'Tenant ID not found'], 400);
+        }
+
+        $request->validate([
+            'status' => 'required|string|in:open,in_progress,resolved',
+        ]);
+
+        $ticket = SupportTicket::where('tenant_id', $tenantId)->where('id', $id)->firstOrFail();
+        $ticket->update(['status' => $request->status]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status tiket berhasil diperbarui.',
+            'data' => $ticket,
+        ]);
+    }
 }

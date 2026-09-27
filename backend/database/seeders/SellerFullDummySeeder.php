@@ -12,6 +12,7 @@ use App\Models\SellerProduct;
 use App\Models\SellerOrder;
 use App\Models\SellerSyncLog;
 use App\Models\RetailShift;
+use App\Models\SupportTicket;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -728,5 +729,80 @@ class SellerFullDummySeeder extends Seeder
             'created_at' => $todaySiangStart,
             'updated_at' => $todaySiangStart,
         ]);
+
+        // 8. Tenant Support Tickets
+        SupportTicket::where('tenant_id', $tenantId)->delete();
+
+        $supportTickets = [
+            [
+                'id' => 'TKT-202609001',
+                'tenant_id' => $tenantId,
+                'name' => $tenantName,
+                'subject' => 'Sinkronisasi Stok Flash Sale TikTok Shop sedikit terlambat saat peak hour',
+                'description' => 'Halo tim Bizora, kami mendapati kendala saat event Flash Sale TikTok jam 20:00 semalam. Terdapat delay sekitar 3-5 menit sebelum stok berkurang di sistem omnichannel Bizora. Mohon dibantu pengecekan webhook event TikTok Shop toko kami.',
+                'category' => 'bug',
+                'priority' => 'high',
+                'status' => 'in_progress',
+                'assigned' => 'Dimas Technical Support',
+                'created_at' => Carbon::now()->subDays(1)->subHours(3),
+                'updated_at' => Carbon::now()->subHours(2),
+            ],
+            [
+                'id' => 'TKT-202609002',
+                'tenant_id' => $tenantId,
+                'name' => $tenantName,
+                'subject' => 'Bagaimana cara mapping varian produk multi-warna & ukuran dari Shopee?',
+                'description' => 'Saya ingin menanyakan panduan mapping untuk produk Fashion yang memiliki 2 level variasi (Warna dan Ukuran) agar stok master SKU di gudang pusat Jakarta dapat sinkron otomatis dengan SKU seller Shopee.',
+                'category' => 'question',
+                'priority' => 'medium',
+                'status' => 'resolved',
+                'assigned' => 'Nadia Customer Success',
+                'created_at' => Carbon::now()->subDays(3)->subHours(5),
+                'updated_at' => Carbon::now()->subDays(2),
+            ],
+            [
+                'id' => 'TKT-202609003',
+                'tenant_id' => $tenantId,
+                'name' => $tenantName,
+                'subject' => 'Usulan penambahan integrasi kurir J&T Cargo & SiCepat Gokil untuk pesanan grosir',
+                'description' => 'Apakah di roadmap mendatang bisa ditambahkan integrasi kurir kargo (J&T Cargo / SiCepat Gokil) untuk mendukung pesanan B2B dan reseller yang belanja dalam volume besar (lebih dari 10kg)?',
+                'category' => 'feature',
+                'priority' => 'low',
+                'status' => 'open',
+                'assigned' => 'Product Team Bizora',
+                'created_at' => Carbon::now()->subDays(5),
+                'updated_at' => Carbon::now()->subDays(5),
+            ],
+            [
+                'id' => 'TKT-202609004',
+                'tenant_id' => $tenantId,
+                'name' => $tenantName,
+                'subject' => 'Konfirmasi faktur pajak & bukti potong PPh 23 invoice langganan tahunan',
+                'description' => 'Mohon dikirimkan bukti potong PPh 23 dan Faktur Pajak elektronik atas pembayaran tagihan paket langganan tahunan PT Bizora Omnichannel untuk keperluan pelaporan SPT Masa perusahaan kami.',
+                'category' => 'billing',
+                'priority' => 'medium',
+                'status' => 'resolved',
+                'assigned' => 'Finance & Tax Team',
+                'created_at' => Carbon::now()->subDays(10),
+                'updated_at' => Carbon::now()->subDays(8),
+            ],
+            [
+                'id' => 'TKT-202609005',
+                'tenant_id' => $tenantId,
+                'name' => $tenantName,
+                'subject' => 'Kendala cetak label resi kurir barcode AWB terpotong di printer thermal 80mm',
+                'description' => 'Saat mencetak label pengiriman SPX Express dari menu Station Packing, barcode bagian bawah terpotong 5mm jika menggunakan margin default Chrome browser. Mohon arahan setting CSS print yang optimal.',
+                'category' => 'bug',
+                'priority' => 'medium',
+                'status' => 'resolved',
+                'assigned' => 'Rian Hardware Integration',
+                'created_at' => Carbon::now()->subDays(14),
+                'updated_at' => Carbon::now()->subDays(12),
+            ],
+        ];
+
+        foreach ($supportTickets as $st) {
+            SupportTicket::create($st);
+        }
     }
 }
