@@ -51,6 +51,8 @@ export default function PaymentReport() {
     paginatedData, startIndex, endIndex
   } = usePagination(filteredPayments);
 
+  const isSeller = typeof window !== 'undefined' && window.location.pathname.includes('/seller');
+
   if (loading) return <RetailLoading text="Menyiapkan data pembayaran & pajak..." />;
 
   return (
@@ -78,7 +80,10 @@ export default function PaymentReport() {
            <button className="btn btn-secondary flex items-center gap-2" onClick={loadData}>
               <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Segarkan
            </button>
-           <button className="btn btn-primary flex items-center gap-2" onClick={() => window.print()}>
+           <button 
+             className={`btn flex items-center gap-2 ${isSeller ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs' : 'btn-primary'}`} 
+             onClick={() => window.print()}
+           >
               <Printer size={16} /> Cetak laporan
            </button>
         </div>
@@ -92,9 +97,9 @@ export default function PaymentReport() {
           subtitle="Akumulasi penerimaan kas kotor terbayar"
           icon={CreditCard}
           badgeText="Kas Masuk"
-          badgeVariant="blue"
+          badgeVariant={isSeller ? "indigo" : "blue"}
           progress={100}
-          progressVariant="blue"
+          progressVariant={isSeller ? "indigo" : "blue"}
         />
         <StatScoreCard
           title="Total Pajak Terpungut (PPN)"
@@ -102,9 +107,9 @@ export default function PaymentReport() {
           subtitle="Estimasi liabilitas PPN yang harus disetor"
           icon={Percent}
           badgeText="PPN Keluaran"
-          badgeVariant="emerald"
+          badgeVariant={isSeller ? "indigo" : "emerald"}
           progress={data.total_payments > 0 ? Math.min(100, Math.round(((data.total_tax || 0) / data.total_payments) * 100)) : 0}
-          progressVariant="emerald"
+          progressVariant={isSeller ? "indigo" : "emerald"}
         />
       </div>
 
@@ -135,7 +140,7 @@ export default function PaymentReport() {
                   contentStyle={{ background: 'var(--retail-card-bg)', border: '1px solid var(--retail-border)', borderRadius: '12px', padding: '12px', color: 'var(--retail-text-primary)' }}
                   itemStyle={{ fontSize: 13, fontWeight: 600 }}
                 />
-                <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: 12, fontWeight: 600 }} />
+                <Legend iconType="circle" verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: 12, fontWeight: 600 }} />
               </PieChart>
            </ResponsiveContainer>
         </div>
@@ -196,6 +201,7 @@ export default function PaymentReport() {
           </tbody>
         </table></div>
         <RetailPagination
+          theme={isSeller ? 'indigo' : 'blue'}
           currentPage={currentPage} setCurrentPage={setCurrentPage}
           pageSize={pageSize} setPageSize={setPageSize}
           totalPages={totalPages} totalItems={totalItems}

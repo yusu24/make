@@ -435,7 +435,7 @@ export default function CashFlow() {
                             ))}
                           </Pie>
                           <Tooltip formatter={(value) => formatRp(value)} />
-                          <Legend />
+                          <Legend iconType="circle" />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>

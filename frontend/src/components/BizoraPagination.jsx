@@ -68,11 +68,13 @@ export default function BizoraPagination({
 
   // Auto-detect module theme from URL if not specified
   let resolvedTheme = theme || color;
-  if (!resolvedTheme) {
-    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+  const path = typeof window !== 'undefined' ? window.location.pathname : '';
+  if (path.includes('/seller')) {
+    if (!theme || theme === 'emerald') resolvedTheme = 'indigo';
+  } else if (!resolvedTheme) {
     if (path.includes('/kuliner')) resolvedTheme = 'amber';
     else if (path.includes('/budidaya')) resolvedTheme = 'teal';
-    else if (path.includes('/retail')) resolvedTheme = 'emerald';
+    else if (path.includes('/retail')) resolvedTheme = 'blue';
     else resolvedTheme = 'indigo';
   }
   const themeConfig = THEME_STYLES[resolvedTheme] || THEME_STYLES.indigo;
