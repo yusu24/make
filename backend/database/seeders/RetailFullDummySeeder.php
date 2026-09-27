@@ -171,22 +171,41 @@ class RetailFullDummySeeder extends Seeder
             // echo "Generating daily transactions...\n";
 
             while ($currentDate <= $endDate) {
-                $shiftTimeStart = (clone $currentDate)->startOfDay()->addHours(8); // Shift Pagi (08:00)
-                $shiftTimeEnd = (clone $currentDate)->startOfDay()->addHours(20); // Tutup Shift (20:00)
+                // 1. SHIFT KASIR (Pagi & Siang)
+                $shiftPagiStart = (clone $currentDate)->startOfDay()->addHours(8); // Shift Pagi (08:00 - 14:00)
+                $shiftPagiEnd = (clone $currentDate)->startOfDay()->addHours(14);
+                $pagiSales = rand(1000000, 2500000);
 
-                // 1. SHIFT KASIR
-                $shift = RetailShift::create([
+                RetailShift::create([
                     'tenant_id' => $tenantId,
-                    'user_id' => $userId, // Dummy
-                    'opened_at' => $shiftTimeStart,
-                    'closed_at' => $shiftTimeEnd,
+                    'user_id' => $userId,
+                    'opened_at' => $shiftPagiStart,
+                    'closed_at' => $shiftPagiEnd,
                     'opening_cash' => 500000,
-                    'closing_cash' => 500000 + rand(1000000, 3000000), // Dummy
-                    'expected_cash' => 500000 + rand(1000000, 3000000),
+                    'closing_cash' => 500000 + $pagiSales,
+                    'expected_cash' => 500000 + $pagiSales,
                     'status' => 'closed',
-                    'note' => 'Tutup shift harian',
-                    'created_at' => $shiftTimeStart,
-                    'updated_at' => $shiftTimeEnd
+                    'note' => 'Tutup shift pagi',
+                    'created_at' => $shiftPagiStart,
+                    'updated_at' => $shiftPagiEnd
+                ]);
+
+                $shiftSiangStart = (clone $currentDate)->startOfDay()->addHours(14); // Shift Siang (14:00 - 21:30)
+                $shiftSiangEnd = (clone $currentDate)->startOfDay()->addHours(21)->addMinutes(30);
+                $siangSales = rand(1500000, 3500000);
+
+                RetailShift::create([
+                    'tenant_id' => $tenantId,
+                    'user_id' => $userId,
+                    'opened_at' => $shiftSiangStart,
+                    'closed_at' => $shiftSiangEnd,
+                    'opening_cash' => 500000,
+                    'closing_cash' => 500000 + $siangSales,
+                    'expected_cash' => 500000 + $siangSales,
+                    'status' => 'closed',
+                    'note' => 'Tutup shift siang',
+                    'created_at' => $shiftSiangStart,
+                    'updated_at' => $shiftSiangEnd
                 ]);
 
                 // 2. Transactions (Penjualan)

@@ -11,6 +11,7 @@ use App\Models\SellerChannel;
 use App\Models\SellerProduct;
 use App\Models\SellerOrder;
 use App\Models\SellerSyncLog;
+use App\Models\RetailShift;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -571,5 +572,161 @@ class SellerFullDummySeeder extends Seeder
         foreach ($syncLogs as $sl) {
             SellerSyncLog::create(array_merge($sl, ['tenant_id' => $tenantId]));
         }
+
+        // 7. Cashier Staff & Retail Shifts (Shift Pagi, Shift Siang, Shift Malam)
+        $kasirRole = RetailRole::where('tenant_id', $tenantId)->where('name', 'like', '%Kasir%')->first();
+        $roleId = $kasirRole ? $kasirRole->id : null;
+
+        $cashiers = [
+            [
+                'email' => 'siti.kasir@seller.com',
+                'name' => 'Siti Ramadhani',
+                'role' => 'staff',
+                'status' => 'active',
+                'tenant_id' => $tenantId,
+                'retail_role_id' => $roleId,
+                'password' => Hash::make('password123')
+            ],
+            [
+                'email' => 'rian.kasir@seller.com',
+                'name' => 'Rian Pratama',
+                'role' => 'staff',
+                'status' => 'active',
+                'tenant_id' => $tenantId,
+                'retail_role_id' => $roleId,
+                'password' => Hash::make('password123')
+            ],
+            [
+                'email' => 'budi.kasir@seller.com',
+                'name' => 'Budi Setiawan',
+                'role' => 'staff',
+                'status' => 'active',
+                'tenant_id' => $tenantId,
+                'retail_role_id' => $roleId,
+                'password' => Hash::make('password123')
+            ]
+        ];
+
+        $cashierModels = [];
+        foreach ($cashiers as $c) {
+            $cashierModels[] = User::updateOrCreate(
+                ['email' => $c['email']],
+                $c
+            );
+        }
+
+        // Seed Retail Shifts for past 25 days
+        RetailShift::where('tenant_id', $tenantId)->delete();
+
+        $startDate = Carbon::now()->subDays(25)->startOfDay();
+        $endDate = Carbon::now()->startOfDay();
+        $currentDate = clone $startDate;
+
+        while ($currentDate < $endDate) {
+            // A. Shift Pagi (08:00 - 14:00)
+            $pagiStart = (clone $currentDate)->addHours(8);
+            $pagiEnd = (clone $currentDate)->addHours(14);
+            $pagiSales = rand(1500000, 3200000);
+            $pagiVar = rand(-1, 2) == -1 ? -rand(5000, 25000) : (rand(0, 3) == 0 ? rand(5000, 15000) : 0);
+            $pagiOpening = 500000;
+            $pagiExpected = $pagiOpening + $pagiSales;
+            $pagiActual = $pagiExpected + $pagiVar;
+
+            RetailShift::create([
+                'tenant_id' => $tenantId,
+                'user_id' => $cashierModels[0]->id,
+                'opened_at' => $pagiStart,
+                'closed_at' => $pagiEnd,
+                'opening_cash' => $pagiOpening,
+                'expected_cash' => $pagiExpected,
+                'closing_cash' => $pagiActual,
+                'difference' => $pagiVar,
+                'status' => 'closed',
+                'note' => 'Shift pagi toko offline berjalan lancar.',
+                'created_at' => $pagiStart,
+                'updated_at' => $pagiEnd,
+            ]);
+
+            // B. Shift Siang (14:00 - 21:30)
+            $siangStart = (clone $currentDate)->addHours(14);
+            $siangEnd = (clone $currentDate)->addHours(21)->addMinutes(30);
+            $siangSales = rand(2200000, 4800000);
+            $siangVar = rand(-2, 3) == -1 ? -rand(5000, 20000) : (rand(0, 2) == 0 ? rand(5000, 20000) : 0);
+            $siangOpening = 500000;
+            $siangExpected = $siangOpening + $siangSales;
+            $siangActual = $siangExpected + $siangVar;
+
+            RetailShift::create([
+                'tenant_id' => $tenantId,
+                'user_id' => $cashierModels[1]->id,
+                'opened_at' => $siangStart,
+                'closed_at' => $siangEnd,
+                'opening_cash' => $siangOpening,
+                'expected_cash' => $siangExpected,
+                'closing_cash' => $siangActual,
+                'difference' => $siangVar,
+                'status' => 'closed',
+                'note' => 'Shift siang ramai pembeli offline, setoran kas tunai diserahkan.',
+                'created_at' => $siangStart,
+                'updated_at' => $siangEnd,
+            ]);
+
+            // C. Shift Malam Weekend (22:00 - 04:00)
+            if (in_array($currentDate->dayOfWeek, [5, 6])) {
+                $malamStart = (clone $currentDate)->addHours(22);
+                $malamEnd = (clone $currentDate)->addDays(1)->addHours(4);
+                $malamSales = rand(800000, 1800000);
+                $malamOpening = 500000;
+                $malamExpected = $malamOpening + $malamSales;
+                $malamActual = $malamExpected;
+
+                RetailShift::create([
+                    'tenant_id' => $tenantId,
+                    'user_id' => $cashierModels[2]->id,
+                    'opened_at' => $malamStart,
+                    'closed_at' => $malamEnd,
+                    'opening_cash' => $malamOpening,
+                    'expected_cash' => $malamExpected,
+                    'closing_cash' => $malamActual,
+                    'difference' => 0,
+                    'status' => 'closed',
+                    'note' => 'Shift malam event promo weekend.',
+                    'created_at' => $malamStart,
+                    'updated_at' => $malamEnd,
+                ]);
+            }
+
+            $currentDate->addDay();
+        }
+
+        // Today shifts
+        $todayPagiStart = Carbon::now()->startOfDay()->addHours(8);
+        $todayPagiEnd = Carbon::now()->startOfDay()->addHours(14);
+        RetailShift::create([
+            'tenant_id' => $tenantId,
+            'user_id' => $cashierModels[0]->id,
+            'opened_at' => $todayPagiStart,
+            'closed_at' => $todayPagiEnd,
+            'opening_cash' => 500000,
+            'expected_cash' => 2450000,
+            'closing_cash' => 2450000,
+            'difference' => 0,
+            'status' => 'closed',
+            'note' => 'Shift pagi hari ini selesai.',
+            'created_at' => $todayPagiStart,
+            'updated_at' => $todayPagiEnd,
+        ]);
+
+        $todaySiangStart = Carbon::now()->startOfDay()->addHours(14);
+        RetailShift::create([
+            'tenant_id' => $tenantId,
+            'user_id' => $cashierModels[1]->id,
+            'opened_at' => $todaySiangStart,
+            'opening_cash' => 500000,
+            'status' => 'open',
+            'note' => 'Shift siang aktif berjalan.',
+            'created_at' => $todaySiangStart,
+            'updated_at' => $todaySiangStart,
+        ]);
     }
 }
