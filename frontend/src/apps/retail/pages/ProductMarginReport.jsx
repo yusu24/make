@@ -185,68 +185,92 @@ export default function ProductMarginReport() {
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <DollarSign size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Penjualan</span>
-            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Total Penjualan
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <DollarSign size={18} />
+              </div>
+            </div>
+            <p className="font-['Plus_Jakarta_Sans'] font-bold text-2xl md:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight mt-1">
               {formatRp(reportData.summary.total_revenue)}
             </p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">{reportData.summary.total_products_sold} varian barang</p>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+            {reportData.summary.total_products_sold} varian barang
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <ShoppingBag size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Modal (HPP)</span>
-            <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Total Modal (HPP)
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <ShoppingBag size={18} />
+              </div>
+            </div>
+            <p className="font-['Plus_Jakarta_Sans'] font-bold text-2xl md:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight mt-1">
               {formatRp(reportData.summary.total_cogs)}
             </p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Biaya pokok barang terjual</p>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+            Biaya pokok barang terjual
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <TrendingUp size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Laba Kotor (Margin)</span>
-            <p className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${reportData.summary.total_margin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Laba Kotor (Margin)
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <TrendingUp size={18} />
+              </div>
+            </div>
+            <p className={`font-['Plus_Jakarta_Sans'] font-bold text-2xl md:text-3xl tracking-tight leading-tight mt-1 ${reportData.summary.total_margin >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
               {formatRp(reportData.summary.total_margin)}
             </p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Keuntungan kotor riil</p>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+            Keuntungan kotor riil
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-            <Percent size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Rata-rata Margin</span>
-            <p className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${reportData.summary.avg_margin_pct >= 20 ? 'text-emerald-600' : reportData.summary.avg_margin_pct >= 10 ? 'text-blue-600' : 'text-amber-600'}`}>
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                Rata-rata Margin
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <Percent size={18} />
+              </div>
+            </div>
+            <p className={`font-['Plus_Jakarta_Sans'] font-bold text-2xl md:text-3xl tracking-tight leading-tight mt-1 ${reportData.summary.avg_margin_pct >= 20 ? 'text-emerald-600 dark:text-emerald-400' : reportData.summary.avg_margin_pct >= 10 ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400'}`}>
               {reportData.summary.avg_margin_pct}%
             </p>
-            <p className="text-xs text-slate-400 mt-1 font-['Inter']">Porsi profit dari omzet</p>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+            Porsi profit dari omzet
           </div>
         </div>
       </div>
 
       {/* Top 10 Margin Horizontal Bar Chart */}
       {chartData.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 p-6 shadow-xs hover:border-slate-300 dark:hover:border-slate-600 transition-all mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 text-base">Top 10 Produk Penyumbang Laba Kotor Terbesar</h3>
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 dark:text-white text-base">Top 10 Produk Penyumbang Laba Kotor Terbesar</h3>
               <p className="text-xs text-slate-400 mt-0.5 font-['Inter']">Peringkat produk dengan kontribusi laba kotor tertinggi dari penjualan riil</p>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100 font-['Inter']">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-100 dark:border-emerald-800 font-['Inter']">
               Top 10 Profit
             </span>
           </div>
@@ -299,7 +323,7 @@ export default function ProductMarginReport() {
       )}
 
       {/* Main Table Section */}
-      <div className="card table-wrap animate-fade-in bg-white border border-slate-100 shadow-sm">
+      <div className="card table-wrap animate-fade-in bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs rounded-2xl overflow-hidden">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <div className="airy-search-wrapper" style={{ width: 320, margin: 0 }}>
             <Search size={16} className="text-slate-400" />

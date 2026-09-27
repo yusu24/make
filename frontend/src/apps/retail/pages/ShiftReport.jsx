@@ -85,53 +85,79 @@ export default function ShiftReport() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-               <Clock size={20} />
+         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+            <div>
+               <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                     Shift Selesai
+                  </span>
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                     <Clock size={18} />
+                  </div>
+               </div>
+               <p className="font-['Plus_Jakarta_Sans'] font-bold text-2xl md:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight mt-1">
+                  {data.total_shifts} <span className="text-xs font-normal text-slate-400 font-['Inter']">Sesi</span>
+               </p>
             </div>
-            <div className="flex-1 min-w-0">
-               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Shift Selesai</span>
-               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">{data.total_shifts}</p>
-               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total sesi ditutup</p>
+            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+               Total sesi ditutup
             </div>
          </div>
 
-         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-               <ArrowUpRight size={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Pemasukan Sistem</span>
-               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
+         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+            <div>
+               <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                     Pemasukan Sistem
+                  </span>
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                     <ArrowUpRight size={18} />
+                  </div>
+               </div>
+               <p className="font-['Plus_Jakarta_Sans'] font-bold text-2xl md:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight mt-1">
                   Rp {Math.round(data.total_expected).toLocaleString('id-ID')}
                </p>
-               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Total omzet sistem</p>
+            </div>
+            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+               Total omzet sistem kasir
             </div>
          </div>
 
-         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-               <Users size={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Setoran Kasir</span>
-               <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
+         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+            <div>
+               <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                     Setoran Kasir
+                  </span>
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                     <Users size={18} />
+                  </div>
+               </div>
+               <p className="font-['Plus_Jakarta_Sans'] font-bold text-2xl md:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight mt-1">
                   Rp {Math.round(data.total_actual).toLocaleString('id-ID')}
                </p>
-               <p className="text-xs text-slate-400 mt-1 font-['Inter']">Uang kas diserahkan</p>
+            </div>
+            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+               Uang fisik diserahkan
             </div>
          </div>
 
-         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${data.total_variance < 0 ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-600'}`}>
-               <ArrowDownRight size={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-               <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider font-['Inter'] mb-1">Total Selisih</span>
-               <p className={`font-['Plus_Jakarta_Sans'] font-extrabold text-2xl md:text-3xl tracking-tight leading-tight ${data.total_variance < 0 ? 'text-rose-600' : 'text-slate-900'}`}>
+         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+            <div>
+               <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-[#667085] dark:text-slate-400 uppercase tracking-wider font-['Inter']">
+                     Total Selisih
+                  </span>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${data.total_variance < 0 ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
+                     <ArrowDownRight size={18} />
+                  </div>
+               </div>
+               <p className={`font-['Plus_Jakarta_Sans'] font-bold text-2xl md:text-3xl tracking-tight leading-tight mt-1 ${data.total_variance < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>
                   Rp {Math.round(data.total_variance).toLocaleString('id-ID')}
                </p>
-               <p className="text-xs text-slate-400 mt-1 font-['Inter']">{data.total_variance === 0 ? 'Seimbang (Pas)' : data.total_variance < 0 ? 'Minus' : 'Surplus'}</p>
+            </div>
+            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400 font-['Inter']">
+               {data.total_variance === 0 ? 'Seimbang (Pas 100%)' : data.total_variance < 0 ? 'Selisih Minus (Kurang)' : 'Selisih Surplus (Lebih)'}
             </div>
          </div>
       </div>

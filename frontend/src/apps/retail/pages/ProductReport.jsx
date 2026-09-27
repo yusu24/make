@@ -55,14 +55,14 @@ export default function ProductReport() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex items-center gap-3">
-            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-900/30 flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center shrink-0">
               <TrendingUp size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-gray-800">Produk Paling Laris</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Berdasarkan volume penjualan (Top 5)</p>
+              <h3 className="font-bold text-slate-800 dark:text-white">Produk Paling Laris</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Berdasarkan volume penjualan (Top 5)</p>
             </div>
           </div>
           <div className="p-5">
@@ -119,14 +119,14 @@ export default function ProductReport() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex items-center gap-3">
-            <div className="p-2 bg-red-100 text-red-600 rounded-lg">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700/80 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-900/30 flex items-center gap-3">
+            <div className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-xl flex items-center justify-center shrink-0">
               <AlertCircle size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-gray-800">Peringatan Stok Kritis</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Barang yang hampir habis atau melewati batas minimal</p>
+              <h3 className="font-bold text-slate-800 dark:text-white">Peringatan Stok Kritis</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Barang yang hampir habis atau melewati batas minimal</p>
             </div>
           </div>
           <div className="p-5">
