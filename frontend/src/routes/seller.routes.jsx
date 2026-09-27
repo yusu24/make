@@ -76,7 +76,7 @@ const sellerRoutes = (
     path="/seller"
     element={
       <ProtectedRoute>
-        <CategoryRoute allowedCategory={['Seller', 'Toko Retail']}>
+        <CategoryRoute allowedCategory={['Seller', 'Toko Retail', 'Ritel & Omnichannel']}>
           <SellerLayout />
         </CategoryRoute>
       </ProtectedRoute>

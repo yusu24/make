@@ -21,7 +21,7 @@ import BudidayaSubtypeModal from './landing/BudidayaSubtypeModal'
 
 // Route map per slug — where to navigate after a successful demo login
 const SLUG_ROUTES = {
-  'toko-retail':      '/retail/dashboard',
+  'toko-retail':      '/seller/dashboard',
   'budidaya-hewan':    '/budidaya/dashboard',
   'budidaya-tanaman': '/budidaya/dashboard',
   'kuliner':          '/kuliner/admin',

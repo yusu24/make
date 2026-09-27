@@ -23,6 +23,7 @@ const JASA_SUB_OPTIONS = [
 ]
 
 const CATEGORY_META_ICONS = {
+  'Ritel & Omnichannel': Store,
   'Budidaya Tanaman':   Sprout,
   'Toko Retail':        Store,
   'Budidaya Hewan':     Fish,
@@ -70,12 +71,10 @@ export default function Register() {
       setCategories(res.data?.data || [])
     }).catch(() => {
       setCategories([
-        { id: 1, name: 'Toko Retail', icon: '🛒' },
+        { id: 1, name: 'Ritel & Omnichannel', icon: '🛍️' },
         { id: 2, name: 'Kuliner', icon: '🍽️' },
         { id: 3, name: 'Budidaya Hewan', icon: '🐟' },
-        { id: 4, name: 'Budidaya Tanaman', icon: '🌱' },
-        { id: 5, name: 'Jasa & Repair', icon: '🛠️' },
-        { id: 6, name: 'Seller Marketplace', icon: '📦' },
+        { id: 4, name: 'Jasa & Repair', icon: '🛠️' },
       ])
     })
 

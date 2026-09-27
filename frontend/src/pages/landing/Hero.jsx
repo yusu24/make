@@ -12,7 +12,7 @@ const SLUG_VISUALS = {
   'budidaya-hewan':    { Icon: Fish,              color: 'bg-teal-500',    sub: 'Monitoring Ternak, Kolam & Pakan' },
   'budidaya-tanaman': { Icon: Sprout,            color: 'bg-emerald-600', sub: 'Monitoring Siklus, Lahan & Pupuk' },
   'kuliner':          { Icon: UtensilsCrossed,  color: 'bg-rose-500',    sub: 'Menu Digital & Manajemen Restoran' },
-  'seller':           { Icon: Globe,            color: 'bg-sky-600',     sub: 'Omnichannel & Marketplace Hub' },
+  'seller':           { Icon: ShoppingBag,      color: 'bg-sky-600',     sub: 'Kasir POS & Omnichannel Marketplace' },
   'jasa':             { Icon: Wrench,           color: 'bg-purple-600',  sub: 'Surat Perintah Kerja (SPK) & Teknisi' },
 }
 const DEFAULT_VISUAL = { Icon: Building2, color: 'bg-slate-600', sub: '' }

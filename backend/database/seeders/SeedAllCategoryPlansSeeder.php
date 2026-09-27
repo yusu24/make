@@ -12,18 +12,17 @@ class SeedAllCategoryPlansSeeder extends Seeder
     public function run(): void
     {
         $categoriesMeta = [
-            'toko-retail'      => ['name' => 'Toko Retail',       'icon' => '🛒', 'color' => '#3b82f6'],
+            'seller'           => ['name' => 'Ritel & Omnichannel', 'icon' => '🛍️', 'color' => '#0284c7'],
             'budidaya-hewan'    => ['name' => 'Budidaya Hewan',     'icon' => '🐟', 'color' => '#10b981'],
             'kuliner'          => ['name' => 'Kuliner',           'icon' => '🍽️', 'color' => '#f59e0b'],
             'jasa'             => ['name' => 'Jasa & Repair',     'icon' => '🛠️', 'color' => '#8b5cf6'],
-            'seller'           => ['name' => 'Seller Marketplace','icon' => '📦', 'color' => '#ec4899'],
         ];
 
         $data = [
-            'toko-retail' => [
-                ['plan_key' => 'free', 'name' => 'Free', 'price' => null, 'max_products' => 20, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'apiAccess'=>false,'prioritySupport'=>false]],
-                ['plan_key' => 'basic', 'name' => 'Basic', 'price' => 79000, 'max_products' => 200, 'max_staff' => 3, 'sort_order' => 1, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>true,'reports'=>true,'multiUser'=>false,'exportExcel'=>true,'apiAccess'=>false,'prioritySupport'=>false]],
-                ['plan_key' => 'pro', 'name' => 'Pro', 'price' => 149000, 'max_products' => null, 'max_staff' => null, 'sort_order' => 2, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>true,'reports'=>true,'multiUser'=>true,'exportExcel'=>true,'apiAccess'=>true,'prioritySupport'=>true]],
+            'seller' => [
+                ['plan_key' => 'free', 'name' => 'Free', 'price' => null, 'max_products' => 50, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>false,'marketplace'=>false,'sync'=>false,'shipments'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'prioritySupport'=>false]],
+                ['plan_key' => 'basic', 'name' => 'Basic', 'price' => 79000, 'max_products' => 500, 'max_staff' => 3, 'sort_order' => 1, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>true,'marketplace'=>true,'sync'=>true,'shipments'=>true,'reports'=>true,'multiUser'=>false,'exportExcel'=>true,'prioritySupport'=>false]],
+                ['plan_key' => 'pro', 'name' => 'Pro', 'price' => 149000, 'max_products' => null, 'max_staff' => null, 'sort_order' => 2, 'is_active' => true, 'features' => ['pos'=>true,'inventory'=>true,'suppliers'=>true,'customers'=>true,'discounts'=>true,'marketplace'=>true,'sync'=>true,'shipments'=>true,'reports'=>true,'multiUser'=>true,'exportExcel'=>true,'prioritySupport'=>true]],
             ],
             'budidaya-hewan' => [
                 ['plan_key' => 'free', 'name' => 'Free', 'price' => null, 'max_products' => null, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true, 'features' => ['ponds'=>true,'cycles'=>true,'feeding'=>false,'harvest'=>false,'health'=>false,'breeding'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'prioritySupport'=>false]],
@@ -39,11 +38,6 @@ class SeedAllCategoryPlansSeeder extends Seeder
                 ['plan_key' => 'free', 'name' => 'Free', 'price' => null, 'max_products' => null, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true, 'features' => ['workOrders'=>true,'services'=>true,'contracts'=>false,'spareparts'=>false,'finance'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'prioritySupport'=>false]],
                 ['plan_key' => 'basic', 'name' => 'Basic', 'price' => 69000, 'max_products' => null, 'max_staff' => 3, 'sort_order' => 1, 'is_active' => true, 'features' => ['workOrders'=>true,'services'=>true,'contracts'=>true,'spareparts'=>true,'finance'=>true,'reports'=>true,'multiUser'=>false,'exportExcel'=>true,'prioritySupport'=>false]],
                 ['plan_key' => 'pro', 'name' => 'Pro', 'price' => 119000, 'max_products' => null, 'max_staff' => null, 'sort_order' => 2, 'is_active' => true, 'features' => ['workOrders'=>true,'services'=>true,'contracts'=>true,'spareparts'=>true,'finance'=>true,'reports'=>true,'multiUser'=>true,'exportExcel'=>true,'prioritySupport'=>true]],
-            ],
-            'seller' => [
-                ['plan_key' => 'free', 'name' => 'Free', 'price' => null, 'max_products' => null, 'max_staff' => 1, 'sort_order' => 0, 'is_active' => true, 'features' => ['inventory'=>true,'marketplace'=>false,'sync'=>false,'shipments'=>false,'reports'=>false,'multiUser'=>false,'exportExcel'=>false,'prioritySupport'=>false]],
-                ['plan_key' => 'basic', 'name' => 'Basic', 'price' => 79000, 'max_products' => null, 'max_staff' => 3, 'sort_order' => 1, 'is_active' => true, 'features' => ['inventory'=>true,'marketplace'=>true,'sync'=>true,'shipments'=>true,'reports'=>true,'multiUser'=>false,'exportExcel'=>true,'prioritySupport'=>false]],
-                ['plan_key' => 'pro', 'name' => 'Pro', 'price' => 149000, 'max_products' => null, 'max_staff' => null, 'sort_order' => 2, 'is_active' => true, 'features' => ['inventory'=>true,'marketplace'=>true,'sync'=>true,'shipments'=>true,'reports'=>true,'multiUser'=>true,'exportExcel'=>true,'prioritySupport'=>true]],
             ],
         ];
 

@@ -54,19 +54,48 @@ class DatabaseSeeder extends Seeder
     {
         // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 1. Business Categories Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         $categories = [
-            ['name' => 'Toko Retail',      'slug' => 'toko-retail',      'description' => 'Manajemen stok & penjualan toko fisik/online', 'icon' => '🛒', 'color' => '#3b82f6', 'sort_order' => 1],
-            ['name' => 'Budidaya Hewan',    'slug' => 'budidaya-hewan',    'description' => 'Pemantauan kandang/kolam & siklus panen',          'icon' => '🐟', 'color' => '#10b981', 'sort_order' => 2],
-            ['name' => 'Kuliner',          'slug' => 'kuliner',          'description' => 'Manajemen restoran & kasir digital',            'icon' => '🍱', 'color' => '#ef4444', 'sort_order' => 3],
-            ['name' => 'Jasa',             'slug' => 'jasa',             'description' => 'Pemesanan layanan & jadwal service',             'icon' => '🛠️', 'color' => '#8b5cf6', 'sort_order' => 4],
-            ['name' => 'Seller',           'slug' => 'seller',           'description' => 'Manajemen omnichannel commerce',                'icon' => '🌐', 'color' => '#f59e0b', 'sort_order' => 5],
+            [
+                'name' => 'Ritel & Omnichannel',
+                'slug' => 'seller',
+                'description' => 'Manajemen toko fisik (POS), multi-gudang & sinkronisasi omnichannel marketplace',
+                'icon' => '🛍️',
+                'color' => '#0284c7',
+                'sort_order' => 1,
+                'active' => true,
+                'headline' => 'Sinkronkan Toko Fisik & Marketplace Tanpa Selisih Stok',
+                'badge' => 'Ritel & Omnichannel',
+                'features_list' => [
+                    'Kasir POS Modern Multi-Kasir & Shift Kasir',
+                    'Integrasi Marketplace (Shopee, Tokopedia, TikTok Shop)',
+                    'Multi-Gudang & Transfer Stok Antar Cabang',
+                    'Stasiun Packing & Cetak Label Resi Otomatis (AWB)',
+                    'Laporan Finansial, Laba Rugi & Arus Kas Real-time',
+                ],
+                'stats' => [
+                    ['value' => '100%', 'label' => 'Stok Sinkron Otomatis'],
+                    ['value' => '10x', 'label' => 'Proses Packing Lebih Cepat'],
+                ],
+            ],
+            ['name' => 'Kuliner',          'slug' => 'kuliner',          'description' => 'Manajemen restoran & kasir digital',            'icon' => '🍱', 'color' => '#ef4444', 'sort_order' => 2, 'active' => true],
+            ['name' => 'Budidaya Hewan',    'slug' => 'budidaya-hewan',    'description' => 'Pemantauan kandang/kolam & siklus panen',          'icon' => '🐟', 'color' => '#10b981', 'sort_order' => 3, 'active' => true],
+            ['name' => 'Jasa',             'slug' => 'jasa',             'description' => 'Pemesanan layanan & jadwal service',             'icon' => '🛠️', 'color' => '#8b5cf6', 'sort_order' => 4, 'active' => true],
         ];
 
         BusinessCategory::where('slug', 'budidaya-tanaman')->delete();
 
         foreach ($categories as $cat) {
-            BusinessCategory::updateOrCreate(['slug' => $cat['slug']], $cat + ['active' => true]);
+            BusinessCategory::updateOrCreate(['slug' => $cat['slug']], $cat);
         }
-        $this->command->info('Ã¢Å“â€¦ Business categories seeded.');
+
+        // Migrate any legacy 'toko-retail' category users & tenants to 'seller' (Ritel & Omnichannel)
+        $sellerCat = BusinessCategory::where('slug', 'seller')->first();
+        $retailCat = BusinessCategory::where('slug', 'toko-retail')->first();
+        if ($sellerCat && $retailCat) {
+            User::where('business_category_id', $retailCat->id)->update(['business_category_id' => $sellerCat->id]);
+            Tenant::where('business_category_id', $retailCat->id)->update(['business_category_id' => $sellerCat->id]);
+            $retailCat->update(['active' => false]);
+        }
+        $this->command->info('✅ Business categories seeded.');
 
         $this->call(SubscriptionPlanSeeder::class);
         $this->command->info('Ã¢Å“â€¦ Subscription plans seeded.');
@@ -115,16 +144,19 @@ class DatabaseSeeder extends Seeder
         // "Demo Toko Retail" card actually logs into (see Landing.jsx
         // handleDemoLogin('retail')) Ã¢â‚¬â€ branded "Toko Demo" with rich
         // dummy data so every retail menu has something to show.
-        $retailTenants = [
+        // --- RITEL & OMNICHANNEL ---
+        $sellerTenants = [
             ['email' => 'ahmad@retail.com', 'name' => 'Toko Demo',   'tenant_id' => 'TN-0001',  'business_name' => 'Toko Demo'],
-            ['email' => 'retail@demo.com',  'name' => 'Retail Demo', 'tenant_id' => 'TN-RETAIL'],
+            ['email' => 'seller@demo.com',  'name' => 'Hendra Seller Demo', 'tenant_id' => 'TN-SELLER', 'business_name' => 'Omnichannel Flagship'],
+            ['email' => 'retail@demo.com',  'name' => 'Retail Demo', 'tenant_id' => 'TN-RETAIL', 'business_name' => 'Retail Demo'],
         ];
-        foreach ($retailTenants as $rt) {
-            $this->createDemoTenant($rt['email'], $rt['name'], 'toko-retail', $rt['tenant_id'], $rt['business_name'] ?? null);
-            $this->seedRetailData($rt['tenant_id']);
-            $this->seedRetailDataExtras($rt['tenant_id']);
+        foreach ($sellerTenants as $st) {
+            $this->createDemoTenant($st['email'], $st['name'], 'seller', $st['tenant_id'], $st['business_name'] ?? null);
+            $this->seedRetailData($st['tenant_id']);
+            $this->seedRetailDataExtras($st['tenant_id']);
         }
-        $this->command->info('Ã¢Å“â€¦ Toko Retail demo accounts seeded.');
+        $this->call(SellerFullDummySeeder::class);
+        $this->command->info('✅ Ritel & Omnichannel demo accounts & dummy data seeded.');
 
         // --- Budidaya Hewan ---
         $budidayaTenants = [
@@ -157,15 +189,6 @@ class DatabaseSeeder extends Seeder
         }
         $this->command->info('Ã¢Å“â€¦ Jasa demo accounts seeded.');
 
-        // --- SELLER ---
-        $sellerTenants = [
-            ['email' => 'seller@demo.com', 'name' => 'Hendra Seller Demo', 'tenant_id' => 'TN-SELLER'],
-        ];
-        foreach ($sellerTenants as $st) {
-            $this->createDemoTenant($st['email'], $st['name'], 'seller', $st['tenant_id']);
-        }
-        $this->call(SellerFullDummySeeder::class);
-        $this->command->info('✅ Seller demo accounts & dummy data seeded.');
 
         $this->command->info('🚀 All Category Demo Accounts Seeded Successfully!');
         

@@ -107,13 +107,13 @@ function SectorInteractiveMock({ slug }) {
     )
   }
 
-  if (slug === 'seller') {
+  if (slug === 'seller' || slug === 'toko-retail') {
     return (
       <div className="bg-slate-900 rounded-2xl p-4 text-white text-xs space-y-3 font-mono shadow-lg border border-slate-800 animate-fadeIn">
         <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-[11px] text-sky-400 font-bold">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
-            OMNICHANNEL SYNC HUB
+            RITEL & OMNICHANNEL LIVE HUB
           </span>
           <span className="px-2 py-0.5 rounded bg-sky-950 border border-sky-500/40 text-[10px] text-sky-300">Aktif</span>
         </div>
@@ -126,10 +126,14 @@ function SectorInteractiveMock({ slug }) {
             <span>Tokopedia:</span>
             <span className="text-sky-300 font-bold">18 Order Masuk</span>
           </div>
+          <div className="flex justify-between">
+            <span>Kasir POS Toko Fisik:</span>
+            <span className="text-emerald-400 font-bold">32 Transaksi Selesai</span>
+          </div>
         </div>
         <div className="bg-sky-950/60 border border-sky-500/30 p-2 rounded-xl text-[11px] text-sky-300 flex items-center gap-1.5">
           <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-          <span>Stok multi-marketplace sinkron 100%</span>
+          <span>Stok toko fisik &amp; multi-marketplace sinkron 100%</span>
         </div>
       </div>
     )

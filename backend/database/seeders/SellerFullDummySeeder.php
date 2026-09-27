@@ -733,9 +733,10 @@ class SellerFullDummySeeder extends Seeder
         // 8. Tenant Support Tickets
         SupportTicket::where('tenant_id', $tenantId)->delete();
 
+        $tenantCode = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $tenantId));
         $supportTickets = [
             [
-                'id' => 'TKT-202609001',
+                'id' => 'TKT-' . $tenantCode . '-001',
                 'tenant_id' => $tenantId,
                 'name' => $tenantName,
                 'subject' => 'Sinkronisasi Stok Flash Sale TikTok Shop sedikit terlambat saat peak hour',
@@ -748,7 +749,7 @@ class SellerFullDummySeeder extends Seeder
                 'updated_at' => Carbon::now()->subHours(2),
             ],
             [
-                'id' => 'TKT-202609002',
+                'id' => 'TKT-' . $tenantCode . '-002',
                 'tenant_id' => $tenantId,
                 'name' => $tenantName,
                 'subject' => 'Bagaimana cara mapping varian produk multi-warna & ukuran dari Shopee?',
@@ -761,7 +762,7 @@ class SellerFullDummySeeder extends Seeder
                 'updated_at' => Carbon::now()->subDays(2),
             ],
             [
-                'id' => 'TKT-202609003',
+                'id' => 'TKT-' . $tenantCode . '-003',
                 'tenant_id' => $tenantId,
                 'name' => $tenantName,
                 'subject' => 'Usulan penambahan integrasi kurir J&T Cargo & SiCepat Gokil untuk pesanan grosir',
@@ -774,7 +775,7 @@ class SellerFullDummySeeder extends Seeder
                 'updated_at' => Carbon::now()->subDays(5),
             ],
             [
-                'id' => 'TKT-202609004',
+                'id' => 'TKT-' . $tenantCode . '-004',
                 'tenant_id' => $tenantId,
                 'name' => $tenantName,
                 'subject' => 'Konfirmasi faktur pajak & bukti potong PPh 23 invoice langganan tahunan',
@@ -787,7 +788,7 @@ class SellerFullDummySeeder extends Seeder
                 'updated_at' => Carbon::now()->subDays(8),
             ],
             [
-                'id' => 'TKT-202609005',
+                'id' => 'TKT-' . $tenantCode . '-005',
                 'tenant_id' => $tenantId,
                 'name' => $tenantName,
                 'subject' => 'Kendala cetak label resi kurir barcode AWB terpotong di printer thermal 80mm',
@@ -802,7 +803,7 @@ class SellerFullDummySeeder extends Seeder
         ];
 
         foreach ($supportTickets as $st) {
-            SupportTicket::create($st);
+            SupportTicket::updateOrCreate(['id' => $st['id']], $st);
         }
     }
 }

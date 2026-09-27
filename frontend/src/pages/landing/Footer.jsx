@@ -3,7 +3,7 @@ import { Building2, Phone, Mail, MapPin, Heart } from '@/constants/icons'
 import bizoraLogo from '../../assets/bizora-logo.png'
 
 const DEFAULTS = {
-  brandDesc: 'Platform bisnis digital #1 Indonesia untuk kelola toko retail, kuliner, serta budidaya hewan dan tanaman dalam satu aplikasi terpadu.',
+  brandDesc: 'Platform bisnis digital #1 Indonesia untuk kelola ritel & omnichannel, kuliner, budidaya hewan, dan jasa dalam satu aplikasi terpadu.',
   address: 'Jakarta & Bandung, Indonesia',
   phone: '+62 812-3456-7890 (CS WhatsApp 24/7)',
   email: 'bantuan@bizora.id',
