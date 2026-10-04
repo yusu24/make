@@ -132,6 +132,12 @@ export default function Header({ onMenuToggle, collapsed, onOpenCommandPalette }
   const { user, isImpersonating, exitImpersonate, logout, isSuperAdmin } = useAuth()
   const isRetail = pathname.startsWith('/retail')
   const isKuliner = pathname.startsWith('/kuliner')
+  const isBudidaya = pathname.startsWith('/budidaya')
+  const isJasa = pathname.startsWith('/jasa')
+  const isSeller = pathname.startsWith('/seller')
+  const isSaasAdmin = Boolean(isSuperAdmin?.() || user?.role === 'admin' || user?.role === 'super_admin')
+  const isSaasAdminPage = !isRetail && !isKuliner && !isBudidaya && !isJasa && !isSeller && isSaasAdmin
+
   const normalizedPath = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname
   const lookupPath = normalizedPath.startsWith('/admin/') ? normalizedPath.replace('/admin', '') : normalizedPath
   let page = PAGE_TITLES[lookupPath] || PAGE_TITLES[normalizedPath]
@@ -146,8 +152,6 @@ export default function Header({ onMenuToggle, collapsed, onOpenCommandPalette }
   if (!page) {
     page = { title: '', sub: '' }
   }
-
-  const isSaasAdminPage = !isRetail && !isKuliner && (isSuperAdmin?.() || user?.role === 'admin')
 
   const [showNotif, setShowNotif] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
