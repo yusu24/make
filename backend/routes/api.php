@@ -77,6 +77,11 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     Route::post('notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
     Route::post('notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'readAll']);
 
+    // Budidaya Alerts
+    Route::get('alerts', [\App\Http\Controllers\Api\Budidaya\AlertController::class, 'index']);
+    Route::post('alerts/mark-all-read', [\App\Http\Controllers\Api\Budidaya\AlertController::class, 'markAllAsRead']);
+    Route::post('alerts/{id}/read', [\App\Http\Controllers\Api\Budidaya\AlertController::class, 'markAsRead']);
+
     // User & Admin Management
     Route::get('users', [UserController::class, 'index']);
     Route::post('users', [UserController::class, 'store']);

@@ -113,6 +113,27 @@ export default function BudidayaHeader({ onMenuToggle, collapsed }) {
     }
   }
 
+  const handleAlertClick = async (alert) => {
+    if (!alert.is_read) {
+      try {
+        await api.post(`/alerts/${alert.id}/read`)
+      } catch (err) {
+        console.error('Failed to mark alert as read:', err)
+      }
+      setAlerts(prev => prev.map(a => a.id === alert.id ? { ...a, is_read: true } : a))
+      setUnreadCount(prev => Math.max(0, prev - 1))
+    }
+    setShowDropdown(false)
+
+    if (alert.pond_id) {
+      navigate(`/budidaya/ponds/${alert.pond_id}`)
+    } else if (alert.cycle_id) {
+      navigate(`/budidaya/cycles/${alert.cycle_id}`)
+    } else {
+      navigate('/budidaya/dashboard')
+    }
+  }
+
   const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-sandbox-') || (user?.email?.includes('demo-') && user?.email?.includes('@umkm-demo.com'));
 
   const handleLogout = async () => {
@@ -218,27 +239,37 @@ export default function BudidayaHeader({ onMenuToggle, collapsed }) {
                   </div>
                 ) : (
                   alerts.map((alert) => (
-                    <div key={alert.id} style={{
-                      padding: '12px 16px',
-                      borderBottom: '1px solid #F8FAFC',
-                      background: alert.is_read ? 'transparent' : '#F0F9F4',
-                      cursor: 'pointer',
-                      transition: 'background 0.15s'
-                    }}>
-                      <div style={{ display: 'flex', gap: 10 }}>
+                    <div 
+                      key={alert.id} 
+                      onClick={() => handleAlertClick(alert)}
+                      style={{
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #F8FAFC',
+                        background: alert.is_read ? 'transparent' : '#F0F9F4',
+                        cursor: 'pointer',
+                        transition: 'background 0.15s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#E8F5ED'}
+                      onMouseLeave={e => e.currentTarget.style.background = alert.is_read ? 'transparent' : '#F0F9F4'}
+                      title="Klik untuk membuka kolam atau siklus terkait"
+                    >
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                         <div style={{ 
                           width: 8, height: 8, borderRadius: '50%', 
                           background: alert.status === 'critical' ? '#EF4444' : '#F59E0B', 
                           marginTop: 5, flexShrink: 0,
                           opacity: alert.is_read ? 0.3 : 1
                         }} />
-                        <div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ margin: 0, fontSize: 12.5, fontWeight: alert.is_read ? 500 : 700, color: '#1A1C1A', lineHeight: '1.4' }}>
                             {alert.pond?.name || terms.unit}: {alert.parameter} {alert.status === 'critical' ? 'Kritis' : 'Peringatan'}
                           </p>
                           <p style={{ margin: '3px 0 0', fontSize: 11, color: '#64748B' }}>
                             Nilai: {alert.value} • {new Date(alert.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+                            <span style={{ fontSize: 11, color: '#059669', fontWeight: 600 }}>Lihat detail &rarr;</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -246,8 +277,14 @@ export default function BudidayaHeader({ onMenuToggle, collapsed }) {
                 )}
               </div>
               <div style={{ padding: '10px', textAlign: 'center', borderTop: '1px solid #F1F5F9', background: '#F8FAF9' }}>
-                <button style={{ background: 'none', border: 'none', color: '#1B4332', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                  Lihat Semua Riwayat
+                <button 
+                  onClick={() => {
+                    setShowDropdown(false);
+                    navigate('/budidaya/reports');
+                  }}
+                  style={{ background: 'none', border: 'none', color: '#1B4332', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Lihat Semua Riwayat & Analisa &rarr;
                 </button>
               </div>
             </div>
