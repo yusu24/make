@@ -4,8 +4,18 @@
 export function reportError(error, extra = {}) {
   const msg = error?.message || String(error);
 
-  // Auto-reload on stale chunk (common when user has older tab open during new deployment)
-  if (/Failed to fetch dynamically imported module|error loading dynamically imported module/i.test(msg)) {
+  // Auto-reload on stale chunk (common when user has older tab open during new deployment,
+  // or when Vite dynamic imports fail / return 404 HTML).
+  const isStaleChunk = 
+    /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed/i.test(msg) ||
+    (/Cannot read properties of undefined \(reading ['"]default['"]\)/i.test(msg) && (
+      error?.stack?.includes('jsx-runtime') ||
+      error?.stack?.includes('react-dom') ||
+      error?.stack?.includes('lazy') ||
+      error?.stack?.includes('assets/')
+    ));
+
+  if (isStaleChunk) {
     const lastReload = sessionStorage.getItem('chunk_reload_retry');
     if (!lastReload || Date.now() - Number(lastReload) > 10000) {
       sessionStorage.setItem('chunk_reload_retry', String(Date.now()));

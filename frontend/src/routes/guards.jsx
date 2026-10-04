@@ -68,7 +68,10 @@ export const ProtectedRoute = ({ children, adminOnly = false }) => {
     const wasDemo = sessionStorage.getItem('is_demo_sandbox') === 'true';
     return <Navigate to={wasDemo ? "/" : "/login"} replace />;
   }
-  if (adminOnly && (user.role === 'customer' || user.role === 'retail_cashier')) return <Navigate to="/" replace />;
+  if (adminOnly && user.role !== 'super_admin' && user.role !== 'admin') {
+    const targetPath = getCategoryDashboardPath(user.business_category, user.role);
+    return <Navigate to={targetPath} replace />;
+  }
   return children;
 };
 
