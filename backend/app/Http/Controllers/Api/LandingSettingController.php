@@ -95,6 +95,7 @@ class LandingSettingController extends Controller
             'campaign_text'    => $request->has('campaign_text') ? $request->campaign_text : $settings->campaign_text,
             'campaign_active'  => $request->has('campaign_active') ? filter_var($request->campaign_active, FILTER_VALIDATE_BOOLEAN) : $settings->campaign_active,
             'show_sandbox'     => $request->has('show_sandbox') ? filter_var($request->show_sandbox, FILTER_VALIDATE_BOOLEAN) : $settings->show_sandbox,
+            'require_registration_otp' => $request->has('require_registration_otp') ? filter_var($request->require_registration_otp, FILTER_VALIDATE_BOOLEAN) : ($settings->require_registration_otp ?? false),
             'show_features'    => $request->has('show_features') ? filter_var($request->show_features, FILTER_VALIDATE_BOOLEAN) : $settings->show_features,
             'show_testimonials'=> $request->has('show_testimonials') ? filter_var($request->show_testimonials, FILTER_VALIDATE_BOOLEAN) : $settings->show_testimonials,
             'featured_categories'=> $request->has('featured_categories') ? $request->featured_categories : $settings->featured_categories,

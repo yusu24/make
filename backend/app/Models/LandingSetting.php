@@ -13,6 +13,7 @@ class LandingSetting extends Model
         'campaign_text',
         'campaign_active',
         'show_sandbox',
+        'require_registration_otp',
         'show_features',
         'show_testimonials',
         'admin_logo_path',
@@ -53,6 +54,7 @@ class LandingSetting extends Model
     protected $casts = [
         'campaign_active' => 'boolean',
         'show_sandbox' => 'boolean',
+        'require_registration_otp' => 'boolean',
         'show_features' => 'boolean',
         'show_testimonials' => 'boolean',
         'payment_is_production' => 'boolean',

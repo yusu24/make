@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\EmailVerificationOtpMail;
 use App\Models\ActivityLog;
 use App\Models\BusinessCategory;
+use App\Models\LandingSetting;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -45,21 +46,39 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Generate random secure 6-digit OTP
-        $otp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+        $settings = LandingSetting::first();
+        $requireOtp = $settings ? (bool)$settings->require_registration_otp : false;
 
-        $user = User::create([
-            'name'                 => $request->name,
-            'email'                => $request->email,
-            'password'             => Hash::make($request->password),
-            'role'                 => 'customer',
-            'status'               => 'pending',
-            'email_verified_at'    => null,
-            'otp_code'             => $otp,
-            'otp_expires_at'       => now()->addMinutes(15),
-            'business_category_id' => $request->business_category_id,
-            'phone'                => $request->phone,
-        ]);
+        if (!$requireOtp) {
+            // Instant Trial Mode: User immediately active and ready for trial onboarding
+            $user = User::create([
+                'name'                 => $request->name,
+                'email'                => $request->email,
+                'password'             => Hash::make($request->password),
+                'role'                 => 'customer',
+                'status'               => 'active',
+                'email_verified_at'    => now(),
+                'otp_code'             => null,
+                'otp_expires_at'       => null,
+                'business_category_id' => $request->business_category_id,
+                'phone'                => $request->phone,
+            ]);
+        } else {
+            // Strict OTP Mode: Generate random 6-digit OTP
+            $otp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+            $user = User::create([
+                'name'                 => $request->name,
+                'email'                => $request->email,
+                'password'             => Hash::make($request->password),
+                'role'                 => 'customer',
+                'status'               => 'pending',
+                'email_verified_at'    => null,
+                'otp_code'             => $otp,
+                'otp_expires_at'       => now()->addMinutes(15),
+                'business_category_id' => $request->business_category_id,
+                'phone'                => $request->phone,
+            ]);
+        }
 
         // Auto-create tenant if category provided
         if ($request->business_category_id) {
@@ -89,6 +108,28 @@ class AuthController extends Controller
                     default                                  => null,
                 };
             }
+        }
+
+        if (!$requireOtp) {
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'action'  => 'register_instant_trial',
+                'target'  => 'User: ' . $user->name,
+                'level'   => 'success',
+                'ip_address' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success'               => true,
+                'requires_verification' => false,
+                'message'               => 'Pendaftaran berhasil! Akun uji coba Anda telah siap digunakan.',
+                'data'                  => [
+                    'token' => $token,
+                    'user'  => $this->formatUser($user),
+                ],
+            ], 201);
         }
 
         // Send OTP Email asynchronously / safe try-catch
@@ -308,26 +349,39 @@ class AuthController extends Controller
 
         // Check if email verified (skip for super_admin)
         if ($user->role !== 'super_admin' && is_null($user->email_verified_at)) {
-            // Re-send fresh OTP if expired
-            if (empty($user->otp_code) || now()->gte($user->otp_expires_at)) {
-                $newOtp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
-                $user->update([
-                    'otp_code'       => $newOtp,
-                    'otp_expires_at' => now()->addMinutes(15),
-                ]);
-                try {
-                    Mail::to($user->email)->send(new EmailVerificationOtpMail($newOtp, $user->name));
-                } catch (\Throwable $e) {
-                    Log::error('Failed to send verification OTP on login: ' . $e->getMessage());
-                }
-            }
+            $settings = LandingSetting::first();
+            $requireOtp = $settings ? (bool)$settings->require_registration_otp : false;
 
-            return response()->json([
-                'success'               => false,
-                'requires_verification' => true,
-                'email'                 => $user->email,
-                'message'               => 'Email Anda belum diverifikasi. Masukkan kode OTP 6-digit yang telah dikirim ke email Anda.',
-            ], 403);
+            if ($requireOtp) {
+                // Re-send fresh OTP if expired
+                if (empty($user->otp_code) || now()->gte($user->otp_expires_at)) {
+                    $newOtp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+                    $user->update([
+                        'otp_code'       => $newOtp,
+                        'otp_expires_at' => now()->addMinutes(15),
+                    ]);
+                    try {
+                        Mail::to($user->email)->send(new EmailVerificationOtpMail($newOtp, $user->name));
+                    } catch (\Throwable $e) {
+                        Log::error('Failed to send verification OTP on login: ' . $e->getMessage());
+                    }
+                }
+
+                return response()->json([
+                    'success'               => false,
+                    'requires_verification' => true,
+                    'email'                 => $user->email,
+                    'message'               => 'Email Anda belum diverifikasi. Masukkan kode OTP 6-digit yang telah dikirim ke email Anda.',
+                ], 403);
+            } else {
+                // Auto-verify if admin has disabled OTP requirement (Instant Trial mode)
+                $user->update([
+                    'email_verified_at' => now(),
+                    'status'            => 'active',
+                    'otp_code'          => null,
+                    'otp_expires_at'    => null,
+                ]);
+            }
         }
 
         // Create new token (keep existing tokens alive so other open tabs stay logged in)

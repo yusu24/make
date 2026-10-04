@@ -148,6 +148,14 @@ export default function Register() {
         localStorage.setItem('bizora_jasa_category', jasaSubCategory)
       }
       const res = await register(form)
+      if (res?.requires_verification === false && res?.data?.token) {
+        setSuccess('Pendaftaran berhasil! Mengarahkan ke dashboard uji coba...')
+        setTimeout(() => {
+          const targetPath = getCategoryDashboardPath(res.data.user?.business_category, res.data.user?.role)
+          navigate(targetPath)
+        }, 1200)
+        return
+      }
       setSuccess(res.message || 'Kode OTP verifikasi telah dikirim ke email Anda.')
       setStep(3)
       setResendTimer(60)

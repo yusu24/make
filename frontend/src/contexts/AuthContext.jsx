@@ -91,6 +91,12 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (formData) => {
         const res = await api.post('/auth/register', formData);
+        if (res.data?.data?.token) {
+            const { token, user: userData } = res.data.data;
+            localStorage.setItem('umkm_token', token);
+            localStorage.setItem('umkm_user', JSON.stringify(userData));
+            setUser(userData);
+        }
         return res.data;
     };
 
