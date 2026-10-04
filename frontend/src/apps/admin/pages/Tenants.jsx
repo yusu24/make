@@ -68,6 +68,42 @@ export default function Tenants() {
   const [showPassword, setShowPassword] = useState(true)
   const [copied, setCopied] = useState(false)
   const [isCleaningDemo, setIsCleaningDemo] = useState(false)
+  const [trialTarget, setTrialTarget] = useState(null)
+  const [trialDays, setTrialDays] = useState(14)
+  const [togglingTrialId, setTogglingTrialId] = useState(null)
+
+  const handleToggleTrial = async (tenant, targetStatus, customDays) => {
+    const isActivating = targetStatus !== undefined ? targetStatus : !tenant.is_trial
+    const days = customDays || trialDays || 14
+    
+    setTogglingTrialId(tenant.tenant_id)
+    try {
+      const res = await api.post(`/admin/tenants/${tenant.tenant_id}/toggle-trial`, {
+        is_trial: isActivating,
+        trial_days: days
+      })
+      
+      setTenants(prev => prev.map(t => {
+        if (t.tenant_id === tenant.tenant_id) {
+          return {
+            ...t,
+            is_trial: isActivating,
+            trial_ends_at: res.data?.trial_ends_at || (isActivating ? new Date(Date.now() + days*86400000).toISOString().split('T')[0] : null),
+            trial_days_left: isActivating ? days : 0,
+            subscription_plan: isActivating ? 'trial' : 'free',
+            status: isActivating ? 'active' : t.status,
+          }
+        }
+        return t
+      }))
+      
+      setTrialTarget(null)
+    } catch (err) {
+      alert('Gagal mengubah mode trial: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setTogglingTrialId(null)
+    }
+  }
 
   const handleCleanupDemo = async () => {
     if (!window.confirm('Bersihkan seluruh akun demo sandbox yang masa aktifnya sudah habis atau sudah tidak aktif?')) return
@@ -271,6 +307,7 @@ export default function Tenants() {
     else if (statusFilter === 'pending') matchesStatus = t.status === 'pending'
     else if (statusFilter === 'inactive') matchesStatus = t.status === 'inactive'
     else if (statusFilter === 'demo') matchesStatus = !!t.is_demo
+    else if (statusFilter === 'trial') matchesStatus = !!t.is_trial
 
     const matchesHealth = healthFilter === 'all' || t.health_status === healthFilter
 
@@ -368,6 +405,7 @@ export default function Tenants() {
                 onChange={e => setStatusFilter(e.target.value)}
               >
                 <option value="all">Semua Status</option>
+                <option value="trial">🚀 Mode Trial (Uji Coba)</option>
                 <option value="active">Aktif</option>
                 <option value="pending">Pending</option>
                 <option value="inactive">Nonaktif</option>
@@ -445,6 +483,7 @@ export default function Tenants() {
               <tr>
                 <th>Tenant / Bisnis</th>
                 <th>Kategori &amp; Paket</th>
+                <th>Akses Trial</th>
                 <th>Status</th>
                 <th>Kesehatan &amp; Aktivitas</th>
                 <th>Terdaftar</th>
@@ -454,7 +493,7 @@ export default function Tenants() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                       <RefreshCw size={24} className="animate-spin text-indigo-600" />
                       <span>Memuat data tenant...</span>
@@ -463,7 +502,7 @@ export default function Tenants() {
                 </tr>
               ) : paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
                       <Inbox size={32} className="text-slate-400" />
                       <span>Tidak ada tenant yang cocok dengan filter saat ini.</span>
@@ -515,6 +554,44 @@ export default function Tenants() {
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                       Paket: <span className="font-semibold text-slate-700">{t.subscription_plan || t.plan || 'Free'}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (t.is_trial) {
+                            if (window.confirm(`Matikan mode trial untuk tenant ${t.name || t.tenant_id}?`)) {
+                              handleToggleTrial(t, false)
+                            }
+                          } else {
+                            setTrialTarget(t)
+                            setTrialDays(14)
+                          }
+                        }}
+                        disabled={togglingTrialId === t.tenant_id}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          t.is_trial ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
+                        } ${togglingTrialId === t.tenant_id ? 'opacity-50 cursor-wait' : ''}`}
+                        title={t.is_trial ? 'Klik untuk matikan mode trial' : 'Klik untuk jadikan akun trial'}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                            t.is_trial ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                      <div className="flex flex-col">
+                        <span className={`text-[11px] font-bold ${t.is_trial ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                          {t.is_trial ? 'Trial ON' : 'Trial OFF'}
+                        </span>
+                        {t.is_trial && (
+                          <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                            {t.trial_days_left > 0 ? `${t.trial_days_left} hr tersisa` : 'Hari terakhir'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td>
@@ -895,6 +972,75 @@ export default function Tenants() {
               <button className="btn btn-secondary" onClick={() => setModuleModal(null)}>Batal</button>
               <button className="btn btn-primary" onClick={saveModules} disabled={savingModules}>
                 {savingModules ? 'Menyimpan...' : 'Simpan Hak Akses Modul'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Modal Konfigurasi Durasi Trial ── */}
+      {trialTarget && (
+        <Modal isOpen={!!trialTarget} onClose={() => setTrialTarget(null)} title={`🚀 Aktifkan Akses Trial: ${trialTarget.name || trialTarget.tenant_id}`} maxWidth="480px">
+          <div className="space-y-4 text-slate-700 dark:text-slate-200">
+            <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed flex items-start gap-2.5">
+              <Sparkles size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-emerald-900 dark:text-emerald-200 font-semibold mb-0.5">Mode Uji Coba Tanpa Ribet</strong>
+                Tenant akan mendapatkan status <strong>Trial Aktif</strong> dengan seluruh modul terbuka. Akun pengguna langsung di-verifikasi otomatis (tanpa perlu mengisi OTP email).
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                Pilih Durasi Masa Uji Coba (Trial):
+              </label>
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {[7, 14, 30, 60].map(d => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setTrialDays(d)}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      trialDays === d
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {d} Hari
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500">Atau tentukan sendiri:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="365"
+                  value={trialDays}
+                  onChange={e => setTrialDays(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-20 px-2 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded-lg text-center font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                />
+                <span className="text-xs text-slate-500">hari</span>
+              </div>
+            </div>
+
+            <div className="modal__actions mt-6 flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                className="btn btn-secondary text-xs"
+                onClick={() => setTrialTarget(null)}
+                disabled={togglingTrialId === trialTarget.tenant_id}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary text-xs bg-emerald-600 hover:bg-emerald-700 border-emerald-600 text-white flex items-center gap-1.5 shadow-sm"
+                onClick={() => handleToggleTrial(trialTarget, true, trialDays)}
+                disabled={togglingTrialId === trialTarget.tenant_id}
+              >
+                <Sparkles size={14} />
+                <span>{togglingTrialId === trialTarget.tenant_id ? 'Mengaktifkan...' : `Jadikan Trial (${trialDays} Hari)`}</span>
               </button>
             </div>
           </div>

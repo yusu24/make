@@ -821,6 +821,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         Route::post('tenants/{tenant_id}/resend-invoice', [TenantController::class, 'resendInvoice']);
         Route::post('tenants/{tenant_id}/reset-password', [TenantController::class, 'resetPassword']);
         Route::post('tenants/{tenant_id}/extend-subscription', [TenantController::class, 'extendSubscription']);
+        Route::post('tenants/{tenant_id}/toggle-trial', [TenantController::class, 'toggleTrial']);
         Route::post('tenants/cleanup-demo', [TenantController::class, 'cleanupDemoSandboxes']);
 
         // KYC Verifications

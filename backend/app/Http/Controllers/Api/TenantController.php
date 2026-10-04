@@ -38,6 +38,13 @@ class TenantController extends Controller
                     $q->where('tenant_id', 'like', '%demo%')
                       ->orWhere('tenant_id', 'like', '%sandbox%');
                 });
+            } elseif ($request->status === 'trial') {
+                $query->where(function($q) {
+                    $q->where('subscription_plan', 'trial')
+                      ->orWhere(function($sub) {
+                          $sub->whereNotNull('trial_ends_at')->where('trial_ends_at', '>', now());
+                      });
+                });
             } else {
                 $query->where('status', $request->status);
             }
@@ -89,6 +96,12 @@ class TenantController extends Controller
                 }
             }
 
+            $isTrial = ($t->subscription_plan === 'trial') || 
+                       ($t->trial_ends_at && $t->trial_ends_at->isFuture() && !in_array($t->subscription_plan, ['pro', 'basic', 'enterprise']));
+            $trialDaysLeft = ($t->trial_ends_at && $t->trial_ends_at->isFuture()) 
+                ? (int) ceil(now()->diffInDays($t->trial_ends_at, false)) 
+                : 0;
+
             return [
                 'id'                  => $t->id,
                 'tenant_id'           => $t->tenant_id,
@@ -102,6 +115,9 @@ class TenantController extends Controller
                 'health_label'        => $healthLabel,
                 'last_activity_human' => $lastActivity ? $lastActivity->diffForHumans() : 'Belum ada aktivitas',
                 'is_demo'             => $isDemo,
+                'is_trial'            => (bool) $isTrial,
+                'trial_ends_at'       => $t->trial_ends_at ? $t->trial_ends_at->format('Y-m-d') : null,
+                'trial_days_left'     => $trialDaysLeft,
                 'expires_at'          => $expiresAt ? $expiresAt->format('Y-m-d') : null,
                 'days_left'           => $daysLeft,
                 'lifecycle_status'    => $lifecycle,
@@ -476,5 +492,67 @@ class TenantController extends Controller
             'expires_at' => $newExpiry->format('Y-m-d'),
             'days_left'  => (int) ceil(now()->diffInDays($newExpiry, false)),
         ]);
+    }
+
+    public function toggleTrial(Request $request, string $id)
+    {
+        $tenant = Tenant::where('tenant_id', $id)->orWhere('id', $id)->with('user', 'modules')->firstOrFail();
+        $isTrial = $request->boolean('is_trial');
+        $trialDays = (int) $request->input('trial_days', 14);
+
+        if ($isTrial) {
+            $trialEndsAt = now()->addDays($trialDays);
+            $tenant->update([
+                'subscription_plan'       => 'trial',
+                'trial_ends_at'           => $trialEndsAt,
+                'subscription_expires_at' => $trialEndsAt,
+                'subscription_status'     => 'active',
+                'status'                  => 'active',
+            ]);
+
+            // Auto-verify associated user so they bypass OTP and login immediately
+            if ($tenant->user) {
+                $tenant->user->update([
+                    'status'            => 'active',
+                    'email_verified_at' => $tenant->user->email_verified_at ?? now(),
+                    'otp_code'          => null,
+                    'otp_expires_at'    => null,
+                ]);
+            }
+
+            // Ensure modules are active for trial experience
+            $tenant->modules()->update(['is_active' => true]);
+
+            $bizName = $tenant->business_name ?: ($tenant->user?->name ?? $tenant->tenant_id);
+            ActivityLog::record('toggle_trial_on', "Mode Trial diaktifkan untuk Tenant {$tenant->tenant_id} ({$trialDays} hari s/d {$trialEndsAt->format('Y-m-d')})", 'success');
+
+            return response()->json([
+                'success'         => true,
+                'is_trial'        => true,
+                'message'         => "Mode Trial untuk {$bizName} berhasil diaktifkan ({$trialDays} hari).",
+                'trial_ends_at'   => $trialEndsAt->format('Y-m-d'),
+                'trial_days_left' => $trialDays,
+                'plan'            => 'trial',
+                'status'          => 'active',
+            ]);
+        } else {
+            $tenant->update([
+                'subscription_plan'       => 'free',
+                'trial_ends_at'           => now(),
+                'subscription_expires_at' => now(),
+            ]);
+
+            $bizName = $tenant->business_name ?: ($tenant->user?->name ?? $tenant->tenant_id);
+            ActivityLog::record('toggle_trial_off', "Mode Trial dinonaktifkan untuk Tenant {$tenant->tenant_id}", 'info');
+
+            return response()->json([
+                'success'         => true,
+                'is_trial'        => false,
+                'message'         => "Mode Trial untuk {$bizName} berhasil dinonaktifkan.",
+                'trial_ends_at'   => null,
+                'trial_days_left' => 0,
+                'plan'            => 'free',
+            ]);
+        }
     }
 }

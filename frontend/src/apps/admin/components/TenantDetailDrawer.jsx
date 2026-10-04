@@ -184,6 +184,19 @@ export default function TenantDetailDrawer({
             }}>
               Paket: {data.subscription_plan || data.plan || 'Free'}
             </span>
+
+            {data.is_trial && (
+              <span style={{
+                background: '#10b98125',
+                border: '1px solid #10b98180',
+                color: '#34d399',
+                padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 4
+              }}>
+                <Sparkles size={12} />
+                <span>Mode Trial ({data.trial_days_left ?? 0} hari tersisa)</span>
+              </span>
+            )}
           </div>
 
           {/* Navigation Tabs */}
