@@ -9,6 +9,7 @@ import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import StatScoreCard from '@/components/ui/StatScoreCard';
+import EmptyTableState from '../../../components/EmptyTableState';
 
 export default function Serials() {
   const toast = useToast();
@@ -157,8 +158,13 @@ export default function Serials() {
 
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button className="btn btn-primary" onClick={openAdd} style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}>
-            <Plus size={15} className="mr-2 mobile-no-margin" />
+          <button
+            title="Tambah Serial"
+            type="button"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer"
+            onClick={openAdd}
+          >
+            <Plus size={15} className="mobile-no-margin" />
             <span className="btn-text-mobile-hide">Tambah Serial</span>
           </button>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
@@ -187,7 +193,17 @@ export default function Serials() {
             </thead>
             <tbody>
               {loading ? <RetailTableLoadingRow colSpan={5} /> : p.paginatedData.length === 0 ? (
-                <tr><td colSpan="5" className="text-center py-6 text-slate-500">Belum ada data serial number.</td></tr>
+                <EmptyTableState
+                  colSpan={5}
+                  icon={Hash}
+                  title="Belum ada data nomor seri / IMEI"
+                  description={search ? `Tidak ada serial number yang cocok dengan "${search}".` : "Catat nomor seri unik atau IMEI unit barang untuk pelacakan garansi."}
+                  actionLabel={search ? "Reset Pencarian" : "Tambah Nomor Seri"}
+                  onAction={() => {
+                    if (search) setSearch('');
+                    else { resetForm(); setShowModal(true); }
+                  }}
+                />
               ) : p.paginatedData.map(s => (
                 <tr key={s.id}>
                   <td className="pl-6">

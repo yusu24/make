@@ -59,8 +59,9 @@ class TenantDeveloperApiController extends Controller
             }
         }
 
-        // Check if tenant has enterprise or custom settings enabling API
-        if ($tenant->subscription_plan === 'enterprise' || $tenant->subscription_plan === 'pro_developer') {
+        // Check if tenant has pro, enterprise or custom settings enabling API
+        $subPlan = strtolower($tenant->subscription_plan ?? '');
+        if (in_array($subPlan, ['pro', 'enterprise', 'pro_developer', 'paket pro'])) {
             return true;
         }
 

@@ -249,22 +249,33 @@ export default function Header({ onMenuToggle, collapsed, onOpenCommandPalette }
             {page.title || (isSaasAdminPage ? 'Bizora SaaS' : 'Bizora')}
           </h1>
         </div>
-
-        <button
-          type="button"
-          onClick={onOpenCommandPalette}
-          className="header__search-trigger hidden sm:flex items-center gap-2.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 px-3.5 py-1.5 rounded-xl text-slate-500 text-xs font-medium transition-all shadow-2xs ml-1"
-          title="Buka Command Palette (Ctrl + K)"
-        >
-          <Search size={14} className="text-slate-400" />
-          <span className="text-slate-600">{isSaasAdminPage ? 'Cari tenant, menu, aksi...' : 'Cari menu, aksi, data...'}</span>
-          <kbd className="bg-white border border-slate-300 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-slate-500 font-mono shadow-2xs">
-            Ctrl K
-          </kbd>
-        </button>
       </div>
 
       <div className="header__right">
+        {/* Desktop Search Trigger (Rata Kanan) */}
+        <button
+          type="button"
+          onClick={onOpenCommandPalette}
+          className="header__search-trigger hidden sm:flex items-center gap-2.5 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800/90 dark:hover:bg-slate-700/90 border border-slate-200/80 dark:border-slate-700/80 px-4 py-1.5 rounded-full text-slate-500 dark:text-slate-400 text-xs font-medium transition-all shadow-2xs cursor-pointer mr-1"
+          title="Buka Pintasan Cepat (Ctrl + K)"
+        >
+          <Search size={14} className="text-slate-400" />
+          <span className="text-slate-600 dark:text-slate-300">{isSaasAdminPage ? 'Cari tenant, menu, aksi...' : 'Cari menu, pintasan, produk...'}</span>
+          <kbd className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono shadow-2xs">
+            Ctrl K
+          </kbd>
+        </button>
+
+        {/* Mobile Search Button */}
+        <button
+          type="button"
+          onClick={onOpenCommandPalette}
+          className="sm:hidden p-2 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+          title="Buka Pintasan Cepat (Ctrl + K)"
+        >
+          <Search size={16} />
+        </button>
+
         <div className="header__date">
           <Calendar size={13} />
           <span>{dateStr}</span>

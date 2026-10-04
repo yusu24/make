@@ -21,6 +21,8 @@ import {
   Bot,
   Store,
   Printer,
+  Eye,
+  Download,
   ChevronRight,
   HelpCircle,
   Tag,
@@ -46,8 +48,11 @@ export default function UniversalSubscriptionView({
   const [pendingReq, setPendingReq] = useState(null);
   const [categoryPromo, setCategoryPromo] = useState(null);
   const [globalSettings, setGlobalSettings] = useState(null);
+  const [invoiceSettings, setInvoiceSettings] = useState(null);
   const [apiPlans, setApiPlans] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   // Checkout Modal State
   const [showOrderModal, setShowOrderModal] = useState(false);
@@ -195,6 +200,7 @@ export default function UniversalSubscriptionView({
         setPendingReq(res.data.data || null);
         setCategoryPromo(res.data.category_promo || null);
         setGlobalSettings(res.data.global_settings || null);
+        setInvoiceSettings(res.data.invoice_settings || null);
         setApiPlans(res.data.plans || []);
         setInvoices(res.data.invoices || []);
       }
@@ -217,6 +223,46 @@ export default function UniversalSubscriptionView({
       currency: 'IDR',
       minimumFractionDigits: 0
     }).format(number || 0);
+  };
+
+  const getCleanInvoiceId = (inv) => {
+    if (!inv) return '';
+    const raw = String(inv.invoice_number || inv.invoice_id || inv.id || '');
+    if (raw.startsWith('INV-SUB-INV-')) {
+      return raw.replace('INV-SUB-', '');
+    }
+    if (raw.startsWith('INV-')) {
+      return raw;
+    }
+    return raw ? `INV-${raw}` : 'INV-SUB';
+  };
+
+  const handleDownloadInvoicePdf = async (inv) => {
+    if (!inv) return;
+    setIsDownloadingPdf(true);
+    const cleanId = getCleanInvoiceId(inv);
+    try {
+      const response = await api.get(`/subscription/invoices/${encodeURIComponent(cleanId)}/download-pdf`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      const isPaid = (inv.status || '').toLowerCase() === 'paid' || (inv.status || '').toLowerCase() === 'approved';
+      link.setAttribute('download', `${isPaid ? 'Kuitansi_Lunas' : 'Faktur_Tagihan'}_${cleanId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      if (toast?.success) toast.success('Berkas PDF resmi Bizora berhasil diunduh!');
+    } catch (err) {
+      console.error('PDF download error:', err);
+      // Fallback: open preview and print
+      setSelectedInvoice(inv);
+      setTimeout(() => window.print(), 300);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   const getPlanPriceInfo = (planKey) => {
@@ -932,12 +978,12 @@ export default function UniversalSubscriptionView({
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Riwayat Faktur & Pembayaran</h3>
-              <p className="text-[11px] text-slate-500">Semua catatan tagihan dan bukti pembayaran langganan akun Anda.</p>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Riwayat Faktur &amp; Pembayaran</h3>
+              <p className="text-[11px] text-slate-500">Semua catatan tagihan dan bukti pembayaran langganan akun Anda format resmi Bizora.</p>
             </div>
             <button
               onClick={fetchData}
-              className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:bg-slate-50 text-slate-600 dark:text-slate-300"
+              className="px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
             >
               Segarkan
             </button>
@@ -965,39 +1011,55 @@ export default function UniversalSubscriptionView({
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {invoices.map((inv, idx) => {
                     const status = (inv.status || 'pending').toLowerCase();
+                    const cleanId = getCleanInvoiceId(inv);
+                    const isPaid = status === 'paid' || status === 'active' || status === 'approved' || (user?.subscription_status === 'active' && (user?.subscription_plan || '').toLowerCase() === (inv.plan || '').toLowerCase());
                     return (
                       <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                         <td className="p-2.5 font-mono font-bold text-slate-800 dark:text-slate-200 text-[11px]">
-                          {inv.invoice_number || inv.invoice_id || `INV-SUB-${inv.id}`}
+                          {cleanId}
                         </td>
                         <td className={`p-2.5 font-semibold capitalize ${theme.basicText} text-[11px]`}>
                           Paket {inv.plan || inv.plan_name || 'Basic'}
                         </td>
                         <td className="p-2.5 text-slate-500 text-[11px]">
-                          {inv.created_at ? new Date(inv.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                          {inv.created_at || inv.date ? new Date(inv.created_at || inv.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
                         </td>
                         <td className="p-2.5 font-bold text-slate-900 dark:text-white text-[11px]">
                           {formatRupiah(inv.amount || inv.total_amount || 0)}
                         </td>
                         <td className="p-2.5 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                            status === 'paid' || status === 'active' || status === 'approved'
+                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold ${
+                            isPaid
                               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                              : status === 'pending'
+                              : status === 'pending' || status === 'unpaid'
                               ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                               : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
                           }`}>
-                            {status === 'paid' || status === 'approved' ? 'LUNAS' : status === 'pending' ? 'MENUNGGU' : 'BATAL'}
+                            {isPaid ? 'LUNAS' : (status === 'pending' || status === 'unpaid') ? 'MENUNGGU' : 'BATAL'}
                           </span>
                         </td>
                         <td className="p-2.5 text-right">
-                          <button
-                            onClick={() => window.print()}
-                            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-400"
-                            title="Cetak Faktur"
-                          >
-                            <Printer size={14} />
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedInvoice(inv)}
+                              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 transition-all cursor-pointer shadow-2xs"
+                              title="Lihat & Cetak Faktur Format Resmi Bizora"
+                            >
+                              <Eye size={12} />
+                              <span>Lihat &amp; Cetak</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadInvoicePdf(inv)}
+                              disabled={isDownloadingPdf}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-2xs"
+                              title="Unduh Berkas PDF Resmi"
+                            >
+                              <Download size={12} />
+                              <span className="hidden sm:inline">PDF</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1165,6 +1227,371 @@ export default function UniversalSubscriptionView({
           </div>
         </div>
       )}
+
+      {/* ── BIZORA OFFICIAL SUBSCRIPTION INVOICE / RECEIPT MODAL & PRINT PREVIEW ── */}
+      {selectedInvoice && (() => {
+        const status = (selectedInvoice.status || 'pending').toLowerCase();
+        const isPaid = status === 'paid' || status === 'active' || status === 'approved' || (user?.subscription_status === 'active' && (user?.subscription_plan || '').toLowerCase() === (selectedInvoice.plan || '').toLowerCase());
+        const cleanId = getCleanInvoiceId(selectedInvoice);
+        const invDate = selectedInvoice.created_at || selectedInvoice.date
+          ? new Date(selectedInvoice.created_at || selectedInvoice.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+          : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        const invDueDate = selectedInvoice.due_date
+          ? new Date(selectedInvoice.due_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+          : new Date(Date.now() + 7 * 86400000).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        const planName = selectedInvoice.plan || selectedInvoice.plan_name || 'Pro';
+        const bankAccounts = invoiceSettings?.bank_accounts && invoiceSettings.bank_accounts.length > 0
+          ? invoiceSettings.bank_accounts
+          : [
+              {
+                bank_name: invoiceSettings?.bank_name || 'Bank Mandiri',
+                bank_account_number: invoiceSettings?.bank_account_number || '123-00-9988776-5',
+                bank_account_name: invoiceSettings?.bank_account_name || 'PT BIZORA TEKNOLOGI INDONESIA'
+              }
+            ];
+
+        return (
+          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+            <div className="bg-slate-100 dark:bg-slate-950 rounded-2xl max-w-3xl w-full border border-slate-300 dark:border-slate-800 shadow-2xl flex flex-col max-h-[96vh] overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
+              
+              {/* Modal Control Header (Hidden when printing) */}
+              <div className="p-3.5 sm:p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0 print:hidden">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={`w-8 h-8 rounded-full ${isPaid ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'} flex items-center justify-center shrink-0`}>
+                    <FileText size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm truncate">
+                      Format Resmi Bizora: {isPaid ? 'Kuitansi Pembayaran Lunas' : 'Faktur Tagihan Langganan'}
+                    </h3>
+                    <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">
+                      {cleanId} • {user?.business_name || user?.name || 'Toko Retail POS'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                    title="Cetak format cetak A4 dokumen ini"
+                  >
+                    <Printer size={13} />
+                    <span>Cetak Dokumen</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadInvoicePdf(selectedInvoice)}
+                    disabled={isDownloadingPdf}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                    title="Unduh Berkas PDF Resmi dari Server"
+                  >
+                    <Download size={13} />
+                    <span>{isDownloadingPdf ? 'Mengunduh...' : 'Unduh PDF'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedInvoice(null)}
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+                    title="Tutup"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Printable Body Container - Standard Bizora A4 Layout */}
+              <div className="overflow-y-auto p-3 sm:p-6 bg-slate-200/60 dark:bg-slate-950 flex justify-center">
+                <div
+                  id="bizora-subscription-invoice"
+                  className="bg-white text-slate-900 w-full max-w-[680px] p-6 sm:p-8 rounded-xl shadow-md border border-slate-200/90 text-xs font-sans relative"
+                >
+                  {/* Header: Company Brand + Title */}
+                  <div className={`flex justify-between items-start pb-4 mb-4 border-b-2 ${isPaid ? 'border-emerald-600' : 'border-indigo-600'}`}>
+                    <div className="flex items-start gap-3">
+                      {invoiceSettings?.invoice_logo_url ? (
+                        <img
+                          src={invoiceSettings.invoice_logo_url}
+                          alt="Logo Bizora"
+                          className="max-h-12 max-w-12 object-contain"
+                        />
+                      ) : (
+                        <div className="w-11 h-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0">
+                          BZ
+                        </div>
+                      )}
+                      <div>
+                        <h4 className={`text-base font-extrabold uppercase tracking-wide leading-none ${isPaid ? 'text-emerald-700' : 'text-indigo-600'}`}>
+                          {invoiceSettings?.company_name || 'BIZORA SaaS'}
+                        </h4>
+                        <p className="text-[10px] font-bold text-slate-600 mt-1">
+                          {invoiceSettings?.company_tagline || 'Sistem Manajemen Usaha & Kasir Terintegrasi'}
+                        </p>
+                        <p className="text-[9px] text-slate-500 leading-relaxed mt-1">
+                          {invoiceSettings?.company_address || 'Jl. Jendral Sudirman No. 123, Jakarta Selatan'}<br />
+                          Email: {invoiceSettings?.company_email || 'billing@bizora.id'} | Telp: {invoiceSettings?.company_phone || '0812-3456-7890'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <div className={`text-sm font-black tracking-wide uppercase ${isPaid ? 'text-emerald-700' : 'text-slate-900'}`}>
+                        {isPaid ? 'KUITANSI LUNAS' : 'INVOICE / TAGIHAN'}
+                      </div>
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        {isPaid ? 'OFFICIAL RECEIPT' : 'SUBSCRIPTION BILLING'}
+                      </div>
+                      <div className="text-[11px] text-slate-700 font-mono font-bold mt-1">
+                        No: <span className="text-indigo-700">{cleanId}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2-Column Info Grid */}
+                  <div className="grid grid-cols-2 gap-3 bg-slate-50/90 border border-slate-200/80 rounded-xl p-3 mb-4 text-[10px]">
+                    <div>
+                      <div className="font-bold text-slate-400 uppercase text-[8px] tracking-wider">Ditagihkan Kepada:</div>
+                      <div className="font-bold text-slate-900 text-xs mt-0.5">
+                        {user?.business_name || user?.name || 'Toko Retail POS'}
+                      </div>
+                      <div className="text-slate-600 mt-0.5">
+                        ID Tenant: <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-mono font-bold text-slate-800">{user?.tenant_id || '-'}</code>
+                      </div>
+                      <div className="text-slate-500 mt-0.5 truncate">{user?.email || '-'}</div>
+                      <div className="text-indigo-600 font-medium text-[9px] mt-0.5">{categoryTitle || 'Toko Retail POS'}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-slate-400 uppercase text-[8px] tracking-wider">Rincian Dokumen:</div>
+                      <div className="text-slate-600 mt-0.5">Tanggal Terbit: <strong>{invDate}</strong></div>
+                      <div className="text-slate-600 mt-0.5">
+                        {isPaid ? 'Tanggal Verifikasi: ' : 'Jatuh Tempo: '}
+                        <strong>{invDueDate}</strong>
+                      </div>
+                      <div className="mt-1">
+                        <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold ${
+                          isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {isPaid ? 'STATUS: LUNAS' : 'STATUS: MENUNGGU PEMBAYARAN'}
+                        </span>
+                      </div>
+                      <div className="text-slate-500 text-[9px] mt-0.5">
+                        Metode: {selectedInvoice.payment_method || 'Transfer Bank / VA'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Line Items Table */}
+                  <table className="w-full text-[10.5px] mb-4 border-collapse">
+                    <thead>
+                      <tr
+                        style={{
+                          backgroundColor: isPaid ? '#15803d' : '#4f46e5',
+                          color: '#ffffff'
+                        }}
+                        className={`${isPaid ? 'bg-emerald-700' : 'bg-indigo-600'} text-white text-left text-[9.5px] uppercase font-bold tracking-wider`}
+                      >
+                        <th style={{ color: '#ffffff', padding: '8px 12px' }} className="rounded-l-lg !text-white">Deskripsi Layanan</th>
+                        <th style={{ color: '#ffffff', padding: '8px 8px', textAlign: 'center' }} className="!text-white">Durasi</th>
+                        <th style={{ color: '#ffffff', padding: '8px 12px', textAlign: 'right' }} className="!text-white">Tarif</th>
+                        <th style={{ color: '#ffffff', padding: '8px 12px', textAlign: 'right' }} className="rounded-r-lg !text-white">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr>
+                        <td className="py-3 px-3">
+                          <div className="font-bold text-slate-900 capitalize">
+                            Langganan Sistem BIZORA SaaS (Paket {planName})
+                          </div>
+                          <div className="text-[9px] text-slate-500 leading-tight mt-0.5">
+                            Akses penuh fitur kasir POS offline, katalog produk, stok &amp; pergudangan, integrasi omnichannel marketplace, laporan keuangan &amp; AI Copilot.
+                          </div>
+                        </td>
+                        <td className="py-3 px-2 text-center font-medium text-slate-600 whitespace-nowrap">
+                          1 Bulan
+                        </td>
+                        <td className="py-3 px-3 text-right font-medium text-slate-600 whitespace-nowrap">
+                          {formatRupiah(selectedInvoice.amount || 0)}
+                        </td>
+                        <td className="py-3 px-3 text-right font-bold text-slate-900 whitespace-nowrap">
+                          {formatRupiah(selectedInvoice.amount || 0)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {/* Stamp & Total Summary Row */}
+                  <div className="flex justify-between items-center mb-4 gap-4">
+                    {/* Stamp on the Left */}
+                    <div className="shrink-0 pl-2">
+                      {isPaid ? (
+                        <div className="border-[2.5px] border-double border-emerald-600 rounded-lg p-2 text-center transform -rotate-3 bg-emerald-50/50 inline-block min-w-[150px]">
+                          <div className="text-[7.5px] font-extrabold tracking-widest text-emerald-800 uppercase">
+                            • RESMI &amp; TERVERIFIKASI •
+                          </div>
+                          <div className="text-sm font-black tracking-[3px] text-emerald-700 py-0.5">
+                            L U N A S
+                          </div>
+                          <div className="text-[7px] font-bold tracking-widest text-emerald-800 uppercase">
+                            OFFICIAL RECEIPT
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="border-2 border-dashed border-amber-500 rounded-lg p-2 text-center transform -rotate-2 bg-amber-50/60 inline-block min-w-[155px]">
+                          <div className="text-[7.5px] font-bold tracking-wider text-amber-800 uppercase">
+                            MENUNGGU PEMBAYARAN
+                          </div>
+                          <div className="text-xs font-black tracking-wider text-amber-700 py-0.5">
+                            BELUM DIBAYAR
+                          </div>
+                          <div className="text-[7.5px] font-semibold text-amber-700">
+                            OFFICIAL INVOICE
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Total Summary Table on the Right */}
+                    <div className="w-56 shrink-0">
+                      <div className="space-y-1 text-[10px]">
+                        <div className="flex justify-between text-slate-500 px-2 py-0.5">
+                          <span>Subtotal:</span>
+                          <span className="font-semibold text-slate-700">{formatRupiah(selectedInvoice.amount || 0)}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-500 px-2 py-0.5">
+                          <span>Pajak PPN (0%):</span>
+                          <span className="font-semibold text-slate-700">Rp 0</span>
+                        </div>
+                        <div className={`flex justify-between px-3 py-1.5 rounded-lg text-xs font-bold ${
+                          isPaid ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' : 'bg-indigo-50 text-indigo-900 border border-indigo-200'
+                        }`}>
+                          <span>TOTAL {isPaid ? 'DIBAYAR' : 'TAGIHAN'}:</span>
+                          <span className="font-mono">{formatRupiah(selectedInvoice.amount || 0)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Info / Receipt Details Box */}
+                  {isPaid ? (
+                    <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200 text-[10px] space-y-1 mb-3">
+                      <div className="font-bold text-emerald-800 uppercase text-[9px] tracking-wide flex items-center gap-1.5">
+                        <CheckCircle2 size={12} className="text-emerald-600" />
+                        <span>STATUS: TELAH DIBAYAR LUNAS (OFFICIAL RECEIPT)</span>
+                      </div>
+                      <div className="text-emerald-800">
+                        Diterima via: <strong>{bankAccounts[0]?.bank_name || 'Bank Mandiri'} ({bankAccounts[0]?.bank_account_number || '123-00-9988776-5'})</strong> a.n. <strong>{bankAccounts[0]?.bank_account_name || 'PT BIZORA TEKNOLOGI INDONESIA'}</strong>
+                      </div>
+                      <div className="text-emerald-700 text-[9px]">
+                        Keterangan: Pembayaran telah diverifikasi secara sistem. Fitur &amp; akses paket <strong>{planName}</strong> aktif dan dapat digunakan.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 rounded-xl bg-slate-50 border border-dashed border-slate-300 text-[10px] space-y-1.5 mb-3">
+                      <div className="font-bold text-slate-700 uppercase text-[9px] tracking-wide flex items-center gap-1.5">
+                        <CreditCard size={12} className="text-indigo-600" />
+                        <span>INSTRUKSI PEMBAYARAN / TRANSFER REKENING RESMI:</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        {bankAccounts.map((b, i) => (
+                          <div key={i} className="p-2 rounded bg-white border border-slate-200 text-[9.5px]">
+                            <div className="font-bold text-slate-800">{b.bank_name || 'Bank Mandiri'}</div>
+                            <div className="font-mono font-bold text-indigo-700 text-[11px] my-0.5">{b.bank_account_number || '123-00-9988776-5'}</div>
+                            <div className="text-slate-500 text-[8.5px]">a.n. {b.bank_account_name || 'PT BIZORA TEKNOLOGI INDONESIA'}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {invoiceSettings?.payment_notes && (
+                        <div className="text-slate-500 italic text-[8.5px] pt-1">
+                          * {invoiceSettings.payment_notes}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Footer Terms & Authenticity */}
+                  <div className="border-t border-slate-200 pt-3 text-center space-y-1">
+                    <p className="text-[9px] text-slate-500 leading-normal">
+                      {invoiceSettings?.invoice_terms || 'Terima kasih atas kepercayaan Anda menggunakan BIZORA SaaS. Faktur ini sah secara elektronik dan diterbitkan otomatis oleh sistem tanpa tanda tangan basah.'}
+                    </p>
+                    <div className="text-[8px] font-mono text-slate-400">
+                      ✓ BIZORA AUTHENTICATED ELECTRONIC DOCUMENT • REF: {cleanId} • {new Date().toISOString()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Bottom Bar */}
+              <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2 shrink-0 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => setSelectedInvoice(null)}
+                  className="px-4 py-1.5 rounded-full border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition-all cursor-pointer"
+                >
+                  Tutup
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Printer size={13} />
+                  <span>Cetak Dokumen</span>
+                </button>
+              </div>
+
+            </div>
+
+            {/* Print Isolation Styles & Header Text Contrast Override */}
+            <style>{`
+              #bizora-subscription-invoice table thead th,
+              #bizora-subscription-invoice table th {
+                color: #ffffff !important;
+                background-color: ${isPaid ? '#15803d' : '#4f46e5'} !important;
+                font-weight: 700 !important;
+                letter-spacing: 0.05em !important;
+                font-size: 10px !important;
+              }
+              @media print {
+                @page {
+                  size: A4 portrait;
+                  margin: 10mm 12mm;
+                }
+                html, body {
+                  background: #ffffff !important;
+                  color: #000000 !important;
+                  height: auto !important;
+                  overflow: visible !important;
+                }
+                body * {
+                  visibility: hidden !important;
+                }
+                #bizora-subscription-invoice, #bizora-subscription-invoice * {
+                  visibility: visible !important;
+                }
+                #bizora-subscription-invoice {
+                  position: absolute !important;
+                  left: 0 !important;
+                  top: 0 !important;
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  margin: 0 !important;
+                  padding: 12px 16px !important;
+                  background: #ffffff !important;
+                  box-shadow: none !important;
+                  border: none !important;
+                  border-radius: 0 !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                .print\\:hidden, .no-print {
+                  display: none !important;
+                }
+              }
+            `}</style>
+          </div>
+        );
+      })()}
     </div>
   );
 }

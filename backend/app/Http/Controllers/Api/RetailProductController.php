@@ -155,26 +155,71 @@ class RetailProductController extends Controller {
         return response()->json(['message' => 'Foto produk dihapus']);
     }
 
+    private function getTenantId(Request $request): string
+    {
+        $tenantId = $request->attributes->get('tenant_id') ?? $request->user()?->tenant_id;
+        if (empty($tenantId)) {
+            $user = auth('sanctum')->user() ?: auth()->user();
+            $tenantId = $user?->tenant_id;
+        }
+        if (empty($tenantId)) {
+            abort(response()->json(['message' => 'Unauthorized: No Tenant ID associated with this user.'], 403));
+        }
+        return $tenantId;
+    }
+
+    public function template(Request $request)
+    {
+        $format = strtolower($request->query('format', 'xlsx'));
+        $fileName = 'template_import_produk.' . ($format === 'csv' ? 'csv' : 'xlsx');
+        $writerType = $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\RetailProductsTemplateExport(),
+            $fileName,
+            $writerType
+        );
+    }
+
     public function export(Request $request)
     {
+        $tenantId = $this->getTenantId($request);
+        $format = strtolower($request->query('format', 'xlsx'));
+        $fileName = 'katalog_produk_' . date('Ymd_His') . '.' . ($format === 'csv' ? 'csv' : 'xlsx');
+        $writerType = $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
+
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\RetailProductsExport(1), // Hardcoding user_id 1 for now or we can use auth()->id() if auth is set up. Let's assume auth is set up. Wait, this app might not have auth on API yet, so I'll use 1 or auth()->id() if it exists. But looking at the app, user_id is usually 1 for demo.
-            'produk_retail.xlsx'
+            new \App\Exports\RetailProductsExport($tenantId),
+            $fileName,
+            $writerType
         );
     }
 
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:5120',
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt|max:10240',
         ]);
 
+        $tenantId = $this->getTenantId($request);
+
         try {
+            $import = new \App\Imports\RetailProductsImport($tenantId);
             \Maatwebsite\Excel\Facades\Excel::import(
-                new \App\Imports\RetailProductsImport(1), // hardcoding user_id 1 for now
+                $import,
                 $request->file('file')
             );
-            return response()->json(['message' => 'Data produk berhasil diimpor']);
+
+            $created = $import->getCreatedCount();
+            $updated = $import->getUpdatedCount();
+            $total = $created + $updated;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Proses import berhasil! Total {$total} produk ({$created} baru ditambahkan, {$updated} diperbarui).",
+                'created' => $created,
+                'updated' => $updated,
+            ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal mengimpor data: ' . $e->getMessage()], 500);
         }

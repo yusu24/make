@@ -267,12 +267,23 @@ class SubscriptionRequestController extends Controller
                 ->get()
             : collect();
 
+        // Auto-reconcile invoice status if tenant subscription is already approved & active
+        if ($tenant && $tenant->subscription_status === 'active') {
+            \App\Models\TenantInvoice::where('tenant_id', $tenantId)
+                ->where('status', '!=', 'paid')
+                ->update([
+                    'status'  => 'paid',
+                    'paid_at' => now(),
+                ]);
+        }
+
         return response()->json([
-            'data'            => $req,
-            'category_promo'  => $promo,
-            'global_settings' => $settings,
-            'plans'           => $plans,
-            'invoices'        => \App\Models\TenantInvoice::where('tenant_id', $tenantId)
+            'data'             => $req,
+            'category_promo'   => $promo,
+            'global_settings'  => $settings,
+            'invoice_settings' => \App\Http\Controllers\Api\AdminInvoiceSettingController::getInvoiceSettings(),
+            'plans'            => $plans,
+            'invoices'         => \App\Models\TenantInvoice::where('tenant_id', $tenantId)
                                     ->orderBy('created_at', 'desc')
                                     ->limit(10)
                                     ->get(),
@@ -291,6 +302,52 @@ class SubscriptionRequestController extends Controller
             ->get();
 
         return response()->json(['data' => $invoices]);
+    }
+
+    /**
+     * Download or stream official PDF invoice matching Bizora format for tenant
+     */
+    public function downloadInvoicePdf(Request $request, string $id)
+    {
+        $tenantId = $request->user()->tenant_id;
+        $role = $request->user()->role;
+
+        $query = \App\Models\TenantInvoice::with('tenant.user');
+
+        if ($role !== 'super_admin') {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $cleanId = preg_replace('/^INV-(SUB-)?/', '', $id);
+        $invoice = (clone $query)->where('id', $id)->first()
+            ?: (clone $query)->where('id', 'LIKE', "%{$id}%")->first()
+            ?: (clone $query)->where('id', 'LIKE', "%{$cleanId}%")->first();
+
+        if (!$invoice) {
+            return response()->json(['message' => 'Faktur tidak ditemukan atau Anda tidak memiliki akses.'], 404);
+        }
+
+        $invoiceData = [
+            'id'           => $invoice->id,
+            'tenant_id'    => $invoice->tenant_id,
+            'tenant_name'  => $invoice->tenant?->business_name ?? $invoice->tenant?->name ?? 'Tenant UMKM',
+            'tenant_email' => $invoice->tenant?->user?->email ?? '-',
+            'plan'         => ucfirst($invoice->plan),
+            'amount'       => (float) $invoice->amount,
+            'status'       => $invoice->status,
+            'date'         => $invoice->date?->toDateString() ?? date('Y-m-d'),
+            'due_date'     => $invoice->due_date?->toDateString() ?? date('Y-m-d', strtotime('+7 days')),
+        ];
+
+        $settings = \App\Http\Controllers\Api\AdminInvoiceSettingController::getInvoiceSettings();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', [
+            'invoice'  => $invoiceData,
+            'settings' => $settings,
+        ]);
+
+        $prefix = ($invoice->status === 'paid' ? 'Kuitansi_' : 'Invoice_');
+        return $pdf->stream("{$prefix}{$invoice->id}.pdf");
     }
 
     /**
@@ -350,6 +407,15 @@ class SubscriptionRequestController extends Controller
 
             // Mark this specific request as approved
             $subReq->update(['status' => 'approved']);
+
+            // Mark corresponding tenant invoice as paid
+            \App\Models\TenantInvoice::where('tenant_id', $subReq->tenant_id)
+                ->where('status', '!=', 'paid')
+                ->latest()
+                ->update([
+                    'status'  => 'paid',
+                    'paid_at' => now(),
+                ]);
 
             return response()->json(['message' => 'Langganan berhasil diaktifkan!']);
         });

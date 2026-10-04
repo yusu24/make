@@ -163,6 +163,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
     // Tenant subscription routes
     Route::get('subscription/current', [SubscriptionRequestController::class, 'current']);
     Route::get('subscription/invoices', [SubscriptionRequestController::class, 'invoices']);
+    Route::get('subscription/invoices/{id}/download-pdf', [SubscriptionRequestController::class, 'downloadInvoicePdf']);
     Route::post('subscription/request', [SubscriptionRequestController::class, 'store']);
     Route::post('subscription/upload-proof', [SubscriptionRequestController::class, 'uploadProof']);
 
@@ -220,23 +221,31 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
             // Shared Retail Data (readable by any retail staff for dropdowns)
             Route::get('products', [RetailProductController::class, 'index']);
             Route::get('categories', [RetailMasterController::class, 'getCategories']);
+            Route::get('categories/template', [RetailMasterController::class, 'templateCategories']);
             Route::get('suppliers', [RetailMasterController::class, 'getSuppliers']);
+            Route::get('suppliers/template', [RetailMasterController::class, 'templateSuppliers']);
             Route::get('customers', [RetailMasterController::class, 'getCustomers']);
+            Route::get('customers/template', [RetailMasterController::class, 'templateCustomers']);
             Route::get('units', [RetailMasterController::class, 'getUnits']);
+            Route::get('units/template', [RetailMasterController::class, 'templateUnits']);
             Route::get('outlets', [\App\Http\Controllers\Api\Retail\RetailOutletController::class, 'index']);
 
             // Master data (categories, suppliers, customers, units, expense categories, settings)
             Route::middleware('retail_permission:master')->group(function () {
                 Route::post('categories', [RetailMasterController::class, 'storeCategory']);
+                Route::post('categories/import', [RetailMasterController::class, 'importCategories']);
                 Route::put('categories/{id}', [RetailMasterController::class, 'updateCategory']);
                 Route::delete('categories/{id}', [RetailMasterController::class, 'destroyCategory']);
                 Route::post('suppliers', [RetailMasterController::class, 'storeSupplier']);
+                Route::post('suppliers/import', [RetailMasterController::class, 'importSuppliers']);
                 Route::put('suppliers/{id}', [RetailMasterController::class, 'updateSupplier']);
                 Route::delete('suppliers/{id}', [RetailMasterController::class, 'destroySupplier']);
                 Route::post('customers', [RetailMasterController::class, 'storeCustomer']);
+                Route::post('customers/import', [RetailMasterController::class, 'importCustomers']);
                 Route::put('customers/{id}', [RetailMasterController::class, 'updateCustomer']);
                 Route::delete('customers/{id}', [RetailMasterController::class, 'destroyCustomer']);
                 Route::post('units', [RetailMasterController::class, 'storeUnit']);
+                Route::post('units/import', [RetailMasterController::class, 'importUnits']);
                 Route::put('units/{id}', [RetailMasterController::class, 'updateUnit']);
                 Route::delete('units/{id}', [RetailMasterController::class, 'destroyUnit']);
 
@@ -279,6 +288,7 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
 
             // Products (catalog)
             Route::middleware('retail_permission:catalog')->group(function () {
+                Route::get('products/template', [RetailProductController::class, 'template']);
                 Route::get('products/export', [RetailProductController::class, 'export']);
                 Route::post('products/import', [RetailProductController::class, 'import']);
                 
@@ -903,6 +913,10 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         // Channels & Sync
         Route::middleware('seller_permission:seller_marketplace')->group(function () {
             Route::get('channels', [\App\Http\Controllers\Api\SellerChannelController::class, 'index']);
+            Route::post('channels', [\App\Http\Controllers\Api\SellerChannelController::class, 'store']);
+            Route::put('channels/{id}', [\App\Http\Controllers\Api\SellerChannelController::class, 'update']);
+            Route::delete('channels/{id}', [\App\Http\Controllers\Api\SellerChannelController::class, 'destroy']);
+            Route::post('channels/{id}/test', [\App\Http\Controllers\Api\SellerChannelController::class, 'testConnection']);
             Route::patch('channels/{id}/toggle', [\App\Http\Controllers\Api\SellerChannelController::class, 'toggle']);
         });
 

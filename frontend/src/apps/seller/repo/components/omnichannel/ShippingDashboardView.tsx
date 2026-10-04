@@ -1,7 +1,25 @@
 import React from 'react';
 import { Truck, Package, Clock, ShieldAlert, ArrowLeftRight, ChevronRight } from '@/constants/icons';
+import { useAuth } from '../../../../../contexts/AuthContext';
 
 export const ShippingDashboardView: React.FC = () => {
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
+  const urgentIssues = isDemo ? [
+    { id: 'INV-12003', issue: 'Batas waktu pengiriman hampir habis (Shopee)', time: 'Sisa 2 jam' },
+    { id: 'INV-12005', issue: 'Kurir gagal pickup (J&T Express)', time: '1 jam yang lalu' },
+    { id: 'INV-11990', issue: 'Pembeli mengajukan pembatalan (Tokopedia)', time: '3 jam yang lalu' },
+  ] : [];
+
+  const courierPerformance = [
+    { name: 'J&T Express', percent: isDemo ? 85 : 0, color: 'bg-red-500' },
+    { name: 'JNE Reguler', percent: isDemo ? 65 : 0, color: 'bg-blue-600' },
+    { name: 'SiCepat Halu', percent: isDemo ? 45 : 0, color: 'bg-rose-500' },
+    { name: 'GoSend Instant', percent: isDemo ? 20 : 0, color: 'bg-emerald-500' },
+  ];
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* KPI Cards */}
@@ -17,7 +35,7 @@ export const ShippingDashboardView: React.FC = () => {
               </div>
             </div>
             <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
-              45 <span className="text-xs font-normal text-slate-400 font-['Inter']">Paket</span>
+              {isDemo ? 45 : 0} <span className="text-xs font-normal text-slate-400 font-['Inter']">Paket</span>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
@@ -39,7 +57,7 @@ export const ShippingDashboardView: React.FC = () => {
               </div>
             </div>
             <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
-              12 <span className="text-xs font-normal text-slate-400 font-['Inter']">Paket</span>
+              {isDemo ? 12 : 0} <span className="text-xs font-normal text-slate-400 font-['Inter']">Paket</span>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
@@ -61,7 +79,7 @@ export const ShippingDashboardView: React.FC = () => {
               </div>
             </div>
             <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
-              89 <span className="text-xs font-normal text-slate-400 font-['Inter']">Paket</span>
+              {isDemo ? 89 : 0} <span className="text-xs font-normal text-slate-400 font-['Inter']">Paket</span>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
@@ -83,7 +101,7 @@ export const ShippingDashboardView: React.FC = () => {
               </div>
             </div>
             <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
-              3 <span className="text-xs font-normal text-slate-400 font-['Inter']">Isu</span>
+              {isDemo ? 3 : 0} <span className="text-xs font-normal text-slate-400 font-['Inter']">Isu</span>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
@@ -105,7 +123,7 @@ export const ShippingDashboardView: React.FC = () => {
               </div>
             </div>
             <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1 font-['Plus_Jakarta_Sans'] tracking-tight">
-              2 <span className="text-xs font-normal text-slate-400 font-['Inter']">Paket</span>
+              {isDemo ? 2 : 0} <span className="text-xs font-normal text-slate-400 font-['Inter']">Paket</span>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
@@ -127,28 +145,30 @@ export const ShippingDashboardView: React.FC = () => {
             </h2>
           </div>
           <div className="p-5">
-            <div className="space-y-4">
-              {[
-                { id: 'INV-12003', issue: 'Batas waktu pengiriman hampir habis (Shopee)', time: 'Sisa 2 jam' },
-                { id: 'INV-12005', issue: 'Kurir gagal pickup (J&T Express)', time: '1 jam yang lalu' },
-                { id: 'INV-11990', issue: 'Pembeli mengajukan pembatalan (Tokopedia)', time: '3 jam yang lalu' },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-start justify-between p-4 rounded-xl bg-rose-50 dark:bg-rose-500/5 border border-rose-100 dark:border-rose-900/30">
-                  <div>
-                    <h4 className="text-sm font-bold text-rose-900 dark:text-rose-200">{item.id}</h4>
-                    <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 mt-1">{item.issue}</p>
+            {urgentIssues.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400">
+                Tidak ada kendala pengiriman saat ini.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {urgentIssues.map((item, idx) => (
+                  <div key={idx} className="flex items-start justify-between p-4 rounded-xl bg-rose-50 dark:bg-rose-500/5 border border-rose-100 dark:border-rose-900/30">
+                    <div>
+                      <h4 className="text-sm font-bold text-rose-900 dark:text-rose-200">{item.id}</h4>
+                      <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 mt-1">{item.issue}</p>
+                    </div>
+                    <span className="text-[10px] font-bold text-rose-400 dark:text-rose-500 bg-white dark:bg-rose-950 px-2 py-1 rounded-full shadow-sm">{item.time}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-rose-400 dark:text-rose-500 bg-white dark:bg-rose-950 px-2 py-1 rounded-full shadow-sm">{item.time}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
             <button className="w-full mt-4 py-2 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors border border-rose-100 dark:border-rose-800/30">
               Lihat Semua Isu
             </button>
           </div>
         </div>
 
-        {/* Courier Performance (Dummy) */}
+        {/* Courier Performance */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 overflow-hidden flex flex-col">
           <div className="p-5 border-b border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -158,12 +178,7 @@ export const ShippingDashboardView: React.FC = () => {
           </div>
           <div className="p-5 flex-1 flex flex-col justify-center">
             <div className="space-y-5">
-              {[
-                { name: 'J&T Express', percent: 85, color: 'bg-red-500' },
-                { name: 'JNE Reguler', percent: 65, color: 'bg-blue-600' },
-                { name: 'SiCepat Halu', percent: 45, color: 'bg-rose-500' },
-                { name: 'GoSend Instant', percent: 20, color: 'bg-emerald-500' },
-              ].map((courier, idx) => (
+              {courierPerformance.map((courier, idx) => (
                 <div key={idx}>
                   <div className="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                     <span>{courier.name}</span>

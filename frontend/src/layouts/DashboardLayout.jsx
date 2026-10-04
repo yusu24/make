@@ -118,7 +118,7 @@ export default function DashboardLayout() {
             onOpenCommandPalette={() => setCommandPaletteOpen(true)}
           />
         )}
-        <main className={`page-content ${pathname.startsWith('/retail') || isPosPage ? 'page-content--retail' : ''} ${isPosPage ? 'page-content--full' : ''} ${isSaasAdmin ? 'page-content--admin' : ''}`}>
+        <main className={`page-content ${(pathname.startsWith('/retail') || pathname.startsWith('/seller') || isPosPage) ? 'page-content--retail seller-scope' : ''} ${isPosPage ? 'page-content--full' : ''} ${isSaasAdmin ? 'page-content--admin' : ''}`}>
           <SubscriptionLock status={user?.subscription_status} daysLeft={user?.subscription_days_left} />
           <AnnouncementModal />
           <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />

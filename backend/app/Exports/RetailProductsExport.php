@@ -6,19 +6,25 @@ use App\Models\RetailProduct;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class RetailProductsExport implements FromCollection, WithHeadings, WithMapping
+class RetailProductsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
-    protected $userId;
+    protected string $tenantId;
 
-    public function __construct($userId)
+    public function __construct(string $tenantId)
     {
-        $this->userId = $userId;
+        $this->tenantId = $tenantId;
     }
 
     public function collection()
     {
-        return RetailProduct::where('user_id', $this->userId)->get();
+        return RetailProduct::where('tenant_id', $this->tenantId)
+            ->with('category')
+            ->orderBy('id', 'asc')
+            ->get();
     }
 
     public function headings(): array
@@ -26,11 +32,12 @@ class RetailProductsExport implements FromCollection, WithHeadings, WithMapping
         return [
             'SKU / Barcode',
             'Nama Produk',
+            'Kategori',
             'Satuan Dasar',
+            'Harga Beli (Modal)',
+            'Harga Jual',
             'Stok Awal',
             'Stok Minimum',
-            'Harga Jual',
-            'Kategori ID (opsional)',
         ];
     }
 
@@ -39,11 +46,25 @@ class RetailProductsExport implements FromCollection, WithHeadings, WithMapping
         return [
             $product->sku,
             $product->name,
-            $product->unit,
-            $product->stock,
-            $product->stock_min,
-            $product->price_sell,
-            $product->category_id,
+            $product->category?->name ?? '',
+            $product->unit ?? 'Pcs',
+            $product->price_buy ?? 0,
+            $product->price_sell ?? 0,
+            $product->stock ?? 0,
+            $product->stock_min ?? 0,
+        ];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => '1E293B']],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E2E8F0'],
+                ],
+            ],
         ];
     }
 }

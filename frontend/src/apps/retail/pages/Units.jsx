@@ -5,11 +5,12 @@ import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
-import { Pencil, Trash2, Scale, RefreshCw } from '@/constants/icons';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import EmptyTableState from '../../../components/EmptyTableState';
 import StatScoreCard from '@/components/ui/StatScoreCard';
+import RetailImportModal from '../components/RetailImportModal';
+import { Pencil, Trash2, Scale, RefreshCw, Upload, Plus } from '@/constants/icons';
 
 export default function Units() {
   const toast = useToast();
@@ -17,6 +18,7 @@ export default function Units() {
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingUnit, setEditingUnit] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [search, setSearch] = useState('');
 
   const fetchUnits = async () => {
@@ -129,6 +131,15 @@ export default function Units() {
             <button onClick={fetchUnits} className="btn-reset-sync" style={{ width: 38, height: 38, flexShrink: 0 }} title="Segarkan Data">
               <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
             </button>
+            <button
+              title="Import Excel"
+              type="button"
+              onClick={() => setShowImportModal(true)}
+              className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 font-semibold text-xs shadow-xs transition-colors shrink-0 cursor-pointer"
+            >
+              <Upload size={14} className="text-blue-600 dark:text-blue-400" />
+              <span className="btn-text-mobile-hide">Import</span>
+            </button>
           </div>
           <form onSubmit={addUnit} className="flex items-center gap-3">
              <div className="airy-input-wrapper" style={{ width: 280, margin: 0 }}>
@@ -138,8 +149,12 @@ export default function Units() {
                   required
                 />
              </div>
-             <button type="submit" className="btn btn-primary h-[38px] px-5 whitespace-nowrap">
-                Tambah
+             <button
+               type="submit"
+               className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer whitespace-nowrap"
+             >
+                <Plus size={15} className="mobile-no-margin" />
+                <span>Tambah</span>
              </button>
           </form>
         </div>
@@ -233,6 +248,18 @@ export default function Units() {
           </div>
         </form>
       </Modal>
+
+      {/* ── Modal Import Excel ── */}
+      <RetailImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        title="Import Satuan Barang"
+        entityName="Satuan"
+        templateEndpoint="/retail/units/template"
+        importEndpoint="/retail/units/import"
+        onSuccess={fetchUnits}
+        sampleFields={['Nama Satuan (Pcs, Botol, Dus, Kg, dll)']}
+      />
     </div>
   );
 }

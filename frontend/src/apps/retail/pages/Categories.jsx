@@ -8,7 +8,9 @@ import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import StatScoreCard from '@/components/ui/StatScoreCard';
-import { Pencil, Trash2, Plus, Search, Tag, RefreshCw, FolderTree, Layers } from '@/constants/icons';
+import EmptyTableState from '../../../components/EmptyTableState';
+import RetailImportModal from '../components/RetailImportModal';
+import { Pencil, Trash2, Plus, Search, Tag, RefreshCw, FolderTree, Layers, Upload } from '@/constants/icons';
 
 export default function Categories() {
   const toast = useToast();
@@ -17,6 +19,7 @@ export default function Categories() {
   const [loading, setLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [search, setSearch] = useState('');
   const [newName, setNewName] = useState('');
   const [adding, setAdding] = useState(false);
@@ -139,13 +142,25 @@ export default function Categories() {
           borderBottom: '1px solid var(--retail-border, #e2e8f0)',
         }}>
           {/* Add button */}
-          <button title="Tambah Kategori"
-            className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
+          <button
+            title="Tambah Kategori"
+            type="button"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer"
             onClick={() => setShowAddModal(true)}
           >
-            <Plus size={15} className="mr-2 mobile-no-margin" />
+            <Plus size={15} className="mobile-no-margin" />
             <span className="btn-text-mobile-hide">Tambah Kategori</span>
+          </button>
+
+          {/* Import button */}
+          <button
+            title="Import Excel"
+            type="button"
+            onClick={() => setShowImportModal(true)}
+            className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 font-semibold text-xs shadow-xs transition-colors shrink-0 cursor-pointer"
+          >
+            <Upload size={14} className="text-blue-600 dark:text-blue-400" />
+            <span className="btn-text-mobile-hide">Import</span>
           </button>
 
           {/* Search */}
@@ -182,16 +197,20 @@ export default function Categories() {
               {loading ? (
                 <RetailTableLoadingRow colSpan={3} text="Menyinkronkan Kategori..." />
               ) : paginatedData.length === 0 ? (
-                <tr>
-                  <td colSpan={3}>
-                    <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--retail-text-secondary)' }}>
-                      <Tag size={36} style={{ marginBottom: 12, opacity: 0.3 }} />
-                      <p style={{ margin: 0 }}>
-                        {search ? `Tidak ada kategori dengan nama "${search}"` : 'Belum ada kategori. Tambah sekarang!'}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
+                <EmptyTableState
+                  colSpan={3}
+                  icon={Layers}
+                  title="Belum ada kategori"
+                  description={search ? `Tidak ada kategori yang cocok dengan pencarian "${search}".` : "Tambahkan kategori produk untuk mengelompokkan barang dagangan toko Anda."}
+                  actionLabel={search ? "Reset Pencarian" : "Tambah Kategori"}
+                  onAction={() => {
+                    if (search) {
+                      setSearch('');
+                    } else {
+                      setShowAddModal(true);
+                    }
+                  }}
+                />
               ) : (
                 paginatedData.map(c => (
                   <tr key={c.id}>
@@ -297,6 +316,18 @@ export default function Categories() {
           </div>
         </form>
       </Modal>
+
+      {/* ── Modal Import Excel ── */}
+      <RetailImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        title="Import Kategori Produk"
+        entityName="Kategori"
+        templateEndpoint="/retail/categories/template"
+        importEndpoint="/retail/categories/import"
+        onSuccess={fetchCategories}
+        sampleFields={['Nama Kategori']}
+      />
     </div>
   );
 }

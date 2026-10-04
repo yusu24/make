@@ -79,3 +79,145 @@
   vertical-align: middle;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
+
+/* ── Placeholder Normalization (Ensure placeholders are never bold) ── */
+.seller-scope input::placeholder,
+.seller-scope textarea::placeholder,
+.seller-scope .form-input::placeholder,
+.seller-scope [placeholder]::placeholder,
+.seller-scope .airy-search-wrapper input::placeholder {
+  font-weight: 400 !important;
+  font-style: normal !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SELLER RETAIL: NON-KOTAK CONTROLS (PILL / CAPSULE / ROUNDED-FULL DESIGN SYSTEM)
+   Sesuai capture desain: semua tombol, searchbox, dropdown, dan kalender dibuat
+   capsule / pill-shaped (rounded-full) tanpa sudut kotak tajam (khusus Seller Retail).
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* 1. SEMUA TOMBOL (Action buttons, pills, icon buttons, pagination buttons) */
+.seller-scope button:not(aside button):not(.sidebar-container button):not([data-sidebar] button):not(.pos-numpad-btn),
+.page-content--retail button:not(aside button):not(.sidebar-container button):not([data-sidebar] button):not(.pos-numpad-btn),
+.retail-modal-scope button:not(aside button):not(.sidebar-container button),
+.retail-page-classic button:not(aside button):not(.sidebar-container button),
+.seller-scope .btn,
+.page-content--retail .btn,
+.retail-modal-scope .btn,
+.retail-page-classic .btn,
+.retail-pagination-btn,
+.btn-reset-sync {
+  border-radius: 9999px !important;
+}
+
+/* 2. SEMUA SEARCHBOX & INPUT TEKS */
+.seller-scope input[type="text"],
+.seller-scope input[type="search"],
+.seller-scope input[type="password"],
+.seller-scope input[type="email"],
+.seller-scope input[type="number"],
+.seller-scope input[type="tel"],
+.seller-scope input[type="url"],
+.page-content--retail input[type="text"],
+.page-content--retail input[type="search"],
+.page-content--retail input[type="password"],
+.page-content--retail input[type="email"],
+.page-content--retail input[type="number"],
+.page-content--retail input[type="tel"],
+.page-content--retail input[type="url"],
+.retail-modal-scope input[type="text"],
+.retail-modal-scope input[type="search"],
+.retail-modal-scope input[type="password"],
+.retail-modal-scope input[type="email"],
+.retail-modal-scope input[type="number"],
+.retail-modal-scope input[type="tel"],
+.retail-modal-scope input[type="url"],
+.retail-page-classic input[type="text"],
+.retail-page-classic input[type="search"],
+.retail-page-classic input[type="password"],
+.retail-page-classic input[type="email"],
+.retail-page-classic input[type="number"],
+.retail-page-classic input[type="tel"],
+.retail-page-classic input[type="url"],
+.seller-scope .form-input,
+.page-content--retail .form-input,
+.retail-modal-scope .form-input,
+.retail-page-classic .form-input,
+.airy-search-wrapper,
+.airy-input-wrapper {
+  border-radius: 9999px !important;
+}
+
+/* Berikan padding horizontal yang proporsional pada input mandiri yang belum punya pl/pr */
+.seller-scope input:not([class*="pl-"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+.page-content--retail input:not([class*="pl-"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+.retail-modal-scope input:not([class*="pl-"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+.retail-page-classic input:not([class*="pl-"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]) {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* 3. SEMUA DROPDOWN (SELECT) */
+.seller-scope select,
+.page-content--retail select,
+.retail-modal-scope select,
+.retail-page-classic select,
+.seller-scope .form-select,
+.page-content--retail .form-select,
+.retail-modal-scope .form-select,
+.retail-page-classic .form-select,
+.retail-filter-select,
+.retail-pagination-select {
+  border-radius: 9999px !important;
+}
+
+/* Pastikan select memiliki padding sisi kanan yang cukup untuk ikon panah dropdown */
+.seller-scope select:not([class*="pr-"]),
+.page-content--retail select:not([class*="pr-"]),
+.retail-modal-scope select:not([class*="pr-"]),
+.retail-page-classic select:not([class*="pr-"]) {
+  padding-left: 1rem !important;
+  padding-right: 2.25rem !important;
+}
+
+/* 4. SEMUA CALENDER (DATE & TIME PICKERS) */
+.seller-scope input[type="date"],
+.seller-scope input[type="datetime-local"],
+.seller-scope input[type="month"],
+.seller-scope input[type="time"],
+.page-content--retail input[type="date"],
+.page-content--retail input[type="datetime-local"],
+.page-content--retail input[type="month"],
+.page-content--retail input[type="time"],
+.retail-modal-scope input[type="date"],
+.retail-modal-scope input[type="datetime-local"],
+.retail-modal-scope input[type="month"],
+.retail-modal-scope input[type="time"],
+.retail-page-classic input[type="date"],
+.retail-page-classic input[type="datetime-local"],
+.retail-page-classic input[type="month"],
+.retail-page-classic input[type="time"],
+.retail-filter-date-input {
+  border-radius: 9999px !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  cursor: pointer;
+}
+
+/* Textarea tetap berbentuk rounded kotak lembut 16px (1rem), tidak membulat aneh */
+.seller-scope textarea,
+.page-content--retail textarea,
+.retail-modal-scope textarea,
+.retail-page-classic textarea {
+  border-radius: 1rem !important;
+}
+
+/* Sidebar navigation buttons tetap bersih dengan rounded-xl standar */
+.seller-scope aside button,
+.seller-scope .sidebar-container button,
+.seller-scope [data-sidebar] button,
+.page-content--retail aside button {
+  border-radius: 0.75rem !important;
+}
+
+

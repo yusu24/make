@@ -20,12 +20,16 @@ class SellerChannel extends Model
         'auto_sync',
         'sync_interval_mins',
         'last_sync_at',
-        'auth_token'
+        'auth_token',
+        'api_credentials',
+        'api_environment',
+        'notes',
     ];
 
     protected $casts = [
         'auto_sync' => 'boolean',
         'sync_interval_mins' => 'integer',
         'last_sync_at' => 'datetime',
+        'api_credentials' => 'array',
     ];
 }

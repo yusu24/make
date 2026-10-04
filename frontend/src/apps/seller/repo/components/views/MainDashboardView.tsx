@@ -13,7 +13,8 @@ import {
   Sparkles,
   Check,
   Star,
-  CheckCircle2
+  CheckCircle2,
+  Upload
 } from '@/constants/icons';
 import {
   ResponsiveContainer,
@@ -192,6 +193,35 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
         </div>
       </div>
 
+      {/* Quick Setup Onboarding Banner if 0 products */}
+      {products.length === 0 && (
+        <div className="rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-transparent border border-blue-500/20 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-[#101828] shadow-xs">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
+              <Package size={24} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Mulai Setup Toko: Masukkan Katalog Produk Anda
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Katalog produk toko Anda saat ini masih kosong (0 produk). Buka katalog untuk mengimpor produk secara massal via Excel/CSV atau input manual.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab('katalog')}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm shadow-blue-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            >
+              <Upload size={14} />
+              Buka Katalog & Import Produk
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Bento Grid Layer 1: Main Revenue Bento Block (8 cols) & Marketplace API Dark Bento Block (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Total Omset Bento Hero Block */}
@@ -210,9 +240,15 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
               <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-[#667085] dark:text-slate-400 font-['Inter']">
                 <span>{t('seller.today')}: <strong className="font-semibold text-[#101828] dark:text-slate-200">{formatIDR(totalOmsetToday)}</strong> ({totalOrdersToday} {t('seller.ordersReceived')})</span>
                 <span className="text-slate-300 dark:text-slate-700">•</span>
-                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md text-[11px]">
-                  <TrendingUp className="w-3 h-3" /> +14.2% Tren Positif
-                </span>
+                {(revenueRange === '30d' ? total30DaysRevenue : revenueForRange) > 0 ? (
+                  <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md text-[11px]">
+                    <TrendingUp className="w-3 h-3" /> +14.2% Tren Positif
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400 font-semibold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md text-[11px]">
+                    0% (Belum ada transaksi)
+                  </span>
+                )}
               </div>
             </div>
 
@@ -346,7 +382,11 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
             </div>
 
             <div className="space-y-3">
-              {stores.map((st) => (
+              {stores.length === 0 ? (
+                <div className="py-6 text-center text-xs text-slate-400 font-['Inter'] border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+                  Belum ada channel marketplace terhubung.
+                </div>
+              ) : stores.map((st) => (
                 <div key={st.id} className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200/80 dark:border-white/10 hover:bg-slate-100/80 dark:hover:bg-white/10 transition-all font-['Inter']">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-indigo-500 rounded-xl flex items-center justify-center text-xs font-semibold text-white shadow-xs font-['Plus_Jakarta_Sans']">
@@ -534,7 +574,13 @@ export const MainDashboardView: React.FC<MainDashboardViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-slate-800/80 text-[13px]">
-                  {pendingOrders.slice(0, 4).map((ord) => {
+                  {pendingOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-10 text-center text-xs text-slate-400 font-['Inter']">
+                        Belum ada pesanan masuk yang perlu diproses.
+                      </td>
+                    </tr>
+                  ) : pendingOrders.slice(0, 4).map((ord) => {
                     const badge = getPlatformBadgeColor(ord.platform);
                     return (
                       <tr key={ord.id} className="hover:bg-gray-50/80 dark:hover:bg-slate-800/50 transition-colors">

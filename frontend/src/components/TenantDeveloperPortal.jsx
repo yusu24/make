@@ -510,14 +510,15 @@ print("Response:", res.json())`;
                 <button
                   type="button"
                   onClick={() => {
-                    if (!hasAccess) {
+                    const canCreate = hasAccess || ['pro', 'enterprise', 'pro_developer', 'paket pro'].includes(tenantInfo?.subscription_plan?.toLowerCase?.());
+                    if (!canCreate) {
                       alert('Fitur pembuatan Kunci API memerlukan upgrade ke paket Pro Developer atau Enterprise.');
                       return;
                     }
                     setNewRawKey(null);
                     setShowKeyModal(true);
                   }}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-full text-xs font-bold flex items-center gap-2 shadow-xs hover:shadow-md transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Buat Kunci API Baru</span>
@@ -540,7 +541,23 @@ print("Response:", res.json())`;
                     {apiKeys.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="p-8 text-center text-slate-400 font-sans">
-                          Belum ada kunci API yang dibuat. Klik tombol <strong>"Buat Kunci API Baru"</strong> di atas.
+                          <p className="mb-3">Belum ada kunci API yang dibuat.</p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const canCreate = hasAccess || ['pro', 'enterprise', 'pro_developer', 'paket pro'].includes(tenantInfo?.subscription_plan?.toLowerCase?.());
+                              if (!canCreate) {
+                                alert('Fitur pembuatan Kunci API memerlukan upgrade ke paket Pro Developer atau Enterprise.');
+                                return;
+                              }
+                              setNewRawKey(null);
+                              setShowKeyModal(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full font-bold text-xs transition-colors cursor-pointer border border-indigo-200"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Buat Kunci Pertama</span>
+                          </button>
                         </td>
                       </tr>
                     ) : (
@@ -614,13 +631,14 @@ print("Response:", res.json())`;
                 <button
                   type="button"
                   onClick={() => {
-                    if (!hasAccess) {
+                    const canCreate = hasAccess || ['pro', 'enterprise', 'pro_developer', 'paket pro'].includes(tenantInfo?.subscription_plan?.toLowerCase?.());
+                    if (!canCreate) {
                       alert('Fitur pendaftaran Webhook endpoint memerlukan upgrade ke paket Pro Developer atau Enterprise.');
                       return;
                     }
                     setShowWebhookModal(true);
                   }}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-full text-xs font-bold flex items-center gap-2 shadow-xs hover:shadow-md transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Tambah Webhook Endpoint</span>
@@ -630,8 +648,23 @@ print("Response:", res.json())`;
               {/* Webhooks List */}
               <div className="space-y-3">
                 {webhooks.length === 0 ? (
-                  <div className="p-8 text-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-2xl">
-                    Belum ada webhook yang didaftarkan.
+                  <div className="p-8 text-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-3">
+                    <p>Belum ada webhook yang didaftarkan.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const canCreate = hasAccess || ['pro', 'enterprise', 'pro_developer', 'paket pro'].includes(tenantInfo?.subscription_plan?.toLowerCase?.());
+                        if (!canCreate) {
+                          alert('Fitur pendaftaran Webhook endpoint memerlukan upgrade ke paket Pro Developer atau Enterprise.');
+                          return;
+                        }
+                        setShowWebhookModal(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-full font-bold text-xs transition-colors cursor-pointer border border-emerald-200"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Tambah Webhook Sekarang</span>
+                    </button>
                   </div>
                 ) : (
                   webhooks.map(wh => (
@@ -826,6 +859,7 @@ print("Response:", res.json())`;
       {/* MODAL: BUAT API KEY BARU */}
       {showKeyModal && (
         <Modal
+          isOpen={showKeyModal}
           title={newRawKey ? "Kunci API Berhasil Dibuat" : "Buat Kunci API Baru"}
           onClose={() => setShowKeyModal(false)}
         >
@@ -841,7 +875,7 @@ print("Response:", res.json())`;
                 <button
                   type="button"
                   onClick={() => copyToClipboard(newRawKey)}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-sans font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-xs font-sans font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors shadow-xs"
                 >
                   {copiedKey ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedKey ? 'Tersalin!' : 'Salin'}</span>
@@ -851,7 +885,7 @@ print("Response:", res.json())`;
               <button
                 type="button"
                 onClick={() => setShowKeyModal(false)}
-                className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold cursor-pointer"
+                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-full text-xs font-bold cursor-pointer transition-colors shadow-xs"
               >
                 Saya Sudah Menyimpan Kunci
               </button>
@@ -876,14 +910,14 @@ print("Response:", res.json())`;
                 <button
                   type="button"
                   onClick={() => setShowKeyModal(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
+                  className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={savingKey}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs font-bold cursor-pointer shadow-xs transition-colors"
                 >
                   {savingKey ? 'Membuat...' : 'Generate Kunci API'}
                 </button>
@@ -896,6 +930,7 @@ print("Response:", res.json())`;
       {/* MODAL: TAMBAH WEBHOOK */}
       {showWebhookModal && (
         <Modal
+          isOpen={showWebhookModal}
           title="Tambah Webhook Endpoint"
           onClose={() => setShowWebhookModal(false)}
         >
@@ -952,14 +987,14 @@ print("Response:", res.json())`;
               <button
                 type="button"
                 onClick={() => setShowWebhookModal(false)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
+                className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold cursor-pointer transition-colors"
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={savingWebhook}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-bold cursor-pointer shadow-xs transition-colors"
               >
                 {savingWebhook ? 'Menyimpan...' : 'Simpan Webhook'}
               </button>

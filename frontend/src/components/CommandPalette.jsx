@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -28,7 +28,7 @@ import {
   X
 } from '@/constants/icons'
 
-const STATIC_COMMANDS = [
+const SAAS_COMMANDS = [
   // Navigations
   { id: 'nav-dash', category: 'Navigasi Menu', title: 'Dashboard Executive SaaS', subtitle: 'MRR, ARR, Churn, Tenant Health', icon: Activity, path: '/dashboard', color: '#4f46e5' },
   { id: 'nav-tenants', category: 'Navigasi Menu', title: 'Manajemen Tenant', subtitle: 'Daftar semua merchant & toko', icon: Store, path: '/tenants', color: '#0284c7' },
@@ -48,63 +48,147 @@ const STATIC_COMMANDS = [
   { id: 'act-filter-warning', category: 'Aksi Cepat', title: 'Filter Tenant Butuh Perhatian', subtitle: 'Lihat tenant dengan health score 40-69', icon: Activity, path: '/tenants?health_status=warning', color: '#f59e0b' },
 ]
 
+const getSellerRetailCommands = (isSeller) => {
+  const base = isSeller ? '/seller' : '/retail'
+  return [
+    // Aksi Cepat
+    { id: 'act-pos', category: 'Aksi Cepat & Kasir', title: 'Kasir POS (Toko Offline)', subtitle: 'Buka register kasir dan transaksi penjualan langsung', icon: CreditCard, path: `${base}/pos`, color: '#10b981' },
+    { id: 'act-new-prod', category: 'Aksi Cepat & Kasir', title: 'Tambah Produk Baru', subtitle: 'Input data produk, SKU, variasi, dan harga jual', icon: Plus, path: `${base}/products`, color: '#4f46e5' },
+    { id: 'act-connect-api', category: 'Aksi Cepat & Kasir', title: 'Hubungkan API Marketplace Baru', subtitle: 'Input kredensial Partner ID & Key Shopee, Tokopedia, TikTok', icon: Zap, path: isSeller ? '/seller/marketplace/connected' : '/retail/settings', color: '#f59e0b' },
+    { id: 'act-sync-stock', category: 'Aksi Cepat & Kasir', title: 'Sinkronisasi Stok Real-Time', subtitle: 'Picu sinkronisasi stok e-commerce dan marketplace', icon: Sparkles, path: isSeller ? '/seller/marketplace/sync' : '/retail/inventory', color: '#6366f1' },
+    { id: 'act-master-data', category: 'Aksi Cepat & Kasir', title: 'Master Data Terpadu & Import Excel', subtitle: 'Kelola kategori, satuan, batch, serial, dan import data massal', icon: FileText, path: isSeller ? '/seller/master-data' : '/retail/setup-master-data', color: '#0284c7' },
+
+    // E-Commerce & Omnichannel
+    { id: 'nav-orders', category: 'Pesanan & Marketplace', title: 'Manajemen Pesanan E-Commerce', subtitle: 'Pesanan masuk dari Shopee, Tokopedia, TikTok Shop & POS', icon: Package, path: isSeller ? '/seller/orders' : '/retail/transactions', color: '#0284c7' },
+    { id: 'nav-connected', category: 'Pesanan & Marketplace', title: 'Toko Terhubung & API Marketplace', subtitle: 'Status koneksi API Shopee, Tokopedia, TikTok Shop, Lazada', icon: Zap, path: isSeller ? '/seller/marketplace/connected' : '/retail/settings', color: '#f59e0b' },
+    { id: 'nav-shipping-pack', category: 'Pesanan & Marketplace', title: 'Packing Station & Cetak AWB', subtitle: 'Proses pengemasan dan cetak resi pengiriman kurir', icon: Package, path: isSeller ? '/seller/shipping/packing' : '/retail/transactions', color: '#8b5cf6' },
+    { id: 'nav-sync-hub', category: 'Pesanan & Marketplace', title: 'Pusat Sinkronisasi Stok', subtitle: 'Status sinkronisasi real-time dan log error API', icon: Sparkles, path: isSeller ? '/seller/marketplace/sync' : '/retail/inventory', color: '#6366f1' },
+    { id: 'nav-shipping-mgmt', category: 'Pesanan & Marketplace', title: 'Manajemen Ekspedisi & Kurir', subtitle: 'Konfigurasi kurir pengiriman toko dan ongkos kirim', icon: Package, path: isSeller ? '/seller/shipping/management' : '/retail/settings', color: '#0284c7' },
+
+    // Katalog & Stok
+    { id: 'nav-products', category: 'Katalog & Inventori', title: 'Katalog Produk & Daftar Barang', subtitle: 'Daftar semua produk, variasi, stok fisik dan harga jual', icon: Layers, path: `${base}/products`, color: '#10b981' },
+    { id: 'nav-inventory', category: 'Katalog & Inventori', title: 'Stok Barang & Multi-Gudang', subtitle: 'Pantau ketersediaan stok, batas minimum, dan mutasi barang', icon: Database, path: `${base}/inventory`, color: '#06b6d4' },
+    { id: 'nav-units', category: 'Katalog & Inventori', title: 'Satuan Ukur Barang (Unit)', subtitle: 'Standarisasi unit Pcs, Box, Dus, Kg, Botol, Pack, Lusin', icon: Layers, path: `${base}/units`, color: '#6366f1' },
+    { id: 'nav-categories', category: 'Katalog & Inventori', title: 'Kategori Produk', subtitle: 'Struktur pengelompokan katalog barang toko', icon: Layers, path: `${base}/categories`, color: '#10b981' },
+    { id: 'nav-batches', category: 'Katalog & Inventori', title: 'Batch & Tanggal Kadaluwarsa (ED)', subtitle: 'Pelacakan nomor batch dan expired date barang', icon: AlertTriangle, path: `${base}/batches`, color: '#f59e0b' },
+    { id: 'nav-serials', category: 'Katalog & Inventori', title: 'Serial Number & IMEI', subtitle: 'Manajemen nomor seri unik barang elektronik/gadget', icon: KeyRound, path: `${base}/serials`, color: '#8b5cf6' },
+    { id: 'nav-labels', category: 'Katalog & Inventori', title: 'Cetak Barcode & Label Harga', subtitle: 'Cetak label barcode untuk rak toko dan kemasan', icon: FileText, path: `${base}/print-labels`, color: '#64748b' },
+    { id: 'nav-discounts', category: 'Katalog & Inventori', title: 'Diskon & Promo Penjualan', subtitle: 'Kupon potongan harga, diskon persentase, dan voucher', icon: Zap, path: `${base}/discounts`, color: '#ef4444' },
+    { id: 'nav-pricelists', category: 'Katalog & Inventori', title: 'Harga Grosir & Member', subtitle: 'Tingkatan harga khusus reseller dan pelanggan VIP', icon: CreditCard, path: `${base}/pricelists`, color: '#0284c7' },
+
+    // Finansial & Laporan
+    { id: 'nav-rep-sales', category: 'Laporan & Finansial', title: 'Laporan Penjualan', subtitle: 'Grafik omzet, tren transaksi, dan laporan kasir', icon: FileText, path: isSeller ? '/seller/reports/sales' : '/retail/reports/sales', color: '#10b981' },
+    { id: 'nav-rep-summary', category: 'Laporan & Finansial', title: 'Ringkasan Laba Rugi', subtitle: 'Perhitungan pendapatan bersih, HPP, dan pengeluaran', icon: FileText, path: isSeller ? '/seller/reports' : '/retail/finance/summary', color: '#10b981' },
+    { id: 'nav-rep-margins', category: 'Laporan & Finansial', title: 'Laporan Margin Keuntungan', subtitle: 'Persentase margin profit per kategori dan item', icon: Activity, path: isSeller ? '/seller/reports/margins' : '/retail/reports/margins', color: '#6366f1' },
+    { id: 'nav-customers', category: 'Laporan & Finansial', title: 'Data Pelanggan (CRM)', subtitle: 'Database pembeli, nomor WhatsApp, dan poin loyalitas', icon: Users, path: `${base}/customers`, color: '#4f46e5' },
+    { id: 'nav-suppliers', category: 'Laporan & Finansial', title: 'Data Supplier & Pemasok', subtitle: 'Daftar vendor, distributor, dan kontak pembelian', icon: Store, path: `${base}/suppliers`, color: '#64748b' },
+
+    // Panduan & Bantuan
+    { id: 'nav-guide', category: 'Bantuan & Pengaturan', title: 'Buku Panduan & SOP Seller', subtitle: 'Panduan lengkap cara pakai fitur dan integrasi marketplace', icon: HelpCircle, path: `${base}/guide`, color: '#64748b' },
+    { id: 'nav-dev-api', category: 'Bantuan & Pengaturan', title: 'Integrasi API & Webhook', subtitle: 'Dokumentasi REST API dan webhook otomatis', icon: Zap, path: isSeller ? '/seller/developer-api' : '/retail/developer-api', color: '#06b6d4' },
+    { id: 'nav-settings', category: 'Bantuan & Pengaturan', title: 'Pengaturan Toko & Akun', subtitle: 'Profil toko, logo, alamat, dan preferensi aplikasi', icon: Settings, path: isSeller ? '/seller/settings' : '/retail/settings', color: '#64748b' },
+  ]
+}
+
 export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
   const navigate = useNavigate()
-  const { impersonate } = useAuth()
+  const location = useLocation()
+  const { impersonate, isSuperAdmin, user } = useAuth()
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [tenantResults, setTenantResults] = useState([])
   const [searchingTenants, setSearchingTenants] = useState(false)
+  const [productResults, setProductResults] = useState([])
+  const [searchingProducts, setSearchingProducts] = useState(false)
   const inputRef = useRef(null)
+
+  const isSeller = location.pathname.startsWith('/seller')
+  const isRetail = location.pathname.startsWith('/retail')
+  const isKuliner = location.pathname.startsWith('/kuliner')
+  const isSaasAdmin = !isRetail && !isSeller && !isKuliner && (isSuperAdmin?.() || user?.role === 'admin')
 
   // Focus on open
   useEffect(() => {
     if (isOpen) {
       setQuery('')
       setSelectedIndex(0)
+      setProductResults([])
+      setTenantResults([])
       setTimeout(() => inputRef.current?.focus(), 50)
     }
   }, [isOpen])
 
-  // Search live tenants when query length >= 2
+  // Search live tenants (for SaaS admin) or live products (for Seller/Retail)
   useEffect(() => {
     if (!isOpen || !query.trim() || query.trim().length < 2) {
       setTenantResults([])
       setSearchingTenants(false)
+      setProductResults([])
+      setSearchingProducts(false)
       return
     }
 
     let isMounted = true
-    setSearchingTenants(true)
 
-    const timer = setTimeout(async () => {
-      try {
-        const res = await api.get('/admin/tenants')
-        if (!isMounted) return
-        const all = res.data?.data || []
-        const q = query.toLowerCase()
-        const matches = all.filter(t => 
-          (t.name || '').toLowerCase().includes(q) ||
-          (t.tenant_id || '').toLowerCase().includes(q) ||
-          (t.email || '').toLowerCase().includes(q) ||
-          (t.category || '').toLowerCase().includes(q)
-        ).slice(0, 5)
-        setTenantResults(matches)
-      } catch (err) {
-        console.error('Tenant search error:', err)
-      } finally {
-        if (isMounted) setSearchingTenants(false)
+    if (isSaasAdmin) {
+      setSearchingTenants(true)
+      const timer = setTimeout(async () => {
+        try {
+          const res = await api.get('/admin/tenants')
+          if (!isMounted) return
+          const all = res.data?.data || []
+          const q = query.toLowerCase()
+          const matches = all.filter(t => 
+            (t.name || '').toLowerCase().includes(q) ||
+            (t.tenant_id || '').toLowerCase().includes(q) ||
+            (t.email || '').toLowerCase().includes(q) ||
+            (t.category || '').toLowerCase().includes(q)
+          ).slice(0, 5)
+          setTenantResults(matches)
+        } catch (err) {
+          console.error('Tenant search error:', err)
+        } finally {
+          if (isMounted) setSearchingTenants(false)
+        }
+      }, 200)
+
+      return () => {
+        isMounted = false
+        clearTimeout(timer)
       }
-    }, 200)
+    } else {
+      // Search products for Seller Retail
+      setSearchingProducts(true)
+      const timer = setTimeout(async () => {
+        try {
+          const res = await api.get('/retail/products')
+          if (!isMounted) return
+          const all = res.data?.data || []
+          const q = query.toLowerCase()
+          const matches = all.filter(p => 
+            (p.name || '').toLowerCase().includes(q) ||
+            (p.sku || '').toLowerCase().includes(q) ||
+            (p.barcode || '').toLowerCase().includes(q)
+          ).slice(0, 5)
+          setProductResults(matches)
+        } catch (err) {
+          // safe fallback
+        } finally {
+          if (isMounted) setSearchingProducts(false)
+        }
+      }, 200)
 
-    return () => {
-      isMounted = false
-      clearTimeout(timer)
+      return () => {
+        isMounted = false
+        clearTimeout(timer)
+      }
     }
-  }, [query, isOpen])
+  }, [query, isOpen, isSaasAdmin])
+
+  const availableCommands = isSaasAdmin ? SAAS_COMMANDS : getSellerRetailCommands(isSeller)
 
   // Filter static items
-  const filteredCommands = STATIC_COMMANDS.filter(cmd => {
+  const filteredCommands = availableCommands.filter(cmd => {
     if (!query.trim()) return true
     const q = query.toLowerCase()
     return cmd.title.toLowerCase().includes(q) || 
@@ -115,6 +199,7 @@ export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
   // Group all visible items for keyboard navigation
   const allItems = [
     ...tenantResults.map(t => ({ type: 'tenant', data: t })),
+    ...productResults.map(p => ({ type: 'product', data: p })),
     ...filteredCommands.map(c => ({ type: 'command', data: c })),
   ]
 
@@ -155,6 +240,10 @@ export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
       } else {
         navigate(`/tenants?search=${t.tenant_id}`)
       }
+    } else if (item.type === 'product') {
+      const p = item.data
+      const target = isSeller ? `/seller/products?search=${encodeURIComponent(p.name)}` : `/retail/products?search=${encodeURIComponent(p.name)}`
+      navigate(target)
     } else if (item.type === 'command') {
       const cmd = item.data
       if (cmd.path) {
@@ -175,6 +264,18 @@ export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
   }
 
   if (!isOpen) return null
+
+  const categoryIconMap = {
+    'Aksi Cepat': '⚡ ',
+    'Aksi Cepat & Kasir': '⚡ ',
+    'Navigasi Menu': '🧭 ',
+    'Pesanan & Marketplace': '📦 ',
+    'Katalog & Inventori': '🏷️ ',
+    'Laporan & Finansial': '💰 ',
+    'Bantuan & Pengaturan': '⚙️ ',
+  }
+
+  const uniqueCategories = Array.from(new Set(filteredCommands.map(c => c.category)))
 
   return createPortal(
     <div
@@ -198,7 +299,7 @@ export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
           width: '100%',
           maxWidth: 620,
           background: '#ffffff',
-          borderRadius: 16,
+          borderRadius: 20,
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(226, 232, 240, 0.8)',
           overflow: 'hidden',
           animation: 'scaleUp 0.15s ease-out',
@@ -222,7 +323,7 @@ export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
               setQuery(e.target.value)
               setSelectedIndex(0)
             }}
-            placeholder="Cari tenant, halaman SaaS, fitur, aksi cepat... (Ketik atau pilih)"
+            placeholder={isSeller || isRetail ? "Cari menu pintasan, aksi cepat, atau produk... (Ketik atau pilih)" : "Cari tenant, halaman SaaS, fitur, aksi cepat... (Ketik atau pilih)"}
             style={{
               width: '100%',
               border: 'none',
@@ -247,7 +348,7 @@ export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
             background: '#e2e8f0',
             color: '#64748b',
             padding: '2px 8px',
-            borderRadius: 6,
+            borderRadius: 9999,
             fontFamily: 'monospace'
           }}>
             ESC
@@ -256,7 +357,7 @@ export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
 
         {/* Results List */}
         <div style={{ maxHeight: 380, overflowY: 'auto', padding: '8px 0' }}>
-          {/* Tenant Live Results */}
+          {/* Tenant Live Results (For SaaS Admin) */}
           {tenantResults.length > 0 && (
             <div style={{ marginBottom: 8 }}>
               <div style={{ padding: '6px 20px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em' }}>
@@ -304,8 +405,8 @@ export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
                           background: '#eef2ff',
                           color: '#4f46e5',
                           border: '1px solid #c7d2fe',
-                          padding: '4px 8px',
-                          borderRadius: 6,
+                          padding: '4px 10px',
+                          borderRadius: 9999,
                           fontSize: 11,
                           fontWeight: 600,
                           cursor: 'pointer',
@@ -324,17 +425,66 @@ export default function CommandPalette({ isOpen, onClose, onSelectTenant }) {
             </div>
           )}
 
-          {/* Static Commands */}
+          {/* Product Live Results (For Retail & Seller) */}
+          {productResults.length > 0 && (
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ padding: '6px 20px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em' }}>
+                📦 Hasil Pencarian Produk & Katalog
+              </div>
+              {productResults.map((p, idx) => {
+                const globalIdx = tenantResults.length + idx
+                const isSelected = selectedIndex === globalIdx
+                return (
+                  <div
+                    key={p.id || idx}
+                    onClick={() => handleExecute({ type: 'product', data: p })}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 20px',
+                      cursor: 'pointer',
+                      background: isSelected ? '#f1f5f9' : 'transparent',
+                      transition: 'background 0.1s',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 8,
+                        background: '#ecfdf5', color: '#059669',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: 14
+                      }}>
+                        <Package size={16} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1e293b' }}>
+                          {p.name}
+                        </div>
+                        <div style={{ fontSize: 11.5, color: '#64748b' }}>
+                          SKU: <code style={{ fontFamily: 'monospace' }}>{p.sku || '-'}</code> • <span style={{ fontWeight: 600, color: '#059669' }}>Rp {Number(p.price || 0).toLocaleString('id-ID')}</span> • Stok: <span style={{ fontWeight: 600 }}>{p.stock ?? '-'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <ArrowRight size={14} className={isSelected ? 'text-indigo-600' : 'text-slate-300'} />
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Commands Grouped by Category */}
           {filteredCommands.length > 0 && (
             <div>
-              {['Navigasi Menu', 'Aksi Cepat'].map(cat => {
+              {uniqueCategories.map(cat => {
                 const itemsInCat = filteredCommands.filter(c => c.category === cat)
                 if (itemsInCat.length === 0) return null
 
                 return (
                   <div key={cat} style={{ marginBottom: 6 }}>
                     <div style={{ padding: '6px 20px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em' }}>
-                      {cat === 'Navigasi Menu' ? '🧭 ' : '⚡ '}{cat}
+                      {categoryIconMap[cat] || '🧭 '}{cat}
                     </div>
                     {itemsInCat.map(cmd => {
                       const itemIdx = allItems.findIndex(i => i.type === 'command' && i.data.id === cmd.id)

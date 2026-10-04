@@ -23,6 +23,7 @@ import { SellerMobileBottomNav } from './components/SellerMobileBottomNav';
 import { SellerMobileBottomSheet } from './components/SellerMobileBottomSheet';
 import { useOmnichannelAccess } from './hooks/useOmnichannelAccess';
 import { OmnichannelLockedView } from './components/omnichannel/OmnichannelLockedView';
+import CommandPalette from '../../../components/CommandPalette';
 
 // Pure, one-directional URL <-> tab mapping.
 export const pathToTab = (p: string): ActiveTab => {
@@ -53,7 +54,8 @@ export const pathToTab = (p: string): ActiveTab => {
   if (p.includes('/reports/sales') || p.includes('/sales-report')) return 'keuangan-laporan';
   if (p.includes('/reports')) return 'keuangan-laporan';
 
-  // 5. Katalog & Harga
+  // 5. Data Master & Katalog
+  if (p.includes('/master-data') || p.includes('/master')) return 'master-data';
   if (p.includes('/categories')) return 'katalog-kategori';
   if (p.includes('/units')) return 'katalog-satuan';
   if (p.includes('/batches')) return 'katalog-batch';
@@ -114,6 +116,7 @@ export const tabToPath = (tab: ActiveTab): string => {
   switch (tab) {
     case 'pesanan': return '/seller/orders';
     case 'toko-offline': return '/seller/pos';
+    case 'master-data': return '/seller/master-data';
     case 'katalog': return '/seller/products';
     case 'katalog-kategori': return '/seller/categories';
     case 'katalog-satuan': return '/seller/units';
@@ -313,6 +316,19 @@ export default function App() {
   const [isAwbPrintOpen, setIsAwbPrintOpen] = useState(false);
   const [selectedOrderForAwb, setSelectedOrderForAwb] = useState<Order | null>(null);
   const [isAiAdvisorOpen, setIsAiAdvisorOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+
+  // Global Ctrl+K / Cmd+K listener for Seller App Command Hub
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Field names match RetailProduct DB columns (price_sell/price_buy/stock/stock_min)
   const mapProduct = (p: any): Product => {
@@ -565,6 +581,7 @@ export default function App() {
             setDarkMode={setDarkMode}
             mobileMenuOpen={isBottomSheetOpen}
             setMobileMenuOpen={() => setIsBottomSheetOpen(prev => !prev)}
+            onOpenCommandPalette={() => setCommandPaletteOpen(true)}
           />
         )}
 
@@ -639,6 +656,12 @@ export default function App() {
           onSelectTab={(tab) => setActiveTab(tab)}
         />
       </>
+
+      {/* Global Command Hub & Shortcut Palette */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+      />
     </div>
   );
 }

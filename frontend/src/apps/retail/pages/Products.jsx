@@ -23,6 +23,7 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formSku, setFormSku] = useState('');
   const [multiUnits, setMultiUnits] = useState([]);
@@ -176,33 +177,59 @@ export default function Products() {
   } = usePagination(filteredProducts);
 
 
-  const handleExport = async () => {
+  const handleExport = async (format = 'xlsx') => {
     try {
-      const res = await api.get('/retail/products/export', { responseType: 'blob' });
+      const res = await api.get(`/retail/products/export?format=${format}`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'produk_retail.xlsx');
+      link.setAttribute('download', `katalog_produk_${new Date().toISOString().slice(0,10)}.${format}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      toast.success('Katalog produk berhasil diunduh');
     } catch (e) {
-      toast.error('Gagal mengunduh Excel');
+      toast.error('Gagal mengunduh katalog produk');
+    }
+  };
+
+  const handleDownloadTemplate = async (format = 'xlsx') => {
+    try {
+      const res = await api.get(`/retail/products/template?format=${format}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `template_import_produk.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success(`Template ${format.toUpperCase()} berhasil diunduh`);
+    } catch (e) {
+      toast.error('Gagal mengunduh template');
     }
   };
 
   const handleImport = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    const file = formData.get('file');
+    if (!file || !file.name) {
+      toast.error('Silakan pilih file Excel atau CSV terlebih dahulu');
+      return;
+    }
+
+    setImporting(true);
     try {
-      await api.post('/retail/products/import', formData, {
+      const res = await api.post('/retail/products/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       fetchData();
       setShowImportModal(false);
-      toast.success('Produk berhasil diimpor ke katalog!');
+      toast.success(res.data?.message || 'Produk berhasil diimpor ke katalog!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Gagal mengimpor data produk');
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -249,7 +276,7 @@ export default function Products() {
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button
             title="Tambah baru"
-            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer"
             onClick={() => setShowModal(true)}
           >
             <Plus size={15} className="mobile-no-margin" />
@@ -306,17 +333,63 @@ export default function Products() {
             {loading ? (
               <RetailTableLoadingRow colSpan={7} text="Memuat katalog..." />
             ) : filteredProducts.length === 0 ? (
-              <EmptyTableState
-                colSpan={7}
-                icon={Package}
-                title="Belum ada data produk"
-                description={search ? `Tidak ada produk yang cocok dengan pencarian "${search}".` : "Mulai tambahkan produk baru ke dalam katalog toko Anda."}
-                actionLabel={search ? "Reset Pencarian" : "Tambah Produk Baru"}
-                onAction={() => {
-                  if (search) setSearch('');
-                  else setShowModal(true);
-                }}
-              />
+              search ? (
+                <EmptyTableState
+                  colSpan={7}
+                  icon={Package}
+                  title="Produk tidak ditemukan"
+                  description={`Tidak ada produk yang cocok dengan pencarian "${search}".`}
+                  actionLabel="Reset Pencarian"
+                  onAction={() => setSearch('')}
+                />
+              ) : (
+                <tr>
+                  <td colSpan={7} className="p-0 border-none">
+                    <div className="flex flex-col items-center justify-center text-center py-12 px-4 max-w-lg mx-auto">
+                      <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 shadow-xs border border-indigo-100 dark:border-indigo-900/50">
+                        <Package size={28} className="stroke-[1.75]" />
+                      </div>
+                      <h4 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1.5">
+                        Katalog Toko Masih Kosong
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mb-6 leading-relaxed">
+                        Mulai isi katalog barang toko Anda untuk memulai operasional kasir & penjualan. Anda dapat langsung mengimpor banyak produk sekaligus via file Excel/CSV atau menginput secara manual.
+                      </p>
+                      
+                      <div className="flex flex-wrap items-center justify-center gap-3 w-full">
+                        <button
+                          type="button"
+                          onClick={() => setShowImportModal(true)}
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-600/20 transition-all cursor-pointer"
+                        >
+                          <Upload size={15} />
+                          Import Massal Excel / CSV
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowModal(true)}
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer border border-slate-200 dark:border-slate-700"
+                        >
+                          <Plus size={15} />
+                          Tambah Produk Manual
+                        </button>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 w-full flex items-center justify-center gap-2 text-xs text-slate-500">
+                        <span>Belum punya format Excel?</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadTemplate('xlsx')}
+                          className="text-blue-600 dark:text-blue-400 hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Download size={13} />
+                          Unduh Template Excel Siap Pakai
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )
             ) : (
               paginatedData.map(p => (
                 <tr key={p.id}>
@@ -527,26 +600,89 @@ export default function Products() {
         </form>
       </Modal>
 
-      <Modal isOpen={showImportModal} onClose={() => setShowImportModal(false)} title="Import Produk (Excel/CSV)">
+      <Modal isOpen={showImportModal} onClose={() => { if (!importing) setShowImportModal(false); }} title="Import Katalog Produk (Excel / CSV)">
         <form onSubmit={handleImport} className="flex flex-col gap-4">
-          <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm mb-2 border border-blue-100">
-            <p className="font-semibold mb-1">Panduan Import Data</p>
-            <ul className="list-disc pl-5 space-y-1">
-               <li>Gunakan format file <strong>.xlsx, .xls, atau .csv</strong>.</li>
-               <li>Anda dapat mengunduh data saat ini via tombol <strong>Export</strong> dan menggunakannya sebagai template (ubah isinya, lalu Import kembali).</li>
-               <li>Kolom yang wajib ada: <strong>SKU / Barcode</strong> dan <strong>Nama Produk</strong>.</li>
-               <li>Jika SKU sudah ada di database, data produk tersebut akan diperbarui. Jika belum ada, akan ditambahkan sebagai produk baru.</li>
+          {/* Step 1: Download Template */}
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mb-0.5">Langkah 1: Unduh Format Template</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Gunakan file template resmi yang telah berisi judul kolom & contoh data.</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadTemplate('xlsx')}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                >
+                  <Download size={13} />
+                  Excel (.xlsx)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadTemplate('csv')}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <Download size={13} />
+                  CSV
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Panduan / Info Box */}
+          <div className="bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 p-4 rounded-xl text-xs border border-blue-100 dark:border-blue-900/60 space-y-1.5">
+            <p className="font-bold flex items-center gap-1.5">
+              <span>💡</span> Ketentuan & Kemudahan Import:
+            </p>
+            <ul className="list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-300">
+              <li><strong>Kolom Utama:</strong> SKU / Barcode, Nama Produk, Kategori, Satuan Dasar, Harga Beli (Modal), Harga Jual, Stok Awal, Stok Minimum.</li>
+              <li><strong>Kategori & Satuan Otomatis:</strong> Kategori atau satuan baru yang tertulis di Excel akan <em>otomatis dibuatkan</em> oleh sistem.</li>
+              <li><strong>Pembaruan Otomatis:</strong> Jika kode SKU sudah ada di toko Anda, sistem akan otomatis memperbarui harga dan stoknya.</li>
+              <li>Mendukung file format <strong>.xlsx, .xls, .csv</strong> (maksimal 10MB).</li>
             </ul>
           </div>
+
+          {/* Step 2: Upload File */}
           <div className="form-group">
-            <label className="form-label">Pilih File Excel/CSV</label>
-            <input type="file" name="file" accept=".xlsx,.xls,.csv" required className="form-input" />
+            <label className="form-label font-bold text-slate-800 dark:text-slate-100">
+              Langkah 2: Pilih File Excel / CSV yang Telah Diisi
+            </label>
+            <input 
+              type="file" 
+              name="file" 
+              accept=".xlsx,.xls,.csv,.txt" 
+              required 
+              disabled={importing}
+              className="form-input text-xs cursor-pointer file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+            />
           </div>
-          <div className="modal__actions mt-4">
-            <button type="button" className="btn btn-secondary" onClick={() => setShowImportModal(false)}>Batal</button>
-            <button type="submit" className="btn btn-primary flex items-center gap-2">
-              <Upload size={16} />
-              Upload & Proses
+
+          <div className="modal__actions mt-2">
+            <button 
+              type="button" 
+              className="btn btn-secondary text-xs" 
+              disabled={importing}
+              onClick={() => setShowImportModal(false)}
+            >
+              Batal
+            </button>
+            <button 
+              type="submit" 
+              disabled={importing}
+              className="btn btn-primary text-xs flex items-center gap-2 cursor-pointer"
+            >
+              {importing ? (
+                <>
+                  <RefreshCw size={14} className="animate-spin" />
+                  Memproses Import...
+                </>
+              ) : (
+                <>
+                  <Upload size={14} />
+                  Upload & Proses Import
+                </>
+              )}
             </button>
           </div>
         </form>

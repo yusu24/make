@@ -20,6 +20,7 @@ const PackingImprovement = lazy(() => import('../apps/seller/repo/components/omn
 const NotificationCenter = lazy(() => import('../apps/seller/repo/components/omnichannel/NotificationCenterView').then(m => ({ default: m.NotificationCenterView })));
 
 // Retail Pages connected into Seller
+const RetailMasterData = lazy(() => import('../apps/seller/repo/pages/MasterDataPage'));
 const RetailPos = lazy(() => import('../apps/retail/pages/Pos'));
 const RetailProducts = lazy(() => import('../apps/retail/pages/Products'));
 const RetailCategories = lazy(() => import('../apps/retail/pages/Categories'));
@@ -99,6 +100,8 @@ const sellerRoutes = (
     <Route path="notifications" element={<NotificationCenter />} />
 
     {/* DATA MASTER & KATALOG */}
+    <Route path="master-data" element={<RetailMasterData />} />
+    <Route path="master" element={<Navigate to="/seller/master-data" replace />} />
     <Route path="products" element={<RetailProducts />} />
     <Route path="categories" element={<RetailCategories />} />
     <Route path="units" element={<RetailUnits />} />

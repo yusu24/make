@@ -19,6 +19,7 @@ import {
 } from '@/constants/icons';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
+import { useAuth } from '../../../../../contexts/AuthContext';
 
 export interface NotificationItem {
   id: number;
@@ -168,7 +169,11 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 ];
 
 export const NotificationCenterView: React.FC = () => {
-  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
+  const [notifications, setNotifications] = useState<NotificationItem[]>(isDemo ? INITIAL_NOTIFICATIONS : []);
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'critical' | 'warning' | 'info'>('all');
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');

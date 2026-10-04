@@ -18,6 +18,13 @@ class SellerProductController extends Controller
         return $tenantId;
     }
 
+    private function isDemoTenant(string $tenantId): bool
+    {
+        return str_starts_with($tenantId, 'TN-DS-')
+            || str_starts_with($tenantId, 'TN-DK-')
+            || in_array($tenantId, ['TN-0001', 'TN-RETAIL', 'TN-SELLER', 'TN-DEMO'], true);
+    }
+
     public function index(Request $request)
     {
         $tenantId = $this->getTenantId($request);
@@ -42,8 +49,8 @@ class SellerProductController extends Controller
 
         $products = $query->orderBy('id', 'desc')->get();
 
-        // Seed initial sample products if tenant is fresh
-        if ($products->isEmpty() && !$request->filled('search')) {
+        // Seed initial sample products ONLY for demo tenants
+        if ($products->isEmpty() && !$request->filled('search') && $this->isDemoTenant($tenantId)) {
             $defaultProducts = [
                 ['name' => 'Kemeja Katun Polos Premium', 'sku' => 'KMT-001', 'category' => 'Pakaian', 'price' => 149000, 'cost_price' => 90000, 'stock' => 45, 'min_stock' => 10, 'status' => 'Aktif'],
                 ['name' => 'Sepatu Sneakers Running V2', 'sku' => 'SNK-002', 'category' => 'Sepatu', 'price' => 299000, 'cost_price' => 180000, 'stock' => 18, 'min_stock' => 5, 'status' => 'Aktif'],

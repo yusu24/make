@@ -8,6 +8,14 @@ use App\Models\SellerWarehouse;
 
 class SellerWarehouseController extends Controller
 {
+    private function isDemoTenant(?string $tenantId): bool
+    {
+        if (!$tenantId) return false;
+        return str_starts_with($tenantId, 'TN-DS-')
+            || str_starts_with($tenantId, 'TN-DK-')
+            || in_array($tenantId, ['TN-0001', 'TN-RETAIL', 'TN-SELLER', 'TN-DEMO'], true);
+    }
+
     public function index(Request $request)
     {
         $tenantId = $request->user()->tenant_id;
@@ -17,7 +25,7 @@ class SellerWarehouseController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        if ($warehouses->isEmpty()) {
+        if ($warehouses->isEmpty() && $this->isDemoTenant($tenantId)) {
             $defaultWarehouses = [
                 [
                     'name' => 'Gudang Utama Jakarta',

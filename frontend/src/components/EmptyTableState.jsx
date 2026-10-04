@@ -24,14 +24,14 @@ export default function EmptyTableState({
 }) {
   const content = (
     <div className={`flex flex-col items-center justify-center text-center ${compact ? 'py-8' : 'py-12'} px-4 ${className}`}>
-      <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3 shadow-inner">
+      <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-center text-slate-400 dark:text-slate-400 mb-3 shadow-inner">
         <Icon size={24} className="stroke-[1.75]" />
       </div>
-      <h4 className="text-[15px] font-semibold text-slate-800 mb-1">
+      <h4 className="text-[15px] font-semibold text-slate-800 dark:text-slate-100 mb-1">
         {title}
       </h4>
       {description && (
-        <p className="text-xs text-slate-500 max-w-sm mb-4 leading-relaxed">
+        <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-4 leading-relaxed">
           {description}
         </p>
       )}

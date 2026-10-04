@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { RefreshCw, Package, ShoppingCart, Tag, Box, Play, CheckCircle2, AlertCircle, Clock } from '@/constants/icons';
+import { useAuth } from '../../../../../contexts/AuthContext';
 
 export const SyncCenterView: React.FC = () => {
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
   const [syncing, setSyncing] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -29,7 +34,7 @@ export const SyncCenterView: React.FC = () => {
       description: 'Update data produk, deskripsi, gambar, dan varian.',
       icon: <Package className="w-6 h-6 text-indigo-500" />,
       color: 'indigo',
-      lastSync: '10 menit yang lalu',
+      lastSync: isDemo ? '10 menit yang lalu' : 'Belum pernah sync',
       status: 'success'
     },
     {
@@ -38,7 +43,7 @@ export const SyncCenterView: React.FC = () => {
       description: 'Update stok gudang ke seluruh platform secara real-time.',
       icon: <Box className="w-6 h-6 text-emerald-500" />,
       color: 'emerald',
-      lastSync: '1 menit yang lalu',
+      lastSync: isDemo ? '1 menit yang lalu' : 'Belum pernah sync',
       status: 'success'
     },
     {
@@ -47,8 +52,8 @@ export const SyncCenterView: React.FC = () => {
       description: 'Sesuaikan harga jual per marketplace.',
       icon: <Tag className="w-6 h-6 text-amber-500" />,
       color: 'amber',
-      lastSync: '2 jam yang lalu',
-      status: 'warning'
+      lastSync: isDemo ? '2 jam yang lalu' : 'Belum pernah sync',
+      status: isDemo ? 'warning' : 'success'
     },
     {
       id: 'orders',
@@ -56,7 +61,7 @@ export const SyncCenterView: React.FC = () => {
       description: 'Tarik pesanan baru dari seluruh toko secara massal.',
       icon: <ShoppingCart className="w-6 h-6 text-purple-500" />,
       color: 'purple',
-      lastSync: '5 menit yang lalu',
+      lastSync: isDemo ? '5 menit yang lalu' : 'Belum pernah sync',
       status: 'success'
     }
   ];

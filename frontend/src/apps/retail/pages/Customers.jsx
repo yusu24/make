@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import { User, RefreshCw, Pencil, Trash2 } from '@/constants/icons';
+import { User, RefreshCw, Pencil, Trash2, Upload } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import usePagination from '../../../hooks/usePagination';
@@ -9,6 +9,7 @@ import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import StatScoreCard from '@/components/ui/StatScoreCard';
 import EmptyTableState from '../../../components/EmptyTableState';
+import RetailImportModal from '../components/RetailImportModal';
 import FormLabel from '../../../components/FormLabel';
 import '../retail.css';
 
@@ -18,6 +19,7 @@ export default function Customers() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [search, setSearch] = useState('');
 
@@ -135,11 +137,20 @@ export default function Customers() {
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button 
             title="Tambah pelanggan"
-            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer"
             onClick={() => { setEditingCustomer(null); setShowModal(true); }}
           >
             <User size={15} className="mobile-no-margin" />
             <span className="btn-text-mobile-hide">Tambah Pelanggan</span>
+          </button>
+          <button
+            title="Import Excel"
+            type="button"
+            onClick={() => setShowImportModal(true)}
+            className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 font-semibold text-xs shadow-xs transition-colors shrink-0 cursor-pointer"
+          >
+            <Upload size={14} className="text-blue-600 dark:text-blue-400" />
+            <span className="btn-text-mobile-hide">Import</span>
           </button>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input 
@@ -251,6 +262,18 @@ export default function Customers() {
            </div>
         </form>
       </Modal>
+
+      {/* ── Modal Import Excel ── */}
+      <RetailImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        title="Import Data Pelanggan"
+        entityName="Pelanggan"
+        templateEndpoint="/retail/customers/template"
+        importEndpoint="/retail/customers/import"
+        onSuccess={fetchCustomers}
+        sampleFields={['Nama Pelanggan', 'No HP / WhatsApp', 'Email', 'Alamat', 'Poin Loyalitas']}
+      />
     </div>
   );
 }

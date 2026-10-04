@@ -10,6 +10,7 @@ import {
   CreditCard,
   ShieldCheck,
   Building2,
+  Search,
 } from '@/constants/icons';
 import { StoreChannel, ActiveTab, Product } from '../types';
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -28,6 +29,7 @@ interface HeaderProps {
   setDarkMode: (val: boolean) => void;
   mobileMenuOpen?: boolean;
   setMobileMenuOpen?: (val: boolean) => void;
+  onOpenCommandPalette?: () => void;
 }
 
 const DEMO_EMAILS = ['seller@demo.com'];
@@ -113,6 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
   setDarkMode,
   mobileMenuOpen,
   setMobileMenuOpen,
+  onOpenCommandPalette,
 }) => {
   const navigate = useNavigate();
   const { user, logout, isImpersonating, exitImpersonate } = useAuth();
@@ -177,9 +180,9 @@ export const Header: React.FC<HeaderProps> = ({
   }).format(new Date());
 
   return (
-    <header className={`h-16 bg-white dark:bg-[#101828] border-b border-gray-200 dark:border-slate-800 fixed top-0 right-0 left-0 ${collapsed ? 'md:left-[68px]' : 'md:left-64'} z-30 transition-all duration-300 px-3 sm:px-4 md:px-6 flex items-center justify-between shadow-xs shrink-0`}>
+    <header className={`h-16 bg-white dark:bg-[#101828] border-b border-gray-200 dark:border-slate-800 fixed top-0 right-0 left-0 ${collapsed ? 'md:left-[68px]' : 'md:left-64'} z-30 transition-all duration-300 px-3 sm:px-4 md:px-6 flex items-center justify-between gap-3 shadow-xs shrink-0`}>
       {/* Left section: Toggle, Dynamic Page Title & Date Badge */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
         <button
           onClick={() => {
             if (window.innerWidth < 768) {
@@ -194,12 +197,12 @@ export const Header: React.FC<HeaderProps> = ({
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           <div className="flex items-center space-x-2 min-w-0">
             <h1 className="text-[15px] sm:text-base lg:text-[17px] font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate whitespace-nowrap font-['Plus_Jakarta_Sans']">
               {TAB_TITLES[activeTab] || 'Bizora Seller'}
             </h1>
-            <span className="hidden md:inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md shrink-0 font-['Inter']">
+            <span className="hidden xl:inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md shrink-0 font-['Inter']">
               <Calendar className="w-3 h-3 text-slate-400" />
               <span>{currentDate}</span>
             </span>
@@ -207,8 +210,35 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right section: Dark Mode, Notifications & Profile */}
-      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+      {/* Right section: Searchbox (Rata Kanan), Dark Mode, Notifications & Profile */}
+      <div className="flex items-center justify-end gap-1.5 sm:gap-2 md:gap-2.5 flex-1 min-w-0">
+        {/* Navtop Searchbox for Shortcuts (Rata Kanan) - Appears on lg+ to prevent overlapping with page title */}
+        <button
+          type="button"
+          onClick={() => onOpenCommandPalette?.()}
+          className="hidden lg:inline-flex items-center justify-between gap-2.5 h-9 px-4 rounded-full bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800/90 dark:hover:bg-slate-700/90 border border-slate-200/80 dark:border-slate-700/80 text-slate-500 dark:text-slate-400 text-xs font-medium transition-all shadow-xs cursor-pointer group max-w-[220px] xl:max-w-[280px] 2xl:max-w-[320px] w-full shrink"
+          title="Buka Pintasan Cepat & Pencarian Menu (Ctrl + K)"
+        >
+          <div className="flex items-center gap-2 truncate">
+            <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors shrink-0" />
+            <span className="truncate text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 font-normal">
+              Cari menu, pintasan, produk...
+            </span>
+          </div>
+          <kbd className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-full px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono shadow-2xs shrink-0 group-hover:border-indigo-400 transition-colors">
+            Ctrl K
+          </kbd>
+        </button>
+
+        {/* Mobile / Tablet Compact Search Button */}
+        <button
+          type="button"
+          onClick={() => onOpenCommandPalette?.()}
+          className="lg:hidden p-2 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+          title="Cari Menu & Pintasan (Ctrl + K)"
+        >
+          <Search className="w-4 h-4" />
+        </button>
 
         {/* Dark Mode Toggle */}
         <button

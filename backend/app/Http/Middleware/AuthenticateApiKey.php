@@ -88,10 +88,10 @@ class AuthenticateApiKey
 
         // Check plan permission
         $plan = SubscriptionPlan::forTenant($tenant);
+        $subPlan = strtolower($tenant->subscription_plan ?? '');
         $hasApiAccess = app()->environment('local')
             || ($plan && is_array($plan->features) && (!empty($plan->features['apiAccess']) || !empty($plan->features['api_access'])))
-            || $tenant->subscription_plan === 'enterprise' 
-            || $tenant->subscription_plan === 'pro_developer';
+            || in_array($subPlan, ['pro', 'enterprise', 'pro_developer', 'paket pro']);
 
         if (!$hasApiAccess) {
             return response()->json([

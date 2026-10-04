@@ -7,6 +7,7 @@ import { Pencil, Trash2, Tag, RefreshCw } from '@/constants/icons';
 import Modal from '../../../components/Modal';
 import CurrencyInput from '../../../components/CurrencyInput';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
+import EmptyTableState from '../../../components/EmptyTableState';
 
 export default function Discounts() {
   const [discounts, setDiscounts] = useState([]);
@@ -64,12 +65,13 @@ export default function Discounts() {
     <div className="animate-fade-in retail-dashboard-spacing">
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button title="Kode Diskon Baru"
-            className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
+          <button
+            title="Kode Diskon Baru"
+            type="button"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer"
             onClick={() => { setEditing(null); setType('percentage'); setShowModal(true); }}
           >
-            <Tag size={15} className="mr-2 mobile-no-margin" />
+            <Tag size={15} className="mobile-no-margin" />
             <span className="btn-text-mobile-hide">Kode Diskon Baru</span>
           </button>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
@@ -99,7 +101,17 @@ export default function Discounts() {
             {loading ? (
               <RetailTableLoadingRow colSpan={7} />
             ) : filteredDiscounts.length === 0 ? (
-              <tr><td colSpan="7" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada kode diskon.</td></tr>
+              <EmptyTableState
+                colSpan={7}
+                icon={Tag}
+                title="Belum ada kode diskon"
+                description={search ? `Tidak ada kode diskon yang cocok dengan "${search}".` : "Buat kupon promo, diskon persentase, atau potongan belanja untuk pelanggan."}
+                actionLabel={search ? "Reset Pencarian" : "Kode Diskon Baru"}
+                onAction={() => {
+                  if (search) setSearch('');
+                  else { setEditing(null); setShowModal(true); }
+                }}
+              />
             ) : (
               paginatedData.map(d => (
                 <tr key={d.id}>

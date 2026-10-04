@@ -5,13 +5,16 @@ import ReactDOM from 'react-dom';
  * Global Modal Component using React Portals
  * This escapes the local stacking context (z-index hell)
  */
-export default function Modal({ isOpen, onClose, title, children, maxWidth = '500px', hideHeader = false }) {
+export default function Modal({ isOpen = true, onClose, title, children, maxWidth = '500px', hideHeader = false, className = '' }) {
   if (!isOpen) return null;
 
+  const isRetailOrSeller = typeof window !== 'undefined' && 
+    (window.location.pathname.startsWith('/retail') || window.location.pathname.startsWith('/seller'));
+
   return ReactDOM.createPortal(
-    <div className="modal-overlay" onClick={onClose}>
+    <div className={`modal-overlay ${isRetailOrSeller ? 'seller-scope' : ''}`} onClick={onClose}>
       <div 
-        className="modal" 
+        className={`modal ${isRetailOrSeller ? 'retail-modal-scope' : ''} ${className}`} 
         onClick={e => e.stopPropagation()} 
         style={{ maxWidth, padding: hideHeader ? 0 : undefined, overflowY: 'auto', overflowX: 'hidden' }}
       >

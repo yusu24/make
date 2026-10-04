@@ -624,7 +624,18 @@ body {
   outline: none;
   box-sizing: border-box;
 }
-.form-input::placeholder { color: var(--text-muted); }
+
+.form-input::placeholder { 
+  color: var(--text-muted); 
+  font-weight: 400 !important;
+}
+
+input::placeholder,
+textarea::placeholder,
+[placeholder]::placeholder {
+  font-weight: 400 !important;
+  font-style: normal !important;
+}
 .form-input:focus { border-color: var(--primary-500); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
 .form-input:hover:not(:focus) { border-color: var(--gray-600); }
 
@@ -1207,6 +1218,12 @@ table td {
 .theme-dark table thead th,
 .theme-dark table th {
   color: #94a3b8 !important;
+}
+
+/* Khusus header tabel invoice & kuitansi resmi Bizora agar teks putih kontras dan terbaca jelas */
+#bizora-subscription-invoice table thead th,
+#bizora-subscription-invoice table th {
+  color: #ffffff !important;
 }
 
 /* Badge / pill / status di dalam td tetap berwarna sendiri */

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { QrCode, Search, Printer, Package, CheckCircle2, AlertCircle, Scan, Check, X, PackageCheck } from '@/constants/icons';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
+import { useAuth } from '../../../../../contexts/AuthContext';
 
 interface PackingQueueItem {
   id: string;
@@ -21,13 +22,17 @@ const INITIAL_PACKING_QUEUE: PackingQueueItem[] = [
 ];
 
 export const PackingImprovementView: React.FC = () => {
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
   const [scannedResi, setScannedResi] = useState('');
-  const [scanHistory, setScanHistory] = useState<Array<{ resi: string; status: 'valid' | 'invalid'; time: string }>>([
+  const [scanHistory, setScanHistory] = useState<Array<{ resi: string; status: 'valid' | 'invalid'; time: string }>>(isDemo ? [
     { resi: 'JX9821039821', status: 'valid', time: '10:42' },
     { resi: '003291083921', status: 'valid', time: '10:40' },
     { resi: 'INVALID-9921', status: 'invalid', time: '10:35' },
-  ]);
-  const [queue, setQueue] = useState<PackingQueueItem[]>(INITIAL_PACKING_QUEUE);
+  ] : []);
+  const [queue, setQueue] = useState<PackingQueueItem[]>(isDemo ? INITIAL_PACKING_QUEUE : []);
   const [searchTerm, setSearchTerm] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 

@@ -488,37 +488,14 @@ class AuthController extends Controller
 
     private function seedDefaultRetailData(string $tenantId)
     {
-        // 1. Categories
-        $cats = ['Makanan', 'Minuman', 'Elektronik', 'Pakaian', 'Alat Kantor', 'Lainnya'];
-        foreach ($cats as $c) {
-            \App\Models\RetailCategory::create(['tenant_id' => $tenantId, 'name' => $c]);
-        }
-
-        // 2. Units
-        $units = ['Pcs', 'Box', 'Pak', 'Botol', 'Kg', 'Liter', 'Meter'];
-        foreach ($units as $u) {
-            \App\Models\RetailUnit::create(['tenant_id' => $tenantId, 'name' => $u]);
-        }
-
-        // 3. Expense Categories
-        $expCats = ['Gaji Pegawai', 'Sewa Tempat', 'Listrik & Air', 'Operasional', 'Pemasaran', 'Lain-lain'];
-        foreach ($expCats as $ec) {
-            \App\Models\RetailFinanceCategory::create(['tenant_id' => $tenantId, 'name' => $ec, 'type' => 'expense']);
-        }
-
-        // 4. Default settings (tax rate, loyalty points ratio)
-        \App\Models\RetailSetting::create([
-            'tenant_id' => $tenantId,
-            'tax_rate' => 0,
-            'points_ratio' => 10000,
-        ]);
-
-        // 5. Default staff role (kasir — POS + inventory view only)
-        \App\Models\RetailRole::create([
-            'tenant_id' => $tenantId,
-            'name' => 'Kasir',
-            'permissions' => ['pos', 'inventory'],
-        ]);
+        // Default settings only (data master & transaksi dimulai dari 0 untuk akun reguler)
+        \App\Models\RetailSetting::firstOrCreate(
+            ['tenant_id' => $tenantId],
+            [
+                'tax_rate' => 0,
+                'points_ratio' => 10000,
+            ]
+        );
     }
 
     private function seedDefaultKulinerData(string $tenantId)
@@ -622,23 +599,14 @@ class AuthController extends Controller
 
     private function seedDefaultSellerData(string $tenantId)
     {
-        // 1. Default Warehouse
-        \App\Models\SellerWarehouse::create([
-            'tenant_id' => $tenantId,
-            'name' => 'Gudang Utama (Pusat)',
-            'address' => 'Gudang Sentral',
-            'is_default' => true,
-        ]);
-
-        // 2. Default Marketplace Channels
-        $channels = [
-            ['platform' => 'shopee', 'store_name' => 'Shopee Official Store', 'status' => 'active'],
-            ['platform' => 'tokopedia', 'store_name' => 'Tokopedia Official Store', 'status' => 'active'],
-            ['platform' => 'tiktok', 'store_name' => 'TikTok Shop Store', 'status' => 'active'],
-        ];
-        foreach ($channels as $ch) {
-            \App\Models\SellerChannel::create(array_merge($ch, ['tenant_id' => $tenantId]));
-        }
+        // Default settings only (produk, pesanan, channel, dan gudang dimulai dari 0 untuk akun reguler)
+        \App\Models\RetailSetting::firstOrCreate(
+            ['tenant_id' => $tenantId],
+            [
+                'tax_rate' => 0,
+                'points_ratio' => 10000,
+            ]
+        );
     }
 
     /**

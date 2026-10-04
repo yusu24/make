@@ -8,6 +8,7 @@ import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import StatScoreCard from '@/components/ui/StatScoreCard';
+import EmptyTableState from '../../../components/EmptyTableState';
 import { Pencil, Trash2, Store, MapPin, Phone, Star, RefreshCw } from '@/constants/icons';
 
 export default function Outlets() {
@@ -154,15 +155,15 @@ export default function Outlets() {
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
           <button 
             type="button" 
-            className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }}
+            title="Tambah Cabang Baru"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer"
             onClick={() => {
               setEditingOutlet(null);
               setErrors({});
               setShowModal(true);
             }}
           >
-            <Store size={15} className="mr-2 mobile-no-margin" />
+            <Store size={15} className="mobile-no-margin" />
             <span className="btn-text-mobile-hide">Tambah Cabang Baru</span>
           </button>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
@@ -194,11 +195,17 @@ export default function Outlets() {
               {loading ? (
                  <RetailTableLoadingRow colSpan={7} text="Memuat daftar cabang..." />
               ) : filteredOutlets.length === 0 ? (
-                 <tr>
-                   <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
-                     Belum ada data cabang / outlet.
-                   </td>
-                 </tr>
+                <EmptyTableState
+                  colSpan={7}
+                  icon={Store}
+                  title="Belum ada data cabang / outlet"
+                  description={search ? `Tidak ada cabang yang cocok dengan "${search}".` : "Daftarkan cabang toko fisik atau gudang satelit bisnis retail Anda."}
+                  actionLabel={search ? "Reset Pencarian" : "Tambah Cabang Baru"}
+                  onAction={() => {
+                    if (search) setSearch('');
+                    else { setEditingOutlet(null); setErrors({}); setShowModal(true); }
+                  }}
+                />
               ) : (
                 paginatedData.map(o => (
                   <tr key={o.id}>

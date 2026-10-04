@@ -187,10 +187,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const getActiveGroup = (tab: string): string | null => {
     if (tab.startsWith('marketplace-')) return 'marketplace';
     if (tab.startsWith('shipping-') || tab === 'notification-center') return 'shipping';
-    if (tab.startsWith('katalog')) return 'katalog';
+    if (tab.startsWith('katalog') || ['master-data', 'pelanggan', 'crm-supplier', 'crm-cabang'].includes(tab)) return 'master';
     if (['gudang', 'gudang-multi', 'penerimaan-barang', 'gudang-po', 'gudang-mutasi', 'gudang-transfer', 'gudang-retur-supplier', 'stock-opname'].includes(tab)) return 'gudang';
     if (tab.startsWith('transaksi-')) return 'transaksi';
-    if (['pelanggan', 'crm-supplier', 'crm-cabang', 'master-data'].includes(tab)) return 'crm';
     if (tab.startsWith('keuangan-') && tab !== 'keuangan-laporan') return 'keuangan';
     if (tab.startsWith('laporan-') || tab === 'keuangan-laporan') return 'laporan';
     if (tab.startsWith('settings-') || tab.startsWith('setting-') || ['backup', 'developer-api', 'panduan', 'langganan', 'support'].includes(tab)) return 'settings';
@@ -225,12 +224,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
+  const isMasterActive = activeGroupId === 'master';
   const isMarketplaceActive = activeGroupId === 'marketplace';
   const isShippingActive = activeGroupId === 'shipping';
-  const isKatalogActive = activeGroupId === 'katalog';
+  const isKatalogActive = isMasterActive;
   const isGudangActive = activeGroupId === 'gudang';
   const isTransaksiActive = activeGroupId === 'transaksi';
-  const isCrmActive = activeGroupId === 'crm';
+  const isCrmActive = isMasterActive;
   const isKeuanganActive = activeGroupId === 'keuangan';
   const isLaporanActive = activeGroupId === 'laporan';
   const isSettingsActive = activeGroupId === 'settings';
@@ -272,18 +272,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'notification-center', label: 'Pusat Notifikasi', icon: <Bell className="w-3.5 h-3.5 text-rose-500" /> },
       ]
     },
-    katalog: {
-      id: 'katalog',
-      label: 'Katalog & Harga',
+    master: {
+      id: 'master',
+      label: 'Data Master',
       items: [
-        { id: 'katalog', label: 'Daftar Produk', icon: <Package className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'master-data', label: 'Pusat Data Master', icon: <Database className="w-3.5 h-3.5 text-indigo-500" /> },
+        { id: 'katalog', label: 'Katalog Produk', icon: <Package className="w-3.5 h-3.5 text-indigo-500" /> },
         { id: 'katalog-kategori', label: 'Kategori Produk', icon: <Layers className="w-3.5 h-3.5 text-emerald-500" /> },
         { id: 'katalog-satuan', label: 'Satuan Barang', icon: <Tag className="w-3.5 h-3.5 text-amber-500" /> },
+        { id: 'pelanggan', label: 'Data Pelanggan (CRM)', icon: <Users className="w-3.5 h-3.5 text-blue-500" /> },
+        { id: 'crm-supplier', label: 'Data Supplier', icon: <Truck className="w-3.5 h-3.5 text-teal-500" /> },
+        { id: 'crm-cabang', label: 'Cabang & Outlet', icon: <Store className="w-3.5 h-3.5 text-sky-500" /> },
+        { id: 'katalog-harga', label: 'Harga Grosir & Member', icon: <Layers className="w-3.5 h-3.5 text-violet-500" /> },
+        { id: 'katalog-diskon', label: 'Kode Diskon & Promo', icon: <Tag className="w-3.5 h-3.5 text-rose-500" /> },
         { id: 'katalog-batch', label: 'Batch & Kadaluwarsa', icon: <Archive className="w-3.5 h-3.5 text-purple-500" /> },
         { id: 'katalog-serial', label: 'Serial Number / IMEI', icon: <QrCode className="w-3.5 h-3.5 text-cyan-500" /> },
         { id: 'katalog-label', label: 'Cetak Barcode Label', icon: <Printer className="w-3.5 h-3.5 text-slate-500" /> },
-        { id: 'katalog-diskon', label: 'Kode Diskon & Promo', icon: <Tag className="w-3.5 h-3.5 text-rose-500" /> },
-        { id: 'katalog-harga', label: 'Harga Grosir & Member', icon: <Layers className="w-3.5 h-3.5 text-blue-500" /> },
       ]
     },
     gudang: {
@@ -422,7 +426,174 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </button>
 
-        {/* ── 3. Pesanan Masuk ── */}
+        {/* ── 3. Data Master ── */}
+        <div>
+          <button
+            onClick={(e) => {
+              if (collapsed) {
+                handleGroupIconClick('master', e);
+              } else {
+                toggleGroup('master');
+              }
+            }}
+            title={collapsed ? 'Data Master' : ''}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
+              isMasterActive || openSection === 'master'
+                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <Database className={`w-4 h-4 shrink-0 ${isMasterActive || openSection === 'master' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            {!collapsed && <span className="flex-1 text-left truncate font-semibold">Data Master</span>}
+            {!collapsed && (
+              isGroupExpanded('master') ? (
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              )
+            )}
+          </button>
+
+          {(!collapsed && isGroupExpanded('master')) && (
+            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
+              <button
+                onClick={() => setActiveTab('master-data')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'master-data'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Database className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate">Pusat Data Master</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Package className="w-3 h-3 text-indigo-500 shrink-0" />
+                <span className="truncate flex-1">Katalog Produk</span>
+                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-950 px-1.5 py-0.2 rounded">Import</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-kategori')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-kategori'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Layers className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">Kategori Produk</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-satuan')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-satuan'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Tag className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="truncate">Satuan Barang</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('pelanggan')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'pelanggan'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Users className="w-3 h-3 text-blue-500 shrink-0" />
+                <span className="truncate">Data Pelanggan (CRM)</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('crm-supplier')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'crm-supplier'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Truck className="w-3 h-3 text-teal-500 shrink-0" />
+                <span className="truncate">Data Supplier</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('crm-cabang')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'crm-cabang'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Store className="w-3 h-3 text-sky-500 shrink-0" />
+                <span className="truncate">Cabang & Outlet</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-harga')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-harga'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Layers className="w-3 h-3 text-violet-500 shrink-0" />
+                <span className="truncate">Harga Grosir & Member</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-diskon')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-diskon'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Tag className="w-3 h-3 text-rose-500 shrink-0" />
+                <span className="truncate">Kode Diskon & Promo</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-batch')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-batch'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Archive className="w-3 h-3 text-purple-500 shrink-0" />
+                <span className="truncate">Batch & Kadaluwarsa</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-serial')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-serial'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <QrCode className="w-3 h-3 text-cyan-500 shrink-0" />
+                <span className="truncate">Serial Number / IMEI</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('katalog-label')}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
+                  activeTab === 'katalog-label'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Printer className="w-3 h-3 text-slate-500 shrink-0" />
+                <span className="truncate">Cetak Label Barcode</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── 4. Pesanan Masuk ── */}
         <button
           onClick={() => {
             if (!isOmnichannelUnlocked) {
@@ -508,7 +679,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <Link className="w-3 h-3 text-emerald-500 shrink-0" />
-                <span className="truncate">Toko Terhubung</span>
+                <span className="truncate flex-1">Toko Terhubung</span>
+                <span className="text-[9.5px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.2 rounded">API</span>
               </button>
               <button
                 onClick={() => setActiveTab('marketplace-mapping')}
@@ -634,130 +806,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </div>
-
-        {/* ── 6. Katalog & Harga ── */}
-        <div>
-          <button
-            onClick={(e) => {
-              if (collapsed) {
-                handleGroupIconClick('katalog', e);
-              } else {
-                toggleGroup('katalog');
-              }
-            }}
-            title={collapsed ? 'Katalog' : ''}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
-              isKatalogActive || openSection === 'katalog'
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-            }`}
-          >
-            <Package className={`w-4 h-4 shrink-0 ${isKatalogActive || openSection === 'katalog' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">Katalog & Harga</span>}
-            {!collapsed && (
-              isGroupExpanded('katalog') ? (
-                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              ) : (
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-              )
-            )}
-          </button>
-
-          {(!collapsed && isGroupExpanded('katalog')) && (
-            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
-              <button
-                onClick={() => setActiveTab('katalog')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'katalog'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Package className="w-3 h-3 text-indigo-500 shrink-0" />
-                <span className="truncate">Daftar Produk</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('katalog-kategori')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'katalog-kategori'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Layers className="w-3 h-3 text-emerald-500 shrink-0" />
-                <span className="truncate">Kategori Produk</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('katalog-satuan')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'katalog-satuan'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Tag className="w-3 h-3 text-amber-500 shrink-0" />
-                <span className="truncate">Satuan Barang</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('katalog-batch')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'katalog-batch'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Archive className="w-3 h-3 text-purple-500 shrink-0" />
-                <span className="truncate">Batch & Kadaluwarsa</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('katalog-serial')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'katalog-serial'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <QrCode className="w-3 h-3 text-cyan-500 shrink-0" />
-                <span className="truncate">Serial Number / IMEI</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('katalog-label')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'katalog-label'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Printer className="w-3 h-3 text-slate-500 shrink-0" />
-                <span className="truncate">Cetak Label Barcode</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('katalog-diskon')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'katalog-diskon'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Tag className="w-3 h-3 text-rose-500 shrink-0" />
-                <span className="truncate">Kode Diskon & Promo</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('katalog-harga')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'katalog-harga'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Layers className="w-3 h-3 text-blue-500 shrink-0" />
-                <span className="truncate">Harga Grosir & Member</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* ── 7. Inventori & Gudang ── */}
+        {/* ── 5. Inventori & Gudang ── */}
         <div>
           <button
             onClick={(e) => {
@@ -957,75 +1006,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </div>
-
-        {/* ── 9. Pelanggan & Supplier CRM ── */}
-        <div>
-          <button
-            onClick={(e) => {
-              if (collapsed) {
-                handleGroupIconClick('crm', e);
-              } else {
-                toggleGroup('crm');
-              }
-            }}
-            title={collapsed ? 'Mitra' : ''}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-[13px] transition-all duration-150 group ${
-              isCrmActive || openSection === 'crm'
-                ? 'text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50/70 dark:bg-indigo-950/40'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-            }`}
-          >
-            <Users className={`w-4 h-4 shrink-0 ${isCrmActive || openSection === 'crm' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-            {!collapsed && <span className="flex-1 text-left truncate">Pelanggan & Supplier</span>}
-            {!collapsed && (
-              isGroupExpanded('crm') ? (
-                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              ) : (
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-              )
-            )}
-          </button>
-
-          {(!collapsed && isGroupExpanded('crm')) && (
-            <div className="ml-3 pl-2.5 border-l border-indigo-100 dark:border-indigo-900/40 my-1 space-y-0.5">
-              <button
-                onClick={() => setActiveTab('pelanggan')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'pelanggan'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Users className="w-3 h-3 text-indigo-500 shrink-0" />
-                <span className="truncate">Data Pelanggan (CRM)</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('crm-supplier')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'crm-supplier'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Truck className="w-3 h-3 text-emerald-500 shrink-0" />
-                <span className="truncate">Data Supplier</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('crm-cabang')}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all text-left ${
-                  activeTab === 'crm-cabang'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}
-              >
-                <Store className="w-3 h-3 text-amber-500 shrink-0" />
-                <span className="truncate">Daftar Cabang & Toko</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* ── 10. Keuangan & Kas ── */}
+        {/* ── 8. Keuangan & Kas ── */}
         <div>
           <button
             onClick={(e) => {

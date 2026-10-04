@@ -3,13 +3,14 @@ import '../retail.css';
 import usePagination from '../../../hooks/usePagination';
 import RetailPagination from '../components/RetailPagination';
 import { api } from '../../../lib/api';
-import { Truck, Pencil, Trash2, ChevronRight, PackageCheck, Plus, RefreshCw } from '@/constants/icons';
+import { Truck, Pencil, Trash2, ChevronRight, PackageCheck, Plus, RefreshCw, Upload } from '@/constants/icons';
 
 import Modal from '../../../components/Modal';
 import RetailTableLoadingRow from '../components/RetailTableLoadingRow';
 import { useToast } from '../../../components/Toast';
 import { useConfirm } from '../../../components/ConfirmDialog';
 import EmptyTableState from '../../../components/EmptyTableState';
+import RetailImportModal from '../components/RetailImportModal';
 import FormLabel from '../../../components/FormLabel';
 import StatScoreCard from '@/components/ui/StatScoreCard';
 
@@ -19,6 +20,7 @@ export default function Suppliers() {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [search, setSearch] = useState('');
 
@@ -140,9 +142,23 @@ export default function Suppliers() {
 
       <div className="card table-wrap animate-fade-in">
         <div className="toolbar-no-stack" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--retail-border, #e2e8f0)' }}>
-          <button title="Registrasi Supplier" className="btn btn-primary" style={{ whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38, padding: '0 16px' }} onClick={() => { setEditingSupplier(null); setShowModal(true); }}>
-            <Plus size={15} className="mr-2 mobile-no-margin" />
+          <button
+            title="Registrasi Supplier"
+            type="button"
+            className="h-[38px] px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all shrink-0 cursor-pointer"
+            onClick={() => { setEditingSupplier(null); setShowModal(true); }}
+          >
+            <Plus size={15} className="mobile-no-margin" />
             <span className="btn-text-mobile-hide">Registrasi Supplier</span>
+          </button>
+          <button
+            title="Import Excel"
+            type="button"
+            onClick={() => setShowImportModal(true)}
+            className="h-[38px] px-3.5 inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 font-semibold text-xs shadow-xs transition-colors shrink-0 cursor-pointer"
+          >
+            <Upload size={14} className="text-blue-600 dark:text-blue-400" />
+            <span className="btn-text-mobile-hide">Import</span>
           </button>
           <div className="airy-search-wrapper" style={{ width: 280, margin: 0 }}>
             <input
@@ -259,6 +275,18 @@ export default function Suppliers() {
           </div>
         </form>
       </Modal>
+
+      {/* ── Modal Import Excel ── */}
+      <RetailImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        title="Import Data Supplier"
+        entityName="Supplier"
+        templateEndpoint="/retail/suppliers/template"
+        importEndpoint="/retail/suppliers/import"
+        onSuccess={fetchSuppliers}
+        sampleFields={['Nama Supplier', 'Kontak (Telepon / WA)', 'Alamat']}
+      />
 
       <style>{`
          .min-h-\\[100px\\] { min-height: 100px; }

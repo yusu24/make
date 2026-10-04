@@ -19,6 +19,13 @@ class SellerOrderController extends Controller
         return $tenantId;
     }
 
+    private function isDemoTenant(string $tenantId): bool
+    {
+        return str_starts_with($tenantId, 'TN-DS-')
+            || str_starts_with($tenantId, 'TN-DK-')
+            || in_array($tenantId, ['TN-0001', 'TN-RETAIL', 'TN-SELLER', 'TN-DEMO'], true);
+    }
+
     public function index(Request $request)
     {
         $tenantId = $this->getTenantId($request);
@@ -43,8 +50,8 @@ class SellerOrderController extends Controller
 
         $orders = $query->orderBy('order_date', 'desc')->get();
 
-        // Seed initial orders if empty
-        if ($orders->isEmpty() && !$request->filled('search')) {
+        // Seed initial orders ONLY for demo tenants
+        if ($orders->isEmpty() && !$request->filled('search') && $this->isDemoTenant($tenantId)) {
             $defaultOrders = [
                 [
                     'order_no' => 'ORD-SHP-88201',

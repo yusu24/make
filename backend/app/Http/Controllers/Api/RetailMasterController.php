@@ -360,4 +360,166 @@ class RetailMasterController extends Controller
 
         return response()->json(['message' => 'Icon toko dihapus']);
     }
+
+    // ==========================================
+    // EXCEL IMPORT & TEMPLATES FOR DATA MASTER
+    // ==========================================
+
+    public function templateCategories(Request $request)
+    {
+        $format = strtolower($request->query('format', 'xlsx'));
+        $fileName = 'template_import_kategori.' . ($format === 'csv' ? 'csv' : 'xlsx');
+        $writerType = $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\RetailCategoriesTemplateExport(),
+            $fileName,
+            $writerType
+        );
+    }
+
+    public function importCategories(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt|max:10240',
+        ]);
+
+        $tenantId = $request->user()->tenant_id;
+
+        try {
+            $import = new \App\Imports\RetailCategoriesImport($tenantId);
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+            $created = $import->getCreatedCount();
+            $skipped = $import->getSkippedCount();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Proses import kategori berhasil! {$created} kategori baru ditambahkan" . ($skipped > 0 ? ", {$skipped} dilewati (sudah ada)." : "."),
+                'created' => $created,
+                'skipped' => $skipped,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal mengimpor data kategori: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function templateUnits(Request $request)
+    {
+        $format = strtolower($request->query('format', 'xlsx'));
+        $fileName = 'template_import_satuan.' . ($format === 'csv' ? 'csv' : 'xlsx');
+        $writerType = $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\RetailUnitsTemplateExport(),
+            $fileName,
+            $writerType
+        );
+    }
+
+    public function importUnits(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt|max:10240',
+        ]);
+
+        $tenantId = $request->user()->tenant_id;
+
+        try {
+            $import = new \App\Imports\RetailUnitsImport($tenantId);
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+            $created = $import->getCreatedCount();
+            $skipped = $import->getSkippedCount();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Proses import satuan berhasil! {$created} satuan baru ditambahkan" . ($skipped > 0 ? ", {$skipped} dilewati (sudah ada)." : "."),
+                'created' => $created,
+                'skipped' => $skipped,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal mengimpor data satuan: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function templateCustomers(Request $request)
+    {
+        $format = strtolower($request->query('format', 'xlsx'));
+        $fileName = 'template_import_pelanggan.' . ($format === 'csv' ? 'csv' : 'xlsx');
+        $writerType = $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\RetailCustomersTemplateExport(),
+            $fileName,
+            $writerType
+        );
+    }
+
+    public function importCustomers(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt|max:10240',
+        ]);
+
+        $tenantId = $request->user()->tenant_id;
+
+        try {
+            $import = new \App\Imports\RetailCustomersImport($tenantId);
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+            $created = $import->getCreatedCount();
+            $updated = $import->getUpdatedCount();
+            $total = $created + $updated;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Proses import pelanggan berhasil! Total {$total} pelanggan ({$created} baru, {$updated} diperbarui).",
+                'created' => $created,
+                'updated' => $updated,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal mengimpor data pelanggan: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function templateSuppliers(Request $request)
+    {
+        $format = strtolower($request->query('format', 'xlsx'));
+        $fileName = 'template_import_supplier.' . ($format === 'csv' ? 'csv' : 'xlsx');
+        $writerType = $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\RetailSuppliersTemplateExport(),
+            $fileName,
+            $writerType
+        );
+    }
+
+    public function importSuppliers(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt|max:10240',
+        ]);
+
+        $tenantId = $request->user()->tenant_id;
+
+        try {
+            $import = new \App\Imports\RetailSuppliersImport($tenantId);
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+            $created = $import->getCreatedCount();
+            $updated = $import->getUpdatedCount();
+            $total = $created + $updated;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Proses import supplier berhasil! Total {$total} supplier ({$created} baru, {$updated} diperbarui).",
+                'created' => $created,
+                'updated' => $updated,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal mengimpor data supplier: ' . $e->getMessage()], 500);
+        }
+    }
 }

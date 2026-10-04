@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Box, Search, Download, CheckCircle2, AlertCircle, Truck, MapPin, Calendar, Clock, X } from '@/constants/icons';
 import { usePagination } from '../../hooks/usePagination';
 import { Pagination } from '../Pagination';
+import { useAuth } from '../../../../../contexts/AuthContext';
 
 interface ShipmentItem {
   id: string;
@@ -29,7 +30,11 @@ const INITIAL_SHIPMENTS: ShipmentItem[] = [
 ];
 
 export const ShippingManagementView: React.FC = () => {
-  const [shipments] = useState<ShipmentItem[]>(INITIAL_SHIPMENTS);
+  const { user } = useAuth();
+  const DEMO_EMAILS = ['seller@demo.com', 'ahmad@retail.com', 'retail@demo.com', 'siti@ikan.com', 'budidaya@demo.com', 'dewi@kuliner.com', 'kuliner@demo.com', 'jasa@demo.com'];
+  const isDemo = user?.tenant_id?.startsWith('TN-DS-') || user?.tenant_id?.startsWith('TN-DK-') || user?.email?.startsWith('demo-') || DEMO_EMAILS.includes(user?.email || '');
+
+  const [shipments] = useState<ShipmentItem[]>(isDemo ? INITIAL_SHIPMENTS : []);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCourier, setSelectedCourier] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
