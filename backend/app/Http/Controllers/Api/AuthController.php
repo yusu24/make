@@ -45,8 +45,8 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Default OTP 123456 for testing (per request)
-        $otp = '123456';
+        // Generate random secure 6-digit OTP
+        $otp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
 
         $user = User::create([
             'name'                 => $request->name,
@@ -56,7 +56,7 @@ class AuthController extends Controller
             'status'               => 'pending',
             'email_verified_at'    => null,
             'otp_code'             => $otp,
-            'otp_expires_at'       => now()->addMinutes(30),
+            'otp_expires_at'       => now()->addMinutes(15),
             'business_category_id' => $request->business_category_id,
             'phone'                => $request->phone,
         ]);
@@ -164,9 +164,9 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Check OTP Match (accept 123456 or matching otp_code)
+        // Check OTP Match (strictly match actual random otp_code)
         $inputOtp = trim((string)$request->otp_code);
-        if ($inputOtp !== '123456' && trim((string)$user->otp_code) !== $inputOtp) {
+        if (empty($user->otp_code) || trim((string)$user->otp_code) !== $inputOtp) {
             return response()->json([
                 'success' => false,
                 'message' => 'Kode OTP salah! Periksa kembali 6 digit kode yang masuk ke email Anda.',
@@ -228,11 +228,11 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Email ini sudah terverifikasi. Silakan langsung masuk.'], 400);
         }
 
-        // Default OTP 123456 for testing (per request)
-        $otp = '123456';
+        // Generate fresh random secure 6-digit OTP
+        $otp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
         $user->update([
             'otp_code'       => $otp,
-            'otp_expires_at' => now()->addMinutes(30),
+            'otp_expires_at' => now()->addMinutes(15),
         ]);
 
         try {

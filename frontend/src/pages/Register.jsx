@@ -442,7 +442,7 @@ export default function Register() {
                         <input 
                           type="text"
                           maxLength={6}
-                          placeholder="123456"
+                          placeholder="· · · · · ·"
                           value={otpCode}
                           onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                           style={{
