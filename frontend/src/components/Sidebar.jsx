@@ -33,11 +33,10 @@ const NAV_ITEMS = [
       { path: '/reports-analytics', icon: <BarChart2 size={18} />,       label: 'Laporan Overview' },
       { path: '/reports-revenue',   icon: <TrendingUp size={18} />,      label: 'Laporan Pendapatan' },
       { path: '/reports-tenants',   icon: <Store size={18} />,           label: 'Analitik Tenant' },
-      { path: '/logs',              icon: <ClipboardList size={18} />,   label: 'Log Aktivitas & Audit' },
     ]
   },
 
-  // ── 2. Manajemen Tenant ───────────────────────────────────────────────────────
+  // ── 3. Manajemen Tenant ───────────────────────────────────────────────────────
   {
     section: 'Manajemen Tenant',
     icon: <Store size={18} />,
@@ -50,7 +49,7 @@ const NAV_ITEMS = [
     ]
   },
 
-  // ── 3. Paket & Langganan ──────────────────────────────────────────────────────
+  // ── 4. Paket & Langganan ──────────────────────────────────────────────────────
   {
     section: 'Paket & Langganan',
     icon: <CreditCard size={18} />,
@@ -64,10 +63,10 @@ const NAV_ITEMS = [
     ]
   },
 
-  // ── 4. Layanan & Pengumuman ───────────────────────────────────────────────────
+  // ── 5. Layanan Pelanggan ───────────────────────────────────────────────────────
   {
-    section: 'Layanan & Pengumuman',
-    icon: <FileText size={18} />,
+    section: 'Layanan Pelanggan',
+    icon: <HelpCircle size={18} />,
     adminOnly: true,
     items: [
       { path: '/content-announcement', icon: <FileText size={18} />,   label: 'Pengumuman & Konten' },
@@ -75,36 +74,45 @@ const NAV_ITEMS = [
     ]
   },
 
-  // ── 5. Konten & Dokumentasi ───────────────────────────────────────────────────
+  // ── 6. Konten & Dokumentasi ───────────────────────────────────────────────────
   {
     section: 'Konten & Dokumentasi',
     icon: <BookOpen size={18} />,
     adminOnly: true,
     items: [
-      { path: '/settings',              icon: <Globe size={18} />,    label: 'Pengaturan Landing Page' },
-      { path: '/doc-center',            icon: <BookOpen size={18} />, label: 'Pusat Dokumentasi' },
-      { path: '/doc-dashboard',         icon: <BookOpen size={18} />, label: 'Kelola Dokumentasi' },
-      { path: '/module-docs',           icon: <Layers size={18} />,   label: 'Arsitektur Modul' },
-      { path: '/admin/icon-dictionary', icon: <Sparkles size={18} />, label: 'Kamus Icon UI' },
-      { path: '/admin/card-dictionary', icon: <LayoutDashboard size={18} />, label: 'Kamus Card UI' },
-      { path: '/admin/font-dictionary', icon: <Type size={18} />, label: 'Kamus Font & Tipografi' },
-      { path: '/admin/retail-standards', icon: <Store size={18} />, label: 'Standar Desain Ritel' },
+      { path: '/settings',      icon: <Globe size={18} />,    label: 'Pengaturan Landing Page' },
+      { path: '/doc-center',    icon: <BookOpen size={18} />, label: 'Pusat Dokumentasi' },
+      { path: '/doc-dashboard', icon: <BookOpen size={18} />, label: 'Kelola Dokumentasi' },
+      { path: '/module-docs',   icon: <Layers size={18} />,   label: 'Arsitektur Modul' },
     ]
   },
 
-  // ── 6. Pengaturan & Keamanan ──────────────────────────────────────────────────
+  // ── 7. Developer Tools ─────────────────────────────────────────────────────────
+  {
+    section: 'Developer Tools',
+    icon: <Cpu size={18} />,
+    adminOnly: true,
+    items: [
+      { path: '/developer-integrations', icon: <Zap size={18} />,             label: 'Integrasi & Webhook' },
+      { path: '/admin/mcp-audit',        icon: <Cpu size={18} />,             label: 'Audit MCP & AI Skills' },
+      { path: '/admin/icon-dictionary',  icon: <Sparkles size={18} />,        label: 'Kamus Icon UI' },
+      { path: '/admin/card-dictionary',  icon: <LayoutDashboard size={18} />, label: 'Kamus Card UI' },
+      { path: '/admin/font-dictionary',  icon: <Type size={18} />,            label: 'Kamus Font & Tipografi' },
+    ]
+  },
+
+  // ── 8. Pengaturan & Keamanan ──────────────────────────────────────────────────
   {
     section: 'Pengaturan & Keamanan',
     icon: <Settings size={18} />,
     adminOnly: true,
     items: [
-      { path: '/admins',                 icon: <UserCheck size={18} />, label: 'Kelola Admin' },
-      { path: '/saas-roles',             icon: <Shield size={18} />,    label: 'Role & Hak Akses' },
-      { path: '/system-monitoring',      icon: <ServerCog size={18} />, label: 'Monitoring Sistem' },
-      { path: '/developer-integrations', icon: <Zap size={18} />,       label: 'Integrasi & Webhook' },
-      { path: '/admin/mcp-audit',        icon: <Cpu size={18} />,       label: 'Audit MCP & AI Skills' },
-      { path: '/backups',                icon: <Archive size={18} />,   label: 'Cadangan Data (Backup)' },
-      { path: '/profile',                icon: <User size={18} />,      label: 'Profil Saya' },
+      { path: '/admins',            icon: <UserCheck size={18} />,     label: 'Kelola Admin' },
+      { path: '/saas-roles',        icon: <Shield size={18} />,        label: 'Role & Hak Akses' },
+      { path: '/logs',              icon: <ClipboardList size={18} />, label: 'Log Aktivitas & Audit' },
+      { path: '/system-monitoring', icon: <ServerCog size={18} />,     label: 'Monitoring Sistem' },
+      { path: '/backups',           icon: <Archive size={18} />,       label: 'Cadangan Data (Backup)' },
+      { path: '/profile',           icon: <User size={18} />,          label: 'Profil Saya' },
     ]
   }
 ]

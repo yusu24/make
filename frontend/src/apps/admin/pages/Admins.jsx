@@ -115,7 +115,13 @@ export default function Admins() {
       setShow(false)
       fetchData()
     } catch (err) {
-      setError(err.response?.data?.message || 'Gagal menyimpan data admin')
+      const errs = err.response?.data?.errors
+      const firstErr = errs ? Object.values(errs).flat()[0] : null
+      setError(
+        firstErr ||
+        err.response?.data?.message ||
+        (!err.response ? 'Tidak dapat terhubung ke server backend. Pastikan server API berjalan.' : 'Gagal menyimpan data admin')
+      )
     } finally {
       setSaving(false)
     }

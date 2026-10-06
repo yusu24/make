@@ -146,6 +146,7 @@ class UserController extends Controller
             'business_category_id' => 'nullable|exists:business_categories,id',
             'phone'                => 'nullable|string|max:20',
             'password'             => 'nullable|string|min:8',
+            'saas_role_id'         => 'nullable|exists:saas_roles,id',
         ]);
 
         if ($validator->fails()) {

@@ -4,7 +4,7 @@ import {
   X, Search, Home, BarChart2, TrendingUp, Store, ClipboardList,
   Shield, Users, Layers, Package, CreditCard, Wallet, FileText, BellRing,
   HelpCircle, BookOpen, Globe, Sparkles, Sliders, UserCheck, ServerCog,
-  Zap, Archive, User, LayoutDashboard, Type
+  Zap, Archive, User, LayoutDashboard, Type, Cpu
 } from '@/constants/icons'
 import './AdminMobileNav.css'
 
@@ -21,7 +21,6 @@ export const ADMIN_MODULE_SECTIONS = [
       { path: '/reports-analytics', icon: <BarChart2 size={20} />, label: 'Laporan Overview', code: 'L01' },
       { path: '/reports-revenue', icon: <TrendingUp size={20} />, label: 'Laporan Pendapatan', code: 'L02' },
       { path: '/reports-tenants', icon: <Store size={20} />, label: 'Analitik Tenant', code: 'L03' },
-      { path: '/logs', icon: <ClipboardList size={20} />, label: 'Log Aktivitas & Audit', code: 'L04' },
     ]
   },
   {
@@ -44,7 +43,7 @@ export const ADMIN_MODULE_SECTIONS = [
     ]
   },
   {
-    group: 'LAYANAN & PENGUMUMAN',
+    group: 'LAYANAN PELANGGAN',
     items: [
       { path: '/content-announcement', icon: <FileText size={20} />, label: 'Pengumuman & Konten', code: 'A01' },
       { path: '/support-center', icon: <HelpCircle size={20} />, label: 'Pusat Bantuan (Tiket)', code: 'A02' },
@@ -57,9 +56,16 @@ export const ADMIN_MODULE_SECTIONS = [
       { path: '/doc-center', icon: <BookOpen size={20} />, label: 'Pusat Dokumentasi', code: 'K02' },
       { path: '/doc-dashboard', icon: <BookOpen size={20} />, label: 'Kelola Dokumentasi', code: 'K03' },
       { path: '/module-docs', icon: <Layers size={20} />, label: 'Arsitektur Modul', code: 'K04' },
-      { path: '/admin/icon-dictionary', icon: <Sparkles size={20} />, label: 'Kamus Icon UI', code: 'K05' },
-      { path: '/admin/card-dictionary', icon: <LayoutDashboard size={20} />, label: 'Kamus Card UI', code: 'K06' },
-      { path: '/admin/font-dictionary', icon: <Type size={20} />, label: 'Kamus Font & Tipografi', code: 'K07' },
+    ]
+  },
+  {
+    group: 'DEVELOPER TOOLS',
+    items: [
+      { path: '/developer-integrations', icon: <Zap size={20} />, label: 'Integrasi & Webhook', code: 'D01' },
+      { path: '/admin/mcp-audit', icon: <Cpu size={20} />, label: 'Audit MCP & AI Skills', code: 'D02' },
+      { path: '/admin/icon-dictionary', icon: <Sparkles size={20} />, label: 'Kamus Icon UI', code: 'D03' },
+      { path: '/admin/card-dictionary', icon: <LayoutDashboard size={20} />, label: 'Kamus Card UI', code: 'D04' },
+      { path: '/admin/font-dictionary', icon: <Type size={20} />, label: 'Kamus Font & Tipografi', code: 'D05' },
     ]
   },
   {
@@ -67,8 +73,8 @@ export const ADMIN_MODULE_SECTIONS = [
     items: [
       { path: '/admins', icon: <UserCheck size={20} />, label: 'Kelola Admin', code: 'S01' },
       { path: '/saas-roles', icon: <Shield size={20} />, label: 'Role & Hak Akses', code: 'S02' },
-      { path: '/system-monitoring', icon: <ServerCog size={20} />, label: 'Monitoring Sistem', code: 'S03' },
-      { path: '/developer-integrations', icon: <Zap size={20} />, label: 'Integrasi & Webhook', code: 'S04' },
+      { path: '/logs', icon: <ClipboardList size={20} />, label: 'Log Aktivitas & Audit', code: 'S03' },
+      { path: '/system-monitoring', icon: <ServerCog size={20} />, label: 'Monitoring Sistem', code: 'S04' },
       { path: '/backups', icon: <Archive size={20} />, label: 'Cadangan Data (Backup)', code: 'S05' },
       { path: '/profile', icon: <User size={20} />, label: 'Profil Saya', code: 'S06' },
     ]

@@ -94,7 +94,16 @@ Route::middleware(['auth:sanctum', 'expire_on_date_change'])->group(function () 
         $request->merge(['role' => ['admin', 'super_admin']]);
         return app(UserController::class)->index($request);
     });
-    Route::post('admins', [UserController::class, 'store']);
+    Route::post('admins', function(Request $request) {
+        // Akun yang dibuat dari halaman Kelola Admin harus selalu ber-role admin
+        // (tanpa ini role default 'customer' dan sistem mencoba membuat Tenant).
+        if (!in_array($request->input('role'), ['admin', 'super_admin'], true)) {
+            $request->merge(['role' => 'admin']);
+        }
+        return app(UserController::class)->store($request);
+    });
+    Route::put('admins/{user}', [UserController::class, 'update']);
+    Route::patch('admins/{user}', [UserController::class, 'update']);
     Route::delete('admins/{user}', [UserController::class, 'destroy']);
     Route::apiResource('saas-roles', SaasRoleController::class);
 
